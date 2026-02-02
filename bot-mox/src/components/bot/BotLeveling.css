@@ -1,0 +1,99 @@
+.bot-leveling {
+  padding: 16px;
+}
+
+.leveling-stat-card {
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+}
+
+.leveling-stat-card .ant-card-body {
+  padding: 16px;
+}
+
+.leveling-stat-card .ant-statistic-title {
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.leveling-stat-card .ant-statistic-content {
+  color: var(--proxmox-text-primary);
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.leveling-progress-card {
+  margin-top: 16px;
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+}
+
+.leveling-progress-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+}
+
+.leveling-progress-card .ant-card-head-title {
+  color: var(--proxmox-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.xp-progress-section {
+  padding: 8px 0;
+}
+
+.xp-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.xp-info .ant-typography {
+  color: var(--proxmox-text-primary);
+}
+
+.xp-percent {
+  text-align: center;
+  margin-top: 8px;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: #722ed1;
+}
+
+.leveling-location-card {
+  margin-top: 16px;
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+}
+
+.location-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.location-icon {
+  font-size: 24px;
+  color: var(--proxmox-accent);
+}
+
+.location-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.location-details .ant-typography {
+  font-size: var(--text-xs);
+}
+
+.location-tag {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}

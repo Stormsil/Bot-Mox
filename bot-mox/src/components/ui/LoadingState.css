@@ -1,0 +1,62 @@
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.loading-state.spinner {
+  min-height: 200px;
+}
+
+.loading-state.skeleton {
+  padding: 16px;
+}
+
+.loading-state.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.loading-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.loading-card .ant-skeleton-content .ant-skeleton-title {
+  background: var(--proxmox-bg-tertiary);
+}
+
+.loading-card .ant-skeleton-content .ant-skeleton-paragraph > li {
+  background: var(--proxmox-bg-tertiary);
+}
+
+.table-loading-state {
+  padding: 24px;
+}
+
+.table-loading-state .ant-skeleton-content .ant-skeleton-title,
+.table-loading-state .ant-skeleton-content .ant-skeleton-paragraph > li {
+  background: var(--proxmox-bg-tertiary);
+}
+
+.list-loading-state {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.list-loading-item {
+  padding: 12px;
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  border-radius: 4px;
+}
+
+.list-loading-item .ant-skeleton-content .ant-skeleton-title,
+.list-loading-item .ant-skeleton-content .ant-skeleton-paragraph > li {
+  background: var(--proxmox-bg-tertiary);
+}

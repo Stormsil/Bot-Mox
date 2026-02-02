@@ -1,0 +1,14 @@
+{
+  "name": "bot-mox-scripts",
+  "version": "1.0.0",
+  "description": "Database maintenance scripts for Bot-Mox",
+  "main": "cleanup-database.js",
+  "scripts": {
+    "cleanup": "node cleanup-database.js",
+    "reset-bots": "node reset-bots.js"
+  },
+  "dependencies": {
+    "firebase": "^10.8.0",
+    "firebase-admin": "^12.0.0"
+  }
+}

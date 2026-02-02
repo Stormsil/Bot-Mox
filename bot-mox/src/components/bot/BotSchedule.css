@@ -1,0 +1,129 @@
+/* Timeline section with sticky position */
+.timeline-section {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--proxmox-bg-secondary);
+  border-bottom: 1px solid var(--proxmox-border);
+  margin-bottom: 16px;
+}
+
+.bot-schedule-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.bot-schedule-error {
+  padding: 16px;
+}
+
+.schedule-card {
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+}
+
+.schedule-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+}
+
+.schedule-card .ant-card-head-title {
+  color: var(--proxmox-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.schedule-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.schedule-actions .ant-btn {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.schedule-actions .ant-btn:hover {
+  border-color: var(--proxmox-orange);
+  color: var(--proxmox-orange);
+}
+
+.schedule-actions .ant-btn-primary {
+  background: var(--proxmox-orange);
+  border-color: var(--proxmox-orange);
+  color: #fff;
+}
+
+.schedule-actions .ant-btn-primary:hover {
+  background: #ff8c00;
+  border-color: #ff8c00;
+}
+
+.schedule-actions .ant-btn-primary:disabled,
+.schedule-actions .ant-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.unsaved-alert {
+  margin-bottom: 16px;
+}
+
+.unsaved-alert .ant-alert-message {
+  color: #faad14;
+}
+
+.day-controls {
+  padding: 16px;
+  background: var(--proxmox-bg-secondary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.day-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.day-toggle span {
+  color: var(--proxmox-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.day-toggle .ant-switch {
+  background-color: #8c8c8c;
+}
+
+.day-toggle .ant-switch-checked {
+  background-color: #52c41a;
+}
+
+/* DayStats styling - now at the bottom */
+.day-stats {
+  margin: 0 16px 16px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--proxmox-border);
+}
+
+/* SessionList container styling */
+.session-list {
+  margin: 0 16px 16px 16px;
+  border: 1px solid var(--proxmox-border);
+  border-radius: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .bot-schedule {
+    padding: 8px;
+  }
+
+  .schedule-actions {
+    flex-direction: column;
+  }
+}

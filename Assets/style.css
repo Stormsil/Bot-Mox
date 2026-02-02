@@ -1,0 +1,194 @@
+/* Proxmox-like Theme Overhaul v16 - "Strict Grid & Alignment" */
+
+/* 1. GLOBAL RESET & TYPOGRAPHY */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Roboto', 'Segoe UI', sans-serif !important;
+    font-size: 13px !important;
+    background-color: #383b40 !important; /* Proxmox dark grey */
+    color: #efefef !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Roboto Condensed', sans-serif !important;
+    font-weight: 600 !important;
+    color: #fff !important;
+    margin: 0 0 10px 0 !important;
+}
+
+/* 2. LAYOUT - TOP HEADER (Fixed) */
+.proxmox-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 45px; /* Fixed Height */
+    background-color: #333; /* Darker header */
+    border-bottom: 1px solid #111;
+    z-index: 9999999; /* Topmost */
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.proxmox-logo {
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+    margin-right: 30px;
+    letter-spacing: 0.5px;
+}
+
+.proxmox-search {
+    background-color: #222;
+    border: 1px solid #444;
+    color: #ccc;
+    padding: 6px 10px;
+    font-size: 13px;
+    width: 250px;
+    border-radius: 0px; /* Square */
+    outline: none;
+}
+
+.proxmox-search:focus {
+    border-color: #555;
+    background-color: #111;
+}
+
+/* 3. LAYOUT - SIDEBAR (Below Header) */
+[data-testid="stSidebar"] {
+    top: 45px !important; /* Push down by header height */
+    height: calc(100vh - 45px) !important;
+    background-color: #282a2e !important;
+    border-right: 1px solid #111 !important;
+    width: 260px !important;
+    z-index: 9999998 !important;
+    box-shadow: none !important;
+    padding-top: 0px !important; 
+}
+
+/* HIDE NATIVE SIDEBAR TOGGLE & HEADER */
+[data-testid="stSidebarCollapsedControl"], [data-testid="stSidebarHeader"] {
+    display: none !important;
+}
+
+/* Sidebar Content Container */
+[data-testid="stSidebarUserContent"] {
+    padding-top: 10px !important; /* Small buffer from top header */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Remove default sidebar gaps */
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    gap: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* Sidebar Header Adjustment for compactness */
+.sidebar-section-header {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    height: 30px !important;
+}
+
+/* HIDE ALL SUBMENU ARROWS (NUCLEAR OPTION) */
+/* Target every possible variation of the arrow element */
+.ant-menu-submenu-arrow,
+.ant-menu-submenu-title .ant-menu-submenu-arrow,
+i.ant-menu-submenu-arrow,
+span.ant-menu-submenu-arrow,
+div.ant-menu-submenu-arrow {
+    display: none !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Remove padding reserved for the arrow to align text properly */
+.ant-menu-submenu-title {
+    padding-right: 10px !important; /* Reset right padding */
+}
+
+
+/* 4. LAYOUT - MAIN CONTENT (Pushed down) */
+.main .block-container {
+    padding-top: 65px !important; /* 45px Header + 20px padding */
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-bottom: 20px !important;
+    max-width: 100% !important;
+}
+
+/* Hide Default Header completely */
+header[data-testid="stHeader"], div[data-testid="stToolbar"] {
+    display: none !important;
+}
+
+/* 5. COMPONENT - TABS (Strict Technical) */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 1px !important;
+    background-color: #282a2e;
+    padding: 4px 4px 0 4px; /* Tab container */
+    border-bottom: 1px solid #444;
+    border-radius: 0px !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    height: 32px !important;
+    padding: 0 16px !important;
+    background-color: #383b40 !important; /* Inactive tab */
+    border: 1px solid #444 !important;
+    border-bottom: none !important;
+    margin-right: 2px !important;
+    color: #aaa !important;
+    border-radius: 0px !important;
+    font-size: 12px !important;
+    font-weight: 500;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #383b40 !important; /* Active matches body */
+    color: #4dabf7 !important; /* Blue text */
+    border-top: 2px solid #4dabf7 !important;
+    border-bottom: 1px solid #383b40 !important; /* Hide bottom border */
+    margin-bottom: -1px !important; /* Overlap border */
+    z-index: 10;
+}
+
+/* 6. COMPONENT - METRICS (Dense) */
+[data-testid="stMetric"] {
+    background-color: #42464d !important;
+    border: 1px solid #555 !important;
+    padding: 12px !important;
+    border-radius: 0px !important;
+}
+
+[data-testid="stMetricLabel"] {
+    font-size: 11px !important;
+    color: #bbb !important;
+    text-transform: uppercase !important;
+}
+
+[data-testid="stMetricValue"] {
+    font-size: 20px !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-family: 'Roboto Condensed', monospace !important;
+}
+
+/* 7. PROGRESS BARS */
+[data-testid="stProgress"] > div > div {
+    height: 8px !important;
+    border-radius: 0px !important;
+}
+
+/* 8. ALERTS */
+[data-testid="stAlert"] {
+    padding: 8px 12px !important;
+    border-radius: 0px !important;
+}

@@ -1,0 +1,141 @@
+.bot-person {
+  padding: 16px;
+  max-width: 100%;
+}
+
+.person-card {
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+}
+
+.person-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+}
+
+.person-card .ant-card-head-title {
+  color: var(--proxmox-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.person-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.warning-icon {
+  color: #faad14;
+  font-size: 18px;
+}
+
+.incomplete-badge .ant-badge-dot {
+  width: 8px;
+  height: 8px;
+  background: #faad14;
+}
+
+.person-form {
+  margin-top: 8px;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-warning-icon {
+  color: #faad14;
+  font-size: 14px;
+}
+
+.person-card .ant-form-item-label > label {
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.person-card .ant-input,
+.person-card .ant-select-selector {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.person-card .ant-input:hover,
+.person-card .ant-input:focus,
+.person-card .ant-select-selector:hover,
+.person-card .ant-select-selector:focus {
+  border-color: var(--proxmox-accent);
+}
+
+.person-card .ant-select-arrow {
+  color: var(--proxmox-text-muted);
+}
+
+.person-form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--proxmox-border);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.generate-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.generate-label {
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.country-select .ant-select-selector {
+  background: var(--proxmox-bg-tertiary) !important;
+  border-color: var(--proxmox-border) !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.generate-btn {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.generate-btn:hover {
+  border-color: var(--proxmox-accent);
+  color: var(--proxmox-accent);
+}
+
+.save-btn {
+  background: var(--proxmox-accent);
+  border-color: var(--proxmox-accent);
+}
+
+.save-btn:hover {
+  background: var(--proxmox-accent-hover);
+  border-color: var(--proxmox-accent-hover);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .person-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .generate-section {
+    justify-content: center;
+  }
+  
+  .save-btn {
+    width: 100%;
+  }
+}

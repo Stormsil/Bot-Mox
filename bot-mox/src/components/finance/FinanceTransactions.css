@@ -1,0 +1,81 @@
+.finance-transactions-container {
+  padding: 16px;
+}
+
+.filters-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  margin-bottom: 16px;
+}
+
+.transactions-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.transactions-card .ant-card-body {
+  padding: 0;
+}
+
+.transactions-table {
+  background: transparent;
+}
+
+.transactions-table .ant-table-thead > tr > th {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+  font-weight: 500;
+}
+
+.transactions-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--proxmox-border);
+  color: var(--proxmox-text-secondary);
+}
+
+.transactions-table .ant-table-tbody > tr:hover > td {
+  background: var(--proxmox-bg-tertiary);
+}
+
+.transaction-type-tag {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.amount-income {
+  color: #52c41a;
+  font-weight: 500;
+}
+
+.amount-expense {
+  color: #f5222d;
+  font-weight: 500;
+}
+
+.action-btn {
+  padding: 4px 8px;
+}
+
+.action-btn:hover {
+  background: var(--proxmox-bg-tertiary);
+}
+
+/* Стили для фильтров */
+.filters-card .ant-select-selector,
+.filters-card .ant-picker,
+.filters-card .ant-input {
+  background: var(--proxmox-bg-tertiary) !important;
+  border-color: var(--proxmox-border) !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.filters-card .ant-select-selection-placeholder,
+.filters-card .ant-input::placeholder {
+  color: var(--proxmox-text-muted) !important;
+}
+
+.filters-card .ant-picker-suffix,
+.filters-card .ant-select-arrow {
+  color: var(--proxmox-text-muted) !important;
+}

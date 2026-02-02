@@ -1,0 +1,180 @@
+.bot-license {
+  padding: 16px;
+}
+
+.license-alert {
+  margin-bottom: 16px;
+}
+
+.license-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  margin-bottom: 16px;
+}
+
+.license-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.license-card .ant-card-head-title {
+  color: var(--proxmox-text-primary);
+}
+
+.license-card .ant-card-extra {
+  padding: 12px 0;
+}
+
+.license-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.license-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.license-field .field-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.license-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.license-key-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.license-key {
+  font-family: monospace;
+  font-size: 13px;
+  background: var(--proxmox-bg-tertiary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+.expiration-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.license-actions {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--proxmox-border);
+}
+
+/* Empty state actions */
+.bot-license .ant-empty {
+  padding: 24px 0;
+}
+
+.bot-license .ant-empty-description {
+  margin-bottom: 16px;
+}
+
+/* Modal styles */
+.bot-license .ant-modal-content {
+  background: var(--proxmox-bg-secondary);
+}
+
+.bot-license .ant-modal-header {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.bot-license .ant-modal-title {
+  color: var(--proxmox-text-primary);
+}
+
+.bot-license .ant-modal-footer {
+  border-top: 1px solid var(--proxmox-border);
+}
+
+/* Form styles */
+.bot-license .ant-form-item-label > label {
+  color: var(--proxmox-text-secondary);
+}
+
+.bot-license .ant-input,
+.bot-license .ant-select-selector,
+.bot-license .ant-picker {
+  background: var(--proxmox-bg-tertiary) !important;
+  border-color: var(--proxmox-border) !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.bot-license .ant-input::placeholder,
+.bot-license .ant-select-selection-placeholder {
+  color: var(--proxmox-text-muted) !important;
+}
+
+/* AutoComplete dropdown */
+.bot-license .ant-select-dropdown {
+  background: var(--proxmox-bg-secondary) !important;
+  border: 1px solid var(--proxmox-border);
+}
+
+.bot-license .ant-select-item {
+  color: var(--proxmox-text-primary) !important;
+}
+
+.bot-license .ant-select-item-option-active {
+  background: var(--proxmox-bg-tertiary) !important;
+}
+
+.bot-license .ant-select-item-option-selected {
+  background: var(--proxmox-accent) !important;
+  color: white !important;
+}
+
+/* DatePicker dropdown */
+.bot-license .ant-picker-dropdown {
+  background: var(--proxmox-bg-secondary);
+}
+
+.bot-license .ant-picker-panel {
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+}
+
+.bot-license .ant-picker-cell {
+  color: var(--proxmox-text-primary);
+}
+
+.bot-license .ant-picker-cell-in-view {
+  color: var(--proxmox-text-primary);
+}
+
+.bot-license .ant-picker-cell:hover:not(.ant-picker-cell-selected):not(.ant-picker-cell-disabled) .ant-picker-cell-inner {
+  background: var(--proxmox-bg-tertiary);
+}
+
+.bot-license .ant-picker-cell-selected .ant-picker-cell-inner {
+  background: var(--proxmox-accent);
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .license-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .license-key-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

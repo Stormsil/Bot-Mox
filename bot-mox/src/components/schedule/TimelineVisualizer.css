@@ -1,0 +1,231 @@
+.timeline-visualizer {
+  padding: 12px 16px 16px 16px;
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  border-radius: 8px;
+  position: relative;
+  margin: 0 16px 16px 16px;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.timeline-title {
+  margin: 0;
+  color: var(--proxmox-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Компактная легенда в заголовке */
+.timeline-header-legend {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.timeline-header-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--proxmox-text-secondary);
+}
+
+.timeline-header-legend .legend-bar {
+  width: 16px;
+  height: 4px;
+  background: #52c41a;
+  border-radius: 2px;
+}
+
+.timeline-header-legend .legend-line {
+  width: 16px;
+  height: 2px;
+  background: #4a4a4a;
+  border-radius: 1px;
+}
+
+.timeline-header-legend .legend-marker {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--proxmox-bg-secondary);
+}
+
+.timeline-header-legend .legend-marker.start {
+  background: #52c41a;
+}
+
+.timeline-header-legend .legend-marker.end {
+  background: #8c8c8c;
+}
+
+.timeline-container {
+  position: relative;
+}
+
+.timeline-container.disabled {
+  opacity: 0.5;
+}
+
+.timeline-line-container {
+  position: relative;
+  height: 70px;
+  margin: 0 30px 10px 30px;
+}
+
+/* Основная линия таймлайна (фон) */
+.timeline-base-line {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #555;
+  border-radius: 1px;
+}
+
+/* Тонкие вертикальные засечки для каждого часа */
+.timeline-tick {
+  position: absolute;
+  top: 12px;
+  width: 1px;
+  height: 11px;
+  background: #666;
+  transform: translateX(-50%);
+}
+
+/* Активные сегменты сессий - точное отображение */
+.timeline-session-bar {
+  position: absolute;
+  top: 15px;
+  height: 3px;
+  background: #52c41a;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-session-bar:hover {
+  height: 5px;
+  top: 14px;
+  box-shadow: 0 0 6px rgba(82, 196, 26, 0.5);
+}
+
+
+/* Маркеры начала и конца сессий */
+.timeline-marker {
+  position: absolute;
+  top: 12px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid var(--proxmox-bg-secondary);
+  transform: translateX(-50%);
+  z-index: 3;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.timeline-marker.start {
+  background: #52c41a;
+  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.3);
+}
+
+.timeline-marker.end {
+  background: #8c8c8c;
+  box-shadow: 0 0 0 2px rgba(140, 140, 140, 0.3);
+}
+
+.timeline-marker:hover {
+  transform: translateX(-50%) scale(1.3);
+  box-shadow: 0 0 0 4px rgba(82, 196, 26, 0.2);
+}
+
+.timeline-marker.end:hover {
+  box-shadow: 0 0 0 4px rgba(140, 140, 140, 0.2);
+}
+
+/* Tooltip для маркеров */
+.timeline-marker::after {
+  content: attr(data-time);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  background: var(--proxmox-bg-tertiary);
+  color: var(--proxmox-text-primary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  border: 1px solid var(--proxmox-border);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.timeline-marker:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+/* Метки времени - под линией */
+.timeline-labels {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  right: 0;
+  height: 20px;
+}
+
+.timeline-time-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--proxmox-text-secondary);
+  font-family: 'Monaco', 'Consolas', monospace;
+  white-space: nowrap;
+}
+
+/* Подписи времени для сессий - над полоской (только длительность) */
+.session-duration-label {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  color: #52c41a;
+  white-space: nowrap;
+  font-family: 'Monaco', 'Consolas', monospace;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+/* Оверлей для отключенного дня */
+.timeline-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  padding: 12px 24px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--proxmox-border);
+}

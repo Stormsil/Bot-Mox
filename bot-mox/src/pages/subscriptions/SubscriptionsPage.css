@@ -1,0 +1,178 @@
+.subscriptions-page {
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.subscriptions-header {
+  margin-bottom: 16px;
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.subscriptions-header .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.subscriptions-header .header-title h4 {
+  margin: 0;
+  color: var(--proxmox-text-primary);
+}
+
+.subscriptions-header .header-title .ant-typography-secondary {
+  color: var(--proxmox-text-secondary);
+}
+
+.subscriptions-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.subscriptions-stats .ant-col {
+  flex: 1;
+  max-width: none;
+}
+
+.subscriptions-stats .stat-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  text-align: center;
+  width: 100%;
+}
+
+.subscriptions-stats .stat-card .stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--proxmox-text-primary);
+}
+
+.subscriptions-stats .stat-card .stat-label {
+  font-size: 12px;
+  color: var(--proxmox-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.subscriptions-stats .stat-card.active .stat-value {
+  color: #52c41a;
+}
+
+.subscriptions-stats .stat-card.expired .stat-value {
+  color: #ff4d4f;
+}
+
+.subscriptions-stats .stat-card.warning .stat-value {
+  color: #faad14;
+}
+
+.expiring-alert {
+  margin-bottom: 16px;
+  background: rgba(250, 173, 20, 0.1);
+  border: 1px solid var(--proxmox-warning);
+}
+
+.expiring-alert .ant-alert-message {
+  color: var(--proxmox-warning);
+  font-weight: 500;
+}
+
+.expiring-list {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+  color: var(--proxmox-text-secondary);
+}
+
+.expiring-list li {
+  margin-bottom: 4px;
+}
+
+.subscriptions-filters {
+  margin-bottom: 16px;
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.subscriptions-table-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.subscriptions-table-card .ant-table {
+  background: transparent;
+}
+
+.subscriptions-table-card .ant-table-thead > tr > th {
+  background: var(--proxmox-bg-tertiary);
+  color: var(--proxmox-text-secondary);
+  border-bottom: 1px solid var(--proxmox-border);
+  font-weight: 500;
+}
+
+.subscriptions-table-card .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.subscriptions-table-card .ant-table-tbody > tr:hover > td {
+  background: var(--proxmox-bg-hover);
+}
+
+.subscriptions-table-card .ant-tag {
+  border-radius: 2px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.subscriptions-page .ant-input,
+.subscriptions-page .ant-select-selector,
+.subscriptions-page .ant-picker {
+  background: var(--proxmox-bg-tertiary) !important;
+  border-color: var(--proxmox-border) !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.subscriptions-page .ant-input::placeholder {
+  color: var(--proxmox-text-muted);
+}
+
+.subscriptions-page .ant-btn-primary {
+  background: var(--proxmox-accent);
+  border-color: var(--proxmox-accent);
+}
+
+.subscriptions-page .ant-btn-primary:hover {
+  background: var(--proxmox-accent-hover);
+  border-color: var(--proxmox-accent-hover);
+}
+
+.subscriptions-page .ant-modal-content {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.subscriptions-page .ant-modal-header {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.subscriptions-page .ant-modal-title {
+  color: var(--proxmox-text-primary);
+}
+
+.subscriptions-page .ant-form-item-label > label {
+  color: var(--proxmox-text-secondary);
+}
+
+.subscriptions-page .ant-picker-dropdown {
+  background: var(--proxmox-bg-secondary);
+}
+
+.subscriptions-page .ant-alert {
+  background: var(--proxmox-bg-tertiary);
+  border: 1px solid var(--proxmox-border);
+}

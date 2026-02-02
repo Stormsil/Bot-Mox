@@ -1,0 +1,64 @@
+/* Proxmox Theme Variables */
+:root {
+  /* Основные цвета фона - настоящий Proxmox стиль */
+  --proxmox-bg-primary: #1e1e1e;
+  --proxmox-bg-secondary: #2d2d2d;
+  --proxmox-bg-tertiary: #333333;
+  --proxmox-bg-hover: #3d3d3d;
+  --proxmox-bg-active: #404040;
+
+  /* Акцентные цвета */
+  --proxmox-accent: #e57000;
+  --proxmox-accent-hover: #ff8c1a;
+  --proxmox-accent-light: #ffa94d;
+
+  /* Текст */
+  --proxmox-text-primary: #ffffff;
+  --proxmox-text-secondary: #cccccc;
+  --proxmox-text-muted: #999999;
+  --proxmox-text-dark: #666666;
+
+  /* Статусы */
+  --proxmox-status-online: #2ecc71;
+  --proxmox-status-offline: #7f8c8d;
+  --proxmox-status-warning: #f39c12;
+  --proxmox-status-error: #e74c3c;
+  --proxmox-status-info: #3498db;
+  --proxmox-status-paused: #f1c40f;
+
+  /* Границы */
+  --proxmox-border: #444444;
+  --proxmox-border-light: #555555;
+  --proxmox-border-dark: #111111;
+
+  /* Шрифты */
+  --font-primary: 'Roboto', 'Segoe UI', sans-serif;
+  --font-condensed: 'Roboto Condensed', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+
+  /* Размеры текста */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+
+  /* Layout */
+  --header-height: 40px;
+  --resource-tree-width: 280px;
+  --tab-bar-width: 120px;
+
+  /* Отступы */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+
+  /* Скругления */
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+}

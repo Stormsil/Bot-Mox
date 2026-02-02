@@ -1,0 +1,196 @@
+.bot-finance {
+  padding: 0;
+}
+
+.finance-summary {
+  margin-bottom: 16px;
+}
+
+.finance-stat-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.finance-stat-card .ant-card-body {
+  padding: 20px;
+}
+
+.finance-stat-card .ant-statistic-title {
+  color: var(--proxmox-text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.finance-stat-card .ant-statistic-content {
+  font-family: var(--font-condensed);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+}
+
+.finance-stat-card .ant-statistic-content-prefix {
+  margin-right: 8px;
+  font-size: var(--text-lg);
+}
+
+.stat-detail {
+  margin-top: 8px;
+}
+
+.stat-detail .stat-label {
+  color: var(--proxmox-text-muted);
+  font-size: var(--text-xs);
+}
+
+.costs-breakdown {
+  margin-bottom: 16px;
+}
+
+.costs-card,
+.roi-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.costs-card .ant-card-head,
+.roi-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.cost-item,
+.roi-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--proxmox-bg-tertiary);
+}
+
+.cost-item:last-child,
+.roi-item:last-child {
+  border-bottom: none;
+}
+
+.cost-item .ant-typography,
+.roi-item .ant-typography {
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.cost-item .ant-typography-strong,
+.roi-item .ant-typography-strong {
+  color: var(--proxmox-text-primary);
+}
+
+.cost-divider,
+.roi-divider {
+  height: 1px;
+  background: var(--proxmox-border);
+  margin: 8px 0;
+}
+
+.cost-item.total .ant-typography,
+.roi-item.total .ant-typography {
+  font-size: var(--text-md);
+}
+
+.total-amount {
+  color: var(--proxmox-accent) !important;
+}
+
+.positive {
+  color: var(--proxmox-status-online) !important;
+}
+
+/* Transactions Table */
+.transactions-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.transactions-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.transactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.transactions-table {
+  background: transparent;
+}
+
+.transactions-table .ant-table {
+  background: transparent;
+}
+
+.transactions-table .ant-table-thead > tr > th {
+  background: var(--proxmox-bg-tertiary);
+  color: var(--proxmox-text-primary);
+  border-bottom: 1px solid var(--proxmox-border);
+  font-weight: 600;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.transactions-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--proxmox-bg-tertiary);
+  color: var(--proxmox-text-secondary);
+}
+
+.transactions-table .ant-table-tbody > tr:hover > td {
+  background: var(--proxmox-bg-hover);
+}
+
+.transaction-type-tag {
+  font-size: var(--text-xs);
+  padding: 0 6px;
+  height: 18px;
+  line-height: 18px;
+  border: none;
+}
+
+.category-tag {
+  background: var(--proxmox-bg-tertiary);
+  border: 1px solid var(--proxmox-border);
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-xs);
+  padding: 0 6px;
+  height: 18px;
+  line-height: 18px;
+}
+
+.amount-income {
+  color: var(--proxmox-status-online);
+  font-weight: 500;
+}
+
+.amount-expense {
+  color: var(--proxmox-status-error);
+  font-weight: 500;
+}
+
+.transactions-table .ant-pagination {
+  margin-top: 16px;
+}
+
+.transactions-table .ant-pagination-item {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+}
+
+.transactions-table .ant-pagination-item-active {
+  background: var(--proxmox-accent);
+  border-color: var(--proxmox-accent);
+}
+
+.transactions-table .ant-pagination-item-active a {
+  color: var(--proxmox-text-primary);
+}

@@ -1,0 +1,277 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap');
+@import './variables.css';
+
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  background-color: var(--proxmox-bg-primary);
+  color: var(--proxmox-text-primary);
+  height: 100%;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-condensed);
+  font-weight: 600;
+  color: var(--proxmox-text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+h4 { font-size: var(--text-md); }
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--proxmox-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--proxmox-border);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--proxmox-border-light);
+}
+
+/* Ant Design Overrides - Proxmox Style */
+.ant-layout {
+  background: var(--proxmox-bg-primary);
+}
+
+.ant-layout-sider {
+  background: var(--proxmox-bg-secondary);
+}
+
+.ant-layout-header {
+  background: var(--proxmox-bg-secondary);
+  padding: 0;
+  height: var(--header-height);
+  line-height: var(--header-height);
+  border-bottom: 1px solid var(--proxmox-border-dark);
+}
+
+/* Tree Component Styling */
+.ant-tree {
+  background: transparent;
+  color: var(--proxmox-text-secondary);
+}
+
+.ant-tree-treenode {
+  padding: 2px 0 !important;
+}
+
+.ant-tree-node-content-wrapper {
+  color: var(--proxmox-text-secondary);
+  padding: 2px 8px !important;
+  border-radius: 0 !important;
+}
+
+.ant-tree-node-content-wrapper:hover {
+  background: var(--proxmox-bg-hover) !important;
+}
+
+.ant-tree-node-selected {
+  background: var(--proxmox-accent) !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.ant-tree-node-selected .ant-tree-title {
+  color: var(--proxmox-text-primary) !important;
+}
+
+.ant-tree-switcher {
+  color: var(--proxmox-text-muted);
+}
+
+/* Tabs Styling - Proxmox Style */
+.ant-tabs {
+  color: var(--proxmox-text-secondary);
+}
+
+.ant-tabs-nav {
+  background: var(--proxmox-bg-secondary);
+  border-bottom: 1px solid var(--proxmox-border-dark);
+  margin-bottom: 0 !important;
+}
+
+.ant-tabs-tab {
+  color: var(--proxmox-text-muted);
+  background: transparent;
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 8px 16px !important;
+}
+
+.ant-tabs-tab:hover {
+  color: var(--proxmox-text-primary);
+  background: var(--proxmox-bg-hover);
+}
+
+.ant-tabs-tab-active {
+  background: var(--proxmox-bg-tertiary) !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.ant-tabs-ink-bar {
+  background: var(--proxmox-accent) !important;
+}
+
+/* Card Styling */
+.ant-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  border-radius: var(--radius-none);
+}
+
+.ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+  padding: 8px 16px;
+  min-height: auto;
+}
+
+.ant-card-head-title {
+  font-family: var(--font-condensed);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--proxmox-text-primary);
+}
+
+.ant-card-body {
+  padding: 16px;
+}
+
+/* Table Styling */
+.ant-table {
+  background: transparent;
+  color: var(--proxmox-text-secondary);
+}
+
+.ant-table-thead > tr > th {
+  background: var(--proxmox-bg-tertiary);
+  color: var(--proxmox-text-primary);
+  border-bottom: 1px solid var(--proxmox-border);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  padding: 8px 12px;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--proxmox-border);
+  padding: 8px 12px;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: var(--proxmox-bg-hover);
+}
+
+/* Button Styling */
+.ant-btn {
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.ant-btn-primary {
+  background: var(--proxmox-accent);
+  border-color: var(--proxmox-accent);
+}
+
+.ant-btn-primary:hover {
+  background: var(--proxmox-accent-hover);
+  border-color: var(--proxmox-accent-hover);
+}
+
+/* Input Styling */
+.ant-input {
+  background: var(--proxmox-bg-tertiary);
+  border: 1px solid var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+  border-radius: var(--radius-sm);
+}
+
+.ant-input:focus {
+  border-color: var(--proxmox-accent);
+  box-shadow: 0 0 0 2px rgba(229, 112, 0, 0.2);
+}
+
+/* Select Styling */
+.ant-select-selector {
+  background: var(--proxmox-bg-tertiary) !important;
+  border: 1px solid var(--proxmox-border) !important;
+  color: var(--proxmox-text-primary) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Divider */
+.ant-divider {
+  border-color: var(--proxmox-border);
+}
+
+/* Badge */
+.ant-badge-count {
+  background: var(--proxmox-accent);
+}
+
+/* Tooltip */
+.ant-tooltip-inner {
+  background: var(--proxmox-bg-tertiary);
+  border: 1px solid var(--proxmox-border);
+  border-radius: var(--radius-sm);
+}
+
+/* Dropdown */
+.ant-dropdown-menu {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  border-radius: var(--radius-sm);
+}
+
+.ant-dropdown-menu-item {
+  color: var(--proxmox-text-secondary);
+}
+
+.ant-dropdown-menu-item:hover {
+  background: var(--proxmox-bg-hover);
+  color: var(--proxmox-text-primary);
+}
+
+/* Proxmox Layout */
+.proxmox-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--proxmox-bg-primary);
+}
+
+.proxmox-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.proxmox-content {
+  flex: 1;
+  overflow: auto;
+  background: var(--proxmox-bg-primary);
+}

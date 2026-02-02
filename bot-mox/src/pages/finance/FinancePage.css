@@ -1,0 +1,132 @@
+.finance-page {
+  padding: 16px;
+}
+
+.finance-summary {
+  margin-bottom: 16px;
+}
+
+.finance-stat-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.finance-stat-card.income {
+  border-left: 3px solid var(--proxmox-status-online);
+}
+
+.finance-stat-card.expense {
+  border-left: 3px solid var(--proxmox-status-error);
+}
+
+.finance-stat-card.profit {
+  border-left: 3px solid var(--proxmox-accent);
+}
+
+.stat-detail {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--proxmox-border);
+}
+
+.stat-label {
+  font-size: var(--text-xs);
+  color: var(--proxmox-text-muted);
+}
+
+.category-breakdown {
+  margin-bottom: 16px;
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.category-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--proxmox-bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--proxmox-accent);
+}
+
+.category-icon.game {
+  color: #722ed1;
+}
+
+.category-icon.proxy {
+  color: #fa8c16;
+}
+
+.category-info {
+  flex: 1;
+}
+
+.category-amount {
+  margin: 0 !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.transactions-card {
+  margin-top: 16px;
+}
+
+.transactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.transactions-table .amount-income {
+  color: var(--proxmox-status-online);
+}
+
+.transactions-table .amount-expense {
+  color: var(--proxmox-status-error);
+}
+
+.transaction-type-tag {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+}
+
+/* Subscription & Game styles */
+.subscription-list,
+.game-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subscription-item,
+.game-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  border-radius: 4px;
+}
+
+.subscription-info,
+.game-info {
+  flex: 1;
+}
+
+.subscription-price,
+.game-price {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

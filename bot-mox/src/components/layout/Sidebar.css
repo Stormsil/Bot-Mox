@@ -1,0 +1,43 @@
+.proxmox-sidebar {
+  background: #282a2e !important;
+  border-right: 1px solid #111;
+  min-height: calc(100vh - 45px);
+}
+
+.proxmox-menu {
+  background: transparent;
+  border-right: none;
+  padding-top: 8px;
+}
+
+.proxmox-menu .ant-menu-item {
+  height: 40px;
+  line-height: 40px;
+  margin: 0;
+  padding-left: 20px !important;
+  color: #bbb;
+  font-size: 13px;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.proxmox-menu .ant-menu-item:hover {
+  color: #efefef;
+  background: #4a4e55;
+}
+
+.proxmox-menu .ant-menu-item-selected {
+  background: #42464d;
+  color: #e57000;
+  border-left: 3px solid #e57000;
+}
+
+.proxmox-menu .ant-menu-item-selected:hover {
+  background: #42464d;
+  color: #e57000;
+}
+
+.proxmox-menu .ant-menu-item .anticon {
+  font-size: 16px;
+  margin-right: 12px;
+}

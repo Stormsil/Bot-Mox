@@ -1,0 +1,80 @@
+/**
+ * @fileoverview Стили для страницы заметок
+ * Использует CSS переменные из variables.css
+ */
+
+.notes-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Основной layout страницы */
+.notes-layout {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Контейнер для редактора */
+.notes-editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--proxmox-bg-primary);
+}
+
+/* Состояние загрузки */
+.notes-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--proxmox-text-muted);
+}
+
+/* Пустое состояние */
+.notes-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+.notes-empty .ant-empty-description {
+  color: var(--proxmox-text-muted);
+}
+
+.notes-empty-content {
+  text-align: center;
+}
+
+.notes-empty-content p {
+  margin: 4px 0;
+  color: var(--proxmox-text-muted);
+}
+
+.notes-empty-content p:first-child {
+  color: var(--proxmox-text-secondary);
+  font-weight: 500;
+}
+
+/* ============================================
+   Адаптивность
+   ============================================ */
+
+@media (max-width: 768px) {
+  .notes-layout {
+    flex-direction: column;
+  }
+
+  .notes-editor-container {
+    border-top: 1px solid var(--proxmox-border);
+  }
+}

@@ -1,0 +1,77 @@
+.bot-farm {
+  padding: 16px;
+}
+
+.farm-stat-card {
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+}
+
+.farm-stat-card .ant-card-body {
+  padding: 16px;
+}
+
+.farm-stat-card .ant-statistic-title {
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.farm-stat-card .ant-statistic-content {
+  color: var(--proxmox-text-primary);
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.inventory-card {
+  margin-top: 16px;
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+}
+
+.inventory-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+}
+
+.inventory-card .ant-card-head-title {
+  color: var(--proxmox-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.inventory-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.inventory-item:last-child {
+  border-bottom: none;
+}
+
+.inventory-item-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inventory-item-icon {
+  color: var(--proxmox-text-muted);
+  font-size: 14px;
+}
+
+.inventory-item-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.inventory-item-quantity {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-xs);
+}

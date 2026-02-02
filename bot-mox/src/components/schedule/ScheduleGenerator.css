@@ -1,0 +1,35 @@
+.schedule-generator-form {
+  width: 320px;
+}
+
+.generator-row {
+  display: flex;
+  gap: 12px;
+}
+
+.generator-row .ant-form-item {
+  flex: 1;
+  margin-bottom: 12px;
+}
+
+.schedule-generator-form .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.schedule-generator-form .ant-form-item-label {
+  padding-bottom: 4px;
+}
+
+.schedule-generator-form .ant-form-item-label label {
+  color: var(--proxmox-text-secondary);
+  font-size: 12px;
+}
+
+.generator-actions {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--proxmox-border);
+}

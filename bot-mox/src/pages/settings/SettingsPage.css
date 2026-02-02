@@ -1,0 +1,133 @@
+.settings-page {
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.settings-title {
+  margin: 0 !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.settings-title .anticon {
+  margin-right: 8px;
+  color: var(--proxmox-accent);
+}
+
+.settings-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  border-radius: 0;
+}
+
+.settings-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+  font-weight: 500;
+}
+
+.settings-card .ant-card-body {
+  background: var(--proxmox-bg-secondary);
+}
+
+.inner-settings-card {
+  background: var(--proxmox-bg-tertiary);
+  border: 1px solid var(--proxmox-border);
+  border-radius: 0;
+}
+
+.inner-settings-card .ant-card-head {
+  background: var(--proxmox-bg-hover);
+  border-bottom: 1px solid var(--proxmox-border);
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.inner-settings-card .ant-card-body {
+  background: var(--proxmox-bg-tertiary);
+  padding: 16px;
+}
+
+.settings-card .ant-form-item-label > label {
+  color: var(--proxmox-text-secondary);
+  font-size: 13px;
+}
+
+.settings-card .ant-input,
+.settings-card .ant-input-password {
+  background: var(--proxmox-bg-tertiary);
+  border: 1px solid var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+  border-radius: 0;
+}
+
+.settings-card .ant-input:hover,
+.settings-card .ant-input-password:hover {
+  border-color: var(--proxmox-accent);
+}
+
+.settings-card .ant-input:focus,
+.settings-card .ant-input-password:focus {
+  border-color: var(--proxmox-accent);
+  box-shadow: 0 0 0 2px rgba(229, 112, 0, 0.2);
+}
+
+.settings-card .ant-input-number {
+  background: var(--proxmox-bg-tertiary);
+  border: 1px solid var(--proxmox-border);
+  border-radius: 0;
+  width: 100%;
+}
+
+.settings-card .ant-input-number:hover {
+  border-color: var(--proxmox-accent);
+}
+
+.settings-card .ant-input-number-focused {
+  border-color: var(--proxmox-accent);
+  box-shadow: 0 0 0 2px rgba(229, 112, 0, 0.2);
+}
+
+.settings-card .ant-input-number-input {
+  color: var(--proxmox-text-primary);
+}
+
+.settings-card .ant-switch {
+  background: var(--proxmox-border);
+}
+
+.settings-card .ant-switch-checked {
+  background: var(--proxmox-accent);
+}
+
+.settings-card .ant-btn-primary {
+  background: var(--proxmox-accent);
+  border-color: var(--proxmox-accent);
+  border-radius: 0;
+}
+
+.settings-card .ant-btn-primary:hover {
+  background: var(--proxmox-accent-hover);
+  border-color: var(--proxmox-accent-hover);
+}
+
+.settings-card .ant-btn {
+  border-radius: 0;
+}
+
+.settings-card .ant-form-item-extra {
+  color: var(--proxmox-text-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}

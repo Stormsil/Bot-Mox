@@ -1,0 +1,114 @@
+.bot-proxy {
+  padding: 16px;
+}
+
+.proxy-alert {
+  margin-bottom: 16px;
+}
+
+.proxy-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  margin-bottom: 16px;
+}
+
+.proxy-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.proxy-card .ant-card-head-title {
+  color: var(--proxmox-text-primary);
+}
+
+.proxy-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.proxy-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.proxy-field .field-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.proxy-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.proxy-address-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.proxy-address {
+  font-family: monospace;
+  font-size: 16px;
+  background: var(--proxmox-bg-tertiary);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.credential-text {
+  font-family: monospace;
+  background: var(--proxmox-bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.fraud-score-container {
+  display: flex;
+  align-items: center;
+}
+
+.expiration-info {
+  display: flex;
+  align-items: center;
+}
+
+.proxy-actions {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--proxmox-border);
+}
+
+.proxy-help-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.proxy-help-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.help-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.help-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--proxmox-text-secondary);
+}
+
+.help-list li {
+  margin-bottom: 4px;
+}
+
+.help-list .ant-tag {
+  font-size: 10px;
+  margin-right: 8px;
+}

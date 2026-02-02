@@ -1,0 +1,87 @@
+.session-editor-modal .ant-modal-content {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.session-editor-modal .ant-modal-header {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.session-editor-modal .ant-modal-title {
+  color: var(--proxmox-text-primary);
+}
+
+.session-editor-modal .ant-modal-close {
+  color: var(--proxmox-text-secondary);
+}
+
+.session-editor-modal .ant-modal-close:hover {
+  color: var(--proxmox-orange);
+}
+
+.session-editor-form .ant-form-item-label > label {
+  color: var(--proxmox-text-secondary);
+}
+
+.session-editor-form .ant-picker {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.session-editor-form .ant-picker:hover,
+.session-editor-form .ant-picker-focused {
+  border-color: var(--proxmox-orange);
+}
+
+.session-editor-form .ant-picker-input > input {
+  color: var(--proxmox-text-primary);
+}
+
+.session-editor-form .ant-select-selector {
+  background: var(--proxmox-bg-tertiary) !important;
+  border-color: var(--proxmox-border) !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.session-editor-form .ant-select:hover .ant-select-selector {
+  border-color: var(--proxmox-orange) !important;
+}
+
+.session-editor-form .ant-select-arrow {
+  color: var(--proxmox-text-secondary);
+}
+
+.session-editor-form .ant-switch {
+  background-color: #8c8c8c;
+}
+
+.session-editor-form .ant-switch-checked {
+  background-color: #52c41a;
+}
+
+.session-editor-modal .ant-modal-footer {
+  border-top: 1px solid var(--proxmox-border);
+}
+
+.session-editor-modal .ant-btn-default {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.session-editor-modal .ant-btn-default:hover {
+  border-color: var(--proxmox-orange);
+  color: var(--proxmox-orange);
+}
+
+.session-editor-modal .ant-btn-primary {
+  background: var(--proxmox-orange);
+  border-color: var(--proxmox-orange);
+}
+
+.session-editor-modal .ant-btn-primary:hover {
+  background: #ff8c00;
+  border-color: #ff8c00;
+}

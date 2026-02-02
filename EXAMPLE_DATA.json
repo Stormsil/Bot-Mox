@@ -1,0 +1,5061 @@
+{
+  "_meta": {
+    "description": "Generated test data for Bot-Mox System",
+    "version": "1.1.0",
+    "created_at": "2026-01-30T03:04:14.942Z",
+    "note": "This data was auto-generated with diverse statuses and configurations"
+  },
+  "projects": {
+    "wow_tbc": {
+      "id": "wow_tbc",
+      "name": "WoW TBC Classic",
+      "game": "World of Warcraft",
+      "expansion": "The Burning Crusade",
+      "currency": "gold",
+      "currency_symbol": "g",
+      "max_level": 70,
+      "professions": [
+        "mining",
+        "herbalism",
+        "skinning",
+        "enchanting",
+        "engineering",
+        "blacksmithing",
+        "jewelcrafting",
+        "alchemy"
+      ],
+      "gold_price_usd": 0.0125,
+      "server_region": "Europe",
+      "created_at": 1761966254943,
+      "updated_at": 1769742254943
+    },
+    "wow_midnight": {
+      "id": "wow_midnight",
+      "name": "WoW Midnight",
+      "game": "World of Warcraft",
+      "expansion": "Midnight",
+      "currency": "gold",
+      "currency_symbol": "g",
+      "max_level": 80,
+      "professions": [
+        "mining",
+        "herbalism",
+        "skinning",
+        "enchanting",
+        "engineering",
+        "blacksmithing",
+        "jewelcrafting",
+        "alchemy",
+        "inscription"
+      ],
+      "gold_price_usd": 0.0085,
+      "server_region": "Europe",
+      "created_at": 1764558254943,
+      "updated_at": 1769742254943
+    }
+  },
+  "bots": {
+    "fa8bb6d4-27c6-452f-9645-aa591d057a99": {
+      "id": "fa8bb6d4-27c6-452f-9645-aa591d057a99",
+      "project_id": "wow_tbc",
+      "status": "leveling",
+      "vm": {
+        "name": "WoW47",
+        "ip": "192.168.38.70",
+        "created_at": "2025-11-19T03:04:14.943Z"
+      },
+      "character": {
+        "name": "Bot001",
+        "level": 17,
+        "race": "undead",
+        "class": "rogue",
+        "server": "Mograine",
+        "faction": "horde"
+      },
+      "account": {
+        "email": "wowbot74d46219@yandex.ru",
+        "password": "pass_73769830-ece",
+        "mail_provider": "yandex",
+        "bnet_created_at": 1764558254943,
+        "mail_created_at": 1738292654943
+      },
+      "person": {
+        "first_name": "Ivan",
+        "last_name": "Kim",
+        "birth_date": "19-05-1986",
+        "country": "Russia",
+        "city": "St. Petersburg",
+        "address": "29 High Street",
+        "zip": "12895"
+      },
+      "proxy": {
+        "full_string": "64.103.83.31:1080:user979:pass8314",
+        "type": "socks5",
+        "ip": "64.103.83.31",
+        "port": 1080,
+        "login": "user979",
+        "password": "pass8314",
+        "provider": "brightdata",
+        "country": "UK",
+        "fraud_score": 46,
+        "VPN": false,
+        "Proxy": true,
+        "detect_country": true,
+        "created_at": 1763089454943,
+        "expires_at": 1792206254943
+      },
+      "leveling": {
+        "current_level": 17,
+        "target_level": 70,
+        "xp_current": 742343,
+        "xp_required": 1000000,
+        "xp_per_hour": 14731,
+        "estimated_time_to_level": 12,
+        "location": "Terokkar Forest",
+        "sub_location": "",
+        "started_at": 1767927854943,
+        "finished_at": 0
+      },
+      "professions": {},
+      "schedule": {
+        "0": [],
+        "1": [],
+        "2": [
+          {
+            "start": "07:00",
+            "end": "17:00",
+            "enabled": true,
+            "profile": "leveling"
+          }
+        ],
+        "3": [
+          {
+            "start": "08:00",
+            "end": "17:00",
+            "enabled": true,
+            "profile": "leveling"
+          }
+        ],
+        "4": [],
+        "5": [
+          {
+            "start": "09:00",
+            "end": "20:00",
+            "enabled": true,
+            "profile": "leveling"
+          }
+        ],
+        "6": []
+      },
+      "farm": {
+        "total_gold": 0,
+        "gold_per_hour": 0,
+        "session_start": 0,
+        "location": "",
+        "profile": "",
+        "all_farmed_gold": 8106
+      },
+      "finance": {
+        "total_farmed_usd": 0.1,
+        "total_expenses_usd": 34,
+        "roi_percent": 0.3
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769742134944,
+      "updated_at": 1769742254944,
+      "created_at": 1766545454944
+    },
+    "eba94c88-45e5-450d-90aa-c4d8dabb66fb": {
+      "id": "eba94c88-45e5-450d-90aa-c4d8dabb66fb",
+      "project_id": "wow_tbc",
+      "status": "farming",
+      "vm": {
+        "name": "WoW7",
+        "ip": "192.168.180.11",
+        "created_at": "2025-12-12T03:04:14.944Z"
+      },
+      "character": {
+        "name": "Bot002",
+        "level": 62,
+        "race": "orc",
+        "class": "rogue",
+        "server": "Golemagg",
+        "faction": "horde"
+      },
+      "account": {
+        "email": "wowbota51385b7@yandex.ru",
+        "password": "pass_0db582b0-34f",
+        "mail_provider": "yandex",
+        "bnet_created_at": 1765767854944,
+        "mail_created_at": 1760843054944
+      },
+      "person": {
+        "first_name": "Elena",
+        "last_name": "Kim",
+        "birth_date": "07-01-1986",
+        "country": "USA",
+        "city": "Chicago",
+        "address": "974 Republic Square",
+        "zip": "12319"
+      },
+      "proxy": {
+        "full_string": "178.60.254.197:1080:user383:pass8166",
+        "type": "http",
+        "ip": "178.60.254.197",
+        "port": 1080,
+        "login": "user383",
+        "password": "pass8166",
+        "provider": "brightdata",
+        "country": "FR",
+        "fraud_score": 37,
+        "VPN": false,
+        "Proxy": true,
+        "detect_country": true,
+        "created_at": 1764903854944,
+        "expires_at": 1801019054944
+      },
+      "leveling": {
+        "current_level": 62,
+        "target_level": 70,
+        "xp_current": 419965,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Shadowmoon Valley",
+        "sub_location": "",
+        "started_at": 1767927854944,
+        "finished_at": 0
+      },
+      "professions": {
+        "engineering": {
+          "name": "Engineering",
+          "skill_points": 203,
+          "max_skill_points": 375,
+          "started_at": 1765767854944,
+          "finished_at": 0
+        }
+      },
+      "schedule": {
+        "0": [],
+        "1": [],
+        "2": [],
+        "3": [
+          {
+            "start": "08:00",
+            "end": "18:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "4": [],
+        "5": [
+          {
+            "start": "08:00",
+            "end": "17:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "6": []
+      },
+      "farm": {
+        "total_gold": 3800,
+        "gold_per_hour": 64,
+        "session_start": 1769738654944,
+        "location": "Nagrand",
+        "profile": "fishing",
+        "all_farmed_gold": 31716
+      },
+      "finance": {
+        "total_farmed_usd": 0.4,
+        "total_expenses_usd": 74,
+        "roi_percent": 0.54
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769742074944,
+      "updated_at": 1769742254944,
+      "created_at": 1762139054944
+    },
+    "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f": {
+      "id": "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f",
+      "project_id": "wow_tbc",
+      "status": "profession",
+      "vm": {
+        "name": "WoW40",
+        "ip": "192.168.237.74",
+        "created_at": "2025-11-02T03:04:14.944Z"
+      },
+      "character": {
+        "name": "Bot003",
+        "level": 66,
+        "race": "blood_elf",
+        "class": "warrior",
+        "server": "Firemaw",
+        "faction": "horde"
+      },
+      "account": {
+        "email": "wowbot150c24c1@gmail.com",
+        "password": "pass_bb74f207-bf2",
+        "mail_provider": "gmail",
+        "bnet_created_at": 1750561454944,
+        "mail_created_at": 1741748654944
+      },
+      "person": {
+        "first_name": "Ivan",
+        "last_name": "Kim",
+        "birth_date": "13-10-1993",
+        "country": "Russia",
+        "city": "St. Petersburg",
+        "address": "287 High Street",
+        "zip": "27431"
+      },
+      "proxy": {
+        "full_string": "162.121.6.84:1080:user532:pass8085",
+        "type": "http",
+        "ip": "162.121.6.84",
+        "port": 1080,
+        "login": "user532",
+        "password": "pass8085",
+        "provider": "luminati",
+        "country": "US",
+        "fraud_score": 39,
+        "VPN": false,
+        "Proxy": true,
+        "detect_country": true,
+        "created_at": 1769051054944,
+        "expires_at": 1789700654944
+      },
+      "leveling": {
+        "current_level": 66,
+        "target_level": 70,
+        "xp_current": 299036,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Netherstorm",
+        "sub_location": "",
+        "started_at": 1769655854944,
+        "finished_at": 0
+      },
+      "professions": {
+        "skinning": {
+          "name": "Skinning",
+          "skill_points": 210,
+          "max_skill_points": 375,
+          "started_at": 1765595054944,
+          "finished_at": 0
+        }
+      },
+      "schedule": {
+        "0": [
+          {
+            "start": "12:00",
+            "end": "18:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "1": [
+          {
+            "start": "10:00",
+            "end": "19:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "2": [],
+        "3": [
+          {
+            "start": "08:00",
+            "end": "19:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "4": [
+          {
+            "start": "09:00",
+            "end": "22:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "5": [],
+        "6": []
+      },
+      "farm": {
+        "total_gold": 0,
+        "gold_per_hour": 0,
+        "session_start": 0,
+        "location": "",
+        "profile": "",
+        "all_farmed_gold": 11891
+      },
+      "finance": {
+        "total_farmed_usd": 0.15,
+        "total_expenses_usd": 26,
+        "roi_percent": 0.57
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769742014944,
+      "updated_at": 1769742254944,
+      "created_at": 1766027054944
+    },
+    "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9": {
+      "id": "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9",
+      "project_id": "wow_tbc",
+      "status": "farming",
+      "vm": {
+        "name": "WoW18",
+        "ip": "192.168.81.1",
+        "created_at": "2026-01-19T03:04:14.944Z"
+      },
+      "character": {
+        "name": "Bot004",
+        "level": 67,
+        "race": "undead",
+        "class": "warrior",
+        "server": "Golemagg",
+        "faction": "horde"
+      },
+      "account": {
+        "email": "wowbot3b1ccd90@outlook.com",
+        "password": "pass_3c453797-639",
+        "mail_provider": "outlook",
+        "bnet_created_at": 1754449454944,
+        "mail_created_at": 1741489454944
+      },
+      "person": {
+        "first_name": "Olga",
+        "last_name": "Garcia",
+        "birth_date": "12-04-1994",
+        "country": "France",
+        "city": "Paris",
+        "address": "516 Central Ave",
+        "zip": "54061"
+      },
+      "proxy": {
+        "full_string": "",
+        "type": "none",
+        "ip": "",
+        "port": 0,
+        "login": "",
+        "password": "",
+        "provider": "",
+        "country": "",
+        "fraud_score": 0,
+        "VPN": false,
+        "Proxy": false,
+        "detect_country": false,
+        "created_at": 0,
+        "expires_at": 0
+      },
+      "leveling": {
+        "current_level": 67,
+        "target_level": 70,
+        "xp_current": 119495,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Terokkar Forest",
+        "sub_location": "",
+        "started_at": 1768964654944,
+        "finished_at": 0
+      },
+      "professions": {
+        "mining": {
+          "name": "Mining",
+          "skill_points": 355,
+          "max_skill_points": 375,
+          "started_at": 1769137454944,
+          "finished_at": 0
+        },
+        "jewelcrafting": {
+          "name": "Jewelcrafting",
+          "skill_points": 247,
+          "max_skill_points": 375,
+          "started_at": 1766199854944,
+          "finished_at": 0
+        }
+      },
+      "schedule": {
+        "0": [
+          {
+            "start": "11:00",
+            "end": "18:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "1": [
+          {
+            "start": "08:00",
+            "end": "20:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "2": [
+          {
+            "start": "08:00",
+            "end": "19:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "3": [],
+        "4": [],
+        "5": [],
+        "6": [
+          {
+            "start": "12:00",
+            "end": "14:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ]
+      },
+      "farm": {
+        "total_gold": 1238,
+        "gold_per_hour": 174,
+        "session_start": 1769699054944,
+        "location": "Netherstorm",
+        "profile": "skinning",
+        "all_farmed_gold": 4508
+      },
+      "finance": {
+        "total_farmed_usd": 0.06,
+        "total_expenses_usd": 64,
+        "roi_percent": 0.09
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769742074944,
+      "updated_at": 1769742254944,
+      "created_at": 1763780654944
+    },
+    "1f3c3d4c-a784-4066-b16b-eafb7999c51e": {
+      "id": "1f3c3d4c-a784-4066-b16b-eafb7999c51e",
+      "project_id": "wow_tbc",
+      "status": "banned",
+      "vm": {
+        "name": "WoW10",
+        "ip": "192.168.125.67",
+        "created_at": "2026-01-05T03:04:14.944Z"
+      },
+      "character": {
+        "name": "Bot005",
+        "level": 14,
+        "race": "tauren",
+        "class": "rogue",
+        "server": "Golemagg",
+        "faction": "horde"
+      },
+      "account": {
+        "email": "wowbotddd26f4f@yahoo.com",
+        "password": "pass_1706beb8-89d",
+        "mail_provider": "yahoo",
+        "bnet_created_at": 1741316654944,
+        "mail_created_at": 1740798254944
+      },
+      "person": {
+        "first_name": "Emma",
+        "last_name": "Kim",
+        "birth_date": "19-12-1983",
+        "country": "Ukraine",
+        "city": "Odessa",
+        "address": "821 High Street",
+        "zip": "46972"
+      },
+      "proxy": {
+        "full_string": "",
+        "type": "none",
+        "ip": "",
+        "port": 0,
+        "login": "",
+        "password": "",
+        "provider": "",
+        "country": "",
+        "fraud_score": 0,
+        "VPN": false,
+        "Proxy": false,
+        "detect_country": false,
+        "created_at": 0,
+        "expires_at": 0
+      },
+      "leveling": {
+        "current_level": 14,
+        "target_level": 70,
+        "xp_current": 89526,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Netherstorm",
+        "sub_location": "",
+        "started_at": 1769483054944,
+        "finished_at": 0
+      },
+      "professions": {
+        "engineering": {
+          "name": "Engineering",
+          "skill_points": 99,
+          "max_skill_points": 375,
+          "started_at": 1768878254944,
+          "finished_at": 0
+        },
+        "herbalism": {
+          "name": "Herbalism",
+          "skill_points": 0,
+          "max_skill_points": 375,
+          "started_at": 0,
+          "finished_at": 0
+        }
+      },
+      "schedule": {
+        "0": [
+          {
+            "start": "09:00",
+            "end": "18:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "1": [
+          {
+            "start": "08:00",
+            "end": "22:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "2": [
+          {
+            "start": "09:00",
+            "end": "17:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "3": [],
+        "4": [
+          {
+            "start": "09:00",
+            "end": "18:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "5": [],
+        "6": []
+      },
+      "farm": {
+        "total_gold": 0,
+        "gold_per_hour": 0,
+        "session_start": 0,
+        "location": "",
+        "profile": "",
+        "all_farmed_gold": 35294
+      },
+      "finance": {
+        "total_farmed_usd": 0.44,
+        "total_expenses_usd": 82,
+        "roi_percent": 0.54
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769709194944,
+      "updated_at": 1769742254944,
+      "created_at": 1763262254944
+    },
+    "5751d784-e320-49fb-8c4e-3d53a6285089": {
+      "id": "5751d784-e320-49fb-8c4e-3d53a6285089",
+      "project_id": "wow_tbc",
+      "status": "farming",
+      "vm": {
+        "name": "WoW9",
+        "ip": "192.168.206.245",
+        "created_at": "2026-01-20T03:04:14.944Z"
+      },
+      "character": {
+        "name": "Bot006",
+        "level": 66,
+        "race": "tauren",
+        "class": "shaman",
+        "server": "Earthshaker",
+        "faction": "horde"
+      },
+      "account": {
+        "email": "wowbotecc7354f@gmail.com",
+        "password": "pass_b4af40b2-6a9",
+        "mail_provider": "gmail",
+        "bnet_created_at": 1766545454944,
+        "mail_created_at": 1738724654944
+      },
+      "person": {
+        "first_name": "John",
+        "last_name": "Garcia",
+        "birth_date": "24-06-1999",
+        "country": "Turkey",
+        "city": "Ankara",
+        "address": "724 Republic Square",
+        "zip": "73949"
+      },
+      "proxy": {
+        "full_string": "",
+        "type": "none",
+        "ip": "",
+        "port": 0,
+        "login": "",
+        "password": "",
+        "provider": "",
+        "country": "",
+        "fraud_score": 0,
+        "VPN": false,
+        "Proxy": false,
+        "detect_country": false,
+        "created_at": 0,
+        "expires_at": 0
+      },
+      "leveling": {
+        "current_level": 66,
+        "target_level": 70,
+        "xp_current": 453513,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Netherstorm",
+        "sub_location": "",
+        "started_at": 1768187054944,
+        "finished_at": 0
+      },
+      "professions": {},
+      "schedule": {
+        "0": [
+          {
+            "start": "09:00",
+            "end": "16:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "1": [
+          {
+            "start": "08:00",
+            "end": "21:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "2": [],
+        "3": [],
+        "4": [
+          {
+            "start": "08:00",
+            "end": "18:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "5": [],
+        "6": [
+          {
+            "start": "08:00",
+            "end": "16:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ]
+      },
+      "farm": {
+        "total_gold": 514,
+        "gold_per_hour": 127,
+        "session_start": 1769727854944,
+        "location": "Shadowmoon Valley",
+        "profile": "fishing",
+        "all_farmed_gold": 22195
+      },
+      "finance": {
+        "total_farmed_usd": 0.28,
+        "total_expenses_usd": 66,
+        "roi_percent": 0.42
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769742134944,
+      "updated_at": 1769742254944,
+      "created_at": 1764558254944
+    },
+    "8610e8ea-5164-46b7-be61-24324fe35a13": {
+      "id": "8610e8ea-5164-46b7-be61-24324fe35a13",
+      "project_id": "wow_tbc",
+      "status": "prepare",
+      "vm": {
+        "name": "WoW25",
+        "ip": "192.168.196.250",
+        "created_at": "2025-12-06T03:04:14.944Z"
+      },
+      "character": {
+        "name": "Bot007",
+        "level": 62,
+        "race": "blood_elf",
+        "class": "druid",
+        "server": "Firemaw",
+        "faction": "horde"
+      },
+      "account": {
+        "email": "wowbot98552b42@yandex.ru",
+        "password": "pass_fd09c3f6-511",
+        "mail_provider": "yandex",
+        "bnet_created_at": 1755486254944,
+        "mail_created_at": 1758078254944
+      },
+      "person": {
+        "first_name": "Elena",
+        "last_name": "Garcia",
+        "birth_date": "23-08-1988",
+        "country": "France",
+        "city": "Lyon",
+        "address": "572 Main St",
+        "zip": "34700"
+      },
+      "proxy": {
+        "full_string": "94.106.135.8:8081:user689:pass1887",
+        "type": "http",
+        "ip": "94.106.135.8",
+        "port": 8081,
+        "login": "user689",
+        "password": "pass1887",
+        "provider": "luminati",
+        "country": "RU",
+        "fraud_score": 3,
+        "VPN": false,
+        "Proxy": true,
+        "detect_country": true,
+        "created_at": 1769137454944,
+        "expires_at": 1783911854944
+      },
+      "leveling": {
+        "current_level": 62,
+        "target_level": 70,
+        "xp_current": 157174,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Terokkar Forest",
+        "sub_location": "",
+        "started_at": 1767841454944,
+        "finished_at": 0
+      },
+      "professions": {
+        "enchanting": {
+          "name": "Enchanting",
+          "skill_points": 0,
+          "max_skill_points": 375,
+          "started_at": 0,
+          "finished_at": 0
+        }
+      },
+      "schedule": {
+        "0": [
+          {
+            "start": "10:00",
+            "end": "15:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "1": [],
+        "2": [],
+        "3": [
+          {
+            "start": "10:00",
+            "end": "16:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "4": [],
+        "5": [
+          {
+            "start": "08:00",
+            "end": "20:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "6": []
+      },
+      "farm": {
+        "total_gold": 0,
+        "gold_per_hour": 0,
+        "session_start": 0,
+        "location": "",
+        "profile": "",
+        "all_farmed_gold": 36243
+      },
+      "finance": {
+        "total_farmed_usd": 0.45,
+        "total_expenses_usd": 46,
+        "roi_percent": 0.98
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769742014944,
+      "updated_at": 1769742254944,
+      "created_at": 1766286254944
+    },
+    "e8ac0d51-df74-4720-a345-ec1e7e7ea773": {
+      "id": "e8ac0d51-df74-4720-a345-ec1e7e7ea773",
+      "project_id": "wow_tbc",
+      "status": "offline",
+      "vm": {
+        "name": "WoW3",
+        "ip": "192.168.73.242",
+        "created_at": "2026-01-10T03:04:14.944Z"
+      },
+      "character": {
+        "name": "Bot008",
+        "level": 61,
+        "race": "tauren",
+        "class": "priest",
+        "server": "Mograine",
+        "faction": "horde"
+      },
+      "account": {
+        "email": "wowbot1ce29dd7@gmail.com",
+        "password": "pass_36a27f57-56b",
+        "mail_provider": "gmail",
+        "bnet_created_at": 1750129454944,
+        "mail_created_at": 1749956654944
+      },
+      "person": {
+        "first_name": "Elena",
+        "last_name": "Johnson",
+        "birth_date": "07-01-1982",
+        "country": "Spain",
+        "city": "Barcelona",
+        "address": "493 Central Ave",
+        "zip": "10226"
+      },
+      "proxy": {
+        "full_string": "106.251.114.13:8118:user191:pass8631",
+        "type": "socks5",
+        "ip": "106.251.114.13",
+        "port": 8118,
+        "login": "user191",
+        "password": "pass8631",
+        "provider": "luminati",
+        "country": "US",
+        "fraud_score": 38,
+        "VPN": false,
+        "Proxy": true,
+        "detect_country": true,
+        "created_at": 1765940654945,
+        "expires_at": 1774235054945
+      },
+      "leveling": {
+        "current_level": 61,
+        "target_level": 70,
+        "xp_current": 392135,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Blade's Edge Mountains",
+        "sub_location": "",
+        "started_at": 1768705454945,
+        "finished_at": 0
+      },
+      "professions": {
+        "mining": {
+          "name": "Mining",
+          "skill_points": 0,
+          "max_skill_points": 375,
+          "started_at": 0,
+          "finished_at": 0
+        },
+        "jewelcrafting": {
+          "name": "Jewelcrafting",
+          "skill_points": 0,
+          "max_skill_points": 375,
+          "started_at": 0,
+          "finished_at": 0
+        }
+      },
+      "schedule": {
+        "0": [],
+        "1": [],
+        "2": [
+          {
+            "start": "08:00",
+            "end": "16:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "3": [],
+        "4": [],
+        "5": [],
+        "6": [
+          {
+            "start": "09:00",
+            "end": "18:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ]
+      },
+      "farm": {
+        "total_gold": 0,
+        "gold_per_hour": 0,
+        "session_start": 0,
+        "location": "",
+        "profile": "",
+        "all_farmed_gold": 3005
+      },
+      "finance": {
+        "total_farmed_usd": 0.04,
+        "total_expenses_usd": 90,
+        "roi_percent": 0.04
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769712194945,
+      "updated_at": 1769742254945,
+      "created_at": 1768100654945
+    },
+    "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0": {
+      "id": "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0",
+      "project_id": "wow_midnight",
+      "status": "prepare",
+      "vm": {
+        "name": "WoW40",
+        "ip": "192.168.234.27",
+        "created_at": "2026-01-16T03:04:14.945Z"
+      },
+      "character": {
+        "name": "Bot009",
+        "level": 67,
+        "race": "draenei",
+        "class": "warlock",
+        "server": "Kazzak",
+        "faction": "alliance"
+      },
+      "account": {
+        "email": "wowbot500cbeca@mail.ru",
+        "password": "pass_acd75f2c-91c",
+        "mail_provider": "mail",
+        "bnet_created_at": 1750215854945,
+        "mail_created_at": 1758942254945
+      },
+      "person": {
+        "first_name": "Mehmet",
+        "last_name": "Kim",
+        "birth_date": "29-11-1998",
+        "country": "Spain",
+        "city": "Barcelona",
+        "address": "819 Republic Square",
+        "zip": "50956"
+      },
+      "proxy": {
+        "full_string": "",
+        "type": "none",
+        "ip": "",
+        "port": 0,
+        "login": "",
+        "password": "",
+        "provider": "",
+        "country": "",
+        "fraud_score": 0,
+        "VPN": false,
+        "Proxy": false,
+        "detect_country": false,
+        "created_at": 0,
+        "expires_at": 0
+      },
+      "leveling": {
+        "current_level": 67,
+        "target_level": 80,
+        "xp_current": 258671,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Shadowmoon Valley",
+        "sub_location": "",
+        "started_at": 1768187054945,
+        "finished_at": 0
+      },
+      "professions": {
+        "mining": {
+          "name": "Mining",
+          "skill_points": 0,
+          "max_skill_points": 375,
+          "started_at": 0,
+          "finished_at": 0
+        }
+      },
+      "schedule": {
+        "0": [
+          {
+            "start": "09:00",
+            "end": "16:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "1": [],
+        "2": [
+          {
+            "start": "08:00",
+            "end": "22:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "3": [],
+        "4": [],
+        "5": [],
+        "6": []
+      },
+      "farm": {
+        "total_gold": 0,
+        "gold_per_hour": 0,
+        "session_start": 0,
+        "location": "",
+        "profile": "",
+        "all_farmed_gold": 43990
+      },
+      "finance": {
+        "total_farmed_usd": 0.37,
+        "total_expenses_usd": 43,
+        "roi_percent": 0.87
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769742194945,
+      "updated_at": 1769742254945,
+      "created_at": 1762743854945
+    },
+    "65b6c7b8-0a7b-4378-882f-b27048103f89": {
+      "id": "65b6c7b8-0a7b-4378-882f-b27048103f89",
+      "project_id": "wow_midnight",
+      "status": "banned",
+      "vm": {
+        "name": "WoW11",
+        "ip": "192.168.164.137",
+        "created_at": "2025-11-16T03:04:14.945Z"
+      },
+      "character": {
+        "name": "Bot010",
+        "level": 66,
+        "race": "night_elf",
+        "class": "druid",
+        "server": "Silvermoon",
+        "faction": "alliance"
+      },
+      "account": {
+        "email": "wowbotd68a3e1c@mail.ru",
+        "password": "pass_6aa32d13-3a9",
+        "mail_provider": "mail",
+        "bnet_created_at": 1745982254945,
+        "mail_created_at": 1758423854945
+      },
+      "person": {
+        "first_name": "Maria",
+        "last_name": "Silva",
+        "birth_date": "02-03-1992",
+        "country": "France",
+        "city": "Lyon",
+        "address": "885 Main St",
+        "zip": "51530"
+      },
+      "proxy": {
+        "full_string": "",
+        "type": "none",
+        "ip": "",
+        "port": 0,
+        "login": "",
+        "password": "",
+        "provider": "",
+        "country": "",
+        "fraud_score": 0,
+        "VPN": false,
+        "Proxy": false,
+        "detect_country": false,
+        "created_at": 0,
+        "expires_at": 0
+      },
+      "leveling": {
+        "current_level": 66,
+        "target_level": 80,
+        "xp_current": 237801,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Netherstorm",
+        "sub_location": "",
+        "started_at": 1768619054945,
+        "finished_at": 0
+      },
+      "professions": {
+        "enchanting": {
+          "name": "Enchanting",
+          "skill_points": 96,
+          "max_skill_points": 375,
+          "started_at": 1768273454945,
+          "finished_at": 0
+        },
+        "skinning": {
+          "name": "Skinning",
+          "skill_points": 134,
+          "max_skill_points": 375,
+          "started_at": 1767582254945,
+          "finished_at": 0
+        }
+      },
+      "schedule": {
+        "0": [],
+        "1": [],
+        "2": [
+          {
+            "start": "09:00",
+            "end": "22:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "3": [
+          {
+            "start": "07:00",
+            "end": "21:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "4": [
+          {
+            "start": "10:00",
+            "end": "17:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "5": [
+          {
+            "start": "09:00",
+            "end": "22:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "6": []
+      },
+      "farm": {
+        "total_gold": 0,
+        "gold_per_hour": 0,
+        "session_start": 0,
+        "location": "",
+        "profile": "",
+        "all_farmed_gold": 33370
+      },
+      "finance": {
+        "total_farmed_usd": 0.28,
+        "total_expenses_usd": 54,
+        "roi_percent": 0.53
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769734214945,
+      "updated_at": 1769742254945,
+      "created_at": 1766891054945
+    },
+    "3b1e3eeb-5ea7-4dcc-a65c-87338086a936": {
+      "id": "3b1e3eeb-5ea7-4dcc-a65c-87338086a936",
+      "project_id": "wow_midnight",
+      "status": "farming",
+      "vm": {
+        "name": "WoW17",
+        "ip": "192.168.103.225",
+        "created_at": "2025-11-08T03:04:14.945Z"
+      },
+      "character": {
+        "name": "Bot011",
+        "level": 71,
+        "race": "dwarf",
+        "class": "rogue",
+        "server": "Stormscale",
+        "faction": "alliance"
+      },
+      "account": {
+        "email": "wowbot71befe71@outlook.com",
+        "password": "pass_56b210eb-217",
+        "mail_provider": "outlook",
+        "bnet_created_at": 1738897454945,
+        "mail_created_at": 1745636654945
+      },
+      "person": {
+        "first_name": "Olga",
+        "last_name": "Müller",
+        "birth_date": "11-03-1989",
+        "country": "France",
+        "city": "Lyon",
+        "address": "629 Central Ave",
+        "zip": "78859"
+      },
+      "proxy": {
+        "full_string": "60.232.154.132:8118:user715:pass5680",
+        "type": "socks5",
+        "ip": "60.232.154.132",
+        "port": 8118,
+        "login": "user715",
+        "password": "pass5680",
+        "provider": "packetstream",
+        "country": "UA",
+        "fraud_score": 39,
+        "VPN": false,
+        "Proxy": true,
+        "detect_country": true,
+        "created_at": 1767150254945,
+        "expires_at": 1789527854945
+      },
+      "leveling": {
+        "current_level": 71,
+        "target_level": 80,
+        "xp_current": 444816,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Blade's Edge Mountains",
+        "sub_location": "",
+        "started_at": 1769137454945,
+        "finished_at": 0
+      },
+      "professions": {},
+      "schedule": {
+        "0": [
+          {
+            "start": "10:00",
+            "end": "14:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "1": [
+          {
+            "start": "10:00",
+            "end": "16:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "2": [],
+        "3": [],
+        "4": [],
+        "5": [
+          {
+            "start": "07:00",
+            "end": "22:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ],
+        "6": [
+          {
+            "start": "11:00",
+            "end": "17:00",
+            "enabled": true,
+            "profile": "farming"
+          }
+        ]
+      },
+      "farm": {
+        "total_gold": 953,
+        "gold_per_hour": 130,
+        "session_start": 1769717054945,
+        "location": "Shadowmoon Valley",
+        "profile": "fishing",
+        "all_farmed_gold": 40317
+      },
+      "finance": {
+        "total_farmed_usd": 0.34,
+        "total_expenses_usd": 54,
+        "roi_percent": 0.63
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769742134945,
+      "updated_at": 1769742254945,
+      "created_at": 1767582254945
+    },
+    "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0": {
+      "id": "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0",
+      "project_id": "wow_midnight",
+      "status": "offline",
+      "vm": {
+        "name": "WoW6",
+        "ip": "192.168.202.177",
+        "created_at": "2026-01-28T03:04:14.945Z"
+      },
+      "character": {
+        "name": "Bot012",
+        "level": 68,
+        "race": "night_elf",
+        "class": "rogue",
+        "server": "Kazzak",
+        "faction": "alliance"
+      },
+      "account": {
+        "email": "wowbot38dedb06@yandex.ru",
+        "password": "pass_2f164d23-a05",
+        "mail_provider": "yandex",
+        "bnet_created_at": 1750561454945,
+        "mail_created_at": 1758683054945
+      },
+      "person": {
+        "first_name": "Mehmet",
+        "last_name": "Johnson",
+        "birth_date": "11-08-1996",
+        "country": "USA",
+        "city": "Chicago",
+        "address": "282 High Street",
+        "zip": "84413"
+      },
+      "proxy": {
+        "full_string": "",
+        "type": "none",
+        "ip": "",
+        "port": 0,
+        "login": "",
+        "password": "",
+        "provider": "",
+        "country": "",
+        "fraud_score": 0,
+        "VPN": false,
+        "Proxy": false,
+        "detect_country": false,
+        "created_at": 0,
+        "expires_at": 0
+      },
+      "leveling": {
+        "current_level": 68,
+        "target_level": 80,
+        "xp_current": 336361,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Nagrand",
+        "sub_location": "",
+        "started_at": 1769569454945,
+        "finished_at": 0
+      },
+      "professions": {
+        "engineering": {
+          "name": "Engineering",
+          "skill_points": 243,
+          "max_skill_points": 375,
+          "started_at": 1767495854945,
+          "finished_at": 0
+        },
+        "skinning": {
+          "name": "Skinning",
+          "skill_points": 0,
+          "max_skill_points": 375,
+          "started_at": 0,
+          "finished_at": 0
+        }
+      },
+      "schedule": {
+        "0": [
+          {
+            "start": "12:00",
+            "end": "16:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "1": [],
+        "2": [],
+        "3": [],
+        "4": [],
+        "5": [
+          {
+            "start": "07:00",
+            "end": "20:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "6": []
+      },
+      "farm": {
+        "total_gold": 0,
+        "gold_per_hour": 0,
+        "session_start": 0,
+        "location": "",
+        "profile": "",
+        "all_farmed_gold": 46712
+      },
+      "finance": {
+        "total_farmed_usd": 0.4,
+        "total_expenses_usd": 50,
+        "roi_percent": 0.79
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769666234945,
+      "updated_at": 1769742254945,
+      "created_at": 1768964654945
+    },
+    "4818a621-c599-45d6-83ec-63f4a079d2ef": {
+      "id": "4818a621-c599-45d6-83ec-63f4a079d2ef",
+      "project_id": "wow_midnight",
+      "status": "offline",
+      "vm": {
+        "name": "WoW40",
+        "ip": "192.168.242.102",
+        "created_at": "2025-11-19T03:04:14.945Z"
+      },
+      "character": {
+        "name": "Bot013",
+        "level": 71,
+        "race": "draenei",
+        "class": "hunter",
+        "server": "Stormscale",
+        "faction": "alliance"
+      },
+      "account": {
+        "email": "wowbote9d48bd0@mail.ru",
+        "password": "pass_08b0ca3b-79e",
+        "mail_provider": "mail",
+        "bnet_created_at": 1740020654945,
+        "mail_created_at": 1759201454945
+      },
+      "person": {
+        "first_name": "Maria",
+        "last_name": "Garcia",
+        "birth_date": "08-04-1986",
+        "country": "Russia",
+        "city": "St. Petersburg",
+        "address": "703 High Street",
+        "zip": "50459"
+      },
+      "proxy": {
+        "full_string": "",
+        "type": "none",
+        "ip": "",
+        "port": 0,
+        "login": "",
+        "password": "",
+        "provider": "",
+        "country": "",
+        "fraud_score": 0,
+        "VPN": false,
+        "Proxy": false,
+        "detect_country": false,
+        "created_at": 0,
+        "expires_at": 0
+      },
+      "leveling": {
+        "current_level": 71,
+        "target_level": 80,
+        "xp_current": 382088,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Shadowmoon Valley",
+        "sub_location": "",
+        "started_at": 1767236654945,
+        "finished_at": 0
+      },
+      "professions": {},
+      "schedule": {
+        "0": [
+          {
+            "start": "10:00",
+            "end": "14:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "1": [
+          {
+            "start": "09:00",
+            "end": "19:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "2": [],
+        "3": [
+          {
+            "start": "10:00",
+            "end": "18:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "4": [],
+        "5": [
+          {
+            "start": "10:00",
+            "end": "21:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "6": []
+      },
+      "farm": {
+        "total_gold": 0,
+        "gold_per_hour": 0,
+        "session_start": 0,
+        "location": "",
+        "profile": "",
+        "all_farmed_gold": 43536
+      },
+      "finance": {
+        "total_farmed_usd": 0.37,
+        "total_expenses_usd": 81,
+        "roi_percent": 0.46
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769660954945,
+      "updated_at": 1769742254945,
+      "created_at": 1764817454945
+    },
+    "2eaddac5-7846-4fb3-a06e-81487685f9c3": {
+      "id": "2eaddac5-7846-4fb3-a06e-81487685f9c3",
+      "project_id": "wow_midnight",
+      "status": "profession",
+      "vm": {
+        "name": "WoW50",
+        "ip": "192.168.211.81",
+        "created_at": "2026-01-25T03:04:14.945Z"
+      },
+      "character": {
+        "name": "Bot014",
+        "level": 61,
+        "race": "night_elf",
+        "class": "hunter",
+        "server": "Draenor",
+        "faction": "alliance"
+      },
+      "account": {
+        "email": "wowbotfefb6459@outlook.com",
+        "password": "pass_313b4755-fca",
+        "mail_provider": "outlook",
+        "bnet_created_at": 1747623854945,
+        "mail_created_at": 1760411054945
+      },
+      "person": {
+        "first_name": "Ivan",
+        "last_name": "Müller",
+        "birth_date": "07-08-1987",
+        "country": "Russia",
+        "city": "Moscow",
+        "address": "654 Park Road",
+        "zip": "65352"
+      },
+      "proxy": {
+        "full_string": "",
+        "type": "none",
+        "ip": "",
+        "port": 0,
+        "login": "",
+        "password": "",
+        "provider": "",
+        "country": "",
+        "fraud_score": 0,
+        "VPN": false,
+        "Proxy": false,
+        "detect_country": false,
+        "created_at": 0,
+        "expires_at": 0
+      },
+      "leveling": {
+        "current_level": 61,
+        "target_level": 80,
+        "xp_current": 458277,
+        "xp_required": 0,
+        "xp_per_hour": 0,
+        "estimated_time_to_level": 0,
+        "location": "Nagrand",
+        "sub_location": "",
+        "started_at": 1769051054945,
+        "finished_at": 0
+      },
+      "professions": {
+        "engineering": {
+          "name": "Engineering",
+          "skill_points": 360,
+          "max_skill_points": 375,
+          "started_at": 1767755054945,
+          "finished_at": 0
+        },
+        "skinning": {
+          "name": "Skinning",
+          "skill_points": 268,
+          "max_skill_points": 375,
+          "started_at": 1769483054945,
+          "finished_at": 0
+        }
+      },
+      "schedule": {
+        "0": [],
+        "1": [],
+        "2": [],
+        "3": [],
+        "4": [],
+        "5": [
+          {
+            "start": "08:00",
+            "end": "16:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ],
+        "6": [
+          {
+            "start": "12:00",
+            "end": "17:00",
+            "enabled": true,
+            "profile": "profession"
+          }
+        ]
+      },
+      "farm": {
+        "total_gold": 0,
+        "gold_per_hour": 0,
+        "session_start": 0,
+        "location": "",
+        "profile": "",
+        "all_farmed_gold": 44158
+      },
+      "finance": {
+        "total_farmed_usd": 0.38,
+        "total_expenses_usd": 75,
+        "roi_percent": 0.5
+      },
+      "monitor": {
+        "screenshot_request": false,
+        "screenshot_url": null,
+        "screenshot_timestamp": null,
+        "status": "idle"
+      },
+      "last_seen": 1769742134945,
+      "updated_at": 1769742254945,
+      "created_at": 1763521454945
+    }
+  },
+  "archive": {
+    "arch_1f3c3d4c-a784-4066-b16b-eafb7999c51e": {
+      "bot_id": "1f3c3d4c-a784-4066-b16b-eafb7999c51e",
+      "archived_at": 1769742254947,
+      "reason": "banned",
+      "ban_details": {
+        "date": 1769569454947,
+        "reason": "suspicious_activity",
+        "ban_mechanism": "account_suspension"
+      },
+      "snapshot": {
+        "project_id": "wow_tbc",
+        "character": {
+          "name": "Bot005",
+          "level": 14,
+          "race": "tauren",
+          "class": "rogue",
+          "server": "Golemagg",
+          "faction": "horde"
+        },
+        "final_level": 14,
+        "total_farmed": 35294,
+        "total_earned_gold": 35294,
+        "total_runtime_hours": 614
+      }
+    },
+    "arch_65b6c7b8-0a7b-4378-882f-b27048103f89": {
+      "bot_id": "65b6c7b8-0a7b-4378-882f-b27048103f89",
+      "archived_at": 1769742254947,
+      "reason": "banned",
+      "ban_details": {
+        "date": 1769396654947,
+        "reason": "botting_detected",
+        "ban_mechanism": "account_suspension"
+      },
+      "snapshot": {
+        "project_id": "wow_midnight",
+        "character": {
+          "name": "Bot010",
+          "level": 66,
+          "race": "night_elf",
+          "class": "druid",
+          "server": "Silvermoon",
+          "faction": "alliance"
+        },
+        "final_level": 66,
+        "total_farmed": 33370,
+        "total_earned_gold": 33370,
+        "total_runtime_hours": 248
+      }
+    }
+  },
+  "daily_stats": {
+    "2026-01-30": {
+      "fa8bb6d4-27c6-452f-9645-aa591d057a99": {
+        "gold_farmed": 1437,
+        "hours_online": 15,
+        "xp_gained": 200359,
+        "deaths": 2,
+        "levels_gained": 2,
+        "last_update": 1769742254947
+      },
+      "eba94c88-45e5-450d-90aa-c4d8dabb66fb": {
+        "gold_farmed": 1907,
+        "hours_online": 13,
+        "xp_gained": 144287,
+        "deaths": 2,
+        "levels_gained": 0,
+        "last_update": 1769742254947
+      },
+      "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f": {
+        "gold_farmed": 1093,
+        "hours_online": 15,
+        "xp_gained": 155857,
+        "deaths": 0,
+        "levels_gained": 2,
+        "last_update": 1769742254947
+      },
+      "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9": {
+        "gold_farmed": 622,
+        "hours_online": 9,
+        "xp_gained": 477769,
+        "deaths": 1,
+        "levels_gained": 2,
+        "last_update": 1769742254947
+      },
+      "5751d784-e320-49fb-8c4e-3d53a6285089": {
+        "gold_farmed": 1292,
+        "hours_online": 13,
+        "xp_gained": 206526,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769742254947
+      },
+      "8610e8ea-5164-46b7-be61-24324fe35a13": {
+        "gold_farmed": 661,
+        "hours_online": 16,
+        "xp_gained": 399023,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769742254947
+      },
+      "e8ac0d51-df74-4720-a345-ec1e7e7ea773": {
+        "gold_farmed": 1126,
+        "hours_online": 7,
+        "xp_gained": 347925,
+        "deaths": 0,
+        "levels_gained": 0,
+        "last_update": 1769742254947
+      },
+      "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0": {
+        "gold_farmed": 1982,
+        "hours_online": 7,
+        "xp_gained": 187206,
+        "deaths": 4,
+        "levels_gained": 2,
+        "last_update": 1769742254947
+      },
+      "3b1e3eeb-5ea7-4dcc-a65c-87338086a936": {
+        "gold_farmed": 853,
+        "hours_online": 12,
+        "xp_gained": 189402,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769742254947
+      },
+      "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0": {
+        "gold_farmed": 1975,
+        "hours_online": 14,
+        "xp_gained": 194553,
+        "deaths": 1,
+        "levels_gained": 2,
+        "last_update": 1769742254947
+      },
+      "4818a621-c599-45d6-83ec-63f4a079d2ef": {
+        "gold_farmed": 1647,
+        "hours_online": 8,
+        "xp_gained": 363416,
+        "deaths": 5,
+        "levels_gained": 2,
+        "last_update": 1769742254947
+      },
+      "2eaddac5-7846-4fb3-a06e-81487685f9c3": {
+        "gold_farmed": 632,
+        "hours_online": 15,
+        "xp_gained": 486120,
+        "deaths": 1,
+        "levels_gained": 1,
+        "last_update": 1769742254947
+      }
+    },
+    "2026-01-29": {
+      "fa8bb6d4-27c6-452f-9645-aa591d057a99": {
+        "gold_farmed": 613,
+        "hours_online": 15,
+        "xp_gained": 100950,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769655854947
+      },
+      "eba94c88-45e5-450d-90aa-c4d8dabb66fb": {
+        "gold_farmed": 1495,
+        "hours_online": 15,
+        "xp_gained": 88656,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769655854947
+      },
+      "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f": {
+        "gold_farmed": 2637,
+        "hours_online": 13,
+        "xp_gained": 486140,
+        "deaths": 3,
+        "levels_gained": 0,
+        "last_update": 1769655854947
+      },
+      "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9": {
+        "gold_farmed": 2800,
+        "hours_online": 10,
+        "xp_gained": 369780,
+        "deaths": 3,
+        "levels_gained": 0,
+        "last_update": 1769655854947
+      },
+      "5751d784-e320-49fb-8c4e-3d53a6285089": {
+        "gold_farmed": 1063,
+        "hours_online": 16,
+        "xp_gained": 59431,
+        "deaths": 2,
+        "levels_gained": 1,
+        "last_update": 1769655854947
+      },
+      "8610e8ea-5164-46b7-be61-24324fe35a13": {
+        "gold_farmed": 1024,
+        "hours_online": 7,
+        "xp_gained": 224211,
+        "deaths": 5,
+        "levels_gained": 1,
+        "last_update": 1769655854947
+      },
+      "e8ac0d51-df74-4720-a345-ec1e7e7ea773": {
+        "gold_farmed": 1614,
+        "hours_online": 9,
+        "xp_gained": 424014,
+        "deaths": 2,
+        "levels_gained": 1,
+        "last_update": 1769655854947
+      },
+      "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0": {
+        "gold_farmed": 1086,
+        "hours_online": 4,
+        "xp_gained": 217641,
+        "deaths": 1,
+        "levels_gained": 2,
+        "last_update": 1769655854947
+      },
+      "3b1e3eeb-5ea7-4dcc-a65c-87338086a936": {
+        "gold_farmed": 2106,
+        "hours_online": 9,
+        "xp_gained": 448672,
+        "deaths": 4,
+        "levels_gained": 1,
+        "last_update": 1769655854947
+      },
+      "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0": {
+        "gold_farmed": 2062,
+        "hours_online": 9,
+        "xp_gained": 474258,
+        "deaths": 2,
+        "levels_gained": 0,
+        "last_update": 1769655854947
+      },
+      "4818a621-c599-45d6-83ec-63f4a079d2ef": {
+        "gold_farmed": 2744,
+        "hours_online": 4,
+        "xp_gained": 382645,
+        "deaths": 4,
+        "levels_gained": 1,
+        "last_update": 1769655854947
+      },
+      "2eaddac5-7846-4fb3-a06e-81487685f9c3": {
+        "gold_farmed": 959,
+        "hours_online": 11,
+        "xp_gained": 57746,
+        "deaths": 4,
+        "levels_gained": 2,
+        "last_update": 1769655854947
+      }
+    },
+    "2026-01-28": {
+      "fa8bb6d4-27c6-452f-9645-aa591d057a99": {
+        "gold_farmed": 1378,
+        "hours_online": 15,
+        "xp_gained": 148120,
+        "deaths": 3,
+        "levels_gained": 0,
+        "last_update": 1769569454947
+      },
+      "eba94c88-45e5-450d-90aa-c4d8dabb66fb": {
+        "gold_farmed": 2681,
+        "hours_online": 12,
+        "xp_gained": 355663,
+        "deaths": 0,
+        "levels_gained": 1,
+        "last_update": 1769569454947
+      },
+      "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f": {
+        "gold_farmed": 644,
+        "hours_online": 7,
+        "xp_gained": 152674,
+        "deaths": 3,
+        "levels_gained": 0,
+        "last_update": 1769569454947
+      },
+      "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9": {
+        "gold_farmed": 1858,
+        "hours_online": 12,
+        "xp_gained": 442929,
+        "deaths": 0,
+        "levels_gained": 0,
+        "last_update": 1769569454947
+      },
+      "5751d784-e320-49fb-8c4e-3d53a6285089": {
+        "gold_farmed": 2820,
+        "hours_online": 4,
+        "xp_gained": 169920,
+        "deaths": 2,
+        "levels_gained": 2,
+        "last_update": 1769569454947
+      },
+      "8610e8ea-5164-46b7-be61-24324fe35a13": {
+        "gold_farmed": 746,
+        "hours_online": 10,
+        "xp_gained": 382182,
+        "deaths": 5,
+        "levels_gained": 2,
+        "last_update": 1769569454947
+      },
+      "e8ac0d51-df74-4720-a345-ec1e7e7ea773": {
+        "gold_farmed": 612,
+        "hours_online": 4,
+        "xp_gained": 76150,
+        "deaths": 2,
+        "levels_gained": 1,
+        "last_update": 1769569454947
+      },
+      "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0": {
+        "gold_farmed": 1677,
+        "hours_online": 9,
+        "xp_gained": 267839,
+        "deaths": 4,
+        "levels_gained": 1,
+        "last_update": 1769569454947
+      },
+      "3b1e3eeb-5ea7-4dcc-a65c-87338086a936": {
+        "gold_farmed": 1292,
+        "hours_online": 14,
+        "xp_gained": 58927,
+        "deaths": 0,
+        "levels_gained": 0,
+        "last_update": 1769569454947
+      },
+      "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0": {
+        "gold_farmed": 2329,
+        "hours_online": 13,
+        "xp_gained": 308135,
+        "deaths": 0,
+        "levels_gained": 2,
+        "last_update": 1769569454947
+      },
+      "4818a621-c599-45d6-83ec-63f4a079d2ef": {
+        "gold_farmed": 820,
+        "hours_online": 16,
+        "xp_gained": 118397,
+        "deaths": 0,
+        "levels_gained": 0,
+        "last_update": 1769569454947
+      },
+      "2eaddac5-7846-4fb3-a06e-81487685f9c3": {
+        "gold_farmed": 1041,
+        "hours_online": 5,
+        "xp_gained": 197803,
+        "deaths": 1,
+        "levels_gained": 0,
+        "last_update": 1769569454947
+      }
+    },
+    "2026-01-27": {
+      "fa8bb6d4-27c6-452f-9645-aa591d057a99": {
+        "gold_farmed": 2492,
+        "hours_online": 16,
+        "xp_gained": 146881,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769483054947
+      },
+      "eba94c88-45e5-450d-90aa-c4d8dabb66fb": {
+        "gold_farmed": 1577,
+        "hours_online": 6,
+        "xp_gained": 422112,
+        "deaths": 5,
+        "levels_gained": 2,
+        "last_update": 1769483054947
+      },
+      "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f": {
+        "gold_farmed": 988,
+        "hours_online": 5,
+        "xp_gained": 217643,
+        "deaths": 1,
+        "levels_gained": 2,
+        "last_update": 1769483054947
+      },
+      "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9": {
+        "gold_farmed": 2402,
+        "hours_online": 14,
+        "xp_gained": 449001,
+        "deaths": 2,
+        "levels_gained": 1,
+        "last_update": 1769483054947
+      },
+      "5751d784-e320-49fb-8c4e-3d53a6285089": {
+        "gold_farmed": 1180,
+        "hours_online": 12,
+        "xp_gained": 240635,
+        "deaths": 2,
+        "levels_gained": 0,
+        "last_update": 1769483054947
+      },
+      "8610e8ea-5164-46b7-be61-24324fe35a13": {
+        "gold_farmed": 2679,
+        "hours_online": 12,
+        "xp_gained": 127553,
+        "deaths": 0,
+        "levels_gained": 0,
+        "last_update": 1769483054947
+      },
+      "e8ac0d51-df74-4720-a345-ec1e7e7ea773": {
+        "gold_farmed": 536,
+        "hours_online": 13,
+        "xp_gained": 420814,
+        "deaths": 4,
+        "levels_gained": 0,
+        "last_update": 1769483054947
+      },
+      "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0": {
+        "gold_farmed": 1870,
+        "hours_online": 14,
+        "xp_gained": 65270,
+        "deaths": 5,
+        "levels_gained": 2,
+        "last_update": 1769483054947
+      },
+      "3b1e3eeb-5ea7-4dcc-a65c-87338086a936": {
+        "gold_farmed": 1918,
+        "hours_online": 10,
+        "xp_gained": 260604,
+        "deaths": 2,
+        "levels_gained": 1,
+        "last_update": 1769483054947
+      },
+      "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0": {
+        "gold_farmed": 764,
+        "hours_online": 16,
+        "xp_gained": 333854,
+        "deaths": 1,
+        "levels_gained": 0,
+        "last_update": 1769483054947
+      },
+      "4818a621-c599-45d6-83ec-63f4a079d2ef": {
+        "gold_farmed": 2825,
+        "hours_online": 11,
+        "xp_gained": 298609,
+        "deaths": 5,
+        "levels_gained": 1,
+        "last_update": 1769483054947
+      },
+      "2eaddac5-7846-4fb3-a06e-81487685f9c3": {
+        "gold_farmed": 1759,
+        "hours_online": 12,
+        "xp_gained": 382498,
+        "deaths": 0,
+        "levels_gained": 0,
+        "last_update": 1769483054947
+      }
+    },
+    "2026-01-26": {
+      "fa8bb6d4-27c6-452f-9645-aa591d057a99": {
+        "gold_farmed": 676,
+        "hours_online": 12,
+        "xp_gained": 102237,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769396654947
+      },
+      "eba94c88-45e5-450d-90aa-c4d8dabb66fb": {
+        "gold_farmed": 1670,
+        "hours_online": 8,
+        "xp_gained": 216595,
+        "deaths": 5,
+        "levels_gained": 0,
+        "last_update": 1769396654947
+      },
+      "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f": {
+        "gold_farmed": 2234,
+        "hours_online": 12,
+        "xp_gained": 245969,
+        "deaths": 1,
+        "levels_gained": 2,
+        "last_update": 1769396654947
+      },
+      "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9": {
+        "gold_farmed": 544,
+        "hours_online": 5,
+        "xp_gained": 498731,
+        "deaths": 4,
+        "levels_gained": 0,
+        "last_update": 1769396654947
+      },
+      "5751d784-e320-49fb-8c4e-3d53a6285089": {
+        "gold_farmed": 2644,
+        "hours_online": 13,
+        "xp_gained": 52277,
+        "deaths": 3,
+        "levels_gained": 0,
+        "last_update": 1769396654947
+      },
+      "8610e8ea-5164-46b7-be61-24324fe35a13": {
+        "gold_farmed": 1824,
+        "hours_online": 10,
+        "xp_gained": 497610,
+        "deaths": 4,
+        "levels_gained": 2,
+        "last_update": 1769396654947
+      },
+      "e8ac0d51-df74-4720-a345-ec1e7e7ea773": {
+        "gold_farmed": 1549,
+        "hours_online": 4,
+        "xp_gained": 303160,
+        "deaths": 5,
+        "levels_gained": 0,
+        "last_update": 1769396654947
+      },
+      "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0": {
+        "gold_farmed": 1404,
+        "hours_online": 4,
+        "xp_gained": 211561,
+        "deaths": 5,
+        "levels_gained": 2,
+        "last_update": 1769396654947
+      },
+      "3b1e3eeb-5ea7-4dcc-a65c-87338086a936": {
+        "gold_farmed": 2039,
+        "hours_online": 5,
+        "xp_gained": 88676,
+        "deaths": 0,
+        "levels_gained": 0,
+        "last_update": 1769396654947
+      },
+      "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0": {
+        "gold_farmed": 1122,
+        "hours_online": 11,
+        "xp_gained": 97575,
+        "deaths": 2,
+        "levels_gained": 0,
+        "last_update": 1769396654947
+      },
+      "4818a621-c599-45d6-83ec-63f4a079d2ef": {
+        "gold_farmed": 1467,
+        "hours_online": 16,
+        "xp_gained": 480125,
+        "deaths": 1,
+        "levels_gained": 0,
+        "last_update": 1769396654947
+      },
+      "2eaddac5-7846-4fb3-a06e-81487685f9c3": {
+        "gold_farmed": 1099,
+        "hours_online": 12,
+        "xp_gained": 361979,
+        "deaths": 4,
+        "levels_gained": 0,
+        "last_update": 1769396654947
+      }
+    },
+    "2026-01-25": {
+      "fa8bb6d4-27c6-452f-9645-aa591d057a99": {
+        "gold_farmed": 2683,
+        "hours_online": 7,
+        "xp_gained": 200858,
+        "deaths": 5,
+        "levels_gained": 0,
+        "last_update": 1769310254947
+      },
+      "eba94c88-45e5-450d-90aa-c4d8dabb66fb": {
+        "gold_farmed": 2972,
+        "hours_online": 6,
+        "xp_gained": 66624,
+        "deaths": 5,
+        "levels_gained": 2,
+        "last_update": 1769310254947
+      },
+      "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f": {
+        "gold_farmed": 2279,
+        "hours_online": 7,
+        "xp_gained": 300322,
+        "deaths": 0,
+        "levels_gained": 1,
+        "last_update": 1769310254947
+      },
+      "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9": {
+        "gold_farmed": 2335,
+        "hours_online": 11,
+        "xp_gained": 443064,
+        "deaths": 3,
+        "levels_gained": 2,
+        "last_update": 1769310254947
+      },
+      "5751d784-e320-49fb-8c4e-3d53a6285089": {
+        "gold_farmed": 2570,
+        "hours_online": 11,
+        "xp_gained": 489649,
+        "deaths": 1,
+        "levels_gained": 1,
+        "last_update": 1769310254947
+      },
+      "8610e8ea-5164-46b7-be61-24324fe35a13": {
+        "gold_farmed": 2824,
+        "hours_online": 4,
+        "xp_gained": 256526,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769310254947
+      },
+      "e8ac0d51-df74-4720-a345-ec1e7e7ea773": {
+        "gold_farmed": 1894,
+        "hours_online": 13,
+        "xp_gained": 384642,
+        "deaths": 0,
+        "levels_gained": 0,
+        "last_update": 1769310254947
+      },
+      "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0": {
+        "gold_farmed": 827,
+        "hours_online": 10,
+        "xp_gained": 461932,
+        "deaths": 4,
+        "levels_gained": 1,
+        "last_update": 1769310254947
+      },
+      "3b1e3eeb-5ea7-4dcc-a65c-87338086a936": {
+        "gold_farmed": 593,
+        "hours_online": 14,
+        "xp_gained": 373081,
+        "deaths": 4,
+        "levels_gained": 0,
+        "last_update": 1769310254947
+      },
+      "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0": {
+        "gold_farmed": 2458,
+        "hours_online": 12,
+        "xp_gained": 427032,
+        "deaths": 2,
+        "levels_gained": 1,
+        "last_update": 1769310254947
+      },
+      "4818a621-c599-45d6-83ec-63f4a079d2ef": {
+        "gold_farmed": 2333,
+        "hours_online": 15,
+        "xp_gained": 365703,
+        "deaths": 4,
+        "levels_gained": 2,
+        "last_update": 1769310254947
+      },
+      "2eaddac5-7846-4fb3-a06e-81487685f9c3": {
+        "gold_farmed": 1804,
+        "hours_online": 5,
+        "xp_gained": 131664,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769310254947
+      }
+    },
+    "2026-01-24": {
+      "fa8bb6d4-27c6-452f-9645-aa591d057a99": {
+        "gold_farmed": 860,
+        "hours_online": 12,
+        "xp_gained": 277727,
+        "deaths": 0,
+        "levels_gained": 1,
+        "last_update": 1769223854947
+      },
+      "eba94c88-45e5-450d-90aa-c4d8dabb66fb": {
+        "gold_farmed": 936,
+        "hours_online": 9,
+        "xp_gained": 215927,
+        "deaths": 4,
+        "levels_gained": 2,
+        "last_update": 1769223854947
+      },
+      "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f": {
+        "gold_farmed": 1432,
+        "hours_online": 5,
+        "xp_gained": 357340,
+        "deaths": 5,
+        "levels_gained": 2,
+        "last_update": 1769223854947
+      },
+      "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9": {
+        "gold_farmed": 2183,
+        "hours_online": 5,
+        "xp_gained": 50093,
+        "deaths": 3,
+        "levels_gained": 0,
+        "last_update": 1769223854947
+      },
+      "5751d784-e320-49fb-8c4e-3d53a6285089": {
+        "gold_farmed": 1507,
+        "hours_online": 8,
+        "xp_gained": 287083,
+        "deaths": 4,
+        "levels_gained": 2,
+        "last_update": 1769223854947
+      },
+      "8610e8ea-5164-46b7-be61-24324fe35a13": {
+        "gold_farmed": 2854,
+        "hours_online": 6,
+        "xp_gained": 53511,
+        "deaths": 0,
+        "levels_gained": 1,
+        "last_update": 1769223854947
+      },
+      "e8ac0d51-df74-4720-a345-ec1e7e7ea773": {
+        "gold_farmed": 2344,
+        "hours_online": 13,
+        "xp_gained": 169089,
+        "deaths": 4,
+        "levels_gained": 2,
+        "last_update": 1769223854947
+      },
+      "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0": {
+        "gold_farmed": 1217,
+        "hours_online": 8,
+        "xp_gained": 436896,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769223854947
+      },
+      "3b1e3eeb-5ea7-4dcc-a65c-87338086a936": {
+        "gold_farmed": 2478,
+        "hours_online": 11,
+        "xp_gained": 90655,
+        "deaths": 4,
+        "levels_gained": 2,
+        "last_update": 1769223854947
+      },
+      "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0": {
+        "gold_farmed": 1171,
+        "hours_online": 10,
+        "xp_gained": 117201,
+        "deaths": 2,
+        "levels_gained": 1,
+        "last_update": 1769223854947
+      },
+      "4818a621-c599-45d6-83ec-63f4a079d2ef": {
+        "gold_farmed": 2740,
+        "hours_online": 7,
+        "xp_gained": 346991,
+        "deaths": 5,
+        "levels_gained": 1,
+        "last_update": 1769223854947
+      },
+      "2eaddac5-7846-4fb3-a06e-81487685f9c3": {
+        "gold_farmed": 1023,
+        "hours_online": 11,
+        "xp_gained": 100594,
+        "deaths": 3,
+        "levels_gained": 1,
+        "last_update": 1769223854947
+      }
+    }
+  },
+  "logs": {
+    "fa8bb6d4-27c6-452f-9645-aa591d057a99": {
+      "evt_001": {
+        "type": "gold_milestone",
+        "timestamp": 1769655854947,
+        "message": "Gold milestone reached: 8000g",
+        "data": {
+          "milestone": 8000,
+          "total": 8106
+        }
+      },
+      "evt_002": {
+        "type": "death",
+        "timestamp": 1768100654947,
+        "message": "Died in Terokkar Forest",
+        "data": {
+          "location": "Terokkar Forest",
+          "killer": "Player"
+        }
+      },
+      "evt_003": {
+        "type": "status_change",
+        "timestamp": 1767755054947,
+        "message": "Status changed: leveling -> leveling",
+        "data": {
+          "old_status": "leveling",
+          "new_status": "leveling"
+        }
+      },
+      "evt_004": {
+        "type": "level_up",
+        "timestamp": 1768359854947,
+        "message": "Level up: 16 -> 17",
+        "data": {
+          "old_level": 16,
+          "new_level": 17,
+          "location": "Terokkar Forest"
+        }
+      },
+      "evt_005": {
+        "type": "status_change",
+        "timestamp": 1768359854947,
+        "message": "Status changed: offline -> leveling",
+        "data": {
+          "old_status": "offline",
+          "new_status": "leveling"
+        }
+      },
+      "evt_006": {
+        "type": "status_change",
+        "timestamp": 1769223854947,
+        "message": "Status changed: offline -> leveling",
+        "data": {
+          "old_status": "offline",
+          "new_status": "leveling"
+        }
+      },
+      "evt_007": {
+        "type": "gold_milestone",
+        "timestamp": 1767236654947,
+        "message": "Gold milestone reached: 8000g",
+        "data": {
+          "milestone": 8000,
+          "total": 8106
+        }
+      },
+      "evt_008": {
+        "type": "gold_milestone",
+        "timestamp": 1768791854947,
+        "message": "Gold milestone reached: 8000g",
+        "data": {
+          "milestone": 8000,
+          "total": 8106
+        }
+      }
+    },
+    "eba94c88-45e5-450d-90aa-c4d8dabb66fb": {
+      "evt_001": {
+        "type": "level_up",
+        "timestamp": 1769310254947,
+        "message": "Level up: 61 -> 62",
+        "data": {
+          "old_level": 61,
+          "new_level": 62,
+          "location": "Shadowmoon Valley"
+        }
+      },
+      "evt_002": {
+        "type": "death",
+        "timestamp": 1768532654947,
+        "message": "Died in Shadowmoon Valley",
+        "data": {
+          "location": "Shadowmoon Valley",
+          "killer": "Boss"
+        }
+      },
+      "evt_003": {
+        "type": "status_change",
+        "timestamp": 1767150254947,
+        "message": "Status changed: leveling -> farming",
+        "data": {
+          "old_status": "leveling",
+          "new_status": "farming"
+        }
+      },
+      "evt_004": {
+        "type": "death",
+        "timestamp": 1769655854947,
+        "message": "Died in Shadowmoon Valley",
+        "data": {
+          "location": "Shadowmoon Valley",
+          "killer": "Player"
+        }
+      },
+      "evt_005": {
+        "type": "gold_milestone",
+        "timestamp": 1768014254947,
+        "message": "Gold milestone reached: 31000g",
+        "data": {
+          "milestone": 31000,
+          "total": 31716
+        }
+      },
+      "evt_006": {
+        "type": "status_change",
+        "timestamp": 1767755054947,
+        "message": "Status changed: offline -> farming",
+        "data": {
+          "old_status": "offline",
+          "new_status": "farming"
+        }
+      }
+    },
+    "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f": {
+      "evt_001": {
+        "type": "level_up",
+        "timestamp": 1767755054947,
+        "message": "Level up: 65 -> 66",
+        "data": {
+          "old_level": 65,
+          "new_level": 66,
+          "location": "Netherstorm"
+        }
+      },
+      "evt_002": {
+        "type": "death",
+        "timestamp": 1768791854947,
+        "message": "Died in Netherstorm",
+        "data": {
+          "location": "Netherstorm",
+          "killer": "Boss"
+        }
+      },
+      "evt_003": {
+        "type": "death",
+        "timestamp": 1768791854947,
+        "message": "Died in Netherstorm",
+        "data": {
+          "location": "Netherstorm",
+          "killer": "Mob"
+        }
+      },
+      "evt_004": {
+        "type": "status_change",
+        "timestamp": 1767150254947,
+        "message": "Status changed: offline -> profession",
+        "data": {
+          "old_status": "offline",
+          "new_status": "profession"
+        }
+      },
+      "evt_005": {
+        "type": "death",
+        "timestamp": 1767150254947,
+        "message": "Died in Netherstorm",
+        "data": {
+          "location": "Netherstorm",
+          "killer": "Boss"
+        }
+      },
+      "evt_006": {
+        "type": "status_change",
+        "timestamp": 1767150254947,
+        "message": "Status changed: leveling -> profession",
+        "data": {
+          "old_status": "leveling",
+          "new_status": "profession"
+        }
+      },
+      "evt_007": {
+        "type": "level_up",
+        "timestamp": 1768705454947,
+        "message": "Level up: 65 -> 66",
+        "data": {
+          "old_level": 65,
+          "new_level": 66,
+          "location": "Netherstorm"
+        }
+      }
+    },
+    "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9": {
+      "evt_001": {
+        "type": "death",
+        "timestamp": 1768014254947,
+        "message": "Died in Terokkar Forest",
+        "data": {
+          "location": "Terokkar Forest",
+          "killer": "Boss"
+        }
+      },
+      "evt_002": {
+        "type": "level_up",
+        "timestamp": 1768964654947,
+        "message": "Level up: 66 -> 67",
+        "data": {
+          "old_level": 66,
+          "new_level": 67,
+          "location": "Terokkar Forest"
+        }
+      },
+      "evt_003": {
+        "type": "level_up",
+        "timestamp": 1769655854947,
+        "message": "Level up: 66 -> 67",
+        "data": {
+          "old_level": 66,
+          "new_level": 67,
+          "location": "Terokkar Forest"
+        }
+      },
+      "evt_004": {
+        "type": "status_change",
+        "timestamp": 1767323054947,
+        "message": "Status changed: leveling -> farming",
+        "data": {
+          "old_status": "leveling",
+          "new_status": "farming"
+        }
+      }
+    },
+    "1f3c3d4c-a784-4066-b16b-eafb7999c51e": {
+      "evt_001": {
+        "type": "death",
+        "timestamp": 1768532654947,
+        "message": "Died in Netherstorm",
+        "data": {
+          "location": "Netherstorm",
+          "killer": "Mob"
+        }
+      },
+      "evt_002": {
+        "type": "level_up",
+        "timestamp": 1767841454947,
+        "message": "Level up: 13 -> 14",
+        "data": {
+          "old_level": 13,
+          "new_level": 14,
+          "location": "Netherstorm"
+        }
+      },
+      "evt_003": {
+        "type": "gold_milestone",
+        "timestamp": 1769569454947,
+        "message": "Gold milestone reached: 35000g",
+        "data": {
+          "milestone": 35000,
+          "total": 35294
+        }
+      },
+      "evt_004": {
+        "type": "status_change",
+        "timestamp": 1767323054947,
+        "message": "Status changed: prepare -> banned",
+        "data": {
+          "old_status": "prepare",
+          "new_status": "banned"
+        }
+      },
+      "evt_005": {
+        "type": "status_change",
+        "timestamp": 1769310254947,
+        "message": "Status changed: prepare -> banned",
+        "data": {
+          "old_status": "prepare",
+          "new_status": "banned"
+        }
+      },
+      "evt_006": {
+        "type": "gold_milestone",
+        "timestamp": 1768446254947,
+        "message": "Gold milestone reached: 35000g",
+        "data": {
+          "milestone": 35000,
+          "total": 35294
+        }
+      },
+      "evt_007": {
+        "type": "level_up",
+        "timestamp": 1768878254947,
+        "message": "Level up: 13 -> 14",
+        "data": {
+          "old_level": 13,
+          "new_level": 14,
+          "location": "Netherstorm"
+        }
+      }
+    },
+    "5751d784-e320-49fb-8c4e-3d53a6285089": {
+      "evt_001": {
+        "type": "level_up",
+        "timestamp": 1769483054947,
+        "message": "Level up: 65 -> 66",
+        "data": {
+          "old_level": 65,
+          "new_level": 66,
+          "location": "Netherstorm"
+        }
+      },
+      "evt_002": {
+        "type": "level_up",
+        "timestamp": 1767668654947,
+        "message": "Level up: 65 -> 66",
+        "data": {
+          "old_level": 65,
+          "new_level": 66,
+          "location": "Netherstorm"
+        }
+      },
+      "evt_003": {
+        "type": "status_change",
+        "timestamp": 1768878254947,
+        "message": "Status changed: prepare -> farming",
+        "data": {
+          "old_status": "prepare",
+          "new_status": "farming"
+        }
+      },
+      "evt_004": {
+        "type": "gold_milestone",
+        "timestamp": 1769051054947,
+        "message": "Gold milestone reached: 22000g",
+        "data": {
+          "milestone": 22000,
+          "total": 22195
+        }
+      }
+    },
+    "8610e8ea-5164-46b7-be61-24324fe35a13": {
+      "evt_001": {
+        "type": "status_change",
+        "timestamp": 1768878254947,
+        "message": "Status changed: leveling -> prepare",
+        "data": {
+          "old_status": "leveling",
+          "new_status": "prepare"
+        }
+      },
+      "evt_002": {
+        "type": "death",
+        "timestamp": 1768446254947,
+        "message": "Died in Terokkar Forest",
+        "data": {
+          "location": "Terokkar Forest",
+          "killer": "Mob"
+        }
+      },
+      "evt_003": {
+        "type": "gold_milestone",
+        "timestamp": 1769569454947,
+        "message": "Gold milestone reached: 36000g",
+        "data": {
+          "milestone": 36000,
+          "total": 36243
+        }
+      },
+      "evt_004": {
+        "type": "status_change",
+        "timestamp": 1769483054947,
+        "message": "Status changed: leveling -> prepare",
+        "data": {
+          "old_status": "leveling",
+          "new_status": "prepare"
+        }
+      },
+      "evt_005": {
+        "type": "level_up",
+        "timestamp": 1768446254947,
+        "message": "Level up: 61 -> 62",
+        "data": {
+          "old_level": 61,
+          "new_level": 62,
+          "location": "Terokkar Forest"
+        }
+      },
+      "evt_006": {
+        "type": "level_up",
+        "timestamp": 1767841454947,
+        "message": "Level up: 61 -> 62",
+        "data": {
+          "old_level": 61,
+          "new_level": 62,
+          "location": "Terokkar Forest"
+        }
+      },
+      "evt_007": {
+        "type": "status_change",
+        "timestamp": 1768619054947,
+        "message": "Status changed: prepare -> prepare",
+        "data": {
+          "old_status": "prepare",
+          "new_status": "prepare"
+        }
+      },
+      "evt_008": {
+        "type": "status_change",
+        "timestamp": 1768100654947,
+        "message": "Status changed: prepare -> prepare",
+        "data": {
+          "old_status": "prepare",
+          "new_status": "prepare"
+        }
+      }
+    },
+    "e8ac0d51-df74-4720-a345-ec1e7e7ea773": {
+      "evt_001": {
+        "type": "gold_milestone",
+        "timestamp": 1768446254947,
+        "message": "Gold milestone reached: 3000g",
+        "data": {
+          "milestone": 3000,
+          "total": 3005
+        }
+      },
+      "evt_002": {
+        "type": "status_change",
+        "timestamp": 1769569454947,
+        "message": "Status changed: prepare -> offline",
+        "data": {
+          "old_status": "prepare",
+          "new_status": "offline"
+        }
+      },
+      "evt_003": {
+        "type": "level_up",
+        "timestamp": 1767668654947,
+        "message": "Level up: 60 -> 61",
+        "data": {
+          "old_level": 60,
+          "new_level": 61,
+          "location": "Blade's Edge Mountains"
+        }
+      },
+      "evt_004": {
+        "type": "gold_milestone",
+        "timestamp": 1768446254947,
+        "message": "Gold milestone reached: 3000g",
+        "data": {
+          "milestone": 3000,
+          "total": 3005
+        }
+      },
+      "evt_005": {
+        "type": "death",
+        "timestamp": 1769655854947,
+        "message": "Died in Blade's Edge Mountains",
+        "data": {
+          "location": "Blade's Edge Mountains",
+          "killer": "Boss"
+        }
+      }
+    },
+    "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0": {
+      "evt_001": {
+        "type": "gold_milestone",
+        "timestamp": 1769223854947,
+        "message": "Gold milestone reached: 43000g",
+        "data": {
+          "milestone": 43000,
+          "total": 43990
+        }
+      },
+      "evt_002": {
+        "type": "status_change",
+        "timestamp": 1767150254947,
+        "message": "Status changed: offline -> prepare",
+        "data": {
+          "old_status": "offline",
+          "new_status": "prepare"
+        }
+      },
+      "evt_003": {
+        "type": "death",
+        "timestamp": 1767236654947,
+        "message": "Died in Shadowmoon Valley",
+        "data": {
+          "location": "Shadowmoon Valley",
+          "killer": "Mob"
+        }
+      },
+      "evt_004": {
+        "type": "level_up",
+        "timestamp": 1769569454947,
+        "message": "Level up: 66 -> 67",
+        "data": {
+          "old_level": 66,
+          "new_level": 67,
+          "location": "Shadowmoon Valley"
+        }
+      },
+      "evt_005": {
+        "type": "gold_milestone",
+        "timestamp": 1768273454947,
+        "message": "Gold milestone reached: 43000g",
+        "data": {
+          "milestone": 43000,
+          "total": 43990
+        }
+      },
+      "evt_006": {
+        "type": "level_up",
+        "timestamp": 1768532654947,
+        "message": "Level up: 66 -> 67",
+        "data": {
+          "old_level": 66,
+          "new_level": 67,
+          "location": "Shadowmoon Valley"
+        }
+      },
+      "evt_007": {
+        "type": "gold_milestone",
+        "timestamp": 1769137454947,
+        "message": "Gold milestone reached: 43000g",
+        "data": {
+          "milestone": 43000,
+          "total": 43990
+        }
+      },
+      "evt_008": {
+        "type": "status_change",
+        "timestamp": 1769483054947,
+        "message": "Status changed: offline -> prepare",
+        "data": {
+          "old_status": "offline",
+          "new_status": "prepare"
+        }
+      },
+      "evt_009": {
+        "type": "death",
+        "timestamp": 1768705454947,
+        "message": "Died in Shadowmoon Valley",
+        "data": {
+          "location": "Shadowmoon Valley",
+          "killer": "Boss"
+        }
+      },
+      "evt_010": {
+        "type": "level_up",
+        "timestamp": 1767582254947,
+        "message": "Level up: 66 -> 67",
+        "data": {
+          "old_level": 66,
+          "new_level": 67,
+          "location": "Shadowmoon Valley"
+        }
+      }
+    },
+    "65b6c7b8-0a7b-4378-882f-b27048103f89": {
+      "evt_001": {
+        "type": "gold_milestone",
+        "timestamp": 1769655854947,
+        "message": "Gold milestone reached: 33000g",
+        "data": {
+          "milestone": 33000,
+          "total": 33370
+        }
+      },
+      "evt_002": {
+        "type": "level_up",
+        "timestamp": 1768446254947,
+        "message": "Level up: 65 -> 66",
+        "data": {
+          "old_level": 65,
+          "new_level": 66,
+          "location": "Netherstorm"
+        }
+      },
+      "evt_003": {
+        "type": "level_up",
+        "timestamp": 1769396654947,
+        "message": "Level up: 65 -> 66",
+        "data": {
+          "old_level": 65,
+          "new_level": 66,
+          "location": "Netherstorm"
+        }
+      },
+      "evt_004": {
+        "type": "status_change",
+        "timestamp": 1768014254947,
+        "message": "Status changed: prepare -> banned",
+        "data": {
+          "old_status": "prepare",
+          "new_status": "banned"
+        }
+      },
+      "evt_005": {
+        "type": "level_up",
+        "timestamp": 1769137454947,
+        "message": "Level up: 65 -> 66",
+        "data": {
+          "old_level": 65,
+          "new_level": 66,
+          "location": "Netherstorm"
+        }
+      },
+      "evt_006": {
+        "type": "level_up",
+        "timestamp": 1769569454947,
+        "message": "Level up: 65 -> 66",
+        "data": {
+          "old_level": 65,
+          "new_level": 66,
+          "location": "Netherstorm"
+        }
+      },
+      "evt_007": {
+        "type": "death",
+        "timestamp": 1769137454947,
+        "message": "Died in Netherstorm",
+        "data": {
+          "location": "Netherstorm",
+          "killer": "Boss"
+        }
+      },
+      "evt_008": {
+        "type": "gold_milestone",
+        "timestamp": 1769483054947,
+        "message": "Gold milestone reached: 33000g",
+        "data": {
+          "milestone": 33000,
+          "total": 33370
+        }
+      },
+      "evt_009": {
+        "type": "level_up",
+        "timestamp": 1768446254947,
+        "message": "Level up: 65 -> 66",
+        "data": {
+          "old_level": 65,
+          "new_level": 66,
+          "location": "Netherstorm"
+        }
+      },
+      "evt_010": {
+        "type": "level_up",
+        "timestamp": 1768014254947,
+        "message": "Level up: 65 -> 66",
+        "data": {
+          "old_level": 65,
+          "new_level": 66,
+          "location": "Netherstorm"
+        }
+      }
+    },
+    "3b1e3eeb-5ea7-4dcc-a65c-87338086a936": {
+      "evt_001": {
+        "type": "death",
+        "timestamp": 1769655854947,
+        "message": "Died in Blade's Edge Mountains",
+        "data": {
+          "location": "Blade's Edge Mountains",
+          "killer": "Mob"
+        }
+      },
+      "evt_002": {
+        "type": "death",
+        "timestamp": 1767495854947,
+        "message": "Died in Blade's Edge Mountains",
+        "data": {
+          "location": "Blade's Edge Mountains",
+          "killer": "Mob"
+        }
+      },
+      "evt_003": {
+        "type": "status_change",
+        "timestamp": 1767668654947,
+        "message": "Status changed: leveling -> farming",
+        "data": {
+          "old_status": "leveling",
+          "new_status": "farming"
+        }
+      }
+    },
+    "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0": {
+      "evt_001": {
+        "type": "level_up",
+        "timestamp": 1768100654947,
+        "message": "Level up: 67 -> 68",
+        "data": {
+          "old_level": 67,
+          "new_level": 68,
+          "location": "Nagrand"
+        }
+      },
+      "evt_002": {
+        "type": "gold_milestone",
+        "timestamp": 1768014254947,
+        "message": "Gold milestone reached: 46000g",
+        "data": {
+          "milestone": 46000,
+          "total": 46712
+        }
+      },
+      "evt_003": {
+        "type": "death",
+        "timestamp": 1768359854947,
+        "message": "Died in Nagrand",
+        "data": {
+          "location": "Nagrand",
+          "killer": "Player"
+        }
+      }
+    },
+    "4818a621-c599-45d6-83ec-63f4a079d2ef": {
+      "evt_001": {
+        "type": "gold_milestone",
+        "timestamp": 1768100654947,
+        "message": "Gold milestone reached: 43000g",
+        "data": {
+          "milestone": 43000,
+          "total": 43536
+        }
+      },
+      "evt_002": {
+        "type": "gold_milestone",
+        "timestamp": 1767841454947,
+        "message": "Gold milestone reached: 43000g",
+        "data": {
+          "milestone": 43000,
+          "total": 43536
+        }
+      },
+      "evt_003": {
+        "type": "level_up",
+        "timestamp": 1769396654947,
+        "message": "Level up: 70 -> 71",
+        "data": {
+          "old_level": 70,
+          "new_level": 71,
+          "location": "Shadowmoon Valley"
+        }
+      },
+      "evt_004": {
+        "type": "status_change",
+        "timestamp": 1768532654947,
+        "message": "Status changed: prepare -> offline",
+        "data": {
+          "old_status": "prepare",
+          "new_status": "offline"
+        }
+      },
+      "evt_005": {
+        "type": "level_up",
+        "timestamp": 1769051054947,
+        "message": "Level up: 70 -> 71",
+        "data": {
+          "old_level": 70,
+          "new_level": 71,
+          "location": "Shadowmoon Valley"
+        }
+      }
+    },
+    "2eaddac5-7846-4fb3-a06e-81487685f9c3": {
+      "evt_001": {
+        "type": "gold_milestone",
+        "timestamp": 1768619054947,
+        "message": "Gold milestone reached: 44000g",
+        "data": {
+          "milestone": 44000,
+          "total": 44158
+        }
+      },
+      "evt_002": {
+        "type": "status_change",
+        "timestamp": 1768187054947,
+        "message": "Status changed: offline -> profession",
+        "data": {
+          "old_status": "offline",
+          "new_status": "profession"
+        }
+      },
+      "evt_003": {
+        "type": "status_change",
+        "timestamp": 1768619054947,
+        "message": "Status changed: prepare -> profession",
+        "data": {
+          "old_status": "prepare",
+          "new_status": "profession"
+        }
+      },
+      "evt_004": {
+        "type": "death",
+        "timestamp": 1769396654947,
+        "message": "Died in Nagrand",
+        "data": {
+          "location": "Nagrand",
+          "killer": "Boss"
+        }
+      },
+      "evt_005": {
+        "type": "gold_milestone",
+        "timestamp": 1769655854947,
+        "message": "Gold milestone reached: 44000g",
+        "data": {
+          "milestone": 44000,
+          "total": 44158
+        }
+      },
+      "evt_006": {
+        "type": "level_up",
+        "timestamp": 1767582254947,
+        "message": "Level up: 60 -> 61",
+        "data": {
+          "old_level": 60,
+          "new_level": 61,
+          "location": "Nagrand"
+        }
+      },
+      "evt_007": {
+        "type": "death",
+        "timestamp": 1769051054947,
+        "message": "Died in Nagrand",
+        "data": {
+          "location": "Nagrand",
+          "killer": "Player"
+        }
+      }
+    }
+  },
+  "finance": {
+    "operations": {
+      "op_001": {
+        "id": "op_001",
+        "type": "income",
+        "category": "sale",
+        "bot_id": "fa8bb6d4-27c6-452f-9645-aa591d057a99",
+        "description": "Gold sold - 3776g",
+        "amount": 494,
+        "currency": "USD",
+        "gold_price_at_time": 0.0125,
+        "date": 1767582254946,
+        "created_at": 1767841454946
+      },
+      "op_002": {
+        "id": "op_002",
+        "type": "income",
+        "category": "sale",
+        "bot_id": "fa8bb6d4-27c6-452f-9645-aa591d057a99",
+        "description": "Gold sold - 2563g",
+        "amount": 407,
+        "currency": "USD",
+        "gold_price_at_time": 0.0125,
+        "date": 1767927854946,
+        "created_at": 1767150254946
+      },
+      "op_003": {
+        "id": "op_003",
+        "type": "expense",
+        "category": "subscription bot",
+        "bot_id": "fa8bb6d4-27c6-452f-9645-aa591d057a99",
+        "description": "Proxy renewal",
+        "amount": 31,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767927854946,
+        "created_at": 1768446254946
+      },
+      "op_004": {
+        "id": "op_004",
+        "type": "expense",
+        "category": "proxy",
+        "bot_id": "fa8bb6d4-27c6-452f-9645-aa591d057a99",
+        "description": "Proxy renewal",
+        "amount": 70,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1769569454946,
+        "created_at": 1768619054946
+      },
+      "op_005": {
+        "id": "op_005",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "fa8bb6d4-27c6-452f-9645-aa591d057a99",
+        "description": "Monthly subscription",
+        "amount": 42,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768791854946,
+        "created_at": 1768359854946
+      },
+      "op_006": {
+        "id": "op_006",
+        "type": "expense",
+        "category": "subscription bot",
+        "bot_id": "eba94c88-45e5-450d-90aa-c4d8dabb66fb",
+        "description": "Game time",
+        "amount": 54,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768273454946,
+        "created_at": 1769569454946
+      },
+      "op_007": {
+        "id": "op_007",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "eba94c88-45e5-450d-90aa-c4d8dabb66fb",
+        "description": "License fee",
+        "amount": 66,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768014254946,
+        "created_at": 1768014254946
+      },
+      "op_008": {
+        "id": "op_008",
+        "type": "expense",
+        "category": "subscription bot",
+        "bot_id": "eba94c88-45e5-450d-90aa-c4d8dabb66fb",
+        "description": "Proxy renewal",
+        "amount": 94,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767150254946,
+        "created_at": 1767841454946
+      },
+      "op_009": {
+        "id": "op_009",
+        "type": "expense",
+        "category": "proxy",
+        "bot_id": "eba94c88-45e5-450d-90aa-c4d8dabb66fb",
+        "description": "Game time",
+        "amount": 10,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767323054946,
+        "created_at": 1768964654946
+      },
+      "op_010": {
+        "id": "op_010",
+        "type": "income",
+        "category": "sale",
+        "bot_id": "eba94c88-45e5-450d-90aa-c4d8dabb66fb",
+        "description": "Gold sold - 7328g",
+        "amount": 483,
+        "currency": "USD",
+        "gold_price_at_time": 0.0125,
+        "date": 1768705454946,
+        "created_at": 1768878254946
+      },
+      "op_011": {
+        "id": "op_011",
+        "type": "expense",
+        "category": "subscription bot",
+        "bot_id": "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f",
+        "description": "Proxy renewal",
+        "amount": 20,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768964654946,
+        "created_at": 1767409454946
+      },
+      "op_012": {
+        "id": "op_012",
+        "type": "expense",
+        "category": "subscription bot",
+        "bot_id": "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f",
+        "description": "Proxy renewal",
+        "amount": 31,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767582254946,
+        "created_at": 1768100654946
+      },
+      "op_013": {
+        "id": "op_013",
+        "type": "expense",
+        "category": "subscription bot",
+        "bot_id": "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f",
+        "description": "License fee",
+        "amount": 17,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767409454946,
+        "created_at": 1769137454946
+      },
+      "op_014": {
+        "id": "op_014",
+        "type": "expense",
+        "category": "subscription bot",
+        "bot_id": "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9",
+        "description": "Proxy renewal",
+        "amount": 22,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768532654946,
+        "created_at": 1768359854946
+      },
+      "op_015": {
+        "id": "op_015",
+        "type": "expense",
+        "category": "subscription bot",
+        "bot_id": "1f3c3d4c-a784-4066-b16b-eafb7999c51e",
+        "description": "Game time",
+        "amount": 17,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1769396654946,
+        "created_at": 1767841454946
+      },
+      "op_016": {
+        "id": "op_016",
+        "type": "income",
+        "category": "sale",
+        "bot_id": "5751d784-e320-49fb-8c4e-3d53a6285089",
+        "description": "Gold sold - 9597g",
+        "amount": 103,
+        "currency": "USD",
+        "gold_price_at_time": 0.0125,
+        "date": 1768532654946,
+        "created_at": 1768705454946
+      },
+      "op_017": {
+        "id": "op_017",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "5751d784-e320-49fb-8c4e-3d53a6285089",
+        "description": "Proxy renewal",
+        "amount": 11,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1769396654946,
+        "created_at": 1768878254946
+      },
+      "op_018": {
+        "id": "op_018",
+        "type": "expense",
+        "category": "subscription game",
+        "bot_id": "8610e8ea-5164-46b7-be61-24324fe35a13",
+        "description": "License fee",
+        "amount": 20,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767927854946,
+        "created_at": 1768964654946
+      },
+      "op_019": {
+        "id": "op_019",
+        "type": "expense",
+        "category": "subscription bot",
+        "bot_id": "8610e8ea-5164-46b7-be61-24324fe35a13",
+        "description": "Game time",
+        "amount": 27,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768273454946,
+        "created_at": 1768014254946
+      },
+      "op_020": {
+        "id": "op_020",
+        "type": "expense",
+        "category": "subscription game",
+        "bot_id": "8610e8ea-5164-46b7-be61-24324fe35a13",
+        "description": "License fee",
+        "amount": 79,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767841454946,
+        "created_at": 1769569454946
+      },
+      "op_021": {
+        "id": "op_021",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "8610e8ea-5164-46b7-be61-24324fe35a13",
+        "description": "License fee",
+        "amount": 62,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767236654946,
+        "created_at": 1767927854946
+      },
+      "op_022": {
+        "id": "op_022",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "e8ac0d51-df74-4720-a345-ec1e7e7ea773",
+        "description": "Proxy renewal",
+        "amount": 98,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1769396654946,
+        "created_at": 1769569454946
+      },
+      "op_023": {
+        "id": "op_023",
+        "type": "expense",
+        "category": "proxy",
+        "bot_id": "e8ac0d51-df74-4720-a345-ec1e7e7ea773",
+        "description": "License fee",
+        "amount": 61,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767582254946,
+        "created_at": 1768532654946
+      },
+      "op_024": {
+        "id": "op_024",
+        "type": "expense",
+        "category": "proxy",
+        "bot_id": "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0",
+        "description": "Game time",
+        "amount": 48,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768532654946,
+        "created_at": 1769137454946
+      },
+      "op_025": {
+        "id": "op_025",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "65b6c7b8-0a7b-4378-882f-b27048103f89",
+        "description": "Monthly subscription",
+        "amount": 74,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767495854946,
+        "created_at": 1769396654946
+      },
+      "op_026": {
+        "id": "op_026",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "65b6c7b8-0a7b-4378-882f-b27048103f89",
+        "description": "Game time",
+        "amount": 24,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1769483054946,
+        "created_at": 1768014254946
+      },
+      "op_027": {
+        "id": "op_027",
+        "type": "expense",
+        "category": "subscription bot",
+        "bot_id": "65b6c7b8-0a7b-4378-882f-b27048103f89",
+        "description": "Monthly subscription",
+        "amount": 94,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767323054946,
+        "created_at": 1767668654946
+      },
+      "op_028": {
+        "id": "op_028",
+        "type": "expense",
+        "category": "proxy",
+        "bot_id": "65b6c7b8-0a7b-4378-882f-b27048103f89",
+        "description": "Monthly subscription",
+        "amount": 41,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768878254946,
+        "created_at": 1767841454946
+      },
+      "op_029": {
+        "id": "op_029",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "3b1e3eeb-5ea7-4dcc-a65c-87338086a936",
+        "description": "Monthly subscription",
+        "amount": 78,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767582254946,
+        "created_at": 1767927854946
+      },
+      "op_030": {
+        "id": "op_030",
+        "type": "expense",
+        "category": "subscription game",
+        "bot_id": "3b1e3eeb-5ea7-4dcc-a65c-87338086a936",
+        "description": "Proxy renewal",
+        "amount": 78,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1769569454946,
+        "created_at": 1769483054946
+      },
+      "op_031": {
+        "id": "op_031",
+        "type": "expense",
+        "category": "proxy",
+        "bot_id": "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0",
+        "description": "Monthly subscription",
+        "amount": 42,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768446254946,
+        "created_at": 1767236654946
+      },
+      "op_032": {
+        "id": "op_032",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0",
+        "description": "Game time",
+        "amount": 54,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768791854946,
+        "created_at": 1768619054946
+      },
+      "op_033": {
+        "id": "op_033",
+        "type": "expense",
+        "category": "proxy",
+        "bot_id": "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0",
+        "description": "Game time",
+        "amount": 44,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768964654946,
+        "created_at": 1768273454946
+      },
+      "op_034": {
+        "id": "op_034",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0",
+        "description": "Monthly subscription",
+        "amount": 17,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767755054946,
+        "created_at": 1767323054946
+      },
+      "op_035": {
+        "id": "op_035",
+        "type": "income",
+        "category": "sale",
+        "bot_id": "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0",
+        "description": "Gold sold - 6013g",
+        "amount": 263,
+        "currency": "USD",
+        "gold_price_at_time": 0.0125,
+        "date": 1769051054946,
+        "created_at": 1768532654946
+      },
+      "op_036": {
+        "id": "op_036",
+        "type": "income",
+        "category": "sale",
+        "bot_id": "4818a621-c599-45d6-83ec-63f4a079d2ef",
+        "description": "Gold sold - 8151g",
+        "amount": 349,
+        "currency": "USD",
+        "gold_price_at_time": 0.0125,
+        "date": 1767323054946,
+        "created_at": 1769137454946
+      },
+      "op_037": {
+        "id": "op_037",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "2eaddac5-7846-4fb3-a06e-81487685f9c3",
+        "description": "License fee",
+        "amount": 53,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768532654946,
+        "created_at": 1767495854946
+      },
+      "op_038": {
+        "id": "op_038",
+        "type": "income",
+        "category": "sale",
+        "bot_id": "2eaddac5-7846-4fb3-a06e-81487685f9c3",
+        "description": "Gold sold - 1393g",
+        "amount": 404,
+        "currency": "USD",
+        "gold_price_at_time": 0.0125,
+        "date": 1767582254946,
+        "created_at": 1768705454946
+      },
+      "op_039": {
+        "id": "op_039",
+        "type": "expense",
+        "category": "license",
+        "bot_id": "2eaddac5-7846-4fb3-a06e-81487685f9c3",
+        "description": "Monthly subscription",
+        "amount": 72,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1768791854946,
+        "created_at": 1768705454946
+      },
+      "op_040": {
+        "id": "op_040",
+        "type": "expense",
+        "category": "subscription game",
+        "bot_id": "2eaddac5-7846-4fb3-a06e-81487685f9c3",
+        "description": "Game time",
+        "amount": 16,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767927854946,
+        "created_at": 1767323054946
+      },
+      "op_041": {
+        "id": "op_041",
+        "type": "expense",
+        "category": "subscription game",
+        "bot_id": "2eaddac5-7846-4fb3-a06e-81487685f9c3",
+        "description": "Monthly subscription",
+        "amount": 52,
+        "currency": "USD",
+        "gold_price_at_time": null,
+        "date": 1767150254946,
+        "created_at": 1768187054946
+      }
+    },
+    "daily_stats": {
+      "2026-01-30": {
+        "date": "2026-01-30",
+        "total_expenses": 78,
+        "total_revenue": 271,
+        "net_profit": 32,
+        "active_bots": 12,
+        "total_farmed": {
+          "wow_tbc": {
+            "gold": 14510
+          },
+          "wow_midnight": {
+            "gold": 4245
+          }
+        }
+      },
+      "2026-01-29": {
+        "date": "2026-01-29",
+        "total_expenses": 41,
+        "total_revenue": 101,
+        "net_profit": 72,
+        "active_bots": 12,
+        "total_farmed": {
+          "wow_tbc": {
+            "gold": 12049
+          },
+          "wow_midnight": {
+            "gold": 3805
+          }
+        }
+      },
+      "2026-01-28": {
+        "date": "2026-01-28",
+        "total_expenses": 49,
+        "total_revenue": 295,
+        "net_profit": 140,
+        "active_bots": 12,
+        "total_farmed": {
+          "wow_tbc": {
+            "gold": 14811
+          },
+          "wow_midnight": {
+            "gold": 6646
+          }
+        }
+      },
+      "2026-01-27": {
+        "date": "2026-01-27",
+        "total_expenses": 50,
+        "total_revenue": 276,
+        "net_profit": 79,
+        "active_bots": 12,
+        "total_farmed": {
+          "wow_tbc": {
+            "gold": 10179
+          },
+          "wow_midnight": {
+            "gold": 8941
+          }
+        }
+      },
+      "2026-01-26": {
+        "date": "2026-01-26",
+        "total_expenses": 95,
+        "total_revenue": 152,
+        "net_profit": 1,
+        "active_bots": 12,
+        "total_farmed": {
+          "wow_tbc": {
+            "gold": 6398
+          },
+          "wow_midnight": {
+            "gold": 3157
+          }
+        }
+      },
+      "2026-01-25": {
+        "date": "2026-01-25",
+        "total_expenses": 56,
+        "total_revenue": 205,
+        "net_profit": 75,
+        "active_bots": 12,
+        "total_farmed": {
+          "wow_tbc": {
+            "gold": 5171
+          },
+          "wow_midnight": {
+            "gold": 8297
+          }
+        }
+      },
+      "2026-01-24": {
+        "date": "2026-01-24",
+        "total_expenses": 56,
+        "total_revenue": 175,
+        "net_profit": 5,
+        "active_bots": 12,
+        "total_farmed": {
+          "wow_tbc": {
+            "gold": 14848
+          },
+          "wow_midnight": {
+            "gold": 6511
+          }
+        }
+      }
+    },
+    "gold_price_history": {
+      "2026-01-30": {
+        "price": 0.012695163998514536
+      },
+      "2026-01-29": {
+        "price": 0.010323151191296344
+      },
+      "2026-01-28": {
+        "price": 0.012957264920405664
+      },
+      "2026-01-27": {
+        "price": 0.011894855162477
+      },
+      "2026-01-26": {
+        "price": 0.013843956175300157
+      },
+      "2026-01-25": {
+        "price": 0.010507599046661752
+      },
+      "2026-01-24": {
+        "price": 0.01049540583865703
+      },
+      "2026-01-23": {
+        "price": 0.014549799349520288
+      },
+      "2026-01-22": {
+        "price": 0.013474505633509267
+      },
+      "2026-01-21": {
+        "price": 0.01451860973292229
+      },
+      "2026-01-20": {
+        "price": 0.010940576093279997
+      },
+      "2026-01-19": {
+        "price": 0.01467499644421467
+      },
+      "2026-01-18": {
+        "price": 0.014637586752474337
+      },
+      "2026-01-17": {
+        "price": 0.013299391654823248
+      },
+      "2026-01-16": {
+        "price": 0.013970469714294768
+      },
+      "2026-01-15": {
+        "price": 0.011270447064897831
+      },
+      "2026-01-14": {
+        "price": 0.014486694868206206
+      },
+      "2026-01-13": {
+        "price": 0.010781592066040596
+      },
+      "2026-01-12": {
+        "price": 0.012428977999587728
+      },
+      "2026-01-11": {
+        "price": 0.010073506817555554
+      },
+      "2026-01-10": {
+        "price": 0.013933122282941406
+      },
+      "2026-01-09": {
+        "price": 0.011419539830332549
+      },
+      "2026-01-08": {
+        "price": 0.011080975041238322
+      },
+      "2026-01-07": {
+        "price": 0.010066269517348531
+      },
+      "2026-01-06": {
+        "price": 0.012810539628713888
+      },
+      "2026-01-05": {
+        "price": 0.014844129839285574
+      },
+      "2026-01-04": {
+        "price": 0.01299114990906265
+      },
+      "2026-01-03": {
+        "price": 0.010838285489245453
+      },
+      "2026-01-02": {
+        "price": 0.011513505895898373
+      },
+      "2026-01-01": {
+        "price": 0.011541401354182421
+      }
+    }
+  },
+  "notes": {
+    "note_001": {
+      "id": "note_001",
+      "text": "Check for bans",
+      "completed": true,
+      "bot_id": null,
+      "created_at": 1769310254946,
+      "updated_at": 1769742254946
+    },
+    "note_002": {
+      "id": "note_002",
+      "text": "Update schedule",
+      "completed": true,
+      "bot_id": null,
+      "created_at": 1768791854946,
+      "updated_at": 1769742254946
+    },
+    "note_003": {
+      "id": "note_003",
+      "text": "Monitor gold prices",
+      "completed": true,
+      "bot_id": null,
+      "created_at": 1768964654946,
+      "updated_at": 1769742254946
+    },
+    "note_004": {
+      "id": "note_004",
+      "text": "Check VM performance",
+      "completed": false,
+      "bot_id": null,
+      "created_at": 1768187054946,
+      "updated_at": 1769742254946
+    },
+    "note_005": {
+      "id": "note_005",
+      "text": "Update schedule",
+      "completed": true,
+      "bot_id": null,
+      "created_at": 1768273454946,
+      "updated_at": 1769742254946
+    },
+    "note_006": {
+      "id": "note_006",
+      "text": "Check for bans",
+      "completed": true,
+      "bot_id": "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f",
+      "created_at": 1767236654946,
+      "updated_at": 1769742254946
+    },
+    "note_007": {
+      "id": "note_007",
+      "text": "Monitor gold prices",
+      "completed": true,
+      "bot_id": "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9",
+      "created_at": 1768705454946,
+      "updated_at": 1769742254946
+    },
+    "note_008": {
+      "id": "note_008",
+      "text": "Check proxy settings",
+      "completed": false,
+      "bot_id": "5751d784-e320-49fb-8c4e-3d53a6285089",
+      "created_at": 1767323054946,
+      "updated_at": 1769742254946
+    },
+    "note_009": {
+      "id": "note_009",
+      "text": "Review ROI performance",
+      "completed": true,
+      "bot_id": "8610e8ea-5164-46b7-be61-24324fe35a13",
+      "created_at": 1768014254946,
+      "updated_at": 1769742254946
+    },
+    "note_010": {
+      "id": "note_010",
+      "text": "Update schedule",
+      "completed": false,
+      "bot_id": "65b6c7b8-0a7b-4378-882f-b27048103f89",
+      "created_at": 1768619054946,
+      "updated_at": 1769742254946
+    },
+    "note_011": {
+      "id": "note_011",
+      "text": "Review ROI performance",
+      "completed": true,
+      "bot_id": "3b1e3eeb-5ea7-4dcc-a65c-87338086a936",
+      "created_at": 1767236654946,
+      "updated_at": 1769742254946
+    },
+    "note_012": {
+      "id": "note_012",
+      "text": "Monitor gold prices",
+      "completed": true,
+      "bot_id": "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0",
+      "created_at": 1768446254946,
+      "updated_at": 1769742254946
+    },
+    "note_013": {
+      "id": "note_013",
+      "text": "Update character gear",
+      "completed": false,
+      "bot_id": "4818a621-c599-45d6-83ec-63f4a079d2ef",
+      "created_at": 1768964654946,
+      "updated_at": 1769742254946
+    },
+    "note_014": {
+      "id": "note_014",
+      "text": "Check VM performance",
+      "completed": false,
+      "bot_id": "2eaddac5-7846-4fb3-a06e-81487685f9c3",
+      "created_at": 1768878254947,
+      "updated_at": 1769742254947
+    }
+  },
+  "gold_prices": {
+    "wow_tbc": {
+      "current": {
+        "price_per_1000": 12.5,
+        "updated_at": 1769742254943,
+        "updated_by": "admin_001",
+        "source": "manual"
+      },
+      "history": {
+        "1769742254947": {
+          "price_per_1000": 11.602746172432395,
+          "date": 1769742254947
+        },
+        "1769655854947": {
+          "price_per_1000": 11.941569460964747,
+          "date": 1769655854947
+        },
+        "1769569454947": {
+          "price_per_1000": 12.618840586696585,
+          "date": 1769569454947
+        },
+        "1769483054947": {
+          "price_per_1000": 12.195154600390946,
+          "date": 1769483054947
+        },
+        "1769396654947": {
+          "price_per_1000": 12.218464923121568,
+          "date": 1769396654947
+        },
+        "1769310254947": {
+          "price_per_1000": 12.71513202973701,
+          "date": 1769310254947
+        },
+        "1769223854947": {
+          "price_per_1000": 12.397901291844306,
+          "date": 1769223854947
+        },
+        "1769137454947": {
+          "price_per_1000": 12.47784129828235,
+          "date": 1769137454947
+        },
+        "1769051054947": {
+          "price_per_1000": 11.854375949959314,
+          "date": 1769051054947
+        },
+        "1768964654947": {
+          "price_per_1000": 12.603265649447712,
+          "date": 1768964654947
+        },
+        "1768878254947": {
+          "price_per_1000": 12.59079404422756,
+          "date": 1768878254947
+        },
+        "1768791854947": {
+          "price_per_1000": 11.779903214316672,
+          "date": 1768791854947
+        },
+        "1768705454947": {
+          "price_per_1000": 11.669518820141093,
+          "date": 1768705454947
+        },
+        "1768619054947": {
+          "price_per_1000": 12.258512215510555,
+          "date": 1768619054947
+        },
+        "1768532654947": {
+          "price_per_1000": 12.322681372144237,
+          "date": 1768532654947
+        },
+        "1768446254947": {
+          "price_per_1000": 13.38231727679763,
+          "date": 1768446254947
+        },
+        "1768359854947": {
+          "price_per_1000": 12.0619302574525,
+          "date": 1768359854947
+        },
+        "1768273454947": {
+          "price_per_1000": 12.924639483481261,
+          "date": 1768273454947
+        },
+        "1768187054947": {
+          "price_per_1000": 12.921662770866897,
+          "date": 1768187054947
+        },
+        "1768100654947": {
+          "price_per_1000": 11.745580512245148,
+          "date": 1768100654947
+        },
+        "1768014254947": {
+          "price_per_1000": 11.855305678873389,
+          "date": 1768014254947
+        },
+        "1767927854947": {
+          "price_per_1000": 13.18141206438381,
+          "date": 1767927854947
+        },
+        "1767841454947": {
+          "price_per_1000": 11.53851866644767,
+          "date": 1767841454947
+        },
+        "1767755054947": {
+          "price_per_1000": 13.18030169514214,
+          "date": 1767755054947
+        },
+        "1767668654947": {
+          "price_per_1000": 12.135577094504793,
+          "date": 1767668654947
+        },
+        "1767582254947": {
+          "price_per_1000": 12.138379636539655,
+          "date": 1767582254947
+        },
+        "1767495854947": {
+          "price_per_1000": 12.76799207583857,
+          "date": 1767495854947
+        },
+        "1767409454947": {
+          "price_per_1000": 13.173492871584926,
+          "date": 1767409454947
+        },
+        "1767323054947": {
+          "price_per_1000": 12.115358129571286,
+          "date": 1767323054947
+        },
+        "1767236654947": {
+          "price_per_1000": 12.057512358790712,
+          "date": 1767236654947
+        }
+      }
+    },
+    "wow_midnight": {
+      "current": {
+        "price_per_1000": 8.5,
+        "updated_at": 1769742254943,
+        "updated_by": "admin_001",
+        "source": "manual"
+      },
+      "history": {
+        "1769742254947": {
+          "price_per_1000": 8.725562358263673,
+          "date": 1769742254947
+        },
+        "1769655854947": {
+          "price_per_1000": 8.617473197176905,
+          "date": 1769655854947
+        },
+        "1769569454947": {
+          "price_per_1000": 8.508317815980863,
+          "date": 1769569454947
+        },
+        "1769483054947": {
+          "price_per_1000": 8.981600806916097,
+          "date": 1769483054947
+        },
+        "1769396654947": {
+          "price_per_1000": 8.690215512629308,
+          "date": 1769396654947
+        },
+        "1769310254947": {
+          "price_per_1000": 8.601513577964937,
+          "date": 1769310254947
+        },
+        "1769223854947": {
+          "price_per_1000": 8.11863535644126,
+          "date": 1769223854947
+        },
+        "1769137454947": {
+          "price_per_1000": 9.12322351303601,
+          "date": 1769137454947
+        },
+        "1769051054947": {
+          "price_per_1000": 9.136634726163372,
+          "date": 1769051054947
+        },
+        "1768964654947": {
+          "price_per_1000": 8.365946593308887,
+          "date": 1768964654947
+        },
+        "1768878254947": {
+          "price_per_1000": 9.106022303589278,
+          "date": 1768878254947
+        },
+        "1768791854947": {
+          "price_per_1000": 8.64867794547295,
+          "date": 1768791854947
+        },
+        "1768705454947": {
+          "price_per_1000": 7.891849853772197,
+          "date": 1768705454947
+        },
+        "1768619054947": {
+          "price_per_1000": 8.354171457867515,
+          "date": 1768619054947
+        },
+        "1768532654947": {
+          "price_per_1000": 8.24075465400462,
+          "date": 1768532654947
+        },
+        "1768446254947": {
+          "price_per_1000": 9.166786119472237,
+          "date": 1768446254947
+        },
+        "1768359854947": {
+          "price_per_1000": 8.569388418582022,
+          "date": 1768359854947
+        },
+        "1768273454947": {
+          "price_per_1000": 7.849981050454403,
+          "date": 1768273454947
+        },
+        "1768187054947": {
+          "price_per_1000": 8.215919111477405,
+          "date": 1768187054947
+        },
+        "1768100654947": {
+          "price_per_1000": 9.084027587671304,
+          "date": 1768100654947
+        },
+        "1768014254947": {
+          "price_per_1000": 8.918916905804851,
+          "date": 1768014254947
+        },
+        "1767927854947": {
+          "price_per_1000": 8.948922274897882,
+          "date": 1767927854947
+        },
+        "1767841454947": {
+          "price_per_1000": 8.942108149247192,
+          "date": 1767841454947
+        },
+        "1767755054947": {
+          "price_per_1000": 8.230553244089727,
+          "date": 1767755054947
+        },
+        "1767668654947": {
+          "price_per_1000": 9.126339293329496,
+          "date": 1767668654947
+        },
+        "1767582254947": {
+          "price_per_1000": 7.792396369313525,
+          "date": 1767582254947
+        },
+        "1767495854947": {
+          "price_per_1000": 7.9652490838174,
+          "date": 1767495854947
+        },
+        "1767409454947": {
+          "price_per_1000": 7.866007852651657,
+          "date": 1767409454947
+        },
+        "1767323054947": {
+          "price_per_1000": 8.269656423739416,
+          "date": 1767323054947
+        },
+        "1767236654947": {
+          "price_per_1000": 7.783441969201648,
+          "date": 1767236654947
+        }
+      }
+    }
+  },
+  "users": {
+    "admin_001": {
+      "id": "admin_001",
+      "email": "admin@botmox.local",
+      "name": "Administrator",
+      "role": "admin",
+      "permissions": {
+        "bots": [
+          "read",
+          "write",
+          "delete"
+        ],
+        "finance": [
+          "read",
+          "write"
+        ],
+        "settings": [
+          "read",
+          "write"
+        ],
+        "archive": [
+          "read",
+          "write"
+        ]
+      },
+      "telegram_id": "123456789",
+      "notifications": {
+        "bot_start": true,
+        "bot_status_change": true,
+        "bot_offline": true,
+        "bot_banned": true,
+        "daily_report": true,
+        "low_roi_alert": true
+      },
+      "last_login": 1769742254943,
+      "created_at": 1761966254943
+    },
+    "operator_001": {
+      "id": "operator_001",
+      "email": "operator@botmox.local",
+      "name": "Operator",
+      "role": "operator",
+      "permissions": {
+        "bots": [
+          "read",
+          "write"
+        ],
+        "finance": [
+          "read"
+        ],
+        "settings": [
+          "read"
+        ],
+        "archive": [
+          "read"
+        ]
+      },
+      "telegram_id": "987654321",
+      "notifications": {
+        "bot_start": true,
+        "bot_status_change": true,
+        "bot_offline": true,
+        "bot_banned": true,
+        "daily_report": false,
+        "low_roi_alert": false
+      },
+      "last_login": 1769655854943,
+      "created_at": 1762830254943
+    }
+  },
+  "settings": {
+    "system": {
+      "app_name": "Bot-Mox",
+      "theme": "dark",
+      "currency": "USD"
+    },
+    "offline_detection": {
+      "offline_timeout_sec": 300
+    },
+    "data_retention": {
+      "logs_retention_days": 7
+    },
+    "notifications": {
+      "telegram_bot_token": "",
+      "telegram_chat_id": "",
+      "alerts": {
+        "bot_offline_delay_minutes": 5,
+        "low_roi_threshold": 50,
+        "daily_report_time": "09:00"
+      }
+    },
+    "roi_calculation": {
+      "include_proxy_cost": true,
+      "include_subscription_cost": true,
+      "include_session_cost": true,
+      "depreciation_days": 30
+    },
+    "data_export": {
+      "auto_archive_daily": true,
+      "local_storage_key": "botmox_archived_data"
+    },
+    "development": {
+      "show_example_data": false,
+      "use_mock_data": false
+    }
+  },
+  "bot_licenses": {
+    "lic_001": {
+      "id": "lic_001",
+      "key": "SIN-360D-51A8-2542",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["fa8bb6d4-27c6-452f-9645-aa591d057a99"],
+      "expires_at": 1784084654945,
+      "created_at": 1764039854945,
+      "updated_at": 1769742254945
+    },
+    "lic_002": {
+      "id": "lic_002",
+      "key": "SIN-41B8-AD6D-3484",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["eba94c88-45e5-450d-90aa-c4d8dabb66fb"],
+      "expires_at": 1796871854945,
+      "created_at": 1766113454945,
+      "updated_at": 1769742254945
+    },
+    "lic_003": {
+      "id": "lic_003",
+      "key": "SIN-41E2-DC36-4792",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["ddc5d90b-ccb8-40cc-b621-6bab5e1b102f"],
+      "expires_at": 1785294254945,
+      "created_at": 1763435054945,
+      "updated_at": 1769742254945
+    },
+    "lic_004": {
+      "id": "lic_004",
+      "key": "SIN-88F3-3465-5506",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9"],
+      "expires_at": 1788318254945,
+      "created_at": 1764903854945,
+      "updated_at": 1769742254945
+    },
+    "lic_005": {
+      "id": "lic_005",
+      "key": "SIN-73FB-9BEA-7666",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["5751d784-e320-49fb-8c4e-3d53a6285089"],
+      "expires_at": 1792724654945,
+      "created_at": 1762916654945,
+      "updated_at": 1769742254945
+    },
+    "lic_006": {
+      "id": "lic_006",
+      "key": "SIN-BBC4-586A-7854",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["8610e8ea-5164-46b7-be61-24324fe35a13"],
+      "expires_at": 1781233454945,
+      "created_at": 1763780654945,
+      "updated_at": 1769742254945
+    },
+    "lic_007": {
+      "id": "lic_007",
+      "key": "SIN-22D8-185B-9759",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["e8ac0d51-df74-4720-a345-ec1e7e7ea773"],
+      "expires_at": 1790564654945,
+      "created_at": 1763435054945,
+      "updated_at": 1769742254945
+    },
+    "lic_008": {
+      "id": "lic_008",
+      "key": "SIN-618C-9425-2684",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["0810a34a-fc47-4f0a-81ec-f402ffa8c3a0"],
+      "expires_at": 1789441454945,
+      "created_at": 1763262254945,
+      "updated_at": 1769742254945
+    },
+    "lic_009": {
+      "id": "lic_009",
+      "key": "SIN-5FD3-A0DB-3548",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["3b1e3eeb-5ea7-4dcc-a65c-87338086a936"],
+      "expires_at": 1782097454945,
+      "created_at": 1762139054945,
+      "updated_at": 1769742254945
+    },
+    "lic_010": {
+      "id": "lic_010",
+      "key": "SIN-931D-388E-9542",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0"],
+      "expires_at": 1795662254945,
+      "created_at": 1765076654945,
+      "updated_at": 1769742254945
+    },
+    "lic_011": {
+      "id": "lic_011",
+      "key": "SIN-DB27-1F05-4787",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["4818a621-c599-45d6-83ec-63f4a079d2ef"],
+      "expires_at": 1774926254945,
+      "created_at": 1765940654945,
+      "updated_at": 1769742254945
+    },
+    "lic_012": {
+      "id": "lic_012",
+      "key": "SIN-0B2C-C91A-9704",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["2eaddac5-7846-4fb3-a06e-81487685f9c3"],
+      "expires_at": 1772766254945,
+      "created_at": 1766199854945,
+      "updated_at": 1769742254945
+    },
+    "lic_013": {
+      "id": "lic_013",
+      "key": "SIN-D628-D8A4-7602",
+      "type": "sin",
+      "status": "expired",
+      "bot_ids": [],
+      "expires_at": 1768964654945,
+      "created_at": 1764385454945,
+      "updated_at": 1769742254945
+    },
+    "lic_014": {
+      "id": "lic_014",
+      "key": "SIN-12B6-7916-2779",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": [],
+      "expires_at": 1788923054945,
+      "created_at": 1763003054945,
+      "updated_at": 1769742254945
+    },
+    "lic_015": {
+      "id": "lic_015",
+      "key": "SIN-7274-74C3-9326",
+      "type": "sin",
+      "status": "revoked",
+      "bot_ids": [],
+      "expires_at": 1768791854945,
+      "created_at": 1766718254945,
+      "updated_at": 1769742254945
+    },
+    "lic_016": {
+      "id": "lic_016",
+      "key": "SIN-MULTI-BOT-TEST",
+      "type": "sin",
+      "status": "active",
+      "bot_ids": ["fa8bb6d4-27c6-452f-9645-aa591d057a99", "eba94c88-45e5-450d-90aa-c4d8dabb66fb", "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f"],
+      "expires_at": 1796871854945,
+      "created_at": 1766113454945,
+      "updated_at": 1769742254945
+    }
+  },
+  "proxies": {
+    "proxy_001": {
+      "id": "proxy_001",
+      "ip": "50.87.60.169",
+      "port": 1080,
+      "login": "user426",
+      "password": "pass8116",
+      "provider": "luminati",
+      "country": "UA",
+      "type": "socks5",
+      "status": "active",
+      "bot_id": "fa8bb6d4-27c6-452f-9645-aa591d057a99",
+      "fraud_score": 15,
+      "expires_at": 1775703854946,
+      "created_at": 1762916654946,
+      "updated_at": 1769742254946
+    },
+    "proxy_002": {
+      "id": "proxy_002",
+      "ip": "214.81.71.42",
+      "port": 8118,
+      "login": "user191",
+      "password": "pass6267",
+      "provider": "oxylabs",
+      "country": "ES",
+      "type": "socks5",
+      "status": "active",
+      "bot_id": "eba94c88-45e5-450d-90aa-c4d8dabb66fb",
+      "fraud_score": 20,
+      "expires_at": 1796007854946,
+      "created_at": 1766545454946,
+      "updated_at": 1769742254946
+    },
+    "proxy_003": {
+      "id": "proxy_003",
+      "ip": "63.100.70.133",
+      "port": 8080,
+      "login": "user918",
+      "password": "pass9096",
+      "provider": "smartproxy",
+      "country": "UK",
+      "type": "socks5",
+      "status": "active",
+      "bot_id": "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f",
+      "fraud_score": 11,
+      "expires_at": 1785899054946,
+      "created_at": 1766199854946,
+      "updated_at": 1769742254946
+    },
+    "proxy_004": {
+      "id": "proxy_004",
+      "ip": "138.177.161.149",
+      "port": 8081,
+      "login": "user173",
+      "password": "pass3107",
+      "provider": "packetstream",
+      "country": "DE",
+      "type": "socks5",
+      "status": "active",
+      "bot_id": "8610e8ea-5164-46b7-be61-24324fe35a13",
+      "fraud_score": 6,
+      "expires_at": 1776740654946,
+      "created_at": 1765595054946,
+      "updated_at": 1769742254946
+    },
+    "proxy_005": {
+      "id": "proxy_005",
+      "ip": "14.19.4.205",
+      "port": 8118,
+      "login": "user255",
+      "password": "pass6151",
+      "provider": "packetstream",
+      "country": "US",
+      "type": "socks5",
+      "status": "active",
+      "bot_id": "e8ac0d51-df74-4720-a345-ec1e7e7ea773",
+      "fraud_score": 29,
+      "expires_at": 1772593454946,
+      "created_at": 1762139054946,
+      "updated_at": 1769742254946
+    },
+    "proxy_006": {
+      "id": "proxy_006",
+      "ip": "251.253.59.106",
+      "port": 8081,
+      "login": "user156",
+      "password": "pass7663",
+      "provider": "smartproxy",
+      "country": "TR",
+      "type": "socks5",
+      "status": "active",
+      "bot_id": "3b1e3eeb-5ea7-4dcc-a65c-87338086a936",
+      "fraud_score": 28,
+      "expires_at": 1794452654946,
+      "created_at": 1762052654946,
+      "updated_at": 1769742254946
+    },
+    "proxy_007": {
+      "id": "proxy_007",
+      "ip": "115.81.111.108",
+      "port": 8080,
+      "login": "user633",
+      "password": "pass2727",
+      "provider": "luminati",
+      "country": "UA",
+      "type": "socks5",
+      "status": "expired",
+      "bot_id": null,
+      "fraud_score": 8,
+      "expires_at": 1767668654946,
+      "created_at": 1763003054946,
+      "updated_at": 1769742254946
+    },
+    "proxy_008": {
+      "id": "proxy_008",
+      "ip": "227.18.18.203",
+      "port": 8080,
+      "login": "user954",
+      "password": "pass2397",
+      "provider": "packetstream",
+      "country": "UK",
+      "type": "socks5",
+      "status": "expired",
+      "bot_id": null,
+      "fraud_score": 39,
+      "expires_at": 1767841454946,
+      "created_at": 1763953454946,
+      "updated_at": 1769742254946
+    },
+    "proxy_009": {
+      "id": "proxy_009",
+      "ip": "188.248.20.181",
+      "port": 1080,
+      "login": "user558",
+      "password": "pass9907",
+      "provider": "packetstream",
+      "country": "RU",
+      "type": "http",
+      "status": "active",
+      "bot_id": null,
+      "fraud_score": 37,
+      "expires_at": 1775444654946,
+      "created_at": 1765595054946,
+      "updated_at": 1769742254946
+    },
+    "proxy_010": {
+      "id": "proxy_010",
+      "ip": "118.43.234.157",
+      "port": 8118,
+      "login": "user513",
+      "password": "pass5883",
+      "provider": "brightdata",
+      "country": "UK",
+      "type": "socks5",
+      "status": "active",
+      "bot_id": null,
+      "fraud_score": 27,
+      "expires_at": 1787713454946,
+      "created_at": 1765508654946,
+      "updated_at": 1769742254946
+    },
+    "proxy_011": {
+      "id": "proxy_011",
+      "ip": "89.43.230.238",
+      "port": 8118,
+      "login": "user355",
+      "password": "pass2702",
+      "provider": "packetstream",
+      "country": "TR",
+      "type": "http",
+      "status": "expired",
+      "bot_id": null,
+      "fraud_score": 29,
+      "expires_at": 1768100654946,
+      "created_at": 1764471854946,
+      "updated_at": 1769742254946
+    }
+  },
+  "subscriptions": {
+    "sub_001": {
+      "id": "sub_001",
+      "bot_id": "fa8bb6d4-27c6-452f-9645-aa591d057a99",
+      "type": "wow_tbc",
+      "status": "expired",
+      "expires_at": 1769655854946,
+      "auto_renew": false,
+      "created_at": 1764385454946,
+      "updated_at": 1769742254946
+    },
+    "sub_002": {
+      "id": "sub_002",
+      "bot_id": "eba94c88-45e5-450d-90aa-c4d8dabb66fb",
+      "type": "wow_tbc",
+      "status": "active",
+      "expires_at": 1772161454946,
+      "auto_renew": false,
+      "created_at": 1764126254946,
+      "updated_at": 1769742254946
+    },
+    "sub_003": {
+      "id": "sub_003",
+      "bot_id": "ddc5d90b-ccb8-40cc-b621-6bab5e1b102f",
+      "type": "wow_tbc",
+      "status": "cancelled",
+      "expires_at": 1767755054946,
+      "auto_renew": true,
+      "created_at": 1762916654946,
+      "updated_at": 1769742254946
+    },
+    "sub_004": {
+      "id": "sub_004",
+      "bot_id": "4cfca948-9c6b-4cd2-8cbe-dc44dc84fac9",
+      "type": "wow_tbc",
+      "status": "cancelled",
+      "expires_at": 1769137454946,
+      "auto_renew": true,
+      "created_at": 1763262254946,
+      "updated_at": 1769742254946
+    },
+    "sub_005": {
+      "id": "sub_005",
+      "bot_id": "1f3c3d4c-a784-4066-b16b-eafb7999c51e",
+      "type": "wow_tbc",
+      "status": "expired",
+      "expires_at": 1768359854946,
+      "auto_renew": true,
+      "created_at": 1764903854946,
+      "updated_at": 1769742254946
+    },
+    "sub_006": {
+      "id": "sub_006",
+      "bot_id": "5751d784-e320-49fb-8c4e-3d53a6285089",
+      "type": "wow_tbc",
+      "status": "active",
+      "expires_at": 1775358254946,
+      "auto_renew": true,
+      "created_at": 1762225454946,
+      "updated_at": 1769742254946
+    },
+    "sub_007": {
+      "id": "sub_007",
+      "bot_id": "8610e8ea-5164-46b7-be61-24324fe35a13",
+      "type": "wow_tbc",
+      "status": "active",
+      "expires_at": 1771902254946,
+      "auto_renew": true,
+      "created_at": 1764039854946,
+      "updated_at": 1769742254946
+    },
+    "sub_008": {
+      "id": "sub_008",
+      "bot_id": "e8ac0d51-df74-4720-a345-ec1e7e7ea773",
+      "type": "wow_tbc",
+      "status": "active",
+      "expires_at": 1772852654946,
+      "auto_renew": true,
+      "created_at": 1762830254946,
+      "updated_at": 1769742254946
+    },
+    "sub_009": {
+      "id": "sub_009",
+      "bot_id": "0810a34a-fc47-4f0a-81ec-f402ffa8c3a0",
+      "type": "wow_midnight",
+      "status": "active",
+      "expires_at": 1772334254946,
+      "auto_renew": true,
+      "created_at": 1766113454946,
+      "updated_at": 1769742254946
+    },
+    "sub_010": {
+      "id": "sub_010",
+      "bot_id": "65b6c7b8-0a7b-4378-882f-b27048103f89",
+      "type": "wow_midnight",
+      "status": "cancelled",
+      "expires_at": 1767495854946,
+      "auto_renew": true,
+      "created_at": 1767150254946,
+      "updated_at": 1769742254946
+    },
+    "sub_011": {
+      "id": "sub_011",
+      "bot_id": "3b1e3eeb-5ea7-4dcc-a65c-87338086a936",
+      "type": "wow_midnight",
+      "status": "active",
+      "expires_at": 1777518254946,
+      "auto_renew": true,
+      "created_at": 1762830254946,
+      "updated_at": 1769742254946
+    },
+    "sub_012": {
+      "id": "sub_012",
+      "bot_id": "5aa29fcd-9a8d-4308-9bfa-ec0e840bd1d0",
+      "type": "wow_midnight",
+      "status": "expired",
+      "expires_at": 1768532654946,
+      "auto_renew": false,
+      "created_at": 1766977454946,
+      "updated_at": 1769742254946
+    },
+    "sub_013": {
+      "id": "sub_013",
+      "bot_id": "4818a621-c599-45d6-83ec-63f4a079d2ef",
+      "type": "wow_midnight",
+      "status": "cancelled",
+      "expires_at": 1767582254946,
+      "auto_renew": false,
+      "created_at": 1763262254946,
+      "updated_at": 1769742254946
+    },
+    "sub_014": {
+      "id": "sub_014",
+      "bot_id": "2eaddac5-7846-4fb3-a06e-81487685f9c3",
+      "type": "wow_midnight",
+      "status": "active",
+      "expires_at": 1775963054946,
+      "auto_renew": true,
+      "created_at": 1764990254946,
+      "updated_at": 1769742254946
+    }
+  },
+  "subscriptions_summary": {
+    "total_active": 7,
+    "total_expired": 7,
+    "by_type": {
+      "wow_tbc": {
+        "active_count": 4,
+        "expired_count": 4,
+        "total_count": 8
+      },
+      "wow_midnight": {
+        "active_count": 3,
+        "expired_count": 3,
+        "total_count": 6
+      }
+    },
+    "expiring_soon": {},
+    "last_updated": 1769742254943
+  }
+}

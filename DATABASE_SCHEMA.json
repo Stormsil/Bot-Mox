@@ -1,0 +1,1894 @@
+{
+  "_meta": {
+    "version": "1.5.0",
+    "description": "Firebase Realtime Database Schema for Bot-Mox - WoW TBC/Midnight Bot Management System (Notes v2 System)",
+    "traffic_limit": "360 MB/day",
+    "last_updated": "2026-02-01",
+    "changelog": {
+      "1.5.0": [
+        "Added notes_v2 section with block-based note system",
+        "Added notes_index for fast note listing and search",
+        "Support for multiple block types: heading_1-3, paragraph, checkbox, bullet_list, numbered_list",
+        "Notes can be linked to bots and projects",
+        "Support for tags, pinning, and full-text search"
+      ],
+      "1.4.0": [
+        "Added api_keys section for IPQS and Telegram integration",
+        "Added proxy settings (auto_check_on_add, fraud_score_threshold, check_interval_hours)",
+        "Added notifications.events for granular event control",
+        "Deprecated telegram_bot_token and telegram_chat_id in favor of api_keys.telegram"
+      ],
+      "1.3.0": [
+        "Added referenceData section to projects for servers, races, classes, factions",
+        "Added faction field to character schema",
+        "Added support for WoW Classic Anniversary EU TBC reference data"
+      ],
+      "1.2.0": [
+        "V6 Master Status: Replaced hp_percent with status_code in telemetry",
+        "Added status_code field (1=Normal, 2=Stuck, 3=Inventory Full, 4=Broken Gear, 5=Dead, 6=Combat, 7=Taxi)",
+        "Scanner Block 1: Green channel now carries StatusCode instead of HP%",
+        "External stuck detection removed - handled by Lua addon internally"
+      ],
+      "1.1.0": [
+        "Added telemetry section to bots for real-time monitoring (V6 Pixel Bridge)",
+        "Added hourly_stats collection for detailed analytics",
+        "Deprecated calculated fields: gold_per_hour, xp_per_hour, estimated_time_to_level",
+        "Scanner V6 Pixel Bridge protocol support (13 blocks, Full Precision)",
+        "Added telemetry fields for Pixel Bridge V6 protocol",
+        "Added pixel validation fields (header/footer RGB values)"
+      ]
+    }
+  },
+
+  "projects": {
+    "_description": "Игровые проекты (WoW TBC, WoW Midnight)",
+    "_schema": {
+      "$project_id": {
+        "id": "string - уникальный идентификатор проекта",
+        "name": "string - отображаемое название",
+        "game": "string - название игры",
+        "expansion": "string - дополнение",
+        "currency": "string - валюта игры (gold, silver)",
+        "currency_symbol": "string - символ валюты (g, s)",
+        "max_level": "number - максимальный уровень",
+        "professions": "array<string> - доступные профессии",
+        "gold_price_usd": "number - цена 1000 золота в USD",
+        "server_region": "string - регион серверов",
+        "created_at": "number - timestamp создания",
+        "updated_at": "number - timestamp обновления",
+        "referenceData": {
+          "_description": "Справочники проекта (сервера, расы, классы, фракции)",
+          "servers": {
+            "$server_id": {
+              "id": "string - ID сервера (lowercase, no spaces)",
+              "name": "string - отображаемое название сервера",
+              "region": "string - регион (EU, US, etc.)",
+              "type": "string - pve | pvp | rp | rppvp"
+            }
+          },
+          "races": {
+            "$race_id": {
+              "id": "string - ID расы",
+              "name": "string - название расы",
+              "faction": "string - alliance | horde",
+              "available_classes": "array<string> - доступные классы для расы"
+            }
+          },
+          "classes": {
+            "$class_id": {
+              "id": "string - ID класса",
+              "name": "string - название класса",
+              "role": "string - tank | healer | dps",
+              "resource": "string - mana | rage | energy | runic"
+            }
+          },
+          "factions": {
+            "$faction_id": {
+              "id": "string - alliance | horde",
+              "name": "string - название фракции",
+              "icon": "string - путь к иконке фракции"
+            }
+          }
+        }
+      }
+    },
+    "_example": {
+      "wow_tbc": {
+        "id": "wow_tbc",
+        "name": "WoW TBC Classic",
+        "game": "World of Warcraft",
+        "expansion": "The Burning Crusade",
+        "currency": "gold",
+        "currency_symbol": "g",
+        "max_level": 70,
+        "professions": ["mining", "herbalism", "skinning", "enchanting", "engineering", "blacksmithing"],
+        "gold_price_usd": 0.0125,
+        "server_region": "Europe",
+        "created_at": 1700000000000,
+        "updated_at": 1700000000000,
+        "referenceData": {
+          "servers": {
+            "spineshatter": { "id": "spineshatter", "name": "Spineshatter", "region": "EU", "type": "pvp" },
+            "thunderstrike": { "id": "thunderstrike", "name": "Thunderstrike", "region": "EU", "type": "pve" }
+          },
+          "races": {
+            "orc": { "id": "orc", "name": "Orc", "faction": "horde", "available_classes": ["warrior", "hunter", "rogue", "shaman", "warlock"], "icon": "https://wow.zamimg.com/images/wow/icons/large/race_orc_male.jpg" },
+            "troll": { "id": "troll", "name": "Troll", "faction": "horde", "available_classes": ["warrior", "hunter", "rogue", "shaman", "mage", "priest"], "icon": "https://wow.zamimg.com/images/wow/icons/large/race_troll_male.jpg" },
+            "tauren": { "id": "tauren", "name": "Tauren", "faction": "horde", "available_classes": ["warrior", "hunter", "shaman", "druid"], "icon": "https://wow.zamimg.com/images/wow/icons/large/race_tauren_male.jpg" },
+            "undead": { "id": "undead", "name": "Undead", "faction": "horde", "available_classes": ["warrior", "rogue", "mage", "warlock", "priest"], "icon": "https://wow.zamimg.com/images/wow/icons/large/race_undead_male.jpg" },
+            "blood_elf": { "id": "blood_elf", "name": "Blood Elf", "faction": "horde", "available_classes": ["paladin", "hunter", "rogue", "priest", "mage", "warlock"], "icon": "https://wow.zamimg.com/images/wow/icons/large/race_bloodelf_male.jpg" },
+            "human": { "id": "human", "name": "Human", "faction": "alliance", "available_classes": ["warrior", "paladin", "hunter", "rogue", "priest", "mage", "warlock"], "icon": "https://wow.zamimg.com/images/wow/icons/large/race_human_male.jpg" },
+            "dwarf": { "id": "dwarf", "name": "Dwarf", "faction": "alliance", "available_classes": ["warrior", "paladin", "hunter", "rogue", "priest"], "icon": "https://wow.zamimg.com/images/wow/icons/large/race_dwarf_male.jpg" },
+            "gnome": { "id": "gnome", "name": "Gnome", "faction": "alliance", "available_classes": ["warrior", "rogue", "mage", "warlock"], "icon": "https://wow.zamimg.com/images/wow/icons/large/race_gnome_male.jpg" },
+            "night_elf": { "id": "night_elf", "name": "Night Elf", "faction": "alliance", "available_classes": ["warrior", "hunter", "rogue", "priest", "mage", "druid"], "icon": "https://wow.zamimg.com/images/wow/icons/large/race_nightelf_male.jpg" },
+            "draenei": { "id": "draenei", "name": "Draenei", "faction": "alliance", "available_classes": ["warrior", "paladin", "hunter", "priest", "mage", "shaman"], "icon": "https://wow.zamimg.com/images/wow/icons/large/race_draenei_male.jpg" }
+          },
+          "classes": {
+            "warrior": { "id": "warrior", "name": "Warrior", "role": "tank", "resource": "rage" },
+            "paladin": { "id": "paladin", "name": "Paladin", "role": "healer", "resource": "mana" },
+            "hunter": { "id": "hunter", "name": "Hunter", "role": "dps", "resource": "mana" },
+            "rogue": { "id": "rogue", "name": "Rogue", "role": "dps", "resource": "energy" },
+            "priest": { "id": "priest", "name": "Priest", "role": "healer", "resource": "mana" },
+            "shaman": { "id": "shaman", "name": "Shaman", "role": "healer", "resource": "mana" },
+            "mage": { "id": "mage", "name": "Mage", "role": "dps", "resource": "mana" },
+            "warlock": { "id": "warlock", "name": "Warlock", "role": "dps", "resource": "mana" },
+            "druid": { "id": "druid", "name": "Druid", "role": "healer", "resource": "mana" }
+          },
+          "factions": {
+            "alliance": { "id": "alliance", "name": "Alliance", "icon": "/icons/factions/alliance.png" },
+            "horde": { "id": "horde", "name": "Horde", "icon": "/icons/factions/horde.png" }
+          }
+        }
+      },
+      "wow_midnight": {
+        "id": "wow_midnight",
+        "name": "WoW Midnight",
+        "game": "World of Warcraft",
+        "expansion": "Midnight",
+        "currency": "gold",
+        "currency_symbol": "g",
+        "max_level": 80,
+        "professions": ["mining", "herbalism", "skinning", "enchanting", "engineering", "blacksmithing", "inscription"],
+        "gold_price_usd": 0.0085,
+        "server_region": "Europe",
+        "created_at": 1700000000000,
+        "updated_at": 1700000000000,
+        "referenceData": {
+          "servers": {},
+          "races": {},
+          "classes": {},
+          "factions": {
+            "alliance": { "id": "alliance", "name": "Alliance", "icon": "/icons/factions/alliance.png" },
+            "horde": { "id": "horde", "name": "Horde", "icon": "/icons/factions/horde.png" }
+          }
+        }
+      }
+    }
+  },
+
+  "bots": {
+    "_description": "Активные боты - основная сущность системы",
+    "_schema": {
+      "$bot_id": {
+        "id": "string - уникальный ID бота (uuid v4)",
+        "project_id": "string - ссылка на проект (wow_tbc | wow_midnight)",
+        "status": "string - offline | prepare | leveling | profession | farming | banned",
+        "vm": {
+          "name": "string - имя VM (например, WoW7)",
+          "ip": "string - IP адрес VM",
+          "created_at": "string - ISO дата создания VM"
+        },
+        "character": {
+          "name": "string - имя персонажа",
+          "level": "number - текущий уровень",
+          "race": "string - раса (orc, human, undead, etc.)",
+          "class": "string - класс (warrior, mage, etc.)",
+          "server": "string - название сервера",
+          "faction": "string - фракция (alliance | horde)"
+        },
+        "account": {
+          "email": "string - email аккаунта",
+          "password": "string - пароль",
+          "mail_provider": "string - провайдер почты (gmail, yahoo, etc.)",
+          "mail_created_at": "number - timestamp регистрации почтового аккаунта"
+        },
+        "person": {
+          "first_name": "string - имя",
+          "last_name": "string - фамилия",
+          "birth_date": "string - дата рождения (DD-MM-YYYY)",
+          "country": "string - страна",
+          "city": "string - город",
+          "address": "string - адрес",
+          "zip": "string - почтовый индекс"
+        },
+        "proxy": {
+          "full_string": "string - полный прокси (ip:port:login:password)",
+          "type": "string - none | http | socks5",
+          "ip": "string - IP адрес прокси",
+          "port": "number - порт прокси",
+          "login": "string - логин прокси",
+          "password": "string - пароль прокси",
+          "provider": "string - провайдер прокси (luminati, smartproxy, etc.)",
+          "country": "string - страна прокси",
+          "fraud_score": "number - оценка мошенничества прокси (0-100)",
+          "VPN": "boolean - является ли прокси VPN",
+          "Proxy": "boolean - является ли прокси обычным прокси",
+          "detect_country": "boolean - определена ли страна прокси",
+          "created_at": "number - timestamp создания прокси",
+          "expires_at": "number - timestamp истечения срока действия прокси"
+        },
+        "leveling": {
+          "current_level": "number - текущий уровень",
+          "target_level": "number - целевой уровень",
+          "xp_current": "number - текущий XP",
+          "xp_required": "number - XP для следующего уровня",
+          "location": "string - текущая локация",
+          "started_at": "number - timestamp начала прокачки",
+          "finished_at": "number - timestamp завершения прокачки",
+          "_deprecated_notes": "xp_per_hour и estimated_time_to_level удалены - рассчитываются на клиенте из hourly_stats"
+        },
+        "professions": {
+          "$profession_name": {
+            "name": "string - название профессии",
+            "skill_points": "number - текущие очки навыка",
+            "max_skill_points": "number - максимальные очки",
+            "started_at": "number - timestamp начала прокачки",
+            "finished_at": "number - timestamp завершения прокачки"
+          }
+        },
+        "schedule": {
+          "_description": "Расписание работы бота (v2 - поддержка множественных сессий)",
+          "version": "number - версия схемы расписания (2)",
+          "timezone": "string - часовой пояс (например, 'Europe/Moscow')",
+          "days": {
+            "$day": "object - 0=Sun, 1=Mon, ..., 6=Sat",
+            "_day_schema": {
+              "enabled": "boolean - активен ли день",
+              "sessions": "array<ScheduleSession> - список сессий"
+            }
+          },
+          "_session": {
+            "id": "string - уникальный ID сессии",
+            "start": "string - время начала (HH:MM)",
+            "end": "string - время окончания (HH:MM)",
+            "enabled": "boolean - активна ли сессия",
+            "type": "string - active | break"
+          },
+          "updated_at": "number - timestamp последнего обновления"
+        },
+        "farm": {
+          "total_gold": "number - всего золота",
+          "session_start": "number - timestamp начала сессии",
+          "location": "string - локация фарма",
+          "profile": "string - текущий профиль фарма (если применимо)",
+          "all_farmed_gold": "number - всего зафармлено золота за всё время"
+        },
+        "telemetry": {
+          "_description": "Телеметрия для мониторинга в реальном времени (V6 Master Status & Stuck Detection)",
+          "custom_status_code": "number - код статуса бота (1=Normal, 2=Stuck, 3=Inventory Full, 4=Broken Gear, 5=Dead, 6=Combat, 7=Taxi)",
+          "wow_status_code": "number - код статуса WoW (Combat, Dead, Mounted, etc.)",
+          "smart_loot_session": "number - накопленная ценность лута за сессию (TSM + Vendor)",
+          "deaths_session": "number - количество смертей за текущую сессию",
+          "durability_avg": "number - средняя прочность экипировки (0-100)",
+          "bag_slots_free": "number - количество свободных слотов в сумках",
+          "last_sync_ts": "number - timestamp последней синхронизации со сканнером",
+          "pixel_block_0_header": "string - RGB значение header блока (должно быть 255,0,255)",
+          "pixel_block_12_footer": "string - RGB значение footer блока (должно быть 0,255,255)",
+          "scan_status": "string - valid | invalid | timeout - статус последнего скана"
+        },
+        "monitor": {
+          "_description": "Мониторинг бота (Post-MVP)",
+          "screenshot_request": "boolean - запрос на скриншот",
+          "screenshot_url": "string | null - URL скриншота",
+          "screenshot_timestamp": "number | null - timestamp скриншота",
+          "status": "string - idle | requested | uploading | error"
+        },
+        "last_seen": "number - timestamp последней активности (используется для определения offline)",
+        "updated_at": "number - timestamp обновления",
+        "created_at": "number - timestamp создания"
+      }
+    },
+    "_example": {
+      "550e8400-e29b-41d4-a716-446655440001": {
+        "id": "550e8400-e29b-41d4-a716-446655440001",
+        "project_id": "wow_tbc",
+        "status": "farming",
+        "vm": {
+          "name": "WoW7",
+          "ip": "192.168.116.22",
+          "created_at": "2026-01-29T03:32:00Z"
+        },
+        "character": {
+          "name": "FarmBot01",
+          "level": 68,
+          "race": "orc",
+          "class": "warrior",
+          "server": "Gehennas",
+          "faction": "horde"
+        },
+        "account": {
+          "email": "wowbot101@example.com",
+          "password": "secure_pass_123",
+          "mail_provider": "gmail",
+          "mail_created_at": 1703980800000
+        },
+        "person": {
+          "first_name": "John",
+          "last_name": "Smith",
+          "birth_date": "15-05-1990",
+          "country": "Turkey",
+          "city": "Istanbul",
+          "address": "123 Main Street",
+          "zip": "34000"
+        },
+        "proxy": {
+          "full_string": "192.168.1.100:8080:user1:pass1",
+          "type": "socks5",
+          "ip": "192.168.1.100",
+          "port": 8080,
+          "login": "user1",
+          "password": "pass1",
+          "provider": "smartproxy",
+          "country": "TR",
+          "fraud_score": 15,
+          "VPN": false,
+          "Proxy": true,
+          "detect_country": true,
+          "created_at": 1704067200000,
+          "expires_at": 1735689600000
+        },
+        "leveling": {
+          "current_level": 68,
+          "target_level": 70,
+          "xp_current": 1250000,
+          "xp_required": 300000,
+          "location": "Nagrand",
+          "started_at": 1706486400000,
+          "finished_at": 0
+        },
+        "professions": {
+          "mining": {
+            "name": "Mining",
+            "skill_points": 350,
+            "max_skill_points": 375,
+            "started_at": 1706400000000,
+            "finished_at": 0
+          },
+          "herbalism": {
+            "name": "Herbalism",
+            "skill_points": 0,
+            "max_skill_points": 375,
+            "started_at": 0,
+            "finished_at": 0
+          }
+        },
+        "schedule": {
+          "version": 2,
+          "timezone": "Europe/Moscow",
+          "days": {
+            "0": {
+              "enabled": true,
+              "sessions": [
+                {"id": "sun_1", "start": "10:00", "end": "14:00", "enabled": true, "type": "active"}
+              ]
+            },
+            "1": {
+              "enabled": true,
+              "sessions": [
+                {"id": "mon_1", "start": "09:00", "end": "11:30", "enabled": true, "type": "active"},
+                {"id": "mon_2", "start": "12:00", "end": "14:30", "enabled": true, "type": "active"},
+                {"id": "mon_3", "start": "15:00", "end": "17:30", "enabled": true, "type": "active"}
+              ]
+            },
+            "2": {
+              "enabled": true,
+              "sessions": [
+                {"id": "tue_1", "start": "09:00", "end": "11:30", "enabled": true, "type": "active"},
+                {"id": "tue_2", "start": "12:00", "end": "14:30", "enabled": true, "type": "active"},
+                {"id": "tue_3", "start": "15:00", "end": "17:30", "enabled": true, "type": "active"}
+              ]
+            },
+            "3": {
+              "enabled": true,
+              "sessions": [
+                {"id": "wed_1", "start": "09:00", "end": "11:30", "enabled": true, "type": "active"},
+                {"id": "wed_2", "start": "12:00", "end": "14:30", "enabled": true, "type": "active"},
+                {"id": "wed_3", "start": "15:00", "end": "17:30", "enabled": true, "type": "active"}
+              ]
+            },
+            "4": {
+              "enabled": true,
+              "sessions": [
+                {"id": "thu_1", "start": "09:00", "end": "11:30", "enabled": true, "type": "active"},
+                {"id": "thu_2", "start": "12:00", "end": "14:30", "enabled": true, "type": "active"},
+                {"id": "thu_3", "start": "15:00", "end": "17:30", "enabled": true, "type": "active"}
+              ]
+            },
+            "5": {
+              "enabled": true,
+              "sessions": [
+                {"id": "fri_1", "start": "09:00", "end": "11:30", "enabled": true, "type": "active"},
+                {"id": "fri_2", "start": "12:00", "end": "14:30", "enabled": true, "type": "active"},
+                {"id": "fri_3", "start": "15:00", "end": "17:30", "enabled": true, "type": "active"}
+              ]
+            },
+            "6": {
+              "enabled": false,
+              "sessions": [
+                {"id": "sat_1", "start": "10:00", "end": "14:00", "enabled": false, "type": "active"}
+              ]
+            }
+          },
+          "updated_at": 1706659200000
+        },
+        "farm": {
+          "total_gold": 15420,
+          "session_start": 1706659200000,
+          "location": "Shadowmoon Valley",
+          "all_farmed_gold": 25800
+        },
+        "telemetry": {
+          "custom_status_code": 1,
+          "wow_status_code": 0,
+          "smart_loot_session": 3200,
+          "deaths_session": 2,
+          "durability_avg": 78,
+          "bag_slots_free": 8,
+          "last_sync_ts": 1769742254945,
+          "pixel_block_0_header": "255,0,255",
+          "pixel_block_12_footer": "0,255,255",
+          "scan_status": "valid"
+        },
+        "monitor": {
+          "screenshot_request": false,
+          "screenshot_url": null,
+          "screenshot_timestamp": null,
+          "status": "idle"
+        },
+        "last_seen": 1706572800000,
+        "updated_at": 1706572800000,
+        "created_at": 1704067200000
+      }
+    }
+  },
+
+  "archive": {
+    "_description": "Архив забаненных или удалённых ботов",
+    "_schema": {
+      "$archive_id": {
+        "bot_id": "string - ID бота до архивации",
+        "archived_at": "number - timestamp архивации",
+        "reason": "string - banned | manual_stop | error | migrated",
+        "ban_details": {
+          "date": "number - timestamp бана",
+          "reason": "string - причина бана",
+          "ban_mechanism": "string - механизм бана (блокирование учетной записи игры, Battle.net, etc.)"
+        },
+        "snapshot": {
+          "project_id": "string - ID проекта",
+          "character": "object - данные персонажа",
+          "final_level": "number - финальный уровень",
+          "total_farmed": "number - всего зафармлено",
+          "total_earned_gold": "number - всего заработано золота",
+          "total_runtime_hours": "number - всего часов работы"
+        }
+      }
+    },
+    "_example": {
+      "arch_550e8400-e29b-41d4-a716-446655440004": {
+        "bot_id": "550e8400-e29b-41d4-a716-446655440004",
+        "archived_at": 1706745600000,
+        "reason": "banned",
+        "ban_details": {
+          "date": 1706745600000,
+          "reason": "suspicious_activity",
+          "ban_mechanism": "battle_net_account_lock"
+        },
+        "snapshot": {
+          "project_id": "wow_tbc",
+          "character": {
+            "name": "BannedBot04",
+            "level": 65,
+            "race": "troll",
+            "class": "hunter",
+            "server": "Gehennas",
+            "faction": "horde"
+          },
+          "final_level": 65,
+          "total_farmed": 8500,
+          "total_earned_gold": 8500,
+          "total_runtime_hours": 240
+        }
+      },
+      "arch_550e8400-e29b-41d4-a716-446655440005": {
+        "bot_id": "550e8400-e29b-41d4-a716-446655440005",
+        "archived_at": 1706054400000,
+        "reason": "manual_stop",
+        "ban_details": {
+          "date": 0,
+          "reason": "",
+          "ban_mechanism": ""
+        },
+        "snapshot": {
+          "project_id": "wow_midnight",
+          "character": {
+            "name": "StoppedBot05",
+            "level": 80,
+            "race": "night_elf",
+            "class": "druid",
+            "server": "Firemaw",
+            "faction": "alliance"
+          },
+          "final_level": 80,
+          "total_farmed": 45200,
+          "total_earned_gold": 45200,
+          "total_runtime_hours": 520
+        }
+      }
+    }
+  },
+
+  "hourly_stats": {
+    "_description": "Почасовая статистика для детальных графиков (V5). Хранит данные с разбивкой по часам. Retention: 14 дней. Скрипт пишет сюда раз в час.",
+    "_schema": {
+      "$project_id": {
+        "$date (YYYY-MM-DD)": {
+          "$bot_id": {
+            "$hour (00-23)": {
+              "xp_gained": "number - XP полученный за этот час",
+              "gold_farmed": "number - чистое золото (loot)",
+              "smart_loot_value": "number - оценочная стоимость (TSM + Vendor)",
+              "deaths": "number - количество смертей",
+              "online_minutes": "number - минут в онлайне (макс 60)"
+            }
+          }
+        }
+      }
+    },
+    "_example": {
+      "wow_tbc": {
+        "2026-01-29": {
+          "550e8400-e29b-41d4-a716-446655440001": {
+            "14": {
+              "xp_gained": 45000,
+              "gold_farmed": 120,
+              "smart_loot_value": 1250,
+              "deaths": 0,
+              "online_minutes": 60
+            },
+            "15": {
+              "xp_gained": 20000,
+              "gold_farmed": 45,
+              "smart_loot_value": 500,
+              "deaths": 2,
+              "online_minutes": 45
+            }
+          }
+        }
+      }
+    },
+    "_retention": "Хранить 14 дней для горячей аналитики. Старое данные удалять или архивировать.",
+    "_notes": [
+      "Используется для построения детальных графиков (зум внутри дня)",
+      "Данные агрегируются сканнером и записываются раз в час",
+      "При сбросе сессии (ReloadUI) сканнер корректно обрабатывает дельты"
+    ]
+  },
+
+  "daily_stats": {
+    "_description": "Ежедневная агрегированная статистика по ботам. Скрипт обновляет инкрементально (добавляет разницу). При отключении света прогресс не теряется.",
+    "_schema": {
+      "$project_id": {
+        "$date (YYYY-MM-DD)": {
+          "$bot_id": {
+            "gold_farmed": "number - золота зафармлено за день",
+            "hours_online": "number - часов онлайн за день",
+            "xp_gained": "number - XP получено за день",
+            "deaths": "number - количество смертей за день",
+            "levels_gained": "number - уровней получено за день",
+            "last_update": "number - timestamp последнего обновления"
+          }
+        }
+      }
+    },
+    "_example": {
+      "wow_tbc": {
+        "2026-01-29": {
+          "550e8400-e29b-41d4-a716-446655440001": {
+            "gold_farmed": 1500,
+            "hours_online": 8.5,
+            "xp_gained": 125000,
+            "deaths": 2,
+            "levels_gained": 1,
+            "last_update": 1706572800000
+          },
+          "550e8400-e29b-41d4-a716-446655440003": {
+            "gold_farmed": 2100,
+            "hours_online": 9.0,
+            "xp_gained": 0,
+            "deaths": 0,
+            "levels_gained": 0,
+            "last_update": 1706572800000
+          }
+        },
+        "2026-01-28": {
+          "550e8400-e29b-41d4-a716-446655440001": {
+            "gold_farmed": 1800,
+            "hours_online": 7.5,
+            "xp_gained": 95000,
+            "deaths": 1,
+            "levels_gained": 0,
+            "last_update": 1706486400000
+          }
+        }
+      }
+    },
+    "_aggregation_notes": [
+      "Скрипт агрегирует данные в daily_stats ежедневно",
+      "Клиент может запрашивать данные за период для построения графиков",
+      "Агрегация за неделю/месяц/квартал выполняется на клиенте",
+      "last_update используется для инкрементального обновления"
+    ]
+  },
+
+  "logs": {
+    "_description": "Только важные события (бан, левел-ап, смерть). Определяются по состоянию бота (если мертв, а в предыдущем сообщении состояние было жив - значит смерть | если уровень изменился - значит левел-ап | скрипт увидел экран блокировки - бан) | уровень максимальный - событие прокачка завершена. Пишется для каждого бота отдельно в его лог",
+    "_schema": {
+      "$bot_id": {
+        "$event_id": {
+          "type": "string - ban | level_up | death | status_change",
+          "timestamp": "number - timestamp события",
+          "message": "string - описание события",
+          "data": "object - дополнительные данные"
+        }
+      }
+    },
+    "_example": {
+      "550e8400-e29b-41d4-a716-446655440001": {
+        "evt_001": {
+          "type": "level_up",
+          "timestamp": 1706572800000,
+          "message": "Level up: 67 -> 68",
+          "data": {
+            "old_level": 67,
+            "new_level": 68,
+            "location": "Nagrand"
+          }
+        },
+        "evt_002": {
+          "type": "death",
+          "timestamp": 1706486400000,
+          "message": "Died in Shadowmoon Valley",
+          "data": {
+            "location": "Shadowmoon Valley",
+            "killer": "Fel Orc"
+          }
+        },
+        "evt_003": {
+          "type": "status_change",
+          "timestamp": 1706400000000,
+          "message": "Status changed: leveling -> farming",
+          "data": {
+            "old_status": "leveling",
+            "new_status": "farming"
+          }
+        }
+      },
+      "550e8400-e29b-41d4-a716-446655440002": {
+        "evt_001": {
+          "type": "level_up",
+          "timestamp": 1706659200000,
+          "message": "Level up: 44 -> 45",
+          "data": {
+            "old_level": 44,
+            "new_level": 45,
+            "location": "Stranglethorn Vale"
+          }
+        },
+        "evt_002": {
+          "type": "death",
+          "timestamp": 1706572800000,
+          "message": "Died in Stranglethorn Vale",
+          "data": {
+            "location": "Stranglethorn Vale",
+            "killer": "Tiger"
+          }
+        }
+      }
+    },
+    "_optimization": "Логи хранятся по bot_id для избежания больших списков. Только важные события - нет логов каждой добычи руды.",
+    "_cleanup": "Автоматическая очистка логов старше logs_retention_days (из settings)"
+  },
+
+  "finance": {
+    "_description": "Глобальные финансовые операции",
+    "_schema": {
+      "operations": {
+        "$operation_id": {
+          "type": "string - income | expense",
+          "category": "string - subscription game | subscription bot | proxy | sale | other",
+          "bot_id": "string | null - ID бота (null для глобальных операций)",
+          "description": "string - описание операции",
+          "amount": "number - сумма",
+          "currency": "string - USD | gold",
+          "gold_price_at_time": "number | null - цена золота на момент операции (если применимо)",
+          "date": "number - timestamp операции",
+          "created_at": "number - timestamp создания записи"
+        }
+      },
+      "daily_stats": {
+        "$date": {
+          "date": "string - YYYY-MM-DD",
+          "total_expenses": "number - всего расходов USD",
+          "total_revenue": "number - всего доходов USD",
+          "net_profit": "number - чистая прибыль USD",
+          "active_bots": "number - активных ботов",
+          "total_farmed": "object - по проектам"
+        }
+      },
+      "gold_price_history": {
+        "$date": {
+          "price": "number - цена золота в USD"
+        }
+      }
+    },
+    "_example": {
+      "operations": {
+        "op_001": {
+          "type": "expense",
+          "category": "subscription bot",
+          "bot_id": "550e8400-e29b-41d4-a716-446655440001",
+          "description": "Bot software license",
+          "amount": 25.00,
+          "currency": "USD",
+          "gold_price_at_time": null,
+          "date": 1704067200000,
+          "created_at": 1704067200000
+        },
+        "op_002": {
+          "type": "income",
+          "category": "sale",
+          "bot_id": "550e8400-e29b-41d4-a716-446655440001",
+          "description": "Gold sold - 5000g",
+          "amount": 62.50,
+          "currency": "USD",
+          "gold_price_at_time": 0.0125,
+          "date": 1704153600000,
+          "created_at": 1704153600000
+        },
+        "op_003": {
+          "type": "expense",
+          "category": "proxy",
+          "bot_id": "550e8400-e29b-41d4-a716-446655440001",
+          "description": "Residential proxy monthly",
+          "amount": 15.00,
+          "currency": "USD",
+          "gold_price_at_time": null,
+          "date": 1704067200000,
+          "created_at": 1704067200000
+        },
+        "op_004": {
+          "type": "expense",
+          "category": "subscription game",
+          "bot_id": null,
+          "description": "WoW subscription",
+          "amount": 12.99,
+          "currency": "USD",
+          "gold_price_at_time": null,
+          "date": 1706745600000,
+          "created_at": 1706745600000
+        }
+      },
+      "daily_stats": {
+        "2026-01-29": {
+          "date": "2026-01-29",
+          "total_expenses": 45.00,
+          "total_revenue": 125.00,
+          "net_profit": 80.00,
+          "active_bots": 15,
+          "total_farmed": {
+            "wow_tbc": { "gold": 2500 },
+            "wow_midnight": { "gold": 1800 }
+          }
+        },
+        "2026-01-28": {
+          "date": "2026-01-28",
+          "total_expenses": 52.99,
+          "total_revenue": 98.50,
+          "net_profit": 45.51,
+          "active_bots": 14,
+          "total_farmed": {
+            "wow_tbc": { "gold": 2100 },
+            "wow_midnight": { "gold": 1500 }
+          }
+        }
+      },
+      "gold_price_history": {
+        "2026-01-29": {
+          "price": 0.0125
+        },
+        "2026-01-28": {
+          "price": 0.0128
+        },
+        "2026-01-27": {
+          "price": 0.0130
+        }
+      }
+    }
+  },
+
+  "notes": {
+    "_description": "DEPRECATED: Старые заметки с чекбоксами. Используйте notes_v2 для новых заметок.",
+    "_schema": {
+      "$note_id": {
+        "text": "string - текст заметки",
+        "completed": "boolean - выполнена ли",
+        "bot_id": "string | null - привязка к боту (null = глобальная)",
+        "created_at": "number - timestamp создания",
+        "updated_at": "number - timestamp обновления"
+      }
+    },
+    "_example": {
+      "note_001": {
+        "text": "Check banned bots every Monday",
+        "completed": false,
+        "bot_id": null,
+        "created_at": 1706572800000,
+        "updated_at": 1706572800000
+      },
+      "note_002": {
+        "text": "Update proxy settings",
+        "completed": true,
+        "bot_id": "550e8400-e29b-41d4-a716-446655440001",
+        "created_at": 1706486400000,
+        "updated_at": 1706572800000
+      },
+      "note_003": {
+        "text": "Review ROI for all farming bots",
+        "completed": false,
+        "bot_id": null,
+        "created_at": 1706745600000,
+        "updated_at": 1706745600000
+      }
+    },
+    "_deprecated": "Используйте notes_v2 для новых заметок. Эта секция оставлена для обратной совместимости."
+  },
+
+  "notes_v2": {
+    "_description": "Заметки v2 - блоковая система с поддержкой различных типов контента",
+    "_schema": {
+      "$note_id": {
+        "id": "string - уникальный ID заметки",
+        "title": "string - заголовок заметки",
+        "blocks": {
+          "$block_id": {
+            "id": "string - уникальный ID блока",
+            "type": "string - тип блока: heading_1 | heading_2 | heading_3 | paragraph | checkbox | bullet_list | numbered_list",
+            "content": "string - текстовое содержимое (для heading_* и paragraph)",
+            "checked": "boolean - состояние чекбокса (только для checkbox)",
+            "items": "array - элементы списка (только для bullet_list и numbered_list)",
+            "created_at": "number - timestamp создания блока",
+            "updated_at": "number - timestamp последнего обновления блока"
+          }
+        },
+        "tags": "array<string> - теги заметки",
+        "bot_id": "string | null - ID привязанного бота",
+        "project_id": "string | null - ID привязанного проекта",
+        "is_pinned": "boolean - закреплена ли заметка",
+        "created_at": "number - timestamp создания",
+        "updated_at": "number - timestamp обновления",
+        "created_by": "string | null - ID пользователя, создавшего заметку"
+      }
+    },
+    "_block_types": {
+      "heading_1": {
+        "description": "Заголовок первого уровня (H1)",
+        "fields": ["id", "type", "content", "created_at", "updated_at"]
+      },
+      "heading_2": {
+        "description": "Заголовок второго уровня (H2)",
+        "fields": ["id", "type", "content", "created_at", "updated_at"]
+      },
+      "heading_3": {
+        "description": "Заголовок третьего уровня (H3)",
+        "fields": ["id", "type", "content", "created_at", "updated_at"]
+      },
+      "paragraph": {
+        "description": "Параграф текста",
+        "fields": ["id", "type", "content", "created_at", "updated_at"]
+      },
+      "checkbox": {
+        "description": "Чекбокс с текстом",
+        "fields": ["id", "type", "content", "checked", "created_at", "updated_at"]
+      },
+      "bullet_list": {
+        "description": "Маркированный список",
+        "fields": ["id", "type", "items", "created_at", "updated_at"],
+        "item_schema": {
+          "id": "string - ID элемента",
+          "content": "string - текст элемента",
+          "checked": "boolean | undefined - состояние чекбокса (опционально)"
+        }
+      },
+      "numbered_list": {
+        "description": "Нумерованный список",
+        "fields": ["id", "type", "items", "created_at", "updated_at"],
+        "item_schema": {
+          "id": "string - ID элемента",
+          "content": "string - текст элемента",
+          "checked": "boolean | undefined - состояние чекбокса (опционально)"
+        }
+      }
+    },
+    "_example": {
+      "note_1738432100000_abc123def": {
+        "id": "note_1738432100000_abc123def",
+        "title": "Гайд по прокачке Mining 1-375",
+        "blocks": {
+          "block_1738432101000_xyz789": {
+            "id": "block_1738432101000_xyz789",
+            "type": "heading_1",
+            "content": "Mining 1-375 Guide",
+            "created_at": 1738432101000,
+            "updated_at": 1738432101000
+          },
+          "block_1738432102000_xyz790": {
+            "id": "block_1738432102000_xyz790",
+            "type": "paragraph",
+            "content": "Полный гайд по прокачке горного дела в WoW TBC Classic.",
+            "created_at": 1738432102000,
+            "updated_at": 1738432102000
+          },
+          "block_1738432103000_xyz791": {
+            "id": "block_1738432103000_xyz791",
+            "type": "heading_2",
+            "content": "Этап 1: 1-75 (Медная руда)",
+            "created_at": 1738432103000,
+            "updated_at": 1738432103000
+          },
+          "block_1738432104000_xyz792": {
+            "id": "block_1738432104000_xyz792",
+            "type": "bullet_list",
+            "items": [
+              { "id": "item_1738432105000_aaa", "content": "Durotar - южная часть" },
+              { "id": "item_1738432106000_bbb", "content": "Elwynn Forest - вокруг Stormwind" },
+              { "id": "item_1738432107000_ccc", "content": "Dun Morogh - вокруг Ironforge" }
+            ],
+            "created_at": 1738432104000,
+            "updated_at": 1738432104000
+          },
+          "block_1738432108000_xyz793": {
+            "id": "block_1738432108000_xyz793",
+            "type": "checkbox",
+            "content": "Купить Mining Pick в Orgrimmar",
+            "checked": true,
+            "created_at": 1738432108000,
+            "updated_at": 1738432150000
+          },
+          "block_1738432109000_xyz794": {
+            "id": "block_1738432109000_xyz794",
+            "type": "numbered_list",
+            "items": [
+              { "id": "item_1738432110000_ddd", "content": "Найти тренера Mining" },
+              { "id": "item_1738432111000_eee", "content": "Начать добывать медь" },
+              { "id": "item_1738432112000_fff", "content": "Достичь 75 скилла" }
+            ],
+            "created_at": 1738432109000,
+            "updated_at": 1738432109000
+          }
+        },
+        "tags": ["profession", "mining", "guide", "tbc"],
+        "bot_id": "550e8400-e29b-41d4-a716-446655440001",
+        "project_id": "wow_tbc",
+        "is_pinned": true,
+        "created_at": 1738432100000,
+        "updated_at": 1738432150000,
+        "created_by": "admin_001"
+      },
+      "note_1738432200000_def456ghi": {
+        "id": "note_1738432200000_def456ghi",
+        "title": "Чек-лист ежедневных задач",
+        "blocks": {
+          "block_1738432201000_ghi123": {
+            "id": "block_1738432201000_ghi123",
+            "type": "heading_2",
+            "content": "Утренние проверки",
+            "created_at": 1738432201000,
+            "updated_at": 1738432201000
+          },
+          "block_1738432202000_ghi124": {
+            "id": "block_1738432202000_ghi124",
+            "type": "checkbox",
+            "content": "Проверить статус всех ботов",
+            "checked": false,
+            "created_at": 1738432202000,
+            "updated_at": 1738432202000
+          },
+          "block_1738432203000_ghi125": {
+            "id": "block_1738432203000_ghi125",
+            "type": "checkbox",
+            "content": "Проверить сроки подписок",
+            "checked": false,
+            "created_at": 1738432203000,
+            "updated_at": 1738432203000
+          },
+          "block_1738432204000_ghi126": {
+            "id": "block_1738432204000_ghi126",
+            "type": "checkbox",
+            "content": "Проверить прокси на бан",
+            "checked": true,
+            "created_at": 1738432204000,
+            "updated_at": 1738432260000
+          }
+        },
+        "tags": ["daily", "checklist", "tasks"],
+        "bot_id": null,
+        "project_id": null,
+        "is_pinned": false,
+        "created_at": 1738432200000,
+        "updated_at": 1738432260000,
+        "created_by": "admin_001"
+      }
+    },
+    "_notes": [
+      "Блоки хранятся как объект с ключами для эффективного обновления отдельных блоков",
+      "Порядок блоков определяется полем created_at при конвертации в массив",
+      "Поддерживается полнотекстовый поиск по заголовку, тегам и содержимому блоков",
+      "Заметки могут быть привязаны к боту (bot_id) и/или проекту (project_id)"
+    ]
+  },
+
+  "notes_index": {
+    "_description": "Индекс заметок для быстрого отображения списков без загрузки полного контента",
+    "_schema": {
+      "$note_id": {
+        "id": "string - ID заметки",
+        "title": "string - заголовок",
+        "preview": "string - превью текста (до 100 символов)",
+        "tags": "array<string> - теги",
+        "bot_id": "string | null - ID бота",
+        "project_id": "string | null - ID проекта",
+        "is_pinned": "boolean - закреплена",
+        "created_at": "number - timestamp создания",
+        "updated_at": "number - timestamp обновления"
+      }
+    },
+    "_example": {
+      "note_1738432100000_abc123def": {
+        "id": "note_1738432100000_abc123def",
+        "title": "Гайд по прокачке Mining 1-375",
+        "preview": "Mining 1-375 Guide Полный гайд по прокачке горного дела в WoW TBC Classic. Этап 1: 1-75...",
+        "tags": ["profession", "mining", "guide", "tbc"],
+        "bot_id": "550e8400-e29b-41d4-a716-446655440001",
+        "project_id": "wow_tbc",
+        "is_pinned": true,
+        "created_at": 1738432100000,
+        "updated_at": 1738432150000
+      },
+      "note_1738432200000_def456ghi": {
+        "id": "note_1738432200000_def456ghi",
+        "title": "Чек-лист ежедневных задач",
+        "preview": "Утренние проверки Проверить статус всех ботов Проверить сроки подписок Проверить прокси...",
+        "tags": ["daily", "checklist", "tasks"],
+        "bot_id": null,
+        "project_id": null,
+        "is_pinned": false,
+        "created_at": 1738432200000,
+        "updated_at": 1738432260000
+      }
+    },
+    "_purpose": [
+      "Быстрая загрузка списка заметок без загрузки полного контента блоков",
+      "Эффективный поиск и фильтрация по метаданным",
+      "Сортировка по дате обновления или создания"
+    ]
+  },
+
+  "gold_prices": {
+    "_description": "История цен на золото",
+    "_schema": {
+      "$project_id": {
+        "current": {
+          "price_per_1000": "number - цена за 1000 золота",
+          "updated_at": "number - timestamp обновления",
+          "updated_by": "string - кем обновлено",
+          "source": "string - manual | api"
+        },
+        "history": {
+          "$timestamp": {
+            "price_per_1000": "number",
+            "date": "number - timestamp"
+          }
+        }
+      }
+    },
+    "_example": {
+      "wow_tbc": {
+        "current": {
+          "price_per_1000": 12.50,
+          "updated_at": 1706572800000,
+          "updated_by": "admin_001",
+          "source": "manual"
+        },
+        "history": {
+          "1706572800000": {
+            "price_per_1000": 12.50,
+            "date": 1706572800000
+          },
+          "1706486400000": {
+            "price_per_1000": 12.75,
+            "date": 1706486400000
+          },
+          "1706400000000": {
+            "price_per_1000": 13.00,
+            "date": 1706400000000
+          }
+        }
+      },
+      "wow_midnight": {
+        "current": {
+          "price_per_1000": 8.50,
+          "updated_at": 1706572800000,
+          "updated_by": "admin_001",
+          "source": "manual"
+        },
+        "history": {
+          "1706572800000": {
+            "price_per_1000": 8.50,
+            "date": 1706572800000
+          },
+          "1706486400000": {
+            "price_per_1000": 8.75,
+            "date": 1706486400000
+          }
+        }
+      }
+    }
+  },
+
+  "users": {
+    "_description": "Пользователи системы",
+    "_schema": {
+      "$user_id": {
+        "id": "string - уникальный ID",
+        "email": "string - email",
+        "name": "string - имя",
+        "role": "string - admin | operator | viewer",
+        "permissions": {
+          "bots": "array<string> - read | write | delete",
+          "finance": "array<string> - read | write",
+          "settings": "array<string> - read | write",
+          "archive": "array<string> - read | write"
+        },
+        "telegram_id": "string | null - ID для уведомлений",
+        "notifications": {
+          "bot_start": "boolean",
+          "bot_status_change": "boolean",
+          "bot_offline": "boolean",
+          "bot_banned": "boolean",
+          "daily_report": "boolean",
+          "low_roi_alert": "boolean"
+        },
+        "last_login": "number - timestamp",
+        "created_at": "number - timestamp"
+      }
+    },
+    "_example": {
+      "admin_001": {
+        "id": "admin_001",
+        "email": "admin@botmox.local",
+        "name": "Administrator",
+        "role": "admin",
+        "permissions": {
+          "bots": ["read", "write", "delete"],
+          "finance": ["read", "write"],
+          "settings": ["read", "write"],
+          "archive": ["read", "write"]
+        },
+        "telegram_id": "123456789",
+        "notifications": {
+          "bot_start": true,
+          "bot_status_change": true,
+          "bot_offline": true,
+          "bot_banned": true,
+          "daily_report": true,
+          "low_roi_alert": true
+        },
+        "last_login": 1706572800000,
+        "created_at": 1704067200000
+      },
+      "operator_001": {
+        "id": "operator_001",
+        "email": "operator@botmox.local",
+        "name": "Operator",
+        "role": "operator",
+        "permissions": {
+          "bots": ["read", "write"],
+          "finance": ["read"],
+          "settings": ["read"],
+          "archive": ["read"]
+        },
+        "telegram_id": "987654321",
+        "notifications": {
+          "bot_start": true,
+          "bot_status_change": true,
+          "bot_offline": true,
+          "bot_banned": true,
+          "daily_report": false,
+          "low_roi_alert": false
+        },
+        "last_login": 1706659200000,
+        "created_at": 1704153600000
+      }
+    }
+  },
+
+  "settings": {
+    "_description": "Настройки системы",
+    "_schema": {
+      "system": {
+        "app_name": "string",
+        "theme": "string - dark | light",
+        "currency": "string - USD | EUR"
+      },
+      "offline_detection": {
+        "offline_timeout_sec": "number - секунд до статуса offline (по умолчанию 300 = 5 минут)",
+        "_description": "Статус offline вычисляется на клиенте по last_seen: текущее время - last_seen > offline_timeout_sec"
+      },
+      "data_retention": {
+        "logs_retention_days": "number - дней хранения логов (по умолчанию 7)",
+        "_description": "Логи старше указанного количества дней автоматически удаляются"
+      },
+      "api_keys": {
+        "_description": "API ключи для внешних сервисов",
+        "ipqs": {
+          "api_key": "string - API ключ для IPQualityScore",
+          "enabled": "boolean - включена ли проверка через IPQS"
+        },
+        "telegram": {
+          "bot_token": "string - токен бота Telegram",
+          "chat_id": "string - ID чата для уведомлений",
+          "enabled": "boolean - включены ли уведомления в Telegram"
+        }
+      },
+      "proxy": {
+        "_description": "Настройки прокси",
+        "auto_check_on_add": "boolean - автоматическая проверка прокси при добавлении",
+        "fraud_score_threshold": "number - пороговое значение fraud score (0-100, по умолчанию 75)",
+        "check_interval_hours": "number - интервал автопроверки прокси в часах (0 = выключено)"
+      },
+      "notifications": {
+        "telegram_bot_token": "string - DEPRECATED: используйте api_keys.telegram.bot_token",
+        "telegram_chat_id": "string - DEPRECATED: используйте api_keys.telegram.chat_id",
+        "alerts": {
+          "bot_offline_delay_minutes": "number",
+          "low_roi_threshold": "number",
+          "daily_report_time": "string - HH:MM"
+        },
+        "events": {
+          "bot_banned": "boolean - уведомление при бане бота",
+          "bot_offline": "boolean - уведомление при офлайне",
+          "bot_online": "boolean - уведомление при возвращении онлайн",
+          "level_up": "boolean - уведомление при повышении уровня",
+          "profession_maxed": "boolean - уведомление при максимуме профессии",
+          "low_fraud_score": "boolean - уведомление при низком fraud score прокси",
+          "daily_report": "boolean - ежедневный отчет"
+        }
+      },
+      "roi_calculation": {
+        "include_proxy_cost": "boolean",
+        "include_subscription_cost": "boolean",
+        "include_session_cost": "boolean",
+        "depreciation_days": "number"
+      },
+      "data_export": {
+        "_description": "Настройки экспорта и архивации данных",
+        "auto_archive_daily": "boolean - автоматическая архивация ежедневной статистики",
+        "local_storage_key": "string - ключ для localStorage сохранённых данных"
+      },
+      "development": {
+        "show_example_data": "boolean - показывать примеры данных в UI",
+        "use_mock_data": "boolean - использовать mock данные вместо Firebase"
+      }
+    },
+    "_example": {
+      "system": {
+        "app_name": "Bot-Mox",
+        "theme": "dark",
+        "currency": "USD"
+      },
+      "offline_detection": {
+        "offline_timeout_sec": 300
+      },
+      "data_retention": {
+        "logs_retention_days": 7
+      },
+      "api_keys": {
+        "ipqs": {
+          "api_key": "",
+          "enabled": false
+        },
+        "telegram": {
+          "bot_token": "",
+          "chat_id": "",
+          "enabled": false
+        }
+      },
+      "proxy": {
+        "auto_check_on_add": true,
+        "fraud_score_threshold": 75,
+        "check_interval_hours": 0
+      },
+      "notifications": {
+        "telegram_bot_token": "",
+        "telegram_chat_id": "",
+        "alerts": {
+          "bot_offline_delay_minutes": 5,
+          "low_roi_threshold": 50,
+          "daily_report_time": "09:00"
+        },
+        "events": {
+          "bot_banned": true,
+          "bot_offline": true,
+          "bot_online": false,
+          "level_up": true,
+          "profession_maxed": false,
+          "low_fraud_score": true,
+          "daily_report": false
+        }
+      },
+      "roi_calculation": {
+        "include_proxy_cost": true,
+        "include_subscription_cost": true,
+        "include_session_cost": true,
+        "depreciation_days": 30
+      },
+      "data_export": {
+        "auto_archive_daily": true,
+        "local_storage_key": "botmox_archived_data"
+      },
+      "development": {
+        "show_example_data": true,
+        "use_mock_data": true
+      }
+    },
+    "_offline_status_logic": {
+      "description": "Определение offline статуса на клиенте",
+      "logic": "status === 'offline' если (Date.now() - last_seen) > (offline_timeout_sec * 1000)",
+      "notes": [
+        "Статус пишется скриптом И может записаться клиентом",
+        "Вычисляется по last_seen (старше N минут = offline)",
+        "Настройка offline_timeout_sec в settings"
+      ]
+    }
+  },
+
+  "security_rules": {
+    "_description": "Правила безопасности Firebase (database.rules.json)",
+    "rules": {
+      "rules": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.token.admin === true",
+        
+        "projects": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true"
+        },
+        
+        "bots": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true",
+          "$bot_id": {
+            ".validate": "newData.hasChildren(['id', 'project_id', 'status', 'character'])"
+          }
+        },
+        
+        "archive": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true"
+        },
+        
+        "logs": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        },
+        
+        "finance": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true",
+          "operations": {
+            "$op_id": {
+              ".validate": "newData.hasChildren(['type', 'category', 'amount', 'currency', 'date'])"
+            }
+          }
+        },
+        
+        "notes": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        },
+
+        "notes_v2": {
+          ".read": "auth != null",
+          ".write": "auth != null",
+          "$note_id": {
+            ".validate": "newData.hasChildren(['id', 'title', 'blocks', 'tags', 'is_pinned', 'created_at', 'updated_at'])"
+          }
+        },
+
+        "notes_index": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        },
+        
+        "gold_prices": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true"
+        },
+        
+        "users": {
+          ".read": "auth != null && auth.token.admin === true",
+          ".write": "auth != null && auth.token.admin === true",
+          "$user_id": {
+            ".read": "auth != null && (auth.token.admin === true || auth.uid === $user_id)"
+          }
+        },
+        
+        "settings": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true"
+        },
+
+        "bot_licenses": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true"
+        },
+
+        "proxies": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true"
+        },
+
+        "app_settings": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true"
+        },
+
+        "subscriptions": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true"
+        },
+
+        "subscriptions_summary": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.token.admin === true"
+        }
+      }
+    }
+  },
+
+  "optimization_guide": {
+    "_description": "Рекомендации по оптимизации трафика (360 МБ/день)",
+    "recommendations": [
+      {
+        "title": "Используйте shallow queries",
+        "description": "Запрашивайте только нужные узлы, избегайте загрузки всей БД"
+      },
+      {
+        "title": "Лимит глубины логов",
+        "description": "Храните не более 100 последних событий на бота, архивируйте старые"
+      },
+      {
+        "title": "Батчевые обновления",
+        "description": "Объединяйте несколько изменений в один update() вызов"
+      },
+      {
+        "title": "Отключите offline persistence для редких данных",
+        "description": "Для статических данных (projects, settings) не нужна синхронизация"
+      },
+      {
+        "title": "Используйте onDisconnect",
+        "description": "Автоматически обновляйте статус при отключении"
+      },
+      {
+        "title": "Пагинация для списков",
+        "description": "Загружайте ботов пачками по 10-20 штук"
+      },
+      {
+        "title": "Сжатие данных",
+        "description": "Используйте короткие ключи (st вместо status), числа вместо строк где возможно"
+      },
+      {
+        "title": "Кэширование на клиенте",
+        "description": "Не перезагружайте статические данные (projects, settings)"
+      },
+      {
+        "title": "Агрегация статистики",
+        "description": "Используйте daily_stats для графиков вместо логов"
+      },
+      {
+        "title": "Локальное хранение архивов",
+        "description": "Сохраняйте скачанные данные в localStorage для оффлайн-графиков"
+      }
+    ],
+    "traffic_estimates": {
+      "bot_status_update": "~50 bytes",
+      "level_up_log": "~200 bytes",
+      "full_bot_read": "~2-3 KB",
+      "bots_list_20": "~20-30 KB",
+      "daily_operations": "~5 KB",
+      "daily_stats_entry": "~100 bytes"
+    },
+    "limits": {
+      "max_bots": 50,
+      "max_logs_per_bot": 100,
+      "max_notes": 200,
+      "max_archive_entries": 500,
+      "max_daily_stats_days": 90
+    }
+  },
+
+  "data_archiving_strategy": {
+    "_description": "Стратегия архивации и управления данными",
+    "daily_aggregation": {
+      "description": "Скрипт агрегирует данные в daily_stats ежедневно",
+      "process": [
+        "Скрипт собирает метрики с ботов (gold, xp, online time)",
+        "Обновляет daily_stats инкрементально (добавляет разницу)",
+        "При отключении света прогресс не теряется благодаря last_update"
+      ]
+    },
+    "client_data_export": {
+      "description": "Пользователь скачивает данные через кнопку в UI",
+      "process": [
+        "Пользователь выбирает период (неделя/месяц/квартал)",
+        "Клиент запрашивает daily_stats за указанный период",
+        "Данные сохраняются локально (localStorage или файл)",
+        "Графики строятся на основе daily_stats + локально сохранённых данных"
+      ]
+    },
+    "auto_cleanup": {
+      "description": "Автоматическая очистка старых данных",
+      "rules": [
+        "Логи старше logs_retention_days удаляются автоматически",
+        "daily_stats хранятся 90 дней в Firebase",
+        "Старые daily_stats архивируются при скачивании"
+      ]
+    },
+    "offline_status": {
+      "description": "Определение offline статуса",
+      "logic": "Клиент вычисляет: Date.now() - last_seen > offline_timeout_sec * 1000",
+      "notes": [
+        "Статус пишется скриптом И может записаться клиентом",
+        "Вычисляется по last_seen (старше N минут = offline)",
+        "Настройка offline_timeout_sec в settings (по умолчанию 300 сек = 5 мин)"
+      ]
+    }
+  },
+
+  "indexes": {
+    "_description": "Рекомендуемые индексы для производительности",
+    "rules": {
+      "bots": {
+        "status": true,
+        "project_id": true,
+        "last_seen": true,
+        "proxy_id": true,
+        "license_id": true
+      },
+      "logs": {
+        "timestamp": true,
+        "type": true
+      },
+      "finance_operations": {
+        "date": true,
+        "bot_id": true,
+        "type": true
+      },
+      "bot_licenses": {
+        "status": true,
+        "expires_at": true,
+        "bot_id": true
+      },
+      "proxies": {
+        "status": true,
+        "expires_at": true,
+        "bot_id": true
+      },
+      "subscriptions": {
+        "bot_id": true,
+        "expires_at": true,
+        "status": true,
+        "type": true
+      },
+      "notes_v2": {
+        "updated_at": true,
+        "created_at": true,
+        "bot_id": true,
+        "project_id": true,
+        "is_pinned": true
+      },
+      "notes_index": {
+        "updated_at": true,
+        "created_at": true,
+        "bot_id": true,
+        "project_id": true,
+        "is_pinned": true
+      }
+    }
+  },
+
+  "bot_licenses": {
+    "_description": "Лицензии ботов (SIN и другие) - хранятся отдельно от ботов",
+    "_schema": {
+      "$license_id": {
+        "id": "string - уникальный ID лицензии",
+        "key": "string - ключ лицензии (например, SIN-XXXX-XXXX)",
+        "type": "string - тип лицензии (sin, other)",
+        "status": "string - active | expired | revoked",
+        "bot_ids": "array<string> - массив ID привязанных ботов (для SIN можно несколько)",
+        "expires_at": "number - timestamp окончания лицензии",
+        "created_at": "number - timestamp создания",
+        "updated_at": "number - timestamp обновления"
+      }
+    },
+    "_example": {
+      "lic_001": {
+        "id": "lic_001",
+        "key": "SIN-XXXX-XXXX-1234",
+        "type": "sin",
+        "status": "active",
+        "bot_ids": ["550e8400-e29b-41d4-a716-446655440001"],
+        "expires_at": 1739577600000,
+        "created_at": 1704067200000,
+        "updated_at": 1704067200000
+      },
+      "lic_002": {
+        "id": "lic_002",
+        "key": "SIN-YYYY-YYYY-5678",
+        "type": "sin",
+        "status": "active",
+        "bot_ids": ["550e8400-e29b-41d4-a716-446655440002", "550e8400-e29b-41d4-a716-446655440003"],
+        "expires_at": 1742256000000,
+        "created_at": 1704153600000,
+        "updated_at": 1704153600000
+      },
+      "lic_003": {
+        "id": "lic_003",
+        "key": "SIN-ZZZZ-ZZZZ-9999",
+        "type": "sin",
+        "status": "expired",
+        "bot_ids": [],
+        "expires_at": 1706745600000,
+        "created_at": 1703980800000,
+        "updated_at": 1706745600000
+      }
+    },
+    "_business_rules": [
+      "Если лицензия закончилась (expires_at < now) → статус меняется на expired",
+      "Если лицензия expired и привязана к боту → статус бота меняется на prepare",
+      "1 лицензия может быть привязана к нескольким ботам (для SIN лицензий)",
+      "Имена ботов берутся из bots.character.name, не хранятся в лицензии"
+    ]
+  },
+
+  "proxies": {
+    "_description": "Прокси - хранятся отдельно, можно привязать к боту",
+    "_schema": {
+      "$proxy_id": {
+        "id": "string - уникальный ID прокси",
+        "ip": "string - IP адрес",
+        "port": "number - порт",
+        "login": "string - логин",
+        "password": "string - пароль",
+        "provider": "string - провайдер прокси (luminati, smartproxy, etc.)",
+        "country": "string - страна прокси",
+        "type": "string - http | socks5",
+        "status": "string - active | expired | banned",
+        "bot_id": "string | null - ID привязанного бота",
+        "fraud_score": "number - оценка мошенничества (0-100)",
+        "expires_at": "number - timestamp окончания срока действия",
+        "created_at": "number - timestamp создания",
+        "updated_at": "number - timestamp обновления"
+      }
+    },
+    "_example": {
+      "proxy_001": {
+        "id": "proxy_001",
+        "ip": "192.168.1.100",
+        "port": 8080,
+        "login": "user1",
+        "password": "pass1",
+        "provider": "smartproxy",
+        "country": "TR",
+        "type": "socks5",
+        "status": "active",
+        "bot_id": "550e8400-e29b-41d4-a716-446655440001",
+        "fraud_score": 15,
+        "expires_at": 1735689600000,
+        "created_at": 1704067200000,
+        "updated_at": 1704067200000
+      },
+      "proxy_002": {
+        "id": "proxy_002",
+        "ip": "203.0.113.50",
+        "port": 3128,
+        "login": "res_user",
+        "password": "res_pass",
+        "provider": "luminati",
+        "country": "TR",
+        "type": "http",
+        "status": "active",
+        "bot_id": "550e8400-e29b-41d4-a716-446655440003",
+        "fraud_score": 8,
+        "expires_at": 1735603200000,
+        "created_at": 1703980800000,
+        "updated_at": 1703980800000
+      },
+      "proxy_003": {
+        "id": "proxy_003",
+        "ip": "198.51.100.25",
+        "port": 1080,
+        "login": "user3",
+        "password": "pass3",
+        "provider": "oxylabs",
+        "country": "UA",
+        "type": "socks5",
+        "status": "expired",
+        "bot_id": null,
+        "fraud_score": 25,
+        "expires_at": 1704067200000,
+        "created_at": 1701398400000,
+        "updated_at": 1704067200000
+      }
+    },
+    "_business_rules": [
+      "Если прокси закончился (expires_at < now) → статус меняется на expired",
+      "При привязке к боту, bot_id заполняется",
+      "При отвязке от бота, bot_id = null",
+      "Если прокси expired → отправляется уведомление"
+    ]
+  },
+
+  "subscriptions": {
+    "_description": "Подписки WoW и другие - привязаны к боту (v2.0 - обновленная схема)",
+    "_schema": {
+      "$subscription_id": {
+        "id": "string - уникальный ID подписки",
+        "bot_id": "string - ID бота (обязательное поле)",
+        "type": "string - тип подписки (wow, bot, proxy, vpn, other)",
+        "status": "string - active | cancelled (expired вычисляется)",
+        "expires_at": "number - timestamp окончания подписки",
+        "auto_renew": "boolean - автопродление включено (только для wow)",
+        "account_email": "string | null - email аккаунта (для wow подписок)",
+        "project_id": "string | null - wow_tbc | wow_midnight (для wow подписок)",
+        "notes": "string | null - заметки о подписке",
+        "created_at": "number - timestamp создания",
+        "updated_at": "number - timestamp обновления"
+      }
+    },
+    "_example": {
+      "sub_001": {
+        "id": "sub_001",
+        "bot_id": "550e8400-e29b-41d4-a716-446655440001",
+        "type": "wow",
+        "status": "active",
+        "expires_at": 1742256000000,
+        "auto_renew": true,
+        "account_email": "wowaccount1@example.com",
+        "project_id": "wow_tbc",
+        "notes": "Основной аккаунт",
+        "created_at": 1704067200000,
+        "updated_at": 1704067200000
+      },
+      "sub_002": {
+        "id": "sub_002",
+        "bot_id": "550e8400-e29b-41d4-a716-446655440002",
+        "type": "bot",
+        "status": "active",
+        "expires_at": 1742342400000,
+        "auto_renew": false,
+        "account_email": null,
+        "project_id": null,
+        "notes": "Лицензия SIN",
+        "created_at": 1704153600000,
+        "updated_at": 1704153600000
+      },
+      "sub_003": {
+        "id": "sub_003",
+        "bot_id": "550e8400-e29b-41d4-a716-446655440003",
+        "type": "proxy",
+        "status": "cancelled",
+        "expires_at": 1706745600000,
+        "auto_renew": false,
+        "account_email": null,
+        "project_id": null,
+        "notes": null,
+        "created_at": 1703980800000,
+        "updated_at": 1706745600000
+      }
+    },
+    "_business_rules": [
+      "Подписка всегда привязана к конкретному боту (bot_id обязателен)",
+      "Статус 'expired' вычисляется на клиенте по expires_at",
+      "В БД хранятся только статусы 'active' и 'cancelled'",
+      "Если подписка закончилась → показывается статус 'expired' в UI",
+      "auto_renew используется только для wow подписок",
+      "account_email используется только для wow подписок"
+    ]
+  },
+
+  "app_settings": {
+    "_description": "Настройки приложения",
+    "_schema": {
+      "subscriptions": {
+        "warning_days": "number - за сколько дней показывать предупреждение (по умолчанию 7)",
+        "updated_at": "number - timestamp обновления",
+        "updated_by": "string | null - кем обновлено"
+      }
+    },
+    "_example": {
+      "subscriptions": {
+        "warning_days": 7,
+        "updated_at": 1706745600000,
+        "updated_by": "admin_001"
+      }
+    }
+  },
+
+  "subscriptions_summary": {
+    "_description": "Агрегированная информация о подписках для быстрого доступа",
+    "_schema": {
+      "total_active": "number - всего активных подписок",
+      "total_expired": "number - всего просроченных подписок",
+      "by_type": {
+        "$type": {
+          "active_count": "number - активных подписок этого типа",
+          "expired_count": "number - просроченных подписок этого типа",
+          "total_count": "number - всего подписок этого типа"
+        }
+      },
+      "expiring_soon": {
+        "$subscription_id": {
+          "id": "string - ID подписки",
+          "bot_id": "string - ID бота",
+          "type": "string - тип подписки",
+          "expires_at": "number - когда истекает",
+          "days_remaining": "number - дней осталось"
+        }
+      },
+      "last_updated": "number - timestamp последнего обновления"
+    },
+    "_example": {
+      "total_active": 2,
+      "total_expired": 1,
+      "by_type": {
+        "wow": {
+          "active_count": 1,
+          "expired_count": 1,
+          "total_count": 2
+        },
+        "bot": {
+          "active_count": 1,
+          "expired_count": 0,
+          "total_count": 1
+        }
+      },
+      "expiring_soon": {
+        "sub_001": {
+          "id": "sub_001",
+          "bot_id": "550e8400-e29b-41d4-a716-446655440001",
+          "type": "wow",
+          "expires_at": 1742256000000,
+          "days_remaining": 15
+        }
+      },
+      "last_updated": 1706745600000
+    },
+    "_notes": [
+      "Обновляется автоматически при изменении subscriptions",
+      "expiring_soon содержит подписки, истекающие в течение warning_days",
+      "Используется для быстрого отображения Summary-вкладки"
+    ]
+  }
+}

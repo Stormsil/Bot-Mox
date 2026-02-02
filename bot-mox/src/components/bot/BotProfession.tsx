@@ -1,0 +1,96 @@
+import React from 'react';
+import { Card, Progress, Row, Col, Typography, Tag } from 'antd';
+import { ToolOutlined, FireOutlined, ExperimentOutlined, BuildOutlined } from '@ant-design/icons';
+import type { Bot, ProfessionProgress } from '../../types';
+import './BotProfession.css';
+
+const { Text } = Typography;
+
+interface BotProfessionProps {
+  bot: Bot;
+}
+
+// Моковые данные профессий
+const mockProfessions: ProfessionProgress[] = [
+  { name: 'Mining', level: 275, max_level: 375, skill_points: 275, max_skill_points: 375 },
+  { name: 'Herbalism', level: 0, max_level: 375, skill_points: 0, max_skill_points: 375 },
+  { name: 'Skinning', level: 0, max_level: 375, skill_points: 0, max_skill_points: 375 },
+  { name: 'Engineering', level: 0, max_level: 375, skill_points: 0, max_skill_points: 375 },
+];
+
+const getProfessionIcon = (name: string) => {
+  switch (name.toLowerCase()) {
+    case 'mining':
+      return <BuildOutlined />;
+    case 'herbalism':
+      return <ExperimentOutlined />;
+    case 'skinning':
+      return <FireOutlined />;
+    default:
+      return <ToolOutlined />;
+  }
+};
+
+const getProfessionColor = (name: string) => {
+  switch (name.toLowerCase()) {
+    case 'mining':
+      return '#8b4513';
+    case 'herbalism':
+      return '#228b22';
+    case 'skinning':
+      return '#cd853f';
+    case 'engineering':
+      return '#4682b4';
+    default:
+      return '#eb2f96';
+  }
+};
+
+export const BotProfession: React.FC<BotProfessionProps> = () => {
+  const professions = mockProfessions;
+
+  return (
+    <div className="bot-profession">
+      <Row gutter={[16, 16]}>
+        {professions.map((profession) => {
+          const percent = profession.max_skill_points > 0
+            ? Math.round((profession.skill_points / profession.max_skill_points) * 100)
+            : 0;
+          const color = getProfessionColor(profession.name);
+          const isActive = profession.skill_points > 0;
+
+          return (
+            <Col span={12} key={profession.name}>
+              <Card
+                className={`profession-card ${isActive ? 'active' : 'inactive'}`}
+                title={
+                  <div className="profession-header">
+                    <span className="profession-icon" style={{ color }}>
+                      {getProfessionIcon(profession.name)}
+                    </span>
+                    <span className="profession-name">{profession.name}</span>
+                    {isActive && <Tag color="success" className="profession-status">Active</Tag>}
+                  </div>
+                }
+              >
+                <div className="profession-progress">
+                  <div className="skill-info">
+                    <Text strong>{profession.skill_points}</Text>
+                    <Text type="secondary">/ {profession.max_skill_points}</Text>
+                  </div>
+                  <Progress
+                    percent={percent}
+                    strokeColor={color}
+                    trailColor="var(--proxmox-border)"
+                    showInfo={false}
+                  />
+                  <div className="skill-percent">{percent}%</div>
+                </div>
+              </Card>
+            </Col>
+          );
+        })}
+      </Row>
+    </div>
+  );
+};

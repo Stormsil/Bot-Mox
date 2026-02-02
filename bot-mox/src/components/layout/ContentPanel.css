@@ -1,0 +1,125 @@
+.content-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--proxmox-bg-primary);
+  overflow: hidden;
+}
+
+/* Контейнер только для навигации табов (без content-holder) */
+.content-tabs-nav {
+  background: var(--proxmox-bg-secondary);
+  border-bottom: 1px solid var(--proxmox-border-dark);
+  flex: 0 0 auto;
+}
+
+/* Ant Tabs внутри навигации - убираем content-holder */
+.content-tabs-nav .ant-tabs {
+  height: auto !important;
+}
+
+.content-tabs-nav .ant-tabs-nav {
+  margin-bottom: 0 !important;
+  background: var(--proxmox-bg-secondary);
+  border-bottom: 1px solid var(--proxmox-border-dark);
+  padding: 0;
+}
+
+.content-tabs-nav .ant-tabs-nav-wrap {
+  padding: 0;
+}
+
+.content-tabs-nav .ant-tabs-nav-list {
+  padding: 0;
+}
+
+.content-tabs-nav .ant-tabs-tab {
+  background: transparent !important;
+  border: none !important;
+  border-right: 1px solid var(--proxmox-border-dark) !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 8px 16px !important;
+  color: var(--proxmox-text-muted);
+  font-size: var(--text-sm);
+  transition: all 0.15s ease;
+}
+
+.content-tabs-nav .ant-tabs-tab:hover {
+  background: var(--proxmox-bg-hover) !important;
+  color: var(--proxmox-text-secondary);
+}
+
+.content-tabs-nav .ant-tabs-tab-active {
+  background: var(--proxmox-bg-tertiary) !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.content-tabs-nav .ant-tabs-ink-bar {
+  display: none;
+}
+
+/* Скрываем content-holder в навигации табов */
+.content-tabs-nav .ant-tabs-content-holder {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.content-tabs-nav .ant-tabs-content {
+  display: none !important;
+}
+
+.tab-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab-label .anticon {
+  font-size: 12px;
+}
+
+.tab-label-warning {
+  color: #faad14;
+}
+
+.tab-warning-icon {
+  color: #faad14;
+  font-size: 12px;
+  margin-left: 2px;
+}
+
+.content-tabs-nav .ant-tabs-tab-active .tab-warning-icon {
+  color: #faad14;
+}
+
+/* Контентная область */
+.content-body {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  padding: 16px;
+  background: var(--proxmox-bg-primary);
+}
+
+/* Скроллбар */
+.content-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.content-body::-webkit-scrollbar-track {
+  background: var(--proxmox-bg-secondary);
+}
+
+.content-body::-webkit-scrollbar-thumb {
+  background: var(--proxmox-border);
+  border-radius: var(--radius-sm);
+}
+
+.content-body::-webkit-scrollbar-thumb:hover {
+  background: var(--proxmox-border-light);
+}

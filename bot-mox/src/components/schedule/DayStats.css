@@ -1,0 +1,36 @@
+.day-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 16px;
+  background: var(--proxmox-bg-secondary);
+  border-top: 1px solid var(--proxmox-border);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--proxmox-orange);
+  font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--proxmox-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--proxmox-border);
+}

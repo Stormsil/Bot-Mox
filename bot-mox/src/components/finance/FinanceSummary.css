@@ -1,0 +1,90 @@
+.finance-summary-container {
+  padding: 16px;
+}
+
+.metrics-row {
+  margin-bottom: 16px;
+}
+
+.metric-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  height: 100%;
+}
+
+.metric-card.income {
+  border-left: 3px solid #52c41a;
+}
+
+.metric-card.expense {
+  border-left: 3px solid #f5222d;
+}
+
+.metric-card.profit {
+  border-left: 3px solid #1890ff;
+}
+
+.metric-card.gold {
+  border-left: 3px solid #faad14;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: var(--proxmox-text-muted);
+  display: block;
+  margin-top: 8px;
+}
+
+.chart-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  margin-bottom: 16px;
+}
+
+.chart-card .ant-card-head {
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.chart-card .ant-card-head-title {
+  color: var(--proxmox-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.charts-row {
+  margin-bottom: 16px;
+}
+
+.chart-tooltip {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  padding: 8px 12px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.chart-tooltip-label {
+  color: var(--proxmox-text-primary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.chart-tooltip-value {
+  color: var(--proxmox-text-secondary);
+  margin: 0;
+  font-size: 12px;
+}
+
+/* Стили для recharts */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--proxmox-border);
+}
+
+.recharts-text {
+  fill: var(--proxmox-text-muted);
+}
+
+.recharts-legend-item-text {
+  color: var(--proxmox-text-secondary) !important;
+}

@@ -1,0 +1,274 @@
+.bot-account {
+  padding: 16px;
+  max-width: 100%;
+}
+
+.account-card {
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+}
+
+.account-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+}
+
+.account-card .ant-card-head-title {
+  color: var(--proxmox-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.account-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.warning-icon {
+  color: #faad14;
+  font-size: 18px;
+}
+
+.incomplete-badge .ant-badge-dot {
+  width: 8px;
+  height: 8px;
+  background: #faad14;
+}
+
+.account-form {
+  margin-top: 8px;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-warning-icon {
+  color: #faad14;
+  font-size: 14px;
+}
+
+.account-card .ant-form-item-label > label {
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.account-card .ant-input,
+.account-card .ant-select-selector,
+.account-card .ant-picker {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.account-card .ant-input:hover,
+.account-card .ant-input:focus,
+.account-card .ant-select-selector:hover,
+.account-card .ant-select-selector:focus,
+.account-card .ant-picker:hover,
+.account-card .ant-picker-focused {
+  border-color: var(--proxmox-accent);
+}
+
+.account-card .ant-input-suffix {
+  color: var(--proxmox-text-muted);
+}
+
+.account-card .ant-select-arrow {
+  color: var(--proxmox-text-muted);
+}
+
+.account-info-value {
+  color: var(--proxmox-text-primary);
+  font-size: var(--text-sm);
+  padding: 4px 0;
+  display: block;
+}
+
+/* Generator Options Card */
+.generator-options-card {
+  margin-top: 16px;
+  background: var(--proxmox-bg-tertiary) !important;
+  border-color: var(--proxmox-border) !important;
+}
+
+.generator-options-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  min-height: 40px;
+}
+
+.generator-options-card .ant-card-head-title {
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.generator-options-card .ant-card-body {
+  padding: 12px 16px;
+}
+
+.generator-options-card .ant-checkbox-wrapper {
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.generator-options-card .ant-input-number {
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.generator-options-card .ant-input-number:hover,
+.generator-options-card .ant-input-number-focused {
+  border-color: var(--proxmox-accent);
+}
+
+/* Form Actions */
+.account-form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--proxmox-border);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.generate-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.generate-label {
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.generate-btn {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.generate-btn:hover {
+  border-color: var(--proxmox-accent);
+  color: var(--proxmox-accent);
+}
+
+.generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.restore-btn {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-secondary);
+}
+
+.restore-btn:hover {
+  border-color: var(--proxmox-accent);
+  color: var(--proxmox-accent);
+}
+
+.account-card .ant-btn-primary {
+  background: var(--proxmox-accent);
+  border-color: var(--proxmox-accent);
+}
+
+.account-card .ant-btn-primary:hover {
+  background: var(--proxmox-accent-hover);
+  border-color: var(--proxmox-accent-hover);
+}
+
+/* DatePicker specific styles */
+.account-card .ant-picker-suffix {
+  color: var(--proxmox-text-muted);
+}
+
+.account-card .ant-picker-clear {
+  background: var(--proxmox-bg-tertiary);
+  color: var(--proxmox-text-muted);
+}
+
+.account-card .ant-picker-clear:hover {
+  color: var(--proxmox-text-primary);
+}
+
+/* Select dropdown styles */
+.account-card .ant-select-dropdown {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.account-card .ant-select-item {
+  color: var(--proxmox-text-primary);
+}
+
+.account-card .ant-select-item-option-selected {
+  background: var(--proxmox-accent);
+  color: white;
+}
+
+.account-card .ant-select-item-option-active {
+  background: var(--proxmox-bg-tertiary);
+}
+
+/* Modal styles */
+.account-card ~ .ant-modal .ant-modal-content {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.account-card ~ .ant-modal .ant-modal-header {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+}
+
+.account-card ~ .ant-modal .ant-modal-title {
+  color: var(--proxmox-text-primary);
+}
+
+.account-card ~ .ant-modal .ant-modal-close {
+  color: var(--proxmox-text-muted);
+}
+
+.account-card ~ .ant-modal .ant-modal-close:hover {
+  color: var(--proxmox-text-primary);
+}
+
+.account-card ~ .ant-modal .ant-modal-body {
+  color: var(--proxmox-text-primary);
+}
+
+.account-card ~ .ant-modal .ant-modal-footer {
+  border-color: var(--proxmox-border);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .account-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .generate-section {
+    justify-content: center;
+  }
+
+  .action-buttons {
+    justify-content: center;
+  }
+}

@@ -1,0 +1,68 @@
+.proxmox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  background: var(--proxmox-bg-secondary) !important;
+  border-bottom: 1px solid var(--proxmox-border-dark);
+  height: var(--header-height) !important;
+  line-height: var(--header-height) !important;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.proxmox-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-condensed);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--proxmox-text-primary);
+  letter-spacing: 0.5px;
+}
+
+.logo-icon {
+  font-size: 16px;
+  color: var(--proxmox-accent);
+}
+
+.logo-text {
+  color: var(--proxmox-text-primary);
+}
+
+.logo-version {
+  font-size: 10px;
+  color: var(--proxmox-text-muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.user-menu {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+}
+
+.user-menu:hover {
+  background: var(--proxmox-bg-hover);
+}
+
+.user-email {
+  color: var(--proxmox-text-secondary) !important;
+  font-size: var(--text-sm);
+}
+
+.dropdown-icon {
+  color: var(--proxmox-text-muted);
+  font-size: 10px;
+}

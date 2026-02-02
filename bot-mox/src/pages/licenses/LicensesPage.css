@@ -1,0 +1,150 @@
+.licenses-page {
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.licenses-header {
+  margin-bottom: 16px;
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.licenses-header .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.licenses-header .header-title h4 {
+  margin: 0;
+  color: var(--proxmox-text-primary);
+}
+
+.licenses-header .header-title .ant-typography-secondary {
+  color: var(--proxmox-text-secondary);
+}
+
+.licenses-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.licenses-stats .stat-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  text-align: center;
+}
+
+.licenses-stats .stat-card .stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--proxmox-text-primary);
+}
+
+.licenses-stats .stat-card .stat-label {
+  font-size: 12px;
+  color: var(--proxmox-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.licenses-stats .stat-card.active .stat-value {
+  color: #52c41a;
+}
+
+.licenses-stats .stat-card.expired .stat-value {
+  color: #ff4d4f;
+}
+
+.licenses-stats .stat-card.warning .stat-value {
+  color: #faad14;
+}
+
+.licenses-filters {
+  margin-bottom: 16px;
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.licenses-table-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.licenses-table-card .ant-table {
+  background: transparent;
+}
+
+.licenses-table-card .ant-table-thead > tr > th {
+  background: var(--proxmox-bg-tertiary);
+  color: var(--proxmox-text-secondary);
+  border-bottom: 1px solid var(--proxmox-border);
+  font-weight: 500;
+}
+
+.licenses-table-card .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.licenses-table-card .ant-table-tbody > tr:hover > td {
+  background: var(--proxmox-bg-hover);
+}
+
+.licenses-table-card .license-key {
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.licenses-table-card .ant-tag {
+  border-radius: 2px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.licenses-page .ant-input,
+.licenses-page .ant-select-selector,
+.licenses-page .ant-picker {
+  background: var(--proxmox-bg-tertiary) !important;
+  border-color: var(--proxmox-border) !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.licenses-page .ant-input::placeholder {
+  color: var(--proxmox-text-muted);
+}
+
+.licenses-page .ant-btn-primary {
+  background: var(--proxmox-accent);
+  border-color: var(--proxmox-accent);
+}
+
+.licenses-page .ant-btn-primary:hover {
+  background: var(--proxmox-accent-hover);
+  border-color: var(--proxmox-accent-hover);
+}
+
+.licenses-page .ant-modal-content {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.licenses-page .ant-modal-header {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.licenses-page .ant-modal-title {
+  color: var(--proxmox-text-primary);
+}
+
+.licenses-page .ant-form-item-label > label {
+  color: var(--proxmox-text-secondary);
+}
+
+.licenses-page .ant-picker-dropdown {
+  background: var(--proxmox-bg-secondary);
+}

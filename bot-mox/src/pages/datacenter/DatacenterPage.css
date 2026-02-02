@@ -1,0 +1,193 @@
+.datacenter-page {
+  height: 100%;
+}
+
+.datacenter-content {
+  padding: 0;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.expiring-alert {
+  margin-bottom: 16px;
+  background: rgba(250, 173, 20, 0.1);
+  border: 1px solid var(--proxmox-warning);
+}
+
+.expiring-alert .ant-alert-message {
+  color: var(--proxmox-warning);
+  font-weight: 500;
+}
+
+.expiring-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.datacenter-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.header-icon {
+  font-size: 32px;
+  color: var(--proxmox-accent);
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-title {
+  margin: 0 !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.metrics-row {
+  margin-bottom: 16px;
+}
+
+.tables-row {
+  margin-bottom: 16px;
+}
+
+.resource-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.resource-card .ant-statistic-title {
+  color: var(--proxmox-text-secondary);
+}
+
+.resource-card .ant-statistic-content {
+  color: var(--proxmox-text-primary);
+}
+
+.stat-suffix {
+  margin-left: 12px;
+  font-size: 12px;
+}
+
+.stat-suffix .ant-tag {
+  font-size: 11px;
+}
+
+.datacenter-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  height: 100%;
+}
+
+.datacenter-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+  padding: 12px 16px;
+  min-height: auto;
+}
+
+.datacenter-card .ant-card-head-title {
+  font-family: var(--font-condensed);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--proxmox-text-primary);
+}
+
+.datacenter-card .ant-card-body {
+  padding: 16px;
+}
+
+.activity-card,
+.expiring-card {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+  height: 100%;
+}
+
+.activity-card .ant-card-head,
+.expiring-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.activity-card .ant-card-head-title,
+.expiring-card .ant-card-head-title {
+  color: var(--proxmox-text-primary);
+  font-size: 14px;
+}
+
+.datacenter-table {
+  background: transparent;
+}
+
+.datacenter-table .ant-table {
+  background: transparent;
+}
+
+.datacenter-table .ant-table-thead > tr > th {
+  background: var(--proxmox-bg-tertiary);
+  color: var(--proxmox-text-primary);
+  border-bottom: 1px solid var(--proxmox-border);
+  font-weight: 600;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 12px;
+}
+
+.datacenter-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--proxmox-bg-tertiary);
+  padding: 10px 12px;
+  color: var(--proxmox-text-secondary);
+}
+
+.datacenter-table .ant-table-tbody > tr:hover > td {
+  background: var(--proxmox-bg-hover);
+}
+
+.bot-tag {
+  background: var(--proxmox-bg-tertiary);
+  border: 1px solid var(--proxmox-border);
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-xs);
+  padding: 0 6px;
+}
+
+.expiring-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.expiring-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.expiring-meta {
+  display: flex;
+  align-items: center;
+}
+
+.no-expiring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 12px;
+}

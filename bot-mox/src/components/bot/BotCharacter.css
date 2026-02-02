@@ -1,0 +1,367 @@
+.bot-character {
+  padding: 16px;
+  max-width: 100%;
+}
+
+.character-card {
+  background: var(--proxmox-bg-secondary);
+  border-color: var(--proxmox-border);
+}
+
+.character-card .ant-card-head {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+}
+
+.character-card .ant-card-head-title {
+  color: var(--proxmox-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.character-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  color: var(--proxmox-accent);
+  font-size: 16px;
+}
+
+.incomplete-badge .ant-badge-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--proxmox-status-warning);
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  gap: 16px;
+}
+
+.loading-text {
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* View Mode */
+.character-view-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.character-header-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.character-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.character-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--proxmox-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: white;
+  border: 2px solid var(--proxmox-border-light);
+}
+
+/* Large race avatar in header */
+.character-race-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid var(--proxmox-border-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.character-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.character-name {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--proxmox-text-primary);
+  margin: 0;
+}
+
+.character-subtitle {
+  font-size: var(--text-sm);
+  color: var(--proxmox-text-secondary);
+  text-transform: capitalize;
+}
+
+.edit-button {
+  background: var(--proxmox-accent);
+  border-color: var(--proxmox-accent);
+}
+
+.edit-button:hover {
+  background: var(--proxmox-accent-hover);
+  border-color: var(--proxmox-accent-hover);
+}
+
+/* Stats Grid */
+.character-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: var(--proxmox-bg-tertiary);
+  border: 1px solid var(--proxmox-border);
+  border-radius: var(--radius-md);
+}
+
+.stat-icon {
+  font-size: 20px;
+  color: var(--proxmox-accent);
+  margin-top: 2px;
+}
+
+.stat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  color: var(--proxmox-text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  color: var(--proxmox-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.stat-value.capitalize {
+  text-transform: capitalize;
+}
+
+/* Race display with icon */
+.race-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.race-display-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.race-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Level display (read-only) */
+.level-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 28px;
+  padding: 0 10px;
+  background: var(--proxmox-accent);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+
+.level-hint {
+  font-size: var(--text-xs);
+  color: var(--proxmox-text-muted);
+  font-style: italic;
+}
+
+/* Edit Form */
+.character-form {
+  margin-top: 8px;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-label .anticon {
+  color: var(--proxmox-accent);
+}
+
+.character-form .ant-form-item-label > label {
+  color: var(--proxmox-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.character-form .ant-input,
+.character-form .ant-input-number,
+.character-form .ant-select-selector {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.character-form .ant-input:hover,
+.character-form .ant-input:focus,
+.character-form .ant-input-number:hover,
+.character-form .ant-input-number:focus,
+.character-form .ant-select-selector:hover,
+.character-form .ant-select-selector:focus {
+  border-color: var(--proxmox-accent);
+}
+
+.character-form .ant-input::placeholder {
+  color: var(--proxmox-text-muted);
+}
+
+.character-form .ant-input-number-input {
+  color: var(--proxmox-text-primary);
+}
+
+.character-form .ant-select-arrow {
+  color: var(--proxmox-text-muted);
+}
+
+.character-form .ant-select-dropdown {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.character-form .ant-select-item {
+  color: var(--proxmox-text-primary);
+}
+
+.character-form .ant-select-item-option-active,
+.character-form .ant-select-item-option-selected {
+  background: var(--proxmox-bg-hover);
+}
+
+/* Form Actions */
+.form-actions {
+  margin-top: 24px;
+  margin-bottom: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--proxmox-border);
+}
+
+.form-actions .ant-form-item-control-input-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.unsaved-changes-text {
+  font-size: var(--text-xs);
+  color: var(--proxmox-status-warning);
+}
+
+/* Button Styles */
+.character-form .ant-btn-primary {
+  background: var(--proxmox-accent);
+  border-color: var(--proxmox-accent);
+}
+
+.character-form .ant-btn-primary:hover {
+  background: var(--proxmox-accent-hover);
+  border-color: var(--proxmox-accent-hover);
+}
+
+.character-form .ant-btn-primary:disabled {
+  background: var(--proxmox-bg-hover);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-muted);
+}
+
+.character-form .ant-btn-default {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-primary);
+}
+
+.character-form .ant-btn-default:hover {
+  border-color: var(--proxmox-accent);
+  color: var(--proxmox-accent);
+}
+
+/* Alert Styles */
+.character-card .ant-alert {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-status-error);
+}
+
+.character-card .ant-alert-message {
+  color: var(--proxmox-text-primary);
+}
+
+.character-card .ant-alert-description {
+  color: var(--proxmox-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bot-character {
+    padding: 12px;
+  }
+
+  .character-header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .character-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .character-form .ant-row {
+    flex-direction: column;
+  }
+
+  .character-form .ant-col {
+    width: 100%;
+    max-width: 100%;
+  }
+}

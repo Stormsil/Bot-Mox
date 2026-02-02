@@ -1,0 +1,88 @@
+.transaction-form-modal .ant-modal-content {
+  background: var(--proxmox-bg-secondary);
+  border: 1px solid var(--proxmox-border);
+}
+
+.transaction-form-modal .ant-modal-header {
+  background: var(--proxmox-bg-secondary);
+  border-bottom: 1px solid var(--proxmox-border);
+}
+
+.transaction-form-modal .ant-modal-title {
+  color: var(--proxmox-text-primary);
+}
+
+.transaction-form-modal .ant-modal-footer {
+  border-top: 1px solid var(--proxmox-border);
+}
+
+.transaction-form .ant-form-item-label > label {
+  color: var(--proxmox-text-secondary);
+}
+
+.transaction-form .ant-radio-group {
+  display: flex;
+  gap: 8px;
+}
+
+.transaction-form .ant-radio-button-wrapper {
+  background: var(--proxmox-bg-tertiary);
+  border-color: var(--proxmox-border);
+  color: var(--proxmox-text-secondary);
+}
+
+.transaction-form .ant-radio-button-wrapper:hover {
+  color: var(--proxmox-text-primary);
+}
+
+.transaction-form .ant-radio-button-wrapper-checked {
+  background: var(--proxmox-accent);
+  border-color: var(--proxmox-accent);
+  color: white;
+}
+
+.transaction-form .ant-radio-button-wrapper-checked:hover {
+  color: white;
+}
+
+.transaction-form .ant-select-selector,
+.transaction-form .ant-input,
+.transaction-form .ant-input-number,
+.transaction-form .ant-picker {
+  background: var(--proxmox-bg-tertiary) !important;
+  border-color: var(--proxmox-border) !important;
+  color: var(--proxmox-text-primary) !important;
+}
+
+.transaction-form .ant-input::placeholder,
+.transaction-form .ant-input-number-input::placeholder {
+  color: var(--proxmox-text-muted) !important;
+}
+
+.transaction-form .ant-select-selection-placeholder {
+  color: var(--proxmox-text-muted) !important;
+}
+
+.transaction-form .ant-select-arrow,
+.transaction-form .ant-picker-suffix {
+  color: var(--proxmox-text-muted) !important;
+}
+
+.transaction-form .ant-divider {
+  border-color: var(--proxmox-border);
+}
+
+.calculated-amount {
+  background: var(--proxmox-bg-tertiary);
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--proxmox-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.calculated-amount .amount-value {
+  color: #52c41a;
+  font-size: 18px;
+}
