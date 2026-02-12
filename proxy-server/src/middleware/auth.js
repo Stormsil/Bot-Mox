@@ -1,4 +1,7 @@
 const { parseBearerToken } = require('../utils/auth-token');
+const { createSupabaseServiceClient } = require('../repositories/supabase/client');
+
+const API_ROLES_ALLOWLIST = ['api', 'admin', 'infra'];
 
 function toRoles(decodedToken = {}) {
   const roles = [];
@@ -11,6 +14,41 @@ function toRoles(decodedToken = {}) {
     for (const role of decodedToken.roles) {
       if (typeof role === 'string' && role.trim()) {
         roles.push(role.trim());
+      }
+    }
+  }
+
+  return [...new Set(roles)];
+}
+
+function toSupabaseRoles(user = {}, env = {}) {
+  const roles = ['api'];
+
+  const email = typeof user.email === 'string' ? user.email.trim().toLowerCase() : '';
+  const userId = typeof user.id === 'string' ? user.id.trim() : '';
+
+  const adminEmails = Array.isArray(env?.supabaseAdminEmails) ? env.supabaseAdminEmails : [];
+  const adminUserIds = Array.isArray(env?.supabaseAdminUserIds) ? env.supabaseAdminUserIds : [];
+
+  const normalizedAdminEmails = adminEmails
+    .map((value) => (typeof value === 'string' ? value.trim().toLowerCase() : ''))
+    .filter(Boolean);
+  const isAdmin =
+    (email && normalizedAdminEmails.includes(email)) ||
+    (userId && adminUserIds.some((entry) => String(entry || '').trim() === userId));
+
+  if (isAdmin) {
+    roles.push('admin', 'infra');
+  }
+
+  const appMetadataRoles = user?.app_metadata?.roles;
+  if (Array.isArray(appMetadataRoles)) {
+    for (const role of appMetadataRoles) {
+      if (typeof role !== 'string') continue;
+      const normalized = role.trim();
+      if (!normalized) continue;
+      if (API_ROLES_ALLOWLIST.includes(normalized)) {
+        roles.push(normalized);
       }
     }
   }
@@ -33,6 +71,27 @@ function pickTenantId(decodedToken = {}, fallbackTenantId = 'default') {
   }
 
   return 'default';
+}
+
+function pickTenantIdFromSupabaseUser(user = {}, fallbackTenantId = 'default') {
+  const candidates = [
+    user?.app_metadata?.tenant_id,
+    user?.app_metadata?.tenantId,
+    fallbackTenantId,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+
+  return 'default';
+}
+
+function isLikelyJwt(token) {
+  const parts = String(token || '').trim().split('.');
+  return parts.length === 3 && parts.every((part) => Boolean(part));
 }
 
 function parseTokenFromRequest(req, { allowQueryToken = false } = {}) {
@@ -96,6 +155,47 @@ function hasRole(auth, role) {
 function createAuthMiddleware({ admin, env, isFirebaseReady }) {
   const defaultTenantId = String(env?.defaultTenantId || 'default').trim() || 'default';
 
+  async function authenticateSupabaseToken(token) {
+    if (!env?.supabaseUrl || !env?.supabaseServiceRoleKey) {
+      return null;
+    }
+
+    if (!isLikelyJwt(token)) {
+      return null;
+    }
+
+    const clientResult = createSupabaseServiceClient(env);
+    if (!clientResult.ok || !clientResult.client) {
+      return null;
+    }
+
+    try {
+      const { data, error } = await clientResult.client.auth.getUser(token);
+      if (error || !data?.user) {
+        return null;
+      }
+
+      const tenantId = pickTenantIdFromSupabaseUser(data.user, defaultTenantId);
+
+      return {
+        ok: true,
+        status: 200,
+        auth: {
+          source: 'supabase',
+          uid: data.user.id,
+          email: data.user.email || null,
+          roles: toSupabaseRoles(data.user, env),
+          claims: {
+            supabase: data.user,
+          },
+          tenant_id: tenantId,
+        },
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
   async function authenticateToken(token) {
     if (!token) {
       return makeAuthError(401, 'Bearer token is required');
@@ -129,7 +229,15 @@ function createAuthMiddleware({ admin, env, isFirebaseReady }) {
       };
     }
 
+    const supabaseResult = await authenticateSupabaseToken(token);
+    if (supabaseResult?.ok) {
+      return supabaseResult;
+    }
+
     if (!isFirebaseReady()) {
+      if (env?.supabaseUrl && env?.supabaseServiceRoleKey) {
+        return makeAuthError(401, 'Token verification failed');
+      }
       return makeAuthError(401, 'Firebase Auth is not available for token verification');
     }
 

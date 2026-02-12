@@ -47,6 +47,7 @@ Storage providers:
 
 - Bearer auth middleware: `proxy-server/src/middleware/auth.js`
 - Tenant context on auth payload (`tenant_id`)
+- Supported auth backends: internal tokens + Supabase Auth (see `docs/AUTH.md`)
 - Infra RBAC gate (`infra` role) on `/api/v1/infra/*`
 - Infra auth gate for UI proxy and WebSocket channels (`/proxmox-ui*`, `/tinyfm-ui*`, `/syncthing-ui*`, `/ws/vm-operations*`)
 - Audit logging for infra mutating operations

@@ -1,7 +1,6 @@
 import type { AuthProvider } from '@refinedev/core';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { buildApiUrl } from '../config/env';
-import { auth, hasFirebaseAuth } from '../utils/firebase';
+import { hasSupabaseAuth, supabase } from '../utils/supabase';
 
 const AUTH_TOKEN_KEY = 'botmox.auth.token';
 const AUTH_IDENTITY_KEY = 'botmox.auth.identity';
@@ -102,6 +101,39 @@ async function ensureSessionValid(): Promise<boolean> {
   return true;
 }
 
+async function ensureSupabaseSessionValid(): Promise<boolean> {
+  if (!hasSupabaseAuth || !supabase) {
+    return false;
+  }
+
+  const sessionResult = await supabase.auth.getSession().catch(() => null);
+  const session = sessionResult?.data?.session || null;
+
+  if (!session?.access_token) {
+    return false;
+  }
+
+  const verified = await verifyTokenWithBackend(session.access_token);
+  if (verified) {
+    saveSession(session.access_token, verified);
+    return true;
+  }
+
+  const refreshed = await supabase.auth.refreshSession().catch(() => null);
+  const refreshedSession = refreshed?.data?.session || null;
+  if (!refreshedSession?.access_token) {
+    return false;
+  }
+
+  const verifiedAfterRefresh = await verifyTokenWithBackend(refreshedSession.access_token);
+  if (!verifiedAfterRefresh) {
+    return false;
+  }
+
+  saveSession(refreshedSession.access_token, verifiedAfterRefresh);
+  return true;
+}
+
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
     if (DEV_AUTH_BYPASS_ENABLED) {
@@ -143,29 +175,57 @@ export const authProvider: AuthProvider = {
       };
     }
 
-    if (!hasFirebaseAuth || !auth) {
+    if (!hasSupabaseAuth || !supabase) {
       return {
         success: false,
         error: {
-          name: 'FirebaseNotConfigured',
+          name: 'SupabaseNotConfigured',
           message:
-            'Firebase Auth is not configured. Set VITE_FIREBASE_* in bot-mox/.env or use VITE_INTERNAL_API_TOKEN for internal mode.',
+            'Supabase Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in bot-mox/.env or use VITE_INTERNAL_API_TOKEN for internal mode.',
         },
       };
     }
 
     try {
-      const credential = await signInWithEmailAndPassword(auth, email, password);
-      const token = await credential.user.getIdToken();
+      const result = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (result.error) {
+        return {
+          success: false,
+          error: {
+            name: 'LoginError',
+            message: result.error.message || 'Invalid email or password',
+          },
+        };
+      }
+
+      const token = result.data.session?.access_token || '';
+      if (!token) {
+        return {
+          success: false,
+          error: {
+            name: 'LoginError',
+            message: 'Supabase did not return access token',
+          },
+        };
+      }
+
       const verifiedIdentity = await verifyTokenWithBackend(token);
 
       if (!verifiedIdentity) {
-        await signOut(auth);
+        try {
+          await supabase.auth.signOut();
+        } catch {
+          // ignore
+        }
         return {
           success: false,
           error: {
             name: 'TokenVerificationFailed',
-            message: 'Backend rejected Firebase token',
+            message: 'Backend rejected Supabase token',
           },
         };
       }
@@ -198,11 +258,12 @@ export const authProvider: AuthProvider = {
     }
 
     clearSession();
-    if (auth) {
+
+    if (supabase) {
       try {
-        await signOut(auth);
+        await supabase.auth.signOut();
       } catch {
-        // Firebase session may already be invalid.
+        // Supabase session may already be invalid.
       }
     }
 
@@ -220,7 +281,7 @@ export const authProvider: AuthProvider = {
       };
     }
 
-    const isValid = await ensureSessionValid();
+    const isValid = (await ensureSupabaseSessionValid()) || (await ensureSessionValid());
 
     if (isValid) {
       return {

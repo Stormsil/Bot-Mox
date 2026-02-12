@@ -65,6 +65,8 @@ const env = {
   dataBackend: parseDataBackend(process.env.DATA_BACKEND, 'rtdb'),
   supabaseUrl: String(process.env.SUPABASE_URL || '').trim(),
   supabaseServiceRoleKey: String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim(),
+  supabaseAdminEmails: parseCsv(process.env.SUPABASE_ADMIN_EMAILS, []),
+  supabaseAdminUserIds: parseCsv(process.env.SUPABASE_ADMIN_USER_IDS, []),
   s3Endpoint: String(process.env.S3_ENDPOINT || '').trim(),
   s3Region: String(process.env.S3_REGION || 'us-east-1').trim() || 'us-east-1',
   s3BucketArtifacts: String(process.env.S3_BUCKET_ARTIFACTS || '').trim(),
