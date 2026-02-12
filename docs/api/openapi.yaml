@@ -291,6 +291,63 @@ components:
         reason:
           type: string
       required: [lease_id]
+    ArtifactReleaseCreateRequest:
+      type: object
+      properties:
+        module:
+          type: string
+        platform:
+          type: string
+        channel:
+          type: string
+          default: stable
+        version:
+          type: string
+        object_key:
+          type: string
+        sha256:
+          type: string
+          pattern: '^[a-fA-F0-9]{64}$'
+        size_bytes:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [draft, active, disabled, archived]
+          default: active
+      required: [module, platform, version, object_key, sha256, size_bytes]
+    ArtifactAssignRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: Optional. If omitted, creates tenant-default assignment.
+        module:
+          type: string
+        platform:
+          type: string
+        channel:
+          type: string
+          default: stable
+        release_id:
+          type: integer
+          minimum: 1
+      required: [module, platform, release_id]
+    ArtifactResolveDownloadRequest:
+      type: object
+      properties:
+        lease_token:
+          type: string
+        vm_uuid:
+          type: string
+        module:
+          type: string
+        platform:
+          type: string
+        channel:
+          type: string
+          default: stable
+      required: [lease_token, vm_uuid, module, platform]
 paths:
   /api/v1/health:
     get:
@@ -984,6 +1041,83 @@ paths:
       responses:
         '200':
           description: Lease revoked
+  /api/v1/artifacts/releases:
+    post:
+      summary: Create artifact release metadata (admin/infra)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtifactReleaseCreateRequest'
+      responses:
+        '201':
+          description: Artifact release created
+        '403':
+          description: Forbidden
+  /api/v1/artifacts/assign:
+    post:
+      summary: Assign artifact release to user or tenant default (admin/infra)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtifactAssignRequest'
+      responses:
+        '201':
+          description: Artifact assignment upserted
+        '403':
+          description: Forbidden
+  /api/v1/artifacts/assign/{userId}/{module}:
+    get:
+      summary: Get effective assignment for user/module (admin/infra)
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: module
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: platform
+          required: false
+          schema:
+            type: string
+            default: windows
+        - in: query
+          name: channel
+          required: false
+          schema:
+            type: string
+            default: stable
+      responses:
+        '200':
+          description: Effective assignment payload
+        '403':
+          description: Forbidden
+  /api/v1/artifacts/resolve-download:
+    post:
+      summary: Resolve short-lived artifact download URL by active execution lease
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtifactResolveDownloadRequest'
+      responses:
+        '200':
+          description: Resolved download URL and artifact metadata
+        '403':
+          description: VM/module/entitlement mismatch
+        '404':
+          description: Assignment or release not found
+        '409':
+          description: Lease inactive/expired or release not active
   /api/v1/infra/proxmox/status:
     get:
       summary: Infra Proxmox status (infra role)

@@ -5,6 +5,7 @@ const RESOURCE_KINDS = ['licenses', 'proxies', 'subscriptions'];
 const WORKSPACE_KINDS = ['notes', 'calendar', 'kanban'];
 const PROJECT_IDS = ['wow_tbc', 'wow_midnight'];
 const STORAGE_OPERATIONAL_MODES = ['local', 'cloud'];
+const ARTIFACT_RELEASE_STATUSES = ['draft', 'active', 'disabled', 'archived'];
 
 const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_24H_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -733,6 +734,33 @@ const licenseRevokeSchema = z.object({
   reason: z.string().trim().max(500).optional(),
 });
 
+const artifactReleaseCreateSchema = z.object({
+  module: z.string().trim().min(1).max(200),
+  platform: z.string().trim().min(1).max(100),
+  channel: z.string().trim().min(1).max(100).optional().default('stable'),
+  version: z.string().trim().min(1).max(100),
+  object_key: z.string().trim().min(1).max(1024),
+  sha256: z.string().trim().regex(/^[a-fA-F0-9]{64}$/),
+  size_bytes: z.coerce.number().int().positive(),
+  status: z.enum(ARTIFACT_RELEASE_STATUSES).optional().default('active'),
+});
+
+const artifactAssignSchema = z.object({
+  user_id: z.string().trim().min(1).max(200).optional(),
+  module: z.string().trim().min(1).max(200),
+  platform: z.string().trim().min(1).max(100),
+  channel: z.string().trim().min(1).max(100).optional().default('stable'),
+  release_id: z.coerce.number().int().positive(),
+});
+
+const artifactResolveDownloadSchema = z.object({
+  lease_token: z.string().trim().min(1),
+  vm_uuid: z.string().trim().min(8).max(128).regex(/^[A-Za-z0-9:_-]+$/),
+  module: z.string().trim().min(1).max(200),
+  platform: z.string().trim().min(1).max(100),
+  channel: z.string().trim().min(1).max(100).optional().default('stable'),
+});
+
 const upsertPayloadSchema = z.record(z.unknown());
 
 function getResourceCreateSchema(kind) {
@@ -891,5 +919,8 @@ module.exports = {
   licenseLeaseRequestSchema,
   licenseHeartbeatSchema,
   licenseRevokeSchema,
+  artifactReleaseCreateSchema,
+  artifactAssignSchema,
+  artifactResolveDownloadSchema,
   upsertPayloadSchema,
 };

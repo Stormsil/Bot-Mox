@@ -28,6 +28,7 @@ Domain routers:
 - `finance.routes.js`
 - `vm.routes.js` (`/api/v1/vm/*`, tenant-scoped VM UUID registry)
 - `license.routes.js` (`/api/v1/license/*`, execution lease + heartbeat/revoke)
+- `artifacts.routes.js` (`/api/v1/artifacts/*`, release assignment + lease-gated download resolve)
 - `ipqs.routes.js`
 - `wow-names.routes.js`
 - `infra.routes.js`
@@ -36,6 +37,11 @@ Domain services:
 
 - `modules/vm-registry/service.js`
 - `modules/license/service.js`
+- `modules/artifacts/service.js`
+
+Storage providers:
+
+- `repositories/s3/storage-provider.js` (MinIO/S3 adapter for artifacts delivery)
 
 ## Security Baseline
 

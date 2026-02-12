@@ -142,7 +142,7 @@ Phase A exit criteria:
 
 ## Phase B: MinIO Artifacts + Lease-Gated Downloads
 
-### B-01 `TODO` Add artifacts data model in Supabase
+### B-01 `GREEN` Add artifacts data model in Supabase
 Scope:
 1. `artifact_releases`.
 2. `artifact_assignments`.
@@ -152,7 +152,10 @@ Green checks:
 1. Tenant-scoped queries validated.
 2. Indexes support lookup by tenant/module/channel/platform.
 
-### B-02 `TODO` Add backend S3 storage provider abstraction
+Evidence:
+1. `supabase/migrations/20260212000200_create_artifacts_domain.sql`
+
+### B-02 `GREEN` Add backend S3 storage provider abstraction
 Scope:
 1. `StorageProvider` interface for S3/MinIO operations.
 2. MinIO implementation with strict private bucket policy.
@@ -161,7 +164,13 @@ Green checks:
 1. Presigned URL TTL is configurable and short-lived.
 2. No public object listing/anonymous read.
 
-### B-03 `TODO` Implement artifacts API module
+Evidence:
+1. `proxy-server/src/repositories/s3/storage-provider.js`
+2. `proxy-server/src/modules/v1/health.js`
+3. `proxy-server/src/config/env.js`
+4. `proxy-server/.env.example`
+
+### B-03 `GREEN` Implement artifacts API module
 Scope:
 1. `POST /api/v1/artifacts/releases`.
 2. `POST /api/v1/artifacts/assign`.
@@ -174,13 +183,30 @@ Green checks:
 3. Revoked/expired lease is rejected.
 4. Audit entry created on each resolve attempt.
 
-### B-04 `TODO` Integrate runner flow end-to-end
+Evidence:
+1. `proxy-server/src/modules/artifacts/service.js`
+2. `proxy-server/src/modules/v1/artifacts.routes.js`
+3. `proxy-server/src/modules/license/service.js`
+4. `proxy-server/src/contracts/schemas.js`
+5. `proxy-server/src/modules/v1/index.js`
+6. `docs/api/openapi.yaml`
+
+Validation:
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+3. `npm run check:secrets`
+
+### B-04 `WIP` Integrate runner flow end-to-end
 Scope:
 1. `vm/register` -> `license/lease` -> `artifacts/resolve-download` -> download + sha256 verify.
 
 Green checks:
 1. Positive scenario works with active entitlement.
 2. Negative scenarios from plan are covered (403/404/409).
+
+Evidence (WIP):
+1. `scripts/artifacts-e2e-smoke.js` (runner flow smoke script, includes sha256 + negative cases)
+2. `scripts/README.md` (execution instructions)
 
 Phase B exit criteria:
 1. Artifacts can be delivered only via active lease + tenant ownership.
@@ -299,14 +325,13 @@ Phase D exit criteria:
 ## Immediate Sprint (Next 7-10 Working Days)
 Priority tasks:
 1. A-06.
-2. B-01 and B-02.
-3. B-03 starts after B-01/B-02.
+2. B-04.
 
 Sprint definition of done:
 1. Production-like compose + image pipeline exist in repo.
 2. Manual deploy/rollback workflow exists.
 3. Health/live/ready endpoints are implemented.
-4. Artifacts schema and S3 provider baseline are ready for API wiring.
+4. Artifacts resolve-download path is end-to-end verified (lease + sha256).
 
 ## Tracking Rules
 1. Each task status change must update this document in the same PR.

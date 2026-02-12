@@ -21,6 +21,14 @@ function base64url(input) {
     .replace(/=+$/g, '');
 }
 
+function fromBase64url(input) {
+  const normalized = String(input || '')
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+  const padded = normalized + '==='.slice((normalized.length + 3) % 4);
+  return Buffer.from(padded, 'base64').toString('utf8');
+}
+
 function signJwtHs256(payload, secret) {
   const header = {
     alg: 'HS256',
@@ -37,6 +45,65 @@ function signJwtHs256(payload, secret) {
     .replace(/\//g, '_')
     .replace(/=+$/g, '');
   return `${signingInput}.${signature}`;
+}
+
+function verifyJwtHs256(token, secret) {
+  const normalizedToken = String(token || '').trim();
+  if (!normalizedToken) {
+    throw new LicenseServiceError(401, 'UNAUTHORIZED', 'lease_token is required');
+  }
+
+  const parts = normalizedToken.split('.');
+  if (parts.length !== 3) {
+    throw new LicenseServiceError(401, 'UNAUTHORIZED', 'Invalid lease token format');
+  }
+
+  const [encodedHeader, encodedPayload, encodedSignature] = parts;
+  const signingInput = `${encodedHeader}.${encodedPayload}`;
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(signingInput)
+    .digest('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+
+  try {
+    const expectedBuffer = Buffer.from(expectedSignature);
+    const providedBuffer = Buffer.from(encodedSignature);
+    const validSignature =
+      expectedBuffer.length === providedBuffer.length &&
+      crypto.timingSafeEqual(expectedBuffer, providedBuffer);
+    if (!validSignature) {
+      throw new LicenseServiceError(401, 'UNAUTHORIZED', 'Invalid lease token signature');
+    }
+  } catch (error) {
+    if (error instanceof LicenseServiceError) {
+      throw error;
+    }
+    throw new LicenseServiceError(401, 'UNAUTHORIZED', 'Invalid lease token signature');
+  }
+
+  let header;
+  let payload;
+  try {
+    header = JSON.parse(fromBase64url(encodedHeader));
+    payload = JSON.parse(fromBase64url(encodedPayload));
+  } catch {
+    throw new LicenseServiceError(401, 'UNAUTHORIZED', 'Invalid lease token payload');
+  }
+
+  if (String(header?.alg || '').toUpperCase() !== 'HS256') {
+    throw new LicenseServiceError(401, 'UNAUTHORIZED', 'Unsupported lease token algorithm');
+  }
+
+  const exp = Number(payload?.exp || 0);
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  if (!Number.isFinite(exp) || exp <= nowSeconds) {
+    throw new LicenseServiceError(409, 'LEASE_EXPIRED', 'Execution lease token is expired');
+  }
+
+  return payload;
 }
 
 function toObjectEntries(value) {
@@ -313,10 +380,84 @@ function createLicenseService({ admin, env, vmRegistryService }) {
     };
   }
 
+  async function resolveActiveLeaseByToken({
+    tenantId,
+    token,
+    expectedVmUuid,
+    expectedModule,
+  }) {
+    const normalizedTenantId = String(tenantId || '').trim() || 'default';
+    if (!signingSecret) {
+      throw new LicenseServiceError(500, 'CONFIG_ERROR', 'LICENSE_LEASE_SECRET is not configured');
+    }
+
+    const payload = verifyJwtHs256(token, signingSecret);
+    const leaseId = String(payload?.jti || '').trim();
+    if (!leaseId) {
+      throw new LicenseServiceError(401, 'UNAUTHORIZED', 'lease_token does not contain jti');
+    }
+
+    const ref = admin.database().ref(tenantPath(normalizedTenantId, 'execution_leases', leaseId));
+    const snapshot = await ref.once('value');
+    if (!snapshot.exists()) {
+      throw new LicenseServiceError(404, 'LEASE_NOT_FOUND', 'Execution lease not found');
+    }
+
+    const lease = snapshot.val() || {};
+    if (lease.token && String(lease.token || '').trim() !== String(token || '').trim()) {
+      throw new LicenseServiceError(401, 'UNAUTHORIZED', 'Execution lease token mismatch');
+    }
+
+    const leaseTenantId = String(lease.tenant_id || '').trim() || normalizedTenantId;
+    if (leaseTenantId !== normalizedTenantId) {
+      throw new LicenseServiceError(403, 'FORBIDDEN', 'Execution lease tenant mismatch');
+    }
+
+    const status = String(lease.status || 'active').trim().toLowerCase();
+    if (status !== 'active') {
+      throw new LicenseServiceError(409, 'LEASE_INACTIVE', 'Execution lease is not active');
+    }
+
+    const expiresAtMs = Number(lease.expires_at || Number(payload.exp || 0) * 1000);
+    if (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now()) {
+      throw new LicenseServiceError(409, 'LEASE_EXPIRED', 'Execution lease is expired');
+    }
+
+    const leaseVmUuid = vmRegistryService.normalizeVmUuid(lease.vm_uuid || payload.vm_uuid);
+    if (expectedVmUuid) {
+      const normalizedExpectedVmUuid = vmRegistryService.normalizeVmUuid(expectedVmUuid);
+      if (leaseVmUuid !== normalizedExpectedVmUuid) {
+        throw new LicenseServiceError(403, 'VM_UUID_MISMATCH', 'Execution lease vm_uuid mismatch');
+      }
+    }
+
+    const leaseModule = String(lease.module || payload.module || '').trim();
+    if (expectedModule) {
+      const normalizedModule = String(expectedModule || '').trim();
+      if (!leaseModule || leaseModule !== normalizedModule) {
+        throw new LicenseServiceError(403, 'MODULE_MISMATCH', 'Execution lease module mismatch');
+      }
+    }
+
+    return {
+      lease_id: leaseId,
+      lease: {
+        ...lease,
+        id: leaseId,
+        vm_uuid: leaseVmUuid,
+        module: leaseModule,
+        tenant_id: leaseTenantId,
+        expires_at: expiresAtMs,
+      },
+      token_payload: payload,
+    };
+  }
+
   return {
     issueExecutionLease,
     heartbeatLease,
     revokeLease,
+    resolveActiveLeaseByToken,
   };
 }
 

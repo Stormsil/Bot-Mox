@@ -148,6 +148,7 @@ Type: `data`
 Priority: `P0`  
 Depends on: `A-02`  
 Estimate: `1-2d`
+Status: `GREEN`
 
 Scope:
 1. Add migrations for `artifact_releases`.
@@ -168,6 +169,7 @@ Type: `backend`
 Priority: `P0`  
 Depends on: `A-02`  
 Estimate: `2d`
+Status: `GREEN`
 
 Scope:
 1. Add storage provider interface in backend.
@@ -188,6 +190,7 @@ Type: `backend`
 Priority: `P0`  
 Depends on: `B-01`, `B-02`  
 Estimate: `2-3d`
+Status: `GREEN`
 
 Scope:
 1. Add `POST /api/v1/artifacts/releases`.
@@ -209,6 +212,7 @@ Type: `backend`
 Priority: `P1`  
 Depends on: `B-03`  
 Estimate: `2d`
+Status: `WIP`
 
 Scope:
 1. Wire `vm/register` + `license/lease` + `artifacts/resolve-download`.
@@ -220,7 +224,7 @@ DoD:
 3. SHA-256 verification is enforced in flow docs/examples.
 
 Validation:
-1. Manual end-to-end script execution.
+1. Run `npm run smoke:artifacts:e2e` with valid env/secrets and an existing assignment (or set `E2E_RELEASE_ID`).
 2. Audit records confirm each resolve/download attempt.
 
 ## Phase C (P0): Agent Command Bus + E2E Secrets
@@ -402,11 +406,10 @@ Validation:
 
 ## Sprint Plan (Immediate)
 Sprint target (7-10 working days):
-1. `A-01`, `A-02`, `A-04`, `A-05`.
-2. `B-01`, `B-02`.
-3. Start `B-03` if capacity remains.
+1. `A-06`.
+2. `B-04`.
 
 Sprint success criteria:
 1. Stack and CD are operational.
 2. Health/readiness contract is live.
-3. Artifacts domain schema and storage adapter are ready for API completion.
+3. Runner artifacts download flow is verified end-to-end (lease + sha256).

@@ -13,8 +13,10 @@ const { createIpqsRoutes } = require('./ipqs.routes');
 const { createWowNamesRoutes } = require('./wow-names.routes');
 const { createVmRoutes } = require('./vm.routes');
 const { createLicenseRoutes } = require('./license.routes');
+const { createArtifactsRoutes } = require('./artifacts.routes');
 const { createVmRegistryService } = require('../vm-registry/service');
 const { createLicenseService } = require('../license/service');
+const { createArtifactsService } = require('../artifacts/service');
 const { createAuditLogMiddleware } = require('../../middleware/audit-log');
 const { asyncHandler } = require('./helpers');
 const {
@@ -42,6 +44,10 @@ function createApiV1Router({
     admin,
     env,
     vmRegistryService,
+  });
+  const artifactsService = createArtifactsService({
+    env,
+    licenseService,
   });
 
   router.get('/health/live', (_req, res) => {
@@ -76,6 +82,7 @@ function createApiV1Router({
   router.use('/finance', createFinanceRoutes({ admin }));
   router.use('/vm', createVmRoutes({ vmRegistryService }));
   router.use('/license', createLicenseRoutes({ licenseService, authMiddleware }));
+  router.use('/artifacts', createArtifactsRoutes({ artifactsService, authMiddleware }));
   if (ipqsService) {
     router.use('/ipqs', createIpqsRoutes({ ipqsService }));
   }

@@ -49,8 +49,8 @@ node scripts/check-bundle-budgets.js
 
 ## `check-secrets.js`
 
-Проверяет только tracked-файлы (`git ls-files`) на признаки утечки секретов.
-Локальные untracked файлы (например, `bot-mox/.env`) не участвуют в скане.
+Проверяет tracked + untracked файлы (`git ls-files --cached --others --exclude-standard`) на признаки утечки секретов.
+Gitignored файлы (например, локальные `.env`/secrets) в скане не участвуют.
 
 Запуск:
 
@@ -67,6 +67,38 @@ node scripts/check-secrets.js
 
 ```bash
 node scripts/cleanup-database.js
+```
+
+## `artifacts-e2e-smoke.js`
+
+Smoke-сценарий для цепочки `vm/register -> license/lease -> artifacts/resolve-download -> download + sha256`.
+Также проверяет негативные кейсы:
+
+- `VM_UUID_MISMATCH` (`403`)
+- `MODULE_MISMATCH` (`403`)
+- `LEASE_INACTIVE` после revoke (`409`)
+
+Минимальные env:
+
+```bash
+API_BEARER_TOKEN=<token>
+E2E_USER_ID=<user-id>
+```
+
+Опциональные env:
+
+- `API_BASE_URL` (default: `http://localhost:3001`)
+- `E2E_VM_UUID` (default: random generated)
+- `E2E_MODULE` (default: `runner-installer`)
+- `E2E_PLATFORM` (default: `windows`)
+- `E2E_CHANNEL` (default: `stable`)
+- `E2E_AGENT_ID` / `E2E_RUNNER_ID`
+- `E2E_RELEASE_ID` (если задан, скрипт делает `POST /api/v1/artifacts/assign`)
+
+Запуск:
+
+```bash
+npm run smoke:artifacts:e2e
 ```
 
 ## Removed Legacy

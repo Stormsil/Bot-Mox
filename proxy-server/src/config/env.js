@@ -11,6 +11,11 @@ function toInt(value, fallback) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function toBoundedInt(value, fallback, min, max) {
+  const parsed = toInt(value, fallback);
+  return Math.max(min, Math.min(max, parsed));
+}
+
 function parseBoolean(value, fallback = false) {
   if (value === undefined || value === null || value === '') return fallback;
   const normalized = String(value).trim().toLowerCase();
@@ -66,7 +71,7 @@ const env = {
   s3AccessKeyId: String(process.env.S3_ACCESS_KEY_ID || '').trim(),
   s3SecretAccessKey: String(process.env.S3_SECRET_ACCESS_KEY || '').trim(),
   s3ForcePathStyle: parseBoolean(process.env.S3_FORCE_PATH_STYLE, true),
-  s3PresignTtlSeconds: toInt(process.env.S3_PRESIGN_TTL_SECONDS, 300),
+  s3PresignTtlSeconds: toBoundedInt(process.env.S3_PRESIGN_TTL_SECONDS, 300, 60, 300),
   requireS3Ready: parseBoolean(process.env.REQUIRE_S3_READY, false),
   requireSupabaseReady: parseBoolean(process.env.REQUIRE_SUPABASE_READY, false),
   readinessProbeTimeoutMs: toInt(process.env.READINESS_PROBE_TIMEOUT_MS, 2000),

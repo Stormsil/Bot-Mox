@@ -80,6 +80,9 @@
 8. Revoked lease -> новые URL не выдаются.
 9. Секреты не попадают в API и логи.
 
+Smoke automation:
+- `npm run smoke:artifacts:e2e` (см. `scripts/artifacts-e2e-smoke.js`)
+
 ## Дефолты и assumptions
 1. Storage: MinIO self-hosted.
 2. Download auth: presigned URL 1-5 min.

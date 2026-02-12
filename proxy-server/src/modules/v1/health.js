@@ -1,20 +1,5 @@
-const axios = require('axios');
 const { createSupabaseServiceClient } = require('../../repositories/supabase/client');
-
-function buildMinioProbeUrl(endpoint) {
-  const raw = String(endpoint || '').trim();
-  if (!raw) return '';
-
-  try {
-    const parsed = new URL(raw);
-    parsed.pathname = '/minio/health/ready';
-    parsed.search = '';
-    parsed.hash = '';
-    return parsed.toString();
-  } catch {
-    return '';
-  }
-}
+const { createS3StorageProvider } = require('../../repositories/s3/storage-provider');
 
 function isSupabaseRequired(env) {
   return String(env?.dataBackend || '').toLowerCase() === 'supabase' || Boolean(env?.requireSupabaseReady);
@@ -72,41 +57,31 @@ async function probeSupabase(env) {
 
 async function probeS3(env) {
   const required = isS3Required(env);
-  const endpoint = String(env?.s3Endpoint || '').trim();
-  if (!endpoint) {
+  const providerResult = createS3StorageProvider({ env });
+  if (!providerResult.enabled || !providerResult.provider) {
     return {
       required,
-      ready: !required,
-      reason: 'not-configured',
+      ready: !required && providerResult.code === 'S3_NOT_CONFIGURED',
+      reason: providerResult.reason || 's3-provider-config-error',
+      code: providerResult.code,
     };
   }
 
-  const probeUrl = buildMinioProbeUrl(endpoint);
-  if (!probeUrl) {
+  const readiness = await providerResult.provider.probeReadiness();
+  if (readiness.ready) {
     return {
       required,
-      ready: false,
-      reason: 'invalid-s3-endpoint-url',
+      ready: true,
+      code: 'OK',
     };
   }
 
-  try {
-    const response = await axios.get(probeUrl, {
-      timeout: Math.max(500, Number(env?.readinessProbeTimeoutMs || 2000)),
-      validateStatus: (status) => status >= 200 && status < 500,
-    });
-    return {
-      required,
-      ready: response.status >= 200 && response.status < 400,
-      status: response.status,
-    };
-  } catch (error) {
-    return {
-      required,
-      ready: false,
-      reason: error instanceof Error ? error.message : String(error),
-    };
-  }
+  return {
+    required,
+    ready: false,
+    reason: readiness.reason || 's3-readiness-check-failed',
+    code: 'S3_NOT_READY',
+  };
 }
 
 async function getHealthChecks({ env, isFirebaseReady }) {

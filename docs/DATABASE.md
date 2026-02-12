@@ -29,6 +29,9 @@
 ## Supabase (Staged)
 
 - `public.storage_policies` (first migrated path for `settings/storage_policy` when `DATA_BACKEND=supabase`)
+- `public.artifact_releases` (tenant-scoped artifact release metadata)
+- `public.artifact_assignments` (tenant default + per-user release assignment)
+- `public.artifact_download_audit` (lease-gated artifact resolve audit trail)
 
 ## Rules
 
@@ -47,6 +50,10 @@
 - `POST /api/v1/license/lease`
 - `POST /api/v1/license/heartbeat`
 - `POST /api/v1/license/revoke`
+- `POST /api/v1/artifacts/releases`
+- `POST /api/v1/artifacts/assign`
+- `GET /api/v1/artifacts/assign/{userId}/{module}`
+- `POST /api/v1/artifacts/resolve-download`
 
 Legacy `/api/*` adapters are removed.
 
