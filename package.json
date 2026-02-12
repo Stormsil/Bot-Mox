@@ -11,6 +11,8 @@
     "dev:supabase:stop": "npx supabase stop",
     "dev:supabase:status": "npx supabase status",
     "dev:supabase:bootstrap-env": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-supabase-env.ps1",
+    "supabase:create-user": "node scripts/supabase-create-user.js",
+    "supabase:generate-keys": "node scripts/supabase-generate-keys.js",
     "check:docker:wsl": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-docker-wsl.ps1",
     "dev:docker:up": "docker compose -f docker-compose.local.yml up",
     "dev:docker:down": "docker compose -f docker-compose.local.yml down",

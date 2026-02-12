@@ -14,15 +14,27 @@
 	reverse_proxy minio:9000
 }
 
+{$SUPABASE_DOMAIN:supabase.localhost} {
+	reverse_proxy supabase-kong:8000
+}
+
 :80 {
 	@api path /api/* /ws/* /ws/v1/*
 	handle @api {
 		reverse_proxy backend:3001
 	}
 
-	@s3 path /s3/* /minio/*
-	handle_path @s3 {
+	handle_path /s3/* {
 		reverse_proxy minio:9000
+	}
+
+	handle_path /minio/* {
+		reverse_proxy minio:9000
+	}
+
+	@supabase path /auth/* /rest/* /storage/*
+	handle @supabase {
+		reverse_proxy supabase-kong:8000
 	}
 
 	handle {

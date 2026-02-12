@@ -40,6 +40,7 @@ Reasoning: this order gives deploy safety first, then one vertical business flow
 Scope:
 1. `bot-mox/Dockerfile` (multi-stage frontend build + static serving image).
 2. `proxy-server/Dockerfile` (production Node runtime).
+3. Frontend runtime env injection (`runtime-config.js`) for production-like deployments.
 
 Green checks:
 1. Images build locally with no errors.
@@ -47,7 +48,8 @@ Green checks:
 
 Evidence:
 1. `bot-mox/Dockerfile`
-2. `proxy-server/Dockerfile`
+2. `bot-mox/docker-entrypoint.sh`
+3. `proxy-server/Dockerfile`
 
 ### A-02 `GREEN` Add deploy stack manifests
 Scope:
@@ -56,6 +58,7 @@ Scope:
 3. `deploy/compose.prod-sim.env.example`.
 4. `deploy/compose.prod.env.example`.
 5. `deploy/caddy/Caddyfile`.
+6. Supabase core routing via Kong (`deploy/supabase/kong.yml`).
 
 Green checks:
 1. Local `prod-sim` boot is successful.
@@ -68,6 +71,7 @@ Evidence:
 3. `deploy/compose.prod-sim.env.example`
 4. `deploy/compose.prod.env.example`
 5. `deploy/caddy/Caddyfile`
+6. `deploy/supabase/kong.yml`
 
 ### A-03 `GREEN` Add stack scripts
 Scope:

@@ -76,6 +76,7 @@ const env = {
   s3PresignTtlSeconds: toBoundedInt(process.env.S3_PRESIGN_TTL_SECONDS, 300, 60, 300),
   requireS3Ready: parseBoolean(process.env.REQUIRE_S3_READY, false),
   requireSupabaseReady: parseBoolean(process.env.REQUIRE_SUPABASE_READY, false),
+  requireFirebaseReady: parseBoolean(process.env.REQUIRE_FIREBASE_READY, false),
   readinessProbeTimeoutMs: toInt(process.env.READINESS_PROBE_TIMEOUT_MS, 2000),
 };
 

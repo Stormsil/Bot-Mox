@@ -23,6 +23,29 @@
 
 и поднимает стек по `deploy/compose.stack.yml`.
 
+## Supabase helpers
+
+### `supabase-generate-keys.js`
+
+Генерирует `SUPABASE_ANON_KEY` и `SUPABASE_SERVICE_ROLE_KEY` из `SUPABASE_JWT_SECRET` (HS256).
+
+Запуск:
+
+```bash
+npm run supabase:generate-keys -- --jwt-secret "<32+ char secret>" --issuer "supabase"
+```
+
+### `supabase-create-user.js`
+
+Создает первого пользователя Supabase Auth (email/password) через admin endpoint GoTrue.
+Требует `SUPABASE_PUBLIC_URL` и `SUPABASE_SERVICE_ROLE_KEY`.
+
+Запуск:
+
+```bash
+npm run supabase:create-user -- --email "admin@example.com" --password "ChangeMeNow!" --tenant "default"
+```
+
 ## Deployment and rollback
 
 - `scripts/deploy-vps.sh`
@@ -84,6 +107,10 @@ Smoke-сценарий для цепочки `vm/register -> license/lease -> ar
 RUNNER_BEARER_TOKEN=<token>
 E2E_USER_ID=<user-id>
 ```
+
+Где брать токены:
+- `RUNNER_BEARER_TOKEN`: обычно это `INTERNAL_API_TOKEN` (роль `api`) или Supabase `access_token` (JWT) после login.
+- `ADMIN_BEARER_TOKEN`: обычно это `INTERNAL_INFRA_TOKEN` (роли `admin+infra`) или Supabase `access_token` пользователя, который allowlisted как admin/infra.
 
 Опциональные env:
 

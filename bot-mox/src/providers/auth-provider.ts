@@ -181,7 +181,7 @@ export const authProvider: AuthProvider = {
         error: {
           name: 'SupabaseNotConfigured',
           message:
-            'Supabase Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in bot-mox/.env or use VITE_INTERNAL_API_TOKEN for internal mode.',
+            'Supabase Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (dev: bot-mox/.env; docker: runtime-config.js) or use VITE_INTERNAL_API_TOKEN for internal mode.',
         },
       };
     }

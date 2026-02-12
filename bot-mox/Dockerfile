@@ -11,8 +11,10 @@ FROM nginx:1.27-alpine AS runtime
 WORKDIR /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY --from=build /app/dist ./
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+RUN chmod +x /docker-entrypoint.sh
+CMD ["/docker-entrypoint.sh"]

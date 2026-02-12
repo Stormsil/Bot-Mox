@@ -1,13 +1,19 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { getRuntimeConfig, readRuntimeString } from '../config/runtime-config';
 
-const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL || '').trim();
-const supabaseAnonKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+const runtimeConfig = getRuntimeConfig();
+const supabaseUrl =
+  readRuntimeString(runtimeConfig.supabaseUrl) ||
+  String(import.meta.env.VITE_SUPABASE_URL || '').trim();
+const supabaseAnonKey =
+  readRuntimeString(runtimeConfig.supabaseAnonKey) ||
+  String(import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
 export const hasSupabaseAuth = Boolean(supabaseUrl && supabaseAnonKey);
 
 if (!hasSupabaseAuth) {
   console.warn(
-    '[Supabase] Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in bot-mox/.env.'
+    '[Supabase] Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (dev: bot-mox/.env; docker: runtime-config.js).'
   );
 }
 
@@ -20,4 +26,3 @@ export const supabase: SupabaseClient | null = hasSupabaseAuth
       },
     })
   : null;
-

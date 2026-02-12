@@ -1,0 +1,73 @@
+_format_version: "1.1"
+
+services:
+  - name: auth-v1
+    _comment: "GoTrue: /auth/v1/* -> http://supabase-auth:9999/*"
+    url: http://supabase-auth:9999/
+    routes:
+      - name: auth-v1-all
+        strip_path: true
+        paths:
+          - /auth/v1/
+    plugins:
+      - name: cors
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              # Preserve Authorization when present; otherwise derive from apikey (Supabase anon/service role JWT).
+              - "Authorization: $((headers.authorization ~= nil and headers.authorization:sub(1, 10) ~= 'Bearer sb_' and headers.authorization) or (headers.apikey ~= nil and ('Bearer ' .. headers.apikey)) or headers.authorization)"
+          replace:
+            headers:
+              - "Authorization: $((headers.authorization ~= nil and headers.authorization:sub(1, 10) ~= 'Bearer sb_' and headers.authorization) or (headers.apikey ~= nil and ('Bearer ' .. headers.apikey)) or headers.authorization)"
+
+  - name: rest-v1
+    _comment: "PostgREST: /rest/v1/* -> http://supabase-rest:3000/*"
+    url: http://supabase-rest:3000/
+    routes:
+      - name: rest-v1-all
+        strip_path: true
+        paths:
+          - /rest/v1/
+    plugins:
+      - name: cors
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "Authorization: $((headers.authorization ~= nil and headers.authorization:sub(1, 10) ~= 'Bearer sb_' and headers.authorization) or (headers.apikey ~= nil and ('Bearer ' .. headers.apikey)) or headers.authorization)"
+          replace:
+            headers:
+              - "Authorization: $((headers.authorization ~= nil and headers.authorization:sub(1, 10) ~= 'Bearer sb_' and headers.authorization) or (headers.apikey ~= nil and ('Bearer ' .. headers.apikey)) or headers.authorization)"
+
+  # S3-compatible storage endpoint (no Authorization header transformation).
+  - name: storage-v1-s3
+    _comment: "Storage S3: /storage/v1/s3/* -> http://supabase-storage:5000/s3/*"
+    url: http://supabase-storage:5000/s3
+    routes:
+      - name: storage-v1-s3-all
+        strip_path: true
+        paths:
+          - /storage/v1/s3/
+    plugins:
+      - name: cors
+
+  - name: storage-v1
+    _comment: "Storage API: /storage/v1/* -> http://supabase-storage:5000/*"
+    url: http://supabase-storage:5000/
+    routes:
+      - name: storage-v1-all
+        strip_path: true
+        paths:
+          - /storage/v1/
+    plugins:
+      - name: cors
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "Authorization: $((headers.authorization ~= nil and headers.authorization:sub(1, 10) ~= 'Bearer sb_' and headers.authorization) or (headers.apikey ~= nil and ('Bearer ' .. headers.apikey)) or headers.authorization)"
+          replace:
+            headers:
+              - "Authorization: $((headers.authorization ~= nil and headers.authorization:sub(1, 10) ~= 'Bearer sb_' and headers.authorization) or (headers.apikey ~= nil and ('Bearer ' .. headers.apikey)) or headers.authorization)"
+

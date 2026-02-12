@@ -6,6 +6,8 @@ services:
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
       VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost:3001}
+      VITE_SUPABASE_URL: ${SUPABASE_PUBLIC_URL:-http://localhost}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
     volumes:
       - ../bot-mox:/app
     ports:

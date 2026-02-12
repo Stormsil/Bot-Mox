@@ -8,6 +8,13 @@ services:
       - frontend
       - backend
       - minio
+      - supabase-kong
+    environment:
+      CADDY_EMAIL: ${CADDY_EMAIL:-ops@example.com}
+      APP_DOMAIN: ${APP_DOMAIN:-app.localhost}
+      API_DOMAIN: ${API_DOMAIN:-api.localhost}
+      S3_DOMAIN: ${S3_DOMAIN:-s3.localhost}
+      SUPABASE_DOMAIN: ${SUPABASE_DOMAIN:-supabase.localhost}
     ports:
       - "${HTTP_PORT:-80}:80"
       - "${HTTPS_PORT:-443}:443"
@@ -22,6 +29,11 @@ services:
   frontend:
     image: ${FRONTEND_IMAGE:-bot-mox/frontend:prod-sim}
     restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+      VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-}
+      VITE_SUPABASE_URL: ${SUPABASE_PUBLIC_URL:-}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
     networks:
       - app
 
@@ -33,7 +45,7 @@ services:
       PORT: ${BACKEND_PORT:-3001}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
       DATA_BACKEND: ${DATA_BACKEND:-rtdb}
-      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_URL: ${SUPABASE_URL:-http://supabase-kong:8000}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
       S3_ENDPOINT: ${S3_ENDPOINT:-}
       S3_REGION: ${S3_REGION:-us-east-1}
@@ -50,6 +62,154 @@ services:
       FIREBASE_SERVICE_ACCOUNT_PATH: ${FIREBASE_SERVICE_ACCOUNT_PATH:-}
       FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL:-}
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+    networks:
+      - app
+
+  supabase-db:
+    image: public.ecr.aws/supabase/postgres:15.8.1.085
+    container_name: supabase-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${SUPABASE_DB_PASSWORD:-postgres}
+      POSTGRES_USER: ${SUPABASE_DB_USER:-supabase_admin}
+      POSTGRES_DB: ${SUPABASE_DB_NAME:-postgres}
+      JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      JWT_EXP: ${SUPABASE_JWT_EXP:-3600}
+    volumes:
+      - supabase-db-data:/var/lib/postgresql/data
+    networks:
+      - data
+
+  supabase-db-init:
+    image: postgres:15-alpine
+    depends_on:
+      - supabase-db
+    restart: "no"
+    environment:
+      PGPASSWORD: ${SUPABASE_DB_PASSWORD:-postgres}
+      SUPABASE_DB_PASSWORD: ${SUPABASE_DB_PASSWORD:-postgres}
+    entrypoint: >
+      /bin/sh -c "
+      set -eu;
+      until pg_isready -h supabase-db -U supabase_admin -d postgres >/dev/null 2>&1; do sleep 1; done;
+      psql -h supabase-db -U supabase_admin -d postgres -v ON_ERROR_STOP=1 -c \"\
+        ALTER ROLE authenticator WITH PASSWORD '$${SUPABASE_DB_PASSWORD}';\
+        ALTER ROLE supabase_auth_admin WITH PASSWORD '$${SUPABASE_DB_PASSWORD}';\
+        ALTER ROLE supabase_storage_admin WITH PASSWORD '$${SUPABASE_DB_PASSWORD}';\
+      \";
+      echo \"[supabase-db-init] Done.\";
+      "
+    networks:
+      - data
+
+  supabase-app-migrate:
+    image: postgres:15-alpine
+    depends_on:
+      - supabase-db
+    restart: "no"
+    environment:
+      PGPASSWORD: ${SUPABASE_DB_PASSWORD:-postgres}
+    volumes:
+      - ../supabase/migrations:/app-migrations:ro
+    entrypoint: >
+      /bin/sh -c "
+      set -eu;
+      until pg_isready -h supabase-db -U postgres -d postgres >/dev/null 2>&1; do sleep 1; done;
+      for sql in /app-migrations/*.sql; do
+        echo \"[supabase-app-migrate] Applying $${sql}\";
+        psql -h supabase-db -U postgres -d postgres -v ON_ERROR_STOP=1 -f \"$${sql}\";
+      done;
+      echo \"[supabase-app-migrate] Done.\";
+      "
+    networks:
+      - data
+
+  supabase-auth:
+    image: public.ecr.aws/supabase/gotrue:v2.186.0
+    restart: unless-stopped
+    depends_on:
+      - supabase-db
+      - supabase-db-init
+    environment:
+      API_EXTERNAL_URL: ${SUPABASE_PUBLIC_URL:-http://localhost}
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgresql://supabase_auth_admin:${SUPABASE_DB_PASSWORD:-postgres}@supabase-db:5432/postgres
+      GOTRUE_SITE_URL: ${SUPABASE_SITE_URL:-http://localhost}
+      GOTRUE_URI_ALLOW_LIST: ${SUPABASE_URI_ALLOW_LIST:-http://localhost}
+      GOTRUE_DISABLE_SIGNUP: ${SUPABASE_DISABLE_SIGNUP:-true}
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+      GOTRUE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      GOTRUE_JWT_ISSUER: ${SUPABASE_JWT_ISSUER:-http://localhost/auth/v1}
+      GOTRUE_JWT_EXP: ${SUPABASE_JWT_EXP:-3600}
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_MAILER_AUTOCONFIRM: ${SUPABASE_MAILER_AUTOCONFIRM:-true}
+    networks:
+      - app
+      - data
+
+  supabase-rest:
+    image: public.ecr.aws/supabase/postgrest:v14.4
+    restart: unless-stopped
+    depends_on:
+      - supabase-db
+      - supabase-db-init
+    environment:
+      PGRST_DB_URI: postgresql://authenticator:${SUPABASE_DB_PASSWORD:-postgres}@supabase-db:5432/postgres
+      PGRST_DB_SCHEMAS: public,storage,graphql_public
+      PGRST_DB_EXTRA_SEARCH_PATH: public,extensions
+      PGRST_DB_MAX_ROWS: ${SUPABASE_API_MAX_ROWS:-1000}
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      PGRST_ADMIN_SERVER_PORT: 3001
+    networks:
+      - app
+      - data
+
+  supabase-storage:
+    image: public.ecr.aws/supabase/storage-api:v1.37.7
+    restart: unless-stopped
+    depends_on:
+      - supabase-db
+      - supabase-db-init
+    environment:
+      DATABASE_URL: postgresql://supabase_storage_admin:${SUPABASE_DB_PASSWORD:-postgres}@supabase-db:5432/postgres
+      ANON_KEY: ${SUPABASE_ANON_KEY:-}
+      SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      AUTH_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /mnt
+      FILE_SIZE_LIMIT: ${SUPABASE_STORAGE_FILE_SIZE_LIMIT:-52428800}
+      TENANT_ID: stub
+      GLOBAL_S3_BUCKET: stub
+      STORAGE_S3_REGION: ${SUPABASE_STORAGE_S3_REGION:-local}
+      ENABLE_IMAGE_TRANSFORMATION: "false"
+      S3_PROTOCOL_ENABLED: "false"
+    volumes:
+      - supabase-storage-data:/mnt
+    networks:
+      - app
+      - data
+
+  supabase-kong:
+    image: public.ecr.aws/supabase/kong:2.8.1
+    restart: unless-stopped
+    depends_on:
+      - supabase-auth
+      - supabase-rest
+      - supabase-storage
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /home/kong/kong.yml
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_PLUGINS: request-transformer,cors
+      KONG_NGINX_WORKER_PROCESSES: "1"
+    volumes:
+      - ./supabase/kong.yml:/home/kong/kong.yml:ro
     networks:
       - app
 
@@ -92,8 +252,12 @@ networks:
     driver: bridge
   app:
     driver: bridge
+  data:
+    driver: bridge
 
 volumes:
   caddy-data:
   caddy-config:
   minio-data:
+  supabase-db-data:
+  supabase-storage-data:

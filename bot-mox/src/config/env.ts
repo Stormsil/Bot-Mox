@@ -1,3 +1,5 @@
+import { getRuntimeConfig, readRuntimeString } from './runtime-config';
+
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
 }
@@ -38,14 +40,19 @@ function resolveDefaultWsBaseUrl(apiBaseUrl: string): string {
 
 export const API_BASE_URL = trimTrailingSlash(
   String(
-    import.meta.env.VITE_API_BASE_URL ||
+    readRuntimeString(getRuntimeConfig().apiBaseUrl) ||
+      import.meta.env.VITE_API_BASE_URL ||
       import.meta.env.VITE_PROXY_BASE_URL ||
       resolveDefaultApiBaseUrl()
   ).trim()
 );
 
 export const WS_BASE_URL = trimTrailingSlash(
-  String(import.meta.env.VITE_WS_BASE_URL || resolveDefaultWsBaseUrl(API_BASE_URL)).trim()
+  String(
+    readRuntimeString(getRuntimeConfig().wsBaseUrl) ||
+      import.meta.env.VITE_WS_BASE_URL ||
+      resolveDefaultWsBaseUrl(API_BASE_URL)
+  ).trim()
 );
 
 export function buildApiUrl(path: string): string {

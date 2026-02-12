@@ -23,11 +23,13 @@ Status: `GREEN`
 Scope:
 1. Add `bot-mox/Dockerfile` (multi-stage build + static runtime).
 2. Add `proxy-server/Dockerfile` (production Node runtime).
+3. Add frontend runtime-config injection (`runtime-config.js`) for Docker deployments.
 
 DoD:
 1. Both images build locally.
 2. Runtime containers start without interactive setup.
-3. Build args/env are documented.
+3. Frontend runtime env can be configured without rebuilding the image.
+4. Build args/env are documented.
 
 Validation:
 1. `docker build -f bot-mox/Dockerfile .`
@@ -46,12 +48,14 @@ Scope:
 3. Add `deploy/compose.prod-sim.env.example`.
 4. Add `deploy/compose.prod.env.example`.
 5. Add `deploy/caddy/Caddyfile`.
+6. Add Supabase core routing config (`deploy/supabase/kong.yml`).
 
 DoD:
 1. `prod-sim` stack starts locally.
 2. `app.<domain>` routes to frontend.
 3. `api.<domain>` routes to backend.
 4. `s3.<domain>` routes to MinIO API.
+5. `supabase.<domain>` routes to Supabase core (`/auth/v1`, `/rest/v1`, `/storage/v1`).
 
 Validation:
 1. `docker compose -f deploy/compose.stack.yml --env-file deploy/compose.prod-sim.env.example up -d`
