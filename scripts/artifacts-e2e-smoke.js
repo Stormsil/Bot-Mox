@@ -139,7 +139,11 @@ function computeSha256(filePath) {
 
 async function run() {
   const baseUrl = normalizeBaseUrl(readEnv('API_BASE_URL', 'http://localhost:3001'));
-  const token = readRequiredEnv('API_BEARER_TOKEN');
+  const runnerToken = readEnv('RUNNER_BEARER_TOKEN', readEnv('API_BEARER_TOKEN', ''));
+  if (!runnerToken) {
+    throw new Error('Missing required env: RUNNER_BEARER_TOKEN (or legacy API_BEARER_TOKEN)');
+  }
+  const adminToken = readEnv('ADMIN_BEARER_TOKEN', '');
   const userId = readRequiredEnv('E2E_USER_ID');
   const vmUuid = (readEnv('E2E_VM_UUID', createRandomVmUuid()) || createRandomVmUuid()).toLowerCase();
   const moduleName = readEnv('E2E_MODULE', 'runner-installer');
@@ -152,10 +156,11 @@ async function run() {
 
   console.log(`[artifacts-e2e] API=${baseUrl}`);
   console.log(`[artifacts-e2e] user=${userId}, vm=${vmUuid}, module=${moduleName}, platform=${platform}, channel=${channel}`);
+  console.log(`[artifacts-e2e] admin_token=${adminToken ? 'set' : 'not-set'} (controls assign/revoke steps)`);
 
   const registerResult = await requestJson({
     baseUrl,
-    token,
+    token: runnerToken,
     method: 'POST',
     endpoint: '/api/v1/vm/register',
     body: {
@@ -170,7 +175,7 @@ async function run() {
 
   const leaseResult = await requestJson({
     baseUrl,
-    token,
+    token: runnerToken,
     method: 'POST',
     endpoint: '/api/v1/license/lease',
     body: {
@@ -186,9 +191,12 @@ async function run() {
   console.log(`[artifacts-e2e] license/lease OK (lease_id=${lease.lease_id})`);
 
   if (releaseId) {
+    if (!adminToken) {
+      console.log('[artifacts-e2e] ADMIN_BEARER_TOKEN is not set, skipping artifacts/assign');
+    } else {
     const assignResult = await requestJson({
       baseUrl,
-      token,
+      token: adminToken,
       method: 'POST',
       endpoint: '/api/v1/artifacts/assign',
       body: {
@@ -201,13 +209,14 @@ async function run() {
     });
     expectSuccess(assignResult, 201, 'artifacts/assign');
     console.log(`[artifacts-e2e] artifacts/assign OK (release_id=${releaseId})`);
+    }
   } else {
     console.log('[artifacts-e2e] E2E_RELEASE_ID is not set, using existing assignment');
   }
 
   const resolveResult = await requestJson({
     baseUrl,
-    token,
+    token: runnerToken,
     method: 'POST',
     endpoint: '/api/v1/artifacts/resolve-download',
     body: {
@@ -241,7 +250,7 @@ async function run() {
 
   const wrongVmResult = await requestJson({
     baseUrl,
-    token,
+    token: runnerToken,
     method: 'POST',
     endpoint: '/api/v1/artifacts/resolve-download',
     body: {
@@ -258,7 +267,7 @@ async function run() {
   const wrongModule = `${moduleName}-mismatch`;
   const wrongModuleResult = await requestJson({
     baseUrl,
-    token,
+    token: runnerToken,
     method: 'POST',
     endpoint: '/api/v1/artifacts/resolve-download',
     body: {
@@ -272,34 +281,38 @@ async function run() {
   expectFailure(wrongModuleResult, 403, 'MODULE_MISMATCH', 'artifacts/resolve-download wrong module');
   console.log('[artifacts-e2e] negative MODULE_MISMATCH OK');
 
-  const revokeResult = await requestJson({
-    baseUrl,
-    token,
-    method: 'POST',
-    endpoint: '/api/v1/license/revoke',
-    body: {
-      lease_id: lease.lease_id,
-      reason: revokeReason,
-    },
-  });
-  expectSuccess(revokeResult, 200, 'license/revoke');
-  console.log('[artifacts-e2e] license/revoke OK');
+  if (!adminToken) {
+    console.log('[artifacts-e2e] ADMIN_BEARER_TOKEN is not set, skipping license/revoke + LEASE_INACTIVE negative case');
+  } else {
+    const revokeResult = await requestJson({
+      baseUrl,
+      token: adminToken,
+      method: 'POST',
+      endpoint: '/api/v1/license/revoke',
+      body: {
+        lease_id: lease.lease_id,
+        reason: revokeReason,
+      },
+    });
+    expectSuccess(revokeResult, 200, 'license/revoke');
+    console.log('[artifacts-e2e] license/revoke OK');
 
-  const revokedLeaseResult = await requestJson({
-    baseUrl,
-    token,
-    method: 'POST',
-    endpoint: '/api/v1/artifacts/resolve-download',
-    body: {
-      lease_token: lease.token,
-      vm_uuid: vmUuid,
-      module: moduleName,
-      platform,
-      channel,
-    },
-  });
-  expectFailure(revokedLeaseResult, 409, 'LEASE_INACTIVE', 'artifacts/resolve-download revoked lease');
-  console.log('[artifacts-e2e] negative LEASE_INACTIVE OK');
+    const revokedLeaseResult = await requestJson({
+      baseUrl,
+      token: runnerToken,
+      method: 'POST',
+      endpoint: '/api/v1/artifacts/resolve-download',
+      body: {
+        lease_token: lease.token,
+        vm_uuid: vmUuid,
+        module: moduleName,
+        platform,
+        channel,
+      },
+    });
+    expectFailure(revokedLeaseResult, 409, 'LEASE_INACTIVE', 'artifacts/resolve-download revoked lease');
+    console.log('[artifacts-e2e] negative LEASE_INACTIVE OK');
+  }
 
   console.log('[artifacts-e2e] SUCCESS');
 }

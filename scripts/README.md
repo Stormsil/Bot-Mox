@@ -81,19 +81,21 @@ Smoke-сценарий для цепочки `vm/register -> license/lease -> ar
 Минимальные env:
 
 ```bash
-API_BEARER_TOKEN=<token>
+RUNNER_BEARER_TOKEN=<token>
 E2E_USER_ID=<user-id>
 ```
 
 Опциональные env:
 
+- `ADMIN_BEARER_TOKEN` (нужен для `artifacts/assign` и `license/revoke` в smoke-сценарии)
 - `API_BASE_URL` (default: `http://localhost:3001`)
 - `E2E_VM_UUID` (default: random generated)
 - `E2E_MODULE` (default: `runner-installer`)
 - `E2E_PLATFORM` (default: `windows`)
 - `E2E_CHANNEL` (default: `stable`)
 - `E2E_AGENT_ID` / `E2E_RUNNER_ID`
-- `E2E_RELEASE_ID` (если задан, скрипт делает `POST /api/v1/artifacts/assign`)
+- `E2E_RELEASE_ID` (если задан и есть `ADMIN_BEARER_TOKEN`, скрипт делает `POST /api/v1/artifacts/assign`)
+- Legacy: `API_BEARER_TOKEN` (alias for `RUNNER_BEARER_TOKEN`)
 
 Запуск:
 
