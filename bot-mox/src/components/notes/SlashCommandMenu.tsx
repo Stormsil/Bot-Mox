@@ -108,7 +108,13 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
 
   // Сброс выбранного индекса при изменении фильтра или списка команд
   useEffect(() => {
-    setSelectedIndex(0);
+    const frameId = window.requestAnimationFrame(() => {
+      setSelectedIndex(0);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
   }, [filter, filteredCommands.length]);
 
   // Обработка клавиатурной навигации

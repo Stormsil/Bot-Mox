@@ -24,7 +24,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--proxmox-bg-primary);
+  background-color: var(--boxmox-color-surface-base);
 }
 
 /* Состояние загрузки */
@@ -35,7 +35,7 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 /* Пустое состояние */
@@ -48,7 +48,7 @@
 }
 
 .notes-empty .ant-empty-description {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .notes-empty-content {
@@ -57,11 +57,11 @@
 
 .notes-empty-content p {
   margin: 4px 0;
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .notes-empty-content p:first-child {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   font-weight: 500;
 }
 
@@ -75,6 +75,6 @@
   }
 
   .notes-editor-container {
-    border-top: 1px solid var(--proxmox-border);
+    border-top: 1px solid var(--boxmox-color-border-default);
   }
 }

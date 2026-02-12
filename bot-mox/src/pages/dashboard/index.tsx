@@ -6,11 +6,10 @@ import {
   RiseOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { ref, onValue, off } from 'firebase/database';
-import { database } from '../../utils/firebase';
 import { MetricCard } from '../../components/ui/MetricCard';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import type { Bot } from '../../types';
+import { subscribeBotsList } from '../../services/botsApiService';
 import './Dashboard.css';
 
 const { Title } = Typography;
@@ -22,6 +21,7 @@ interface BotData extends Bot {
     race: string;
     class: string;
     server: string;
+    faction: 'alliance' | 'horde';
   };
 }
 
@@ -95,52 +95,28 @@ export const DashboardPage: React.FC = () => {
     bannedBots: 0,
   });
 
-  // Загрузка ботов из Firebase с realtime обновлениями
+  // Загрузка ботов через backend API с polling-обновлениями
   useEffect(() => {
-    setLoading(true);
-    const botsRef = ref(database, 'bots');
-
-    const handleValue = (snapshot: any) => {
-      const data = snapshot.val();
-      if (data) {
-        const botsArray = Object.entries(data).map(([id, bot]: [string, any]) => ({
-          id,
-          ...bot,
-        })) as BotData[];
-        
+    return subscribeBotsList(
+      (botsList) => {
+        const botsArray = botsList as BotData[];
         setBots(botsArray);
-        
-        // Calculate metrics
         setMetrics({
           totalBots: botsArray.length,
-          activeBots: botsArray.filter(b => ['prepare', 'leveling', 'profession', 'farming'].includes(b.status)).length,
-          levelingBots: botsArray.filter(b => b.status === 'leveling').length,
-          farmingBots: botsArray.filter(b => b.status === 'farming').length,
-          bannedBots: botsArray.filter(b => b.status === 'banned').length,
+          activeBots: botsArray.filter((bot) => ['prepare', 'leveling', 'profession', 'farming'].includes(bot.status))
+            .length,
+          levelingBots: botsArray.filter((bot) => bot.status === 'leveling').length,
+          farmingBots: botsArray.filter((bot) => bot.status === 'farming').length,
+          bannedBots: botsArray.filter((bot) => bot.status === 'banned').length,
         });
-      } else {
-        setBots([]);
-        setMetrics({
-          totalBots: 0,
-          activeBots: 0,
-          levelingBots: 0,
-          farmingBots: 0,
-          bannedBots: 0,
-        });
-      }
-      setLoading(false);
-    };
-
-    const handleError = (error: Error) => {
-      console.error('Error loading bots:', error);
-      setLoading(false);
-    };
-
-    onValue(botsRef, handleValue, handleError);
-
-    return () => {
-      off(botsRef, 'value', handleValue);
-    };
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error loading bots:', error);
+        setLoading(false);
+      },
+      { intervalMs: 5000 }
+    );
   }, []);
 
   if (loading) {

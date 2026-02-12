@@ -1,56 +1,56 @@
 .session-editor-modal .ant-modal-content {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .session-editor-modal .ant-modal-header {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .session-editor-modal .ant-modal-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .session-editor-modal .ant-modal-close {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .session-editor-modal .ant-modal-close:hover {
-  color: var(--proxmox-orange);
+  color: var(--boxmox-color-brand-primary);
 }
 
 .session-editor-form .ant-form-item-label > label {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .session-editor-form .ant-picker {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .session-editor-form .ant-picker:hover,
 .session-editor-form .ant-picker-focused {
-  border-color: var(--proxmox-orange);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .session-editor-form .ant-picker-input > input {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .session-editor-form .ant-select-selector {
-  background: var(--proxmox-bg-tertiary) !important;
-  border-color: var(--proxmox-border) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .session-editor-form .ant-select:hover .ant-select-selector {
-  border-color: var(--proxmox-orange) !important;
+  border-color: var(--boxmox-color-brand-primary) !important;
 }
 
 .session-editor-form .ant-select-arrow {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .session-editor-form .ant-switch {
@@ -62,26 +62,26 @@
 }
 
 .session-editor-modal .ant-modal-footer {
-  border-top: 1px solid var(--proxmox-border);
+  border-top: 1px solid var(--boxmox-color-border-default);
 }
 
 .session-editor-modal .ant-btn-default {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .session-editor-modal .ant-btn-default:hover {
-  border-color: var(--proxmox-orange);
-  color: var(--proxmox-orange);
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
 }
 
 .session-editor-modal .ant-btn-primary {
-  background: var(--proxmox-orange);
-  border-color: var(--proxmox-orange);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .session-editor-modal .ant-btn-primary:hover {
-  background: #ff8c00;
-  border-color: #ff8c00;
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
 }

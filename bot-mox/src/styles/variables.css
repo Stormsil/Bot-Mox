@@ -1,35 +1,45 @@
-/* Proxmox Theme Variables */
+/* Boxmox Theme Variables */
 :root {
-  /* Основные цвета фона - настоящий Proxmox стиль */
-  --proxmox-bg-primary: #1e1e1e;
-  --proxmox-bg-secondary: #2d2d2d;
-  --proxmox-bg-tertiary: #333333;
-  --proxmox-bg-hover: #3d3d3d;
-  --proxmox-bg-active: #404040;
+  /* Surface */
+  --boxmox-color-surface-base: #f2f4f7;
+  --boxmox-color-surface-panel: #ffffff;
+  --boxmox-color-surface-muted: #e9edf2;
+  --boxmox-color-surface-hover: #e1e8f1;
+  --boxmox-color-surface-active: #d5e0ee;
 
-  /* Акцентные цвета */
-  --proxmox-accent: #e57000;
-  --proxmox-accent-hover: #ff8c1a;
-  --proxmox-accent-light: #ffa94d;
+  /* Brand */
+  --boxmox-color-brand-primary: #3b7db8;
+  --boxmox-color-brand-primary-hover: #2f6b9f;
+  --boxmox-color-brand-soft: #d6e6f7;
+  --boxmox-color-brand-contrast: #1f4f6f;
+  --boxmox-color-brand-warning: #f59a23;
+  --boxmox-color-brand-primary-rgb: 59, 125, 184;
 
-  /* Текст */
-  --proxmox-text-primary: #ffffff;
-  --proxmox-text-secondary: #cccccc;
-  --proxmox-text-muted: #999999;
-  --proxmox-text-dark: #666666;
+  /* Text */
+  --boxmox-color-text-primary: #26323b;
+  --boxmox-color-text-secondary: #4b5a66;
+  --boxmox-color-text-muted: #7b8793;
+  --boxmox-color-text-strong: #1a1f24;
 
-  /* Статусы */
-  --proxmox-status-online: #2ecc71;
-  --proxmox-status-offline: #7f8c8d;
-  --proxmox-status-warning: #f39c12;
-  --proxmox-status-error: #e74c3c;
-  --proxmox-status-info: #3498db;
-  --proxmox-status-paused: #f1c40f;
+  /* Status */
+  --boxmox-color-status-success: #2ecc71;
+  --boxmox-color-status-neutral: #7f8c8d;
+  --boxmox-color-status-warning: #f39c12;
+  --boxmox-color-status-danger: #e74c3c;
+  --boxmox-color-status-info: #3498db;
+  --boxmox-color-status-paused: #f1c40f;
 
-  /* Границы */
-  --proxmox-border: #444444;
-  --proxmox-border-light: #555555;
-  --proxmox-border-dark: #111111;
+  /* Border */
+  --boxmox-color-border-default: #d4dbe3;
+  --boxmox-color-border-subtle: #e4e9ef;
+  --boxmox-color-border-strong: #bcc6d1;
+
+  /* Header */
+  --boxmox-color-header-bg: #2c3e50;
+  --boxmox-color-header-border: #21313f;
+  --boxmox-color-header-text: #e6edf3;
+  --boxmox-color-header-text-muted: #a9b6c3;
+  --boxmox-color-header-hover: #344a5e;
 
   /* Шрифты */
   --font-primary: 'Roboto', 'Segoe UI', sans-serif;
@@ -61,4 +71,35 @@
   --radius-none: 0;
   --radius-sm: 2px;
   --radius-md: 4px;
+}
+
+/* Dark theme overrides */
+:root[data-theme='dark'] {
+  --boxmox-color-surface-base: #1e1f22;
+  --boxmox-color-surface-panel: #2a2f35;
+  --boxmox-color-surface-muted: #31363d;
+  --boxmox-color-surface-hover: #3a414a;
+  --boxmox-color-surface-active: #444c56;
+
+  --boxmox-color-brand-primary: #4a90d6;
+  --boxmox-color-brand-primary-hover: #5aa0e0;
+  --boxmox-color-brand-soft: #233a4f;
+  --boxmox-color-brand-contrast: #cfe2f4;
+  --boxmox-color-brand-warning: #f2a93b;
+  --boxmox-color-brand-primary-rgb: 74, 144, 214;
+
+  --boxmox-color-text-primary: #e6edf3;
+  --boxmox-color-text-secondary: #b9c3cd;
+  --boxmox-color-text-muted: #8e9aa6;
+  --boxmox-color-text-strong: #f4f7fa;
+
+  --boxmox-color-border-default: #3a424a;
+  --boxmox-color-border-subtle: #4a545e;
+  --boxmox-color-border-strong: #23282f;
+
+  --boxmox-color-header-bg: #1f2a33;
+  --boxmox-color-header-border: #182129;
+  --boxmox-color-header-text: #e6edf3;
+  --boxmox-color-header-text-muted: #97a6b4;
+  --boxmox-color-header-hover: #2a3945;
 }

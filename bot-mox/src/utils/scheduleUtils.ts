@@ -2,6 +2,36 @@ import type { BotScheduleV2, ScheduleDay, ScheduleSession, ScheduleValidationErr
 
 const DEFAULT_TIMEZONE = 'Europe/Moscow';
 
+type UnknownRecord = Record<string, unknown>;
+type LegacyScheduleSlot = Partial<
+  Pick<ScheduleSession, 'start' | 'end' | 'enabled' | 'profile'>
+> &
+  UnknownRecord;
+
+interface LauncherScheduleSlot {
+  start: string;
+  end: string;
+  action: 'start' | 'stop';
+  profile?: string;
+}
+
+interface LauncherScheduleDay {
+  day_of_week: number;
+  enabled: boolean;
+  total_active_minutes: number;
+  slots: LauncherScheduleSlot[];
+}
+
+type LauncherScheduleWeek = Record<string, LauncherScheduleDay>;
+
+export interface LauncherSchedulePayload {
+  bot_id: string;
+  schedule_version: number;
+  timezone: string;
+  current_week: LauncherScheduleWeek;
+  generated_at: number;
+}
+
 /**
  * Создает пустое расписание для нового бота
  */
@@ -67,15 +97,15 @@ export function createDefaultSchedule(): BotScheduleV2 {
  * v1: { "0": [{start, end, enabled, profile}], "1": [...], ... }
  * v2: { version: 2, timezone: "...", days: { "0": { enabled, sessions: [...] }, ... } }
  */
-export function migrateSchedule(oldSchedule: Record<string, any> | null): BotScheduleV2 {
+export function migrateSchedule(oldSchedule: UnknownRecord | null): BotScheduleV2 {
   // Если нет расписания - создаем дефолтное
   if (!oldSchedule) {
     return createDefaultSchedule();
   }
 
   // Если уже v2 - проверяем и исправляем структуру
-  if (oldSchedule.version === 2 && oldSchedule.days) {
-    const schedule = oldSchedule as BotScheduleV2;
+  if (oldSchedule['version'] === 2 && typeof oldSchedule['days'] === 'object' && oldSchedule['days']) {
+    const schedule = oldSchedule as unknown as BotScheduleV2;
     // Проверяем, что у всех дней есть массив sessions
     for (let day = 0; day <= 6; day++) {
       const dayKey = day.toString() as keyof typeof schedule.days;
@@ -101,12 +131,13 @@ export function migrateSchedule(oldSchedule: Record<string, any> | null): BotSch
       // Конвертируем все слоты v1 в сессии v2
       for (const slot of oldDay) {
         if (slot && typeof slot === 'object') {
+          const slotRecord = slot as LegacyScheduleSlot;
           sessions.push({
             id: generateSessionId(),
-            start: slot.start || '09:00',
-            end: slot.end || '17:00',
-            enabled: slot.enabled ?? false,
-            profile: slot.profile || 'farming',
+            start: slotRecord.start || '09:00',
+            end: slotRecord.end || '17:00',
+            enabled: slotRecord.enabled ?? false,
+            profile: slotRecord.profile || 'farming',
             type: 'active'
           });
         }
@@ -399,9 +430,9 @@ export function getDayName(dayIndex: number, short: boolean = true): string {
 export function generateScheduleForLauncher(
   schedule: BotScheduleV2,
   botId: string
-): Record<string, any> {
+): LauncherSchedulePayload {
   const weekDates = getWeekDates();
-  const currentWeek: Record<string, any> = {};
+  const currentWeek: LauncherScheduleWeek = {};
 
   weekDates.forEach((date, index) => {
     const dayKey = index.toString() as keyof typeof schedule.days;
@@ -409,7 +440,7 @@ export function generateScheduleForLauncher(
     const dateStr = date.toISOString().split('T')[0];
 
     const sortedSessions = sortSessions(daySchedule.sessions.filter(s => s.enabled));
-    const slots: Array<{ start: string; end: string; action: string; profile?: string }> = [];
+    const slots: LauncherScheduleSlot[] = [];
 
     let lastEndMinutes = 0;
 
@@ -566,13 +597,58 @@ export function randomInt(min: number, max: number): number {
 export function validateGenerationParams(params: ScheduleGenerationParams): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   
-  const windowStart = timeToMinutes(params.startTime);
-  const windowEnd = timeToMinutes(params.endTime);
-  const windowDuration = windowEnd - windowStart;
+  const getWindowDuration = (start: string, end: string) => {
+    const s = timeToMinutes(start);
+    const e = timeToMinutes(end);
+    return e < s ? (1440 - s) + e : e - s;
+  };
+
+  const window1Duration = getWindowDuration(params.startTime, params.endTime);
   
-  // Проверка временного окна
-  if (windowDuration <= 0) {
-    errors.push('End time must be after start time');
+  if (window1Duration <= 0) {
+    errors.push('Window 1: End time must be after start time');
+  }
+
+  let totalWindowDuration = window1Duration;
+
+  if (params.useSecondWindow && params.startTime2 && params.endTime2) {
+    const window2Duration = getWindowDuration(params.startTime2, params.endTime2);
+
+    if (window2Duration <= 0) {
+      errors.push('Window 2: End time must be after start time');
+    }
+
+    // Проверка на пересечение окон (упрощенная)
+    const w1s = timeToMinutes(params.startTime);
+    const w1e = timeToMinutes(params.endTime);
+    const w2s = timeToMinutes(params.startTime2);
+    const w2e = timeToMinutes(params.endTime2);
+
+    const isOverlap = () => {
+      // Просто проверим 1440 минутный массив
+      const minutes = new Array(1440).fill(false);
+      const fill = (s: number, e: number) => {
+        let curr = s;
+        while (curr !== e) {
+          minutes[curr] = true;
+          curr = (curr + 1) % 1440;
+        }
+      };
+      fill(w1s, w1e);
+      let overlap = false;
+      let curr = w2s;
+      while (curr !== w2e) {
+        if (minutes[curr]) overlap = true;
+        curr = (curr + 1) % 1440;
+      }
+      return overlap;
+    };
+
+    if (isOverlap()) {
+      errors.push('Windows must not overlap');
+    }
+
+    totalWindowDuration += window2Duration;
   }
   
   // Проверка целевого времени активности
@@ -584,8 +660,8 @@ export function validateGenerationParams(params: ScheduleGenerationParams): { va
     errors.push('Target active time cannot exceed 23 hours (1380 minutes)');
   }
   
-  if (windowDuration > 0 && params.targetActiveMinutes > windowDuration) {
-    errors.push(`Target active time cannot exceed window duration (${windowDuration} minutes)`);
+  if (totalWindowDuration > 0 && params.targetActiveMinutes > totalWindowDuration) {
+    errors.push(`Target active time cannot exceed total window duration (${totalWindowDuration} minutes)`);
   }
   
   // Проверка минимальной длительности сессии
@@ -593,8 +669,8 @@ export function validateGenerationParams(params: ScheduleGenerationParams): { va
     errors.push('Minimum session duration must be at least 15 minutes');
   }
   
-  if (params.minSessionMinutes > 240) {
-    errors.push('Minimum session duration cannot exceed 4 hours (240 minutes)');
+  if (params.minSessionMinutes > 480) {
+    errors.push('Minimum session duration cannot exceed 8 hours');
   }
   
   // Проверка минимального перерыва
@@ -602,48 +678,22 @@ export function validateGenerationParams(params: ScheduleGenerationParams): { va
     errors.push('Minimum break duration must be at least 5 minutes');
   }
   
-  if (params.minBreakMinutes > 120) {
-    errors.push('Minimum break duration cannot exceed 2 hours (120 minutes)');
-  }
-  
   // Проверка рандомного отклонения
   if (params.randomOffsetMinutes < 0) {
     errors.push('Random offset cannot be negative');
   }
   
-  if (params.randomOffsetMinutes > 60) {
-    errors.push('Random offset cannot exceed 60 minutes');
-  }
-  
-  // Проверка достижимости цели - УЛУЧШЕННАЯ ВЕРСИЯ
-  if (windowDuration > 0) {
-    // Формула: для N сессий нужно N * minSession + (N-1) * minBreak <= windowDuration
-    // Решаем относительно N: N <= (windowDuration + minBreak) / (minSession + minBreak)
-    const maxPossibleSessions = Math.floor(
-      (windowDuration + params.minBreakMinutes) / 
-      (params.minSessionMinutes + params.minBreakMinutes)
-    );
-    const maxPossibleActiveTime = maxPossibleSessions * params.minSessionMinutes;
-    
-    if (params.targetActiveMinutes > maxPossibleActiveTime && maxPossibleSessions > 0) {
-      const deficit = params.targetActiveMinutes - maxPossibleActiveTime;
+  // Проверка достижимости цели с учетом перерывов
+  if (totalWindowDuration > 0) {
+    // Максимально плотный график: 
+    // Сессии максимально длинные (до 4 часов), перерывы минимальные
+    const maxPossibleSessions = Math.max(1, Math.floor((totalWindowDuration + params.minBreakMinutes) / (params.minSessionMinutes + params.minBreakMinutes)));
+    const maxPossibleActiveTime = totalWindowDuration - (maxPossibleSessions - 1) * params.minBreakMinutes;
+
+    if (params.targetActiveMinutes > maxPossibleActiveTime) {
       errors.push(
-        `IMPOSSIBLE CONFIGURATION: With min session ${params.minSessionMinutes}min and break ${params.minBreakMinutes}min, ` +
-        `maximum achievable active time is ${maxPossibleActiveTime}min (${Math.floor(maxPossibleActiveTime / 60)}h ${maxPossibleActiveTime % 60}m). ` +
-        `You requested ${params.targetActiveMinutes}min (${Math.floor(params.targetActiveMinutes / 60)}h ${params.targetActiveMinutes % 60}m), ` +
-        `which is ${deficit}min more than possible. ` +
-        `Solutions: 1) Reduce target by ${deficit}min, 2) Decrease min session to ${Math.floor(windowDuration / Math.ceil(params.targetActiveMinutes / params.minSessionMinutes)) - params.minBreakMinutes}min, ` +
-        `3) Decrease break to ${Math.floor((windowDuration - params.targetActiveMinutes) / Math.ceil(params.targetActiveMinutes / params.minSessionMinutes))}min, ` +
-        `4) Extend time window by ${Math.ceil((params.targetActiveMinutes - maxPossibleActiveTime) / 60)}h`
-      );
-    }
-    
-    // Дополнительная проверка: target не должен превышать 80% окна для комфортной генерации
-    const comfortableMaxActive = Math.floor(windowDuration * 0.8);
-    if (params.targetActiveMinutes > comfortableMaxActive && errors.length === 0) {
-      console.warn(
-        `[validateGenerationParams] Warning: Target ${params.targetActiveMinutes}min is ${Math.round((params.targetActiveMinutes / windowDuration) * 100)}% of window. ` +
-        `Recommended maximum is ${comfortableMaxActive}min (80%) for stable generation.`
+        `Target active time (${params.targetActiveMinutes}min) might be unreachable with current min session/break settings. ` +
+        `Max possible is ~${maxPossibleActiveTime}min.`
       );
     }
   }
@@ -655,415 +705,152 @@ export function validateGenerationParams(params: ScheduleGenerationParams): { va
 }
 
 /**
- * Определяет временные зоны для распределения активности
- * Имитирует реальный игровой паттерн человека
- */
-function calculateActivityZones(
-  windowStart: number,
-  windowEnd: number,
-  targetActiveMinutes: number
-): Array<{ start: number; end: number; targetMinutes: number; priority: number }> {
-  const windowDuration = windowEnd - windowStart;
-  const zones: Array<{ start: number; end: number; targetMinutes: number; priority: number }> = [];
-  
-  // Определяем границы зон (в минутах от начала дня)
-  const morningEnd = Math.min(windowEnd, 12 * 60);      // 12:00 или endTime
-  const dayEnd = Math.min(windowEnd, 17 * 60);          // 17:00 или endTime
-  const eveningEnd = Math.min(windowEnd, 22 * 60);      // 22:00 или endTime
-  
-  // Утренняя зона (если окно начинается до 12:00)
-  if (windowStart < morningEnd) {
-    const zoneDuration = morningEnd - windowStart;
-    const zoneRatio = zoneDuration / windowDuration;
-    // Утром 15-20% активности
-    zones.push({
-      start: windowStart,
-      end: morningEnd,
-      targetMinutes: Math.floor(targetActiveMinutes * zoneRatio * 0.85),
-      priority: 1
-    });
-  }
-  
-  // Дневная зона (12:00-17:00)
-  if (morningEnd < dayEnd && windowStart < dayEnd) {
-    const zoneStart = Math.max(windowStart, morningEnd);
-    const zoneDuration = dayEnd - zoneStart;
-    const zoneRatio = zoneDuration / windowDuration;
-    // Днём 25-30% активности
-    zones.push({
-      start: zoneStart,
-      end: dayEnd,
-      targetMinutes: Math.floor(targetActiveMinutes * zoneRatio * 1.1),
-      priority: 2
-    });
-  }
-  
-  // Вечерняя зона (17:00-22:00) - пик активности
-  if (dayEnd < eveningEnd && windowStart < eveningEnd) {
-    const zoneStart = Math.max(windowStart, dayEnd);
-    const zoneDuration = eveningEnd - zoneStart;
-    const zoneRatio = zoneDuration / windowDuration;
-    // Вечером 35-40% активности (пик)
-    zones.push({
-      start: zoneStart,
-      end: eveningEnd,
-      targetMinutes: Math.floor(targetActiveMinutes * zoneRatio * 1.25),
-      priority: 3
-    });
-  }
-  
-  // Ночная зона (после 22:00)
-  if (eveningEnd < windowEnd) {
-    const zoneStart = Math.max(windowStart, eveningEnd);
-    const zoneDuration = windowEnd - zoneStart;
-    const zoneRatio = zoneDuration / windowDuration;
-    // Ночью 15-20% активности
-    zones.push({
-      start: zoneStart,
-      end: windowEnd,
-      targetMinutes: Math.floor(targetActiveMinutes * zoneRatio * 0.9),
-      priority: 1
-    });
-  }
-  
-  // Нормализуем целевое время чтобы сумма соответствовала targetActiveMinutes
-  const totalTarget = zones.reduce((sum, z) => sum + z.targetMinutes, 0);
-  console.log(`[DEBUG calculateActivityZones] Before normalization: totalTarget=${totalTarget}, targetActiveMinutes=${targetActiveMinutes}`);
-  
-  if (totalTarget > 0) {
-    const scaleFactor = targetActiveMinutes / totalTarget;
-    console.log(`[DEBUG calculateActivityZones] scaleFactor: ${scaleFactor}`);
-    zones.forEach(z => {
-      const oldTarget = z.targetMinutes;
-      z.targetMinutes = Math.floor(z.targetMinutes * scaleFactor);
-      console.log(`[DEBUG calculateActivityZones] Zone ${minutesToTime(z.start)}-${minutesToTime(z.end)}: ${oldTarget} -> ${z.targetMinutes} min`);
-    });
-  }
-  
-  const filteredZones = zones.filter(z => z.targetMinutes >= 30); // Фильтруем зоны с малым временем
-  console.log(`[DEBUG calculateActivityZones] After filtering (>=30min): ${filteredZones.length} zones, total target: ${filteredZones.reduce((sum, z) => sum + z.targetMinutes, 0)} min`);
-  
-  return filteredZones;
-}
-
-/**
- * Генерирует сессии для одной зоны с равномерным распределением
- */
-function generateSessionsForZone(
-  zone: { start: number; end: number; targetMinutes: number; priority: number },
-  minSessionMinutes: number,
-  minBreakMinutes: number,
-  randomOffsetMinutes: number,
-  profile: string
-): ScheduleSession[] {
-  const sessions: ScheduleSession[] = [];
-  const zoneDuration = zone.end - zone.start;
-  
-  console.log(`[DEBUG generateSessionsForZone] Zone: ${minutesToTime(zone.start)}-${minutesToTime(zone.end)}, target: ${zone.targetMinutes}min, duration: ${zoneDuration}min`);
-  
-  if (zone.targetMinutes <= 0 || zoneDuration < minSessionMinutes) {
-    console.log(`[DEBUG generateSessionsForZone] Skipping zone: target=${zone.targetMinutes}, zoneDuration=${zoneDuration}, minSession=${minSessionMinutes}`);
-    return sessions;
-  }
-  
-  // Определяем количество сессий в зоне на основе приоритета
-  let numSessions: number;
-  const avgSessionDuration = 90 + randomInt(0, 60); // 1.5-2.5 часа в среднем
-  
-  if (zone.priority === 3) {
-    // Вечерний пик - 1-2 длинные сессии
-    numSessions = zone.targetMinutes > 180 ? 2 : 1;
-  } else if (zone.priority === 2) {
-    // День - 2-3 средние сессии
-    numSessions = Math.max(2, Math.min(3, Math.floor(zone.targetMinutes / avgSessionDuration)));
-  } else {
-    // Утро/Ночь - 1-2 сессии
-    numSessions = zone.targetMinutes > 120 ? 2 : 1;
-  }
-  
-  console.log(`[DEBUG generateSessionsForZone] numSessions: ${numSessions}, avgSessionDuration: ${avgSessionDuration}`);
-  
-  // Распределяем время активности между сессиями
-  const baseSessionDuration = Math.floor(zone.targetMinutes / numSessions);
-  const breakTimeTotal = zoneDuration - zone.targetMinutes;
-  const breakBetweenSessions = numSessions > 1 ? Math.floor(breakTimeTotal / (numSessions - 1)) : 0;
-  
-  console.log(`[DEBUG generateSessionsForZone] baseSessionDuration: ${baseSessionDuration}, breakTimeTotal: ${breakTimeTotal}, breakBetweenSessions: ${breakBetweenSessions}`);
-  
-  let currentTime = zone.start;
-  let remainingActive = zone.targetMinutes;
-  let previousSessionEnd = 0;
-  
-  for (let i = 0; i < numSessions && remainingActive > 0; i++) {
-    // Рандомизируем длительность сессии (±20% от базовой)
-    const durationVariation = Math.floor(baseSessionDuration * 0.2);
-    let sessionDuration = baseSessionDuration + randomInt(-durationVariation, durationVariation);
-    sessionDuration = Math.max(minSessionMinutes, Math.min(sessionDuration, remainingActive));
-    
-    // Рассчитываем минимальное время начала сессии (с учётом перерыва)
-    let minSessionStart = zone.start;
-    if (i > 0) {
-      // Следующая сессия должна начаться не раньше, чем закончилась предыдущая + minBreakMinutes
-      minSessionStart = previousSessionEnd + minBreakMinutes;
-    }
-    
-    // Рандомизируем время начала: только вперёд (0 до randomOffsetMinutes), но не раньше minSessionStart
-    const startOffset = randomInt(0, randomOffsetMinutes);
-    let sessionStart = Math.max(minSessionStart, currentTime + startOffset);
-    
-    console.log(`[DEBUG generateSessionsForZone] Session ${i + 1}: minSessionStart=${minSessionStart}, currentTime=${currentTime}, startOffset=${startOffset}, sessionStart=${sessionStart}`);
-    
-    // Убеждаемся, что сессия укладывается в зону
-    if (sessionStart + minSessionMinutes > zone.end) {
-      console.log(`[DEBUG generateSessionsForZone] Session ${i + 1} skipped: not enough space in zone (start=${sessionStart}, minSession=${minSessionMinutes}, zoneEnd=${zone.end})`);
-      break; // Не хватает места для сессии
-    }
-    
-    // Рассчитываем время окончания
-    let sessionEnd = sessionStart + sessionDuration;
-    
-    // Проверяем границы зоны
-    if (sessionEnd > zone.end) {
-      sessionEnd = zone.end;
-      sessionDuration = sessionEnd - sessionStart;
-      
-      console.log(`[DEBUG generateSessionsForZone] Session ${i + 1} truncated to zone end: ${sessionStart}-${sessionEnd} (${sessionDuration} min)`);
-      
-      // Если сессия стала слишком короткой, пропускаем
-      if (sessionDuration < minSessionMinutes) {
-        console.log(`[DEBUG generateSessionsForZone] Session ${i + 1} skipped: too short after truncation (${sessionDuration} < ${minSessionMinutes})`);
-        break;
-      }
-    }
-    
-    if (sessionDuration >= minSessionMinutes) {
-      sessions.push({
-        id: generateSessionId(),
-        start: minutesToTime(sessionStart),
-        end: minutesToTime(sessionEnd),
-        enabled: true,
-        profile,
-        type: 'active'
-      });
-      
-      remainingActive -= sessionDuration;
-      previousSessionEnd = sessionEnd;
-      
-      console.log(`[DEBUG generateSessionsForZone] Session ${i + 1} created: ${minutesToTime(sessionStart)}-${minutesToTime(sessionEnd)} (${sessionDuration} min), remainingActive: ${remainingActive}`);
-    }
-    
-    // Переходим к следующей сессии
-    if (i < numSessions - 1 && remainingActive > 0) {
-      // Добавляем перерыв: строго minBreakMinutes + рандомное увеличение
-      const breakExtension = randomInt(0, Math.min(randomOffsetMinutes, minBreakMinutes));
-      currentTime = sessionEnd + minBreakMinutes + breakExtension;
-      
-      console.log(`[DEBUG generateSessionsForZone] After session ${i + 1}: breakExtension=${breakExtension}, currentTime=${currentTime}, next session needs: ${currentTime + minSessionMinutes}, zone ends: ${zone.end}`);
-      
-      // Если вышли за границы зоны, прекращаем
-      if (currentTime + minSessionMinutes > zone.end) {
-        console.log(`[DEBUG generateSessionsForZone] Stopping: next session would exceed zone`);
-        break;
-      }
-    }
-  }
-  
-  console.log(`[DEBUG generateSessionsForZone] Total sessions created: ${sessions.length}, total active time: ${sessions.reduce((sum, s) => sum + timeToMinutes(s.end) - timeToMinutes(s.start), 0)} min`);
-  
-  return sessions;
-}
-
-/**
  * Генерирует расписание для одного дня с имитацией человеческой активности
  */
 export function generateDaySchedule(
   params: ScheduleGenerationParams,
   dayIndex?: number
 ): ScheduleDay {
+  void dayIndex;
   const {
-    startTime,
-    endTime,
     targetActiveMinutes,
     minSessionMinutes,
     minBreakMinutes,
-    randomOffsetMinutes,
     profile = 'farming'
   } = params;
 
-  const sessions: ScheduleSession[] = [];
-  
-  // Конвертируем время в минуты
-  const windowStart = timeToMinutes(startTime);
-  const windowEnd = timeToMinutes(endTime);
-  const windowDuration = windowEnd - windowStart;
-  
-  // Проверяем валидность параметров
-  if (windowDuration <= 0) {
-    console.log('[DEBUG] Invalid window duration:', windowDuration);
-    return { enabled: false, sessions: [] };
+  // 1. Собираем все доступные временные интервалы (минуты дня)
+  const isTimeAllowed = new Array(1440).fill(false);
+  const markAllowed = (start: string, end: string) => {
+    let curr = timeToMinutes(start);
+    const stop = timeToMinutes(end);
+    if (curr === stop) return;
+    while (curr !== stop) {
+      isTimeAllowed[curr] = true;
+      curr = (curr + 1) % 1440;
+    }
+  };
+
+  markAllowed(params.startTime, params.endTime);
+  if (params.useSecondWindow && params.startTime2 && params.endTime2) {
+    markAllowed(params.startTime2, params.endTime2);
   }
-  
-  if (targetActiveMinutes > windowDuration) {
-    console.log('[DEBUG] Target exceeds window:', targetActiveMinutes, '>', windowDuration);
+
+  const totalAllowedMinutes = isTimeAllowed.filter(t => t).length;
+  if (totalAllowedMinutes < targetActiveMinutes) {
     return { enabled: false, sessions: [] };
   }
 
-  // Рассчитываем временные зоны
-  const zones = calculateActivityZones(windowStart, windowEnd, targetActiveMinutes);
-  console.log('[DEBUG] Zones calculated:', zones.map(z => ({ 
-    start: minutesToTime(z.start), 
-    end: minutesToTime(z.end), 
-    target: z.targetMinutes,
-    priority: z.priority 
-  })));
+  let finalSessions: ScheduleSession[] = [];
+  let bestActiveTime = 0;
   
-  // Генерируем сессии для каждой зоны
-  for (const zone of zones) {
-    const zoneSessions = generateSessionsForZone(
-      zone,
-      minSessionMinutes,
-      minBreakMinutes,
-      randomOffsetMinutes,
-      profile
-    );
-    console.log(`[DEBUG] Zone ${minutesToTime(zone.start)}-${minutesToTime(zone.end)} (target: ${zone.targetMinutes}min, priority: ${zone.priority}) generated ${zoneSessions.length} sessions:`);
-    zoneSessions.forEach((s, idx) => {
-      const duration = timeToMinutes(s.end) - timeToMinutes(s.start);
-      console.log(`  Session ${idx + 1}: ${s.start}-${s.end} (${duration} min)`);
-    });
-    sessions.push(...zoneSessions);
-  }
-  
-  // Сортируем сессии по времени начала
-  let sortedSessions = sortSessions(sessions);
-  
-  // Исправляем перерывы между сессиями (особенно между зонами)
-  console.log('[DEBUG] Starting break adjustment. minBreakMinutes:', minBreakMinutes);
-  
-  // Сначала проверяем, есть ли сессии, которые выходят за пределы окна
-  for (let i = 0; i < sortedSessions.length; i++) {
-    const session = sortedSessions[i];
-    const startMin = timeToMinutes(session.start);
-    const endMin = timeToMinutes(session.end);
-    
-    if (endMin > windowEnd) {
-      console.warn(`[DEBUG] Session ${i + 1} exceeds window: ${session.start}-${session.end}, window ends at ${minutesToTime(windowEnd)}`);
-      if (startMin + minSessionMinutes <= windowEnd) {
-        // Обрезаем до конца окна
-        session.end = minutesToTime(windowEnd);
-        console.log(`[DEBUG] Session ${i + 1} truncated to ${session.start}-${session.end}`);
-      } else {
-        // Удаляем сессию
-        console.warn(`[DEBUG] Removing session ${i + 1}: cannot fit in window`);
-        sortedSessions.splice(i, 1);
-        i--;
-      }
-    }
-  }
-  
-  // Затем исправляем перерывы между сессиями
-  for (let i = 1; i < sortedSessions.length; i++) {
-    const prevSession = sortedSessions[i - 1];
-    const currSession = sortedSessions[i];
-    
-    const prevEndMin = timeToMinutes(prevSession.end);
-    const currStartMin = timeToMinutes(currSession.start);
-    const breakDuration = currStartMin - prevEndMin;
-    
-    console.log(`[DEBUG] Break ${i}: ${prevSession.end} -> ${currSession.start} = ${breakDuration} min (need >= ${minBreakMinutes})`);
-    
-    // Если перерыв меньше минимального, сдвигаем текущую сессию
-    if (breakDuration < minBreakMinutes) {
-      const newStartMin = prevEndMin + minBreakMinutes;
-      const sessionDuration = timeToMinutes(currSession.end) - currStartMin;
-      const newEndMin = newStartMin + sessionDuration;
-      
-      console.log(`[DEBUG] Adjusting session ${i}: newStart=${minutesToTime(newStartMin)}, newEnd=${minutesToTime(newEndMin)}, windowEnd=${minutesToTime(windowEnd)}`);
-      
-      // Проверяем, что сессия укладывается в окно
-      if (newEndMin <= windowEnd) {
-        currSession.start = minutesToTime(newStartMin);
-        currSession.end = minutesToTime(newEndMin);
-        console.log(`[DEBUG] Session ${i} adjusted successfully`);
-      } else {
-        // Если не укладывается - обрезаем сессию или пропускаем
-        console.warn(`[DEBUG] Cannot adjust session ${i}: exceeds window. Truncating or removing.`);
-        if (newStartMin + minSessionMinutes <= windowEnd) {
-          // Обрезаем сессию до конца окна
-          currSession.start = minutesToTime(newStartMin);
-          currSession.end = minutesToTime(windowEnd);
-          console.log(`[DEBUG] Session ${i} truncated to ${currSession.start}-${currSession.end}`);
+  // Пробуем разные стратегии количества сессий
+  const sessionCountsToTry = [
+    Math.max(1, Math.round(targetActiveMinutes / 180)), // Сессии по ~3ч
+    Math.max(1, Math.round(targetActiveMinutes / 120)), // Сессии по ~2ч
+    Math.max(1, Math.round(targetActiveMinutes / 240)), // Сессии по ~4ч
+  ].filter((v, i, a) => a.indexOf(v) === i); // Убираем дубли
+
+  for (const numSessions of sessionCountsToTry) {
+    // Пытаемся разместить сессии (несколько попыток для каждой стратегии)
+    for (let attempt = 0; attempt < 25; attempt++) {
+      // 2. Распределяем минуты между сессиями для этой попытки
+      let remainingMinutes = targetActiveMinutes;
+      const sessionDurations: number[] = [];
+      for (let i = 0; i < numSessions; i++) {
+        if (i === numSessions - 1) {
+          sessionDurations.push(remainingMinutes);
         } else {
-          // Удаляем сессию, если она стала слишком короткой
-          console.warn(`[DEBUG] Removing session ${i}: too short after adjustment`);
-          sortedSessions.splice(i, 1);
-          i--; // Корректируем индекс
+          const duration = Math.max(minSessionMinutes, Math.floor(remainingMinutes / (numSessions - i)) + randomInt(-40, 40));
+          const finalDuration = Math.min(duration, remainingMinutes - (numSessions - i - 1) * minSessionMinutes);
+          sessionDurations.push(finalDuration);
+          remainingMinutes -= finalDuration;
         }
       }
-    }
-  }
-  
-  // Пересортируем после корректировки
-  sortedSessions = sortSessions(sortedSessions);
-  
-  // Подсчитываем фактическое активное время
-  let actualActiveMinutes = 0;
-  for (const session of sortedSessions) {
-    actualActiveMinutes += timeToMinutes(session.end) - timeToMinutes(session.start);
-  }
-  
-  // DEBUG: Логирование перерывов между сессиями
-  console.log('=== Schedule Generation Debug ===');
-  console.log('Params:', { startTime, endTime, targetActiveMinutes, minSessionMinutes, minBreakMinutes, randomOffsetMinutes });
-  console.log('Window duration:', windowDuration, 'min');
-  console.log('Target active:', targetActiveMinutes, 'min');
-  console.log('Actual active:', actualActiveMinutes, 'min');
-  console.log('Difference:', targetActiveMinutes - actualActiveMinutes, 'min');
-  console.log('minBreakMinutes:', minBreakMinutes);
-  console.log('Total sessions:', sortedSessions.length);
-  
-  for (let i = 0; i < sortedSessions.length; i++) {
-    const session = sortedSessions[i];
-    const startMin = timeToMinutes(session.start);
-    const endMin = timeToMinutes(session.end);
-    
-    if (i > 0) {
-      const prevEndMin = timeToMinutes(sortedSessions[i - 1].end);
-      const breakDuration = startMin - prevEndMin;
-      const isValid = breakDuration >= minBreakMinutes;
-      
-      console.log(`Break ${i}: ${sortedSessions[i - 1].end} -> ${session.start} = ${breakDuration} min ${isValid ? '✓' : '✗ VIOLATION!'}`);
-      
-      if (!isValid) {
-        console.warn(`WARNING: Break too short! Expected >= ${minBreakMinutes}, got ${breakDuration}`);
+
+      const currentSessions: ScheduleSession[] = [];
+      const occupied = new Array(1440).fill(false);
+      let success = true;
+
+      // Сортируем длительности (сначала длинные)
+      const sortedDurations = [...sessionDurations].sort((a, b) => b - a);
+
+      for (const duration of sortedDurations) {
+        const possibleStarts: number[] = [];
+
+        // Ищем все возможные точки начала
+        for (let s = 0; s < 1440; s++) {
+          let canPlace = true;
+          for (let m = 0; m < duration; m++) {
+            const t = (s + m) % 1440;
+            if (!isTimeAllowed[t] || occupied[t]) {
+              canPlace = false;
+              break;
+            }
+          }
+
+          if (canPlace) {
+            // Проверяем минимальный перерыв до и после
+            for (let b = 1; b <= minBreakMinutes; b++) {
+              if (occupied[(s - b + 1440) % 1440] || occupied[(s + duration + b - 1) % 1440]) {
+                canPlace = false;
+                break;
+              }
+            }
+          }
+
+          if (canPlace) possibleStarts.push(s);
+        }
+
+        if (possibleStarts.length > 0) {
+          // Выбираем точку старта
+          let start: number;
+          // Если места мало (target > 65% от allowed), предпочитаем края для компактности
+          if (targetActiveMinutes / totalAllowedMinutes > 0.65) {
+            start = Math.random() > 0.5 ? possibleStarts[0] : possibleStarts[possibleStarts.length - 1];
+          } else {
+            start = possibleStarts[randomInt(0, possibleStarts.length - 1)];
+          }
+          
+          for (let m = 0; m < duration; m++) {
+            occupied[(start + m) % 1440] = true;
+          }
+
+          currentSessions.push({
+            id: generateSessionId(),
+            start: minutesToTime(start),
+            end: minutesToTime((start + duration) % 1440),
+            enabled: true,
+            profile,
+            type: 'active'
+          });
+        } else {
+          success = false;
+          break;
+        }
       }
-    }
-    
-    console.log(`Session ${i + 1}: ${session.start} - ${session.end} (${endMin - startMin} min)`);
-  }
-  
-  // Если не удалось сгенерировать сессии, используем fallback
-  if (sortedSessions.length === 0 && targetActiveMinutes > 0) {
-    // Fallback: одна большая сессия
-    const sessionStart = windowStart + randomInt(0, Math.min(randomOffsetMinutes, windowDuration / 4));
-    const sessionEnd = Math.min(windowEnd, sessionStart + targetActiveMinutes);
-    
-    if (sessionEnd - sessionStart >= minSessionMinutes) {
-      sortedSessions.push({
-        id: generateSessionId(),
-        start: minutesToTime(sessionStart),
-        end: minutesToTime(sessionEnd),
-        enabled: true,
-        profile,
-        type: 'active'
-      });
-      console.log('[DEBUG] Fallback session created:', sortedSessions[0]);
+
+      const totalActive = currentSessions.reduce((sum, s) => {
+          const sMin = timeToMinutes(s.start);
+          const eMin = timeToMinutes(s.end);
+          const d = eMin - sMin;
+          return sum + (d <= 0 ? d + 1440 : d);
+      }, 0);
+
+      if (totalActive > bestActiveTime) {
+        bestActiveTime = totalActive;
+        finalSessions = currentSessions;
+      }
+
+      if (success && totalActive >= targetActiveMinutes) {
+        return { enabled: true, sessions: sortSessions(finalSessions) };
+      }
     }
   }
 
   return {
-    enabled: sortedSessions.length > 0,
-    sessions: sortedSessions
+    enabled: finalSessions.length > 0,
+    sessions: sortSessions(finalSessions)
   };
 }
 
@@ -1072,7 +859,7 @@ export function generateDaySchedule(
  */
 export function generateSchedule(
   params: ScheduleGenerationParams
-): GeneratedSchedule {
+): GeneratedSchedule & { allowedWindows: Array<{ start: string; end: string }> } {
   const days: GeneratedSchedule['days'] = {
     "0": { enabled: true, sessions: [] },
     "1": { enabled: true, sessions: [] },
@@ -1089,5 +876,11 @@ export function generateSchedule(
     days[dayKey] = generateDaySchedule(params, day);
   }
 
-  return { days };
+  const allowedWindows = [];
+  allowedWindows.push({ start: params.startTime, end: params.endTime });
+  if (params.useSecondWindow && params.startTime2 && params.endTime2) {
+    allowedWindows.push({ start: params.startTime2, end: params.endTime2 });
+  }
+
+  return { days, allowedWindows };
 }

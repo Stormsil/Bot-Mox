@@ -1,350 +1,358 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Statistic, Table, Typography, Tag, Progress, Alert, Spin, List } from 'antd';
-import {
-  DatabaseOutlined,
-  DesktopOutlined,
-  UserOutlined,
-  DollarOutlined,
-  WarningOutlined,
-  CheckCircleOutlined,
-  SyncOutlined,
-  KeyOutlined,
-  GlobalOutlined,
-  CreditCardOutlined,
-  ClockCircleOutlined,
-} from '@ant-design/icons';
-import { ref, onValue } from 'firebase/database';
-import { database } from '../../utils/firebase';
-import { MetricCard } from '../../components/ui/MetricCard';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Spin } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { ContentPanel } from '../../components/layout/ContentPanel';
-import type { Bot, BotLicense, Proxy, Subscription } from '../../types';
-import dayjs from 'dayjs';
+import type { BotLicense, Proxy, Subscription } from '../../types';
+import { useFinance } from '../../hooks/useFinance';
+import { calculateFinanceSummary } from '../../services/financeService';
+import { getSubscriptionSettings } from '../../services/settingsService';
+import { subscribeToNotesIndex } from '../../services/notesService';
+import type { NoteIndex } from '../../services/notesService';
+import { subscribeBotsMap } from '../../services/botsApiService';
+import type { BotRecord } from '../../services/botsApiService';
+import { subscribeResources } from '../../services/resourcesApiService';
+import {
+  type ContentMapSection,
+  type ExpiringItem,
+  DatacenterContentMap,
+} from './content-map';
+import {
+  buildProjectStats,
+  CONTENT_MAP_COLLAPSE_KEY,
+  DEFAULT_COLLAPSED_SECTIONS,
+  FINANCE_WINDOW_DAYS,
+  MS_PER_DAY,
+} from './page-helpers';
 import './DatacenterPage.css';
 
-const { Title, Text } = Typography;
-
-interface DashboardStats {
-  totalBots: number;
-  activeBots: number;
-  offlineBots: number;
-  bannedBots: number;
-  totalLicenses: number;
-  activeLicenses: number;
-  expiredLicenses: number;
-  totalProxies: number;
-  activeProxies: number;
-  expiredProxies: number;
-  totalSubscriptions: number;
-  activeSubscriptions: number;
-  expiredSubscriptions: number;
-  expiringSoonCount: number;
-}
-
-interface ExpiringItem {
-  id: string;
-  type: 'license' | 'proxy' | 'subscription';
-  name: string;
-  botId?: string;
-  botName?: string;
-  expiresAt: number;
-  daysRemaining: number;
-}
-
 export const DatacenterPage: React.FC = () => {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [expiringItems, setExpiringItems] = useState<ExpiringItem[]>([]);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [bots, setBots] = useState<Record<string, Bot>>({});
+  const navigate = useNavigate();
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+  const [bots, setBots] = useState<Record<string, BotRecord>>({});
+  const [botsLoading, setBotsLoading] = useState(true);
+
+  const [licenses, setLicenses] = useState<BotLicense[]>([]);
+  const [licensesLoading, setLicensesLoading] = useState(true);
+
+  const [proxies, setProxies] = useState<Proxy[]>([]);
+  const [proxiesLoading, setProxiesLoading] = useState(true);
+
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [subscriptionsLoading, setSubscriptionsLoading] = useState(true);
+
+  const [notesIndex, setNotesIndex] = useState<NoteIndex[]>([]);
+  const [notesLoading, setNotesLoading] = useState(true);
+
+  const [warningDays, setWarningDays] = useState(7);
+  const [collapsedSections, setCollapsedSections] = useState<Record<ContentMapSection, boolean>>(
+    () => {
+      const saved = localStorage.getItem(CONTENT_MAP_COLLAPSE_KEY);
+      if (saved) {
+        try {
+          return { ...DEFAULT_COLLAPSED_SECTIONS, ...JSON.parse(saved) };
+        } catch (error) {
+          console.warn('Failed to parse content map collapse state:', error);
+        }
+      }
+      return DEFAULT_COLLAPSED_SECTIONS;
+    }
+  );
+
+  const { operations, loading: financeLoading } = useFinance({ days: 365 });
 
   useEffect(() => {
-    const botsRef = ref(database, 'bots');
-    const licensesRef = ref(database, 'bot_licenses');
-    const proxiesRef = ref(database, 'proxies');
-    const subscriptionsRef = ref(database, 'subscriptions');
+    return subscribeBotsMap(
+      (data) => {
+        setBots(data || {});
+        setBotsLoading(false);
+      },
+      (error) => {
+        console.error('Error loading bots:', error);
+        setBotsLoading(false);
+      },
+      { intervalMs: 5000 }
+    );
+  }, []);
 
-    // Загрузка ботов
-    const unsubscribeBots = onValue(botsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setBots(data);
-        
-        const botsList = Object.values(data) as Bot[];
-        const now = Date.now();
-        const fiveMinutesAgo = now - 5 * 60 * 1000;
-        
-        const newStats: DashboardStats = {
-          totalBots: botsList.length,
-          activeBots: botsList.filter(b => b.last_seen > fiveMinutesAgo && b.status !== 'banned').length,
-          offlineBots: botsList.filter(b => b.last_seen <= fiveMinutesAgo && b.status !== 'banned').length,
-          bannedBots: botsList.filter(b => b.status === 'banned').length,
-          totalLicenses: 0,
-          activeLicenses: 0,
-          expiredLicenses: 0,
-          totalProxies: 0,
-          activeProxies: 0,
-          expiredProxies: 0,
-          totalSubscriptions: 0,
-          activeSubscriptions: 0,
-          expiredSubscriptions: 0,
-          expiringSoonCount: 0,
-        };
+  useEffect(() => {
+    return subscribeResources<BotLicense>(
+      'licenses',
+      (list) => {
+        setLicenses(list || []);
+        setLicensesLoading(false);
+      },
+      (error) => {
+        console.error('Error loading licenses:', error);
+        setLicensesLoading(false);
+      },
+      { intervalMs: 7000 }
+    );
+  }, []);
 
-        // Загрузка лицензий
-        onValue(licensesRef, (licSnapshot) => {
-          const licData = licSnapshot.val();
-          if (licData) {
-            const licenses = Object.values(licData) as BotLicense[];
-            newStats.totalLicenses = licenses.length;
-            newStats.activeLicenses = licenses.filter(l => l.expires_at > now).length;
-            newStats.expiredLicenses = licenses.filter(l => l.expires_at <= now).length;
-            
-            // Добавляем истекающие лицензии (v1.4.0 - поддержка нескольких ботов)
-            const expiringLicenses: ExpiringItem[] = licenses
-              .filter(l => {
-                const daysRemaining = Math.ceil((l.expires_at - now) / (1000 * 60 * 60 * 24));
-                return daysRemaining <= 7 && daysRemaining > 0;
-              })
-              .flatMap(l => {
-                // Для лицензий с несколькими ботами создаём entry для каждого бота
-                const botIds = l.bot_ids || [];
-                if (botIds.length === 0) {
-                  return [{
-                    id: l.id,
-                    type: 'license' as const,
-                    name: `License (${l.type})`,
-                    expiresAt: l.expires_at,
-                    daysRemaining: Math.ceil((l.expires_at - now) / (1000 * 60 * 60 * 24)),
-                  }];
-                }
-                return botIds.map(botId => {
-                  const bot = data[botId];
-                  return {
-                    id: `${l.id}_${botId}`,
-                    type: 'license' as const,
-                    name: `License (${l.type})`,
-                    botId: botId,
-                    botName: bot?.character?.name,
-                    expiresAt: l.expires_at,
-                    daysRemaining: Math.ceil((l.expires_at - now) / (1000 * 60 * 60 * 24)),
-                  };
-                });
-              });
-            
-            setExpiringItems(prev => [...prev.filter(i => i.type !== 'license'), ...expiringLicenses]);
-          }
-        }, { onlyOnce: true });
+  useEffect(() => {
+    return subscribeResources<Proxy>(
+      'proxies',
+      (list) => {
+        setProxies(list || []);
+        setProxiesLoading(false);
+      },
+      (error) => {
+        console.error('Error loading proxies:', error);
+        setProxiesLoading(false);
+      },
+      { intervalMs: 7000 }
+    );
+  }, []);
 
-        // Загрузка прокси
-        onValue(proxiesRef, (proxySnapshot) => {
-          const proxyData = proxySnapshot.val();
-          if (proxyData) {
-            const proxies = Object.values(proxyData) as Proxy[];
-            newStats.totalProxies = proxies.length;
-            newStats.activeProxies = proxies.filter(p => p.expires_at > now && p.status !== 'banned').length;
-            newStats.expiredProxies = proxies.filter(p => p.expires_at <= now || p.status === 'banned').length;
-            
-            // Добавляем истекающие прокси
-            const expiringProxies = proxies
-              .filter(p => {
-                const daysRemaining = Math.ceil((p.expires_at - now) / (1000 * 60 * 60 * 24));
-                return daysRemaining <= 7 && daysRemaining > 0;
-              })
-              .map(p => {
-                const bot = p.bot_id ? data[p.bot_id] : null;
-                return {
-                  id: p.id,
-                  type: 'proxy' as const,
-                  name: `Proxy (${p.ip}:${p.port})`,
-                  botId: p.bot_id || undefined,
-                  botName: bot?.character?.name,
-                  expiresAt: p.expires_at,
-                  daysRemaining: Math.ceil((p.expires_at - now) / (1000 * 60 * 60 * 24)),
-                };
-              });
-            
-            setExpiringItems(prev => [...prev.filter(i => i.type !== 'proxy'), ...expiringProxies]);
-          }
-        }, { onlyOnce: true });
+  useEffect(() => {
+    return subscribeResources<Subscription>(
+      'subscriptions',
+      (list) => {
+        setSubscriptions(list || []);
+        setSubscriptionsLoading(false);
+      },
+      (error) => {
+        console.error('Error loading subscriptions:', error);
+        setSubscriptionsLoading(false);
+      },
+      { intervalMs: 7000 }
+    );
+  }, []);
 
-        // Загрузка подписок
-        onValue(subscriptionsRef, (subSnapshot) => {
-          const subData = subSnapshot.val();
-          if (subData) {
-            const subscriptions = Object.values(subData) as Subscription[];
-            newStats.totalSubscriptions = subscriptions.length;
-            newStats.activeSubscriptions = subscriptions.filter(s => s.expires_at > now).length;
-            newStats.expiredSubscriptions = subscriptions.filter(s => s.expires_at <= now).length;
-            
-            // Добавляем истекающие подписки
-            const expiringSubs = subscriptions
-              .filter(s => {
-                const daysRemaining = Math.ceil((s.expires_at - now) / (1000 * 60 * 60 * 24));
-                return daysRemaining <= 7 && daysRemaining > 0;
-              })
-              .map(s => {
-                const bot = s.bot_id ? data[s.bot_id] : null;
-                return {
-                  id: s.id,
-                  type: 'subscription' as const,
-                  name: `Subscription (${s.type})`,
-                  botId: s.bot_id || undefined,
-                  botName: bot?.character?.name,
-                  expiresAt: s.expires_at,
-                  daysRemaining: Math.ceil((s.expires_at - now) / (1000 * 60 * 60 * 24)),
-                };
-              });
-            
-            setExpiringItems(prev => [...prev.filter(i => i.type !== 'subscription'), ...expiringSubs]);
-          }
-          
-          newStats.expiringSoonCount = 
-            newStats.totalLicenses + newStats.totalProxies + newStats.totalSubscriptions;
-          
-          setStats(newStats);
-          setLoading(false);
-        }, { onlyOnce: true });
-
-        // Генерация активности
-        const activity = botsList
-          .filter(b => b.last_seen > now - 24 * 60 * 60 * 1000)
-          .slice(0, 5)
-          .map(b => ({
-            id: b.id,
-            time: dayjs(b.last_seen).format('HH:mm'),
-            bot: b.character.name,
-            action: b.status === 'farming' ? 'Farming' : b.status === 'leveling' ? 'Leveling' : 'Active',
-            project: b.project_id,
-            status: b.status === 'banned' ? 'error' : 'success',
-          }));
-        setRecentActivity(activity);
-      } else {
-        setStats({
-          totalBots: 0,
-          activeBots: 0,
-          offlineBots: 0,
-          bannedBots: 0,
-          totalLicenses: 0,
-          activeLicenses: 0,
-          expiredLicenses: 0,
-          totalProxies: 0,
-          activeProxies: 0,
-          expiredProxies: 0,
-          totalSubscriptions: 0,
-          activeSubscriptions: 0,
-          expiredSubscriptions: 0,
-          expiringSoonCount: 0,
-        });
-        setLoading(false);
-      }
-    }, (error) => {
-      console.error('Error loading dashboard data:', error);
-      setLoading(false);
+  useEffect(() => {
+    const unsubscribe = subscribeToNotesIndex((notes) => {
+      setNotesIndex(notes || []);
+      setNotesLoading(false);
     });
 
     return () => {
-      unsubscribeBots();
+      unsubscribe();
     };
   }, []);
 
-  // Сортировка истекающих элементов
-  const sortedExpiringItems = [...expiringItems].sort((a, b) => a.daysRemaining - b.daysRemaining);
+  useEffect(() => {
+    getSubscriptionSettings()
+      .then((settings) => setWarningDays(settings.warning_days || 7))
+      .catch(() => setWarningDays(7));
+  }, []);
 
-  const projectColumns = [
-    {
-      title: 'Project',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text: string, record: { game: string }) => (
-        <div>
-          <Text strong>{text}</Text>
-          <br />
-          <Text type="secondary" style={{ fontSize: '11px' }}>{record.game}</Text>
-        </div>
-      ),
-    },
-    {
-      title: 'Bots',
-      dataIndex: 'bots',
-      key: 'bots',
-      width: 80,
-      render: (bots: number, record: { active: number }) => (
-        <Text>{record.active} / {bots}</Text>
-      ),
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
-      render: (status: string) => (
-        <Tag
-          icon={status === 'online' ? <CheckCircleOutlined /> : <WarningOutlined />}
-          color={status === 'online' ? 'success' : 'error'}
-          style={{ margin: 0 }}
-        >
-          {status === 'online' ? 'Online' : 'Offline'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Utilization',
-      key: 'utilization',
-      width: 150,
-      render: (_: unknown, record: { active: number; bots: number }) => (
-        <Progress
-          percent={Math.round((record.active / record.bots) * 100)}
-          size="small"
-          strokeColor="var(--proxmox-accent)"
-          trailColor="var(--proxmox-bg-tertiary)"
-        />
-      ),
-    },
-  ];
+  useEffect(() => {
+    localStorage.setItem(CONTENT_MAP_COLLAPSE_KEY, JSON.stringify(collapsedSections));
+  }, [collapsedSections]);
 
-  const activityColumns = [
-    {
-      title: 'Time',
-      dataIndex: 'time',
-      key: 'time',
-      width: 70,
-    },
-    {
-      title: 'Bot',
-      dataIndex: 'bot',
-      key: 'bot',
-    },
-    {
-      title: 'Action',
-      dataIndex: 'action',
-      key: 'action',
-    },
-    {
-      title: 'Project',
-      dataIndex: 'project',
-      key: 'project',
-      width: 100,
-      render: (project: string) => (
-        <Tag style={{ margin: 0 }}>{project}</Tag>
-      ),
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 80,
-      render: (status: string) => (
-        <Tag
-          color={status === 'success' ? 'success' : status === 'warning' ? 'warning' : 'error'}
-          style={{ margin: 0 }}
-        >
-          {status === 'success' ? 'OK' : status === 'warning' ? 'Warn' : 'Error'}
-        </Tag>
-      ),
-    },
-  ];
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60_000);
 
-  if (loading) {
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const toggleSection = (section: ContentMapSection) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  const botsList = useMemo(() => Object.values(bots), [bots]);
+
+  const projectStats = useMemo(() => {
+    const tbcBots = botsList.filter((bot) => bot.project_id === 'wow_tbc');
+    const midnightBots = botsList.filter((bot) => bot.project_id === 'wow_midnight');
+
+    return {
+      all: buildProjectStats(botsList, currentTime),
+      wow_tbc: buildProjectStats(tbcBots, currentTime),
+      wow_midnight: buildProjectStats(midnightBots, currentTime),
+    };
+  }, [botsList, currentTime]);
+
+  const financeSummary = useMemo(() => {
+    const start = currentTime - FINANCE_WINDOW_DAYS * MS_PER_DAY;
+    const windowOps = operations.filter((op) => op.date >= start);
+    return calculateFinanceSummary(windowOps);
+  }, [operations, currentTime]);
+
+  const financeGoldByProject = useMemo(() => {
+    const start = currentTime - FINANCE_WINDOW_DAYS * MS_PER_DAY;
+
+    const seed = {
+      wow_tbc: { totalGold: 0, priceSum: 0, priceCount: 0, avgPrice: 0 },
+      wow_midnight: { totalGold: 0, priceSum: 0, priceCount: 0, avgPrice: 0 },
+    };
+
+    operations.forEach((op) => {
+      if (op.date < start) return;
+      if (op.type !== 'income' || op.category !== 'sale') return;
+      if (!op.project_id) return;
+      if (!(op.project_id in seed)) return;
+
+      const projectKey = op.project_id as 'wow_tbc' | 'wow_midnight';
+      seed[projectKey].totalGold += op.gold_amount || 0;
+      if (typeof op.gold_price_at_time === 'number' && op.gold_price_at_time > 0) {
+        seed[projectKey].priceSum += op.gold_price_at_time;
+        seed[projectKey].priceCount += 1;
+      }
+    });
+
+    (Object.keys(seed) as Array<'wow_tbc' | 'wow_midnight'>).forEach((key) => {
+      const entry = seed[key];
+      entry.avgPrice = entry.priceCount > 0 ? entry.priceSum / entry.priceCount : 0;
+    });
+
+    return seed;
+  }, [operations, currentTime]);
+
+  const licenseStats = useMemo(() => {
+    const expiringSoon = licenses.filter((license) => {
+      const daysRemaining = Math.ceil((license.expires_at - currentTime) / MS_PER_DAY);
+      return daysRemaining <= warningDays && daysRemaining > 0;
+    }).length;
+
+    const expired = licenses.filter((license) => license.expires_at <= currentTime).length;
+    const active = licenses.filter(
+      (license) => license.status === 'active' && license.expires_at > currentTime
+    ).length;
+    const unassigned = licenses.filter((license) => !license.bot_ids || license.bot_ids.length === 0)
+      .length;
+
+    return {
+      total: licenses.length,
+      active,
+      expiringSoon,
+      expired,
+      unassigned,
+    };
+  }, [licenses, warningDays, currentTime]);
+
+  const proxyStats = useMemo(() => {
+    const expiringSoon = proxies.filter((proxy) => {
+      if (proxy.status === 'banned') return false;
+      const daysRemaining = Math.ceil((proxy.expires_at - currentTime) / MS_PER_DAY);
+      return daysRemaining <= warningDays && daysRemaining > 0;
+    }).length;
+
+    const expired = proxies.filter(
+      (proxy) => proxy.expires_at <= currentTime || proxy.status === 'expired'
+    ).length;
+    const active = proxies.filter(
+      (proxy) => proxy.status === 'active' && proxy.expires_at > currentTime
+    ).length;
+    const unassigned = proxies.filter((proxy) => !proxy.bot_id).length;
+
+    return {
+      total: proxies.length,
+      active,
+      expiringSoon,
+      expired,
+      unassigned,
+    };
+  }, [proxies, warningDays, currentTime]);
+
+  const subscriptionStats = useMemo(() => {
+    const expiringSoon = subscriptions.filter((sub) => {
+      const daysRemaining = Math.ceil((sub.expires_at - currentTime) / MS_PER_DAY);
+      return daysRemaining <= warningDays && daysRemaining > 0;
+    }).length;
+
+    const expired = subscriptions.filter((sub) => sub.expires_at <= currentTime).length;
+    const active = subscriptions.filter((sub) => sub.expires_at > currentTime).length;
+
+    return {
+      total: subscriptions.length,
+      active,
+      expired,
+      expiringSoon,
+    };
+  }, [subscriptions, warningDays, currentTime]);
+
+  const notesStats = useMemo(() => {
+    const total = notesIndex.length;
+    const pinned = notesIndex.filter((note) => note.is_pinned).length;
+    return { total, pinned };
+  }, [notesIndex]);
+
+  const latestNotes = useMemo(() => notesIndex.slice(0, 5), [notesIndex]);
+
+  const expiringItems = useMemo(() => {
+    const items: ExpiringItem[] = [];
+
+    licenses.forEach((license) => {
+      const daysRemaining = Math.ceil((license.expires_at - currentTime) / MS_PER_DAY);
+      if (daysRemaining <= warningDays && daysRemaining > 0) {
+        const botName = license.bot_ids?.length
+          ? bots[license.bot_ids[0]]?.character?.name
+          : undefined;
+        items.push({
+          id: license.id,
+          type: 'license',
+          name: `License (${license.type})`,
+          botName,
+          daysRemaining,
+          expiresAt: license.expires_at,
+        });
+      }
+    });
+
+    proxies.forEach((proxy) => {
+      if (proxy.status === 'banned') return;
+      const daysRemaining = Math.ceil((proxy.expires_at - currentTime) / MS_PER_DAY);
+      if (daysRemaining <= warningDays && daysRemaining > 0) {
+        const botName = proxy.bot_id ? bots[proxy.bot_id]?.character?.name : undefined;
+        items.push({
+          id: proxy.id,
+          type: 'proxy',
+          name: `Proxy (${proxy.ip}:${proxy.port})`,
+          botName,
+          daysRemaining,
+          expiresAt: proxy.expires_at,
+        });
+      }
+    });
+
+    subscriptions.forEach((sub) => {
+      const daysRemaining = Math.ceil((sub.expires_at - currentTime) / MS_PER_DAY);
+      if (daysRemaining <= warningDays && daysRemaining > 0) {
+        const botName = sub.bot_id ? bots[sub.bot_id]?.character?.name : undefined;
+        items.push({
+          id: sub.id,
+          type: 'subscription',
+          name: `Subscription (${sub.type})`,
+          botName,
+          daysRemaining,
+          expiresAt: sub.expires_at,
+        });
+      }
+    });
+
+    return items.sort((a, b) => a.daysRemaining - b.daysRemaining);
+  }, [licenses, proxies, subscriptions, bots, warningDays, currentTime]);
+
+  const initialLoading =
+    botsLoading
+    && licensesLoading
+    && proxiesLoading
+    && subscriptionsLoading
+    && financeLoading
+    && notesLoading;
+
+  const navProps = (path: string) => ({
+    role: 'button' as const,
+    tabIndex: 0,
+    onClick: () => navigate(path),
+    onKeyDown: (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        navigate(path);
+      }
+    },
+  });
+
+  if (initialLoading) {
     return (
       <div className="datacenter-page">
         <ContentPanel type="datacenter">
@@ -359,194 +367,29 @@ export const DatacenterPage: React.FC = () => {
   return (
     <div className="datacenter-page">
       <ContentPanel type="datacenter">
-        {/* Expiring Soon Alert */}
-        {sortedExpiringItems.length > 0 && (
-          <Alert
-            className="expiring-alert"
-            message={
-              <span>
-                <WarningOutlined /> {sortedExpiringItems.length} item(s) expiring soon
-              </span>
-            }
-            description={
-              <List
-                size="small"
-                dataSource={sortedExpiringItems.slice(0, 5)}
-                renderItem={item => (
-                  <List.Item className="expiring-item">
-                    <span>
-                      <Tag color={
-                        item.type === 'license' ? 'blue' : 
-                        item.type === 'proxy' ? 'cyan' : 'purple'
-                      }>
-                        {item.type}
-                      </Tag>
-                      {item.name}
-                      {item.botName && <Text type="secondary"> ({item.botName})</Text>}
-                    </span>
-                    <Tag color={item.daysRemaining <= 3 ? 'error' : 'warning'}>
-                      {item.daysRemaining} days
-                    </Tag>
-                  </List.Item>
-                )}
-              />
-            }
-            type="warning"
-            showIcon={false}
-          />
-        )}
-
-        {/* Metrics Grid */}
-        <Row gutter={[16, 16]} className="metrics-row">
-          <Col span={6}>
-            <MetricCard
-              label="Total Bots"
-              value={stats?.totalBots || 0}
-              icon={<DesktopOutlined />}
-              color="var(--proxmox-accent)"
-            />
-          </Col>
-          <Col span={6}>
-            <MetricCard
-              label="Active Bots"
-              value={stats?.activeBots || 0}
-              icon={<CheckCircleOutlined />}
-              color="#52c41a"
-            />
-          </Col>
-          <Col span={6}>
-            <MetricCard
-              label="Offline Bots"
-              value={stats?.offlineBots || 0}
-              icon={<WarningOutlined />}
-              color="#faad14"
-            />
-          </Col>
-          <Col span={6}>
-            <MetricCard
-              label="Banned Bots"
-              value={stats?.bannedBots || 0}
-              icon={<DatabaseOutlined />}
-              color="#ff4d4f"
-            />
-          </Col>
-        </Row>
-
-        {/* Licenses, Proxies, Subscriptions Stats */}
-        <Row gutter={[16, 16]} className="metrics-row">
-          <Col span={8}>
-            <Card className="resource-card">
-              <Statistic
-                title={<span><KeyOutlined /> Licenses</span>}
-                value={stats?.totalLicenses || 0}
-                suffix={
-                  <span className="stat-suffix">
-                    <Tag color="success">{stats?.activeLicenses || 0} active</Tag>
-                    {stats?.expiredLicenses ? <Tag color="error">{stats.expiredLicenses} expired</Tag> : null}
-                  </span>
-                }
-              />
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card className="resource-card">
-              <Statistic
-                title={<span><GlobalOutlined /> Proxies</span>}
-                value={stats?.totalProxies || 0}
-                suffix={
-                  <span className="stat-suffix">
-                    <Tag color="success">{stats?.activeProxies || 0} active</Tag>
-                    {stats?.expiredProxies ? <Tag color="error">{stats.expiredProxies} expired</Tag> : null}
-                  </span>
-                }
-              />
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card className="resource-card">
-              <Statistic
-                title={<span><CreditCardOutlined /> Subscriptions</span>}
-                value={stats?.totalSubscriptions || 0}
-                suffix={
-                  <span className="stat-suffix">
-                    <Tag color="success">{stats?.activeSubscriptions || 0} active</Tag>
-                    {stats?.expiredSubscriptions ? <Tag color="error">{stats.expiredSubscriptions} expired</Tag> : null}
-                  </span>
-                }
-              />
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Tables */}
-        <Row gutter={[16, 16]} className="tables-row">
-          <Col span={12}>
-            <Card 
-              title={
-                <span>
-                  <ClockCircleOutlined /> Recent Activity
-                </span>
-              }
-              className="activity-card"
-            >
-              <Table
-                dataSource={recentActivity}
-                columns={activityColumns}
-                pagination={false}
-                size="small"
-                rowKey="id"
-              />
-            </Card>
-          </Col>
-          <Col span={12}>
-            <Card 
-              title={
-                <span>
-                  <WarningOutlined /> Expiring Soon ({sortedExpiringItems.length})
-                </span>
-              }
-              className="expiring-card"
-            >
-              {sortedExpiringItems.length > 0 ? (
-                <List
-                  size="small"
-                  dataSource={sortedExpiringItems}
-                  renderItem={item => (
-                    <List.Item className="expiring-list-item">
-                      <div className="expiring-info">
-                        <Tag color={
-                          item.type === 'license' ? 'blue' : 
-                          item.type === 'proxy' ? 'cyan' : 'purple'
-                        }>
-                          {item.type}
-                        </Tag>
-                        <Text>{item.name}</Text>
-                        {item.botName && (
-                          <Text type="secondary" style={{ fontSize: '11px' }}>
-                            {item.botName}
-                          </Text>
-                        )}
-                      </div>
-                      <div className="expiring-meta">
-                        <Text type="secondary" style={{ fontSize: '11px' }}>
-                          {dayjs(item.expiresAt).format('MMM DD')}
-                        </Text>
-                        <Tag color={item.daysRemaining <= 3 ? 'error' : 'warning'} style={{ marginLeft: 8 }}>
-                          {item.daysRemaining}d
-                        </Tag>
-                      </div>
-                    </List.Item>
-                  )}
-                />
-              ) : (
-                <div className="no-expiring">
-                  <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 24 }} />
-                  <Text type="secondary">No items expiring soon</Text>
-                </div>
-              )}
-            </Card>
-          </Col>
-        </Row>
+        <DatacenterContentMap
+          collapsedSections={collapsedSections}
+          toggleSection={toggleSection}
+          navProps={navProps}
+          loading={{
+            bots: botsLoading,
+            licenses: licensesLoading,
+            proxies: proxiesLoading,
+            subscriptions: subscriptionsLoading,
+            finance: financeLoading,
+            notes: notesLoading,
+          }}
+          projectStats={projectStats}
+          licenseStats={licenseStats}
+          proxyStats={proxyStats}
+          subscriptionStats={subscriptionStats}
+          financeWindowDays={FINANCE_WINDOW_DAYS}
+          financeSummary={financeSummary}
+          financeGoldByProject={financeGoldByProject}
+          notesStats={notesStats}
+          latestNotes={latestNotes}
+          expiringItems={expiringItems}
+        />
       </ContentPanel>
     </div>
   );

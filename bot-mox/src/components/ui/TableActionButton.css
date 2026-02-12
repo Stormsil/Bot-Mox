@@ -1,0 +1,17 @@
+.table-action-group {
+  display: inline-flex;
+}
+
+.table-action-btn.ant-btn-text {
+  min-width: 28px;
+  padding-inline: 8px;
+  border-radius: 6px;
+}
+
+.table-action-btn.ant-btn-text:hover {
+  background: var(--boxmox-color-surface-muted) !important;
+}
+
+.table-action-btn.ant-btn-text.ant-btn-dangerous:hover {
+  background: rgba(255, 77, 79, 0.12) !important;
+}

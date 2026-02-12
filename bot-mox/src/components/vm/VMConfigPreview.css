@@ -1,0 +1,47 @@
+.vm-config-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vm-config-preview-output {
+  background: var(--boxmox-color-surface-base);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 2px;
+  padding: 12px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--boxmox-color-text-primary);
+}
+
+.vm-config-preview-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.vm-config-preview-detail {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 2px;
+  padding: 8px 12px;
+}
+
+.vm-config-preview-detail .detail-label {
+  font-size: 11px;
+  color: var(--boxmox-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.vm-config-preview-detail .detail-value {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--boxmox-color-text-primary);
+  word-break: break-all;
+}

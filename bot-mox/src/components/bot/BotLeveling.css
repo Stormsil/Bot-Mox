@@ -3,8 +3,8 @@
 }
 
 .leveling-stat-card {
-  background: var(--proxmox-bg-secondary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .leveling-stat-card .ant-card-body {
@@ -12,31 +12,31 @@
 }
 
 .leveling-stat-card .ant-statistic-title {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .leveling-stat-card .ant-statistic-content {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   font-size: var(--text-xl);
   font-weight: 600;
 }
 
 .leveling-progress-card {
   margin-top: 16px;
-  background: var(--proxmox-bg-secondary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .leveling-progress-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .leveling-progress-card .ant-card-head-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   font-size: var(--text-sm);
   font-weight: 600;
 }
@@ -52,7 +52,7 @@
 }
 
 .xp-info .ant-typography {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .xp-percent {
@@ -65,8 +65,8 @@
 
 .leveling-location-card {
   margin-top: 16px;
-  background: var(--proxmox-bg-secondary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .location-info {
@@ -77,7 +77,7 @@
 
 .location-icon {
   font-size: 24px;
-  color: var(--proxmox-accent);
+  color: var(--boxmox-color-brand-primary);
 }
 
 .location-details {
@@ -93,7 +93,7 @@
 .location-tag {
   font-size: var(--text-sm);
   font-weight: 500;
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }

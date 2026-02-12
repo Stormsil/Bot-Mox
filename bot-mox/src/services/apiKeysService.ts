@@ -1,10 +1,53 @@
-import { ref, get, set, update } from 'firebase/database';
-import { database } from '../utils/firebase';
+import { apiGet, apiPut } from './apiClient';
 import type { ApiKeys, ProxySettings, NotificationEvents } from '../types';
 
-const API_KEYS_PATH = 'settings/api_keys';
-const PROXY_SETTINGS_PATH = 'settings/proxy';
-const NOTIFICATION_EVENTS_PATH = 'settings/notifications/events';
+const SETTINGS_API_PREFIX = '/api/v1/settings';
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+
+const normalizeApiKeys = (value: unknown): ApiKeys => {
+  const source = asRecord(value);
+  const ipqs = asRecord(source.ipqs);
+  const telegram = asRecord(source.telegram);
+
+  return {
+    ipqs: {
+      api_key: typeof ipqs.api_key === 'string' ? ipqs.api_key : '',
+      enabled: Boolean(ipqs.enabled),
+    },
+    telegram: {
+      bot_token: typeof telegram.bot_token === 'string' ? telegram.bot_token : '',
+      chat_id: typeof telegram.chat_id === 'string' ? telegram.chat_id : '',
+      enabled: Boolean(telegram.enabled),
+    },
+  };
+};
+
+const normalizeProxySettings = (value: unknown): ProxySettings => {
+  const source = asRecord(value);
+  return {
+    auto_check_on_add:
+      typeof source.auto_check_on_add === 'boolean' ? source.auto_check_on_add : true,
+    fraud_score_threshold:
+      typeof source.fraud_score_threshold === 'number' ? source.fraud_score_threshold : 75,
+    check_interval_hours:
+      typeof source.check_interval_hours === 'number' ? source.check_interval_hours : 0,
+  };
+};
+
+const normalizeNotificationEvents = (value: unknown): NotificationEvents => {
+  const source = asRecord(value);
+  return {
+    bot_banned: typeof source.bot_banned === 'boolean' ? source.bot_banned : true,
+    bot_offline: typeof source.bot_offline === 'boolean' ? source.bot_offline : true,
+    bot_online: typeof source.bot_online === 'boolean' ? source.bot_online : false,
+    level_up: typeof source.level_up === 'boolean' ? source.level_up : true,
+    profession_maxed: typeof source.profession_maxed === 'boolean' ? source.profession_maxed : false,
+    low_fraud_score: typeof source.low_fraud_score === 'boolean' ? source.low_fraud_score : true,
+    daily_report: typeof source.daily_report === 'boolean' ? source.daily_report : false,
+  };
+};
 
 /**
  * API ключи по умолчанию
@@ -54,14 +97,8 @@ export function getDefaultNotificationEvents(): NotificationEvents {
  */
 export async function getApiKeys(): Promise<ApiKeys> {
   try {
-    const apiKeysRef = ref(database, API_KEYS_PATH);
-    const snapshot = await get(apiKeysRef);
-
-    if (snapshot.exists()) {
-      return snapshot.val() as ApiKeys;
-    }
-
-    return getDefaultApiKeys();
+    const response = await apiGet<unknown>(`${SETTINGS_API_PREFIX}/api_keys`);
+    return normalizeApiKeys(response.data);
   } catch (error) {
     console.error('Error loading API keys:', error);
     return getDefaultApiKeys();
@@ -72,8 +109,6 @@ export async function getApiKeys(): Promise<ApiKeys> {
  * Обновляет API ключи
  */
 export async function updateApiKeys(apiKeys: Partial<ApiKeys>): Promise<void> {
-  const apiKeysRef = ref(database, API_KEYS_PATH);
-
   const currentKeys = await getApiKeys();
 
   const updates: ApiKeys = {
@@ -87,7 +122,7 @@ export async function updateApiKeys(apiKeys: Partial<ApiKeys>): Promise<void> {
     },
   };
 
-  await set(apiKeysRef, updates);
+  await apiPut(`${SETTINGS_API_PREFIX}/api_keys`, updates);
 }
 
 /**
@@ -95,14 +130,8 @@ export async function updateApiKeys(apiKeys: Partial<ApiKeys>): Promise<void> {
  */
 export async function getProxySettings(): Promise<ProxySettings> {
   try {
-    const settingsRef = ref(database, PROXY_SETTINGS_PATH);
-    const snapshot = await get(settingsRef);
-
-    if (snapshot.exists()) {
-      return snapshot.val() as ProxySettings;
-    }
-
-    return getDefaultProxySettings();
+    const response = await apiGet<unknown>(`${SETTINGS_API_PREFIX}/proxy`);
+    return normalizeProxySettings(response.data);
   } catch (error) {
     console.error('Error loading proxy settings:', error);
     return getDefaultProxySettings();
@@ -113,8 +142,6 @@ export async function getProxySettings(): Promise<ProxySettings> {
  * Обновляет настройки прокси
  */
 export async function updateProxySettings(settings: Partial<ProxySettings>): Promise<void> {
-  const settingsRef = ref(database, PROXY_SETTINGS_PATH);
-
   const currentSettings = await getProxySettings();
 
   const updates: ProxySettings = {
@@ -122,7 +149,7 @@ export async function updateProxySettings(settings: Partial<ProxySettings>): Pro
     ...settings,
   };
 
-  await set(settingsRef, updates);
+  await apiPut(`${SETTINGS_API_PREFIX}/proxy`, updates);
 }
 
 /**
@@ -130,14 +157,8 @@ export async function updateProxySettings(settings: Partial<ProxySettings>): Pro
  */
 export async function getNotificationEvents(): Promise<NotificationEvents> {
   try {
-    const eventsRef = ref(database, NOTIFICATION_EVENTS_PATH);
-    const snapshot = await get(eventsRef);
-
-    if (snapshot.exists()) {
-      return snapshot.val() as NotificationEvents;
-    }
-
-    return getDefaultNotificationEvents();
+    const response = await apiGet<unknown>(`${SETTINGS_API_PREFIX}/notifications/events`);
+    return normalizeNotificationEvents(response.data);
   } catch (error) {
     console.error('Error loading notification events:', error);
     return getDefaultNotificationEvents();
@@ -148,8 +169,6 @@ export async function getNotificationEvents(): Promise<NotificationEvents> {
  * Обновляет настройки событий уведомлений
  */
 export async function updateNotificationEvents(events: Partial<NotificationEvents>): Promise<void> {
-  const eventsRef = ref(database, NOTIFICATION_EVENTS_PATH);
-
   const currentEvents = await getNotificationEvents();
 
   const updates: NotificationEvents = {
@@ -157,7 +176,7 @@ export async function updateNotificationEvents(events: Partial<NotificationEvent
     ...events,
   };
 
-  await set(eventsRef, updates);
+  await apiPut(`${SETTINGS_API_PREFIX}/notifications/events`, updates);
 }
 
 /**
@@ -208,25 +227,28 @@ export async function getTelegramConfig(): Promise<{ bot_token: string; chat_id:
  */
 export async function initApiSettings(): Promise<void> {
   try {
-    // Инициализация API ключей
-    const apiKeysRef = ref(database, API_KEYS_PATH);
-    const apiKeysSnapshot = await get(apiKeysRef);
-    if (!apiKeysSnapshot.exists()) {
-      await set(apiKeysRef, getDefaultApiKeys());
+    const [apiKeys, proxySettings, notificationEvents] = await Promise.all([
+      getApiKeys(),
+      getProxySettings(),
+      getNotificationEvents(),
+    ]);
+
+    if (!apiKeys.ipqs || !apiKeys.telegram) {
+      await apiPut(`${SETTINGS_API_PREFIX}/api_keys`, getDefaultApiKeys());
     }
 
-    // Инициализация настроек прокси
-    const proxySettingsRef = ref(database, PROXY_SETTINGS_PATH);
-    const proxySnapshot = await get(proxySettingsRef);
-    if (!proxySnapshot.exists()) {
-      await set(proxySettingsRef, getDefaultProxySettings());
+    if (
+      typeof proxySettings.auto_check_on_add !== 'boolean'
+      || typeof proxySettings.fraud_score_threshold !== 'number'
+    ) {
+      await apiPut(`${SETTINGS_API_PREFIX}/proxy`, getDefaultProxySettings());
     }
 
-    // Инициализация событий уведомлений
-    const eventsRef = ref(database, NOTIFICATION_EVENTS_PATH);
-    const eventsSnapshot = await get(eventsRef);
-    if (!eventsSnapshot.exists()) {
-      await set(eventsRef, getDefaultNotificationEvents());
+    if (
+      typeof notificationEvents.bot_banned !== 'boolean'
+      || typeof notificationEvents.bot_offline !== 'boolean'
+    ) {
+      await apiPut(`${SETTINGS_API_PREFIX}/notifications/events`, getDefaultNotificationEvents());
     }
   } catch (error) {
     console.error('Error initializing API settings:', error);

@@ -3,8 +3,8 @@
 }
 
 .profession-card {
-  background: var(--proxmox-bg-secondary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
   transition: all 0.2s ease;
 }
 
@@ -17,8 +17,8 @@
 }
 
 .profession-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
   padding: 12px 16px;
   min-height: auto;
 }
@@ -36,7 +36,7 @@
 .profession-name {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   text-transform: capitalize;
 }
 
@@ -61,7 +61,7 @@
 }
 
 .skill-info .ant-typography {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .skill-percent {
@@ -69,5 +69,5 @@
   margin-top: 8px;
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }

@@ -6,8 +6,8 @@
 
 .licenses-header {
   margin-bottom: 16px;
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .licenses-header .header-content {
@@ -18,11 +18,11 @@
 
 .licenses-header .header-title h4 {
   margin: 0;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .licenses-header .header-title .ant-typography-secondary {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .licenses-stats {
@@ -33,20 +33,20 @@
 }
 
 .licenses-stats .stat-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   text-align: center;
 }
 
 .licenses-stats .stat-card .stat-value {
   font-size: 24px;
   font-weight: 600;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .licenses-stats .stat-card .stat-label {
   font-size: 12px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -65,13 +65,13 @@
 
 .licenses-filters {
   margin-bottom: 16px;
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .licenses-table-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .licenses-table-card .ant-table {
@@ -79,19 +79,19 @@
 }
 
 .licenses-table-card .ant-table-thead > tr > th {
-  background: var(--proxmox-bg-tertiary);
-  color: var(--proxmox-text-secondary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-secondary);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
   font-weight: 500;
 }
 
 .licenses-table-card .ant-table-tbody > tr > td {
-  border-bottom: 1px solid var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .licenses-table-card .ant-table-tbody > tr:hover > td {
-  background: var(--proxmox-bg-hover);
+  background: var(--boxmox-color-surface-hover);
 }
 
 .licenses-table-card .license-key {
@@ -108,43 +108,43 @@
 .licenses-page .ant-input,
 .licenses-page .ant-select-selector,
 .licenses-page .ant-picker {
-  background: var(--proxmox-bg-tertiary) !important;
-  border-color: var(--proxmox-border) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .licenses-page .ant-input::placeholder {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .licenses-page .ant-btn-primary {
-  background: var(--proxmox-accent);
-  border-color: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .licenses-page .ant-btn-primary:hover {
-  background: var(--proxmox-accent-hover);
-  border-color: var(--proxmox-accent-hover);
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
 }
 
 .licenses-page .ant-modal-content {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .licenses-page .ant-modal-header {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .licenses-page .ant-modal-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .licenses-page .ant-form-item-label > label {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .licenses-page .ant-picker-dropdown {
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-surface-panel);
 }

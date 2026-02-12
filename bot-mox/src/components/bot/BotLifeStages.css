@@ -58,8 +58,8 @@
 /* Stage Selector Card */
 .stage-selector-card {
   margin-bottom: 16px;
-  background: var(--proxmox-card-bg);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .stage-selector-header {
@@ -76,7 +76,7 @@
 
 .stage-selector-left h5 {
   margin: 0;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .stage-select {
@@ -84,9 +84,9 @@
 }
 
 .stage-select .ant-select-selector {
-  background: var(--proxmox-bg) !important;
-  border-color: var(--proxmox-border) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-surface-base) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .stage-option {
@@ -135,38 +135,38 @@
 }
 
 .prepare-message h4 {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   margin-bottom: 8px;
 }
 
 /* Stat Cards */
 .stage-stat-card {
-  background: var(--proxmox-card-bg);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .stage-stat-card .ant-statistic-title {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .stage-stat-card .ant-statistic-content {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 /* Detail Cards */
 .stage-detail-card {
   margin-top: 16px;
-  background: var(--proxmox-card-bg);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .stage-detail-card .ant-card-head {
-  background: var(--proxmox-card-bg);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .stage-detail-card .ant-card-head-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 /* XP Progress Section */
@@ -184,7 +184,7 @@
   text-align: center;
   margin-top: 8px;
   font-weight: bold;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 /* Location Info */
@@ -197,7 +197,7 @@
 
 .location-icon {
   font-size: 24px;
-  color: var(--proxmox-accent);
+  color: var(--boxmox-color-brand-primary);
 }
 
 .location-details {
@@ -213,13 +213,13 @@
 
 /* Profession Cards */
 .profession-card {
-  background: var(--proxmox-card-bg);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   transition: all 0.3s ease;
 }
 
 .profession-card.active {
-  border-color: var(--proxmox-success);
+  border-color: var(--boxmox-color-status-success);
   box-shadow: 0 0 8px rgba(82, 196, 26, 0.2);
 }
 
@@ -239,7 +239,7 @@
 
 .profession-name {
   flex: 1;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .profession-status {
@@ -260,7 +260,7 @@
   text-align: center;
   margin-top: 8px;
   font-weight: bold;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 /* Inventory */
@@ -269,7 +269,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid var(--proxmox-border);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .inventory-item:last-child {
@@ -284,7 +284,7 @@
 
 .inventory-item-icon {
   font-size: 20px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .inventory-item-details {
@@ -302,20 +302,20 @@
 
 .inventory-item-quantity {
   font-weight: bold;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 /* Analytics Card */
 .analytics-card {
-  background: var(--proxmox-card-bg);
+  background: var(--boxmox-color-surface-panel);
 }
 
 .analytics-card .ant-statistic-title {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .analytics-card .ant-statistic-content {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 /* Simple Bar Chart */
@@ -353,18 +353,18 @@
 
 /* Timeline Card */
 .timeline-card {
-  background: var(--proxmox-card-bg);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   height: fit-content;
 }
 
 .timeline-card .ant-card-head {
-  background: var(--proxmox-card-bg);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .timeline-card .ant-card-head-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .stage-timeline {
@@ -391,7 +391,16 @@
 }
 
 .timeline-item.active .ant-typography {
-  color: var(--proxmox-accent);
+  color: var(--boxmox-color-brand-primary);
+}
+
+.timeline-item.active.banned .ant-typography {
+  color: #ff4d4f;
+}
+
+/* Ban/Unban Buttons */
+.timeline-card .ant-btn {
+  margin-top: 16px;
 }
 
 /* Responsive */

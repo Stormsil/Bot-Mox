@@ -21,6 +21,7 @@ import {
   deleteNote,
   updateNote,
 } from '../../services/notesService';
+import { TableActionButton } from '../ui/TableActionButton';
 import './NotesComponents.css';
 
 interface NoteSidebarProps {
@@ -142,13 +143,14 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
         project_id: null,
         tags: [],
       });
+      onCreateNote?.();
       setSearchQuery('');
     } catch (error) {
       console.error('Error creating note:', error);
     } finally {
       setCreating(false);
     }
-  }, []);
+  }, [onCreateNote]);
 
   // Обработка изменения поискового запроса
   const handleSearchChange = useCallback(
@@ -325,15 +327,12 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
 
                       {/* Hover actions */}
                       <div className="note-list-item-actions">
-                        <Tooltip title={note.is_pinned ? 'Unpin' : 'Pin'}>
-                          <Button
-                            type="text"
-                            size="small"
-                            icon={note.is_pinned ? <PushpinFilled /> : <PushpinOutlined />}
-                            className={`note-list-item-action ${note.is_pinned ? 'pinned' : ''}`}
-                            onClick={(e) => handleTogglePin(note, e)}
-                          />
-                        </Tooltip>
+                        <TableActionButton
+                          icon={note.is_pinned ? <PushpinFilled /> : <PushpinOutlined />}
+                          className={`note-list-item-action ${note.is_pinned ? 'pinned' : ''}`}
+                          onClick={(e) => handleTogglePin(note, e as React.MouseEvent)}
+                          tooltip={note.is_pinned ? 'Unpin' : 'Pin'}
+                        />
                         <Popconfirm
                           title="Delete note?"
                           description="This action cannot be undone."
@@ -343,16 +342,13 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                           okType="danger"
                           cancelText="Cancel"
                         >
-                          <Tooltip title="Delete">
-                            <Button
-                              type="text"
-                              size="small"
-                              danger
-                              icon={<DeleteOutlined />}
-                              className="note-list-item-action"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </Tooltip>
+                          <TableActionButton
+                            danger
+                            icon={<DeleteOutlined />}
+                            className="note-list-item-action"
+                            onClick={(e) => (e as React.MouseEvent).stopPropagation()}
+                            tooltip="Delete"
+                          />
                         </Popconfirm>
                       </div>
                     </>

@@ -19,7 +19,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   subtext,
   progress,
   icon,
-  color = '#e57000',
+  color = 'var(--boxmox-color-brand-primary)',
 }) => {
   return (
     <Card className="metric-card" bordered={false}>
@@ -36,7 +36,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
             percent={progress}
             size="small"
             strokeColor={color}
-            trailColor="#282a2e"
+            trailColor="var(--boxmox-color-border-subtle)"
             showInfo={false}
           />
         </div>

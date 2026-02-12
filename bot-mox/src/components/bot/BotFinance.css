@@ -7,8 +7,8 @@
 }
 
 .finance-stat-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .finance-stat-card .ant-card-body {
@@ -16,7 +16,7 @@
 }
 
 .finance-stat-card .ant-statistic-title {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -39,7 +39,7 @@
 }
 
 .stat-detail .stat-label {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
   font-size: var(--text-xs);
 }
 
@@ -49,14 +49,14 @@
 
 .costs-card,
 .roi-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .costs-card .ant-card-head,
 .roi-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .cost-item,
@@ -65,7 +65,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid var(--proxmox-bg-tertiary);
+  border-bottom: 1px solid var(--boxmox-color-surface-muted);
 }
 
 .cost-item:last-child,
@@ -75,19 +75,19 @@
 
 .cost-item .ant-typography,
 .roi-item .ant-typography {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   font-size: var(--text-sm);
 }
 
 .cost-item .ant-typography-strong,
 .roi-item .ant-typography-strong {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .cost-divider,
 .roi-divider {
   height: 1px;
-  background: var(--proxmox-border);
+  background: var(--boxmox-color-border-default);
   margin: 8px 0;
 }
 
@@ -97,22 +97,22 @@
 }
 
 .total-amount {
-  color: var(--proxmox-accent) !important;
+  color: var(--boxmox-color-brand-primary) !important;
 }
 
 .positive {
-  color: var(--proxmox-status-online) !important;
+  color: var(--boxmox-color-status-success) !important;
 }
 
 /* Transactions Table */
 .transactions-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .transactions-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .transactions-header {
@@ -131,9 +131,9 @@
 }
 
 .transactions-table .ant-table-thead > tr > th {
-  background: var(--proxmox-bg-tertiary);
-  color: var(--proxmox-text-primary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-primary);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
   font-weight: 600;
   font-size: var(--text-xs);
   text-transform: uppercase;
@@ -141,12 +141,12 @@
 }
 
 .transactions-table .ant-table-tbody > tr > td {
-  border-bottom: 1px solid var(--proxmox-bg-tertiary);
-  color: var(--proxmox-text-secondary);
+  border-bottom: 1px solid var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .transactions-table .ant-table-tbody > tr:hover > td {
-  background: var(--proxmox-bg-hover);
+  background: var(--boxmox-color-surface-hover);
 }
 
 .transaction-type-tag {
@@ -158,9 +158,9 @@
 }
 
 .category-tag {
-  background: var(--proxmox-bg-tertiary);
-  border: 1px solid var(--proxmox-border);
-  color: var(--proxmox-text-secondary);
+  background: var(--boxmox-color-surface-muted);
+  border: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-secondary);
   font-size: var(--text-xs);
   padding: 0 6px;
   height: 18px;
@@ -168,12 +168,12 @@
 }
 
 .amount-income {
-  color: var(--proxmox-status-online);
+  color: var(--boxmox-color-status-success);
   font-weight: 500;
 }
 
 .amount-expense {
-  color: var(--proxmox-status-error);
+  color: var(--boxmox-color-status-danger);
   font-weight: 500;
 }
 
@@ -182,15 +182,15 @@
 }
 
 .transactions-table .ant-pagination-item {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .transactions-table .ant-pagination-item-active {
-  background: var(--proxmox-accent);
-  border-color: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .transactions-table .ant-pagination-item-active a {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }

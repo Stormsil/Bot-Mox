@@ -13,9 +13,9 @@ import {
   createSubscription,
   updateSubscription,
   deleteSubscription,
-  calculateSubscriptionStatus,
   enrichSubscriptionsWithDetails,
 } from '../services/subscriptionService';
+import { fetchBotsList } from '../services/botsApiService';
 import {
   getSubscriptionSettings,
   updateSubscriptionSettings,
@@ -57,7 +57,9 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
   // Состояния
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [settings, setSettings] = useState<SubscriptionSettings>(getDefaultSettings());
-  const [botsMap, setBotsMap] = useState<Map<string, { name: string; character?: string; status?: string; vmName?: string }>>(new Map());
+  const [botsMap, setBotsMap] = useState<
+    Map<string, { name: string; character?: string; status?: SubscriptionWithDetails['botStatus']; vmName?: string }>
+  >(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -76,26 +78,22 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
   // Загрузка данных ботов для отображения
   const loadBotsData = useCallback(async () => {
     try {
-      const { database } = await import('../utils/firebase');
-      const { ref, get } = await import('firebase/database');
-      const botsRef = ref(database, 'bots');
-      const snapshot = await get(botsRef);
+      const bots = await fetchBotsList();
+      const nextBotsMap = new Map<
+        string,
+        { name: string; character?: string; status?: SubscriptionWithDetails['botStatus']; vmName?: string }
+      >();
 
-      if (snapshot.exists()) {
-        const botsData = snapshot.val();
-        const newBotsMap = new Map<string, { name: string; character?: string; status?: string; vmName?: string }>();
-
-        Object.entries(botsData).forEach(([id, data]: [string, any]) => {
-          newBotsMap.set(id, {
-            name: data.name || id,
-            character: data.character?.name,
-            status: data.status,
-            vmName: data.vm?.name,
-          });
+      bots.forEach((bot) => {
+        nextBotsMap.set(bot.id, {
+          name: bot.name || bot.id,
+          character: bot.character?.name,
+          status: bot.status,
+          vmName: bot.vm?.name,
         });
+      });
 
-        setBotsMap(newBotsMap);
-      }
+      setBotsMap(nextBotsMap);
     } catch (err) {
       console.error('Error loading bots data:', err);
     }
@@ -103,20 +101,28 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
 
   // Подписка на изменения подписок
   useEffect(() => {
-    setLoading(true);
-    setError(null);
+    const frameId = window.requestAnimationFrame(() => {
+      setLoading(true);
+      setError(null);
+    });
 
     // Загружаем настройки и данные ботов
-    loadSettings();
-    loadBotsData();
+    const loadTimer = window.setTimeout(() => {
+      void loadSettings();
+      void loadBotsData();
+    }, 0);
 
     // Подписываемся на подписки
-    const subscribeFn = botId ? subscribeToBotSubscriptions : subscribeToSubscriptions;
-    const args = botId
-      ? [botId, (subs: Subscription[]) => setSubscriptions(subs), (err: Error) => setError(err)]
-      : [(subs: Subscription[]) => setSubscriptions(subs), (err: Error) => setError(err)];
-
-    const unsubscribe = (subscribeFn as any)(...args);
+    const unsubscribe = botId
+      ? subscribeToBotSubscriptions(
+          botId,
+          (subs: Subscription[]) => setSubscriptions(subs),
+          (err: Error) => setError(err)
+        )
+      : subscribeToSubscriptions(
+          (subs: Subscription[]) => setSubscriptions(subs),
+          (err: Error) => setError(err)
+        );
 
     // Отмечаем загрузку завершенной после небольшой задержки
     const timeout = setTimeout(() => {
@@ -124,6 +130,8 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
     }, 300);
 
     return () => {
+      window.cancelAnimationFrame(frameId);
+      clearTimeout(loadTimer);
       unsubscribe();
       clearTimeout(timeout);
     };

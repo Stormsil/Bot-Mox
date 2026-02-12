@@ -3,9 +3,23 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--proxmox-bg-secondary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
   margin-bottom: 16px;
+}
+
+/* Main layout wrapper */
+.schedule-content-wrapper {
+  display: flex;
+  gap: 0;
+  min-height: 500px;
+}
+
+.schedule-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .bot-schedule-loading {
@@ -20,17 +34,17 @@
 }
 
 .schedule-card {
-  background: var(--proxmox-bg-secondary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .schedule-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .schedule-card .ant-card-head-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   font-size: 14px;
   font-weight: 600;
 }
@@ -41,25 +55,25 @@
 }
 
 .schedule-actions .ant-btn {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .schedule-actions .ant-btn:hover {
-  border-color: var(--proxmox-orange);
-  color: var(--proxmox-orange);
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
 }
 
 .schedule-actions .ant-btn-primary {
-  background: var(--proxmox-orange);
-  border-color: var(--proxmox-orange);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
   color: #fff;
 }
 
 .schedule-actions .ant-btn-primary:hover {
-  background: #ff8c00;
-  border-color: #ff8c00;
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
 }
 
 .schedule-actions .ant-btn-primary:disabled,
@@ -68,18 +82,41 @@
   cursor: not-allowed;
 }
 
+.schedule-actions .schedule-unlock-btn {
+  border-color: var(--boxmox-color-brand-warning);
+  color: var(--boxmox-color-brand-warning);
+}
+
+.schedule-actions .schedule-unlock-btn:hover {
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
+}
+
 .unsaved-alert {
   margin-bottom: 16px;
 }
 
 .unsaved-alert .ant-alert-message {
-  color: #faad14;
+  color: #b36200;
+}
+
+.unsaved-alert.ant-alert-warning {
+  background: #fff4e3;
+  border-color: var(--boxmox-color-brand-warning);
+}
+
+.unsaved-alert.ant-alert-warning .ant-alert-icon {
+  color: var(--boxmox-color-brand-warning);
+}
+
+.unsaved-alert.ant-alert-warning .ant-alert-description {
+  color: var(--boxmox-color-text-secondary);
 }
 
 .day-controls {
   padding: 16px;
-  background: var(--proxmox-bg-secondary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .day-toggle {
@@ -90,7 +127,7 @@
 }
 
 .day-toggle span {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   font-size: 14px;
   font-weight: 500;
 }
@@ -107,13 +144,13 @@
 .day-stats {
   margin: 0 16px 16px 16px;
   border-radius: 8px;
-  border: 1px solid var(--proxmox-border);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 /* SessionList container styling */
 .session-list {
   margin: 0 16px 16px 16px;
-  border: 1px solid var(--proxmox-border);
+  border: 1px solid var(--boxmox-color-border-default);
   border-radius: 8px;
 }
 

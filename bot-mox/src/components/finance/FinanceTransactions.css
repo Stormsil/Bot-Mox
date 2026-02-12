@@ -3,14 +3,18 @@
 }
 
 .filters-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   margin-bottom: 16px;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .transactions-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .transactions-card .ant-card-body {
@@ -22,60 +26,67 @@
 }
 
 .transactions-table .ant-table-thead > tr > th {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
-  color: var(--proxmox-text-primary);
-  font-weight: 500;
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .transactions-table .ant-table-tbody > tr > td {
-  border-bottom: 1px solid var(--proxmox-border);
-  color: var(--proxmox-text-secondary);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .transactions-table .ant-table-tbody > tr:hover > td {
-  background: var(--proxmox-bg-tertiary);
+  background: var(--boxmox-color-surface-muted);
+}
+
+.finance-tag {
+  border-radius: 2px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--boxmox-color-text-secondary) !important;
+  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--boxmox-color-surface-muted);
+}
+
+.transactions-table .ant-tag {
+  border-radius: 2px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .transaction-type-tag {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   font-weight: 500;
 }
 
-.amount-income {
-  color: #52c41a;
+.amount-neutral {
+  color: var(--boxmox-color-text-primary);
   font-weight: 500;
-}
-
-.amount-expense {
-  color: #f5222d;
-  font-weight: 500;
-}
-
-.action-btn {
-  padding: 4px 8px;
-}
-
-.action-btn:hover {
-  background: var(--proxmox-bg-tertiary);
 }
 
 /* Стили для фильтров */
 .filters-card .ant-select-selector,
 .filters-card .ant-picker,
 .filters-card .ant-input {
-  background: var(--proxmox-bg-tertiary) !important;
-  border-color: var(--proxmox-border) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .filters-card .ant-select-selection-placeholder,
 .filters-card .ant-input::placeholder {
-  color: var(--proxmox-text-muted) !important;
+  color: var(--boxmox-color-text-muted) !important;
 }
 
 .filters-card .ant-picker-suffix,
 .filters-card .ant-select-arrow {
-  color: var(--proxmox-text-muted) !important;
+  color: var(--boxmox-color-text-muted) !important;
 }

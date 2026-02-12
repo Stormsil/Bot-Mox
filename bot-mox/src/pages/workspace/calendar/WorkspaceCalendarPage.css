@@ -1,0 +1,225 @@
+.workspace-calendar-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.workspace-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.workspace-calendar-title {
+  margin: 0 !important;
+  color: var(--boxmox-color-text-primary) !important;
+}
+
+.workspace-calendar-title .anticon {
+  color: var(--boxmox-color-brand-primary);
+  margin-right: 8px;
+}
+
+.workspace-calendar-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 12px;
+  min-height: 0;
+  flex: 1;
+}
+
+.workspace-calendar-main,
+.workspace-calendar-sidebar {
+  min-height: 0;
+  border-color: var(--boxmox-color-border-default);
+}
+
+.workspace-calendar-main .ant-card-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workspace-calendar-main .ant-picker-calendar {
+  background: var(--boxmox-color-surface-panel);
+}
+
+.workspace-calendar-main .ant-picker-cell-selected .ant-picker-cell-inner,
+.workspace-calendar-main .ant-picker-cell:hover .ant-picker-cell-inner {
+  background: var(--boxmox-color-brand-soft) !important;
+}
+
+.workspace-calendar-cell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.workspace-calendar-legend {
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  background: var(--boxmox-color-surface-muted);
+}
+
+.workspace-calendar-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--boxmox-color-text-secondary);
+}
+
+.workspace-calendar-legend-circle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--boxmox-color-brand-primary);
+}
+
+.workspace-calendar-legend-selected {
+  width: 14px;
+  height: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--boxmox-color-brand-primary);
+  background: var(--boxmox-color-brand-soft);
+}
+
+.workspace-calendar-cell-badge {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 10px;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  background: var(--boxmox-color-brand-primary);
+  color: #fff;
+  padding: 0 4px;
+}
+
+.workspace-calendar-week {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workspace-calendar-week-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.workspace-calendar-week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(120px, 1fr));
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.workspace-calendar-week-day {
+  min-height: 160px;
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--boxmox-color-surface-panel);
+  color: var(--boxmox-color-text-primary);
+  text-align: left;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.workspace-calendar-week-day:hover {
+  border-color: var(--boxmox-color-brand-primary);
+  background: var(--boxmox-color-surface-hover);
+}
+
+.workspace-calendar-week-day.selected {
+  border-color: var(--boxmox-color-brand-primary);
+  background: var(--boxmox-color-brand-soft);
+}
+
+.workspace-calendar-week-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.workspace-calendar-week-day-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+
+.workspace-calendar-week-tag {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspace-calendar-sidebar .ant-card-head-title {
+  color: var(--boxmox-color-text-primary);
+}
+
+.workspace-calendar-sidebar .ant-card-body {
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.workspace-calendar-sidebar .ant-list-item {
+  border-bottom-color: var(--boxmox-color-border-default);
+}
+
+.workspace-calendar-timeline .ant-divider {
+  margin: 10px 0;
+}
+
+.workspace-calendar-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--boxmox-color-text-primary);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.workspace-calendar-item-description {
+  width: 100%;
+}
+
+.workspace-calendar-note-link {
+  padding-inline: 0 !important;
+  height: auto !important;
+}
+
+@media (max-width: 1100px) {
+  .workspace-calendar-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-calendar-week-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .workspace-calendar-week-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,73 @@
+.vm-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 700px;
+}
+
+.vm-settings-section {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 2px;
+  padding: 16px;
+}
+
+.vm-settings-section h4 {
+  margin: 0 0 12px 0;
+  color: var(--boxmox-color-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  padding-bottom: 8px;
+}
+
+.vm-settings-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.vm-settings-row.single {
+  grid-template-columns: 1fr;
+}
+
+.vm-settings-field label {
+  display: block;
+  font-size: 12px;
+  color: var(--boxmox-color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.vm-settings-status {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.vm-settings-template-sync {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-secondary);
+  font-size: 12px;
+}
+
+.vm-settings-template-sync--loading {
+  border-color: var(--boxmox-color-status-info);
+  color: var(--boxmox-color-status-info);
+}
+
+.vm-settings-template-sync--ok {
+  border-color: var(--boxmox-color-status-success);
+  color: var(--boxmox-color-status-success);
+}
+
+.vm-settings-template-sync--error {
+  border-color: var(--boxmox-color-status-danger);
+  color: var(--boxmox-color-status-danger);
+}

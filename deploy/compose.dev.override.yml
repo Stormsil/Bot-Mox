@@ -1,0 +1,39 @@
+services:
+  frontend:
+    image: node:20-bookworm
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
+      VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost:3001}
+    volumes:
+      - ../bot-mox:/app
+    ports:
+      - "${FRONTEND_BIND_PORT:-5173}:5173"
+
+  backend:
+    image: node:20-bookworm
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    environment:
+      NODE_ENV: development
+      PORT: ${BACKEND_PORT:-3001}
+      DATA_BACKEND: ${DATA_BACKEND:-rtdb}
+      SUPABASE_URL: ${SUPABASE_URL:-http://host.docker.internal:54321}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_BUCKET_ARTIFACTS: ${S3_BUCKET_ARTIFACTS:-botmox-artifacts}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-true}
+      S3_PRESIGN_TTL_SECONDS: ${S3_PRESIGN_TTL_SECONDS:-300}
+      ALLOW_INSECURE_DEV_TOKENS: ${ALLOW_INSECURE_DEV_TOKENS:-true}
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-change-me-api-token}
+      INTERNAL_INFRA_TOKEN: ${INTERNAL_INFRA_TOKEN:-change-me-infra-token}
+    volumes:
+      - ../proxy-server:/app
+    ports:
+      - "${BACKEND_BIND_PORT:-3001}:3001"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

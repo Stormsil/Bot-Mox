@@ -1,0 +1,1272 @@
+openapi: 3.0.3
+info:
+  title: Bot-Mox API v1
+  version: 1.0.0
+  description: Canonical API surface for phased backend/frontend alignment.
+servers:
+  - url: http://localhost:3001
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SuccessEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          nullable: true
+        meta:
+          nullable: true
+      required: [success]
+    ErrorEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              nullable: true
+          required: [code, message]
+      required: [success, error]
+    HealthSummary:
+      type: object
+      properties:
+        service:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        firebase:
+          type: boolean
+        data_backend:
+          type: string
+          enum: [rtdb, supabase]
+        supabase_ready:
+          type: boolean
+        s3_ready:
+          type: boolean
+        supabase_configured:
+          type: boolean
+        s3_configured:
+          type: boolean
+      required:
+        - service
+        - timestamp
+        - firebase
+        - data_backend
+        - supabase_ready
+        - s3_ready
+    LivenessPayload:
+      type: object
+      properties:
+        service:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [live]
+      required: [service, timestamp, status]
+    ReadinessPayload:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ready, not-ready]
+        ready:
+          type: boolean
+        checks:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+      required: [status, ready, checks, timestamp]
+    ResourceMutationRequest:
+      description: |
+        Kind-specific mutation payload. Server validates by `{kind}`.
+        - `licenses`: `LicenseMutationRequest`
+        - `proxies`: `ProxyMutationRequest`
+        - `subscriptions`: `SubscriptionMutationRequest`
+      oneOf:
+        - $ref: '#/components/schemas/LicenseMutationRequest'
+        - $ref: '#/components/schemas/ProxyMutationRequest'
+        - $ref: '#/components/schemas/SubscriptionMutationRequest'
+    WorkspaceMutationRequest:
+      description: |
+        Kind-specific mutation payload. Server validates by `{kind}`.
+        - `notes`: `NoteMutationRequest`
+        - `calendar`: `CalendarMutationRequest`
+        - `kanban`: `KanbanMutationRequest`
+      oneOf:
+        - $ref: '#/components/schemas/NoteMutationRequest'
+        - $ref: '#/components/schemas/CalendarMutationRequest'
+        - $ref: '#/components/schemas/KanbanMutationRequest'
+    SettingsMutationRequest:
+      description: |
+        Path-aware mutation payload. Accepted shape depends on concrete `path`.
+        Supported top-level payload kinds:
+        - object
+        - array
+        - primitive (`string`/`number`/`boolean`)
+        - `null` (for explicit deletes on selected subpaths)
+      nullable: true
+      oneOf:
+        - type: object
+          additionalProperties: true
+        - type: array
+          items: {}
+        - type: string
+        - type: number
+        - type: boolean
+    LicenseMutationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+          enum: [active, expired, revoked]
+        bot_ids:
+          type: array
+          items:
+            type: string
+        expires_at:
+          type: integer
+      additionalProperties: true
+    ProxyMutationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        ip:
+          type: string
+        port:
+          type: integer
+        type:
+          type: string
+          enum: [http, socks5]
+        status:
+          type: string
+          enum: [active, expired, banned]
+        bot_id:
+          type: string
+          nullable: true
+      additionalProperties: true
+    SubscriptionMutationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [wow, bot, proxy, vpn, other]
+        status:
+          type: string
+          enum: [active, cancelled, expired, expiring_soon]
+        bot_id:
+          type: string
+        project_id:
+          type: string
+          enum: [wow_tbc, wow_midnight]
+        expires_at:
+          type: integer
+      additionalProperties: true
+    NoteMutationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        bot_id:
+          type: string
+          nullable: true
+      additionalProperties: true
+    CalendarMutationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+        linked_note_id:
+          type: string
+          nullable: true
+      additionalProperties: true
+    KanbanMutationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [todo, in_progress, done]
+        due_date:
+          type: string
+          nullable: true
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+        order:
+          type: integer
+      additionalProperties: true
+    VmRegisterRequest:
+      type: object
+      properties:
+        vm_uuid:
+          type: string
+        user_id:
+          type: string
+        vm_name:
+          type: string
+        project_id:
+          type: string
+        status:
+          type: string
+          enum: [active, paused, revoked]
+        metadata:
+          type: object
+          additionalProperties: true
+      required: [vm_uuid]
+    LicenseLeaseRequest:
+      type: object
+      properties:
+        vm_uuid:
+          type: string
+        user_id:
+          type: string
+        agent_id:
+          type: string
+        runner_id:
+          type: string
+        module:
+          type: string
+        version:
+          type: string
+      required: [vm_uuid, agent_id, runner_id, module]
+    LicenseHeartbeatRequest:
+      type: object
+      properties:
+        lease_id:
+          type: string
+      required: [lease_id]
+    LicenseRevokeRequest:
+      type: object
+      properties:
+        lease_id:
+          type: string
+        reason:
+          type: string
+      required: [lease_id]
+paths:
+  /api/v1/health:
+    get:
+      summary: API v1 health summary
+      security: []
+      responses:
+        '200':
+          description: Health payload
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/HealthSummary'
+  /api/v1/health/live:
+    get:
+      summary: API v1 liveness probe
+      security: []
+      responses:
+        '200':
+          description: Liveness payload
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LivenessPayload'
+  /api/v1/health/ready:
+    get:
+      summary: API v1 readiness probe
+      security: []
+      responses:
+        '200':
+          description: Ready
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ReadinessPayload'
+        '503':
+          description: Not ready
+  /api/v1/auth/verify:
+    get:
+      summary: Verify bearer token and return identity
+      responses:
+        '200':
+          description: Verified identity
+        '401':
+          description: Unauthorized
+  /api/v1/auth/whoami:
+    get:
+      summary: Return raw authenticated principal payload
+      responses:
+        '200':
+          description: Auth payload
+        '401':
+          description: Unauthorized
+  /api/v1/ipqs/status:
+    get:
+      summary: Get IPQS availability/configuration status
+      responses:
+        '200':
+          description: IPQS status payload
+  /api/v1/ipqs/check:
+    post:
+      summary: Check single IP via IPQS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ip:
+                  type: string
+              required: [ip]
+      responses:
+        '200':
+          description: IPQS check result
+        '400':
+          description: Invalid request
+  /api/v1/ipqs/check-batch:
+    post:
+      summary: Check batch of IPs via IPQS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ips:
+                  type: array
+                  items:
+                    type: string
+              required: [ips]
+      responses:
+        '200':
+          description: Batch check results
+        '400':
+          description: Invalid request
+  /api/v1/wow-names:
+    get:
+      summary: Fetch WoW name candidates from Warcraft Tavern sources
+      parameters:
+        - in: query
+          name: count
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: batches
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: WoW names payload
+        '502':
+          description: Source returned no names
+  /api/v1/resources/{kind}:
+    get:
+      summary: List resources by kind
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+            enum: [licenses, proxies, subscriptions]
+      responses:
+        '200':
+          description: Resource list
+    post:
+      summary: Create resource by kind
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+            enum: [licenses, proxies, subscriptions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceMutationRequest'
+      responses:
+        '201':
+          description: Created resource
+  /api/v1/resources/{kind}/{id}:
+    get:
+      summary: Get resource by id
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+            enum: [licenses, proxies, subscriptions]
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resource entity
+        '404':
+          description: Not found
+    patch:
+      summary: Update resource by id
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+            enum: [licenses, proxies, subscriptions]
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceMutationRequest'
+      responses:
+        '200':
+          description: Updated resource
+    delete:
+      summary: Delete resource by id
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+            enum: [licenses, proxies, subscriptions]
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deletion result
+  /api/v1/workspace/{kind}:
+    get:
+      summary: List workspace entities by kind
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+            enum: [notes, calendar, kanban]
+      responses:
+        '200':
+          description: Workspace list
+    post:
+      summary: Create workspace entity by kind
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+            enum: [notes, calendar, kanban]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceMutationRequest'
+      responses:
+        '201':
+          description: Workspace entity created
+  /api/v1/workspace/{kind}/{id}:
+    get:
+      summary: Get workspace entity by id
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+            enum: [notes, calendar, kanban]
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workspace entity
+        '404':
+          description: Not found
+    patch:
+      summary: Update workspace entity by id
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+            enum: [notes, calendar, kanban]
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceMutationRequest'
+      responses:
+        '200':
+          description: Updated workspace entity
+    delete:
+      summary: Delete workspace entity by id
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+            enum: [notes, calendar, kanban]
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deletion result
+  /api/v1/settings:
+    get:
+      summary: Get full settings tree
+      responses:
+        '200':
+          description: Settings root
+  /api/v1/settings/{path}:
+    get:
+      summary: Get settings subtree
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Settings subtree
+    put:
+      summary: Merge settings subtree (path-aware validation)
+      description: |
+        The backend validates payload shape by concrete subpath and rejects
+        invalid RTDB path segments (`.`, `..`, `#`, `$`, `[`, `]`).
+        Commonly used paths:
+        - `alerts`
+        - `api_keys`
+        - `proxy`
+        - `notifications/events`
+        - `projects`, `projects/{projectId}`
+        - `theme`
+        - `schedule/last_params`, `schedule/templates`, `schedule/templates/{templateId}`
+        - `vmgenerator`, `vmgenerator/profiles`, `vmgenerator/profiles/{profileId}`
+        - `generators/account/*`
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsMutationRequest'
+      responses:
+        '200':
+          description: Updated settings
+        '400':
+          description: Invalid path or invalid payload for selected subpath
+    patch:
+      summary: Patch settings subtree (path-aware validation)
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsMutationRequest'
+      responses:
+        '200':
+          description: Updated settings
+        '400':
+          description: Invalid path or invalid payload for selected subpath
+  /api/v1/vm/register:
+    post:
+      summary: Register VM UUID in tenant-scoped VM registry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VmRegisterRequest'
+      responses:
+        '201':
+          description: VM registered
+        '400':
+          description: Invalid request body
+  /api/v1/vm/{uuid}/resolve:
+    get:
+      summary: Resolve VM UUID in current tenant
+      parameters:
+        - in: path
+          name: uuid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: VM registry entry
+        '404':
+          description: VM UUID not found
+  /api/v1/bots:
+    get:
+      summary: List bots
+      responses:
+        '200':
+          description: Bot list
+    post:
+      summary: Create bot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Created bot
+  /api/v1/bots/{id}:
+    get:
+      summary: Get bot by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bot entity
+    patch:
+      summary: Update bot by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Updated bot
+    delete:
+      summary: Delete bot by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted bot
+  /api/v1/bots/{id}/lifecycle:
+    get:
+      summary: Get bot lifecycle payload
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bot lifecycle
+        '404':
+          description: Not found
+  /api/v1/bots/{id}/lifecycle/transitions:
+    get:
+      summary: Get bot lifecycle stage transitions
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lifecycle transitions
+  /api/v1/bots/{id}/lifecycle/is-banned:
+    get:
+      summary: Check whether bot is banned
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Banned state
+  /api/v1/bots/{id}/lifecycle/transition:
+    post:
+      summary: Transition bot lifecycle status (non-ban)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [offline, prepare, leveling, profession, farming, banned]
+              required: [status]
+      responses:
+        '200':
+          description: Updated bot
+  /api/v1/bots/{id}/lifecycle/ban:
+    post:
+      summary: Ban bot and persist ban details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ban_date:
+                  type: string
+                  example: 10.02.2026
+                ban_reason:
+                  type: string
+                ban_mechanism:
+                  type: string
+              required: [ban_date, ban_reason, ban_mechanism]
+      responses:
+        '200':
+          description: Bot banned
+  /api/v1/bots/{id}/lifecycle/unban:
+    post:
+      summary: Remove bot ban and restore previous status
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bot unbanned
+  /api/v1/finance/operations:
+    get:
+      summary: List finance operations
+      responses:
+        '200':
+          description: Finance operation list
+    post:
+      summary: Create finance operation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [income, expense]
+                category:
+                  type: string
+                amount:
+                  type: number
+                currency:
+                  type: string
+                date:
+                  type: integer
+              required: [type, category, amount, currency, date]
+      responses:
+        '201':
+          description: Finance operation created
+  /api/v1/finance/operations/{id}:
+    get:
+      summary: Get finance operation by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Finance operation
+        '404':
+          description: Not found
+    patch:
+      summary: Update finance operation by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Updated finance operation
+    delete:
+      summary: Delete finance operation by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deletion result
+  /api/v1/finance/daily-stats:
+    get:
+      summary: Get finance daily stats map
+      responses:
+        '200':
+          description: Daily stats payload
+  /api/v1/finance/gold-price-history:
+    get:
+      summary: Get finance gold price history map
+      responses:
+        '200':
+          description: Gold price history payload
+  /api/v1/license/lease:
+    post:
+      summary: Issue short-lived execution lease for runner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LicenseLeaseRequest'
+      responses:
+        '201':
+          description: Lease issued
+        '403':
+          description: License, entitlement or VM ownership check failed
+  /api/v1/license/heartbeat:
+    post:
+      summary: Update lease heartbeat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LicenseHeartbeatRequest'
+      responses:
+        '200':
+          description: Heartbeat accepted
+        '409':
+          description: Lease inactive or expired
+  /api/v1/license/revoke:
+    post:
+      summary: Revoke existing execution lease
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LicenseRevokeRequest'
+      responses:
+        '200':
+          description: Lease revoked
+  /api/v1/infra/proxmox/status:
+    get:
+      summary: Infra Proxmox status (infra role)
+      responses:
+        '200':
+          description: Infra health
+        '403':
+          description: Forbidden
+  /api/v1/infra/proxmox/login:
+    post:
+      summary: Infra Proxmox login (infra role)
+      responses:
+        '200':
+          description: Login result
+  /api/v1/infra/proxmox/nodes/{node}/qemu:
+    get:
+      summary: List node VMs (infra role)
+      parameters:
+        - in: path
+          name: node
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: VM list
+  /api/v1/infra/proxmox/nodes/{node}/qemu/{vmid}/clone:
+    post:
+      summary: Clone VM on node (infra role)
+      parameters:
+        - in: path
+          name: node
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: vmid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newid:
+                  type: string
+                name:
+                  type: string
+                target:
+                  type: string
+                full:
+                  type: boolean
+              additionalProperties: true
+      responses:
+        '200':
+          description: Clone task accepted
+        '400':
+          description: Invalid request
+  /api/v1/infra/proxmox/nodes/{node}/qemu/{vmid}/config:
+    get:
+      summary: Read VM config from Proxmox (infra role)
+      parameters:
+        - in: path
+          name: node
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: vmid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: VM config payload
+    put:
+      summary: Update VM config in Proxmox (infra role)
+      parameters:
+        - in: path
+          name: node
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: vmid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cores:
+                  type: integer
+                memory:
+                  type: integer
+                sockets:
+                  type: integer
+              additionalProperties: true
+      responses:
+        '200':
+          description: VM config updated
+        '400':
+          description: Invalid request
+  /api/v1/infra/proxmox/nodes/{node}/tasks/{upid}/status:
+    get:
+      summary: Get Proxmox task status (infra role)
+      parameters:
+        - in: path
+          name: node
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: upid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task status payload
+  /api/v1/infra/proxmox/nodes/{node}/qemu/{vmid}/status/{action}:
+    post:
+      summary: Execute VM action (start/stop/reboot/...) (infra role)
+      parameters:
+        - in: path
+          name: node
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: vmid
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Action result
+  /api/v1/infra/proxmox/nodes/{node}/qemu/{vmid}:
+    delete:
+      summary: Delete VM on node (infra role)
+      parameters:
+        - in: path
+          name: node
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: vmid
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: purge
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: destroy-unreferenced-disks
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Delete result
+  /api/v1/infra/proxmox/nodes/{node}/qemu/{vmid}/sendkey:
+    post:
+      summary: Send keyboard key to VM (infra role)
+      parameters:
+        - in: path
+          name: node
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: vmid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+              required: [key]
+      responses:
+        '200':
+          description: Sendkey result
+        '400':
+          description: Invalid request
+  /api/v1/infra/proxmox/nodes/{node}/qemu/{vmid}/status/current:
+    get:
+      summary: Get current VM runtime status (infra role)
+      parameters:
+        - in: path
+          name: node
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: vmid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current VM status
+  /api/v1/infra/proxmox/cluster/resources:
+    get:
+      summary: Get cluster resources (infra role)
+      responses:
+        '200':
+          description: Cluster resources
+  /api/v1/infra/ssh/exec:
+    post:
+      summary: Execute allowlisted SSH command (infra role)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                command:
+                  type: string
+                timeout:
+                  type: number
+      responses:
+        '200':
+          description: SSH command result
+        '403':
+          description: Forbidden or command not allowlisted
+  /api/v1/infra/ssh/test:
+    post:
+      summary: Test SSH connectivity (infra role)
+      responses:
+        '200':
+          description: SSH test result
+  /api/v1/infra/ssh/vm-config/{vmid}:
+    get:
+      summary: Read VM config over SSH (infra role)
+      parameters:
+        - in: path
+          name: vmid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: VM config text
+    put:
+      summary: Write VM config over SSH (infra role)
+      parameters:
+        - in: path
+          name: vmid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+              required: [content]
+      responses:
+        '200':
+          description: VM config write result

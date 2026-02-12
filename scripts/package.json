@@ -4,8 +4,7 @@
   "description": "Database maintenance scripts for Bot-Mox",
   "main": "cleanup-database.js",
   "scripts": {
-    "cleanup": "node cleanup-database.js",
-    "reset-bots": "node reset-bots.js"
+    "cleanup": "node cleanup-database.js"
   },
   "dependencies": {
     "firebase": "^10.8.0",

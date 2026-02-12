@@ -11,8 +11,8 @@
 html, body {
   font-family: var(--font-primary);
   font-size: var(--text-base);
-  background-color: var(--proxmox-bg-primary);
-  color: var(--proxmox-text-primary);
+  background-color: var(--boxmox-color-surface-base);
+  color: var(--boxmox-color-text-primary);
   height: 100%;
   overflow: hidden;
 }
@@ -25,7 +25,7 @@ html, body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-condensed);
   font-weight: 600;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   margin: 0 0 var(--spacing-md) 0;
 }
 
@@ -41,39 +41,40 @@ h4 { font-size: var(--text-md); }
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-surface-muted);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--proxmox-border);
+  background: var(--boxmox-color-border-strong);
   border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--proxmox-border-light);
+  background: var(--boxmox-color-border-default);
 }
 
 /* Ant Design Overrides - Proxmox Style */
 .ant-layout {
-  background: var(--proxmox-bg-primary);
+  background: var(--boxmox-color-surface-base);
 }
 
 .ant-layout-sider {
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-surface-panel);
 }
 
 .ant-layout-header {
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-header-bg);
   padding: 0;
   height: var(--header-height);
   line-height: var(--header-height);
-  border-bottom: 1px solid var(--proxmox-border-dark);
+  border-bottom: 1px solid var(--boxmox-color-header-border);
+  color: var(--boxmox-color-header-text);
 }
 
 /* Tree Component Styling */
 .ant-tree {
   background: transparent;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .ant-tree-treenode {
@@ -81,41 +82,41 @@ h4 { font-size: var(--text-md); }
 }
 
 .ant-tree-node-content-wrapper {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   padding: 2px 8px !important;
   border-radius: 0 !important;
 }
 
 .ant-tree-node-content-wrapper:hover {
-  background: var(--proxmox-bg-hover) !important;
+  background: var(--boxmox-color-surface-hover) !important;
 }
 
 .ant-tree-node-selected {
-  background: var(--proxmox-accent) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-brand-soft) !important;
+  color: var(--boxmox-color-brand-contrast) !important;
 }
 
 .ant-tree-node-selected .ant-tree-title {
-  color: var(--proxmox-text-primary) !important;
+  color: var(--boxmox-color-brand-contrast) !important;
 }
 
 .ant-tree-switcher {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 /* Tabs Styling - Proxmox Style */
 .ant-tabs {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .ant-tabs-nav {
-  background: var(--proxmox-bg-secondary);
-  border-bottom: 1px solid var(--proxmox-border-dark);
+  background: var(--boxmox-color-surface-panel);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
   margin-bottom: 0 !important;
 }
 
 .ant-tabs-tab {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
   background: transparent;
   border: none !important;
   border-radius: 0 !important;
@@ -124,29 +125,29 @@ h4 { font-size: var(--text-md); }
 }
 
 .ant-tabs-tab:hover {
-  color: var(--proxmox-text-primary);
-  background: var(--proxmox-bg-hover);
+  color: var(--boxmox-color-text-primary);
+  background: var(--boxmox-color-surface-hover);
 }
 
 .ant-tabs-tab-active {
-  background: var(--proxmox-bg-tertiary) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-surface-muted) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .ant-tabs-ink-bar {
-  background: var(--proxmox-accent) !important;
+  background: var(--boxmox-color-brand-primary) !important;
 }
 
 /* Card Styling */
 .ant-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
-  border-radius: var(--radius-none);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: var(--radius-sm);
 }
 
 .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
   padding: 8px 16px;
   min-height: auto;
 }
@@ -155,7 +156,7 @@ h4 { font-size: var(--text-md); }
   font-family: var(--font-condensed);
   font-size: var(--text-md);
   font-weight: 600;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .ant-card-body {
@@ -165,25 +166,25 @@ h4 { font-size: var(--text-md); }
 /* Table Styling */
 .ant-table {
   background: transparent;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .ant-table-thead > tr > th {
-  background: var(--proxmox-bg-tertiary);
-  color: var(--proxmox-text-primary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-primary);
+  border-bottom: 1px solid var(--boxmox-color-border-strong);
   font-weight: 600;
   font-size: var(--text-sm);
   padding: 8px 12px;
 }
 
 .ant-table-tbody > tr > td {
-  border-bottom: 1px solid var(--proxmox-border);
+  border-bottom: 1px solid var(--boxmox-color-border-subtle);
   padding: 8px 12px;
 }
 
 .ant-table-tbody > tr:hover > td {
-  background: var(--proxmox-bg-hover);
+  background: var(--boxmox-color-surface-hover);
 }
 
 /* Button Styling */
@@ -193,67 +194,68 @@ h4 { font-size: var(--text-md); }
 }
 
 .ant-btn-primary {
-  background: var(--proxmox-accent);
-  border-color: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .ant-btn-primary:hover {
-  background: var(--proxmox-accent-hover);
-  border-color: var(--proxmox-accent-hover);
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
 }
 
 /* Input Styling */
 .ant-input {
-  background: var(--proxmox-bg-tertiary);
-  border: 1px solid var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
   border-radius: var(--radius-sm);
 }
 
 .ant-input:focus {
-  border-color: var(--proxmox-accent);
-  box-shadow: 0 0 0 2px rgba(229, 112, 0, 0.2);
+  border-color: var(--boxmox-color-brand-primary);
+  box-shadow: 0 0 0 2px rgba(59, 125, 184, 0.18);
 }
 
 /* Select Styling */
 .ant-select-selector {
-  background: var(--proxmox-bg-tertiary) !important;
-  border: 1px solid var(--proxmox-border) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-surface-panel) !important;
+  border: 1px solid var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
   border-radius: var(--radius-sm) !important;
 }
 
 /* Divider */
 .ant-divider {
-  border-color: var(--proxmox-border);
+  border-color: var(--boxmox-color-border-default);
 }
 
 /* Badge */
 .ant-badge-count {
-  background: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
 }
 
 /* Tooltip */
 .ant-tooltip-inner {
-  background: var(--proxmox-bg-tertiary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   border-radius: var(--radius-sm);
+  color: var(--boxmox-color-text-primary);
 }
 
 /* Dropdown */
 .ant-dropdown-menu {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   border-radius: var(--radius-sm);
 }
 
 .ant-dropdown-menu-item {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .ant-dropdown-menu-item:hover {
-  background: var(--proxmox-bg-hover);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-hover);
+  color: var(--boxmox-color-text-primary);
 }
 
 /* Proxmox Layout */
@@ -261,7 +263,7 @@ h4 { font-size: var(--text-md); }
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--proxmox-bg-primary);
+  background: var(--boxmox-color-surface-base);
 }
 
 .proxmox-body {
@@ -273,5 +275,5 @@ h4 { font-size: var(--text-md); }
 .proxmox-content {
   flex: 1;
   overflow: auto;
-  background: var(--proxmox-bg-primary);
+  background: var(--boxmox-color-surface-base);
 }

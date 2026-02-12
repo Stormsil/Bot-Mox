@@ -1,11 +1,11 @@
 .dashboard-page {
   padding: 24px;
   min-height: calc(100vh - 45px);
-  background: #383b40;
+  background: var(--boxmox-color-surface-base);
 }
 
 .page-title {
-  color: #efefef !important;
+  color: var(--boxmox-color-text-primary) !important;
   margin-bottom: 24px !important;
   font-family: 'Roboto Condensed', sans-serif;
 }
@@ -15,15 +15,15 @@
 }
 
 .bots-table-card {
-  background: #42464d !important;
-  border: 1px solid #555 !important;
-  border-radius: 0 !important;
+  background: var(--boxmox-color-surface-panel) !important;
+  border: 1px solid var(--boxmox-color-border-default) !important;
+  border-radius: var(--radius-sm) !important;
 }
 
 .bots-table-card .ant-card-head {
-  background: #282a2e !important;
-  border-bottom: 1px solid #555 !important;
-  color: #efefef !important;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-bottom: 1px solid var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .bots-table-card .ant-card-body {
@@ -35,27 +35,27 @@
 }
 
 .bots-table-card .ant-table-thead > tr > th {
-  background: #282a2e;
-  color: #efefef;
-  border-bottom: 2px solid #e57000;
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-primary);
+  border-bottom: 2px solid var(--boxmox-color-brand-primary);
   font-weight: 600;
 }
 
 .bots-table-card .ant-table-tbody > tr > td {
-  border-bottom: 1px solid #444;
-  color: #efefef;
+  border-bottom: 1px solid var(--boxmox-color-border-subtle);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .bots-table-card .ant-table-tbody > tr:hover > td {
-  background: #4a4e55;
+  background: var(--boxmox-color-surface-hover);
 }
 
 .bot-name {
   font-weight: 500;
-  color: #efefef;
+  color: var(--boxmox-color-text-primary);
 }
 
 .bot-character {
   font-size: 11px;
-  color: #888;
+  color: var(--boxmox-color-text-muted);
 }

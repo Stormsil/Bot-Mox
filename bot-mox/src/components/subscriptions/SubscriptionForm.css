@@ -8,7 +8,7 @@
 
 .subscription-form .ant-form-item-label {
   font-weight: 500;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .subscription-form .ant-select,
@@ -34,13 +34,13 @@
 }
 
 .subscription-form .ant-btn-primary {
-  background-color: var(--proxmox-primary);
-  border-color: var(--proxmox-primary);
+  background-color: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .subscription-form .ant-btn-primary:hover {
-  background-color: var(--proxmox-primary-hover);
-  border-color: var(--proxmox-primary-hover);
+  background-color: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
 }
 
 .subscription-form .ant-alert {
@@ -58,22 +58,22 @@
 .subscription-form .ant-select-disabled .ant-select-selector,
 .subscription-form .ant-input-disabled,
 .subscription-form .ant-picker-disabled {
-  background-color: var(--proxmox-bg-secondary) !important;
-  color: var(--proxmox-text-secondary) !important;
+  background-color: var(--boxmox-color-surface-panel) !important;
+  color: var(--boxmox-color-text-secondary) !important;
 }
 
 /* Placeholder */
 .subscription-form .ant-select-selection-placeholder,
 .subscription-form .ant-input::placeholder,
 .subscription-form .ant-picker-input > input::placeholder {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 /* Фокус */
 .subscription-form .ant-select-focused .ant-select-selector,
 .subscription-form .ant-input:focus,
 .subscription-form .ant-picker-focused {
-  border-color: var(--proxmox-primary) !important;
+  border-color: var(--boxmox-color-brand-primary) !important;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
 }
 

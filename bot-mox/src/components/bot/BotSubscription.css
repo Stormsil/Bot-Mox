@@ -16,8 +16,8 @@
 }
 
 .subscription-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   margin-bottom: 16px;
 }
 
@@ -31,7 +31,7 @@
 
 .subscription-card .ant-list-item {
   padding: 12px 24px;
-  border-bottom: 1px solid var(--proxmox-border);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .subscription-card .ant-list-item:last-child {
@@ -39,12 +39,12 @@
 }
 
 .subscription-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .subscription-card .ant-card-head-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .subscription-item {
@@ -92,13 +92,13 @@
 }
 
 .subscription-help-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .subscription-help-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .help-content {
@@ -110,11 +110,11 @@
 .help-list {
   margin: 0;
   padding-left: 20px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .help-text {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   font-size: 13px;
   margin: 0;
 }

@@ -1,0 +1,62 @@
+.vm-list {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vm-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--boxmox-color-surface-muted);
+}
+
+.vm-list-stats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-xs);
+}
+
+.vm-list-stats .stat-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vm-list-stats .stat-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.vm-list-stats .stat-dot.running {
+  background: #52c41a;
+}
+
+.vm-list-stats .stat-dot.stopped {
+  background: #8c8c8c;
+}
+
+.vm-list .ant-table-wrapper {
+  flex: 1;
+  min-height: 0;
+}
+
+.vm-list .ant-table {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+}
+
+.vm-list .ant-table-thead > tr > th {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+}

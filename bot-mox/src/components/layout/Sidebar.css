@@ -1,6 +1,6 @@
 .proxmox-sidebar {
-  background: #282a2e !important;
-  border-right: 1px solid #111;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-right: 1px solid var(--boxmox-color-border-default);
   min-height: calc(100vh - 45px);
 }
 
@@ -15,26 +15,26 @@
   line-height: 40px;
   margin: 0;
   padding-left: 20px !important;
-  color: #bbb;
+  color: var(--boxmox-color-text-secondary);
   font-size: 13px;
   border-left: 3px solid transparent;
   transition: all 0.2s;
 }
 
 .proxmox-menu .ant-menu-item:hover {
-  color: #efefef;
-  background: #4a4e55;
+  color: var(--boxmox-color-text-primary);
+  background: var(--boxmox-color-surface-hover);
 }
 
 .proxmox-menu .ant-menu-item-selected {
-  background: #42464d;
-  color: #e57000;
-  border-left: 3px solid #e57000;
+  background: var(--boxmox-color-brand-soft);
+  color: var(--boxmox-color-brand-contrast);
+  border-left: 3px solid var(--boxmox-color-brand-primary);
 }
 
 .proxmox-menu .ant-menu-item-selected:hover {
-  background: #42464d;
-  color: #e57000;
+  background: var(--boxmox-color-brand-soft);
+  color: var(--boxmox-color-brand-contrast);
 }
 
 .proxmox-menu .ant-menu-item .anticon {

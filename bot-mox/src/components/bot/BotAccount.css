@@ -4,17 +4,17 @@
 }
 
 .account-card {
-  background: var(--proxmox-bg-secondary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .account-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .account-card .ant-card-head-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   font-size: var(--text-sm);
   font-weight: 600;
 }
@@ -40,6 +40,49 @@
   margin-top: 8px;
 }
 
+.account-workflow-alert {
+  border-left: 3px solid var(--boxmox-color-brand-primary);
+  padding: 6px 10px !important;
+  margin-bottom: 10px !important;
+}
+
+.account-workflow-alert .ant-alert-message {
+  margin-bottom: 0 !important;
+  font-size: var(--text-xs);
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.account-workflow-alert .ant-alert-icon {
+  font-size: 14px;
+  margin-inline-end: 8px !important;
+}
+
+.config-incomplete-alert {
+  border-color: var(--boxmox-color-brand-warning) !important;
+  background: color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted)) !important;
+}
+
+.config-incomplete-alert .ant-alert-message {
+  color: var(--boxmox-color-text-primary) !important;
+}
+
+.config-incomplete-alert .ant-alert-description {
+  color: var(--boxmox-color-text-secondary) !important;
+}
+
+.account-workflow-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.account-workflow-help-icon {
+  color: var(--boxmox-color-text-muted);
+  cursor: help;
+  font-size: 13px;
+}
+
 .field-label {
   display: flex;
   align-items: center;
@@ -52,16 +95,16 @@
 }
 
 .account-card .ant-form-item-label > label {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   font-size: var(--text-sm);
 }
 
 .account-card .ant-input,
 .account-card .ant-select-selector,
 .account-card .ant-picker {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .account-card .ant-input:hover,
@@ -70,19 +113,19 @@
 .account-card .ant-select-selector:focus,
 .account-card .ant-picker:hover,
 .account-card .ant-picker-focused {
-  border-color: var(--proxmox-accent);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .account-card .ant-input-suffix {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .account-card .ant-select-arrow {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .account-info-value {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   font-size: var(--text-sm);
   padding: 4px 0;
   display: block;
@@ -91,13 +134,13 @@
 /* Generator Options Card */
 .generator-options-card {
   margin-top: 16px;
-  background: var(--proxmox-bg-tertiary) !important;
-  border-color: var(--proxmox-border) !important;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
 }
 
 .generator-options-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
   min-height: 40px;
 }
 
@@ -111,19 +154,68 @@
 }
 
 .generator-options-card .ant-checkbox-wrapper {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   font-size: var(--text-sm);
 }
 
 .generator-options-card .ant-input-number {
-  background: var(--proxmox-bg-secondary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .generator-options-card .ant-input-number:hover,
 .generator-options-card .ant-input-number-focused {
-  border-color: var(--proxmox-accent);
+  border-color: var(--boxmox-color-brand-primary);
+}
+
+/* Generator presets */
+.generator-presets-card {
+  margin-top: 12px;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+}
+
+.generator-presets-card .ant-card-head {
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  min-height: 40px;
+}
+
+.generator-presets-card .ant-card-head-title {
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.generator-presets-card .ant-card-extra {
+  padding: 0;
+}
+
+.generator-collapse-btn {
+  color: var(--boxmox-color-text-secondary) !important;
+  padding-inline: 4px !important;
+}
+
+.generator-presets-card .ant-card-body {
+  padding: 12px 16px;
+}
+
+.generator-presets-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.generator-presets-row:last-child {
+  margin-bottom: 0;
+}
+
+.generator-template-select,
+.generator-template-name {
+  min-width: 180px;
+  flex: 1;
 }
 
 /* Form Actions */
@@ -133,7 +225,7 @@
   align-items: center;
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 1px solid var(--proxmox-border);
+  border-top: 1px solid var(--boxmox-color-border-default);
   flex-wrap: wrap;
   gap: 16px;
 }
@@ -146,19 +238,29 @@
 }
 
 .generate-label {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   font-size: var(--text-sm);
 }
 
 .generate-btn {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .generate-btn:hover {
-  border-color: var(--proxmox-accent);
-  color: var(--proxmox-accent);
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
+}
+
+.unlock-btn {
+  border-color: var(--boxmox-color-brand-warning);
+  color: var(--boxmox-color-brand-warning);
+}
+
+.unlock-btn:hover {
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
 }
 
 .generate-btn:disabled {
@@ -173,88 +275,88 @@
 }
 
 .restore-btn {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-secondary);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .restore-btn:hover {
-  border-color: var(--proxmox-accent);
-  color: var(--proxmox-accent);
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
 }
 
 .account-card .ant-btn-primary {
-  background: var(--proxmox-accent);
-  border-color: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .account-card .ant-btn-primary:hover {
-  background: var(--proxmox-accent-hover);
-  border-color: var(--proxmox-accent-hover);
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
 }
 
 /* DatePicker specific styles */
 .account-card .ant-picker-suffix {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .account-card .ant-picker-clear {
-  background: var(--proxmox-bg-tertiary);
-  color: var(--proxmox-text-muted);
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .account-card .ant-picker-clear:hover {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 /* Select dropdown styles */
 .account-card .ant-select-dropdown {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .account-card .ant-select-item {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .account-card .ant-select-item-option-selected {
-  background: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
   color: white;
 }
 
 .account-card .ant-select-item-option-active {
-  background: var(--proxmox-bg-tertiary);
+  background: var(--boxmox-color-surface-muted);
 }
 
 /* Modal styles */
 .account-card ~ .ant-modal .ant-modal-content {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .account-card ~ .ant-modal .ant-modal-header {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .account-card ~ .ant-modal .ant-modal-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .account-card ~ .ant-modal .ant-modal-close {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .account-card ~ .ant-modal .ant-modal-close:hover {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .account-card ~ .ant-modal .ant-modal-body {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .account-card ~ .ant-modal .ant-modal-footer {
-  border-color: var(--proxmox-border);
+  border-color: var(--boxmox-color-border-default);
 }
 
 /* Responsive adjustments */

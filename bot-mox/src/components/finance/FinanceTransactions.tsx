@@ -24,6 +24,7 @@ import {
 } from '@ant-design/icons';
 import type { FinanceOperation, FinanceOperationType, FinanceCategory } from '../../types';
 import { formatTimestampToDate } from '../../services/financeService';
+import { TableActionButton, TableActionGroup } from '../ui/TableActionButton';
 import './FinanceTransactions.css';
 
 const { Text } = Typography;
@@ -38,15 +39,6 @@ interface FinanceTransactionsProps {
 }
 
 // Цвета для категорий
-const CATEGORY_COLORS: Record<string, string> = {
-  sale: 'green',
-  subscription_bot: 'blue',
-  subscription_game: 'purple',
-  proxy: 'orange',
-  license: 'cyan',
-  other: 'default',
-};
-
 // Метки для категорий
 const CATEGORY_LABELS: Record<string, string> = {
   sale: 'Sale',
@@ -119,10 +111,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       key: 'type',
       width: 100,
       render: (type: FinanceOperationType) => (
-        <Tag
-          color={type === 'income' ? 'green' : 'red'}
-          className="transaction-type-tag"
-        >
+        <Tag className="finance-tag transaction-type-tag">
           {type === 'income' ? 'Income' : 'Expense'}
         </Tag>
       ),
@@ -138,7 +127,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       key: 'category',
       width: 150,
       render: (category: string) => (
-        <Tag color={CATEGORY_COLORS[category] || 'default'}>
+        <Tag className="finance-tag">
           {CATEGORY_LABELS[category] || category}
         </Tag>
       ),
@@ -151,7 +140,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       render: (projectId: string | null) => {
         if (!projectId) return '-';
         return (
-          <Tag color={projectId === 'wow_tbc' ? 'blue' : 'purple'}>
+          <Tag className="finance-tag">
             {projectId === 'wow_tbc' ? 'TBC' : 'Midnight'}
           </Tag>
         );
@@ -180,9 +169,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       width: 150,
       align: 'right' as const,
       render: (amount: number, record: FinanceOperation) => (
-        <Text
-          className={record.type === 'income' ? 'amount-income' : 'amount-expense'}
-        >
+        <Text className="amount-neutral">
           {record.type === 'income' ? '+' : '-'}${amount.toFixed(2)}
         </Text>
       ),
@@ -192,14 +179,9 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       title: 'Actions',
       key: 'actions',
       width: 120,
-      render: (_: any, record: FinanceOperation) => (
-        <Space size="small">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(record)}
-            className="action-btn"
-          />
+      render: (_value: unknown, record: FinanceOperation) => (
+        <TableActionGroup>
+          <TableActionButton icon={<EditOutlined />} onClick={() => onEdit(record)} tooltip="Edit" />
           <Popconfirm
             title="Delete transaction"
             description="Are you sure you want to delete this transaction?"
@@ -207,14 +189,9 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
             okText="Yes"
             cancelText="No"
           >
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              className="action-btn"
-            />
+            <TableActionButton danger icon={<DeleteOutlined />} tooltip="Delete" />
           </Popconfirm>
-        </Space>
+        </TableActionGroup>
       ),
     },
   ];

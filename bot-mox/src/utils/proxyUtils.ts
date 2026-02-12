@@ -1,5 +1,3 @@
-import type { IPQSResponse } from '../types';
-
 export interface ParsedProxy {
   ip: string;
   port: number;
@@ -81,77 +79,6 @@ export function parseProxyString(proxyString: string): ParsedProxy | null {
 }
 
 /**
- * Проверяет валидность IP адреса
- */
-export function isValidIP(ip: string): boolean {
-  const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  return ipv4Regex.test(ip);
-}
-
-/**
- * Проверяет валидность порта
- */
-export function isValidPort(port: number): boolean {
-  return Number.isInteger(port) && port > 0 && port <= 65535;
-}
-
-/**
- * Форматирует прокси обратно в строку
- */
-export function formatProxyString(proxy: ParsedProxy): string {
-  return `${proxy.ip}:${proxy.port}:${proxy.login}:${proxy.password}`;
-}
-
-/**
- * Проверяет прокси через IPQS API
- * Требуется API ключ, который должен быть настроен в переменных окружения
- */
-export async function checkProxyWithIPQS(
-  ip: string,
-  apiKey: string
-): Promise<IPQSResponse | null> {
-  if (!apiKey) {
-    console.warn('IPQS API key not provided');
-    return null;
-  }
-
-  try {
-    const url = `https://ipqualityscore.com/api/json/ip/${apiKey}/${ip}?strictness=1&allow_public_access_points=true`;
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`IPQS API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data as IPQSResponse;
-  } catch (error) {
-    console.error('Error checking proxy with IPQS:', error);
-    return null;
-  }
-}
-
-/**
- * Получает цвет для fraud score
- */
-export function getFraudScoreColor(score: number): string {
-  if (score <= 20) return '#52c41a'; // Зеленый - низкий риск
-  if (score <= 50) return '#faad14'; // Желтый - средний риск
-  if (score <= 75) return '#ff7a45'; // Оранжевый - высокий риск
-  return '#ff4d4f'; // Красный - критический риск
-}
-
-/**
- * Получает текстовое описание fraud score
- */
-export function getFraudScoreLabel(score: number): string {
-  if (score <= 20) return 'Low Risk';
-  if (score <= 50) return 'Medium Risk';
-  if (score <= 75) return 'High Risk';
-  return 'Critical Risk';
-}
-
-/**
  * Получает флаг страны по коду
  */
 export function getCountryFlag(countryCode: string): string {
@@ -164,15 +91,4 @@ export function getCountryFlag(countryCode: string): string {
     .map(char => 127397 + char.charCodeAt(0));
   
   return String.fromCodePoint(...codePoints);
-}
-
-/**
- * Определяет провайдера по IP (упрощенная версия)
- * В реальном приложении можно использовать базу данных ASN
- */
-export function detectProvider(ip: string): string {
-  // Это упрощенная заглушка
-  // В реальном приложении здесь должен быть запрос к базе данных ASN
-  // или к API для определения провайдера
-  return 'Unknown';
 }

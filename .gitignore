@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build artifacts
+dist/
+build/
+coverage/
+.cache/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.local
+Assets/firebase-key.json
+/firebase-key.json
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Firebase / runtime artifacts
+firebase-debug.log
+firebase-debug.*.log
+supabase/.temp/
+supabase/.branches/
+
+# Misc
+tmp/
+temp/
+backups/

@@ -1,0 +1,31 @@
+{
+	email {$CADDY_EMAIL:ops@example.com}
+}
+
+{$APP_DOMAIN:app.localhost} {
+	reverse_proxy frontend:80
+}
+
+{$API_DOMAIN:api.localhost} {
+	reverse_proxy backend:3001
+}
+
+{$S3_DOMAIN:s3.localhost} {
+	reverse_proxy minio:9000
+}
+
+:80 {
+	@api path /api/* /ws/* /ws/v1/*
+	handle @api {
+		reverse_proxy backend:3001
+	}
+
+	@s3 path /s3/* /minio/*
+	handle_path @s3 {
+		reverse_proxy minio:9000
+	}
+
+	handle {
+		reverse_proxy frontend:80
+	}
+}

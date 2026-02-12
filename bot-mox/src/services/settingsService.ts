@@ -1,11 +1,10 @@
-import { ref, get, set, update } from 'firebase/database';
-import { database } from '../utils/firebase';
 import type { SubscriptionSettings } from '../types';
+import { apiGet, apiPut } from './apiClient';
 
-const SETTINGS_PATH = 'app_settings/subscriptions';
+const SETTINGS_PATH = '/api/v1/settings/alerts';
 
 /**
- * Настройки по умолчанию
+ * Глобальные пороги предупреждений по ресурсам
  */
 export function getDefaultSettings(): SubscriptionSettings {
   return {
@@ -14,20 +13,33 @@ export function getDefaultSettings(): SubscriptionSettings {
   };
 }
 
+function normalizeSubscriptionSettings(raw: unknown): SubscriptionSettings {
+  if (!raw || typeof raw !== 'object') {
+    return getDefaultSettings();
+  }
+
+  const source = raw as Record<string, unknown>;
+
+  return {
+    warning_days:
+      typeof source.warning_days === 'number' && Number.isFinite(source.warning_days)
+        ? source.warning_days
+        : getDefaultSettings().warning_days,
+    updated_at:
+      typeof source.updated_at === 'number' && Number.isFinite(source.updated_at)
+        ? source.updated_at
+        : Date.now(),
+    updated_by: typeof source.updated_by === 'string' ? source.updated_by : undefined,
+  };
+}
+
 /**
- * Получает настройки подписок из Firebase
+ * Получает глобальные пороги предупреждений из backend API
  */
 export async function getSubscriptionSettings(): Promise<SubscriptionSettings> {
   try {
-    const settingsRef = ref(database, SETTINGS_PATH);
-    const snapshot = await get(settingsRef);
-
-    if (snapshot.exists()) {
-      return snapshot.val() as SubscriptionSettings;
-    }
-
-    // Если настроек нет, возвращаем дефолтные
-    return getDefaultSettings();
+    const response = await apiGet<unknown>(SETTINGS_PATH);
+    return normalizeSubscriptionSettings(response.data);
   } catch (error) {
     console.error('Error loading subscription settings:', error);
     return getDefaultSettings();
@@ -35,14 +47,12 @@ export async function getSubscriptionSettings(): Promise<SubscriptionSettings> {
 }
 
 /**
- * Обновляет настройки подписок
+ * Обновляет глобальные пороги предупреждений
  */
 export async function updateSubscriptionSettings(
   settings: Partial<SubscriptionSettings>,
   userId?: string
 ): Promise<void> {
-  const settingsRef = ref(database, SETTINGS_PATH);
-
   const updates: SubscriptionSettings = {
     ...getDefaultSettings(),
     ...settings,
@@ -53,19 +63,17 @@ export async function updateSubscriptionSettings(
     updates.updated_by = userId;
   }
 
-  await set(settingsRef, updates);
+  await apiPut(SETTINGS_PATH, updates);
 }
 
 /**
- * Инициализирует настройки подписок, если они не существуют
+ * Инициализирует глобальные пороги предупреждений, если они не существуют
  */
 export async function initSubscriptionSettings(): Promise<void> {
   try {
-    const settingsRef = ref(database, SETTINGS_PATH);
-    const snapshot = await get(settingsRef);
-
-    if (!snapshot.exists()) {
-      await set(settingsRef, getDefaultSettings());
+    const current = await getSubscriptionSettings();
+    if (!current || typeof current.warning_days !== 'number') {
+      await updateSubscriptionSettings(getDefaultSettings());
     }
   } catch (error) {
     console.error('Error initializing subscription settings:', error);

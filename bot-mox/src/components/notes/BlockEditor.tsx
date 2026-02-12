@@ -19,9 +19,6 @@ interface BlockEditorProps {
   autoFocus?: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-void ((props: BlockEditorProps) => props.isFocused);
-
 /**
  * Определяет тип блока по содержимому (для markdown-like синтаксиса)
  */
@@ -93,6 +90,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
   isFocused,
   autoFocus = false,
 }) => {
+  void isFocused;
   const contentRef = useRef<HTMLDivElement>(null);
   const [showPlaceholder, setShowPlaceholder] = useState(!block.content);
   const slashMenuTriggered = useRef(false);

@@ -7,18 +7,18 @@
 }
 
 .proxy-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   margin-bottom: 16px;
 }
 
 .proxy-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .proxy-card .ant-card-head-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .proxy-content {
@@ -54,14 +54,14 @@
 .proxy-address {
   font-family: monospace;
   font-size: 16px;
-  background: var(--proxmox-bg-tertiary);
+  background: var(--boxmox-color-surface-muted);
   padding: 4px 8px;
   border-radius: 4px;
 }
 
 .credential-text {
   font-family: monospace;
-  background: var(--proxmox-bg-tertiary);
+  background: var(--boxmox-color-surface-muted);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -79,17 +79,17 @@
 .proxy-actions {
   margin-top: 8px;
   padding-top: 16px;
-  border-top: 1px solid var(--proxmox-border);
+  border-top: 1px solid var(--boxmox-color-border-default);
 }
 
 .proxy-help-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .proxy-help-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .help-content {
@@ -101,7 +101,7 @@
 .help-list {
   margin: 0;
   padding-left: 20px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .help-list li {
@@ -111,4 +111,101 @@
 .help-list .ant-tag {
   font-size: 10px;
   margin-right: 8px;
+}
+
+/* Proxy String field styles */
+.proxy-string-field {
+  background: var(--boxmox-color-surface-muted);
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--boxmox-color-border-default);
+}
+
+.proxy-string-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.proxy-string {
+  font-family: monospace;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+/* IPQS Results styles */
+.ipqs-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: var(--boxmox-color-surface-muted);
+  border-radius: 4px;
+}
+
+.ipqs-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ipqs-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+}
+
+.ipqs-row:last-child {
+  border-bottom: none;
+}
+
+.fraud-score-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ipqs-flags {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--boxmox-color-border-default);
+}
+
+/* Modal styles for proxy */
+.proxy-modal .ant-modal-content {
+  background: var(--boxmox-color-surface-panel);
+}
+
+.proxy-modal .ant-modal-header {
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+}
+
+.proxy-modal .ant-modal-title {
+  color: var(--boxmox-color-text-primary);
+}
+
+/* Unassign button styles */
+.unassign-btn {
+  background: #ff4d4f;
+  border-color: #ff4d4f;
+}
+
+.unassign-btn:hover {
+  background: #ff7875;
+  border-color: #ff7875;
+}
+
+/* Empty state styles */
+.proxy-empty .ant-empty-description {
+  color: var(--boxmox-color-text-secondary);
+}
+
+.proxy-empty .ant-btn {
+  margin-top: 16px;
 }

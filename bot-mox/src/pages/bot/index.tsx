@@ -1,285 +1,185 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Alert, Spin } from 'antd';
-import { ref, onValue, off } from 'firebase/database';
-import { database } from '../../utils/firebase';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { subscribeBotById } from '../../services/botsApiService';
 import { ContentPanel } from '../../components/layout/ContentPanel';
 import type { TabType } from '../../components/layout/ContentPanel';
-import {
-  BotSummary,
-  BotCharacter,
-  BotLogs,
-  BotSchedule,
-  BotAccount,
-  BotPerson,
-  BotLicense,
-  BotProxy,
-  BotSubscription,
-  BotLifeStages,
-} from '../../components/bot';
 import type { Bot } from '../../types';
+import {
+  BotPageAlertState,
+  BotPageLoading,
+  DEFAULT_CONFIGURE_TAB,
+  DEFAULT_RESOURCES_TAB,
+  MAIN_TABS,
+  buildConfigureSections,
+  buildResourcesSections,
+  getIncompleteTabs,
+  getScheduleStats,
+  isAccountComplete,
+  isCharacterComplete,
+  isPersonComplete,
+  isScheduleComplete,
+  normalizeTabParams,
+  renderTabContent,
+} from './page';
+import type { ConfigureTab, ExtendedBot, MainTab } from './page';
 import './BotPage.css';
-
-// Extended Bot type with all Firebase fields
-interface ExtendedBot extends Bot {
-  vm?: {
-    name: string;
-    ip: string;
-    created_at: string;
-  };
-  account?: {
-    email: string;
-    password: string;
-    mail_provider: string;
-    bnet_created_at: number;
-    mail_created_at: number;
-  };
-  person?: {
-    first_name?: string;
-    last_name?: string;
-    birth_date?: string;
-    country?: string;
-    city?: string;
-    address?: string;
-    zip?: string;
-  };
-  proxy?: {
-    full_string: string;
-    type: string;
-    ip: string;
-    port: number;
-    login: string;
-    password: string;
-    provider: string;
-    country: string;
-    fraud_score: number;
-    VPN: boolean;
-    Proxy: boolean;
-    detect_country: boolean;
-    created_at: number;
-    expires_at: number;
-  };
-  leveling?: {
-    current_level: number;
-    target_level: number;
-    xp_current: number;
-    xp_required: number;
-    xp_per_hour: number;
-    estimated_time_to_level: number;
-    location: string;
-    sub_location: string;
-    started_at: number;
-    finished_at: number;
-  };
-  professions?: Record<string, {
-    name: string;
-    skill_points: number;
-    max_skill_points: number;
-    started_at: number;
-    finished_at: number;
-  }>;
-  schedule?: Record<string, Array<{
-    start: string;
-    end: string;
-    enabled: boolean;
-    profile: string;
-  }>>;
-  farm?: {
-    total_gold: number;
-    gold_per_hour: number;
-    session_start: number;
-    location: string;
-    profile: string;
-    all_farmed_gold: number;
-  };
-  finance?: {
-    total_farmed_usd: number;
-    total_expenses_usd: number;
-    roi_percent: number;
-  };
-  monitor?: {
-    screenshot_request: boolean;
-    screenshot_url: string | null;
-    screenshot_timestamp: number | null;
-    status: string;
-  };
-  updated_at?: number;
-  created_at?: number;
-}
 
 export const BotPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [activeTab, setActiveTab] = useState<TabType>('summary');
-  const [bot, setBot] = useState<ExtendedBot | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabsFromQuery = useMemo(() => normalizeTabParams(searchParams), [searchParams]);
+  const activeTab = tabsFromQuery.main;
+  const configureTab = tabsFromQuery.configure || DEFAULT_CONFIGURE_TAB;
+  const resourcesTab = tabsFromQuery.resources || DEFAULT_RESOURCES_TAB;
 
-  // Загрузка данных бота из Firebase с realtime обновлениями
+  const [bot, setBot] = useState<ExtendedBot | null>(null);
+  const [loading, setLoading] = useState(() => Boolean(id));
+  const [error, setError] = useState<string | null>(null);
+  const openConfigureKey = activeTab === 'configure' ? `configure-${configureTab}` : undefined;
+
   useEffect(() => {
     if (!id) {
-      setError('Bot ID is required');
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    const unsubscribe = subscribeBotById(
+      id,
+      (data) => {
+        if (data) {
+          setBot(data as ExtendedBot);
+        } else {
+          setBot(null);
+        }
+        setError(null);
+        setLoading(false);
+      },
+      (loadError) => {
+        console.error('Error loading bot:', loadError);
+        setError('Failed to load bot data');
+        setLoading(false);
+      },
+      { intervalMs: 5000 }
+    );
 
-    const botRef = ref(database, `bots/${id}`);
-
-    const handleValue = (snapshot: any) => {
-      const data = snapshot.val();
-      console.log('Firebase data received:', data);
-      console.log('Firebase person data:', data?.person);
-      if (data) {
-        const botData = {
-          id,
-          ...data,
-        } as ExtendedBot;
-        console.log('Bot data with person:', botData.person);
-        setBot(botData);
-      } else {
-        setBot(null);
-      }
-      setLoading(false);
-    };
-
-    const handleError = (err: Error) => {
-      console.error('Error loading bot:', err);
-      setError('Failed to load bot data');
-      setLoading(false);
-    };
-
-    onValue(botRef, handleValue, handleError);
-
-    return () => {
-      off(botRef, 'value', handleValue);
-    };
+    return () => unsubscribe();
   }, [id]);
 
+  const setParamsForTab = (main: MainTab, subtab?: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', main);
+    if (subtab) {
+      nextParams.set('subtab', subtab);
+    } else {
+      nextParams.delete('subtab');
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const handleTabChange = (tab: TabType) => {
+    if (!MAIN_TABS.includes(tab as MainTab)) {
+      return;
+    }
+
+    const nextMain = tab as MainTab;
+    if (nextMain === 'configure') {
+      setParamsForTab(nextMain, configureTab || DEFAULT_CONFIGURE_TAB);
+      return;
+    }
+    if (nextMain === 'resources') {
+      setParamsForTab(nextMain, resourcesTab || DEFAULT_RESOURCES_TAB);
+      return;
+    }
+
+    setParamsForTab(nextMain);
+  };
+
+  const handleConfigureTabChange = (tab: ConfigureTab) => {
+    setParamsForTab('configure', tab);
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'configure') {
+      requestAnimationFrame(() => scrollToSection(`configure-${configureTab}`));
+    }
+  }, [activeTab, configureTab]);
+
+  useEffect(() => {
+    if (activeTab === 'resources') {
+      requestAnimationFrame(() => scrollToSection(`resources-${resourcesTab}`));
+    }
+  }, [activeTab, resourcesTab]);
+
+  const scheduleStats = useMemo(() => getScheduleStats(bot), [bot]);
+  const accountComplete = useMemo(() => isAccountComplete(bot), [bot]);
+  const personComplete = useMemo(() => isPersonComplete(bot), [bot]);
+  const characterComplete = useMemo(() => isCharacterComplete(bot), [bot]);
+  const scheduleComplete = useMemo(
+    () => isScheduleComplete(scheduleStats.enabledSessions),
+    [scheduleStats.enabledSessions]
+  );
+
   if (loading) {
-    return (
-      <div className="bot-page">
-        <div className="bot-page-loading">
-          <Spin size="large" />
-          <p>Loading bot data...</p>
-        </div>
-      </div>
-    );
+    return <BotPageLoading />;
   }
 
   if (error) {
-    return (
-      <div className="bot-page">
-        <Alert
-          message="Error"
-          description={error}
-          type="error"
-          showIcon
-        />
-      </div>
-    );
+    return <BotPageAlertState message="Error" description={error} />;
+  }
+
+  if (!id) {
+    return <BotPageAlertState message="Bot ID Missing" description={'Route parameter "id" is required.'} />;
   }
 
   if (!bot) {
-    return (
-      <div className="bot-page">
-        <Alert
-          message="Bot Not Found"
-          description={`Bot with ID "${id}" was not found.`}
-          type="error"
-          showIcon
-        />
-      </div>
-    );
+    return <BotPageAlertState message="Bot Not Found" description={`Bot with ID "${id}" was not found.`} />;
   }
 
-  const renderTabContent = () => {
-    // Pass full ExtendedBot to components that need extra fields
-    if (activeTab === 'person') {
-      return <BotPerson bot={bot} />;
-    }
-
-    if (activeTab === 'account') {
-      return <BotAccount bot={bot} />;
-    }
-
-    // Convert ExtendedBot to Bot for components that expect the base type
-    const baseBot: Bot = {
-      id: bot.id,
-      name: bot.character?.name || bot.id,
-      project_id: bot.project_id,
-      status: bot.status,
-      character: bot.character,
-      last_seen: bot.last_seen,
-    };
-
-    switch (activeTab) {
-      case 'summary':
-        return <BotSummary bot={baseBot} />;
-      case 'schedule':
-        return <BotSchedule botId={baseBot.id} />;
-      case 'lifeStages':
-        return <BotLifeStages bot={baseBot} botId={bot.id} />;
-      case 'character':
-        return <BotCharacter bot={baseBot} />;
-      case 'logs':
-        return <BotLogs bot={baseBot} />;
-      case 'license':
-        return <BotLicense bot={baseBot} />;
-      case 'proxy':
-        return <BotProxy bot={baseBot} />;
-      case 'subscription':
-        return <BotSubscription bot={baseBot} />;
-      default:
-        return <BotSummary bot={baseBot} />;
-    }
+  const baseBot: Bot = {
+    id: bot.id,
+    name: bot.character?.name || bot.id,
+    project_id: bot.project_id,
+    status: bot.status,
+    character: bot.character,
+    last_seen: bot.last_seen,
   };
 
-  // Check if person data is incomplete
-  const isPersonDataIncomplete = (): boolean => {
-    if (!bot?.person) return true;
-    return !!(
-      !bot.person.first_name?.trim() ||
-      !bot.person.last_name?.trim() ||
-      !bot.person.birth_date?.trim() ||
-      !bot.person.country?.trim() ||
-      !bot.person.city?.trim() ||
-      !bot.person.address?.trim() ||
-      !bot.person.zip?.trim()
-    );
-  };
+  const configureSections = buildConfigureSections({
+    bot,
+    baseBot,
+    personComplete,
+    accountComplete,
+    characterComplete,
+    scheduleComplete,
+  });
 
-  // Check if account data is incomplete
-  const isAccountDataIncomplete = (): boolean => {
-    if (!bot?.account) return true;
-    return !!(
-      !bot.account.email?.trim() ||
-      !bot.account.password?.trim()
-    );
-  };
+  const resourcesSections = buildResourcesSections(baseBot);
 
-  // Get list of incomplete tabs
-  const getIncompleteTabs = (): TabType[] => {
-    const incomplete: TabType[] = [];
-    if (isPersonDataIncomplete()) {
-      incomplete.push('person');
-    }
-    if (isAccountDataIncomplete()) {
-      incomplete.push('account');
-    }
-    return incomplete;
-  };
+  const content = renderTabContent({
+    activeTab,
+    bot,
+    baseBot,
+    configureSections,
+    openConfigureKey,
+    onConfigureTabChange: handleConfigureTabChange,
+    resourcesSections,
+  });
 
   return (
     <div className="bot-page">
       <ContentPanel
         type="bot"
         activeTab={activeTab}
-        onTabChange={setActiveTab}
-        incompleteTabs={getIncompleteTabs()}
+        onTabChange={handleTabChange}
+        incompleteTabs={getIncompleteTabs(bot)}
       >
-        {renderTabContent()}
+        {content}
       </ContentPanel>
     </div>
   );

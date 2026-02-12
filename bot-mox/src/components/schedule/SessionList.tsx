@@ -3,6 +3,7 @@ import { Button, Switch, Empty } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ScheduleSession } from '../../types';
 import { formatDuration, timeToMinutes } from '../../utils/scheduleUtils';
+import { TableActionButton } from '../ui/TableActionButton';
 import './SessionList.css';
 
 interface SessionListProps {
@@ -73,7 +74,7 @@ export const SessionList: React.FC<SessionListProps> = ({
                     {session.start} - {session.end}
                   </span>
                   <span className="duration">
-                    {getSessionDuration(session)}
+                    ({getSessionDuration(session)})
                   </span>
                 </div>
 
@@ -83,18 +84,16 @@ export const SessionList: React.FC<SessionListProps> = ({
                     checked={session.enabled}
                     onChange={(checked) => onToggle(session.id, checked)}
                   />
-                  <Button
-                    type="text"
-                    size="small"
+                  <TableActionButton
                     icon={<EditOutlined />}
                     onClick={() => onEdit(session)}
+                    tooltip="Edit session"
                   />
-                  <Button
-                    type="text"
-                    size="small"
+                  <TableActionButton
                     danger
                     icon={<DeleteOutlined />}
                     onClick={() => onDelete(session.id)}
+                    tooltip="Delete session"
                   />
                 </div>
               </div>

@@ -1,31 +1,192 @@
 .resource-tree-container {
   width: var(--resource-tree-width);
   height: 100%;
-  background: var(--proxmox-bg-secondary);
-  border-right: 1px solid var(--proxmox-border-dark);
+  background: var(--boxmox-color-surface-panel);
+  border-right: 1px solid var(--boxmox-color-border-strong);
   display: flex;
   flex-direction: column;
+  position: relative;
+  transition: width 0.15s ease;
 }
 
-.resource-tree-header {
-  padding: 8px 12px;
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border-dark);
+/* Top toolbar */
+.resource-tree-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  gap: 6px;
+  background: var(--boxmox-color-surface-panel);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
-.resource-tree-header-title {
-  font-family: var(--font-condensed);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--proxmox-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.resource-tree-collapse-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 4px;
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.resource-tree-collapse-btn:hover {
+  background: var(--boxmox-color-surface-hover);
+  color: var(--boxmox-color-text-primary);
+}
+
+.resource-tree-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resource-tree-loading-inline {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 4px;
+  background: var(--boxmox-color-surface-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resource-tree-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resource-tree-action-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 4px;
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.resource-tree-action-btn:hover {
+  background: var(--boxmox-color-surface-hover);
+  color: var(--boxmox-color-text-primary);
+}
+
+.resource-tree-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-muted);
+}
+
+.resource-tree-action-btn .anticon {
+  font-size: 14px;
+}
+
+.resource-tree-resizer {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+}
+
+.resource-tree-container.resizing {
+  user-select: none;
+}
+
+.resource-tree-container.collapsed .resource-tree-actions {
+  display: none;
+}
+
+.resource-tree-container.collapsed .resource-tree-filters-compact,
+.resource-tree-container.collapsed .resource-tree {
+  display: none;
+}
+
+.resource-tree-collapsed-nav {
+  display: none;
+}
+
+.resource-tree-container.collapsed .resource-tree-toolbar {
+  justify-content: center;
+  padding: 8px;
+}
+
+.resource-tree-container.collapsed .resource-tree-collapse-btn {
+  width: 30px;
+}
+
+.resource-tree-container.collapsed .resource-tree-toolbar-right {
+  display: none;
+}
+
+.resource-tree-container.collapsed .resource-tree-collapsed-nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  overflow-y: auto;
+}
+
+.resource-tree-collapsed-item {
+  width: 30px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--boxmox-color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.resource-tree-collapsed-item:hover {
+  background: var(--boxmox-color-surface-hover);
+  color: var(--boxmox-color-text-primary);
+}
+
+.resource-tree-collapsed-item.active {
+  background: var(--boxmox-color-brand-soft);
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-contrast);
+}
+
+.resource-tree-collapsed-item .anticon {
+  font-size: 16px;
+}
+
+.resource-tree-container.collapsed .resource-tree-resizer {
+  display: none;
 }
 
 /* Компактная панель фильтров */
 .resource-tree-filters-compact {
-  background: var(--proxmox-bg-secondary);
-  border-bottom: 1px solid var(--proxmox-border-dark);
+  background: var(--boxmox-color-surface-panel);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+}
+
+.resource-tree-filters-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-right: 6px;
 }
 
 .filters-toggle-btn {
@@ -33,13 +194,13 @@
   text-align: left;
   padding: 6px 12px;
   font-size: var(--text-xs);
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   border-radius: 0;
 }
 
 .filters-toggle-btn:hover {
-  color: var(--proxmox-text-primary);
-  background: var(--proxmox-bg-tertiary);
+  color: var(--boxmox-color-text-primary);
+  background: var(--boxmox-color-surface-muted);
 }
 
 .filters-panel {
@@ -47,7 +208,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  background: var(--proxmox-bg-tertiary);
+  background: var(--boxmox-color-surface-muted);
 }
 
 .filter-chip {
@@ -55,24 +216,24 @@
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border: 1px solid var(--proxmox-border);
+  border: 1px solid var(--boxmox-color-border-default);
   border-radius: 3px;
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-surface-panel);
   cursor: pointer;
   font-size: var(--text-xs);
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   transition: all 0.15s ease;
 }
 
 .filter-chip:hover {
-  border-color: var(--proxmox-accent);
-  color: var(--proxmox-text-primary);
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .filter-chip.active {
   border-color: var(--status-color);
   background: color-mix(in srgb, var(--status-color) 15%, transparent);
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .filter-chip-indicator {
@@ -89,7 +250,7 @@
 .resource-tree {
   flex: 1;
   overflow: auto;
-  padding: 4px 0;
+  padding: 4px 0 4px 6px;
   background: transparent;
 }
 
@@ -105,11 +266,15 @@
 }
 
 .resource-tree .ant-tree-node-content-wrapper:hover {
-  background: var(--proxmox-bg-tertiary);
+  background: var(--boxmox-color-surface-muted);
 }
 
 .resource-tree .ant-tree-node-content-wrapper.ant-tree-node-selected {
-  background: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-soft);
+}
+
+.resource-tree .ant-tree-node-content-wrapper.ant-tree-node-selected .resource-tree-title {
+  color: var(--boxmox-color-brand-contrast);
 }
 
 .resource-tree-node {
@@ -131,7 +296,7 @@
 
 .resource-tree-title {
   font-size: var(--text-sm);
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -144,11 +309,11 @@
   width: 18px;
   height: 24px;
   line-height: 24px;
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .resource-tree .ant-tree-switcher:hover {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 /* Убираем отступы для листьев */
@@ -158,10 +323,10 @@
 
 /* Линии дерева */
 .resource-tree .ant-tree-show-line .ant-tree-indent-unit::before {
-  border-color: var(--proxmox-border);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .resource-tree .ant-tree-show-line .ant-tree-switcher-leaf-line::before,
 .resource-tree .ant-tree-show-line .ant-tree-switcher-leaf-line::after {
-  border-color: var(--proxmox-border);
+  border-color: var(--boxmox-color-border-default);
 }

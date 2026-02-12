@@ -1,154 +1,97 @@
 import type { IPQSResponse, Proxy } from '../types';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { API_BASE_URL as API_BASE_URL_FROM_ENV } from '../config/env';
 import { getApiKeys, getProxySettings } from './apiKeysService';
-import app from '../utils/firebase';
+import { apiGet, apiPost, ApiClientError } from './apiClient';
+
+const LOCAL_PROXY_URL = API_BASE_URL_FROM_ENV;
+const IPQS_API_PREFIX = '/api/v1/ipqs';
+
+interface BackendStatusPayload {
+  enabled?: unknown;
+  configured?: unknown;
+  firebaseInitialized?: unknown;
+}
+
+interface BackendStatus {
+  enabled: boolean;
+  configured: boolean;
+  firebaseInitialized: boolean;
+}
+
+function normalizeBackendStatus(payload: BackendStatusPayload): BackendStatus {
+  return {
+    enabled: Boolean(payload.enabled),
+    configured: Boolean(payload.configured),
+    firebaseInitialized: Boolean(payload.firebaseInitialized),
+  };
+}
+
+function toErrorMessage(error: unknown): string {
+  if (error instanceof ApiClientError) {
+    return `${error.code}: ${error.message}`;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
+async function getStatusFromBackend(): Promise<BackendStatus | null> {
+  try {
+    const response = await apiGet<BackendStatusPayload>(`${IPQS_API_PREFIX}/status`);
+    return normalizeBackendStatus(response.data || {});
+  } catch (error) {
+    console.warn('Failed to fetch IPQS status from backend:', toErrorMessage(error));
+    return null;
+  }
+}
 
 /**
- * Сервис для работы с IPQualityScore API
- * Поддерживает два режима работы:
- * 1. Локальный прокси-сервер (для разработки) - http://localhost:3001
- * 2. Firebase Cloud Functions (для production)
- *
- * Проверка прокси на fraud score, VPN, TOR и другие параметры
- */
-
-// Инициализируем Functions
-const functions = getFunctions(app);
-
-// Создаем callable функции
-const checkIPQualityCallable = httpsCallable<{ ip: string }, { success: boolean; data: IPQSResponse }>(
-  functions,
-  'checkIPQuality'
-);
-
-const getIPQSStatusCallable = httpsCallable<Record<string, never>, { enabled: boolean; configured: boolean }>(
-  functions,
-  'getIPQSStatus'
-);
-
-// Конфигурация локального прокси-сервера
-const LOCAL_PROXY_URL = 'http://localhost:3001';
-
-/**
- * Проверяет доступность локального прокси-сервера
+ * Проверяет доступность backend IPQS API
  * @returns Promise<boolean>
  */
 async function isLocalProxyAvailable(): Promise<boolean> {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
-
-    const response = await fetch(`${LOCAL_PROXY_URL}/api/status`, {
-      method: 'GET',
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-    return response.ok;
-  } catch {
-    return false;
-  }
+  const status = await getStatusFromBackend();
+  return Boolean(status);
 }
 
 /**
- * Проверяет IP адрес через локальный прокси-сервер
+ * Проверяет IP адрес через backend API
  * @param ip - IP адрес для проверки
  * @returns Promise<IPQSResponse | null>
  */
-async function checkIPQualityViaLocalProxy(ip: string): Promise<IPQSResponse | null> {
-  try {
-    const response = await fetch(`${LOCAL_PROXY_URL}/api/check-ip`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ ip })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.warn('Local proxy returned error:', errorData.error || response.statusText);
-      return null;
-    }
-
-    const result = await response.json();
-
-    if (result.success && result.data) {
-      return result.data as IPQSResponse;
-    }
-
+async function checkIPQualityViaBackend(ip: string): Promise<IPQSResponse | null> {
+  const normalizedIp = String(ip || '').trim();
+  if (!normalizedIp) {
     return null;
+  }
+
+  try {
+    const response = await apiPost<IPQSResponse>(`${IPQS_API_PREFIX}/check`, {
+      ip: normalizedIp,
+    });
+    return response.data;
   } catch (error) {
-    console.error('Error checking IP via local proxy:', error);
+    console.warn('IPQS backend check failed:', toErrorMessage(error));
     return null;
   }
 }
 
 /**
- * Проверяет IP адрес через IPQualityScore API
- * Сначала пробует локальный прокси-сервер, затем Cloud Function, затем прямой запрос
+ * Проверяет IP адрес через backend API
  * @param ip - IP адрес для проверки
  * @returns Promise<IPQSResponse | null> - результат проверки или null в случае ошибки
  */
 export async function checkIPQuality(ip: string): Promise<IPQSResponse | null> {
-  // Сначала пробуем локальный прокси-сервер (для разработки)
-  const isLocalAvailable = await isLocalProxyAvailable();
-
-  if (isLocalAvailable) {
-    console.log('🔄 Using local proxy server for IP check');
-    const result = await checkIPQualityViaLocalProxy(ip);
-    if (result) {
-      return result;
-    }
-    console.warn('Local proxy failed, trying direct API call...');
-  } else {
-    console.warn('Local proxy not available, trying direct API call...');
-  }
-
-  // Прямой запрос к IPQS API (fallback)
-  return checkIPQualityDirect(ip);
-}
-
-/**
- * Прямой запрос к IPQualityScore API (fallback для разработки)
- * @param ip - IP адрес для проверки
- * @returns Promise<IPQSResponse | null> - результат проверки или null в случае ошибки
- */
-async function checkIPQualityDirect(ip: string): Promise<IPQSResponse | null> {
-  try {
-    // Получаем API ключ из настроек
-    const apiKeys = await getApiKeys();
-
-    // Проверяем, включена ли проверка IPQS
-    if (!apiKeys.ipqs.enabled || !apiKeys.ipqs.api_key) {
-      console.warn('IPQS check is disabled or API key not configured');
-      return null;
-    }
-
-    const apiKey = apiKeys.ipqs.api_key;
-    const IPQS_API_BASE = 'https://www.ipqualityscore.com/api/json/ip';
-
-    // Формируем URL с параметрами
-    const url = `${IPQS_API_BASE}/${apiKey}/${ip}?strictness=1&allow_public_access_points=true&fast=true`;
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`IPQS API error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (!data.success) {
-      console.warn('IPQS API returned error:', data.message);
-      return null;
-    }
-
-    return data as IPQSResponse;
-  } catch (error) {
-    console.error('Error in direct IP quality check:', error);
+  const isBackendAvailable = await isLocalProxyAvailable();
+  if (!isBackendAvailable) {
+    console.warn('IPQS backend is unavailable');
     return null;
   }
+
+  return checkIPQualityViaBackend(ip);
 }
 
 /**
@@ -174,19 +117,12 @@ export async function isProxySuspicious(fraudScore: number): Promise<boolean> {
  */
 export async function isAutoCheckEnabled(): Promise<boolean> {
   try {
-    const [apiKeys, proxySettings] = await Promise.all([
-      getApiKeys(),
-      getProxySettings()
-    ]);
+    const [apiKeys, proxySettings] = await Promise.all([getApiKeys(), getProxySettings()]);
 
     // Автопроверка включена только если:
     // 1. IPQS включен и есть API ключ
     // 2. В настройках прокси включена автопроверка при добавлении
-    return (
-      apiKeys.ipqs.enabled &&
-      apiKeys.ipqs.api_key.length > 0 &&
-      proxySettings.auto_check_on_add
-    );
+    return apiKeys.ipqs.enabled && apiKeys.ipqs.api_key.length > 0 && proxySettings.auto_check_on_add;
   } catch (error) {
     console.error('Error checking auto check status:', error);
     return false;
@@ -194,30 +130,16 @@ export async function isAutoCheckEnabled(): Promise<boolean> {
 }
 
 /**
- * Получает статус IPQS через локальный прокси или Cloud Function
+ * Получает статус IPQS через backend API
  * @returns Promise<boolean> - true если проверка включена
  */
 export async function isIPQSCheckEnabled(): Promise<boolean> {
-  // Сначала пробуем локальный прокси
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
-
-    const response = await fetch(`${LOCAL_PROXY_URL}/api/status`, {
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
-    if (response.ok) {
-      const data = await response.json();
-      return data.ipqs?.enabled && data.ipqs?.configured;
-    }
-  } catch {
-    // Локальный прокси недоступен, используем прямое чтение из базы
+  const status = await getStatusFromBackend();
+  if (status) {
+    return status.enabled && status.configured;
   }
 
-  // Прямое чтение из Firebase
+  // Fallback через settings endpoint
   try {
     const apiKeys = await getApiKeys();
     return apiKeys.ipqs.enabled && apiKeys.ipqs.api_key.length > 0;
@@ -232,31 +154,22 @@ export async function isIPQSCheckEnabled(): Promise<boolean> {
  * @returns Promise<{ enabled: boolean; configured: boolean; localProxyAvailable: boolean }>
  */
 export async function getIPQSStatus(): Promise<{ enabled: boolean; configured: boolean; localProxyAvailable: boolean }> {
-  const localProxyAvailable = await isLocalProxyAvailable();
-
-  if (localProxyAvailable) {
-    try {
-      const response = await fetch(`${LOCAL_PROXY_URL}/api/status`);
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          enabled: data.ipqs?.enabled || false,
-          configured: data.ipqs?.configured || false,
-          localProxyAvailable: true
-        };
-      }
-    } catch {
-      // Игнорируем ошибки
-    }
+  const status = await getStatusFromBackend();
+  if (status) {
+    return {
+      enabled: status.enabled,
+      configured: status.configured,
+      localProxyAvailable: true,
+    };
   }
 
-  // Прямое чтение из Firebase
+  // Fallback через settings endpoint
   try {
     const apiKeys = await getApiKeys();
     return {
       enabled: apiKeys.ipqs.enabled,
       configured: apiKeys.ipqs.api_key.length > 0,
-      localProxyAvailable: false
+      localProxyAvailable: false,
     };
   } catch (error) {
     console.error('Error getting IPQS status:', error);
@@ -310,7 +223,7 @@ export function updateProxyWithIPQSData(
   };
 
   // Удаляем undefined поля чтобы избежать ошибок Firebase
-  Object.keys(updates).forEach(key => {
+  Object.keys(updates).forEach((key) => {
     if (updates[key as keyof Proxy] === undefined) {
       delete updates[key as keyof Proxy];
     }
@@ -369,7 +282,7 @@ export async function checkProxyWithValidation(
   localProxyUsed: boolean;
 }> {
   try {
-    // Проверяем доступность локального прокси
+    // Проверяем доступность backend
     const localProxyUsed = await isLocalProxyAvailable();
 
     // Проверяем, включена ли проверка IPQS
@@ -379,7 +292,7 @@ export async function checkProxyWithValidation(
         data: null,
         isSuspicious: false,
         error: 'IPQS check is disabled or API key not configured',
-        localProxyUsed
+        localProxyUsed,
       };
     }
 
@@ -390,7 +303,7 @@ export async function checkProxyWithValidation(
         data: null,
         isSuspicious: false,
         error: 'Failed to check IP quality',
-        localProxyUsed
+        localProxyUsed,
       };
     }
 
@@ -403,13 +316,13 @@ export async function checkProxyWithValidation(
       data: null,
       isSuspicious: false,
       error: errorMessage,
-      localProxyUsed: false
+      localProxyUsed: false,
     };
   }
 }
 
 /**
- * Проверяет доступность локального прокси-сервера и возвращает статус
+ * Проверяет доступность backend API и возвращает статус
  * @returns Promise<{ available: boolean; message: string }>
  */
 export async function checkLocalProxyStatus(): Promise<{ available: boolean; message: string }> {
@@ -418,12 +331,12 @@ export async function checkLocalProxyStatus(): Promise<{ available: boolean; mes
   if (available) {
     return {
       available: true,
-      message: 'Local proxy server is running on http://localhost:3001'
+      message: `Backend API is available on ${LOCAL_PROXY_URL}`,
     };
   }
 
   return {
     available: false,
-    message: 'Local proxy server is not available. Please start it with: cd proxy-server && npm start'
+    message: 'Backend API is unavailable. Please start proxy-server: cd proxy-server && npm start',
   };
 }

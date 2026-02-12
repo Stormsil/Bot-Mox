@@ -1,51 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Typography, Tag, Alert, Spin, Tooltip, Space } from 'antd';
-import { 
-  WarningOutlined, 
-  CheckCircleOutlined, 
-  ClockCircleOutlined, 
-  ExclamationCircleOutlined,
-  KeyOutlined,
-  GlobalOutlined,
-  CreditCardOutlined,
-  PoweroffOutlined
-} from '@ant-design/icons';
-import { StatusBadge } from '../ui/StatusBadge';
-import { ref, onValue } from 'firebase/database';
-import { database } from '../../utils/firebase';
-import type { Bot, BotLicense, Proxy, Subscription } from '../../types';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Card, Spin } from 'antd';
+import { useSearchParams } from 'react-router-dom';
+import type { BotLicense, Proxy, Subscription } from '../../types';
+import { fetchResources } from '../../services/resourcesApiService';
+import {
+  SUMMARY_SECTIONS,
+  calculateScheduleStats,
+  calculateSubscriptionSummary,
+  formatCompactKey,
+  formatDate,
+  formatDaysLeft,
+  formatProjectName,
+  getHealthStatus,
+} from './summary/helpers';
+import {
+  SummaryBotInfoSection,
+  SummaryCharacterSection,
+  SummaryConfigureSection,
+  SummaryOverviewSection,
+  SummaryResourcesSection,
+} from './summary/sections';
+import type {
+  BotStatusInfo,
+  BotSummaryProps,
+  LinkedResources,
+  ProxyDetails,
+  SummaryConfigureTab,
+  SummaryMainTab,
+  SummaryResourcesTab,
+} from './summary/types';
 import './BotSummary.css';
 
-const { Title, Text } = Typography;
-
-interface BotSummaryProps {
-  bot: Bot;
-}
-
-interface BotStatusInfo {
-  licenseExpired: boolean;
-  licenseExpiringSoon: boolean;
-  proxyExpired: boolean;
-  proxyExpiringSoon: boolean;
-  proxyBanned: boolean;
-  subscriptionsExpired: number;
-  subscriptionsExpiringSoon: number;
-  isOffline: boolean;
-  lastSeenMinutes: number;
-}
-
 export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
+  const [activeSection, setActiveSection] = useState('overview');
   const [statusInfo, setStatusInfo] = useState<BotStatusInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [linkedResources, setLinkedResources] = useState<LinkedResources>({
+    license: null,
+    proxy: null,
+    subscriptions: [],
+  });
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    // Проверяем статус лицензии
-    const licensesRef = ref(database, 'bot_licenses');
-    const proxiesRef = ref(database, 'proxies');
-    const subscriptionsRef = ref(database, 'subscriptions');
-    const botProxyRef = ref(database, `bots/${bot.id}/proxy`);
+    let isCancelled = false;
 
     const checkStatus = async () => {
+      setLoading(true);
       const info: BotStatusInfo = {
         licenseExpired: false,
         licenseExpiringSoon: false,
@@ -58,126 +59,142 @@ export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
         lastSeenMinutes: 0,
       };
 
-      // Проверка offline статуса
+      const warningDays = 7;
       const lastSeenMinutes = Math.floor((Date.now() - bot.last_seen) / (1000 * 60));
       info.isOffline = lastSeenMinutes > 5;
       info.lastSeenMinutes = lastSeenMinutes;
 
-      // Проверка лицензии (v1.4.0 - поддержка нескольких ботов)
-      onValue(licensesRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const license = Object.entries(data).find(([_, value]) => {
-            const lic = value as BotLicense;
-            return lic.bot_ids?.includes(bot.id);
-          });
-          if (license) {
-            const licData = license[1] as BotLicense;
-            const daysRemaining = Math.ceil((licData.expires_at - Date.now()) / (1000 * 60 * 60 * 24));
-            info.licenseExpired = Date.now() > licData.expires_at;
-            info.licenseExpiringSoon = daysRemaining <= 7 && daysRemaining > 0;
+      try {
+        const [licenses, proxies, subscriptions] = await Promise.all([
+          fetchResources<BotLicense>('licenses'),
+          fetchResources<Proxy>('proxies'),
+          fetchResources<Subscription>('subscriptions'),
+        ]);
+
+        const linkedLicense = licenses.find((license) => license.bot_ids?.includes(bot.id)) || null;
+        let linkedProxy: ProxyDetails | null = bot.proxy?.ip
+          ? {
+              ip: bot.proxy.ip,
+              port: bot.proxy.port,
+              status: bot.proxy.status,
+              expires_at: bot.proxy.expires_at,
+              provider: bot.proxy.provider,
+              country: bot.proxy.country,
+            }
+          : null;
+
+        if (linkedLicense) {
+          const daysRemaining = Math.ceil((linkedLicense.expires_at - Date.now()) / (1000 * 60 * 60 * 24));
+          info.licenseExpired = Date.now() > linkedLicense.expires_at;
+          info.licenseExpiringSoon = daysRemaining <= warningDays && daysRemaining > 0;
+        }
+
+        if (!linkedProxy) {
+          const proxyData = proxies.find((proxy) => proxy.bot_id === bot.id);
+          if (proxyData) {
+            linkedProxy = {
+              ip: proxyData.ip,
+              port: proxyData.port,
+              status: proxyData.status,
+              expires_at: proxyData.expires_at,
+              provider: proxyData.provider,
+              country: proxyData.country,
+            };
           }
         }
-      }, { onlyOnce: true });
 
-      // Проверка прокси (сначала в боте, потом в общем списке)
-      onValue(botProxyRef, (snapshot) => {
-        const botProxy = snapshot.val();
-        if (botProxy && botProxy.ip) {
-          const daysRemaining = botProxy.expires_at 
-            ? Math.ceil((botProxy.expires_at - Date.now()) / (1000 * 60 * 60 * 24))
-            : 0;
-          info.proxyExpired = botProxy.expires_at ? Date.now() > botProxy.expires_at : false;
-          info.proxyExpiringSoon = daysRemaining <= 7 && daysRemaining > 0;
-          info.proxyBanned = botProxy.status === 'banned';
-        } else {
-          // Проверяем в общем списке
-          onValue(proxiesRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-              const proxy = Object.entries(data).find(([_, value]) => {
-                const p = value as Proxy;
-                return p.bot_id === bot.id;
-              });
-              if (proxy) {
-                const proxyData = proxy[1] as Proxy;
-                const daysRemaining = Math.ceil((proxyData.expires_at - Date.now()) / (1000 * 60 * 60 * 24));
-                info.proxyExpired = Date.now() > proxyData.expires_at;
-                info.proxyExpiringSoon = daysRemaining <= 7 && daysRemaining > 0;
-                info.proxyBanned = proxyData.status === 'banned';
-              }
-            }
-          }, { onlyOnce: true });
+        if (linkedProxy?.expires_at) {
+          const daysRemaining = Math.ceil((linkedProxy.expires_at - Date.now()) / (1000 * 60 * 60 * 24));
+          info.proxyExpired = Date.now() > linkedProxy.expires_at;
+          info.proxyExpiringSoon = daysRemaining <= warningDays && daysRemaining > 0;
+          info.proxyBanned = linkedProxy.status === 'banned';
         }
-      }, { onlyOnce: true });
 
-      // Проверка подписок
-      onValue(subscriptionsRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          Object.entries(data).forEach(([_, value]) => {
-            const sub = value as Subscription;
-            if (sub.bot_id === bot.id) {
-              const daysRemaining = Math.ceil((sub.expires_at - Date.now()) / (1000 * 60 * 60 * 24));
-              if (Date.now() > sub.expires_at) {
-                info.subscriptionsExpired++;
-              } else if (daysRemaining <= 7 && daysRemaining > 0) {
-                info.subscriptionsExpiringSoon++;
-              }
-            }
+        const linkedSubscriptions = subscriptions.filter((sub) => sub.bot_id === bot.id);
+        linkedSubscriptions.forEach((sub) => {
+          const daysRemaining = Math.ceil((sub.expires_at - Date.now()) / (1000 * 60 * 60 * 24));
+          if (Date.now() > sub.expires_at) {
+            info.subscriptionsExpired += 1;
+          } else if (daysRemaining <= warningDays && daysRemaining > 0) {
+            info.subscriptionsExpiringSoon += 1;
+          }
+        });
+
+        if (!isCancelled) {
+          setLinkedResources({
+            license: linkedLicense,
+            proxy: linkedProxy,
+            subscriptions: linkedSubscriptions,
           });
+          setStatusInfo(info);
         }
-      }, { onlyOnce: true });
-
-      setTimeout(() => {
-        setStatusInfo(info);
-        setLoading(false);
-      }, 500);
+      } catch (error) {
+        console.error('Failed to load bot summary status info', error);
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
     };
 
-    checkStatus();
-  }, [bot.id, bot.last_seen]);
-
-  // Получение общего статуса здоровья бота
-  const getHealthStatus = () => {
-    if (!statusInfo) return { status: 'unknown', message: 'Checking...', icon: <Spin size="small" /> };
-    
-    const criticalIssues = [
-      statusInfo.licenseExpired,
-      statusInfo.proxyExpired,
-      statusInfo.proxyBanned,
-      statusInfo.subscriptionsExpired > 0,
-    ].filter(Boolean).length;
-
-    const warnings = [
-      statusInfo.licenseExpiringSoon,
-      statusInfo.proxyExpiringSoon,
-      statusInfo.subscriptionsExpiringSoon > 0,
-      statusInfo.isOffline,
-    ].filter(Boolean).length;
-
-    if (criticalIssues > 0) {
-      return { 
-        status: 'error', 
-        message: `${criticalIssues} critical issue(s)`, 
-        icon: <ExclamationCircleOutlined /> 
-      };
-    }
-    if (warnings > 0) {
-      return { 
-        status: 'warning', 
-        message: `${warnings} warning(s)`, 
-        icon: <WarningOutlined /> 
-      };
-    }
-    return { 
-      status: 'success', 
-      message: 'All systems operational', 
-      icon: <CheckCircleOutlined /> 
+    void checkStatus();
+    return () => {
+      isCancelled = true;
     };
+  }, [bot.id, bot.last_seen, bot.proxy]);
+
+  const health = getHealthStatus(statusInfo);
+
+  const handleSummaryNavClick = (key: string) => {
+    setActiveSection(key);
+    const element = document.getElementById(`summary-${key}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
-  const health = getHealthStatus();
+  const setTabParams = (main: SummaryMainTab, subtab?: SummaryConfigureTab | SummaryResourcesTab) => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', main);
+    if (subtab) {
+      nextParams.set('subtab', subtab);
+    } else {
+      nextParams.delete('subtab');
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const goToConfigure = (subtab: SummaryConfigureTab) => setTabParams('configure', subtab);
+  const goToResources = (subtab: SummaryResourcesTab) => setTabParams('resources', subtab);
+
+  const handleKeyActivate =
+    (action: () => void) =>
+    (event: React.KeyboardEvent<HTMLElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        action();
+      }
+    };
+
+  const accountCreatedAt = bot.account?.bnet_created_at || bot.account?.mail_created_at || 0;
+  const accountEmail = bot.account?.email?.trim() || '';
+  const accountPassword = bot.account?.password?.trim() || '';
+  const accountComplete = Boolean(accountEmail && accountPassword);
+  const personComplete = Boolean(
+    bot.person?.first_name?.trim() &&
+      bot.person?.last_name?.trim() &&
+      bot.person?.birth_date?.trim() &&
+      bot.person?.country?.trim() &&
+      bot.person?.city?.trim() &&
+      bot.person?.address?.trim() &&
+      bot.person?.zip?.trim()
+  );
+
+  const scheduleStats = useMemo(() => calculateScheduleStats(bot.schedule), [bot.schedule]);
+  const subscriptionSummary = useMemo(
+    () => calculateSubscriptionSummary(linkedResources.subscriptions),
+    [linkedResources.subscriptions]
+  );
 
   if (loading) {
     return (
@@ -191,236 +208,51 @@ export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
 
   return (
     <div className="bot-summary">
-      {/* Health Status Alert */}
-      <Alert
-        className="health-alert"
-        message={
-          <Space>
-            {health.icon}
-            <span>Bot Health: {health.message}</span>
-          </Space>
-        }
-        type={health.status as any}
-        showIcon={false}
-      />
+      <div className="bot-subtabs-layout">
+        <div className="bot-subtabs-nav">
+          {SUMMARY_SECTIONS.map((section) => (
+            <button
+              key={section.key}
+              type="button"
+              className={`bot-subtab ${activeSection === section.key ? 'active' : ''}`}
+              onClick={() => handleSummaryNavClick(section.key)}
+            >
+              <span className="bot-subtab-icon">{section.icon}</span>
+              <span className="bot-subtab-label">{section.label}</span>
+            </button>
+          ))}
+        </div>
 
-      {/* Critical Issues */}
-      {statusInfo && (
-        <div className="alerts-section">
-          {statusInfo.licenseExpired && (
-            <Alert
-              className="status-alert"
-              message="License Expired"
-              description="The bot license has expired. Bot may stop functioning. Please renew the license."
-              type="error"
-              showIcon
-              icon={<KeyOutlined />}
-            />
-          )}
-          {statusInfo.licenseExpiringSoon && !statusInfo.licenseExpired && (
-            <Alert
-              className="status-alert"
-              message="License Expiring Soon"
-              description="The bot license will expire soon. Please renew to avoid interruption."
-              type="warning"
-              showIcon
-              icon={<KeyOutlined />}
-            />
-          )}
-          {statusInfo.proxyExpired && (
-            <Alert
-              className="status-alert"
-              message="Proxy Expired"
-              description="The proxy has expired. Bot may lose connection. Please update proxy."
-              type="error"
-              showIcon
-              icon={<GlobalOutlined />}
-            />
-          )}
-          {statusInfo.proxyBanned && (
-            <Alert
-              className="status-alert"
-              message="Proxy Banned"
-              description="The proxy has been banned by the game. Please assign a new proxy."
-              type="error"
-              showIcon
-              icon={<GlobalOutlined />}
-            />
-          )}
-          {statusInfo.proxyExpiringSoon && !statusInfo.proxyExpired && !statusInfo.proxyBanned && (
-            <Alert
-              className="status-alert"
-              message="Proxy Expiring Soon"
-              description="The proxy will expire soon. Please renew to avoid connection issues."
-              type="warning"
-              showIcon
-              icon={<GlobalOutlined />}
-            />
-          )}
-          {statusInfo.subscriptionsExpired > 0 && (
-            <Alert
-              className="status-alert"
-              message={`${statusInfo.subscriptionsExpired} Subscription(s) Expired`}
-              description="Some subscriptions have expired. Check the Subscription tab for details."
-              type="error"
-              showIcon
-              icon={<CreditCardOutlined />}
-            />
-          )}
-          {statusInfo.subscriptionsExpiringSoon > 0 && statusInfo.subscriptionsExpired === 0 && (
-            <Alert
-              className="status-alert"
-              message={`${statusInfo.subscriptionsExpiringSoon} Subscription(s) Expiring Soon`}
-              description="Some subscriptions will expire soon. Check the Subscription tab for details."
-              type="warning"
-              showIcon
-              icon={<CreditCardOutlined />}
-            />
-          )}
-          {statusInfo.isOffline && (
-            <Alert
-              className="status-alert"
-              message="Bot Offline"
-              description={`Last seen ${statusInfo.lastSeenMinutes} minutes ago. The bot may be disconnected or experiencing issues.`}
-              type="warning"
-              showIcon
-              icon={<PoweroffOutlined />}
+        <div className="bot-subtabs-content">
+          <SummaryOverviewSection health={health} statusInfo={statusInfo} />
+          <SummaryCharacterSection bot={bot} />
+          <SummaryBotInfoSection bot={bot} statusInfo={statusInfo} formatProjectName={formatProjectName} />
+          <SummaryConfigureSection
+            bot={bot}
+            accountComplete={accountComplete}
+            personComplete={personComplete}
+            accountEmail={accountEmail}
+            accountPassword={accountPassword}
+            accountCreatedAt={accountCreatedAt}
+            scheduleStats={scheduleStats}
+            goToConfigure={goToConfigure}
+            onActivate={handleKeyActivate}
+            formatDate={formatDate}
+          />
+          {statusInfo && (
+            <SummaryResourcesSection
+              statusInfo={statusInfo}
+              linkedResources={linkedResources}
+              subscriptionSummary={subscriptionSummary}
+              goToResources={goToResources}
+              onActivate={handleKeyActivate}
+              formatCompactKey={formatCompactKey}
+              formatDate={formatDate}
+              formatDaysLeft={formatDaysLeft}
             />
           )}
         </div>
-      )}
-
-      {/* Заголовок с основной информацией */}
-      <Card className="summary-header-card" bordered={false}>
-        <div className="summary-header">
-          <div className="header-main">
-            <Title level={4} className="bot-name">
-              {bot.character.name}
-              <StatusBadge status={bot.status} />
-            </Title>
-            <Text className="bot-subtitle">
-              {bot.character.race} {bot.character.class} • Level {bot.character.level}
-            </Text>
-          </div>
-          <div className="header-meta">
-            <Tag className="server-tag">{bot.character.server}</Tag>
-            <Tag className="project-tag">{bot.project_id}</Tag>
-          </div>
-        </div>
-      </Card>
-
-      {/* Детальная информация */}
-      <Row gutter={[16, 16]} className="details-row">
-        <Col span={12}>
-          <Card title="Character Info" className="detail-card">
-            <div className="character-stats">
-              <div className="stat-row">
-                <Text>Level</Text>
-                <Text strong>{bot.character.level}</Text>
-              </div>
-              <div className="stat-row">
-                <Text>Race</Text>
-                <Text strong className="capitalize">{bot.character.race}</Text>
-              </div>
-              <div className="stat-row">
-                <Text>Class</Text>
-                <Text strong className="capitalize">{bot.character.class}</Text>
-              </div>
-              <div className="stat-row">
-                <Text>Server</Text>
-                <Tag className="server-tag">{bot.character.server}</Tag>
-              </div>
-            </div>
-          </Card>
-        </Col>
-
-        <Col span={12}>
-          <Card title="Bot Info" className="detail-card">
-            <div className="bot-stats">
-              <div className="stat-row">
-                <Text>Bot ID</Text>
-                <Text strong className="bot-id">{bot.id}</Text>
-              </div>
-              <div className="stat-row">
-                <Text>Project</Text>
-                <Tag className="project-tag">{bot.project_id}</Tag>
-              </div>
-              <div className="stat-row">
-                <Text>Status</Text>
-                <StatusBadge status={bot.status} size="small" />
-              </div>
-              <div className="stat-row">
-                <Text>Last Seen</Text>
-                <Tooltip title={new Date(bot.last_seen).toLocaleString()}>
-                  <Text strong className={statusInfo?.isOffline ? 'offline-text' : ''}>
-                    {statusInfo?.isOffline 
-                      ? `${statusInfo.lastSeenMinutes} min ago` 
-                      : new Date(bot.last_seen).toLocaleTimeString()}
-                  </Text>
-                </Tooltip>
-              </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Status Summary */}
-      {statusInfo && (
-        <Card className="status-summary-card" title="Status Summary">
-          <Row gutter={[16, 16]}>
-            <Col span={8}>
-              <div className="status-item">
-                <KeyOutlined className="status-icon" />
-                <div>
-                  <Text type="secondary">License</Text>
-                  <br />
-                  {statusInfo.licenseExpired ? (
-                    <Tag color="error">Expired</Tag>
-                  ) : statusInfo.licenseExpiringSoon ? (
-                    <Tag color="warning">Expiring Soon</Tag>
-                  ) : (
-                    <Tag color="success">Active</Tag>
-                  )}
-                </div>
-              </div>
-            </Col>
-            <Col span={8}>
-              <div className="status-item">
-                <GlobalOutlined className="status-icon" />
-                <div>
-                  <Text type="secondary">Proxy</Text>
-                  <br />
-                  {statusInfo.proxyExpired ? (
-                    <Tag color="error">Expired</Tag>
-                  ) : statusInfo.proxyBanned ? (
-                    <Tag color="error">Banned</Tag>
-                  ) : statusInfo.proxyExpiringSoon ? (
-                    <Tag color="warning">Expiring Soon</Tag>
-                  ) : (
-                    <Tag color="success">Active</Tag>
-                  )}
-                </div>
-              </div>
-            </Col>
-            <Col span={8}>
-              <div className="status-item">
-                <CreditCardOutlined className="status-icon" />
-                <div>
-                  <Text type="secondary">Subscriptions</Text>
-                  <br />
-                  {statusInfo.subscriptionsExpired > 0 ? (
-                    <Tag color="error">{statusInfo.subscriptionsExpired} Expired</Tag>
-                  ) : statusInfo.subscriptionsExpiringSoon > 0 ? (
-                    <Tag color="warning">{statusInfo.subscriptionsExpiringSoon} Expiring</Tag>
-                  ) : (
-                    <Tag color="success">All Active</Tag>
-                  )}
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </Card>
-      )}
+      </div>
     </div>
   );
 };

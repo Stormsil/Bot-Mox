@@ -25,8 +25,7 @@ interface TransactionFormProps {
   onCancel: () => void;
   onSubmit: (data: FinanceOperationFormData) => Promise<void>;
   loading?: boolean;
-  goldPriceTBC: number;
-  goldPriceMidnight: number;
+  // Note: gold prices are now entered manually per transaction
 }
 
 // Категории для доходов
@@ -37,10 +36,9 @@ const INCOME_CATEGORIES = [
 
 // Категории для расходов
 const EXPENSE_CATEGORIES = [
-  { value: 'subscription_bot', label: 'Bot Subscription' },
   { value: 'subscription_game', label: 'Game Subscription' },
   { value: 'proxy', label: 'Proxy' },
-  { value: 'license', label: 'License' },
+  { value: 'bot_license', label: 'Bot license' },
   { value: 'other', label: 'Other Expense' },
 ];
 
@@ -50,33 +48,28 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   onCancel,
   onSubmit,
   loading = false,
-  goldPriceTBC,
-  goldPriceMidnight,
 }) => {
   const [form] = Form.useForm();
   const [transactionType, setTransactionType] = useState<FinanceOperationType>('expense');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedProject, setSelectedProject] = useState<string>('');
   const [goldAmount, setGoldAmount] = useState<number>(0);
   const [goldPrice, setGoldPrice] = useState<number>(0);
 
   const isEdit = !!operation;
   const isGoldSale = selectedCategory === 'sale';
 
-  // Получаем текущую цену золота в зависимости от проекта
-  const currentGoldPrice = selectedProject === 'wow_midnight' ? goldPriceMidnight : goldPriceTBC;
-
   // Рассчитываем сумму для продажи золота
   const calculatedAmount = goldAmount * (goldPrice / 1000);
 
   // Инициализация формы при открытии
   useEffect(() => {
-    if (visible) {
+    if (!visible) return;
+
+    const frameId = window.requestAnimationFrame(() => {
       if (operation) {
         // Режим редактирования
         setTransactionType(operation.type);
         setSelectedCategory(operation.category);
-        setSelectedProject(operation.project_id || '');
         setGoldAmount(operation.gold_amount || 0);
         setGoldPrice(operation.gold_price_at_time || 0);
 
@@ -95,7 +88,6 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         // Режим создания
         setTransactionType('expense');
         setSelectedCategory('');
-        setSelectedProject('');
         setGoldAmount(0);
         setGoldPrice(0);
 
@@ -104,18 +96,18 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
           type: 'expense',
           currency: 'USD',
           date: dayjs(),
+          category: undefined,
         });
       }
-    }
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
   }, [visible, operation, form]);
 
-  // Обновляем цену золота при изменении проекта
-  useEffect(() => {
-    if (isGoldSale && selectedProject) {
-      setGoldPrice(currentGoldPrice);
-      form.setFieldsValue({ gold_price_at_time: currentGoldPrice });
-    }
-  }, [selectedProject, isGoldSale, currentGoldPrice, form]);
+  // Note: Gold price is now entered manually per transaction
+  // No automatic price updates based on project selection
 
   // Обработка отправки формы
   const handleSubmit = async () => {
@@ -132,7 +124,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         currency: 'USD',
         gold_price_at_time: isGoldSale ? values.gold_price_at_time : null,
         gold_amount: isGoldSale ? values.gold_amount : undefined,
-        date: values.date.format('YYYY-MM-DD'),
+        date: values.date.format('YYYY-MM-DD HH:mm:ss'),
       };
 
       await onSubmit(formData);
@@ -145,23 +137,23 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   // Обработка изменения типа транзакции
   const handleTypeChange = (type: FinanceOperationType) => {
     setTransactionType(type);
-    setSelectedCategory('');
-    form.setFieldsValue({ category: undefined });
+    if (type === 'income') {
+      // Для доходов всегда продажа золота
+      setSelectedCategory('sale');
+      form.setFieldsValue({ 
+        category: 'sale',
+        project_id: undefined,
+      });
+    } else {
+      setSelectedCategory('');
+      form.setFieldsValue({ category: undefined });
+    }
   };
 
   // Обработка изменения категории
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    if (category === 'sale') {
-      // Для продажи золота устанавливаем цену по умолчанию
-      setGoldPrice(currentGoldPrice);
-      form.setFieldsValue({ gold_price_at_time: currentGoldPrice });
-    }
-  };
-
-  // Обработка изменения проекта
-  const handleProjectChange = (project: string) => {
-    setSelectedProject(project);
+    // Note: Price is now entered manually, no default value from project
   };
 
   // Обработка изменения количества золота
@@ -208,24 +200,26 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
           </Radio.Group>
         </Form.Item>
 
-        {/* Категория */}
-        <Form.Item
-          name="category"
-          label="Category"
-          rules={[{ required: true, message: 'Please select category' }]}
-        >
-          <Select
-            placeholder="Select category"
-            onChange={handleCategoryChange}
-            disabled={isEdit}
+        {/* Категория (только для расходов) */}
+        {transactionType === 'expense' && (
+          <Form.Item
+            name="category"
+            label="Category"
+            rules={[{ required: true, message: 'Please select category' }]}
           >
-            {categories.map((cat) => (
-              <Option key={cat.value} value={cat.value}>
-                {cat.label}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+            <Select
+              placeholder="Select category"
+              onChange={handleCategoryChange}
+              disabled={isEdit}
+            >
+              {categories.map((cat) => (
+                <Option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        )}
 
         {/* Проект (для продажи золота) */}
         {isGoldSale && (
@@ -234,7 +228,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
             label="Project"
             rules={[{ required: true, message: 'Please select project' }]}
           >
-            <Select placeholder="Select project" onChange={handleProjectChange}>
+            <Select placeholder="Select project">
               <Option value="wow_tbc">WoW TBC Classic</Option>
               <Option value="wow_midnight">WoW Midnight</Option>
             </Select>
@@ -255,22 +249,18 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
                 label="Gold Amount (g)"
                 rules={[{ required: true, message: 'Please enter gold amount' }]}
               >
-                <InputNumber
+                <InputNumber<number>
                   style={{ width: '100%' }}
                   min={0}
                   placeholder="Enter gold amount"
+                  value={goldAmount}
                   onChange={handleGoldAmountChange}
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={(value) => {
-                    const parsed = value!.replace(/\s?|(,*)/g, '');
-                    return parsed ? Number(parsed) : 0;
-                  }}
                 />
               </Form.Item>
 
               <Form.Item
                 name="gold_price_at_time"
-                label={`Gold Price (per 1000g) - Current: $${currentGoldPrice.toFixed(2)}`}
+                label="Gold Price (per 1000g)"
                 rules={[{ required: true, message: 'Please enter gold price' }]}
               >
                 <InputNumber
@@ -294,18 +284,6 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
           </>
         )}
 
-        {/* Описание */}
-        <Form.Item
-          name="description"
-          label="Description"
-          rules={[{ required: true, message: 'Please enter description' }]}
-        >
-          <Input.TextArea
-            rows={2}
-            placeholder="Enter transaction description"
-          />
-        </Form.Item>
-
         {/* Сумма (только для не-продаж) */}
         {!isGoldSale && (
           <Form.Item
@@ -323,13 +301,28 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
           </Form.Item>
         )}
 
-        {/* Дата */}
+        {/* Дата и время */}
         <Form.Item
           name="date"
-          label="Date"
-          rules={[{ required: true, message: 'Please select date' }]}
+          label="Date & Time"
+          rules={[{ required: true, message: 'Please select date and time' }]}
         >
-          <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
+          <DatePicker 
+            style={{ width: '100%' }} 
+            format="DD.MM.YYYY HH:mm"
+            showTime={{ format: 'HH:mm' }}
+          />
+        </Form.Item>
+
+        {/* Описание (опционально) */}
+        <Form.Item
+          name="description"
+          label="Description"
+        >
+          <Input.TextArea
+            rows={2}
+            placeholder="Enter transaction description (optional)"
+          />
         </Form.Item>
       </Form>
     </Modal>

@@ -109,7 +109,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
               prefix={<ArrowUpOutlined />}
               suffix="USD"
               precision={2}
-              valueStyle={{ color: 'var(--proxmox-status-online)' }}
+              valueStyle={{ color: 'var(--boxmox-color-status-success)' }}
             />
             <div className="stat-detail">
               <Text className="stat-label">From farming & sales</Text>
@@ -124,7 +124,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
               prefix={<ArrowDownOutlined />}
               suffix="USD"
               precision={2}
-              valueStyle={{ color: 'var(--proxmox-status-error)' }}
+              valueStyle={{ color: 'var(--boxmox-color-status-danger)' }}
             />
             <div className="stat-detail">
               <Text className="stat-label">Proxy, subs & session</Text>
@@ -140,7 +140,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
               suffix="USD"
               precision={2}
               valueStyle={{
-                color: netProfit >= 0 ? 'var(--proxmox-status-online)' : 'var(--proxmox-status-error)'
+                color: netProfit >= 0 ? 'var(--boxmox-color-status-success)' : 'var(--boxmox-color-status-danger)'
               }}
             />
             <div className="stat-detail">

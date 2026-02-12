@@ -192,12 +192,9 @@ export const generateEmail = (params: EmailGeneratorParams): string => {
  * Популярные домены для email
  */
 export const popularEmailDomains = [
-  'gmail.com',
   'outlook.com',
-  'yahoo.com',
-  'hotmail.com',
-  'icloud.com',
-  'mail.com',
+  'proton.me',
+  'gmail.com',
 ];
 
 /**

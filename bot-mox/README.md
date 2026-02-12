@@ -1,73 +1,61 @@
-# React + TypeScript + Vite
+# Bot-Mox Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend приложение Bot-Mox на `React + TypeScript + Vite` с `Refine + Ant Design`.
 
-Currently, two official plugins are available:
+## Назначение
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- работа с ресурсами (`licenses`, `proxies`, `subscriptions`)
+- управление ботами и их жизненным циклом
+- рабочее пространство (`notes`, `calendar`, `kanban`)
+- настройки, финансы, datacenter/infra UI
 
-## React Compiler
+Все бизнес-операции выполняются через backend API (`/api/v1/*`).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Требования
 
-## Expanding the ESLint configuration
+- Node.js 20+
+- npm 10+
+- запущенный backend (`proxy-server`) на `http://localhost:3001`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Локальный запуск
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd bot-mox
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Приложение будет доступно на `http://localhost:5173`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Основные команды
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
+npm run build
+npm run lint
+npx tsc -b --pretty false
 ```
+
+## Структура (кратко)
+
+- `src/pages` — страницы и контейнеры
+- `src/components` — UI-компоненты и feature-блоки
+- `src/services` — API-клиенты и доменные сервисы
+- `src/providers` — провайдеры Refine/Auth/Data
+- `src/types` — типы домена и DTO
+
+## API контракт
+
+Frontend ориентирован на canonical API:
+
+- `GET /api/v1/health`
+- `GET|POST /api/v1/ipqs/*`
+- `GET /api/v1/wow-names`
+- `GET|POST|PATCH|DELETE /api/v1/resources/*`
+- `GET|POST|PATCH|DELETE /api/v1/workspace/*`
+- `GET|PUT|PATCH /api/v1/settings/*`
+- `GET|POST|PATCH|DELETE /api/v1/bots/*`
+- `GET|POST|PATCH|DELETE /api/v1/finance/*`
+- `GET|POST|PUT|DELETE /api/v1/infra/*`
+
+Legacy `/api/*` маршруты не поддерживаются.

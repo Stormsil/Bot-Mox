@@ -1,64 +1,74 @@
-# Database Cleanup Scripts
+# Scripts
 
-## cleanup-database.js
+Актуальный набор скриптов репозитория сведен к maintenance, quality-check и deploy задачам.
 
-Скрипт для очистки и реструктуризации базы данных Firebase.
+## Stack lifecycle
 
-### Что делает:
+### Dev profile (hot reload)
 
-1. **Миграция schedule v1 → v2**
-   - Конвертирует старый формат расписания (плоская структура) в новый (v2 с сессиями)
-   - Проверяет целостность существующих v2 расписаний
-   - Создает дефолтное расписание для ботов без schedule
+- `scripts/stack-dev-up.ps1` / `scripts/stack-dev-up.sh`
+- `scripts/stack-dev-down.ps1` / `scripts/stack-dev-down.sh`
 
-2. **Удаление архаичных полей**
-   - `old_schedule`
-   - `schedule_v1`
-   - `temp_schedule`
-   - `_migration_backup`
+Запускают `deploy/compose.stack.yml` c `deploy/compose.dev.override.yml`.
 
-3. **Проверка целостности данных**
-   - Проверяет наличие обязательных полей (id, project_id, status, character)
-   - Проверяет структуру schedule.days
+### Prod-sim profile (production-like)
 
-### Запуск:
+- `scripts/stack-prod-sim-up.ps1` / `scripts/stack-prod-sim-up.sh`
+- `scripts/stack-prod-sim-down.ps1` / `scripts/stack-prod-sim-down.sh`
+
+Скрипт `up` собирает локальные образы:
+
+- `bot-mox/frontend:prod-sim`
+- `bot-mox/backend:prod-sim`
+
+и поднимает стек по `deploy/compose.stack.yml`.
+
+## Deployment and rollback
+
+- `scripts/deploy-vps.sh`
+- `scripts/rollback-vps.sh`
+
+`deploy-vps.sh` поддерживает `--dry-run` (валидация compose-конфига без запуска).
+
+## Backups
+
+- `scripts/backup-postgres.sh`
+- `scripts/backup-minio.sh`
+
+По умолчанию создают архивы в `./backups/postgres` и `./backups/minio`.
+
+## `check-bundle-budgets.js`
+
+Проверяет размер frontend bundle относительно заданных бюджетов.
+
+Запуск:
 
 ```bash
-cd scripts
-node cleanup-database.js
+node scripts/check-bundle-budgets.js
 ```
 
-**Важно:** Перед запуском убедитесь, что у вас есть права на запись в Firebase!
+## `check-secrets.js`
 
-### Результат:
+Проверяет только tracked-файлы (`git ls-files`) на признаки утечки секретов.
+Локальные untracked файлы (например, `bot-mox/.env`) не участвуют в скане.
 
-Скрипт выведет статистику:
-```
-📊 Found X bots
+Запуск:
 
-📋 Processing bot: <bot_id>
-  🔄 Migrating schedule v1 → v2
-  ✅ Schedule v2 is valid
-  🗑️  Removing deprecated field: old_schedule
-
-💾 Applying X updates...
-✅ Database cleanup completed successfully!
-
-📈 Statistics:
-  - Total bots: X
-  - Bots updated: Y
-  - Bots unchanged: Z
+```bash
+node scripts/check-secrets.js
 ```
 
-### Безопасность:
+## `cleanup-database.js`
 
-- Скрипт только обновляет/удаляет данные, не удаляет ботов
-- Все изменения выполняются через Firebase update() (атомарно)
-- Старые schedule конвертируются, а не удаляются
-- Если schedule уже v2 и валиден - он не изменяется
+Ручной maintenance-скрипт для Firebase RTDB (очистка/нормализация данных).
+Используется точечно и требует валидной конфигурации доступа к базе.
 
-### Возможные проблемы:
+Запуск:
 
-1. **Permission denied** - Убедитесь, что у вас есть права на запись
-2. **Network error** - Проверьте подключение к интернету
-3. **Invalid data** - Скрипт пропустит ботов с критическими ошибками
+```bash
+node scripts/cleanup-database.js
+```
+
+## Removed Legacy
+
+Одноразовые миграции, legacy Firebase upload-утилиты и локальные backup/node_modules из `scripts/` удалены в рамках зачистки репозитория.

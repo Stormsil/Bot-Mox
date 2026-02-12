@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Layout, Menu } from 'antd';
 import {
   DashboardOutlined,
@@ -55,11 +55,6 @@ const menuItems = [
 export const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [selectedKey, setSelectedKey] = useState(location.pathname);
-
-  useEffect(() => {
-    setSelectedKey(location.pathname);
-  }, [location.pathname]);
 
   const handleClick = (key: string) => {
     navigate(key);
@@ -73,7 +68,7 @@ export const Sidebar: React.FC = () => {
     >
       <Menu
         mode="inline"
-        selectedKeys={[selectedKey]}
+        selectedKeys={[location.pathname]}
         items={menuItems}
         className="proxmox-menu"
         onClick={({ key }) => handleClick(key)}

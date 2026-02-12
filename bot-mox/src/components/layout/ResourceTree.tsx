@@ -1,486 +1,395 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Tree, Button, Spin } from 'antd';
-import type { TreeDataNode, TreeProps } from 'antd';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Tree } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { subscribeBotsMap } from '../../services/botsApiService';
+import type { BotRecord } from '../../services/botsApiService';
+import { subscribeToProjectSettings } from '../../services/projectSettingsService';
+import { fetchResourceTreeSettings, saveResourceTreeSettings } from '../../services/resourceTreeSettingsService';
+import { buildUnifiedTreeData } from './resourceTree/builders';
 import {
-  DatabaseOutlined,
-  DesktopOutlined,
-  UserOutlined,
-  AreaChartOutlined,
-  DollarOutlined,
-  FolderOutlined,
-  SettingOutlined,
-  ExclamationCircleOutlined,
-  PlayCircleOutlined,
-  StopOutlined,
-  ClockCircleOutlined,
-  ToolOutlined,
-  PoweroffOutlined,
-  DownOutlined,
-  RightOutlined,
-  KeyOutlined,
-  GlobalOutlined,
-  CreditCardOutlined,
-  FileTextOutlined,
-} from '@ant-design/icons';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ref, onValue, off } from 'firebase/database';
-import { database } from '../../utils/firebase';
+  ResourceTreeCollapsedNav,
+  ResourceTreeFilters,
+  ResourceTreeToolbar,
+} from './resourceTree/parts';
+import {
+  COLLAPSED_TREE_WIDTH,
+  DEFAULT_TREE_WIDTH,
+  MAX_TREE_WIDTH,
+  MIN_TREE_WIDTH,
+  RESOURCE_TREE_COLLAPSED_KEY,
+  RESOURCE_TREE_WIDTH_KEY,
+  ROOT_SECTION_KEYS,
+  SHOW_FILTERS_KEY,
+  DEFAULT_VISIBLE_STATUSES,
+  sanitizeBotStatuses,
+} from './resourceTree/types';
+import type { BotStatus, TreeItem } from './resourceTree/types';
+import {
+  collectExpandableKeys,
+  convertToTreeData,
+  findNodePath,
+  getSelectedKeysForLocation,
+  isProjectsBranchKey,
+  parseStatusGroupKey,
+} from './resourceTree/tree-utils';
+import { resolveStaticPathForTreeKey } from './resourceTree/navigation';
 import './ResourceTree.css';
 
-// Новые типы статусов бота
-export type BotStatus = 'offline' | 'prepare' | 'leveling' | 'profession' | 'farming' | 'banned';
-
-// Интерфейс для бота из Firebase
-interface BotData {
-  id: string;
-  project_id: 'wow_tbc' | 'wow_midnight';
-  status: BotStatus;
-  character: {
-    name: string;
-    level: number;
-    race: string;
-    class: string;
-  };
-  vm?: {
-    name: string;
-  };
-}
-
-// Интерфейс для бота в дереве
-interface BotItem {
-  id: string;
-  key: string;
-  title: string;
-  status: BotStatus;
-}
-
-// Интерфейс для группы статусов
-interface StatusGroup {
-  key: string;
-  title: string;
-  status: BotStatus;
-  count: number;
-  children: BotItem[];
-}
-
-// Интерфейс для элемента дерева
-interface TreeItem {
-  key: string;
-  title: string;
-  type: 'datacenter' | 'project' | 'bot' | 'metrics' | 'finance' | 'archive' | 'system' | 'logs' | 'settings' | 'status_group' | 'licenses' | 'proxies' | 'subscriptions' | 'notes';
-  status?: BotStatus;
-  children?: TreeItem[];
-}
-
-// Конфигурация статусов без эмодзи
-const statusConfig: Record<BotStatus, { title: string; color: string }> = {
-  offline: { title: 'Offline', color: '#8c8c8c' },
-  prepare: { title: 'Prepare', color: '#1890ff' },
-  leveling: { title: 'Leveling', color: '#722ed1' },
-  profession: { title: 'Profession', color: '#eb2f96' },
-  farming: { title: 'Farming', color: '#52c41a' },
-  banned: { title: 'Banned', color: '#f5222d' },
-};
-
-// Группировка ботов по статусам
-const groupBotsByStatus = (bots: BotItem[]): StatusGroup[] => {
-  const groups: Record<BotStatus, BotItem[]> = {
-    offline: [],
-    prepare: [],
-    leveling: [],
-    profession: [],
-    farming: [],
-    banned: [],
-  };
-
-  bots.forEach(bot => {
-    groups[bot.status].push(bot);
-  });
-
-  return (Object.keys(groups) as BotStatus[])
-    .filter(status => groups[status].length > 0)
-    .map(status => ({
-      key: status,
-      title: statusConfig[status].title,
-      status,
-      count: groups[status].length,
-      children: groups[status],
-    }));
-};
-
-// Получение иконки по типу
-const getIcon = (type: TreeItem['type'], status?: BotStatus) => {
-  const iconStyle = { fontSize: 14 };
-
-  switch (type) {
-    case 'datacenter':
-      return <DatabaseOutlined style={{ ...iconStyle, color: 'var(--proxmox-accent)' }} />;
-    case 'project':
-      return <DesktopOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-secondary)' }} />;
-    case 'bot':
-      return getBotIcon(status);
-    case 'status_group':
-      return getBotIcon(status);
-    case 'metrics':
-      return <AreaChartOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-secondary)' }} />;
-    case 'finance':
-      return <DollarOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-secondary)' }} />;
-    case 'archive':
-      return <FolderOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-secondary)' }} />;
-    case 'system':
-    case 'settings':
-      return <SettingOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-secondary)' }} />;
-    case 'logs':
-      return <ExclamationCircleOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-secondary)' }} />;
-    case 'licenses':
-      return <KeyOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-secondary)' }} />;
-    case 'proxies':
-      return <GlobalOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-secondary)' }} />;
-    case 'subscriptions':
-      return <CreditCardOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-secondary)' }} />;
-    case 'notes':
-      return <FileTextOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-secondary)' }} />;
-    default:
-      return <DesktopOutlined style={iconStyle} />;
-  }
-};
-
-// Получение иконки статуса бота
-const getBotIcon = (status?: BotStatus) => {
-  const iconStyle = { fontSize: 12 };
-
-  switch (status) {
-    case 'offline':
-      return <PoweroffOutlined style={{ ...iconStyle, color: '#8c8c8c' }} />;
-    case 'prepare':
-      return <ClockCircleOutlined style={{ ...iconStyle, color: '#1890ff' }} />;
-    case 'leveling':
-      return <PlayCircleOutlined style={{ ...iconStyle, color: '#722ed1' }} />;
-    case 'profession':
-      return <ToolOutlined style={{ ...iconStyle, color: '#eb2f96' }} />;
-    case 'farming':
-      return <PlayCircleOutlined style={{ ...iconStyle, color: '#52c41a' }} />;
-    case 'banned':
-      return <StopOutlined style={{ ...iconStyle, color: '#f5222d' }} />;
-    default:
-      return <UserOutlined style={{ ...iconStyle, color: 'var(--proxmox-text-muted)' }} />;
-  }
-};
-
-// Преобразование данных в формат TreeDataNode
-const convertToTreeData = (items: TreeItem[]): TreeDataNode[] => {
-  return items.map((item) => ({
-    key: item.key,
-    title: (
-      <span className="resource-tree-node">
-        <span className="resource-tree-icon">{getIcon(item.type, item.status)}</span>
-        <span className="resource-tree-title">{item.title}</span>
-      </span>
-    ),
-    children: item.children ? convertToTreeData(item.children) : undefined,
-  }));
-};
+export type { BotStatus } from './resourceTree/types';
 
 export const ResourceTree: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const isResizingRef = React.useRef(false);
+
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
-  const [showFilters, setShowFilters] = useState(false);
-  const [bots, setBots] = useState<Record<string, BotData>>({});
+  const [showFilters, setShowFilters] = useState(true);
+  const [bots, setBots] = useState<Record<string, BotRecord>>({});
+  const [projectsMeta, setProjectsMeta] = useState<Record<string, { id: string; name: string }>>({});
   const [loading, setLoading] = useState(true);
-  
-  // Фильтры статусов
-  const [visibleStatuses, setVisibleStatuses] = useState<BotStatus[]>(() => {
-    const saved = localStorage.getItem('resourceTreeFilters');
-    if (saved) {
-      return JSON.parse(saved);
-    }
-    // По умолчанию все кроме banned и offline
-    return ['prepare', 'leveling', 'profession', 'farming'];
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [hasRemoteSettings, setHasRemoteSettings] = useState(false);
+  const [treeWidth, setTreeWidth] = useState<number>(() => {
+    if (typeof window === 'undefined') return DEFAULT_TREE_WIDTH;
+    const stored = Number(localStorage.getItem(RESOURCE_TREE_WIDTH_KEY));
+    if (!Number.isFinite(stored)) return DEFAULT_TREE_WIDTH;
+    return Math.min(MAX_TREE_WIDTH, Math.max(MIN_TREE_WIDTH, stored));
   });
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem(RESOURCE_TREE_COLLAPSED_KEY) === 'true';
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const [visibleStatuses, setVisibleStatuses] = useState<BotStatus[]>(DEFAULT_VISIBLE_STATUSES);
 
-  // Загрузка ботов из Firebase с realtime обновлениями
   useEffect(() => {
-    setLoading(true);
-    const botsRef = ref(database, 'bots');
+    let isMounted = true;
 
-    const handleValue = (snapshot: any) => {
-      const data = snapshot.val();
-      if (data) {
-        setBots(data);
-      } else {
-        setBots({});
-      }
-      setLoading(false);
-    };
+    fetchResourceTreeSettings()
+      .then((data) => {
+        if (!isMounted) return;
 
-    const handleError = (error: Error) => {
-      console.error('Error loading bots:', error);
-      setLoading(false);
-    };
+        if (data) {
+          setHasRemoteSettings(true);
+          if (data.visibleStatuses?.length) {
+            setVisibleStatuses(sanitizeBotStatuses(data.visibleStatuses));
+          }
+          if (Array.isArray(data.expandedKeys)) {
+            setExpandedKeys(data.expandedKeys);
+          }
+          if (typeof data.showFilters === 'boolean') {
+            setShowFilters(data.showFilters);
+          }
+        } else {
+          try {
+            const savedFilters = localStorage.getItem('resourceTreeFilters');
+            if (savedFilters) {
+              setVisibleStatuses(sanitizeBotStatuses(JSON.parse(savedFilters)));
+            }
+            const savedExpanded = localStorage.getItem('resourceTreeExpanded');
+            if (savedExpanded) {
+              setExpandedKeys(JSON.parse(savedExpanded));
+            }
+            const savedShowFilters = localStorage.getItem(SHOW_FILTERS_KEY);
+            if (savedShowFilters) {
+              setShowFilters(JSON.parse(savedShowFilters));
+            }
+          } catch (error) {
+            console.warn('Failed to parse local resource tree settings:', error);
+          }
+        }
 
-    onValue(botsRef, handleValue, handleError);
+        setSettingsLoaded(true);
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        console.error('Error loading resource tree settings:', error);
+        setSettingsLoaded(true);
+      });
 
     return () => {
-      off(botsRef, 'value', handleValue);
+      isMounted = false;
     };
   }, []);
 
-  // Преобразование ботов из Firebase в формат дерева
-  const getBotsForProject = useCallback((projectId: string): BotItem[] => {
-    return Object.entries(bots)
-      .filter(([_, bot]: [string, BotData]) => bot.project_id === projectId)
-      .map(([id, bot]: [string, BotData]) => ({
-        id,
-        key: id,
-        title: `${bot.character.name} (${bot.vm?.name || 'No VM'}) - ${id.substring(0, 8)}`,
-        status: bot.status,
-      }));
-  }, [bots]);
+  useEffect(() => {
+    return subscribeBotsMap(
+      (data) => {
+        setBots(data || {});
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error loading bots:', error);
+        setLoading(false);
+      },
+      { intervalMs: 5000 }
+    );
+  }, []);
 
-  // Формирование данных дерева
-  const buildTreeData = useCallback((visibleStatuses: BotStatus[]): TreeItem[] => {
-    const tbcBots = getBotsForProject('wow_tbc');
-    const midnightBots = getBotsForProject('wow_midnight');
-    
-    const tbcGroups = groupBotsByStatus(tbcBots).filter(g => visibleStatuses.includes(g.status));
-    const midnightGroups = groupBotsByStatus(midnightBots).filter(g => visibleStatuses.includes(g.status));
+  useEffect(() => {
+    return subscribeToProjectSettings(
+      (projects) => {
+        const mapped = Object.fromEntries(
+          Object.entries(projects).map(([projectId, project]) => [
+            projectId,
+            {
+              id: projectId,
+              name: (project.name || projectId).trim(),
+            },
+          ])
+        );
+        setProjectsMeta(mapped);
+      },
+      (error) => {
+        console.error('Error loading projects for resource tree:', error);
+      }
+    );
+  }, []);
 
-    const buildProjectChildren = (groups: StatusGroup[], projectId: string): TreeItem[] => {
-      return groups.map(group => ({
-        key: `status_${projectId}_${group.key}`,
-        title: `${group.title} (${group.count})`,
-        type: 'status_group' as const,
-        status: group.status,
-        children: group.children.map(bot => ({
-          key: bot.key,
-          title: bot.title,
-          type: 'bot' as const,
-          status: bot.status,
-        })),
-      }));
+  const treeData = useMemo(
+    () => buildUnifiedTreeData({ bots, projectsMeta, visibleStatuses }),
+    [bots, projectsMeta, visibleStatuses]
+  );
+
+  useEffect(() => {
+    if (!settingsLoaded || hasRemoteSettings || loading) return;
+    if (expandedKeys.length > 0) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      setExpandedKeys([...ROOT_SECTION_KEYS]);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [settingsLoaded, hasRemoteSettings, loading, expandedKeys.length]);
+
+  useEffect(() => {
+    if (!settingsLoaded) return;
+    const payload = {
+      expandedKeys: expandedKeys.map((key) => String(key)),
+      visibleStatuses,
+      showFilters,
+      updated_at: Date.now(),
     };
 
-    return [
-      {
-        key: 'datacenter',
-        title: 'Bot-Mox Datacenter',
-        type: 'datacenter',
-        children: [
-          {
-            key: 'project_wow_tbc',
-            title: `WoW TBC (${tbcBots.length})`,
-            type: 'project',
-            children: buildProjectChildren(tbcGroups, 'wow_tbc'),
-          },
-          {
-            key: 'project_wow_midnight',
-            title: `WoW Midnight (${midnightBots.length})`,
-            type: 'project',
-            children: buildProjectChildren(midnightGroups, 'wow_midnight'),
-          },
-          {
-            key: 'finance',
-            title: 'Finance',
-            type: 'finance',
-          },
-          {
-            key: 'notes',
-            title: 'Notes',
-            type: 'notes',
-          },
-          {
-            key: 'licenses',
-            title: 'Licenses',
-            type: 'licenses',
-          },
-          {
-            key: 'proxies',
-            title: 'Proxies',
-            type: 'proxies',
-          },
-          {
-            key: 'subscriptions',
-            title: 'Subscriptions',
-            type: 'subscriptions',
-          },
-          {
-            key: 'settings',
-            title: 'Settings',
-            type: 'settings',
-          },
-          {
-            key: 'archive',
-            title: 'Archive',
-            type: 'archive',
-            children: [
-              { key: 'archive_banned', title: 'Banned History', type: 'archive' },
-            ],
-          },
-        ],
-      },
-    ];
-  }, [getBotsForProject]);
+    const timeout = setTimeout(() => {
+      saveResourceTreeSettings(payload).catch((error) => {
+        console.error('Error saving resource tree settings:', error);
+      });
+    }, 400);
 
-  // Сохранение фильтров
-  useEffect(() => {
-    localStorage.setItem('resourceTreeFilters', JSON.stringify(visibleStatuses));
-  }, [visibleStatuses]);
+    return () => clearTimeout(timeout);
+  }, [settingsLoaded, expandedKeys, visibleStatuses, showFilters]);
 
-  // Загрузка состояния из localStorage
   useEffect(() => {
-    const savedExpanded = localStorage.getItem('resourceTreeExpanded');
-    if (savedExpanded) {
-      setExpandedKeys(JSON.parse(savedExpanded));
-    } else {
-      // При первом запуске раскрываем все, кроме группы banned
-      // Собираем все ключи для раскрытия
-      const allKeysToExpand: string[] = ['datacenter', 'project_wow_tbc', 'project_wow_midnight'];
-      
-      // Добавляем все статус-группы, кроме banned
-      const tbcGroups = groupBotsByStatus(getBotsForProject('wow_tbc'))
-        .filter(g => g.status !== 'banned');
-      const midnightGroups = groupBotsByStatus(getBotsForProject('wow_midnight'))
-        .filter(g => g.status !== 'banned');
-      
-      tbcGroups.forEach(g => allKeysToExpand.push(`status_wow_tbc_${g.status}`));
-      midnightGroups.forEach(g => allKeysToExpand.push(`status_wow_midnight_${g.status}`));
-      
-      setExpandedKeys(allKeysToExpand);
+    try {
+      localStorage.setItem('resourceTreeExpanded', JSON.stringify(expandedKeys));
+      localStorage.setItem('resourceTreeFilters', JSON.stringify(visibleStatuses));
+      localStorage.setItem(SHOW_FILTERS_KEY, JSON.stringify(showFilters));
+    } catch (error) {
+      console.warn('Failed to save local resource tree cache:', error);
     }
-  }, [bots]); // Добавляем bots в зависимости, чтобы обновлялось при загрузке данных
+  }, [expandedKeys, visibleStatuses, showFilters]);
 
-  // Сохранение состояния в localStorage
   useEffect(() => {
-    localStorage.setItem('resourceTreeExpanded', JSON.stringify(expandedKeys));
-  }, [expandedKeys]);
+    const nextSelectedKeys = getSelectedKeysForLocation(location.pathname, location.search);
+    const frameId = window.requestAnimationFrame(() => {
+      setSelectedKeys(nextSelectedKeys);
+    });
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [location.pathname, location.search]);
 
-  // Обновление выбранного ключа при изменении URL
+  const navigateByTreeKey = useCallback(
+    (key: string) => {
+      if (key.startsWith('bot_') || bots[key]) {
+        navigate(`/bot/${key}`);
+        return;
+      }
+
+      const statusNode = parseStatusGroupKey(key);
+      if (statusNode) {
+        navigate(`/project/${statusNode.projectId}?status=${statusNode.status}`);
+        return;
+      }
+
+      if (key.startsWith('project_')) {
+        const projectId = key.replace('project_', '');
+        navigate(`/project/${projectId}`);
+        return;
+      }
+
+      const targetPath = resolveStaticPathForTreeKey(key);
+      if (targetPath) {
+        navigate(targetPath);
+      }
+    },
+    [bots, navigate]
+  );
+
+  const setCollapsedState = useCallback((next: boolean) => {
+    setIsCollapsed(next);
+    try {
+      localStorage.setItem(RESOURCE_TREE_COLLAPSED_KEY, String(next));
+    } catch (error) {
+      console.warn('Failed to save resource tree collapse state:', error);
+    }
+  }, []);
+
+  const handleCollapsedRootClick = useCallback((item: TreeItem) => {
+    if (item.type === 'section') {
+      setCollapsedState(false);
+      setExpandedKeys((prev) => {
+        const set = new Set(prev.map(String));
+        set.add(item.key);
+        return Array.from(set);
+      });
+      return;
+    }
+
+    setSelectedKeys([item.key]);
+    navigateByTreeKey(item.key);
+  }, [navigateByTreeKey, setCollapsedState]);
+
+  const toggleStatus = useCallback(
+    (status: BotStatus) => {
+      setVisibleStatuses((prev) => (
+        prev.includes(status) ? prev.filter((value) => value !== status) : [...prev, status]
+      ));
+    },
+    []
+  );
+
   useEffect(() => {
-    const path = location.pathname;
-    if (path === '/') {
-      setSelectedKeys(['datacenter']);
-    } else if (path.startsWith('/bot/')) {
-      const botId = path.replace('/bot/', '');
-      setSelectedKeys([botId]);
-    } else if (path.startsWith('/project/')) {
-      const projectId = path.replace('/project/', '');
-      setSelectedKeys([projectId]);
-    } else if (path === '/finance') {
-      setSelectedKeys(['finance']);
-    } else if (path === '/settings') {
-      setSelectedKeys(['settings']);
-    } else if (path === '/notes') {
-      setSelectedKeys(['notes']);
-    } else if (path === '/archive/banned') {
-      setSelectedKeys(['archive_banned']);
-    } else if (path === '/licenses') {
-      setSelectedKeys(['licenses']);
-    } else if (path === '/proxies') {
-      setSelectedKeys(['proxies']);
-    } else if (path === '/subscriptions') {
-      setSelectedKeys(['subscriptions']);
-    }
-  }, [location.pathname]);
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(RESOURCE_TREE_WIDTH_KEY, String(treeWidth));
+  }, [treeWidth]);
 
-  const onExpand: TreeProps['onExpand'] = (expandedKeysValue) => {
-    setExpandedKeys(expandedKeysValue);
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!isResizingRef.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const nextWidth = Math.min(MAX_TREE_WIDTH, Math.max(MIN_TREE_WIDTH, event.clientX - rect.left));
+      setTreeWidth(nextWidth);
+    };
+
+    const handleMouseUp = () => {
+      if (!isResizingRef.current) return;
+      isResizingRef.current = false;
+      setIsResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
+  const treeDataNodes = useMemo(() => convertToTreeData(treeData), [treeData]);
+
+  const selectedRootKey = useMemo(() => {
+    if (selectedKeys.length === 0) return '';
+    const selectedKey = String(selectedKeys[0]);
+    const found = findNodePath(treeData, selectedKey);
+    return found?.path[0] || '';
+  }, [selectedKeys, treeData]);
+
+  const expandableKeys = useMemo(() => collectExpandableKeys(treeData), [treeData]);
+
+  const isAllExpanded = useMemo(() => {
+    if (expandableKeys.length === 0) return false;
+    const expandedSet = new Set(expandedKeys.map(String));
+    return expandableKeys.every((key) => expandedSet.has(key));
+  }, [expandableKeys, expandedKeys]);
+
+  useEffect(() => {
+    if (selectedKeys.length === 0) return;
+    const targetKey = String(selectedKeys[0]);
+    const found = findNodePath(treeData, targetKey);
+    if (!found) return;
+    if (found.path.some((key) => isProjectsBranchKey(key))) return;
+    const shouldExpand = found.node.children && found.node.children.length > 0 ? found.path : found.path.slice(0, -1);
+    if (shouldExpand.length === 0) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      setExpandedKeys((prev) => {
+        const expandedSet = new Set(prev.map(String));
+        let changed = false;
+        shouldExpand.forEach((key) => {
+          if (!expandedSet.has(key)) {
+            expandedSet.add(key);
+            changed = true;
+          }
+        });
+        return changed ? Array.from(expandedSet) : prev;
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [selectedKeys, treeData]);
+
+  const handleResizeStart = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (isCollapsed) return;
+    event.preventDefault();
+    isResizingRef.current = true;
+    setIsResizing(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
   };
-
-  const onSelect: TreeProps['onSelect'] = (selectedKeysValue, info) => {
-    const key = info.node.key as string;
-    setSelectedKeys(selectedKeysValue);
-
-    // Навигация в зависимости от типа элемента
-    if (key === 'datacenter') {
-      navigate('/');
-    } else if (key.startsWith('bot_') || (bots[key])) {
-      navigate(`/bot/${key}`);
-    } else if (key.startsWith('project_')) {
-      const projectId = key.replace('project_', '');
-      navigate(`/project/${projectId}`);
-    } else if (key === 'finance') {
-      navigate('/finance');
-    } else if (key === 'settings') {
-      navigate('/settings');
-    } else if (key === 'notes') {
-      navigate('/notes');
-    } else if (key === 'archive_banned') {
-      navigate('/archive/banned');
-    } else if (key === 'licenses') {
-      navigate('/licenses');
-    } else if (key === 'proxies') {
-      navigate('/proxies');
-    } else if (key === 'subscriptions') {
-      navigate('/subscriptions');
-    }
-  };
-
-  const toggleStatus = (status: BotStatus) => {
-    setVisibleStatuses(prev => 
-      prev.includes(status) 
-        ? prev.filter(s => s !== status)
-        : [...prev, status]
-    );
-  };
-
-  const treeData = buildTreeData(visibleStatuses);
-  const treeDataNodes = convertToTreeData(treeData);
-
-  if (loading) {
-    return (
-      <div className="resource-tree-container">
-        <div className="resource-tree-loading">
-          <Spin size="small" />
-          <span>Loading bots...</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="resource-tree-container">
-      <div className="resource-tree-header">
-        <span className="resource-tree-header-title">Resource Tree</span>
-      </div>
-      
-      {/* Компактная панель фильтров */}
-      <div className="resource-tree-filters-compact">
-        <Button 
-          type="text" 
-          size="small"
-          className="filters-toggle-btn"
-          onClick={() => setShowFilters(!showFilters)}
-          icon={showFilters ? <DownOutlined /> : <RightOutlined />}
-        >
-          Filters
-        </Button>
-        
-        {showFilters && (
-          <div className="filters-panel">
-            {(Object.keys(statusConfig) as BotStatus[]).map(status => (
-              <button
-                key={status}
-                className={`filter-chip ${visibleStatuses.includes(status) ? 'active' : ''}`}
-                onClick={() => toggleStatus(status)}
-                style={{ '--status-color': statusConfig[status].color } as React.CSSProperties}
-              >
-                <span className="filter-chip-indicator" />
-                <span className="filter-chip-label">{statusConfig[status].title}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+    <div
+      ref={containerRef}
+      className={`resource-tree-container ${isCollapsed ? 'collapsed' : ''} ${isResizing ? 'resizing' : ''}`}
+      style={{ width: isCollapsed ? COLLAPSED_TREE_WIDTH : treeWidth }}
+    >
+      <ResourceTreeToolbar
+        isCollapsed={isCollapsed}
+        loading={loading}
+        isAllExpanded={isAllExpanded}
+        hasExpandableKeys={expandableKeys.length > 0}
+        onToggleCollapse={() => setCollapsedState(!isCollapsed)}
+        onToggleExpandAll={() => setExpandedKeys(isAllExpanded ? [] : expandableKeys)}
+      />
+
+      <div className="resource-tree-resizer" onMouseDown={handleResizeStart} />
+
+      <ResourceTreeFilters
+        showFilters={showFilters}
+        visibleStatuses={visibleStatuses}
+        onToggleShowFilters={() => setShowFilters((prev) => !prev)}
+        onToggleStatus={toggleStatus}
+      />
+
+      {isCollapsed && (
+        <ResourceTreeCollapsedNav
+          treeData={treeData}
+          selectedRootKey={selectedRootKey}
+          onRootClick={handleCollapsedRootClick}
+        />
+      )}
 
       <Tree
         className="resource-tree"
         treeData={treeDataNodes}
         expandedKeys={expandedKeys}
         selectedKeys={selectedKeys}
-        onExpand={onExpand}
-        onSelect={onSelect}
+        onExpand={(expandedKeysValue) => setExpandedKeys(expandedKeysValue)}
+        onSelect={(selectedKeysValue, info) => {
+          const key = info.node.key as string;
+          setSelectedKeys(selectedKeysValue);
+          navigateByTreeKey(key);
+        }}
         showLine={{ showLeafIcon: false }}
         showIcon={false}
         blockNode

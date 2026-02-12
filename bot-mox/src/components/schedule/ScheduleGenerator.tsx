@@ -1,261 +1,383 @@
-import React, { useState, useCallback } from 'react';
-import { Button, InputNumber, TimePicker, Form, Space, Popover } from 'antd';
-import { SettingOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import type { ScheduleGenerationParams } from '../../types';
-import { timeToMinutes } from '../../utils/scheduleUtils';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Button, InputNumber, TimePicker, Form, Space, Popover, Switch, Divider, Input, List, message, Tooltip } from 'antd';
+import { SettingOutlined, ThunderboltOutlined, SaveOutlined, DeleteOutlined, FolderOpenOutlined, LockOutlined } from '@ant-design/icons';
+import { apiGet, apiPatch, apiPut } from '../../services/apiClient';
+import type { ScheduleGenerationParams, ScheduleTemplate } from '../../types';
+import { validateGenerationParams } from '../../utils/scheduleUtils';
+import { TableActionButton } from '../ui/TableActionButton';
+import { CONSTRAINTS, DEFAULT_PARAMS, toTemplatesList } from './generator-config';
 import dayjs from 'dayjs';
 import './ScheduleGenerator.css';
 
 interface ScheduleGeneratorProps {
   onGenerate: (params: ScheduleGenerationParams) => void;
   disabled?: boolean;
+  locked?: boolean;
 }
-
-// Дефолтные значения параметров - ОПТИМИЗИРОВАННЫЕ
-// Рассчитаны для стабильной генерации 12+ часов активного времени
-const DEFAULT_PARAMS: ScheduleGenerationParams = {
-  startTime: '06:00',       // Раньше начинаем - больше времени для сессий
-  endTime: '23:59',         // Почти до полуночи
-  targetActiveMinutes: 720, // 12 часов - оптимальная цель
-  minSessionMinutes: 45,    // 45 минут - компромисс между гибкостью и стабильностью
-  minBreakMinutes: 15,      // 15 минут минимум - позволяет больше сессий
-  randomOffsetMinutes: 10,  // ±10 минут - меньше хаоса, больше предсказуемости
-  profile: 'farming'
-};
-
-// Ограничения для валидации - с проверкой достижимости
-const CONSTRAINTS = {
-  minSessionMinutes: { min: 15, max: 240 },
-  minBreakMinutes: { min: 5, max: 120 },
-  randomOffsetMinutes: { min: 0, max: 30 }, // Ограничиваем для стабильности
-  targetActiveMinutes: { min: 30, max: 1380 } // 30 мин - 23 часа
-};
 
 export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
   onGenerate,
-  disabled = false
+  disabled = false,
+  locked = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [params, setParams] = useState<ScheduleGenerationParams>(DEFAULT_PARAMS);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<string[]>([]);
+  const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
+  const [templateName, setTemplateName] = useState('');
+  const [showTemplates, setShowTemplates] = useState(false);
 
-  // Валидация параметров с проверкой достижимости цели
-  const validateParams = useCallback((): boolean => {
-    const newErrors: Record<string, string> = {};
-    
-    const windowStart = timeToMinutes(params.startTime);
-    const windowEnd = timeToMinutes(params.endTime);
-    const windowDuration = windowEnd - windowStart;
-    
-    if (windowDuration <= 0) {
-      newErrors.endTime = 'End time must be after start time';
-    }
-    
-    if (params.targetActiveMinutes > windowDuration) {
-      newErrors.targetActiveMinutes = `Cannot exceed window duration (${windowDuration} min)`;
-    }
-    
-    if (params.minSessionMinutes < CONSTRAINTS.minSessionMinutes.min) {
-      newErrors.minSessionMinutes = `Minimum ${CONSTRAINTS.minSessionMinutes.min} minutes`;
-    }
-    
-    if (params.minSessionMinutes > CONSTRAINTS.minSessionMinutes.max) {
-      newErrors.minSessionMinutes = `Maximum ${CONSTRAINTS.minSessionMinutes.max} minutes`;
-    }
-    
-    if (params.minBreakMinutes < CONSTRAINTS.minBreakMinutes.min) {
-      newErrors.minBreakMinutes = `Minimum ${CONSTRAINTS.minBreakMinutes.min} minutes`;
-    }
-    
-    if (params.randomOffsetMinutes > CONSTRAINTS.randomOffsetMinutes.max) {
-      newErrors.randomOffsetMinutes = `Maximum ${CONSTRAINTS.randomOffsetMinutes.max} minutes`;
-    }
-    
-    // ПРОВЕРКА ДОСТИЖИМОСТИ: Можем ли мы достичь targetActiveMinutes с текущими настройками?
-    if (windowDuration > 0) {
-      // Минимальное время для одной сессии = minSessionMinutes + minBreakMinutes (кроме последней)
-      // Для N сессий нужно: N * minSessionMinutes + (N-1) * minBreakMinutes <= windowDuration
-      // Решаем: N * (minSessionMinutes + minBreakMinutes) - minBreakMinutes <= windowDuration
-      // N <= (windowDuration + minBreakMinutes) / (minSessionMinutes + minBreakMinutes)
-      const maxSessionsPossible = Math.floor(
-        (windowDuration + params.minBreakMinutes) / 
-        (params.minSessionMinutes + params.minBreakMinutes)
-      );
-      
-      // Максимальное активное время = maxSessionsPossible * minSessionMinutes
-      const maxAchievableActiveTime = maxSessionsPossible * params.minSessionMinutes;
-      
-      if (params.targetActiveMinutes > maxAchievableActiveTime) {
-        newErrors.targetActiveMinutes = 
-          `With min session ${params.minSessionMinutes}min and break ${params.minBreakMinutes}min, ` +
-          `maximum achievable is ${maxAchievableActiveTime}min (${Math.floor(maxAchievableActiveTime / 60)}h ${maxAchievableActiveTime % 60}m). ` +
-          `Either reduce target, decrease min session/break, or extend time window.`;
-      }
-      
-      // Дополнительная проверка: targetActiveMinutes должен быть разумным
-      // Рекомендуемое максимальное активное время = 70% от windowDuration
-      const recommendedMaxActive = Math.floor(windowDuration * 0.75);
-      if (params.targetActiveMinutes > recommendedMaxActive && !newErrors.targetActiveMinutes) {
-        // Предупреждение, но не ошибка
-        console.warn(
-          `[ScheduleGenerator] Target ${params.targetActiveMinutes}min exceeds recommended 75% of window ` +
-          `(${recommendedMaxActive}min). Generation may produce suboptimal results.`
-        );
-      }
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [params]);
+  // Load templates and last params via API
+  useEffect(() => {
+    let isActive = true;
 
-  // Обработчик генерации
-  const handleGenerate = useCallback(() => {
-    if (!validateParams()) return;
+    const loadGeneratorData = async () => {
+      try {
+        const [templatesResponse, lastParamsResponse] = await Promise.all([
+          apiGet<unknown>('/api/v1/settings/schedule/templates'),
+          apiGet<unknown>('/api/v1/settings/schedule/last_params'),
+        ]);
+
+        if (!isActive) return;
+
+        setTemplates(toTemplatesList(templatesResponse.data));
+        if (lastParamsResponse.data && typeof lastParamsResponse.data === 'object') {
+          setParams((prev) => ({ ...prev, ...(lastParamsResponse.data as Partial<ScheduleGenerationParams>) }));
+        }
+      } catch (error) {
+        console.error('Failed to load schedule generator settings:', error);
+      }
+    };
+
+    void loadGeneratorData();
+    const timer = setInterval(() => {
+      void loadGeneratorData();
+    }, 8000);
+
+    return () => {
+      isActive = false;
+      clearInterval(timer);
+    };
+  }, []);
+
+  const handleGenerate = useCallback(async () => {
+    const { valid, errors: validationErrors } = validateGenerationParams(params);
+    if (!valid) {
+      setErrors(validationErrors);
+      return;
+    }
     
+    // Save as last used params
+    try {
+      await apiPut('/api/v1/settings/schedule/last_params', params);
+    } catch (err) {
+      console.error('Failed to save last params:', err);
+    }
+
     onGenerate(params);
     setIsOpen(false);
-  }, [params, validateParams, onGenerate]);
+    setErrors([]);
+  }, [params, onGenerate]);
 
-  // Обновление параметра
   const updateParam = useCallback(<K extends keyof ScheduleGenerationParams>(
     key: K,
     value: ScheduleGenerationParams[K]
   ) => {
     setParams(prev => ({ ...prev, [key]: value }));
-    // Очищаем ошибку для этого поля
-    if (errors[key]) {
-      setErrors(prev => { const next = { ...prev }; delete next[key]; return next; });
-    }
-  }, [errors]);
+    setErrors([]);
+  }, []);
 
-  // Контент поповера с параметрами
+  const handleSaveTemplate = async () => {
+    if (!templateName.trim()) {
+      message.warning('Please enter template name');
+      return;
+    }
+
+    try {
+      const templateId = `schedule_tpl_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+      await apiPut(`/api/v1/settings/schedule/templates/${templateId}`, {
+        name: templateName,
+        params,
+        created_at: Date.now(),
+        updated_at: Date.now()
+      });
+      setTemplateName('');
+      message.success('Template saved');
+    } catch (err) {
+      console.error('Failed to save template:', err);
+      message.error('Failed to save template');
+    }
+  };
+
+  const handleLoadTemplate = (template: ScheduleTemplate) => {
+    // Важно: создаем новый объект чтобы React увидел изменения
+    setParams({ ...template.params });
+    setShowTemplates(false);
+    message.success(`Template "${template.name}" parameters loaded`);
+  };
+
+  const handleApplyTemplate = (template: ScheduleTemplate) => {
+    // Прямое применение с генерацией
+    onGenerate(template.params);
+    setIsOpen(false);
+    message.success(`Template "${template.name}" applied and randomized`);
+  };
+
+  const handleDeleteTemplate = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    try {
+      await apiPatch('/api/v1/settings/schedule/templates', {
+        [id]: null,
+      });
+      message.success('Template deleted');
+    } catch (err) {
+      console.error('Failed to delete template:', err);
+      message.error('Failed to delete template');
+    }
+  };
+
   const popoverContent = (
     <div className="schedule-generator-form">
-      <Form layout="vertical" size="small">
-        <div className="generator-row">
-          <Form.Item 
-            label="Farm Start" 
-            validateStatus={errors.startTime ? 'error' : undefined}
-            help={errors.startTime}
-          >
-            <TimePicker
-              value={dayjs(params.startTime, 'HH:mm')}
-              onChange={(time) => updateParam('startTime', time?.format('HH:mm') || '09:00')}
-              format="HH:mm"
-              size="small"
-            />
-          </Form.Item>
-          
-          <Form.Item 
-            label="Farm End"
-            validateStatus={errors.endTime ? 'error' : undefined}
-            help={errors.endTime}
-          >
-            <TimePicker
-              value={dayjs(params.endTime, 'HH:mm')}
-              onChange={(time) => updateParam('endTime', time?.format('HH:mm') || '23:00')}
-              format="HH:mm"
-              size="small"
-            />
-          </Form.Item>
-        </div>
-
-        <Form.Item 
-          label={`Target Active Time: ${params.targetActiveMinutes} min (${Math.floor(params.targetActiveMinutes / 60)}h ${params.targetActiveMinutes % 60}m)`}
-          validateStatus={errors.targetActiveMinutes ? 'error' : undefined}
-          help={errors.targetActiveMinutes}
+      <div className="generator-tabs-header">
+        <Button 
+          type={!showTemplates ? "primary" : "default"} 
+          size="small" 
+          onClick={() => setShowTemplates(false)}
         >
-          <InputNumber
-            min={CONSTRAINTS.targetActiveMinutes.min}
-            max={CONSTRAINTS.targetActiveMinutes.max}
-            value={params.targetActiveMinutes}
-            onChange={(value) => updateParam('targetActiveMinutes', value || 480)}
-            size="small"
-            style={{ width: '100%' }}
-            step={15}
-          />
-        </Form.Item>
+          Generator
+        </Button>
+        <Button 
+          type={showTemplates ? "primary" : "default"} 
+          size="small" 
+          icon={<FolderOpenOutlined />}
+          onClick={() => setShowTemplates(true)}
+        >
+          Templates ({templates.length})
+        </Button>
+      </div>
 
-        <div className="generator-row">
+      <Divider style={{ margin: '12px 0' }} />
+
+      {!showTemplates ? (
+        <Form layout="vertical" size="small">
+          <div className="generator-section-title">Time Window 1</div>
+          <div className="generator-row">
+            <Form.Item label="Start">
+              <TimePicker
+                value={dayjs(params.startTime, 'HH:mm')}
+                onChange={(time) => updateParam('startTime', time?.format('HH:mm') || '09:00')}
+                format="HH:mm"
+                size="small"
+                allowClear={false}
+              />
+            </Form.Item>
+            <Form.Item label="End">
+              <TimePicker
+                value={dayjs(params.endTime, 'HH:mm')}
+                onChange={(time) => updateParam('endTime', time?.format('HH:mm') || '23:30')}
+                format="HH:mm"
+                size="small"
+                allowClear={false}
+              />
+            </Form.Item>
+          </div>
+
+          <div className="generator-window-toggle">
+            <span className="toggle-label">Second Window (e.g. night sessions)</span>
+            <Switch 
+              size="small" 
+              checked={params.useSecondWindow} 
+              onChange={(checked) => updateParam('useSecondWindow', checked)} 
+            />
+          </div>
+
+          {params.useSecondWindow && (
+            <div className="generator-row">
+              <Form.Item label="Start 2">
+                <TimePicker
+                  value={dayjs(params.startTime2 || '00:00', 'HH:mm')}
+                  onChange={(time) => updateParam('startTime2', time?.format('HH:mm') || '00:00')}
+                  format="HH:mm"
+                  size="small"
+                  allowClear={false}
+                />
+              </Form.Item>
+              <Form.Item label="End 2">
+                <TimePicker
+                  value={dayjs(params.endTime2 || '02:00', 'HH:mm')}
+                  onChange={(time) => updateParam('endTime2', time?.format('HH:mm') || '02:00')}
+                  format="HH:mm"
+                  size="small"
+                  allowClear={false}
+                />
+              </Form.Item>
+            </div>
+          )}
+
+          <Divider style={{ margin: '8px 0' }} />
+
           <Form.Item 
-            label="Min Session"
-            validateStatus={errors.minSessionMinutes ? 'error' : undefined}
-            help={errors.minSessionMinutes}
+            className="highlight-param"
+            label={`Target Active Time: ${params.targetActiveMinutes} min (${Math.floor(params.targetActiveMinutes / 60)}h ${params.targetActiveMinutes % 60}m)`}
           >
             <InputNumber
-              min={CONSTRAINTS.minSessionMinutes.min}
-              max={CONSTRAINTS.minSessionMinutes.max}
-              value={params.minSessionMinutes}
-              onChange={(value) => updateParam('minSessionMinutes', value || 60)}
+              min={CONSTRAINTS.targetActiveMinutes.min}
+              max={CONSTRAINTS.targetActiveMinutes.max}
+              value={params.targetActiveMinutes}
+              onChange={(value) => updateParam('targetActiveMinutes', value || 480)}
               size="small"
+              style={{ width: '100%' }}
+              step={15}
+            />
+          </Form.Item>
+
+          <div className="generator-row">
+            <Form.Item label="Min Session">
+              <InputNumber
+                min={CONSTRAINTS.minSessionMinutes.min}
+                max={CONSTRAINTS.minSessionMinutes.max}
+                value={params.minSessionMinutes}
+                onChange={(value) => updateParam('minSessionMinutes', value || 60)}
+                size="small"
+                addonAfter="m"
+              />
+            </Form.Item>
+            <Form.Item label="Min Break">
+              <InputNumber
+                min={CONSTRAINTS.minBreakMinutes.min}
+                max={CONSTRAINTS.minBreakMinutes.max}
+                value={params.minBreakMinutes}
+                onChange={(value) => updateParam('minBreakMinutes', value || 30)}
+                size="small"
+                addonAfter="m"
+              />
+            </Form.Item>
+          </div>
+
+          <Form.Item 
+            className="highlight-param randomness-param"
+            label={
+              <Space>
+                <span>Randomization Factor: ±{params.randomOffsetMinutes} min</span>
+                <Tooltip title="Adds randomness to every session boundary (+/-) to ensure uniqueness.">
+                  <SettingOutlined style={{ fontSize: '10px' }} />
+                </Tooltip>
+              </Space>
+            }
+          >
+            <InputNumber
+              min={CONSTRAINTS.randomOffsetMinutes.min}
+              max={CONSTRAINTS.randomOffsetMinutes.max}
+              value={params.randomOffsetMinutes}
+              onChange={(value) => updateParam('randomOffsetMinutes', value || 0)}
+              size="small"
+              style={{ width: '100%' }}
               addonAfter="min"
             />
           </Form.Item>
-          
-          <Form.Item 
-            label="Min Break"
-            validateStatus={errors.minBreakMinutes ? 'error' : undefined}
-            help={errors.minBreakMinutes}
-          >
-            <InputNumber
-              min={CONSTRAINTS.minBreakMinutes.min}
-              max={CONSTRAINTS.minBreakMinutes.max}
-              value={params.minBreakMinutes}
-              onChange={(value) => updateParam('minBreakMinutes', value || 30)}
-              size="small"
-              addonAfter="min"
+
+          {errors.length > 0 && (
+            <div className="generator-errors">
+              {errors.map((err, i) => <div key={i} className="error-item">{err}</div>)}
+            </div>
+          )}
+
+          <div className="generator-template-save">
+            <Input 
+              placeholder="Template name" 
+              size="small" 
+              value={templateName}
+              onChange={e => setTemplateName(e.target.value)}
+              style={{ width: '140px' }}
             />
-          </Form.Item>
-        </div>
+            <Button 
+              size="small" 
+              icon={<SaveOutlined />} 
+              onClick={handleSaveTemplate}
+              title="Save as template"
+            >
+              Save
+            </Button>
+          </div>
 
-        <Form.Item 
-          label={`Random Offset: ±${params.randomOffsetMinutes} min`}
-          validateStatus={errors.randomOffsetMinutes ? 'error' : undefined}
-          help={errors.randomOffsetMinutes}
-        >
-          <InputNumber
-            min={CONSTRAINTS.randomOffsetMinutes.min}
-            max={CONSTRAINTS.randomOffsetMinutes.max}
-            value={params.randomOffsetMinutes}
-            onChange={(value) => updateParam('randomOffsetMinutes', value || 0)}
+          <div className="generator-actions">
+            <Button size="small" onClick={() => setParams(DEFAULT_PARAMS)}>
+              Reset
+            </Button>
+            <Button 
+              type="primary" 
+              size="small" 
+              icon={<ThunderboltOutlined />}
+              onClick={handleGenerate}
+            >
+              Generate
+            </Button>
+          </div>
+        </Form>
+      ) : (
+        <div className="templates-list-container">
+          <List
             size="small"
-            style={{ width: '100%' }}
-            addonAfter="min"
+            dataSource={templates}
+            renderItem={item => (
+              <List.Item 
+                className="template-item"
+                actions={[
+                  <Button 
+                    type="primary"
+                    size="small"
+                    className="template-apply-btn"
+                    icon={<ThunderboltOutlined />}
+                    onClick={() => handleApplyTemplate(item)}
+                  >
+                    Apply
+                  </Button>,
+                  <Space size={0}>
+                    <TableActionButton
+                      icon={<FolderOpenOutlined />}
+                      onClick={() => handleLoadTemplate(item)}
+                      tooltip="Load parameters"
+                    />
+                    <TableActionButton
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={(e) => handleDeleteTemplate(e as React.MouseEvent, item.id)}
+                      tooltip="Delete template"
+                    />
+                  </Space>
+                ]}
+              >
+                <div className="template-info">
+                  <div className="template-name">{item.name}</div>
+                  <div className="template-details">
+                    {Math.floor(item.params.targetActiveMinutes / 60)}h {item.params.targetActiveMinutes % 60}m 
+                    {item.params.useSecondWindow ? ' | 2 Windows' : ''}
+                  </div>
+                </div>
+              </List.Item>
+            )}
+            locale={{ emptyText: 'No templates' }}
           />
-        </Form.Item>
-
-        <Space className="generator-actions">
-          <Button size="small" onClick={() => setParams(DEFAULT_PARAMS)}>
-            Reset
-          </Button>
-          <Button 
-            type="primary" 
-            size="small" 
-            icon={<ThunderboltOutlined />}
-            onClick={handleGenerate}
-          >
-            Generate
-          </Button>
-        </Space>
-      </Form>
+        </div>
+      )}
     </div>
   );
 
   return (
     <Popover
       content={popoverContent}
-      title="Schedule Generator Settings"
+      title="Schedule Generator"
       trigger="click"
       open={isOpen}
       onOpenChange={setIsOpen}
       placement="bottomRight"
     >
       <Button
-        icon={<SettingOutlined />}
+        icon={locked ? <LockOutlined /> : <SettingOutlined />}
         size="small"
-        disabled={disabled}
+        disabled={disabled || locked}
       >
-        Generate
+        {locked ? 'Locked' : 'Generate'}
       </Button>
     </Popover>
   );

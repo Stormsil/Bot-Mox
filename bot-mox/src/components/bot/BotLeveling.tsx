@@ -71,7 +71,7 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
           <Progress
             percent={xpPercent}
             strokeColor="#722ed1"
-            trailColor="var(--proxmox-border)"
+            trailColor="var(--boxmox-color-border-default)"
             showInfo={false}
           />
           <div className="xp-percent">{xpPercent}%</div>

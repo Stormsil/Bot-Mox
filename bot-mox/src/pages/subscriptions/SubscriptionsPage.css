@@ -6,8 +6,8 @@
 
 .subscriptions-header {
   margin-bottom: 16px;
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .subscriptions-header .header-content {
@@ -18,11 +18,11 @@
 
 .subscriptions-header .header-title h4 {
   margin: 0;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .subscriptions-header .header-title .ant-typography-secondary {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .subscriptions-stats {
@@ -39,8 +39,8 @@
 }
 
 .subscriptions-stats .stat-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   text-align: center;
   width: 100%;
 }
@@ -48,12 +48,12 @@
 .subscriptions-stats .stat-card .stat-value {
   font-size: 24px;
   font-weight: 600;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .subscriptions-stats .stat-card .stat-label {
   font-size: 12px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -72,19 +72,29 @@
 
 .expiring-alert {
   margin-bottom: 16px;
-  background: rgba(250, 173, 20, 0.1);
-  border: 1px solid var(--proxmox-warning);
+  border: 1px solid rgba(250, 173, 20, 0.8);
+  border-left: 4px solid #faad14;
+  background: linear-gradient(90deg, rgba(250, 173, 20, 0.2), rgba(250, 173, 20, 0.05));
+  box-shadow: 0 0 0 1px rgba(250, 173, 20, 0.15);
 }
 
 .expiring-alert .ant-alert-message {
-  color: var(--proxmox-warning);
-  font-weight: 500;
+  color: #faad14;
+  font-weight: 600;
+}
+
+.expiring-alert .ant-alert-description {
+  color: var(--boxmox-color-text-secondary);
+}
+
+.expiring-alert .ant-alert-icon {
+  color: #faad14;
 }
 
 .expiring-list {
   margin: 8px 0 0 0;
   padding-left: 20px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .expiring-list li {
@@ -93,13 +103,13 @@
 
 .subscriptions-filters {
   margin-bottom: 16px;
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .subscriptions-table-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .subscriptions-table-card .ant-table {
@@ -107,19 +117,19 @@
 }
 
 .subscriptions-table-card .ant-table-thead > tr > th {
-  background: var(--proxmox-bg-tertiary);
-  color: var(--proxmox-text-secondary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-secondary);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
   font-weight: 500;
 }
 
 .subscriptions-table-card .ant-table-tbody > tr > td {
-  border-bottom: 1px solid var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .subscriptions-table-card .ant-table-tbody > tr:hover > td {
-  background: var(--proxmox-bg-hover);
+  background: var(--boxmox-color-surface-hover);
 }
 
 .subscriptions-table-card .ant-tag {
@@ -131,48 +141,48 @@
 .subscriptions-page .ant-input,
 .subscriptions-page .ant-select-selector,
 .subscriptions-page .ant-picker {
-  background: var(--proxmox-bg-tertiary) !important;
-  border-color: var(--proxmox-border) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .subscriptions-page .ant-input::placeholder {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .subscriptions-page .ant-btn-primary {
-  background: var(--proxmox-accent);
-  border-color: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .subscriptions-page .ant-btn-primary:hover {
-  background: var(--proxmox-accent-hover);
-  border-color: var(--proxmox-accent-hover);
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
 }
 
 .subscriptions-page .ant-modal-content {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .subscriptions-page .ant-modal-header {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .subscriptions-page .ant-modal-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .subscriptions-page .ant-form-item-label > label {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .subscriptions-page .ant-picker-dropdown {
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-surface-panel);
 }
 
-.subscriptions-page .ant-alert {
-  background: var(--proxmox-bg-tertiary);
-  border: 1px solid var(--proxmox-border);
+.subscriptions-page .ant-alert:not(.expiring-alert) {
+  background: var(--boxmox-color-surface-muted);
+  border: 1px solid var(--boxmox-color-border-default);
 }

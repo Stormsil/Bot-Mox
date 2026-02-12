@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Spin, Alert, message } from 'antd';
-import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
-import { ref, onValue, off, set } from 'firebase/database';
-import { database } from '../../utils/firebase';
+import { SaveOutlined, ReloadOutlined, CalendarOutlined, UnlockOutlined } from '@ant-design/icons';
+import { apiPatch } from '../../services/apiClient';
+import { subscribeBotById } from '../../services/botsApiService';
 import type { BotScheduleV2, ScheduleDay, ScheduleSession, ScheduleGenerationParams } from '../../types';
 import {
   DayTabs,
@@ -10,12 +10,13 @@ import {
   SessionEditor,
   TimelineVisualizer,
   DayStats,
-  ScheduleGenerator
+  ScheduleGenerator,
+  WeekPanel,
+  WeekOverview
 } from '../schedule';
 import {
   createEmptySchedule,
   migrateSchedule,
-  getWeekDates,
   sortSessions,
   generateSchedule
 } from '../../utils/scheduleUtils';
@@ -27,50 +28,46 @@ interface BotScheduleProps {
 
 export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
   const [schedule, setSchedule] = useState<BotScheduleV2 | null>(null);
+  const [serverSchedule, setServerSchedule] = useState<BotScheduleV2 | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState(1); // Monday default
+  const [viewMode, setViewMode] = useState<'day' | 'week'>('day'); // 'day' or 'week' overview
   const [hasChanges, setHasChanges] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingSession, setEditingSession] = useState<ScheduleSession | null>(null);
+  const [scheduleLocked, setScheduleLocked] = useState(false);
+  const [pendingScheduleLock, setPendingScheduleLock] = useState(false);
 
-  const weekDates = getWeekDates();
-
-  // Load schedule from Firebase
+  // Load schedule via API subscription
   useEffect(() => {
     if (!botId) return;
+    const unsubscribe = subscribeBotById(
+      botId,
+      (payload) => {
+        const locks = (payload?.generation_locks || {}) as Record<string, unknown>;
+        setScheduleLocked(Boolean(locks.schedule));
 
-    setLoading(true);
-    setError(null);
+        const incoming = payload?.schedule
+          ? migrateSchedule(payload.schedule as Record<string, unknown>)
+          : createEmptySchedule();
 
-    const scheduleRef = ref(database, `bots/${botId}/schedule`);
+        setServerSchedule(incoming);
+        if (!hasChanges) {
+          setSchedule(incoming);
+        }
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Failed to load schedule:', err);
+        setError('Failed to load schedule');
+        setLoading(false);
+      },
+      { intervalMs: 5000 }
+    );
 
-    const handleValue = (snapshot: any) => {
-      const data = snapshot.val();
-
-      if (data) {
-        // Migrate old format to new
-        const migrated = migrateSchedule(data);
-        setSchedule(migrated);
-      } else {
-        // Create default schedule if none exists
-        setSchedule(createEmptySchedule());
-      }
-      setLoading(false);
-    };
-
-    const handleError = (err: Error) => {
-      console.error('Failed to load schedule:', err);
-      setError('Failed to load schedule');
-      setLoading(false);
-    };
-
-    onValue(scheduleRef, handleValue, handleError);
-
-    return () => {
-      off(scheduleRef, 'value', handleValue);
-    };
-  }, [botId]);
+    return () => unsubscribe();
+  }, [botId, hasChanges]);
 
   // Get current day schedule
   const getCurrentDaySchedule = useCallback((): ScheduleDay => {
@@ -96,10 +93,11 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     setHasChanges(true);
   }, []);
 
-  // Handle day toggle
-  const handleDayToggle = useCallback((enabled: boolean) => {
-    updateDay(selectedDay, { enabled });
-  }, [selectedDay, updateDay]);
+  // Handle schedule change from WeekOverview
+  const handleScheduleChange = useCallback((newSchedule: BotScheduleV2) => {
+    setSchedule(newSchedule);
+    setHasChanges(true);
+  }, []);
 
   // Handle add session
   const handleAddSession = useCallback(() => {
@@ -164,7 +162,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
 
     // FIX: Also set enabled: true when adding a session to ensure day is marked as active
     const hasEnabledSessions = newSessions.some(s => s.enabled);
-    updateDay(selectedDay, { 
+    updateDay(selectedDay, {
       sessions: sortSessions(newSessions),
       enabled: hasEnabledSessions || currentDay.enabled
     });
@@ -172,44 +170,57 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     setEditingSession(null);
   }, [editingSession, getCurrentDaySchedule, selectedDay, updateDay]);
 
-  // Handle save to Firebase
+  // Handle session change from timeline drag-and-drop
+  const handleSessionChange = useCallback((session: ScheduleSession) => {
+    const currentDay = getCurrentDaySchedule();
+    // Defensive check: ensure sessions is an array
+    const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
+    const newSessions = sessionsArray.map(s =>
+      s.id === session.id ? session : s
+    );
+
+    updateDay(selectedDay, {
+      sessions: sortSessions(newSessions),
+      enabled: newSessions.some(s => s.enabled)
+    });
+  }, [getCurrentDaySchedule, selectedDay, updateDay]);
+
   const handleSave = useCallback(async () => {
     if (!schedule || !botId) return;
 
     try {
-      const scheduleRef = ref(database, `bots/${botId}/schedule`);
-      await set(scheduleRef, {
+      const nextSchedule = {
         ...schedule,
-        updated_at: Date.now()
+        updated_at: Date.now(),
+      };
+      await apiPatch(`/api/v1/bots/${encodeURIComponent(botId)}`, {
+        schedule: nextSchedule,
+        ...(pendingScheduleLock ? { 'generation_locks/schedule': true } : {}),
       });
+      setServerSchedule(nextSchedule);
+      if (pendingScheduleLock) setPendingScheduleLock(false);
       setHasChanges(false);
       message.success('Schedule saved successfully');
     } catch (err) {
       console.error('Failed to save schedule:', err);
       message.error('Failed to save schedule');
     }
-  }, [schedule, botId]);
+  }, [schedule, botId, pendingScheduleLock]);
 
-  // Handle reset
   const handleReset = useCallback(() => {
-    if (!schedule) return;
+    if (serverSchedule) {
+      setSchedule(migrateSchedule(serverSchedule as unknown as Record<string, unknown>));
+    } else {
+      setSchedule(createEmptySchedule());
+    }
+    setHasChanges(false);
+  }, [serverSchedule]);
 
-    // Reload from Firebase
-    const scheduleRef = ref(database, `bots/${botId}/schedule`);
-    onValue(scheduleRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const migrated = migrateSchedule(data);
-        setSchedule(migrated);
-      } else {
-        setSchedule(createEmptySchedule());
-      }
-      setHasChanges(false);
-    }, { onlyOnce: true });
-  }, [botId, schedule]);
-
-  // Handle generate schedule
   const handleGenerateSchedule = useCallback((params: ScheduleGenerationParams) => {
+    if (scheduleLocked) {
+      message.warning('Schedule generation is locked');
+      return;
+    }
     const generated = generateSchedule(params);
     
     setSchedule(prev => {
@@ -217,12 +228,30 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
       return {
         ...prev,
         days: generated.days,
+        allowedWindows: generated.allowedWindows,
         updated_at: Date.now()
       };
     });
     setHasChanges(true);
+    setPendingScheduleLock(true);
     message.success('Schedule generated for all 7 days');
-  }, []);
+  }, [scheduleLocked]);
+
+  const handleUnlockGeneration = useCallback(async () => {
+    if (!botId) return;
+
+    try {
+      await apiPatch(`/api/v1/bots/${encodeURIComponent(botId)}`, {
+        'generation_locks/schedule': false,
+      });
+      setPendingScheduleLock(false);
+      setScheduleLocked(false);
+      message.success('Schedule generation unlocked');
+    } catch (error) {
+      console.error('Failed to unlock schedule generation:', error);
+      message.error('Failed to unlock generation');
+    }
+  }, [botId]);
 
   if (loading) {
     return (
@@ -254,10 +283,28 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
         className="schedule-card schedule-card-fixed"
         extra={
           <div className="schedule-actions">
-            <ScheduleGenerator 
+            <Button
+              icon={<CalendarOutlined />}
+              size="small"
+              onClick={() => setViewMode(viewMode === 'day' ? 'week' : 'day')}
+            >
+              {viewMode === 'day' ? 'Week Overview' : 'Day View'}
+            </Button>
+            <ScheduleGenerator
               onGenerate={handleGenerateSchedule}
               disabled={loading}
+              locked={scheduleLocked}
             />
+            {(scheduleLocked || pendingScheduleLock) && (
+              <Button
+                icon={<UnlockOutlined />}
+                size="small"
+                onClick={handleUnlockGeneration}
+                className="schedule-unlock-btn"
+              >
+                Unlock
+              </Button>
+            )}
             <Button
               icon={<ReloadOutlined />}
               size="small"
@@ -288,25 +335,53 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
           />
         )}
 
-        <DayTabs
-          selectedDay={selectedDay}
-          onDayChange={setSelectedDay}
-          days={schedule?.days || {}}
-        />
+        <div className="schedule-content-wrapper">
+          <WeekPanel
+            schedule={schedule}
+            selectedDay={selectedDay}
+            onDaySelect={setSelectedDay}
+          />
 
-        <TimelineVisualizer
-          sessions={currentDay.sessions}
-        />
+          <div className="schedule-main-content">
+            <DayTabs
+              selectedDay={selectedDay}
+              onDayChange={setSelectedDay}
+              days={schedule?.days || {}}
+            />
 
-        <SessionList
-          sessions={currentDay.sessions}
-          onAdd={handleAddSession}
-          onEdit={handleEditSession}
-          onDelete={handleDeleteSession}
-          onToggle={handleToggleSession}
-        />
+            {viewMode === 'week' ? (
+              <WeekOverview
+                schedule={schedule}
+                onScheduleChange={handleScheduleChange}
+                onSave={handleSave}
+                onReset={handleReset}
+                hasChanges={hasChanges}
+                onDaySelect={(day) => {
+                  setSelectedDay(day);
+                  setViewMode('day');
+                }}
+              />
+            ) : (
+              <>
+                <TimelineVisualizer
+                  sessions={currentDay.sessions}
+                  allowedWindows={schedule?.allowedWindows}
+                  onSessionChange={handleSessionChange}
+                />
 
-        <DayStats sessions={currentDay.sessions} />
+                <SessionList
+                  sessions={currentDay.sessions}
+                  onAdd={handleAddSession}
+                  onEdit={handleEditSession}
+                  onDelete={handleDeleteSession}
+                  onToggle={handleToggleSession}
+                />
+
+                <DayStats sessions={currentDay.sessions} />
+              </>
+            )}
+          </div>
+        </div>
 
         <SessionEditor
           session={editingSession}

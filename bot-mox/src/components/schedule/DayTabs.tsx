@@ -60,7 +60,7 @@ export const DayTabs: React.FC<DayTabsProps> = ({
     }
   }, [selectedDay, carouselDates]);
 
-  const handleDayClick = (dayIndex: number, date: Date) => {
+  const handleDayClick = (dayIndex: number) => {
     onDayChange(dayIndex);
   };
 
@@ -80,7 +80,7 @@ export const DayTabs: React.FC<DayTabsProps> = ({
             <button
               key={index}
               className={`day-tab ${isSelected ? 'selected' : ''} ${status} ${isToday ? 'today' : ''}`}
-              onClick={() => handleDayClick(dayIndex, date)}
+              onClick={() => handleDayClick(dayIndex)}
             >
               <span className="day-name">{getDayName(dayIndex, true)}</span>
               <span className="day-date">{formatDateShort(date)}</span>

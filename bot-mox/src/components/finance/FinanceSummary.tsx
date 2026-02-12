@@ -1,272 +1,269 @@
-import React from 'react';
-import { Card, Row, Col, Statistic, Typography, Empty } from 'antd';
-import {
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  DollarOutlined,
-  GoldOutlined,
-  ShoppingOutlined,
-  WalletOutlined,
-} from '@ant-design/icons';
+import React, { useMemo } from 'react';
+import { Card, Row, Col, Typography, Empty } from 'antd';
 import {
   PieChart,
   Pie,
   Cell,
   ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
-  BarChart,
-  Bar,
 } from 'recharts';
-import type { FinanceSummary as FinanceSummaryType, CategoryBreakdown, TimeSeriesData } from '../../types';
+import type { FinanceSummary as FinanceSummaryType, CategoryBreakdown, TimeSeriesData, GoldPriceHistoryEntry, FinanceOperation } from '../../types';
+import { UniversalChart } from './UniversalChart';
+import { ProjectPerformanceTable } from './ProjectPerformanceTable';
+import { CostAnalysis } from './CostAnalysis';
 import './FinanceSummary.css';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
+
+type MetricTone = 'positive' | 'negative' | 'neutral' | 'accent';
+
+interface PieTooltipPayloadItem {
+  payload: {
+    name: string;
+    value: number;
+    percentage: number;
+  };
+}
+
+interface PieTooltipContentProps {
+  active?: boolean;
+  payload?: PieTooltipPayloadItem[];
+  formatCurrency: (value: number) => string;
+}
+
+interface MetricBlockProps {
+  label: string;
+  value: React.ReactNode;
+  unit: string;
+  hint: React.ReactNode;
+  tone: MetricTone;
+  loading: boolean;
+}
 
 // Цвета для графиков
 const COLORS = {
-  income: '#52c41a',
-  expense: '#f5222d',
-  profit: '#1890ff',
-  categories: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2'],
+  // Muted, professional palette (non-grey, low saturation)
+  categories: ['#5b6f8f', '#4f8a8b', '#8b5a3c', '#7a5c8f', '#6b7a88', '#8a8f4f'],
 };
+
+const PieTooltipContent: React.FC<PieTooltipContentProps> = ({ active, payload, formatCurrency }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="chart-tooltip">
+        <p className="chart-tooltip-label">{data.name}</p>
+        <p className="chart-tooltip-value">
+          {formatCurrency(data.value)} ({data.percentage}%)
+        </p>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+const MetricBlock: React.FC<MetricBlockProps> = ({ label, value, unit, hint, tone, loading }) => (
+  <Card className={`metric-card metric-${tone}`} loading={loading} bordered={false}>
+    <div className="metric-header">
+      <Text className="metric-title">{label}</Text>
+      <Text className="metric-unit">{unit}</Text>
+    </div>
+    <div className={`metric-value metric-${tone}`}>{value}</div>
+    <Text className="metric-label">{hint}</Text>
+  </Card>
+);
 
 interface FinanceSummaryProps {
   summary: FinanceSummaryType;
   incomeBreakdown: CategoryBreakdown[];
   expenseBreakdown: CategoryBreakdown[];
   timeSeriesData: TimeSeriesData[];
+  goldPriceHistory: GoldPriceHistoryEntry[];
   loading?: boolean;
+  timeRange: number;
+  onTimeRangeChange: (days: number) => void;
+  selectedProject: 'all' | 'wow_tbc' | 'wow_midnight';
+  operations: FinanceOperation[]; // Added operations prop
 }
 
-export const FinanceSummary: React.FC<FinanceSummaryProps> = ({
-  summary,
-  incomeBreakdown,
-  expenseBreakdown,
-  timeSeriesData,
-  loading = false,
-}) => {
+export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
+  const {
+    summary,
+    expenseBreakdown,
+    timeSeriesData,
+    goldPriceHistory,
+    loading = false,
+    timeRange,
+    onTimeRangeChange,
+    selectedProject,
+    operations,
+  } = props;
   // Форматирование валюты
   const formatCurrency = (value: number) => {
     return `$${value.toFixed(2)}`;
   };
 
-  // Форматирование золота
-  const formatGold = (value: number) => {
-    return `${value.toLocaleString()}g`;
+  const formatSignedCurrency = (value: number) => {
+    if (value === 0) return formatCurrency(0);
+    return `${value > 0 ? '+' : '-'}${formatCurrency(Math.abs(value))}`;
   };
 
   // Данные для круговой диаграммы расходов
-  const expensePieData = expenseBreakdown.map((item) => ({
-    name: item.category.replace(/_/g, ' ').toUpperCase(),
-    value: item.amount,
-    percentage: item.percentage,
-  }));
+  const expensePieData = expenseBreakdown.map((item) => {
+    const label = item.category
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
 
-  // Данные для круговой диаграммы доходов
-  const incomePieData = incomeBreakdown.map((item) => ({
-    name: item.category.toUpperCase(),
-    value: item.amount,
-    percentage: item.percentage,
-  }));
+    return {
+      name: label,
+      value: item.amount,
+      percentage: item.percentage,
+    };
+  });
 
-  // Кастомный tooltip для графиков
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="chart-tooltip">
-          <p className="chart-tooltip-label">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="chart-tooltip-value" style={{ color: entry.color }}>
-              {entry.name}: {formatCurrency(entry.value)}
-            </p>
-          ))}
-        </div>
-      );
+  const goldByProject = useMemo(() => {
+    const base = {
+      wow_tbc: { totalGold: 0, priceSum: 0, priceCount: 0, avgPrice: 0 },
+      wow_midnight: { totalGold: 0, priceSum: 0, priceCount: 0, avgPrice: 0 },
+    };
+
+    operations.forEach((op) => {
+      if (op.type !== 'income' || op.category !== 'sale') return;
+      if (!op.project_id) return;
+      if (!(op.project_id in base)) return;
+
+      const key = op.project_id as 'wow_tbc' | 'wow_midnight';
+      base[key].totalGold += op.gold_amount || 0;
+      if (typeof op.gold_price_at_time === 'number' && op.gold_price_at_time > 0) {
+        base[key].priceSum += op.gold_price_at_time;
+        base[key].priceCount += 1;
+      }
+    });
+
+    (Object.keys(base) as Array<'wow_tbc' | 'wow_midnight'>).forEach((key) => {
+      const entry = base[key];
+      entry.avgPrice = entry.priceCount > 0 ? entry.priceSum / entry.priceCount : 0;
+    });
+
+    return base;
+  }, [operations]);
+
+  const renderGoldValue = () => {
+    if (selectedProject !== 'all') {
+      return `${summary.totalGoldSold.toLocaleString()} g`;
     }
-    return null;
+
+    return (
+      <div className="metric-multi">
+        <div className="metric-multi-row">
+          <span className="metric-multi-label">WoW TBC</span>
+          <span>{goldByProject.wow_tbc.totalGold.toLocaleString()} g</span>
+        </div>
+        <div className="metric-multi-row">
+          <span className="metric-multi-label">WoW Midnight</span>
+          <span>{goldByProject.wow_midnight.totalGold.toLocaleString()} g</span>
+        </div>
+      </div>
+    );
   };
 
-  // Кастомный tooltip для pie chart
-  const PieTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="chart-tooltip">
-          <p className="chart-tooltip-label">{data.name}</p>
-          <p className="chart-tooltip-value">
-            {formatCurrency(data.value)} ({data.percentage}%)
-          </p>
-        </div>
-      );
+  const renderGoldHint = () => {
+    if (selectedProject !== 'all') {
+      return `Avg price: $${summary.averageGoldPrice.toFixed(4)}/1000g`;
     }
-    return null;
-  };
 
+    return (
+      <span className="metric-hint-stack">
+        <span>WoW TBC: ${goldByProject.wow_tbc.avgPrice.toFixed(4)}/1000g</span>
+        <span>WoW Midnight: ${goldByProject.wow_midnight.avgPrice.toFixed(4)}/1000g</span>
+      </span>
+    );
+  };
+/*  */
   return (
     <div className="finance-summary-container">
       {/* Основные метрики */}
       <Row gutter={[16, 16]} className="metrics-row">
         <Col span={6}>
-          <Card className="metric-card income" loading={loading}>
-            <Statistic
-              title="Total Income"
-              value={summary.totalIncome}
-              prefix={<ArrowUpOutlined />}
-              suffix="USD"
-              precision={2}
-              valueStyle={{ color: COLORS.income }}
-            />
-            <Text className="metric-label">From all sources</Text>
-          </Card>
+          <MetricBlock
+            label="Total Income"
+            value={formatCurrency(summary.totalIncome)}
+            unit="USD"
+            hint="All sources"
+            tone="neutral"
+            loading={loading}
+          />
         </Col>
         <Col span={6}>
-          <Card className="metric-card expense" loading={loading}>
-            <Statistic
-              title="Total Expenses"
-              value={summary.totalExpenses}
-              prefix={<ArrowDownOutlined />}
-              suffix="USD"
-              precision={2}
-              valueStyle={{ color: COLORS.expense }}
-            />
-            <Text className="metric-label">All categories</Text>
-          </Card>
+          <MetricBlock
+            label="Total Expenses"
+            value={formatCurrency(summary.totalExpenses)}
+            unit="USD"
+            hint="All categories"
+            tone="neutral"
+            loading={loading}
+          />
         </Col>
         <Col span={6}>
-          <Card className="metric-card profit" loading={loading}>
-            <Statistic
-              title="Net Profit"
-              value={summary.netProfit}
-              prefix={<DollarOutlined />}
-              suffix="USD"
-              precision={2}
-              valueStyle={{
-                color: summary.netProfit >= 0 ? COLORS.income : COLORS.expense,
-              }}
-            />
-            <Text className="metric-label">
-              {summary.netProfit >= 0 ? 'Profit' : 'Loss'}
-            </Text>
-          </Card>
+          <MetricBlock
+            label="Net Profit"
+            value={formatSignedCurrency(summary.netProfit)}
+            unit="USD"
+            hint={summary.netProfit >= 0 ? 'Net gain' : 'Net loss'}
+            tone="neutral"
+            loading={loading}
+          />
         </Col>
         <Col span={6}>
-          <Card className="metric-card gold" loading={loading}>
-            <Statistic
-              title="Gold Sold"
-              value={summary.totalGoldSold}
-              prefix={<GoldOutlined />}
-              suffix="g"
-              precision={0}
-              valueStyle={{ color: '#faad14' }}
-            />
-            <Text className="metric-label">
-              Avg price: ${summary.averageGoldPrice.toFixed(4)}/1000g
-            </Text>
-          </Card>
+          <MetricBlock
+            label="Gold Sold"
+            value={renderGoldValue()}
+            unit="Volume"
+            hint={renderGoldHint()}
+            tone="neutral"
+            loading={loading}
+          />
         </Col>
       </Row>
 
-      {/* График доходов и расходов по времени */}
-      <Card className="chart-card" title="Income & Expenses Over Time" loading={loading}>
-        {timeSeriesData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={timeSeriesData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--proxmox-border)" />
-              <XAxis
-                dataKey="date"
-                tick={{ fill: 'var(--proxmox-text-muted)', fontSize: 12 }}
-                stroke="var(--proxmox-border)"
-              />
-              <YAxis
-                tick={{ fill: 'var(--proxmox-text-muted)', fontSize: 12 }}
-                stroke="var(--proxmox-border)"
-                tickFormatter={(value) => `$${value}`}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="income"
-                name="Income"
-                stroke={COLORS.income}
-                strokeWidth={2}
-                dot={{ fill: COLORS.income, strokeWidth: 2 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="expense"
-                name="Expenses"
-                stroke={COLORS.expense}
-                strokeWidth={2}
-                dot={{ fill: COLORS.expense, strokeWidth: 2 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="profit"
-                name="Profit"
-                stroke={COLORS.profit}
-                strokeWidth={2}
-                dot={{ fill: COLORS.profit, strokeWidth: 2 }}
-                strokeDasharray="5 5"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <Empty description="No data available" />
-        )}
-      </Card>
+      {/* Универсальный график */}
+      <UniversalChart
+        timeSeriesData={timeSeriesData}
+        goldPriceHistory={goldPriceHistory}
+        loading={loading}
+        timeRange={timeRange}
+        onTimeRangeChange={onTimeRangeChange}
+      />
 
-      {/* Pie charts для категорий */}
+      {/* Project Performance Table */}
+      <Row gutter={[16, 16]} className="charts-row">
+         <Col span={24}>
+            <ProjectPerformanceTable operations={operations} loading={loading} />
+         </Col>
+      </Row>
+
+      {/* Expense Analysis (Pie + Cost Structure) */}
       <Row gutter={[16, 16]} className="charts-row">
         <Col span={12}>
-          <Card className="chart-card" title="Income by Category" loading={loading}>
-            {incomePieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={incomePieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {incomePieData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS.categories[index % COLORS.categories.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<PieTooltip />} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <Empty description="No income data" />
-            )}
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card className="chart-card" title="Expenses by Category" loading={loading}>
+          <Card className="chart-card" title="Expenses Distribution" loading={loading} bordered={false}>
             {expensePieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
                     data={expensePieData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
+                    innerRadius={84}
+                    outerRadius={104}
+                    paddingAngle={2}
                     dataKey="value"
+                    label={false}
+                    labelLine={false}
+                    stroke="var(--boxmox-color-surface-base)"
+                    strokeWidth={2}
                   >
                     {expensePieData.map((entry, index) => (
                       <Cell
@@ -275,8 +272,16 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = ({
                       />
                     ))}
                   </Pie>
-                  <Tooltip content={<PieTooltip />} />
-                  <Legend />
+                  <Tooltip content={<PieTooltipContent formatCurrency={formatCurrency} />} />
+                  <Legend
+                    iconType="circle"
+                    wrapperStyle={{
+                      color: 'var(--boxmox-color-text-secondary)',
+                      fontSize: 11,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.4px',
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -284,46 +289,14 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = ({
             )}
           </Card>
         </Col>
+        <Col span={12}>
+          <CostAnalysis 
+             expenseBreakdown={expenseBreakdown} 
+             totalExpenses={summary.totalExpenses}
+             loading={loading}
+          />
+        </Col>
       </Row>
-
-      {/* График распределения по категориям (бар) */}
-      <Card className="chart-card" title="Category Breakdown" loading={loading}>
-        {expenseBreakdown.length > 0 || incomeBreakdown.length > 0 ? (
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart
-              data={[
-                ...expenseBreakdown.map((item) => ({
-                  name: item.category.replace(/_/g, ' '),
-                  amount: item.amount,
-                  type: 'Expense',
-                })),
-                ...incomeBreakdown.map((item) => ({
-                  name: item.category,
-                  amount: item.amount,
-                  type: 'Income',
-                })),
-              ]}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--proxmox-border)" />
-              <XAxis
-                dataKey="name"
-                tick={{ fill: 'var(--proxmox-text-muted)', fontSize: 12 }}
-                stroke="var(--proxmox-border)"
-              />
-              <YAxis
-                tick={{ fill: 'var(--proxmox-text-muted)', fontSize: 12 }}
-                stroke="var(--proxmox-border)"
-                tickFormatter={(value) => `$${value}`}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar dataKey="amount" fill={COLORS.profit} name="Amount" />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <Empty description="No category data" />
-        )}
-      </Card>
     </div>
   );
 };

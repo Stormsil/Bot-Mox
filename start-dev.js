@@ -4,7 +4,9 @@
  */
 
 const { spawn } = require('child_process');
+const fs = require('fs');
 const path = require('path');
+const net = require('net');
 
 // Colors for console output
 const colors = {
@@ -29,6 +31,76 @@ function logPrefix(prefix, message, color = 'reset') {
 
 // Track child processes
 const processes = [];
+let isShuttingDown = false;
+
+function parseDotEnvFile(raw) {
+  const out = {};
+
+  String(raw || '')
+    .split(/\r?\n/)
+    .forEach((line) => {
+      const trimmed = String(line || '').trim();
+      if (!trimmed || trimmed.startsWith('#')) return;
+
+      const eq = trimmed.indexOf('=');
+      if (eq < 0) return;
+
+      const key = trimmed.slice(0, eq).trim();
+      let value = trimmed.slice(eq + 1).trim();
+      if (!key) return;
+
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+
+      out[key] = value;
+    });
+
+  return out;
+}
+
+function resolveProxyPort() {
+  const proxyPath = path.join(__dirname, 'proxy-server');
+  const envPath = path.join(proxyPath, '.env');
+  const envExamplePath = path.join(proxyPath, '.env.example');
+
+  try {
+    const raw = fs.existsSync(envPath)
+      ? fs.readFileSync(envPath, 'utf8')
+      : fs.existsSync(envExamplePath)
+        ? fs.readFileSync(envExamplePath, 'utf8')
+        : '';
+
+    const parsed = parseDotEnvFile(raw);
+    const port = Number.parseInt(String(parsed.PORT || '').trim(), 10);
+    return Number.isFinite(port) ? port : 3001;
+  } catch {
+    return 3001;
+  }
+}
+
+function isPortAvailable(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+
+    server.once('error', (error) => {
+      if (error && error.code === 'EADDRINUSE') {
+        resolve(false);
+        return;
+      }
+      resolve(false);
+    });
+
+    server.once('listening', () => {
+      server.close(() => resolve(true));
+    });
+
+    server.listen(port);
+  });
+}
 
 /**
  * Spawn a process and handle its output
@@ -44,11 +116,19 @@ function spawnProcess(name, command, args, options = {}) {
   };
   const color = colorMap[name] || 'reset';
 
+  let launchCommand = command;
+  let launchArgs = args;
+
+  if (process.platform === 'win32') {
+    launchCommand = process.env.ComSpec || 'cmd.exe';
+    launchArgs = ['/d', '/s', '/c', [command, ...args].join(' ')];
+  }
+
   logPrefix(name, `Starting ${command} ${args.join(' ')}...`, color);
 
-  const proc = spawn(command, args, {
+  const proc = spawn(launchCommand, launchArgs, {
     stdio: 'pipe',
-    shell: true,
+    shell: false,
     ...options
   });
 
@@ -81,7 +161,7 @@ function spawnProcess(name, command, args, options = {}) {
     }
     // If one process exits, kill all others
     if (code !== null) {
-      shutdown();
+      shutdown(code === 0 ? 0 : 1);
     }
   });
 
@@ -97,6 +177,11 @@ function spawnProcess(name, command, args, options = {}) {
  * Shutdown all processes gracefully
  */
 function shutdown(exitCode = 0) {
+  if (isShuttingDown) {
+    return;
+  }
+  isShuttingDown = true;
+
   log('\n🛑 Shutting down all processes...', 'yellow');
 
   processes.forEach(({ name, proc }) => {
@@ -123,7 +208,6 @@ function shutdown(exitCode = 0) {
 // Handle process signals
 process.on('SIGINT', () => shutdown());
 process.on('SIGTERM', () => shutdown());
-process.on('exit', () => shutdown());
 
 // Main execution
 async function main() {
@@ -132,16 +216,35 @@ async function main() {
   log('╚════════════════════════════════════════════════════════════╝', 'bright');
   log('');
 
+  const proxyPort = resolveProxyPort();
+  const proxyPortAvailable = await isPortAvailable(proxyPort);
+  if (!proxyPortAvailable) {
+    log(
+      `❌ Port ${proxyPort} is already in use. Stop the running process or change PORT in proxy-server/.env.`,
+      'red'
+    );
+    log(`   Tip: check owner with \`Get-NetTCPConnection -LocalPort ${proxyPort} -State Listen\``, 'yellow');
+    process.exit(1);
+    return;
+  }
+
   // Start proxy server first
   const proxyPath = path.join(__dirname, 'proxy-server');
   spawnProcess('PROXY', 'npm', ['start'], {
-    cwd: proxyPath
+    cwd: proxyPath,
+    env: {
+      ...process.env,
+      PORT: String(proxyPort),
+    },
   });
 
   // Wait a bit for proxy server to initialize
   log('');
   log('⏳ Waiting for proxy server to initialize...', 'dim');
   await new Promise(resolve => setTimeout(resolve, 2000));
+  if (isShuttingDown) {
+    return;
+  }
 
   // Start Vite dev server
   const botMoxPath = path.join(__dirname, 'bot-mox');
@@ -153,7 +256,7 @@ async function main() {
   log('✅ All services started!', 'green');
   log('');
   log('📱 Available endpoints:', 'bright');
-  log('   • Proxy Server: http://localhost:3001', 'cyan');
+  log(`   • Proxy Server: http://localhost:${proxyPort}`, 'cyan');
   log('   • Vite Dev:     http://localhost:5173', 'green');
   log('');
   log('Press Ctrl+C to stop all services', 'dim');

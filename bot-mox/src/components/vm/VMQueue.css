@@ -1,0 +1,60 @@
+.vm-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vm-queue-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.vm-queue-table .ant-table {
+  background: var(--boxmox-color-surface-panel);
+}
+
+.vm-queue-status-pending {
+  color: var(--boxmox-color-text-muted);
+}
+
+.vm-queue-status-cloning {
+  color: #1890ff;
+}
+
+.vm-queue-status-configuring {
+  color: #722ed1;
+}
+
+.vm-queue-status-done {
+  color: #52c41a;
+}
+
+.vm-queue-status-error {
+  color: #ff4d4f;
+}
+
+.vm-queue-ssh-command {
+  background: var(--boxmox-color-surface-base);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 2px;
+  padding: 12px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vm-queue-ssh-command code {
+  flex: 1;
+  color: #52c41a;
+}
+
+.vm-queue-add-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}

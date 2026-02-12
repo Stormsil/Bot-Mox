@@ -19,9 +19,6 @@ interface CheckboxBlockProps {
   autoFocus?: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-void ((props: CheckboxBlockProps) => props.isFocused);
-
 export const CheckboxBlockComponent: React.FC<CheckboxBlockProps> = ({
   block,
   onChange,
@@ -32,6 +29,7 @@ export const CheckboxBlockComponent: React.FC<CheckboxBlockProps> = ({
   isFocused,
   autoFocus = false,
 }) => {
+  void isFocused;
   const contentRef = useRef<HTMLDivElement>(null);
   const [showPlaceholder, setShowPlaceholder] = useState(!block.content);
 

@@ -18,9 +18,6 @@ interface ListBlockProps {
   autoFocus?: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-void ((props: ListBlockProps) => [props.onEnter, props.isFocused]);
-
 /**
  * Компонент отдельного элемента списка
  */
@@ -140,6 +137,9 @@ export const ListBlockComponent: React.FC<ListBlockProps> = ({
   isFocused,
   autoFocus = false,
 }) => {
+  void onEnter;
+  void isFocused;
+
   // Обработка изменения содержимого элемента
   const handleItemChange = useCallback(
     (id: string, content: string) => {

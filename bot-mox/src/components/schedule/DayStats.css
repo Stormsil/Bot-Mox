@@ -4,8 +4,8 @@
   justify-content: center;
   gap: 24px;
   padding: 16px;
-  background: var(--proxmox-bg-secondary);
-  border-top: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-top: 1px solid var(--boxmox-color-border-default);
 }
 
 .stat-item {
@@ -18,13 +18,13 @@
 .stat-value {
   font-size: 18px;
   font-weight: 700;
-  color: var(--proxmox-orange);
+  color: var(--boxmox-color-text-primary);
   font-family: 'Monaco', 'Consolas', monospace;
 }
 
 .stat-label {
   font-size: 11px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -32,5 +32,5 @@
 .stat-divider {
   width: 1px;
   height: 32px;
-  background: var(--proxmox-border);
+  background: var(--boxmox-color-border-default);
 }

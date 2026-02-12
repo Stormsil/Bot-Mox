@@ -18,7 +18,6 @@ import {
   calculateCategoryBreakdown,
   prepareTimeSeriesData,
   filterOperations,
-  getCurrentGoldPrice,
 } from '../services/financeService';
 
 interface UseFinanceOptions {
@@ -39,7 +38,6 @@ interface UseFinanceReturn {
   addOperation: (data: FinanceOperationFormData) => Promise<void>;
   updateOperation: (id: string, data: Partial<FinanceOperationFormData>) => Promise<void>;
   deleteOperation: (id: string) => Promise<void>;
-  getGoldPrice: (projectId: 'wow_tbc' | 'wow_midnight') => Promise<number>;
 
   // Фильтрация
   filteredOperations: (
@@ -62,11 +60,10 @@ export function useFinance(options: UseFinanceOptions = {}): UseFinanceReturn {
   const [operations, setOperations] = useState<FinanceOperation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
 
   // Загрузка операций
   useEffect(() => {
-    setLoading(true);
-
     const unsubscribe = subscribeToFinanceOperations(
       (data) => {
         setOperations(data);
@@ -100,10 +97,22 @@ export function useFinance(options: UseFinanceOptions = {}): UseFinanceReturn {
     return calculateCategoryBreakdown(operations, 'expense');
   }, [operations]);
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   // Подготавливаем данные для графика
   const timeSeriesData = useMemo(() => {
-    return prepareTimeSeriesData(operations, days);
-  }, [operations, days]);
+    const end = currentTime;
+    const start = end - days * 24 * 60 * 60 * 1000;
+    return prepareTimeSeriesData(operations, start, end);
+  }, [operations, days, currentTime]);
 
   // Добавление операции
   const addOperation = useCallback(async (data: FinanceOperationFormData): Promise<void> => {
@@ -144,12 +153,8 @@ export function useFinance(options: UseFinanceOptions = {}): UseFinanceReturn {
     }
   }, []);
 
-  // Получение цены золота
-  const getGoldPrice = useCallback(async (
-    projectId: 'wow_tbc' | 'wow_midnight'
-  ): Promise<number> => {
-    return getCurrentGoldPrice(projectId);
-  }, []);
+  // Note: Gold price is now entered manually per transaction
+  // Price history is derived from past sale operations
 
   // Фильтрация операций
   const filteredOperations = useCallback(
@@ -182,7 +187,6 @@ export function useFinance(options: UseFinanceOptions = {}): UseFinanceReturn {
     addOperation,
     updateOperation,
     deleteOperation,
-    getGoldPrice,
     filteredOperations,
   };
 }

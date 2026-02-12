@@ -6,8 +6,8 @@
 
 .proxies-header {
   margin-bottom: 16px;
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .proxies-header .header-content {
@@ -18,11 +18,11 @@
 
 .proxies-header .header-title h4 {
   margin: 0;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .proxies-header .header-title .ant-typography-secondary {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .proxies-stats {
@@ -33,20 +33,20 @@
 }
 
 .proxies-stats .stat-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   text-align: center;
 }
 
 .proxies-stats .stat-card .stat-value {
   font-size: 24px;
   font-weight: 600;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .proxies-stats .stat-card .stat-label {
   font-size: 12px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -69,13 +69,13 @@
 
 .proxies-filters {
   margin-bottom: 16px;
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .proxies-table-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .proxies-table-card .ant-table {
@@ -83,15 +83,15 @@
 }
 
 .proxies-table-card .ant-table-thead > tr > th {
-  background: var(--proxmox-bg-tertiary);
-  color: var(--proxmox-text-secondary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-secondary);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
   font-weight: 500;
 }
 
 .proxies-table-card .ant-table-tbody > tr > td {
-  border-bottom: 1px solid var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .proxies-table-card .ant-table-cell {
@@ -99,7 +99,7 @@
 }
 
 .proxies-table-card .ant-table-tbody > tr:hover > td {
-  background: var(--proxmox-bg-hover);
+  background: var(--boxmox-color-surface-hover);
 }
 
 .proxies-table-card .proxy-address {
@@ -124,45 +124,45 @@
 .proxies-page .ant-input,
 .proxies-page .ant-select-selector,
 .proxies-page .ant-picker {
-  background: var(--proxmox-bg-tertiary) !important;
-  border-color: var(--proxmox-border) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .proxies-page .ant-input::placeholder {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .proxies-page .ant-btn-primary {
-  background: var(--proxmox-accent);
-  border-color: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .proxies-page .ant-btn-primary:hover {
-  background: var(--proxmox-accent-hover);
-  border-color: var(--proxmox-accent-hover);
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
 }
 
 .proxies-page .ant-modal-content {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .proxies-page .ant-modal-header {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .proxies-page .ant-modal-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .proxies-page .ant-form-item-label > label {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .proxies-page .ant-picker-dropdown {
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-surface-panel);
 }
 
 /* High risk stat card */
@@ -176,8 +176,8 @@
 }
 
 .proxy-copy-btn:hover {
-  background: var(--proxmox-bg-hover) !important;
-  border-color: var(--proxmox-accent) !important;
+  background: var(--boxmox-color-surface-hover) !important;
+  border-color: var(--boxmox-color-brand-primary) !important;
 }
 
 /* Fraud score cell improvements */
@@ -186,7 +186,7 @@
 }
 
 .fraud-score-cell .ant-progress-inner {
-  background-color: var(--proxmox-bg-tertiary);
+  background-color: var(--boxmox-color-surface-muted);
 }
 
 /* Table improvements */
@@ -291,8 +291,8 @@
 .proxies-table-card .ant-table-thead > tr > th:nth-child(9),
 .proxies-table-card .ant-table-tbody > tr > td:nth-child(9) {
   /* Days Left */
-  width: 50px;
-  min-width: 50px;
+  width: 20px;
+  min-width: 20px;
   text-align: left !important;
 }
 
@@ -337,7 +337,7 @@
 }
 
 .fraud-score-cell .ant-progress-inner {
-  background-color: var(--proxmox-bg-tertiary);
+  background-color: var(--boxmox-color-surface-muted);
   border-radius: 3px;
 }
 
@@ -354,8 +354,8 @@
 }
 
 .proxy-copy-btn:hover {
-  background: var(--proxmox-bg-hover) !important;
-  border-color: var(--proxmox-accent) !important;
+  background: var(--boxmox-color-surface-hover) !important;
+  border-color: var(--boxmox-color-brand-primary) !important;
 }
 
 .proxy-copy-btn .ant-typography {
@@ -367,7 +367,7 @@
 .proxy-credentials {
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
   font-size: 11px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   opacity: 0.8;
 }
 

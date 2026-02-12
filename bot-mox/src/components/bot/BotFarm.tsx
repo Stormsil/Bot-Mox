@@ -43,10 +43,21 @@ const getQualityColor = (quality: InventoryItem['quality']) => {
 export const BotFarm: React.FC<BotFarmProps> = () => {
   const inventory = mockInventory;
   const farmStats = mockFarmStats;
-  const sessionDuration = Date.now() - farmStats.session_start;
+  const [currentTime, setCurrentTime] = React.useState(() => Date.now());
+  const sessionDuration = currentTime - farmStats.session_start;
   const hoursActive = sessionDuration / 3600000;
   // goldEarned will be used in future
   void hoursActive;
+
+  React.useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const formatDuration = (ms: number) => {
     const hours = Math.floor(ms / 3600000);

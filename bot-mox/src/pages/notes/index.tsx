@@ -3,37 +3,24 @@
  * Интегрирует NoteSidebar и NoteEditor для полноценной работы с заметками
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { Empty, Spin, message } from 'antd';
-import { NoteSidebar, NoteEditor } from '../../components/notes';
+import { useLocation } from 'react-router-dom';
+import { NoteSidebar } from '../../components/notes';
 import type { Note } from '../../services/notesService';
 import {
-  getNote,
   subscribeToNote,
 } from '../../services/notesService';
 import './NotesPage.css';
 
+const NoteEditor = lazy(async () => ({
+  default: (await import('../../components/notes/NoteEditor')).NoteEditor,
+}));
+
 const SIDEBAR_COLLAPSED_KEY = 'notes_sidebar_collapsed';
 
-/**
- * Создает пустую заметку по умолчанию
- */
-const createDefaultNote = (): Note => {
-  const now = Date.now();
-  return {
-    id: '',
-    title: '',
-    content: '',  // Markdown content
-    tags: [],
-    bot_id: null,
-    project_id: null,
-    is_pinned: false,
-    created_at: now,
-    updated_at: now,
-  };
-};
-
 export const NotesPage: React.FC = () => {
+  const location = useLocation();
   // Состояние выбранной заметки
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
@@ -45,14 +32,28 @@ export const NotesPage: React.FC = () => {
     return saved ? JSON.parse(saved) : false;
   });
 
+  // Поддержка deep-link из календаря: /notes?note=<id>
+  useEffect(() => {
+    const noteIdFromQuery = new URLSearchParams(location.search).get('note');
+    if (!noteIdFromQuery) return;
+    const frameId = window.requestAnimationFrame(() => {
+      setSelectedNoteId((prev) => (prev === noteIdFromQuery ? prev : noteIdFromQuery));
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [location.search]);
+
   // Загрузка заметки при изменении выбранного ID
   useEffect(() => {
     if (!selectedNoteId) {
-      setCurrentNote(null);
       return;
     }
 
-    setLoading(true);
+    const loadingFrame = window.requestAnimationFrame(() => {
+      setLoading(true);
+    });
 
     // Подписываемся на realtime обновления заметки
     const unsubscribe = subscribeToNote(selectedNoteId, (note) => {
@@ -68,18 +69,22 @@ export const NotesPage: React.FC = () => {
     });
 
     return () => {
+      window.cancelAnimationFrame(loadingFrame);
       unsubscribe();
     };
   }, [selectedNoteId]);
 
   // Обработчик выбора заметки из sidebar
   const handleSelectNote = useCallback((noteId: string) => {
+    setCurrentNote(null);
     setSelectedNoteId(noteId);
   }, []);
 
   // Обработчик создания новой заметки
   const handleCreateNote = useCallback(() => {
     // Заметка создается в NoteSidebar, здесь только сбрасываем выбор
+    setCurrentNote(null);
+    setLoading(false);
     setSelectedNoteId(null);
     message.success('Note created');
   }, []);
@@ -91,8 +96,10 @@ export const NotesPage: React.FC = () => {
 
   // Обработчик удаления заметки
   const handleNoteDelete = useCallback((noteId: string) => {
+    void noteId;
     setSelectedNoteId(null);
     setCurrentNote(null);
+    setLoading(false);
     message.success('Note deleted');
   }, []);
 
@@ -126,11 +133,20 @@ export const NotesPage: React.FC = () => {
               <span>Loading note...</span>
             </div>
           ) : currentNote ? (
-            <NoteEditor
-              note={currentNote}
-              onNoteChange={handleNoteChange}
-              onNoteDelete={handleNoteDelete}
-            />
+            <Suspense
+              fallback={(
+                <div className="notes-loading">
+                  <Spin size="large" />
+                  <span>Loading editor...</span>
+                </div>
+              )}
+            >
+              <NoteEditor
+                note={currentNote}
+                onNoteChange={handleNoteChange}
+                onNoteDelete={handleNoteDelete}
+              />
+            </Suspense>
           ) : (
             <div className="notes-empty">
               <Empty

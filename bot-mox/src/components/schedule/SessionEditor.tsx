@@ -40,7 +40,13 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
           enabled: true
         });
       }
-      setError(null);
+      const frameId = window.requestAnimationFrame(() => {
+        setError(null);
+      });
+
+      return () => {
+        window.cancelAnimationFrame(frameId);
+      };
     }
   }, [visible, session, form]);
 

@@ -81,7 +81,7 @@ export const BotProfession: React.FC<BotProfessionProps> = () => {
                   <Progress
                     percent={percent}
                     strokeColor={color}
-                    trailColor="var(--proxmox-border)"
+                    trailColor="var(--boxmox-color-border-default)"
                     showInfo={false}
                   />
                   <div className="skill-percent">{percent}%</div>

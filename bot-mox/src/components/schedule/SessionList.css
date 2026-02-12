@@ -1,6 +1,6 @@
 .session-list {
   padding: 16px;
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-surface-panel);
   display: flex;
   flex-direction: column;
 }
@@ -19,14 +19,14 @@
 
 .session-list-header h4 {
   margin: 0;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   font-size: 14px;
   font-weight: 600;
 }
 
 .session-empty {
   padding: 32px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .session-items {
@@ -47,70 +47,62 @@
 }
 
 .session-items-scrollable::-webkit-scrollbar-track {
-  background: var(--proxmox-bg-tertiary);
+  background: var(--boxmox-color-surface-muted);
   border-radius: 3px;
 }
 
 .session-items-scrollable::-webkit-scrollbar-thumb {
-  background: var(--proxmox-border);
+  background: var(--boxmox-color-border-default);
   border-radius: 3px;
 }
 
 .session-items-scrollable::-webkit-scrollbar-thumb:hover {
-  background: var(--proxmox-orange);
+  background: var(--boxmox-color-brand-primary);
 }
 
 .session-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: var(--proxmox-bg-tertiary);
-  border: 1px solid var(--proxmox-border);
-  border-radius: 8px;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--boxmox-color-surface-muted);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 6px;
   transition: all 0.2s ease;
+  min-height: 36px;
 }
 
 .session-item:hover {
-  border-color: var(--proxmox-orange);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .session-item.disabled {
   opacity: 0.6;
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-surface-panel);
 }
 
 .session-number {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--proxmox-orange);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 50%;
-  flex-shrink: 0;
+  display: none;
 }
 
 .session-time {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
   flex: 1;
 }
 
 .time-range {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   font-family: 'Monaco', 'Consolas', monospace;
 }
 
 .duration {
   font-size: 11px;
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .session-profile {
@@ -120,8 +112,8 @@
 .profile-badge {
   display: inline-block;
   padding: 2px 8px;
-  background: rgba(255, 165, 0, 0.2);
-  color: var(--proxmox-orange);
+  background: var(--boxmox-color-brand-soft);
+  color: var(--boxmox-color-brand-contrast);
   font-size: 11px;
   font-weight: 500;
   text-transform: capitalize;
@@ -136,11 +128,11 @@
 }
 
 .session-actions .ant-btn {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .session-actions .ant-btn:hover {
-  color: var(--proxmox-orange);
+  color: var(--boxmox-color-brand-primary);
 }
 
 .session-actions .ant-switch {

@@ -10,6 +10,7 @@ import {
 import { PlusOutlined, EditOutlined } from '@ant-design/icons';
 import type { SubscriptionFormData, SubscriptionWithDetails } from '../../types';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import './SubscriptionForm.css';
 
 const { Option } = Select;
@@ -37,6 +38,11 @@ interface SubscriptionFormProps {
   onCancel?: () => void;
   // Loading state
   loading?: boolean;
+}
+
+interface SubscriptionFormValues {
+  bot_id?: string;
+  expires_at: Dayjs;
 }
 
 /**
@@ -81,7 +87,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
   }, [editingSubscription, presetBotId, form]);
 
   // Form submission handler
-  const handleSubmit = (values: any) => {
+  const handleSubmit = (values: SubscriptionFormValues) => {
     setDateError(null);
 
     // Check date
@@ -150,7 +156,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
               // Формат: CharacterName (VM-Name) - shortUUID
               const vmName = bot.vmName || bot.name || 'Unknown';
               const characterName = bot.character || 'Unknown';
-              const shortId = bot.id.slice(0, 8);
               const displayLabel = `${characterName} (${vmName}) - ${bot.id}`;
 
               return (

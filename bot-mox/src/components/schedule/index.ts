@@ -4,3 +4,5 @@ export { SessionEditor } from './SessionEditor';
 export { TimelineVisualizer } from './TimelineVisualizer';
 export { DayStats } from './DayStats';
 export { ScheduleGenerator } from './ScheduleGenerator';
+export { WeekPanel } from './WeekPanel';
+export { WeekOverview } from './WeekOverview';

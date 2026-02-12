@@ -1,23 +1,23 @@
 .transaction-form-modal .ant-modal-content {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .transaction-form-modal .ant-modal-header {
-  background: var(--proxmox-bg-secondary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .transaction-form-modal .ant-modal-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .transaction-form-modal .ant-modal-footer {
-  border-top: 1px solid var(--proxmox-border);
+  border-top: 1px solid var(--boxmox-color-border-default);
 }
 
 .transaction-form .ant-form-item-label > label {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .transaction-form .ant-radio-group {
@@ -26,18 +26,18 @@
 }
 
 .transaction-form .ant-radio-button-wrapper {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-secondary);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .transaction-form .ant-radio-button-wrapper:hover {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .transaction-form .ant-radio-button-wrapper-checked {
-  background: var(--proxmox-accent);
-  border-color: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
   color: white;
 }
 
@@ -49,34 +49,34 @@
 .transaction-form .ant-input,
 .transaction-form .ant-input-number,
 .transaction-form .ant-picker {
-  background: var(--proxmox-bg-tertiary) !important;
-  border-color: var(--proxmox-border) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .transaction-form .ant-input::placeholder,
 .transaction-form .ant-input-number-input::placeholder {
-  color: var(--proxmox-text-muted) !important;
+  color: var(--boxmox-color-text-muted) !important;
 }
 
 .transaction-form .ant-select-selection-placeholder {
-  color: var(--proxmox-text-muted) !important;
+  color: var(--boxmox-color-text-muted) !important;
 }
 
 .transaction-form .ant-select-arrow,
 .transaction-form .ant-picker-suffix {
-  color: var(--proxmox-text-muted) !important;
+  color: var(--boxmox-color-text-muted) !important;
 }
 
 .transaction-form .ant-divider {
-  border-color: var(--proxmox-border);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .calculated-amount {
-  background: var(--proxmox-bg-tertiary);
+  background: var(--boxmox-color-surface-muted);
   padding: 12px 16px;
   border-radius: 4px;
-  border: 1px solid var(--proxmox-border);
+  border: 1px solid var(--boxmox-color-border-default);
   display: flex;
   justify-content: space-between;
   align-items: center;

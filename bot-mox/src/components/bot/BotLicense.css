@@ -7,18 +7,18 @@
 }
 
 .license-card {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
   margin-bottom: 16px;
 }
 
 .license-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .license-card .ant-card-head-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .license-card .ant-card-extra {
@@ -59,7 +59,7 @@
 .license-key {
   font-family: monospace;
   font-size: 13px;
-  background: var(--proxmox-bg-tertiary);
+  background: var(--boxmox-color-surface-muted);
   padding: 4px 8px;
   border-radius: 4px;
   word-break: break-all;
@@ -74,7 +74,7 @@
 .license-actions {
   margin-top: 8px;
   padding-top: 16px;
-  border-top: 1px solid var(--proxmox-border);
+  border-top: 1px solid var(--boxmox-color-border-default);
 }
 
 /* Empty state actions */
@@ -88,83 +88,83 @@
 
 /* Modal styles */
 .bot-license .ant-modal-content {
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-surface-panel);
 }
 
 .bot-license .ant-modal-header {
-  background: var(--proxmox-bg-tertiary);
-  border-bottom: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .bot-license .ant-modal-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .bot-license .ant-modal-footer {
-  border-top: 1px solid var(--proxmox-border);
+  border-top: 1px solid var(--boxmox-color-border-default);
 }
 
 /* Form styles */
 .bot-license .ant-form-item-label > label {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
 }
 
 .bot-license .ant-input,
 .bot-license .ant-select-selector,
 .bot-license .ant-picker {
-  background: var(--proxmox-bg-tertiary) !important;
-  border-color: var(--proxmox-border) !important;
-  color: var(--proxmox-text-primary) !important;
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .bot-license .ant-input::placeholder,
 .bot-license .ant-select-selection-placeholder {
-  color: var(--proxmox-text-muted) !important;
+  color: var(--boxmox-color-text-muted) !important;
 }
 
 /* AutoComplete dropdown */
 .bot-license .ant-select-dropdown {
-  background: var(--proxmox-bg-secondary) !important;
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel) !important;
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .bot-license .ant-select-item {
-  color: var(--proxmox-text-primary) !important;
+  color: var(--boxmox-color-text-primary) !important;
 }
 
 .bot-license .ant-select-item-option-active {
-  background: var(--proxmox-bg-tertiary) !important;
+  background: var(--boxmox-color-surface-muted) !important;
 }
 
 .bot-license .ant-select-item-option-selected {
-  background: var(--proxmox-accent) !important;
+  background: var(--boxmox-color-brand-primary) !important;
   color: white !important;
 }
 
 /* DatePicker dropdown */
 .bot-license .ant-picker-dropdown {
-  background: var(--proxmox-bg-secondary);
+  background: var(--boxmox-color-surface-panel);
 }
 
 .bot-license .ant-picker-panel {
-  background: var(--proxmox-bg-secondary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .bot-license .ant-picker-cell {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .bot-license .ant-picker-cell-in-view {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .bot-license .ant-picker-cell:hover:not(.ant-picker-cell-selected):not(.ant-picker-cell-disabled) .ant-picker-cell-inner {
-  background: var(--proxmox-bg-tertiary);
+  background: var(--boxmox-color-surface-muted);
 }
 
 .bot-license .ant-picker-cell-selected .ant-picker-cell-inner {
-  background: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
 }
 
 /* Responsive */

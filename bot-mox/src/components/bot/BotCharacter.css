@@ -4,17 +4,17 @@
 }
 
 .character-card {
-  background: var(--proxmox-bg-secondary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .character-card .ant-card-head {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
 }
 
 .character-card .ant-card-head-title {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   font-size: var(--text-sm);
   font-weight: 600;
 }
@@ -26,14 +26,14 @@
 }
 
 .header-icon {
-  color: var(--proxmox-accent);
+  color: var(--boxmox-color-brand-primary);
   font-size: 16px;
 }
 
 .incomplete-badge .ant-badge-dot {
   width: 8px;
   height: 8px;
-  background: var(--proxmox-status-warning);
+  background: var(--boxmox-color-status-warning);
 }
 
 /* Loading State */
@@ -47,7 +47,7 @@
 }
 
 .loading-text {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   font-size: var(--text-sm);
 }
 
@@ -63,7 +63,7 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--proxmox-border);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .character-avatar-section {
@@ -76,13 +76,13 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 28px;
   color: white;
-  border: 2px solid var(--proxmox-border-light);
+  border: 2px solid var(--boxmox-color-border-subtle);
 }
 
 /* Large race avatar in header */
@@ -91,7 +91,7 @@
   height: 80px;
   border-radius: 8px;
   object-fit: cover;
-  border: 2px solid var(--proxmox-border-light);
+  border: 2px solid var(--boxmox-color-border-subtle);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -104,24 +104,24 @@
 .character-name {
   font-size: var(--text-xl);
   font-weight: 600;
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   margin: 0;
 }
 
 .character-subtitle {
   font-size: var(--text-sm);
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   text-transform: capitalize;
 }
 
 .edit-button {
-  background: var(--proxmox-accent);
-  border-color: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .edit-button:hover {
-  background: var(--proxmox-accent-hover);
-  border-color: var(--proxmox-accent-hover);
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
 }
 
 /* Stats Grid */
@@ -136,14 +136,14 @@
   align-items: flex-start;
   gap: 12px;
   padding: 12px;
-  background: var(--proxmox-bg-tertiary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-muted);
+  border: 1px solid var(--boxmox-color-border-default);
   border-radius: var(--radius-md);
 }
 
 .stat-icon {
   font-size: 20px;
-  color: var(--proxmox-accent);
+  color: var(--boxmox-color-brand-primary);
   margin-top: 2px;
 }
 
@@ -155,14 +155,14 @@
 }
 
 .stat-label {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .stat-value {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
   font-size: var(--text-sm);
   font-weight: 500;
 }
@@ -203,7 +203,7 @@
   min-width: 36px;
   height: 28px;
   padding: 0 10px;
-  background: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
   color: white;
   font-size: var(--text-sm);
   font-weight: 600;
@@ -212,13 +212,63 @@
 
 .level-hint {
   font-size: var(--text-xs);
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
   font-style: italic;
 }
 
 /* Edit Form */
 .character-form {
   margin-top: 8px;
+}
+
+.character-workflow-alert {
+  border-left: 3px solid var(--boxmox-color-brand-primary);
+  padding: 6px 10px !important;
+  margin-bottom: 10px !important;
+}
+
+.character-workflow-alert .ant-alert-message {
+  margin-bottom: 0 !important;
+  font-size: var(--text-xs);
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.character-workflow-alert .ant-alert-icon {
+  font-size: 14px;
+  margin-inline-end: 8px !important;
+}
+
+.character-workflow-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.character-workflow-help-icon {
+  color: var(--boxmox-color-text-muted);
+  cursor: help;
+  font-size: 13px;
+}
+
+.character-generate-btn {
+  height: 28px;
+  padding: 0 8px;
+}
+
+.character-name-actions {
+  display: inline-flex;
+  align-items: center;
+}
+
+.character-unlock-btn {
+  height: 28px;
+  padding: 0 8px;
+  color: var(--boxmox-color-brand-warning) !important;
+}
+
+.character-unlock-btn:hover {
+  color: var(--boxmox-color-brand-primary) !important;
 }
 
 .field-label {
@@ -228,20 +278,20 @@
 }
 
 .field-label .anticon {
-  color: var(--proxmox-accent);
+  color: var(--boxmox-color-brand-primary);
 }
 
 .character-form .ant-form-item-label > label {
-  color: var(--proxmox-text-secondary);
+  color: var(--boxmox-color-text-secondary);
   font-size: var(--text-sm);
 }
 
 .character-form .ant-input,
 .character-form .ant-input-number,
 .character-form .ant-select-selector {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .character-form .ant-input:hover,
@@ -250,33 +300,46 @@
 .character-form .ant-input-number:focus,
 .character-form .ant-select-selector:hover,
 .character-form .ant-select-selector:focus {
-  border-color: var(--proxmox-accent);
+  border-color: var(--boxmox-color-brand-primary);
+}
+
+.character-form .ant-input-group-addon {
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.character-form .ant-input-group-addon .ant-btn-text {
+  color: var(--boxmox-color-brand-primary);
+}
+
+.character-form .ant-input-group-addon .ant-btn-text:disabled {
+  color: var(--boxmox-color-text-muted);
 }
 
 .character-form .ant-input::placeholder {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .character-form .ant-input-number-input {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .character-form .ant-select-arrow {
-  color: var(--proxmox-text-muted);
+  color: var(--boxmox-color-text-muted);
 }
 
 .character-form .ant-select-dropdown {
-  background: var(--proxmox-bg-secondary);
-  border: 1px solid var(--proxmox-border);
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .character-form .ant-select-item {
-  color: var(--proxmox-text-primary);
+  color: var(--boxmox-color-text-primary);
 }
 
 .character-form .ant-select-item-option-active,
 .character-form .ant-select-item-option-selected {
-  background: var(--proxmox-bg-hover);
+  background: var(--boxmox-color-surface-hover);
 }
 
 /* Form Actions */
@@ -284,7 +347,7 @@
   margin-top: 24px;
   margin-bottom: 0;
   padding-top: 16px;
-  border-top: 1px solid var(--proxmox-border);
+  border-top: 1px solid var(--boxmox-color-border-default);
 }
 
 .form-actions .ant-form-item-control-input-content {
@@ -295,49 +358,54 @@
 
 .unsaved-changes-text {
   font-size: var(--text-xs);
-  color: var(--proxmox-status-warning);
+  color: var(--boxmox-color-status-warning);
 }
 
 /* Button Styles */
 .character-form .ant-btn-primary {
-  background: var(--proxmox-accent);
-  border-color: var(--proxmox-accent);
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
 }
 
 .character-form .ant-btn-primary:hover {
-  background: var(--proxmox-accent-hover);
-  border-color: var(--proxmox-accent-hover);
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
 }
 
 .character-form .ant-btn-primary:disabled {
-  background: var(--proxmox-bg-hover);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-muted);
+  background: var(--boxmox-color-surface-hover);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-muted);
 }
 
 .character-form .ant-btn-default {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-border);
-  color: var(--proxmox-text-primary);
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
 }
 
 .character-form .ant-btn-default:hover {
-  border-color: var(--proxmox-accent);
-  color: var(--proxmox-accent);
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
 }
 
 /* Alert Styles */
-.character-card .ant-alert {
-  background: var(--proxmox-bg-tertiary);
-  border-color: var(--proxmox-status-error);
+.config-incomplete-alert {
+  border-color: var(--boxmox-color-brand-warning) !important;
+  background: color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted)) !important;
 }
 
-.character-card .ant-alert-message {
-  color: var(--proxmox-text-primary);
+.config-incomplete-alert .ant-alert-message {
+  color: var(--boxmox-color-text-primary) !important;
 }
 
-.character-card .ant-alert-description {
-  color: var(--proxmox-text-secondary);
+.config-incomplete-alert .ant-alert-description {
+  color: var(--boxmox-color-text-secondary) !important;
+}
+
+.character-card .ant-alert-error {
+  background: color-mix(in srgb, var(--boxmox-color-status-danger) 10%, var(--boxmox-color-surface-muted));
+  border-color: var(--boxmox-color-status-danger);
 }
 
 /* Responsive */

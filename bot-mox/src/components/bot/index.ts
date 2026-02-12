@@ -10,3 +10,4 @@ export { BotLicense } from './BotLicense';
 export { BotProxy } from './BotProxy';
 export { BotSubscription } from './BotSubscription';
 export { BotLifeStages } from './BotLifeStages';
+export { BotVMInfo } from './BotVMInfo';

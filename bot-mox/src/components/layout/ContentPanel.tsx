@@ -3,21 +3,16 @@ import { Tabs } from 'antd';
 import type { TabsProps } from 'antd';
 import {
   InfoCircleOutlined,
-  UserOutlined,
-  FileTextOutlined,
-  CalendarOutlined,
-  MailOutlined,
-  IdcardOutlined,
-  KeyOutlined,
-  GlobalOutlined,
-  CreditCardOutlined,
+  AppstoreOutlined,
+  EyeOutlined,
+  SettingOutlined,
   ExclamationCircleOutlined,
-  SyncOutlined,
   UnorderedListOutlined,
+  DesktopOutlined,
 } from '@ant-design/icons';
 import './ContentPanel.css';
 
-export type TabType = 'summary' | 'schedule' | 'character' | 'lifeStages' | 'account' | 'person' | 'logs' | 'license' | 'proxy' | 'subscription' | 'transactions';
+export type TabType = 'summary' | 'monitoring' | 'configure' | 'resources' | 'vmInfo' | 'transactions' | 'gold_price';
 
 interface ContentPanelProps {
   activeTab?: TabType;
@@ -25,111 +20,29 @@ interface ContentPanelProps {
   children?: React.ReactNode;
   type?: 'bot' | 'datacenter' | 'project' | 'metrics' | 'finance';
   incompleteTabs?: TabType[];
+  className?: string;
+  hideTabs?: boolean;
 }
 
 // Табы для бота (новая структура)
-const botTabs: TabsProps['items'] = [
-  {
-    key: 'summary',
-    label: (
-      <span className="tab-label">
-        <InfoCircleOutlined />
-        <span>Summary</span>
-      </span>
-    ),
-    children: null,
-  },
-  {
-    key: 'schedule',
-    label: (
-      <span className="tab-label">
-        <CalendarOutlined />
-        <span>Schedule</span>
-      </span>
-    ),
-    children: null,
-  },
-  {
-    key: 'lifeStages',
-    label: (
-      <span className="tab-label">
-        <SyncOutlined />
-        <span>Life Stages</span>
-      </span>
-    ),
-    children: null,
-  },
-  {
-    key: 'character',
-    label: (
-      <span className="tab-label">
-        <UserOutlined />
-        <span>Character</span>
-      </span>
-    ),
-    children: null,
-  },
-  {
-    key: 'account',
-    label: (
-      <span className="tab-label">
-        <MailOutlined />
-        <span>Account</span>
-      </span>
-    ),
-    children: null,
-  },
-  {
-    key: 'person',
-    label: (
-      <span className="tab-label">
-        <IdcardOutlined />
-        <span>Person</span>
-      </span>
-    ),
-    children: null,
-  },
-  {
-    key: 'logs',
-    label: (
-      <span className="tab-label">
-        <FileTextOutlined />
-        <span>Logs</span>
-      </span>
-    ),
-    children: null,
-  },
-  {
-    key: 'license',
-    label: (
-      <span className="tab-label">
-        <KeyOutlined />
-        <span>License</span>
-      </span>
-    ),
-    children: null,
-  },
-  {
-    key: 'proxy',
-    label: (
-      <span className="tab-label">
-        <GlobalOutlined />
-        <span>Proxy</span>
-      </span>
-    ),
-    children: null,
-  },
-  {
-    key: 'subscription',
-    label: (
-      <span className="tab-label">
-        <CreditCardOutlined />
-        <span>Subscription</span>
-      </span>
-    ),
-    children: null,
-  },
+const botTabMeta: Array<{ key: TabType; icon: React.ReactNode; label: string }> = [
+  { key: 'summary', icon: <InfoCircleOutlined />, label: 'Summary' },
+  { key: 'monitoring', icon: <EyeOutlined />, label: 'Monitoring' },
+  { key: 'configure', icon: <SettingOutlined />, label: 'Configure' },
+  { key: 'resources', icon: <AppstoreOutlined />, label: 'Resources' },
+  { key: 'vmInfo', icon: <DesktopOutlined />, label: 'VM Info' },
 ];
+
+const botTabs: TabsProps['items'] = botTabMeta.map((tab) => ({
+  key: tab.key,
+  label: (
+    <span className="tab-label">
+      {tab.icon}
+      <span>{tab.label}</span>
+    </span>
+  ),
+  children: null,
+}));
 
 // Табы для датацентра
 const datacenterTabs: TabsProps['items'] = [
@@ -205,46 +118,16 @@ const tabsMap: Record<NonNullable<ContentPanelProps['type']>, TabsProps['items']
   finance: financeTabs,
 };
 
-// Icon mapping for tabs
-const tabIcons: Record<TabType, React.ReactNode> = {
-  summary: <InfoCircleOutlined />,
-  schedule: <CalendarOutlined />,
-  lifeStages: <SyncOutlined />,
-  character: <UserOutlined />,
-  account: <MailOutlined />,
-  person: <IdcardOutlined />,
-  logs: <FileTextOutlined />,
-  license: <KeyOutlined />,
-  proxy: <GlobalOutlined />,
-  subscription: <CreditCardOutlined />,
-  transactions: <UnorderedListOutlined />,
-};
-
-// Tab labels mapping
-const tabLabels: Record<TabType, string> = {
-  summary: 'Summary',
-  schedule: 'Schedule',
-  lifeStages: 'Стадии жизни',
-  character: 'Character',
-  account: 'Account',
-  person: 'Person',
-  logs: 'Logs',
-  license: 'License',
-  proxy: 'Proxy',
-  subscription: 'Subscription',
-  transactions: 'Transactions',
-};
-
 // Function to create tabs with incomplete indicators
 const createBotTabsWithWarnings = (incompleteTabs: TabType[] = []): TabsProps['items'] => {
-  return (Object.keys(tabIcons) as TabType[]).map(key => {
-    const isIncomplete = incompleteTabs.includes(key);
+  return botTabMeta.map((tab) => {
+    const isIncomplete = incompleteTabs.includes(tab.key);
     return {
-      key,
+      key: tab.key,
       label: (
         <span className={`tab-label ${isIncomplete ? 'tab-label-warning' : ''}`}>
-          {tabIcons[key]}
-          <span>{tabLabels[key]}</span>
+          {tab.icon}
+          <span>{tab.label}</span>
           {isIncomplete && <ExclamationCircleOutlined className="tab-warning-icon" />}
         </span>
       ),
@@ -259,6 +142,8 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   children,
   type = 'datacenter',
   incompleteTabs = [],
+  className,
+  hideTabs = false,
 }) => {
   const baseTabs = tabsMap[type] || datacenterTabs;
   const tabs = type === 'bot' && incompleteTabs.length > 0
@@ -270,17 +155,19 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   };
 
   return (
-    <div className="content-panel">
-      <div className="content-tabs-nav">
-        <Tabs
-          activeKey={activeTab}
-          onChange={handleTabChange}
-          items={tabs}
-          type="card"
-          className="content-tabs-ant"
-          renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} />}
-        />
-      </div>
+    <div className={`content-panel ${className || ''}`}>
+      {!hideTabs && (
+        <div className="content-tabs-nav">
+          <Tabs
+            activeKey={activeTab}
+            onChange={handleTabChange}
+            items={tabs}
+            type="card"
+            className="content-tabs-ant"
+            renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} />}
+          />
+        </div>
+      )}
       <div className="content-body">{children}</div>
     </div>
   );
