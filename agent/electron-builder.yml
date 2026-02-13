@@ -1,0 +1,14 @@
+appId: com.botmox.agent
+productName: Bot-Mox Agent
+directories:
+  output: release
+win:
+  target: portable
+  icon: assets/icon.png
+portable:
+  artifactName: BotMox-Agent-${version}.exe
+files:
+  - dist/**/*
+  - assets/**/*
+  - node_modules/**/*
+  - package.json

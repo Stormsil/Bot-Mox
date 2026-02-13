@@ -1,0 +1,23 @@
+{
+  "name": "botmox-agent",
+  "version": "0.1.0",
+  "description": "Bot-Mox Desktop Agent — Windows tray app for Proxmox VM operations",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "copy-static": "node -e \"const fs=require('fs'),p=require('path');const s=p.join('src','ui'),d=p.join('dist','ui');fs.mkdirSync(d,{recursive:true});fs.readdirSync(s).filter(f=>!f.endsWith('.ts')).forEach(f=>fs.copyFileSync(p.join(s,f),p.join(d,f)));console.log('Static files copied')\"",
+    "dev": "tsc && npm run copy-static && electron .",
+    "build": "tsc && npm run copy-static && electron-builder --win portable",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.0.0",
+    "rimraf": "^6.0.0",
+    "typescript": "^5.7.0"
+  }
+}
