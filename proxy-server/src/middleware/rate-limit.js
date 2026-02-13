@@ -1,6 +1,8 @@
 function createSimpleRateLimiter(options = {}) {
   const windowMs = Number(options.windowMs) || 15 * 60 * 1000;
   const max = Number(options.max) || 100;
+  const skip =
+    typeof options.skip === 'function' ? options.skip : () => false;
   const keyGenerator =
     typeof options.keyGenerator === 'function'
       ? options.keyGenerator
@@ -22,6 +24,8 @@ function createSimpleRateLimiter(options = {}) {
   }
 
   return function rateLimiter(req, res, next) {
+    if (skip(req)) return next();
+
     const now = Date.now();
     const key = keyGenerator(req);
 

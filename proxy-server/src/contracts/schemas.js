@@ -800,7 +800,7 @@ const agentCommandCreateSchema = z.object({
 
 const agentCommandUpdateSchema = z.object({
   status: z.enum(['running', 'succeeded', 'failed']),
-  result: z.record(z.unknown()).optional(),
+  result: z.unknown().optional(),
   error_message: z.string().trim().max(2000).optional(),
 });
 

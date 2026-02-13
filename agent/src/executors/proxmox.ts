@@ -62,7 +62,11 @@ function httpRequest(
       reject(new Error('Request timed out'));
     });
 
-    if (body) req.write(body);
+    if (body) {
+      const buf = Buffer.from(body, 'utf-8');
+      req.setHeader('Content-Length', buf.byteLength);
+      req.write(buf);
+    }
     req.end();
   });
 }
@@ -93,7 +97,8 @@ async function login(config: ProxmoxConfig, logger: Logger): Promise<ProxmoxSess
 
   const loginData = (response.data as { data?: { ticket?: string; CSRFPreventionToken?: string } })?.data;
   if (!loginData?.ticket) {
-    throw new Error(`Proxmox login failed (HTTP ${response.status})`);
+    const detail = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+    throw new Error(`Proxmox login failed (HTTP ${response.status}): ${detail}`);
   }
 
   session = {

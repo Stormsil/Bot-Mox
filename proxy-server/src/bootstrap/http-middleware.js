@@ -53,6 +53,13 @@ function mountCoreHttpMiddleware({ app, env, corsOptions }) {
     createSimpleRateLimiter({
       windowMs: env.apiRateLimitWindowMs,
       max: env.apiRateLimitMax,
+      skip: (req) => {
+        // Internal/infra tokens are trusted server-to-server calls — skip rate limit
+        const auth = req.headers?.authorization;
+        if (!auth) return false;
+        const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+        return token === env.internalApiToken || token === env.internalInfraToken;
+      },
     })
   );
   app.use(requestLogger);

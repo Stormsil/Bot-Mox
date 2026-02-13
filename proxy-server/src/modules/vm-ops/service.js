@@ -146,7 +146,7 @@ function createVmOpsService({ env, agentService }) {
 
     let query = client
       .from('agent_commands')
-      .select('id, tenant_id, agent_id, command_type, status, queued_at, started_at, completed_at, expires_at')
+      .select('id, tenant_id, agent_id, command_type, payload, status, queued_at, started_at, completed_at, expires_at')
       .eq('tenant_id', normalizedTenantId)
       .order('queued_at', { ascending: false })
       .limit(100);

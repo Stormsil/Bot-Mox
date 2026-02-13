@@ -138,7 +138,7 @@ export class AgentLoop {
     try {
       const result = await executeCommand(
         cmd.command_type,
-        cmd.payload,
+        cmd.payload || {},
         this.config,
         this.logger,
       );
