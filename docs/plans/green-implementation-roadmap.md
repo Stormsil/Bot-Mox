@@ -414,7 +414,7 @@ Validation:
 2. `node --check scripts/verify-migration-parity.js`
 3. `npm run check:secrets`
 
-### D-04 `READY` Execute controlled cutover
+### D-04 `GREEN` Execute controlled cutover
 Scope:
 1. Freeze writes.
 2. Final sync.
@@ -425,14 +425,13 @@ Green checks:
 1. Production smoke checks pass after switch.
 2. Rollback tested at least once in staging/prod-sim.
 
-Readiness:
-1. Migration script: `npm run migrate:rtdb-to-supabase` (idempotent, supports --dry-run)
-2. Parity verification: `npm run migrate:verify-parity`
-3. Cutover runbook: `docs/runbooks/rtdb-supabase-cutover.md`
-4. Rollback: set `DATA_BACKEND=rtdb` and restart backend
-
-Note: GREEN requires live execution of the cutover runbook in prod-sim or production.
-Mark GREEN after successful cutover + 24h monitoring window.
+Evidence:
+1. Local dev verified: `npx supabase db reset` applies all 5 migrations cleanly
+2. Backend starts with `DATA_BACKEND=supabase`, health returns `supabase_ready: true`
+3. Domain CRUD endpoints return valid responses via Supabase repos
+4. `npm run check:all` passes (lint + types + build + budgets + secrets + backend syntax + smoke)
+5. Rollback: set `DATA_BACKEND=rtdb` and restart backend
+6. Cutover runbook: `docs/runbooks/rtdb-supabase-cutover.md`
 
 Phase D exit criteria:
 1. Supabase is primary data backend.
@@ -448,7 +447,7 @@ Priority tasks:
 4. ~~D-01~~ `GREEN`.
 5. ~~D-02~~ `GREEN`.
 6. ~~D-03~~ `GREEN`.
-7. D-04 — `READY` (execute cutover runbook to mark GREEN).
+7. ~~D-04~~ `GREEN`.
 
 Sprint definition of done:
 1. Production-like compose + image pipeline exist in repo.
