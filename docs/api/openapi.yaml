@@ -1404,3 +1404,380 @@ paths:
       responses:
         '200':
           description: VM config write result
+  # --- Agents ---
+  /api/v1/agents/pairings:
+    post:
+      summary: Create agent pairing code (admin/infra)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                expires_in_minutes:
+                  type: integer
+                  default: 15
+      responses:
+        '201':
+          description: Pairing created
+        '403':
+          description: Forbidden
+  /api/v1/agents/register:
+    post:
+      summary: Register agent using pairing code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pairing_code:
+                  type: string
+                version:
+                  type: string
+                platform:
+                  type: string
+                capabilities:
+                  type: array
+                  items:
+                    type: string
+              required: [pairing_code]
+      responses:
+        '201':
+          description: Agent registered
+        '404':
+          description: Pairing not found
+        '410':
+          description: Pairing expired
+  /api/v1/agents/heartbeat:
+    post:
+      summary: Agent heartbeat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agent_id:
+                  type: string
+              required: [agent_id]
+      responses:
+        '200':
+          description: Heartbeat accepted
+        '409':
+          description: Agent revoked or not active
+  /api/v1/agents:
+    get:
+      summary: List agents for tenant
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, active, offline, revoked]
+      responses:
+        '200':
+          description: Agent list
+  /api/v1/agents/{id}:
+    get:
+      summary: Get agent by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Agent details
+        '404':
+          description: Not found
+  /api/v1/agents/{id}/revoke:
+    post:
+      summary: Revoke agent (admin/infra)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Agent revoked
+        '409':
+          description: Already revoked
+  # --- Secrets ---
+  /api/v1/secrets:
+    post:
+      summary: Store new ciphertext secret (server-blind)
+      description: Backend stores only ciphertext and metadata. Never returns plaintext.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                ciphertext:
+                  type: string
+                alg:
+                  type: string
+                  default: AES-256-GCM
+                key_id:
+                  type: string
+                nonce:
+                  type: string
+                aad_meta:
+                  type: object
+                  additionalProperties: true
+              required: [label, ciphertext, key_id, nonce]
+      responses:
+        '201':
+          description: Secret metadata (no ciphertext in response)
+  /api/v1/secrets/{id}/meta:
+    get:
+      summary: Get secret metadata (no ciphertext)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Secret metadata
+        '404':
+          description: Not found
+  /api/v1/secrets/{id}/rotate:
+    post:
+      summary: Rotate secret ciphertext material
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ciphertext:
+                  type: string
+                alg:
+                  type: string
+                key_id:
+                  type: string
+                nonce:
+                  type: string
+                aad_meta:
+                  type: object
+              required: [ciphertext, key_id, nonce]
+      responses:
+        '200':
+          description: Rotated secret metadata
+  /api/v1/secrets/bindings:
+    post:
+      summary: Bind secret to scope (bot/vm/agent/tenant)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scope_type:
+                  type: string
+                  enum: [bot, vm, agent, tenant]
+                scope_id:
+                  type: string
+                secret_ref:
+                  type: string
+                  format: uuid
+                field_name:
+                  type: string
+              required: [scope_type, scope_id, secret_ref, field_name]
+      responses:
+        '201':
+          description: Binding created
+    get:
+      summary: List secret bindings for scope
+      parameters:
+        - in: query
+          name: scope_type
+          schema:
+            type: string
+        - in: query
+          name: scope_id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Binding list
+  # --- VM Ops (agent-mediated) ---
+  /api/v1/vm-ops/proxmox/{action}:
+    post:
+      summary: Dispatch proxmox command through agent
+      parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agent_id:
+                  type: string
+                  format: uuid
+                action:
+                  type: string
+                params:
+                  type: object
+                  additionalProperties: true
+              required: [agent_id, action]
+      responses:
+        '202':
+          description: Command queued
+        '409':
+          description: Agent offline
+  /api/v1/vm-ops/syncthing/{action}:
+    post:
+      summary: Dispatch syncthing command through agent
+      parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agent_id:
+                  type: string
+                  format: uuid
+                action:
+                  type: string
+                params:
+                  type: object
+                  additionalProperties: true
+              required: [agent_id, action]
+      responses:
+        '202':
+          description: Command queued
+        '409':
+          description: Agent offline
+  /api/v1/vm-ops/commands:
+    post:
+      summary: Dispatch arbitrary agent command (admin/infra)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agent_id:
+                  type: string
+                  format: uuid
+                command_type:
+                  type: string
+                payload:
+                  type: object
+                  additionalProperties: true
+                expires_in_seconds:
+                  type: integer
+                  default: 300
+              required: [agent_id, command_type]
+      responses:
+        '202':
+          description: Command queued
+        '409':
+          description: Agent offline
+    get:
+      summary: List agent commands
+      parameters:
+        - in: query
+          name: agent_id
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Command list
+  /api/v1/vm-ops/commands/{id}:
+    get:
+      summary: Get command status
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Command status
+        '404':
+          description: Not found
+    patch:
+      summary: Update command status (from agent)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [running, succeeded, failed]
+                result:
+                  type: object
+                  additionalProperties: true
+                error_message:
+                  type: string
+              required: [status]
+      responses:
+        '200':
+          description: Command updated

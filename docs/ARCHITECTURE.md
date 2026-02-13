@@ -29,15 +29,21 @@ Domain routers:
 - `vm.routes.js` (`/api/v1/vm/*`, tenant-scoped VM UUID registry)
 - `license.routes.js` (`/api/v1/license/*`, execution lease + heartbeat/revoke)
 - `artifacts.routes.js` (`/api/v1/artifacts/*`, release assignment + lease-gated download resolve)
+- `agents.routes.js` (`/api/v1/agents/*`, agent registration/pairing/heartbeat/revoke)
+- `secrets.routes.js` (`/api/v1/secrets/*`, ciphertext-only E2E encrypted vault)
+- `vm-ops.routes.js` (`/api/v1/vm-ops/*`, agent-mediated VM operations via command bus)
 - `ipqs.routes.js`
 - `wow-names.routes.js`
-- `infra.routes.js`
+- `infra.routes.js` (legacy, admin/infra only)
 
 Domain services:
 
 - `modules/vm-registry/service.js`
 - `modules/license/service.js`
 - `modules/artifacts/service.js`
+- `modules/agents/service.js`
+- `modules/secrets/service.js`
+- `modules/vm-ops/service.js`
 
 Storage providers:
 
@@ -48,7 +54,10 @@ Storage providers:
 - Bearer auth middleware: `proxy-server/src/middleware/auth.js`
 - Tenant context on auth payload (`tenant_id`)
 - Supported auth backends: internal tokens + Supabase Auth (see `docs/AUTH.md`)
-- Infra RBAC gate (`infra` role) on `/api/v1/infra/*`
+- Infra RBAC gate (`infra` role) on `/api/v1/infra/*` (legacy, admin only)
+- Agent operations require admin/infra role for pairing and revoke
+- Secrets vault: server-blind E2E encryption (stores only ciphertext, never returns plaintext)
+- VM operations flow through agent command bus (fail-fast when agent offline)
 - Infra auth gate for UI proxy and WebSocket channels (`/proxmox-ui*`, `/tinyfm-ui*`, `/syncthing-ui*`, `/ws/vm-operations*`)
 - Audit logging for infra mutating operations
 - HTTP hardening and CORS: `proxy-server/src/bootstrap/http-middleware.js`
@@ -71,6 +80,8 @@ Storage providers:
 - Tracker-ready issue list: `docs/plans/green-issue-backlog.md`
 - Deploy stack manifests: `deploy/compose.stack.yml`, `deploy/compose.dev.override.yml`
 - Deploy workflows: `.github/workflows/images.yml`, `.github/workflows/deploy-prod.yml`, `.github/workflows/rollback-prod.yml`
+- VPS operations runbook: `docs/runbooks/vps-operations.md`
+- Supabase agents/secrets/commands schema: `supabase/migrations/20260212000400_create_agents_domain.sql`
 
 ## History
 

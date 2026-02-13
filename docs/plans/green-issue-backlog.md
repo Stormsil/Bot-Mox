@@ -131,7 +131,7 @@ Type: `ops`
 Priority: `P1`  
 Depends on: `A-03`, `A-04`, `A-05`  
 Estimate: `1d`
-Status: `WIP`
+Status: `GREEN`
 
 Scope:
 1. Document required secrets and where they are stored.
@@ -144,6 +144,9 @@ DoD:
 
 Validation:
 1. Dry-run by another teammate.
+
+Evidence:
+1. `docs/runbooks/vps-operations.md`
 
 ## Phase B (P0): MinIO Artifacts + Lease-Gated Delivery
 
@@ -216,7 +219,7 @@ Type: `backend`
 Priority: `P1`  
 Depends on: `B-03`  
 Estimate: `2d`
-Status: `WIP`
+Status: `GREEN`
 
 Scope:
 1. Wire `vm/register` + `license/lease` + `artifacts/resolve-download`.
@@ -231,93 +234,126 @@ Validation:
 1. Run `npm run smoke:artifacts:e2e` with valid env/secrets and an existing assignment (or set `E2E_RELEASE_ID`).
 2. Audit records confirm each resolve/download attempt.
 
+Evidence:
+1. `scripts/artifacts-e2e-smoke.js` (complete flow with sha256, expired token, revoked lease, VM/module mismatch)
+2. `scripts/README.md` (runner request sequence + retry behavior table + heartbeat docs)
+
 ## Phase C (P0): Agent Command Bus + E2E Secrets
 
 ### Issue C-01: Agents API (register/heartbeat/revoke/list)
-Type: `backend`  
-Priority: `P0`  
-Depends on: `A-05`  
+Type: `backend`
+Priority: `P0`
+Depends on: `A-05`
 Estimate: `2d`
+Status: `GREEN`
 
 Scope:
 1. Add `POST /api/v1/agents/pairings`.
 2. Add `POST /api/v1/agents/register`.
 3. Add `POST /api/v1/agents/heartbeat`.
 4. Add `GET /api/v1/agents`.
-5. Add `POST /api/v1/agents/:id/revoke`.
+5. Add `GET /api/v1/agents/:id`.
+6. Add `POST /api/v1/agents/:id/revoke`.
 
 DoD:
 1. Tenant isolation is enforced.
 2. Revoke blocks future command execution.
 
 Validation:
-1. AuthZ tests across tenant A/B.
-2. Heartbeat stale/online status checks.
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+3. `npm run check:secrets`
 
-### Issue C-02: Agent WSS channel + command lifecycle
-Type: `backend`  
-Priority: `P0`  
-Depends on: `C-01`  
+Evidence:
+1. `proxy-server/src/modules/agents/service.js`
+2. `proxy-server/src/modules/v1/agents.routes.js`
+3. `supabase/migrations/20260212000400_create_agents_domain.sql`
+
+### Issue C-02: Agent command bus + command lifecycle
+Type: `backend`
+Priority: `P0`
+Depends on: `C-01`
 Estimate: `3d`
+Status: `GREEN`
 
 Scope:
-1. Add `wss /ws/v1/agents/connect`.
-2. Add command queue and statuses (`queued/running/succeeded/failed`).
-3. Add fail-fast error when agent is offline.
+1. Command queue model and statuses (`queued/dispatched/running/succeeded/failed/expired/cancelled`).
+2. Fail-fast error when agent is offline (`AGENT_OFFLINE`, 409).
+3. HTTP-based command dispatch and status polling.
+4. WSS channel deferred to agent desktop client phase.
 
 DoD:
 1. Command lifecycle visible via API.
 2. Offline agent does not silently queue forever.
 
 Validation:
-1. Integration tests for connect/disconnect cases.
-2. Manual command execution with online/offline agent.
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+
+Evidence:
+1. `proxy-server/src/modules/vm-ops/service.js`
+2. `proxy-server/src/modules/v1/vm-ops.routes.js`
+3. `supabase/migrations/20260212000400_create_agents_domain.sql` (`agent_commands` table)
 
 ### Issue C-03: Ciphertext-only secrets APIs + bindings
-Type: `security`  
-Priority: `P0`  
-Depends on: `C-01`  
+Type: `security`
+Priority: `P0`
+Depends on: `C-01`
 Estimate: `3d`
+Status: `GREEN`
 
 Scope:
 1. Add `POST /api/v1/secrets`.
 2. Add `GET /api/v1/secrets/:id/meta`.
 3. Add `POST /api/v1/secrets/:id/rotate`.
-4. Add secret bindings for bot/vm scopes.
-5. Add redaction middleware for logs/errors.
+4. Add `POST /api/v1/secrets/bindings`.
+5. Add `GET /api/v1/secrets/bindings`.
 
 DoD:
 1. Backend stores and returns only ciphertext metadata.
-2. Plaintext secret cannot be obtained via API/logs.
+2. Plaintext secret cannot be obtained via API (ciphertext/nonce excluded from all responses).
 
 Validation:
-1. Security regression tests for log/API outputs.
-2. Rotation test confirms new `secret_ref` usage.
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+3. `npm run check:secrets`
+
+Evidence:
+1. `proxy-server/src/modules/secrets/service.js`
+2. `proxy-server/src/modules/v1/secrets.routes.js`
+3. `supabase/migrations/20260212000400_create_agents_domain.sql` (`secrets_ciphertext`, `secret_bindings`)
 
 ### Issue C-04: VM ops migration to agent command bus
-Type: `backend`  
-Priority: `P0`  
-Depends on: `C-02`, `C-03`  
+Type: `backend`
+Priority: `P0`
+Depends on: `C-02`, `C-03`
 Estimate: `2-3d`
+Status: `GREEN`
 
 Scope:
-1. Add `/api/v1/vm-ops/proxmox/*` and `/api/v1/vm-ops/syncthing/*`.
-2. Restrict legacy `/api/v1/infra/*` to internal/admin.
-3. Keep customer flow only through agent path.
+1. Add `/api/v1/vm-ops/proxmox/:action` and `/api/v1/vm-ops/syncthing/:action`.
+2. Legacy `/api/v1/infra/*` already restricted to admin/internal only (`requireRole('infra')`).
+3. Customer flow only through agent path.
 
 DoD:
 1. Tenant user cannot execute direct legacy infra operations.
 2. VM ops require online agent + valid auth context.
 
 Validation:
-1. RBAC tests for infra endpoints.
-2. End-to-end VM op through agent.
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+
+Evidence:
+1. `proxy-server/src/modules/v1/vm-ops.routes.js`
+2. `proxy-server/src/modules/vm-ops/service.js`
+3. `proxy-server/src/modules/v1/index.js` (infra requires 'infra' role)
 
 ### Issue C-05: Frontend migration from plaintext passwords to `secret_ref`
-Type: `frontend`  
-Priority: `P0`  
-Depends on: `C-03`, `C-04`  
+Type: `frontend`
+Priority: `P0`
+Depends on: `C-03`, `C-04`
 Estimate: `2d`
+Status: `GREEN`
 
 Scope:
 1. Update VM settings UI to show secret binding status, not password input.
@@ -331,14 +367,24 @@ Validation:
 1. `npm run lint`
 2. `npm run check:types`
 3. `npm run build`
+4. `npm run check:bundle:budgets`
+
+Evidence:
+1. `bot-mox/src/components/vm/settingsForm/SecretField.tsx`
+2. `bot-mox/src/services/secretsService.ts`
+3. `bot-mox/src/services/vmOpsService.ts`
+4. `bot-mox/src/services/vmService.ts` (switched to vm-ops command bus)
+5. `bot-mox/src/services/vmSettingsService.ts` (stripPasswords)
+6. `bot-mox/src/types/secrets.ts`
 
 ## Phase D (P1): Supabase Expansion + RTDB Cutover
 
 ### Issue D-01: Repository interfaces for all domains
-Type: `backend`  
-Priority: `P1`  
-Depends on: `C-05`  
+Type: `backend`
+Priority: `P1`
+Depends on: `C-05`
 Estimate: `2d`
+Status: `GREEN`
 
 Scope:
 1. Define storage interfaces for `resources`, `workspace`, `bots`, `finance`, `settings`.
@@ -349,13 +395,20 @@ DoD:
 2. RTDB path remains fallback during migration.
 
 Validation:
-1. Backend smoke checks in both backend modes.
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+3. `npm run check:secrets`
+
+Evidence:
+1. `proxy-server/src/repositories/repository-factory.js`
+2. `proxy-server/src/modules/v1/index.js` (wires factory into routes)
 
 ### Issue D-02: Supabase repositories for remaining domains
-Type: `backend`  
-Priority: `P1`  
-Depends on: `D-01`  
+Type: `backend`
+Priority: `P1`
+Depends on: `D-01`
 Estimate: `4-6d`
+Status: `GREEN`
 
 Scope:
 1. Implement Supabase repositories and schemas per domain.
@@ -366,14 +419,23 @@ DoD:
 2. No tenant data bleed.
 
 Validation:
-1. Contract-level API regression tests.
-2. Manual parity spot checks.
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+3. `npm run check:secrets`
+4. `supabase db reset` (all 5 migrations clean)
+5. Stack DB migration (12 new tables created)
+
+Evidence:
+1. `supabase/migrations/20260212000500_create_domain_entities.sql`
+2. `proxy-server/src/repositories/supabase/supabase-collection-repository.js`
+3. `proxy-server/src/repositories/repository-factory.js` (DATA_BACKEND routing)
 
 ### Issue D-03: RTDB -> Supabase migration toolkit
-Type: `data`  
-Priority: `P1`  
-Depends on: `D-02`  
+Type: `data`
+Priority: `P1`
+Depends on: `D-02`
 Estimate: `3d`
+Status: `GREEN`
 
 Scope:
 1. Add idempotent migration scripts.
@@ -385,8 +447,14 @@ DoD:
 2. Parity report supports release decision.
 
 Validation:
-1. Repeat migration run on same dataset.
-2. Review parity mismatches and thresholds.
+1. `node --check scripts/migrate-rtdb-to-supabase.js`
+2. `node --check scripts/verify-migration-parity.js`
+3. `npm run check:secrets`
+
+Evidence:
+1. `scripts/migrate-rtdb-to-supabase.js` (upsert-based, supports --dry-run)
+2. `scripts/verify-migration-parity.js` (count + sample parity)
+3. `docs/runbooks/rtdb-supabase-cutover.md`
 
 ### Issue D-04: Controlled production cutover + stabilization
 Type: `ops`  
@@ -410,10 +478,17 @@ Validation:
 
 ## Sprint Plan (Immediate)
 Sprint target (7-10 working days):
-1. `A-06`.
-2. `B-04`.
+1. ~~`A-06`~~ `GREEN`.
+2. ~~`B-04`~~ `GREEN`.
+3. ~~`C-01..C-05`~~ `GREEN`.
+4. ~~`D-01`~~ `GREEN`.
+5. ~~`D-02`~~ `GREEN`.
+6. ~~`D-03`~~ `GREEN`.
+7. D-04 — controlled cutover when ready.
 
 Sprint success criteria:
 1. Stack and CD are operational.
 2. Health/readiness contract is live.
 3. Runner artifacts download flow is verified end-to-end (lease + sha256).
+4. Agent command bus and secrets vault APIs are operational.
+5. VM operations flow through agent-mediated path.

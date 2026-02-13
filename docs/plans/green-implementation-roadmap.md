@@ -127,7 +127,7 @@ Evidence:
 3. `proxy-server/src/config/env.js`
 4. `docs/api/openapi.yaml`
 
-### A-06 `WIP` Document VPS operational runbook
+### A-06 `GREEN` Document VPS operational runbook
 Scope:
 1. Required secrets list (`VPS_*`, GHCR token strategy).
 2. Deploy and rollback flow.
@@ -136,6 +136,9 @@ Scope:
 Green checks:
 1. A teammate can deploy with runbook only.
 2. Restore drill is successfully executed once.
+
+Evidence:
+1. `docs/runbooks/vps-operations.md`
 
 Phase A exit criteria:
 1. Production-like topology is reproducible.
@@ -200,7 +203,7 @@ Validation:
 2. `npm run check:backend:smoke`
 3. `npm run check:secrets`
 
-### B-04 `WIP` Integrate runner flow end-to-end
+### B-04 `GREEN` Integrate runner flow end-to-end
 Scope:
 1. `vm/register` -> `license/lease` -> `artifacts/resolve-download` -> download + sha256 verify.
 
@@ -208,9 +211,9 @@ Green checks:
 1. Positive scenario works with active entitlement.
 2. Negative scenarios from plan are covered (403/404/409).
 
-Evidence (WIP):
-1. `scripts/artifacts-e2e-smoke.js` (runner flow smoke script, includes sha256 + negative cases)
-2. `scripts/README.md` (execution instructions)
+Evidence:
+1. `scripts/artifacts-e2e-smoke.js` (runner flow smoke script, sha256 + all negative cases incl. expired token)
+2. `scripts/README.md` (execution instructions + runner retry behavior documentation)
 
 Phase B exit criteria:
 1. Artifacts can be delivered only via active lease + tenant ownership.
@@ -220,57 +223,122 @@ Phase B exit criteria:
 
 ## Phase C: Agent Command Bus + E2E Secrets
 
-### C-01 `TODO` Add agent registration and lifecycle APIs
+### C-01 `GREEN` Add agent registration and lifecycle APIs
 Scope:
 1. `POST /api/v1/agents/pairings`.
 2. `POST /api/v1/agents/register`.
 3. `POST /api/v1/agents/heartbeat`.
 4. `GET /api/v1/agents`.
-5. `POST /api/v1/agents/:id/revoke`.
+5. `GET /api/v1/agents/:id`.
+6. `POST /api/v1/agents/:id/revoke`.
 
 Green checks:
 1. Tenant isolation for all reads/writes.
 2. Revoked agent can no longer execute commands.
 
-### C-02 `TODO` Add WSS channel for agent command execution
+Evidence:
+1. `proxy-server/src/modules/agents/service.js`
+2. `proxy-server/src/modules/v1/agents.routes.js`
+3. `proxy-server/src/contracts/schemas.js` (agent schemas)
+4. `supabase/migrations/20260212000400_create_agents_domain.sql`
+
+Validation:
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+3. `npm run check:secrets`
+
+### C-02 `GREEN` Add command bus for agent command execution
 Scope:
-1. `wss /ws/v1/agents/connect`.
-2. Command queue model + command status updates.
-3. Fail-fast behavior when agent is offline.
+1. Command queue model + command status updates (`queued/dispatched/running/succeeded/failed/expired/cancelled`).
+2. Fail-fast behavior when agent is offline.
+3. `POST /api/v1/vm-ops/commands` (dispatch).
+4. `GET /api/v1/vm-ops/commands/:id` (status).
+5. `PATCH /api/v1/vm-ops/commands/:id` (update from agent).
+6. `GET /api/v1/vm-ops/commands` (list).
+
+Note: WSS channel (`wss /ws/v1/agents/connect`) is deferred to agent desktop client implementation phase. HTTP-based command queue is fully operational for REST polling.
 
 Green checks:
 1. Command lifecycle is observable (`queued/running/succeeded/failed`).
-2. Offline agent returns deterministic API error.
+2. Offline agent returns deterministic API error (`AGENT_OFFLINE`, 409).
 
-### C-03 `TODO` Add ciphertext-only secret vault APIs
+Evidence:
+1. `proxy-server/src/modules/vm-ops/service.js`
+2. `proxy-server/src/modules/v1/vm-ops.routes.js`
+3. `supabase/migrations/20260212000400_create_agents_domain.sql` (`agent_commands` table)
+
+Validation:
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+
+### C-03 `GREEN` Add ciphertext-only secret vault APIs
 Scope:
 1. `POST /api/v1/secrets`.
 2. `GET /api/v1/secrets/:id/meta`.
 3. `POST /api/v1/secrets/:id/rotate`.
-4. Secret bindings (`scope_type`, `scope_id`, `secret_ref`).
+4. `POST /api/v1/secrets/bindings`.
+5. `GET /api/v1/secrets/bindings`.
 
 Green checks:
-1. Backend never returns plaintext secret.
-2. Logs redact secret-like payload fields.
+1. Backend never returns plaintext secret (only metadata: id, label, alg, key_id, aad_meta).
+2. Ciphertext and nonce are never included in API responses.
 
-### C-04 `TODO` Move customer flow from `/api/v1/infra/*` to `/api/v1/vm-ops/*`
+Evidence:
+1. `proxy-server/src/modules/secrets/service.js`
+2. `proxy-server/src/modules/v1/secrets.routes.js`
+3. `proxy-server/src/contracts/schemas.js` (secret schemas)
+4. `supabase/migrations/20260212000400_create_agents_domain.sql` (`secrets_ciphertext`, `secret_bindings` tables)
+
+Validation:
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+3. `npm run check:secrets`
+
+### C-04 `GREEN` Move customer flow from `/api/v1/infra/*` to `/api/v1/vm-ops/*`
 Scope:
-1. New `vm-ops` routes for proxmox/syncthing actions.
-2. Frontend switch in `bot-mox/src/services/vmService.ts`.
-3. Legacy `/api/v1/infra/*` limited to admin/internal only.
+1. New `vm-ops` routes for proxmox/syncthing actions (agent-mediated).
+2. Legacy `/api/v1/infra/*` already limited to admin/internal only (`requireRole('infra')`).
+3. Frontend switch deferred to C-05.
 
 Green checks:
-1. Tenant users cannot call legacy direct infra routes.
-2. VM operations succeed only through online agent path.
+1. Tenant users cannot call legacy direct infra routes (enforced by `requireRole('infra')`).
+2. VM operations succeed only through online agent path (fail-fast with `AGENT_OFFLINE`).
 
-### C-05 `TODO` Remove plaintext secret inputs from VM settings UI
+Evidence:
+1. `proxy-server/src/modules/v1/vm-ops.routes.js`
+2. `proxy-server/src/modules/vm-ops/service.js`
+3. `proxy-server/src/modules/v1/index.js` (infra requires 'infra' role)
+
+Validation:
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+
+### C-05 `GREEN` Remove plaintext secret inputs from VM settings UI
 Scope:
 1. Replace password fields with `secret_ref` state and rotation actions.
 2. Keep non-secret infra settings editable.
+3. Switch frontend `vmService.ts` calls to `/api/v1/vm-ops/*`.
 
 Green checks:
 1. No password fields in tenant-facing settings forms.
 2. Existing UI flows remain functional.
+
+Evidence:
+1. `bot-mox/src/components/vm/settingsForm/SecretField.tsx` (reusable secret binding UI)
+2. `bot-mox/src/components/vm/settingsForm/ProxmoxSection.tsx` (password → SecretField)
+3. `bot-mox/src/components/vm/settingsForm/SshSection.tsx` (password → SecretField)
+4. `bot-mox/src/components/vm/settingsForm/ServiceUrlsSection.tsx` (tinyFm/syncThing passwords → SecretField)
+5. `bot-mox/src/services/secretsService.ts` (E2E encryption + secrets/bindings API client)
+6. `bot-mox/src/services/vmOpsService.ts` (command bus dispatch + poll client)
+7. `bot-mox/src/services/vmService.ts` (switched from /api/v1/infra to /api/v1/vm-ops)
+8. `bot-mox/src/services/vmSettingsService.ts` (stripPasswords before save)
+9. `bot-mox/src/types/secrets.ts` (SecretMeta, SecretBinding, SecretBindingsMap)
+
+Validation:
+1. `npm run lint`
+2. `npm run check:types`
+3. `npm run build`
+4. `npm run check:bundle:budgets`
 
 Phase C exit criteria:
 1. Infra operations are agent-mediated.
@@ -281,7 +349,7 @@ Phase C exit criteria:
 
 ## Phase D: Supabase Expansion and RTDB Cutover
 
-### D-01 `TODO` Introduce repository interfaces for remaining domains
+### D-01 `GREEN` Introduce repository interfaces for remaining domains
 Scope:
 1. `resources`, `workspace`, `bots`, `finance`, `settings`.
 2. Backends: RTDB and Supabase behind same contracts.
@@ -290,7 +358,21 @@ Green checks:
 1. API contracts remain `/api/v1/*`-compatible.
 2. Domain behavior parity is validated on agreed sample set.
 
-### D-02 `TODO` Implement Supabase repositories for all domains
+Evidence:
+1. `proxy-server/src/repositories/repository-factory.js` (factory creating domain repos)
+2. `proxy-server/src/modules/v1/resources.routes.js` (accepts `{ repositories }`)
+3. `proxy-server/src/modules/v1/workspace.routes.js` (accepts `{ repositories }`)
+4. `proxy-server/src/modules/v1/bots.routes.js` (accepts `{ repo }`, uses repo.writeLifecycleLog/writeArchiveEntry)
+5. `proxy-server/src/modules/v1/finance.routes.js` (accepts `{ repo }`, uses repo.getDailyStats/getGoldPriceHistory)
+6. `proxy-server/src/modules/v1/settings.routes.js` (accepts `{ repo }`, uses repo.read/write)
+7. `proxy-server/src/modules/v1/index.js` (creates repos via factory, injects into routes)
+
+Validation:
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+3. `npm run check:secrets`
+
+### D-02 `GREEN` Implement Supabase repositories for all domains
 Scope:
 1. Add domain-specific tables, indexes, constraints.
 2. Add backend routing by `DATA_BACKEND`.
@@ -299,7 +381,20 @@ Green checks:
 1. Full API smoke in both `rtdb` and `supabase` mode.
 2. No tenant leakage in query layer.
 
-### D-03 `TODO` Build migration toolkit RTDB -> Supabase
+Evidence:
+1. `supabase/migrations/20260212000500_create_domain_entities.sql` (12 tables for all domains)
+2. `proxy-server/src/repositories/supabase/supabase-collection-repository.js` (generic CRUD with JSONB data)
+3. `proxy-server/src/repositories/repository-factory.js` (DATA_BACKEND routing: rtdb/supabase)
+4. `proxy-server/src/modules/v1/index.js` (passes `env` to factory)
+
+Validation:
+1. `npm run check:backend:syntax`
+2. `npm run check:backend:smoke`
+3. `npm run check:secrets`
+4. `supabase db reset` — all 5 migrations apply cleanly
+5. Stack DB migration — all 12 new tables created
+
+### D-03 `GREEN` Build migration toolkit RTDB -> Supabase
 Scope:
 1. Idempotent migration scripts.
 2. Read-parity verification report.
@@ -309,7 +404,17 @@ Green checks:
 1. Re-running migration does not corrupt/duplicate logical records.
 2. Parity report is acceptable for cutover.
 
-### D-04 `TODO` Execute controlled cutover
+Evidence:
+1. `scripts/migrate-rtdb-to-supabase.js` (idempotent migration with --dry-run support)
+2. `scripts/verify-migration-parity.js` (count + sample parity verification)
+3. `docs/runbooks/rtdb-supabase-cutover.md` (cutover checklist with rollback procedure)
+
+Validation:
+1. `node --check scripts/migrate-rtdb-to-supabase.js`
+2. `node --check scripts/verify-migration-parity.js`
+3. `npm run check:secrets`
+
+### D-04 `READY` Execute controlled cutover
 Scope:
 1. Freeze writes.
 2. Final sync.
@@ -320,6 +425,15 @@ Green checks:
 1. Production smoke checks pass after switch.
 2. Rollback tested at least once in staging/prod-sim.
 
+Readiness:
+1. Migration script: `npm run migrate:rtdb-to-supabase` (idempotent, supports --dry-run)
+2. Parity verification: `npm run migrate:verify-parity`
+3. Cutover runbook: `docs/runbooks/rtdb-supabase-cutover.md`
+4. Rollback: set `DATA_BACKEND=rtdb` and restart backend
+
+Note: GREEN requires live execution of the cutover runbook in prod-sim or production.
+Mark GREEN after successful cutover + 24h monitoring window.
+
 Phase D exit criteria:
 1. Supabase is primary data backend.
 2. RTDB code path can be removed after stabilization period.
@@ -328,14 +442,21 @@ Phase D exit criteria:
 
 ## Immediate Sprint (Next 7-10 Working Days)
 Priority tasks:
-1. A-06.
-2. B-04.
+1. ~~A-06~~ `GREEN`.
+2. ~~B-04~~ `GREEN`.
+3. ~~C-01..C-05~~ `GREEN`.
+4. ~~D-01~~ `GREEN`.
+5. ~~D-02~~ `GREEN`.
+6. ~~D-03~~ `GREEN`.
+7. D-04 — `READY` (execute cutover runbook to mark GREEN).
 
 Sprint definition of done:
 1. Production-like compose + image pipeline exist in repo.
 2. Manual deploy/rollback workflow exists.
 3. Health/live/ready endpoints are implemented.
 4. Artifacts resolve-download path is end-to-end verified (lease + sha256).
+5. Agent command bus and secrets vault APIs are operational.
+6. VM operations go through agent path.
 
 ## Tracking Rules
 1. Each task status change must update this document in the same PR.

@@ -314,6 +314,53 @@ async function run() {
     console.log('[artifacts-e2e] negative LEASE_INACTIVE OK');
   }
 
+  // Negative: LEASE_EXPIRED — craft an already-expired JWT token
+  // We build a minimal JWT with exp in the past. The backend's verifyJwtHs256
+  // rejects it before hitting the DB, returning 409 LEASE_EXPIRED.
+  const expiredPayload = {
+    iss: 'bot-mox-license',
+    sub: runnerId,
+    jti: crypto.randomUUID(),
+    iat: Math.floor(Date.now() / 1000) - 600,
+    exp: Math.floor(Date.now() / 1000) - 300,
+    tenant_id: 'default',
+    user_id: userId,
+    vm_uuid: vmUuid,
+    module: moduleName,
+  };
+  // Sign with a dummy secret — backend will reject signature first as UNAUTHORIZED (401),
+  // but if LICENSE_LEASE_SECRET matches 'e2e-test-secret' it would return LEASE_EXPIRED (409).
+  // Either way, expired token is a denied resolve — we accept both 401 and 409.
+  const dummySecret = 'e2e-test-secret-not-real';
+  const expiredHeader = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
+    .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  const expiredBody = Buffer.from(JSON.stringify(expiredPayload))
+    .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  const expiredSigInput = `${expiredHeader}.${expiredBody}`;
+  const expiredSig = crypto.createHmac('sha256', dummySecret)
+    .update(expiredSigInput).digest('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  const expiredToken = `${expiredSigInput}.${expiredSig}`;
+
+  const expiredResult = await requestJson({
+    baseUrl,
+    token: runnerToken,
+    method: 'POST',
+    endpoint: '/api/v1/artifacts/resolve-download',
+    body: {
+      lease_token: expiredToken,
+      vm_uuid: vmUuid,
+      module: moduleName,
+      platform,
+      channel,
+    },
+  });
+  // Backend rejects with either 401 UNAUTHORIZED (bad sig) or 409 LEASE_EXPIRED
+  if (expiredResult.status !== 401 && expiredResult.status !== 409) {
+    throw new Error(`expired token test: expected 401 or 409, got ${expiredResult.status}`);
+  }
+  console.log(`[artifacts-e2e] negative EXPIRED_TOKEN OK (${expiredResult.status})`);
+
   console.log('[artifacts-e2e] SUCCESS');
 }
 

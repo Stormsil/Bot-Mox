@@ -130,6 +130,48 @@ E2E_USER_ID=<user-id>
 npm run smoke:artifacts:e2e
 ```
 
+## Runner Request Sequence and Retry Behavior
+
+### Flow
+
+```
+1. POST /api/v1/vm/register        { vm_uuid, user_id, vm_name, status }
+2. POST /api/v1/license/lease       { vm_uuid, user_id, agent_id, runner_id, module, version }
+   -> { lease_id, token, expires_at }
+3. POST /api/v1/artifacts/resolve-download  { lease_token, vm_uuid, module, platform, channel }
+   -> { download_url, sha256, version, size_bytes, url_expires_at }
+4. GET  <download_url>              (presigned, short-lived)
+5. Verify SHA-256 of downloaded file
+```
+
+### Retry Rules
+
+| Scenario | HTTP | Code | Runner Action |
+|---|---|---|---|
+| Lease expired (JWT exp) | 409 | `LEASE_EXPIRED` | Re-issue lease (step 2), then resolve again |
+| Lease revoked | 409 | `LEASE_INACTIVE` | Re-issue lease (step 2), then resolve again |
+| Presigned URL expired | 403/404 | S3 error | Call resolve-download again (step 3) for a new URL |
+| VM not registered | 404 | `VM_NOT_REGISTERED` | Re-register VM (step 1) |
+| Module not allowed | 403 | `MODULE_NOT_ALLOWED` | Cannot retry — entitlement required |
+| License inactive | 403 | `LICENSE_INACTIVE` | Cannot retry — active subscription required |
+| Network error | N/A | N/A | Exponential backoff, max 3 retries per step |
+
+### Heartbeat
+
+While lease is active, runner should call:
+
+```
+POST /api/v1/license/heartbeat  { lease_id }
+```
+
+Interval: every 30-60 seconds. If no heartbeat for > 2x interval, server may consider agent stale.
+
+### Presigned URL Lifetime
+
+- Configurable via `S3_PRESIGN_TTL_SECONDS` (default: 180s, range: 60-300s).
+- If URL expires before download completes, call `resolve-download` again.
+- Each resolve attempt is recorded in `artifact_download_audit`.
+
 ## Removed Legacy
 
 Одноразовые миграции, legacy Firebase upload-утилиты и локальные backup/node_modules из `scripts/` удалены в рамках зачистки репозитория.

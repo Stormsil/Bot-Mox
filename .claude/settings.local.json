@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e:*)",
+      "Bash(npm run check:backend:syntax:*)",
+      "Bash(npm run check:backend:smoke:*)",
+      "Bash(npm run check:secrets:*)",
+      "Bash(docker ps:*)",
+      "Bash(npx supabase:*)",
+      "Bash(ren:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker compose:*)",
+      "Bash(xargs:*)",
+      "mcp__antd-components__get-component-props",
+      "Bash(npm run lint:*)",
+      "Bash(npm run check:types:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run check:bundle:budgets:*)",
+      "Bash(node --check:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "antd-components"
+  ]
+}
