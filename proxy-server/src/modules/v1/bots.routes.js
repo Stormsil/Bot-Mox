@@ -7,8 +7,6 @@ const {
   banDetailsSchema,
 } = require('../../contracts/schemas');
 const { success, failure } = require('../../contracts/envelope');
-const { RtdbCollectionRepository } = require('../../repositories/rtdb/rtdb-repository');
-const { RTDB_PATHS } = require('../../repositories/rtdb/paths');
 const { parseListQuery, applyListQuery, asyncHandler } = require('./helpers');
 
 const BOT_STATUS_TO_STAGE = {
@@ -50,40 +48,8 @@ function toLifecycleStageFromStatus(status) {
   return BOT_STATUS_TO_STAGE[normalized] || null;
 }
 
-async function writeLifecycleLog(admin, botId, type, message, details) {
-  const logRef = admin.database().ref(RTDB_PATHS.logs.botLifecycle).push();
-  await logRef.set({
-    id: logRef.key,
-    bot_id: String(botId),
-    type: String(type),
-    message: String(message),
-    details: details || null,
-    timestamp: Date.now(),
-  });
-}
-
-async function writeArchiveEntry(admin, botId, botSnapshot, banDetails) {
-  const archiveRef = admin.database().ref(RTDB_PATHS.archive).push();
-  await archiveRef.set({
-    id: archiveRef.key,
-    bot_id: String(botId),
-    reason: 'banned',
-    archived_at: Date.now(),
-    ban_details: banDetails,
-    snapshot: {
-      project_id: botSnapshot?.project_id || '',
-      character: botSnapshot?.character || null,
-      final_level: Number(botSnapshot?.character?.level || 0),
-      total_farmed: Number(botSnapshot?.farm?.all_farmed_gold || 0),
-      total_earned_gold: Number(botSnapshot?.farm?.all_earned_gold || 0),
-      total_runtime_hours: Number(botSnapshot?.monitor?.total_runtime_hours || 0),
-    },
-  });
-}
-
-function createBotsRoutes({ admin }) {
+function createBotsRoutes({ repo }) {
   const router = express.Router();
-  const repo = new RtdbCollectionRepository(admin, RTDB_PATHS.bots);
 
   router.get(
     '/',
@@ -277,8 +243,7 @@ function createBotsRoutes({ admin }) {
         },
       });
 
-      await writeLifecycleLog(
-        admin,
+      await repo.writeLifecycleLog(
         botId,
         'status_change',
         `Status changed from ${currentStatus} to ${nextStatus}`,
@@ -341,9 +306,8 @@ function createBotsRoutes({ admin }) {
         },
       });
 
-      await writeArchiveEntry(admin, botId, entity, banDetails);
-      await writeLifecycleLog(
-        admin,
+      await repo.writeArchiveEntry(botId, entity, banDetails);
+      await repo.writeLifecycleLog(
         botId,
         'ban',
         `Bot banned: ${parsedBody.data.ban_reason}`,
@@ -394,8 +358,7 @@ function createBotsRoutes({ admin }) {
         },
       });
 
-      await writeLifecycleLog(
-        admin,
+      await repo.writeLifecycleLog(
         botId,
         'unban',
         `Bot unbanned and restored to ${restoredStatus}`,

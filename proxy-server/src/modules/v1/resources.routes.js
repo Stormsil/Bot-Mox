@@ -6,23 +6,9 @@ const {
   getResourcePatchSchema,
 } = require('../../contracts/schemas');
 const { success, failure } = require('../../contracts/envelope');
-const { RtdbCollectionRepository } = require('../../repositories/rtdb/rtdb-repository');
-const { RTDB_PATHS } = require('../../repositories/rtdb/paths');
 const { parseListQuery, applyListQuery, asyncHandler } = require('./helpers');
 
-const RESOURCE_PATHS = {
-  licenses: RTDB_PATHS.resources.licenses,
-  proxies: RTDB_PATHS.resources.proxies,
-  subscriptions: RTDB_PATHS.resources.subscriptions,
-};
-
-function getRepository(admin, kind) {
-  const path = RESOURCE_PATHS[kind];
-  if (!path) return null;
-  return new RtdbCollectionRepository(admin, path);
-}
-
-function createResourcesRoutes({ admin }) {
+function createResourcesRoutes({ repositories }) {
   const router = express.Router();
 
   router.get(
@@ -34,7 +20,7 @@ function createResourcesRoutes({ admin }) {
       }
 
       const { kind } = parsedKind.data;
-      const repo = getRepository(admin, kind);
+      const repo = repositories[kind] || null;
       if (!repo) {
         return res.status(404).json(failure('NOT_FOUND', `Unknown resource kind: ${kind}`));
       }
@@ -64,7 +50,7 @@ function createResourcesRoutes({ admin }) {
       }
 
       const { kind } = parsedKind.data;
-      const repo = getRepository(admin, kind);
+      const repo = repositories[kind] || null;
       if (!repo) {
         return res.status(404).json(failure('NOT_FOUND', `Unknown resource kind: ${kind}`));
       }
@@ -92,7 +78,7 @@ function createResourcesRoutes({ admin }) {
       }
 
       const { kind } = parsedKind.data;
-      const repo = getRepository(admin, kind);
+      const repo = repositories[kind] || null;
       if (!repo) {
         return res.status(404).json(failure('NOT_FOUND', `Unknown resource kind: ${kind}`));
       }
@@ -118,7 +104,7 @@ function createResourcesRoutes({ admin }) {
       }
 
       const { kind } = parsedKind.data;
-      const repo = getRepository(admin, kind);
+      const repo = repositories[kind] || null;
       if (!repo) {
         return res.status(404).json(failure('NOT_FOUND', `Unknown resource kind: ${kind}`));
       }
@@ -151,7 +137,7 @@ function createResourcesRoutes({ admin }) {
       }
 
       const { kind } = parsedKind.data;
-      const repo = getRepository(admin, kind);
+      const repo = repositories[kind] || null;
       if (!repo) {
         return res.status(404).json(failure('NOT_FOUND', `Unknown resource kind: ${kind}`));
       }

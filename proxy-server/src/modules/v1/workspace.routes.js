@@ -6,23 +6,9 @@ const {
   getWorkspacePatchSchema,
 } = require('../../contracts/schemas');
 const { success, failure } = require('../../contracts/envelope');
-const { RtdbCollectionRepository } = require('../../repositories/rtdb/rtdb-repository');
-const { RTDB_PATHS } = require('../../repositories/rtdb/paths');
 const { parseListQuery, applyListQuery, asyncHandler } = require('./helpers');
 
-const WORKSPACE_PATHS = {
-  notes: RTDB_PATHS.workspace.notes,
-  calendar: RTDB_PATHS.workspace.calendar,
-  kanban: RTDB_PATHS.workspace.kanban,
-};
-
-function getRepository(admin, kind) {
-  const path = WORKSPACE_PATHS[kind];
-  if (!path) return null;
-  return new RtdbCollectionRepository(admin, path);
-}
-
-function createWorkspaceRoutes({ admin }) {
+function createWorkspaceRoutes({ repositories }) {
   const router = express.Router();
 
   router.get(
@@ -34,7 +20,7 @@ function createWorkspaceRoutes({ admin }) {
       }
 
       const { kind } = parsedKind.data;
-      const repo = getRepository(admin, kind);
+      const repo = repositories[kind] || null;
       if (!repo) {
         return res.status(404).json(failure('NOT_FOUND', `Unknown workspace kind: ${kind}`));
       }
@@ -63,7 +49,7 @@ function createWorkspaceRoutes({ admin }) {
       }
 
       const { kind } = parsedKind.data;
-      const repo = getRepository(admin, kind);
+      const repo = repositories[kind] || null;
       if (!repo) {
         return res.status(404).json(failure('NOT_FOUND', `Unknown workspace kind: ${kind}`));
       }
@@ -91,7 +77,7 @@ function createWorkspaceRoutes({ admin }) {
       }
 
       const { kind } = parsedKind.data;
-      const repo = getRepository(admin, kind);
+      const repo = repositories[kind] || null;
       if (!repo) {
         return res.status(404).json(failure('NOT_FOUND', `Unknown workspace kind: ${kind}`));
       }
@@ -116,7 +102,7 @@ function createWorkspaceRoutes({ admin }) {
       }
 
       const { kind } = parsedKind.data;
-      const repo = getRepository(admin, kind);
+      const repo = repositories[kind] || null;
       if (!repo) {
         return res.status(404).json(failure('NOT_FOUND', `Unknown workspace kind: ${kind}`));
       }
@@ -149,7 +135,7 @@ function createWorkspaceRoutes({ admin }) {
       }
 
       const { kind } = parsedKind.data;
-      const repo = getRepository(admin, kind);
+      const repo = repositories[kind] || null;
       if (!repo) {
         return res.status(404).json(failure('NOT_FOUND', `Unknown workspace kind: ${kind}`));
       }

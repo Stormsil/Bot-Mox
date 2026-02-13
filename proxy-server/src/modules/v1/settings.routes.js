@@ -2,8 +2,6 @@ const express = require('express');
 const { env } = require('../../config/env');
 const { success, failure } = require('../../contracts/envelope');
 const { resolveSettingsMutationSchema } = require('../../contracts/schemas');
-const { RTDB_PATHS } = require('../../repositories/rtdb/paths');
-const { readRtdbPath, writeRtdbPath } = require('../../repositories/rtdb/rtdb-repository');
 const { buildTenantPath } = require('../../repositories/rtdb/tenant-paths');
 const {
   createSupabaseStoragePolicyRepository,
@@ -11,6 +9,7 @@ const {
 } = require('../../repositories/supabase/storage-policy-repository');
 const { asyncHandler } = require('./helpers');
 
+const SETTINGS_ROOT = 'settings';
 const INVALID_RTD_PATH_SEGMENT_PATTERN = /[.#$\[\]]/;
 
 function parseSettingsPath(pathValue) {
@@ -21,12 +20,12 @@ function parseSettingsPath(pathValue) {
     return {
       success: true,
       subPath: '',
-      targetPath: RTDB_PATHS.settings,
+      targetPath: SETTINGS_ROOT,
     };
   }
 
   const inputSegments = normalized.split('/').filter(Boolean);
-  const segments = inputSegments[0] === RTDB_PATHS.settings ? inputSegments.slice(1) : inputSegments;
+  const segments = inputSegments[0] === SETTINGS_ROOT ? inputSegments.slice(1) : inputSegments;
 
   for (const segment of segments) {
     if (
@@ -46,13 +45,13 @@ function parseSettingsPath(pathValue) {
   return {
     success: true,
     subPath,
-    targetPath: subPath ? `${RTDB_PATHS.settings}/${subPath}` : RTDB_PATHS.settings,
+    targetPath: subPath ? `${SETTINGS_ROOT}/${subPath}` : SETTINGS_ROOT,
   };
 }
 
 function resolveSettingsTargetPath(parsedPath, auth) {
   if (!parsedPath?.subPath) {
-    return RTDB_PATHS.settings;
+    return SETTINGS_ROOT;
   }
 
   if (parsedPath.subPath === 'storage_policy') {
@@ -92,14 +91,14 @@ function writeSupabaseStoragePolicyError(res, error) {
   return res.status(500).json(failure('INTERNAL_ERROR', 'Unexpected storage policy backend failure'));
 }
 
-function createSettingsRoutes({ admin }) {
+function createSettingsRoutes({ repo }) {
   const router = express.Router();
   const storagePolicyRepository = createSupabaseStoragePolicyRepository({ env });
 
   router.get(
     '/',
     asyncHandler(async (_req, res) => {
-      const data = await readRtdbPath(admin, RTDB_PATHS.settings);
+      const data = await repo.read(SETTINGS_ROOT);
       return res.json(success(data || {}));
     })
   );
@@ -131,7 +130,7 @@ function createSettingsRoutes({ admin }) {
       }
 
       const targetPath = resolveSettingsTargetPath(parsedPath, req.auth);
-      const data = await readRtdbPath(admin, targetPath);
+      const data = await repo.read(targetPath);
       return res.json(success(data));
     })
   );
@@ -173,7 +172,7 @@ function createSettingsRoutes({ admin }) {
       }
 
       const targetPath = resolveSettingsTargetPath(parsedPath, req.auth);
-      const data = await writeRtdbPath(admin, targetPath, parsedBody.data, { merge: true });
+      const data = await repo.write(targetPath, parsedBody.data, { merge: true });
       return res.json(success(data));
     })
   );
@@ -215,7 +214,7 @@ function createSettingsRoutes({ admin }) {
       }
 
       const targetPath = resolveSettingsTargetPath(parsedPath, req.auth);
-      const data = await writeRtdbPath(admin, targetPath, parsedBody.data, { merge: true });
+      const data = await repo.write(targetPath, parsedBody.data, { merge: true });
       return res.json(success(data));
     })
   );
