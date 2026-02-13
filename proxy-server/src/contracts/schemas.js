@@ -763,6 +763,81 @@ const artifactResolveDownloadSchema = z.object({
 
 const upsertPayloadSchema = z.record(z.unknown());
 
+// --- Agents ---
+
+const agentPairingSchema = z.object({
+  name: z.string().trim().min(1).max(200).optional(),
+  expires_in_minutes: z.coerce.number().int().min(5).max(1440).optional().default(15),
+});
+
+const agentRegisterSchema = z.object({
+  pairing_code: z.string().trim().min(1).max(200),
+  version: z.string().trim().max(100).optional(),
+  platform: z.string().trim().max(100).optional(),
+  capabilities: z.array(z.string().trim().min(1).max(200)).max(50).optional(),
+});
+
+const agentHeartbeatSchema = z.object({
+  agent_id: z.string().trim().min(1).max(200),
+});
+
+const agentRevokeSchema = z.object({
+  reason: z.string().trim().max(500).optional(),
+});
+
+const agentListQuerySchema = z.object({
+  status: z.enum(['pending', 'active', 'offline', 'revoked']).optional(),
+});
+
+// --- Agent Commands ---
+
+const agentCommandCreateSchema = z.object({
+  agent_id: z.string().trim().min(1).max(200),
+  command_type: z.string().trim().min(1).max(200),
+  payload: z.record(z.unknown()).optional().default({}),
+  expires_in_seconds: z.coerce.number().int().min(10).max(3600).optional().default(300),
+});
+
+const agentCommandUpdateSchema = z.object({
+  status: z.enum(['running', 'succeeded', 'failed']),
+  result: z.record(z.unknown()).optional(),
+  error_message: z.string().trim().max(2000).optional(),
+});
+
+// --- Secrets ---
+
+const secretCreateSchema = z.object({
+  label: z.string().trim().min(1).max(200),
+  ciphertext: z.string().trim().min(1),
+  alg: z.string().trim().min(1).max(50).optional().default('AES-256-GCM'),
+  key_id: z.string().trim().min(1).max(200),
+  nonce: z.string().trim().min(1).max(200),
+  aad_meta: z.record(z.unknown()).optional().default({}),
+});
+
+const secretRotateSchema = z.object({
+  ciphertext: z.string().trim().min(1),
+  alg: z.string().trim().min(1).max(50).optional(),
+  key_id: z.string().trim().min(1).max(200),
+  nonce: z.string().trim().min(1).max(200),
+  aad_meta: z.record(z.unknown()).optional(),
+});
+
+const secretBindingCreateSchema = z.object({
+  scope_type: z.enum(['bot', 'vm', 'agent', 'tenant']),
+  scope_id: z.string().trim().min(1).max(200),
+  secret_ref: z.string().trim().min(1).max(200),
+  field_name: z.string().trim().min(1).max(200),
+});
+
+// --- VM Ops ---
+
+const vmOpsCommandSchema = z.object({
+  agent_id: z.string().trim().min(1).max(200),
+  action: z.string().trim().min(1).max(200),
+  params: z.record(z.unknown()).optional().default({}),
+});
+
 function getResourceCreateSchema(kind) {
   return resourceMutationSchemas[kind] || resourceCreateSchema;
 }
@@ -923,4 +998,15 @@ module.exports = {
   artifactAssignSchema,
   artifactResolveDownloadSchema,
   upsertPayloadSchema,
+  agentPairingSchema,
+  agentRegisterSchema,
+  agentHeartbeatSchema,
+  agentRevokeSchema,
+  agentListQuerySchema,
+  agentCommandCreateSchema,
+  agentCommandUpdateSchema,
+  secretCreateSchema,
+  secretRotateSchema,
+  secretBindingCreateSchema,
+  vmOpsCommandSchema,
 };

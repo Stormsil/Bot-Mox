@@ -14,9 +14,16 @@ const { createWowNamesRoutes } = require('./wow-names.routes');
 const { createVmRoutes } = require('./vm.routes');
 const { createLicenseRoutes } = require('./license.routes');
 const { createArtifactsRoutes } = require('./artifacts.routes');
+const { createAgentsRoutes } = require('./agents.routes');
+const { createSecretsRoutes } = require('./secrets.routes');
+const { createVmOpsRoutes } = require('./vm-ops.routes');
 const { createVmRegistryService } = require('../vm-registry/service');
 const { createLicenseService } = require('../license/service');
 const { createArtifactsService } = require('../artifacts/service');
+const { createAgentService } = require('../agents/service');
+const { createSecretsService } = require('../secrets/service');
+const { createVmOpsService } = require('../vm-ops/service');
+const { createRepositories } = require('../../repositories/repository-factory');
 const { createAuditLogMiddleware } = require('../../middleware/audit-log');
 const { asyncHandler } = require('./helpers');
 const {
@@ -39,6 +46,7 @@ function createApiV1Router({
   const router = express.Router();
   const authMiddleware = injectedAuthMiddleware || createAuthMiddleware({ admin, env, isFirebaseReady });
   const { authenticate, requireRole } = authMiddleware;
+  const repos = createRepositories({ admin, env });
   const vmRegistryService = createVmRegistryService({ admin });
   const licenseService = createLicenseService({
     admin,
@@ -49,6 +57,9 @@ function createApiV1Router({
     env,
     licenseService,
   });
+  const agentService = createAgentService({ env });
+  const secretsService = createSecretsService({ env });
+  const vmOpsService = createVmOpsService({ env, agentService });
 
   router.get('/health/live', (_req, res) => {
     res.json(success(buildLivenessPayload()));
@@ -75,14 +86,17 @@ function createApiV1Router({
   router.use('/auth', createAuthRoutes({ authenticate }));
   router.use(authenticate);
 
-  router.use('/resources', createResourcesRoutes({ admin }));
-  router.use('/workspace', createWorkspaceRoutes({ admin }));
-  router.use('/settings', createSettingsRoutes({ admin }));
-  router.use('/bots', createBotsRoutes({ admin }));
-  router.use('/finance', createFinanceRoutes({ admin }));
+  router.use('/resources', createResourcesRoutes({ repositories: repos.resources }));
+  router.use('/workspace', createWorkspaceRoutes({ repositories: repos.workspace }));
+  router.use('/settings', createSettingsRoutes({ repo: repos.settings }));
+  router.use('/bots', createBotsRoutes({ repo: repos.bots }));
+  router.use('/finance', createFinanceRoutes({ repo: repos.finance }));
   router.use('/vm', createVmRoutes({ vmRegistryService }));
   router.use('/license', createLicenseRoutes({ licenseService, authMiddleware }));
   router.use('/artifacts', createArtifactsRoutes({ artifactsService, authMiddleware }));
+  router.use('/agents', createAgentsRoutes({ agentService, authMiddleware }));
+  router.use('/secrets', createSecretsRoutes({ secretsService, authMiddleware }));
+  router.use('/vm-ops', createVmOpsRoutes({ vmOpsService, authMiddleware }));
   if (ipqsService) {
     router.use('/ipqs', createIpqsRoutes({ ipqsService }));
   }
