@@ -5,4 +5,5 @@ export * from './SshSection';
 export * from './TemplateStorageSection';
 export * from './ProjectResourcesSection';
 export * from './ServiceUrlsSection';
+export * from './SecretField';
 export * from './SettingsActions';

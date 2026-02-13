@@ -1,8 +1,14 @@
 import React from 'react';
 import { Input, Switch } from 'antd';
 import type { SettingsSectionProps } from './types';
+import { SecretField } from './SecretField';
 
-export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({ settings, onFieldChange }) => (
+export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
+  settings,
+  onFieldChange,
+  secretBindings,
+  onSecretBindingChange,
+}) => (
   <div className="vm-settings-section">
     <h4>Service URLs</h4>
     <div className="vm-settings-row single">
@@ -54,14 +60,23 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({ settings, o
           size="small"
         />
       </div>
-      <div className="vm-settings-field">
-        <label>TinyFM Password</label>
-        <Input.Password
-          value={settings.services.tinyFmPassword}
-          onChange={(event) => onFieldChange('services.tinyFmPassword', event.target.value)}
-          size="small"
+      {onSecretBindingChange ? (
+        <SecretField
+          fieldName="services.tinyFmPassword"
+          label="TinyFM Password"
+          binding={secretBindings?.['services.tinyFmPassword']}
+          onBindingChange={onSecretBindingChange}
         />
-      </div>
+      ) : (
+        <div className="vm-settings-field">
+          <label>TinyFM Password</label>
+          <Input.Password
+            value={settings.services.tinyFmPassword ?? ''}
+            onChange={(event) => onFieldChange('services.tinyFmPassword', event.target.value)}
+            size="small"
+          />
+        </div>
+      )}
     </div>
     <div className="vm-settings-row">
       <div className="vm-settings-field">
@@ -94,14 +109,23 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({ settings, o
           size="small"
         />
       </div>
-      <div className="vm-settings-field">
-        <label>SyncThing Password</label>
-        <Input.Password
-          value={settings.services.syncThingPassword}
-          onChange={(event) => onFieldChange('services.syncThingPassword', event.target.value)}
-          size="small"
+      {onSecretBindingChange ? (
+        <SecretField
+          fieldName="services.syncThingPassword"
+          label="SyncThing Password"
+          binding={secretBindings?.['services.syncThingPassword']}
+          onBindingChange={onSecretBindingChange}
         />
-      </div>
+      ) : (
+        <div className="vm-settings-field">
+          <label>SyncThing Password</label>
+          <Input.Password
+            value={settings.services.syncThingPassword ?? ''}
+            onChange={(event) => onFieldChange('services.syncThingPassword', event.target.value)}
+            size="small"
+          />
+        </div>
+      )}
     </div>
   </div>
 );

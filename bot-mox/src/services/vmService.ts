@@ -7,32 +7,12 @@ import type {
   ProxmoxVMConfig,
   VMConfigUpdateParams,
 } from '../types';
-import { API_BASE_URL as API_BASE_URL_FROM_ENV } from '../config/env';
-import { authFetch } from './authFetch';
 import { apiGet, apiPatch, apiPost, ApiClientError } from './apiClient';
+import { executeVmOps } from './vmOpsService';
 
-const LOCAL_PROXY_URL = API_BASE_URL_FROM_ENV;
-const INFRA_API_PREFIX = '/api/v1/infra';
-
-function extractApiErrorMessage(payload: unknown, fallback: string): string {
-  if (!payload || typeof payload !== 'object') {
-    return fallback;
-  }
-
-  const error = (payload as Record<string, unknown>).error;
-  if (typeof error === 'string' && error.trim()) {
-    return error;
-  }
-
-  if (error && typeof error === 'object') {
-    const message = (error as Record<string, unknown>).message;
-    if (typeof message === 'string' && message.trim()) {
-      return message;
-    }
-  }
-
-  return fallback;
-}
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -43,17 +23,17 @@ function isRunningStatus(status: unknown): boolean {
 }
 
 // ============================================================
-// Proxmox operations (via proxy-server)
+// Proxmox operations (via agent command bus → /api/v1/vm-ops)
 // ============================================================
 
 export async function testProxmoxConnection(): Promise<boolean> {
   try {
-    const res = await authFetch(`${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/status`);
-    const data = await res.json();
-    if (!data?.success) {
-      return false;
-    }
-    return Boolean(data.connected || data?.data?.connected);
+    const result = await executeVmOps<{ connected?: boolean }>({
+      type: 'proxmox',
+      action: 'status',
+      timeoutMs: 15_000,
+    });
+    return Boolean(result?.connected);
   } catch {
     return false;
   }
@@ -61,92 +41,77 @@ export async function testProxmoxConnection(): Promise<boolean> {
 
 export async function proxmoxLogin(): Promise<boolean> {
   try {
-    const res = await authFetch(`${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/login`, { method: 'POST' });
-    const data = await res.json();
-    return Boolean(data?.success);
+    await executeVmOps({ type: 'proxmox', action: 'login' });
+    return true;
   } catch {
     return false;
   }
 }
 
 export async function listVMs(node = 'h1'): Promise<ProxmoxVM[]> {
-  const res = await authFetch(`${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/nodes/${node}/qemu`);
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to list VMs'));
-  const payload = Array.isArray(data.data) ? data.data : [];
-  return payload as ProxmoxVM[];
+  const result = await executeVmOps<ProxmoxVM[]>({
+    type: 'proxmox',
+    action: 'list-vms',
+    params: { node },
+  });
+  return Array.isArray(result) ? result : [];
 }
 
 export async function getClusterResources(): Promise<ProxmoxClusterResource[]> {
-  const res = await authFetch(`${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/cluster/resources`);
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to load cluster resources'));
-  return Array.isArray(data.data) ? (data.data as ProxmoxClusterResource[]) : [];
+  const result = await executeVmOps<ProxmoxClusterResource[]>({
+    type: 'proxmox',
+    action: 'cluster-resources',
+  });
+  return Array.isArray(result) ? result : [];
 }
 
 export async function cloneVM(params: CloneParams): Promise<{ upid: string }> {
-  const node = params.node || 'h1';
-  const res = await authFetch(
-    `${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/nodes/${node}/qemu/${params.templateVmId}/clone`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        newid: params.newid,
-        name: params.name,
-        storage: params.storage,
-        format: params.format,
-        full: params.full ? 1 : 0,
-      }),
-    }
-  );
-  const data = await res.json();
-  if (!data.success) {
-    const errorDetails =
-      (data && typeof data === 'object' && data.error && typeof data.error === 'object')
-        ? (data.error as { details?: unknown }).details
-        : undefined;
-    const details =
-      errorDetails && typeof errorDetails === 'object'
-        ? JSON.stringify(errorDetails)
-        : (errorDetails ? String(errorDetails) : '');
-    const message = extractApiErrorMessage(data, 'Clone failed');
-    throw new Error(details ? `${message}: ${details}` : message);
-  }
-  const upid = String(data?.upid || data?.data?.upid || '').trim();
-  if (!upid) {
-    throw new Error('Clone completed without UPID');
-  }
+  const result = await executeVmOps<{ upid: string }>({
+    type: 'proxmox',
+    action: 'clone',
+    params: {
+      templateVmId: params.templateVmId,
+      newid: params.newid,
+      name: params.name,
+      storage: params.storage,
+      format: params.format,
+      full: params.full,
+      node: params.node,
+    },
+    timeoutMs: 300_000,
+  });
+  const upid = String(result?.upid || '').trim();
+  if (!upid) throw new Error('Clone completed without UPID');
   return { upid };
 }
 
 export async function pollTaskStatus(upid: string, node = 'h1'): Promise<ProxmoxTaskStatus> {
-  const res = await authFetch(
-    `${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/nodes/${node}/tasks/${encodeURIComponent(upid)}/status`
-  );
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to poll task'));
-  return data.data as ProxmoxTaskStatus;
+  const result = await executeVmOps<ProxmoxTaskStatus>({
+    type: 'proxmox',
+    action: 'task-status',
+    params: { upid, node },
+    timeoutMs: 15_000,
+  });
+  return result;
 }
 
 export async function startVM(vmid: number, node = 'h1'): Promise<string | null> {
-  const res = await authFetch(
-    `${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/nodes/${node}/qemu/${vmid}/status/start`,
-    { method: 'POST' }
-  );
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to start VM'));
-  const upid = String(data?.upid || data?.data?.upid || data?.data || '').trim();
-  return upid || null;
+  const result = await executeVmOps<{ upid?: string }>({
+    type: 'proxmox',
+    action: 'start',
+    params: { vmid, node },
+    timeoutMs: 30_000,
+  });
+  return String(result?.upid || '').trim() || null;
 }
 
 export async function stopVM(vmid: number, node = 'h1'): Promise<void> {
-  const res = await authFetch(
-    `${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/nodes/${node}/qemu/${vmid}/status/stop`,
-    { method: 'POST' }
-  );
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to stop VM'));
+  await executeVmOps({
+    type: 'proxmox',
+    action: 'stop',
+    params: { vmid, node },
+    timeoutMs: 30_000,
+  });
 }
 
 export interface DeleteVMOptions {
@@ -159,59 +124,38 @@ export async function deleteVM(
   node = 'h1',
   options: DeleteVMOptions = {}
 ): Promise<{ upid: string | null }> {
-  const purge = options.purge ?? true;
-  const destroyUnreferencedDisks = options.destroyUnreferencedDisks ?? true;
-  const params = new URLSearchParams();
-  if (purge) params.set('purge', '1');
-  if (destroyUnreferencedDisks) params.set('destroy-unreferenced-disks', '1');
-  const query = params.toString();
-  const url = `${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/nodes/${node}/qemu/${vmid}${query ? `?${query}` : ''}`;
-
-  let res: Response;
-  try {
-    res = await authFetch(url, { method: 'DELETE' });
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    throw new Error(`Delete request failed (network/CORS): ${msg}`);
-  }
-
-  let data: { success?: boolean; error?: string; upid?: string; data?: { upid?: string } };
-  try {
-    data = await res.json();
-  } catch {
-    throw new Error(`Delete request failed (HTTP ${res.status}): invalid response from proxy`);
-  }
-
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to delete VM'));
-  const upidRaw = typeof data.upid === 'string' && data.upid.trim()
-    ? data.upid.trim()
-    : (typeof data.data?.upid === 'string' ? data.data.upid.trim() : '');
-  const upid = upidRaw || null;
-  return { upid };
+  const result = await executeVmOps<{ upid?: string }>({
+    type: 'proxmox',
+    action: 'delete',
+    params: {
+      vmid,
+      node,
+      purge: options.purge ?? true,
+      destroyUnreferencedDisks: options.destroyUnreferencedDisks ?? true,
+    },
+    timeoutMs: 60_000,
+  });
+  return { upid: String(result?.upid || '').trim() || null };
 }
 
 export async function getVMStatus(vmid: number, node = 'h1'): Promise<ProxmoxVM> {
-  const res = await authFetch(
-    `${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/nodes/${node}/qemu/${vmid}/status/current`
-  );
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to get VM status'));
-  return data.data as ProxmoxVM;
+  return executeVmOps<ProxmoxVM>({
+    type: 'proxmox',
+    action: 'vm-status',
+    params: { vmid, node },
+    timeoutMs: 15_000,
+  });
 }
 
 export async function sendVMKey(vmid: number, key: string, node = 'h1'): Promise<void> {
   const normalizedKey = String(key || '').trim();
   if (!normalizedKey) throw new Error('key is required');
-  const res = await authFetch(
-    `${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/nodes/${node}/qemu/${vmid}/sendkey`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: normalizedKey }),
-    }
-  );
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to send VM key'));
+  await executeVmOps({
+    type: 'proxmox',
+    action: 'sendkey',
+    params: { vmid, key: normalizedKey, node },
+    timeoutMs: 15_000,
+  });
 }
 
 export interface StartAndSendKeyOptions {
@@ -300,7 +244,6 @@ async function runSendKeySpam(
       sent += 1;
       lastError = null;
     } catch (error) {
-      // VM may still be booting: keep retrying throughout the spam window.
       lastError = error instanceof Error ? error.message : String(error);
     }
 
@@ -326,7 +269,7 @@ async function runStartAndSendKeyForVm(
     const current = await getVMStatus(vmid, options.node);
     isAlreadyRunning = isRunningStatus(current.status);
   } catch {
-    // Ignore status probe errors here and rely on start task + follow-up checks.
+    // Ignore
   }
 
   const spamSignal = { cancelled: false };
@@ -419,98 +362,80 @@ export async function startAndSendKeyBatch(
 }
 
 export async function getVMConfig(vmid: number, node = 'h1'): Promise<ProxmoxVMConfig> {
-  const res = await authFetch(
-    `${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/nodes/${node}/qemu/${vmid}/config`
-  );
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to get VM config'));
-  return (data.data || {}) as ProxmoxVMConfig;
+  return executeVmOps<ProxmoxVMConfig>({
+    type: 'proxmox',
+    action: 'get-config',
+    params: { vmid, node },
+    timeoutMs: 15_000,
+  });
 }
 
 export async function updateVMConfig(params: VMConfigUpdateParams): Promise<{ upid: string }> {
-  const node = params.node || 'h1';
-  const payload: Record<string, string | number | boolean | undefined> = {
-    ...(params.config || {}),
-  };
-  if (params.cores !== undefined) payload.cores = params.cores;
-  if (params.sockets !== undefined) payload.sockets = params.sockets;
-  if (params.memory !== undefined) payload.memory = params.memory;
-  if (params.balloon !== undefined) payload.balloon = params.balloon;
-  if (params.cpu !== undefined) payload.cpu = params.cpu;
-  if (params.onboot !== undefined) payload.onboot = params.onboot;
-  if (params.agent !== undefined) payload.agent = params.agent;
-
-  const res = await authFetch(
-    `${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/proxmox/nodes/${node}/qemu/${params.vmid}/config`,
-    {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }
-  );
-  const data = await res.json();
-  if (!data.success) {
-    const errorDetails =
-      (data && typeof data === 'object' && data.error && typeof data.error === 'object')
-        ? (data.error as { details?: unknown }).details
-        : undefined;
-    const details =
-      errorDetails && typeof errorDetails === 'object'
-        ? JSON.stringify(errorDetails)
-        : (errorDetails ? String(errorDetails) : '');
-    const message = extractApiErrorMessage(data, 'Failed to update VM config');
-    throw new Error(details ? `${message}: ${details}` : message);
-  }
-  const upid = String(data?.upid || data?.data?.upid || '').trim();
-  if (!upid) {
-    throw new Error('VM config update completed without UPID');
-  }
+  const result = await executeVmOps<{ upid: string }>({
+    type: 'proxmox',
+    action: 'update-config',
+    params: {
+      vmid: params.vmid,
+      node: params.node,
+      cores: params.cores,
+      sockets: params.sockets,
+      memory: params.memory,
+      balloon: params.balloon,
+      cpu: params.cpu,
+      onboot: params.onboot,
+      agent: params.agent,
+      config: params.config,
+    },
+    timeoutMs: 30_000,
+  });
+  const upid = String(result?.upid || '').trim();
+  if (!upid) throw new Error('VM config update completed without UPID');
   return { upid };
 }
 
 // ============================================================
-// SSH operations (via proxy-server)
+// SSH operations (via agent command bus → /api/v1/vm-ops)
 // ============================================================
 
 export async function testSSHConnection(): Promise<boolean> {
   try {
-    const res = await authFetch(`${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/ssh/test`, { method: 'POST' });
-    const data = await res.json();
-    return Boolean(data?.success);
+    await executeVmOps({ type: 'proxmox', action: 'ssh-test', timeoutMs: 15_000 });
+    return true;
   } catch {
     return false;
   }
 }
 
 export async function readVMConfig(vmid: number): Promise<string> {
-  const res = await authFetch(`${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/ssh/vm-config/${vmid}`);
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to read config'));
-  return String(data?.config || data?.data?.config || '');
+  const result = await executeVmOps<{ config?: string }>({
+    type: 'proxmox',
+    action: 'ssh-read-config',
+    params: { vmid },
+    timeoutMs: 15_000,
+  });
+  return String(result?.config || '');
 }
 
 export async function writeVMConfig(vmid: number, content: string): Promise<void> {
-  const res = await authFetch(`${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/ssh/vm-config/${vmid}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content }),
+  await executeVmOps({
+    type: 'proxmox',
+    action: 'ssh-write-config',
+    params: { vmid, content },
+    timeoutMs: 15_000,
   });
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'Failed to write config'));
 }
 
 export async function executeSSH(command: string, timeout?: number): Promise<SSHResult> {
-  const res = await authFetch(`${LOCAL_PROXY_URL}${INFRA_API_PREFIX}/ssh/exec`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ command, timeout }),
+  const result = await executeVmOps<SSHResult>({
+    type: 'proxmox',
+    action: 'ssh-exec',
+    params: { command, timeout },
+    timeoutMs: Math.max(30_000, (timeout || 0) + 10_000),
   });
-  const data = await res.json();
-  if (!data.success) throw new Error(extractApiErrorMessage(data, 'SSH exec failed'));
   return {
-    stdout: String(data?.stdout || data?.data?.stdout || ''),
-    stderr: String(data?.stderr || data?.data?.stderr || ''),
-    exitCode: Number(data?.exitCode ?? data?.data?.exitCode ?? 1),
+    stdout: String(result?.stdout || ''),
+    stderr: String(result?.stderr || ''),
+    exitCode: Number(result?.exitCode ?? 1),
   };
 }
 
@@ -571,4 +496,3 @@ export async function upsertBotVM(
   });
   return { mode: 'updated' };
 }
-

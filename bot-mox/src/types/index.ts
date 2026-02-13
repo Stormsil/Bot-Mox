@@ -4,3 +4,4 @@ export * from './resources';
 export * from './appSettings';
 export * from './botLifecycle';
 export * from './vm';
+export * from './secrets';

@@ -23,7 +23,6 @@ const DEFAULT_SETTINGS: VMGeneratorSettings = {
   proxmox: {
     url: 'https://127.0.0.1:8006/',
     username: '',
-    password: '',
     node: 'h1',
   },
   ssh: {
@@ -75,10 +74,8 @@ const DEFAULT_SETTINGS: VMGeneratorSettings = {
     proxmoxAutoLogin: false,
     tinyFmAutoLogin: false,
     tinyFmUsername: '',
-    tinyFmPassword: '',
     syncThingAutoLogin: false,
     syncThingUsername: '',
-    syncThingPassword: '',
   },
   deleteVmFilters: DEFAULT_DELETE_VM_FILTERS,
 };
@@ -192,6 +189,27 @@ export async function getVMSettings(): Promise<VMGeneratorSettings> {
     console.error('Error loading VM settings:', error);
     return DEFAULT_SETTINGS;
   }
+}
+
+/**
+ * Strip deprecated plaintext password fields before persisting to the backend.
+ * Passwords are managed through the secrets vault (secret bindings) instead.
+ */
+export function stripPasswords(settings: Partial<VMGeneratorSettings>): Partial<VMGeneratorSettings> {
+  const cleaned = structuredClone(settings);
+
+  if (cleaned.proxmox) {
+    delete cleaned.proxmox.password;
+  }
+  if (cleaned.ssh) {
+    delete cleaned.ssh.password;
+  }
+  if (cleaned.services) {
+    delete cleaned.services.tinyFmPassword;
+    delete cleaned.services.syncThingPassword;
+  }
+
+  return cleaned;
 }
 
 export async function updateVMSettings(settings: Partial<VMGeneratorSettings>): Promise<void> {

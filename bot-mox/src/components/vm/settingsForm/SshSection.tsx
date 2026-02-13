@@ -1,8 +1,14 @@
 import React from 'react';
 import { Input, InputNumber, Switch } from 'antd';
 import type { SettingsSectionProps } from './types';
+import { SecretField } from './SecretField';
 
-export const SshSection: React.FC<SettingsSectionProps> = ({ settings, onFieldChange }) => (
+export const SshSection: React.FC<SettingsSectionProps> = ({
+  settings,
+  onFieldChange,
+  secretBindings,
+  onSecretBindingChange,
+}) => (
   <div className="vm-settings-section">
     <h4>SSH Connection</h4>
     <div className="vm-settings-row">
@@ -48,14 +54,23 @@ export const SshSection: React.FC<SettingsSectionProps> = ({ settings, onFieldCh
     </div>
     {!settings.ssh.useKeyAuth && (
       <div className="vm-settings-row single">
-        <div className="vm-settings-field">
-          <label>Password</label>
-          <Input.Password
-            value={settings.ssh.password || ''}
-            onChange={(event) => onFieldChange('ssh.password', event.target.value)}
-            size="small"
+        {onSecretBindingChange ? (
+          <SecretField
+            fieldName="ssh.password"
+            label="Password"
+            binding={secretBindings?.['ssh.password']}
+            onBindingChange={onSecretBindingChange}
           />
-        </div>
+        ) : (
+          <div className="vm-settings-field">
+            <label>Password</label>
+            <Input.Password
+              value={settings.ssh.password || ''}
+              onChange={(event) => onFieldChange('ssh.password', event.target.value)}
+              size="small"
+            />
+          </div>
+        )}
       </div>
     )}
   </div>

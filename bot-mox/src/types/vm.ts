@@ -191,13 +191,15 @@ export interface VMGeneratorSettings {
   proxmox: {
     url: string;
     username: string;
-    password: string;
+    /** @deprecated Use secret binding instead. */
+    password?: string;
     node: string;
   };
   ssh: {
     host: string;
     port: number;
     username: string;
+    /** @deprecated Use secret binding instead. */
     password?: string;
     privateKeyPath?: string;
     useKeyAuth: boolean;
@@ -227,10 +229,12 @@ export interface VMGeneratorSettings {
     proxmoxAutoLogin: boolean;
     tinyFmAutoLogin: boolean;
     tinyFmUsername: string;
-    tinyFmPassword: string;
+    /** @deprecated Use secret binding instead. */
+    tinyFmPassword?: string;
     syncThingAutoLogin: boolean;
     syncThingUsername: string;
-    syncThingPassword: string;
+    /** @deprecated Use secret binding instead. */
+    syncThingPassword?: string;
   };
   deleteVmFilters?: {
     policy: {

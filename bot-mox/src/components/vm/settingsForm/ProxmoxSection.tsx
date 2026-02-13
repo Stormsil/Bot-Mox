@@ -1,8 +1,14 @@
 import React from 'react';
 import { Input } from 'antd';
 import type { SettingsSectionProps } from './types';
+import { SecretField } from './SecretField';
 
-export const ProxmoxSection: React.FC<SettingsSectionProps> = ({ settings, onFieldChange }) => (
+export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
+  settings,
+  onFieldChange,
+  secretBindings,
+  onSecretBindingChange,
+}) => (
   <div className="vm-settings-section">
     <h4>Proxmox Connection</h4>
     <div className="vm-settings-row">
@@ -32,14 +38,23 @@ export const ProxmoxSection: React.FC<SettingsSectionProps> = ({ settings, onFie
           size="small"
         />
       </div>
-      <div className="vm-settings-field">
-        <label>Password</label>
-        <Input.Password
-          value={settings.proxmox.password}
-          onChange={(event) => onFieldChange('proxmox.password', event.target.value)}
-          size="small"
+      {onSecretBindingChange ? (
+        <SecretField
+          fieldName="proxmox.password"
+          label="Password"
+          binding={secretBindings?.['proxmox.password']}
+          onBindingChange={onSecretBindingChange}
         />
-      </div>
+      ) : (
+        <div className="vm-settings-field">
+          <label>Password</label>
+          <Input.Password
+            value={settings.proxmox.password ?? ''}
+            onChange={(event) => onFieldChange('proxmox.password', event.target.value)}
+            size="small"
+          />
+        </div>
+      )}
     </div>
   </div>
 );

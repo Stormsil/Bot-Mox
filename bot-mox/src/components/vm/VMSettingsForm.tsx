@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { message } from 'antd';
 import type { VMGeneratorSettings } from '../../types';
-import { getVMSettings, updateVMSettings } from '../../services/vmSettingsService';
+import type { SecretBinding, SecretBindingsMap } from '../../types/secrets';
+import { getVMSettings, updateVMSettings, stripPasswords } from '../../services/vmSettingsService';
+import { loadVmSettingsBindings } from '../../services/secretsService';
 import { getVMConfig, testProxmoxConnection, testSSHConnection } from '../../services/vmService';
 import {
   normalizeTemplateCores,
@@ -29,9 +31,15 @@ export const VMSettingsForm: React.FC = () => {
   const lastTemplateSyncKeyRef = useRef<string>('');
   const templateSyncRequestRef = useRef(0);
 
+  const [secretBindings, setSecretBindings] = useState<SecretBindingsMap>({});
+
   useEffect(() => {
-    getVMSettings().then((loadedSettings) => {
+    Promise.all([
+      getVMSettings(),
+      loadVmSettingsBindings().catch(() => ({}) as SecretBindingsMap),
+    ]).then(([loadedSettings, bindings]) => {
       setSettings(loadedSettings);
+      setSecretBindings(bindings);
       setLoading(false);
     });
   }, []);
@@ -41,7 +49,7 @@ export const VMSettingsForm: React.FC = () => {
 
     setSaving(true);
     try {
-      await updateVMSettings(settings);
+      await updateVMSettings(stripPasswords(settings));
       message.success('Settings saved');
     } catch {
       message.error('Failed to save settings');
@@ -62,6 +70,10 @@ export const VMSettingsForm: React.FC = () => {
 
   const handleFieldChange = (path: string, value: unknown) => {
     setSettings((prev) => (prev ? updateSettingsByPath(prev, path, value) : prev));
+  };
+
+  const handleSecretBindingChange = (fieldName: string, binding: SecretBinding) => {
+    setSecretBindings((prev) => ({ ...prev, [fieldName]: binding }));
   };
 
   useEffect(() => {
@@ -138,8 +150,18 @@ export const VMSettingsForm: React.FC = () => {
 
   return (
     <div className="vm-settings-form">
-      <ProxmoxSection settings={settings} onFieldChange={handleFieldChange} />
-      <SshSection settings={settings} onFieldChange={handleFieldChange} />
+      <ProxmoxSection
+        settings={settings}
+        onFieldChange={handleFieldChange}
+        secretBindings={secretBindings}
+        onSecretBindingChange={handleSecretBindingChange}
+      />
+      <SshSection
+        settings={settings}
+        onFieldChange={handleFieldChange}
+        secretBindings={secretBindings}
+        onSecretBindingChange={handleSecretBindingChange}
+      />
       <TemplateStorageSection
         settings={settings}
         onFieldChange={handleFieldChange}
@@ -147,7 +169,12 @@ export const VMSettingsForm: React.FC = () => {
         syncMessage={templateSyncMessage}
       />
       <ProjectResourcesSection settings={settings} onFieldChange={handleFieldChange} />
-      <ServiceUrlsSection settings={settings} onFieldChange={handleFieldChange} />
+      <ServiceUrlsSection
+        settings={settings}
+        onFieldChange={handleFieldChange}
+        secretBindings={secretBindings}
+        onSecretBindingChange={handleSecretBindingChange}
+      />
 
       <SettingsActions
         saving={saving}
