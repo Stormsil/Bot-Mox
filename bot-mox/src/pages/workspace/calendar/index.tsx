@@ -201,7 +201,10 @@ export const WorkspaceCalendarPage: React.FC = () => {
     <div className={styles.root}>
       <div className={styles.header}>
         <Title level={4} className={styles.title}>
-          <CalendarOutlined /> Workspace Calendar
+          <span className={styles.titleIcon}>
+            <CalendarOutlined />
+          </span>
+          Workspace Calendar
         </Title>
         <Space>
           <Segmented<CalendarViewMode>
@@ -234,7 +237,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
 
         <Card
           className={styles.sidebar}
-          title={sidebarTitle}
+          title={<span className={styles.sidebarTitle}>{sidebarTitle}</span>}
           extra={
             <Space>
               {isDayMode && (
@@ -248,6 +251,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
             </Space>
           }
           loading={loading}
+          styles={{ body: { maxHeight: '100%', overflowY: 'auto' } }}
         >
           <CalendarEventList
             events={selectedDateEvents}
