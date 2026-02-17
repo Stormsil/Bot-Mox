@@ -7,21 +7,11 @@
   border-color: var(--boxmox-color-border-default);
 }
 
-.leveling-stat-card :global(.ant-card-body) {
-  padding: 16px;
-}
-
-.leveling-stat-card :global(.ant-statistic-title) {
+.stat-title {
   color: var(--boxmox-color-text-secondary);
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.leveling-stat-card :global(.ant-statistic-content) {
-  color: var(--boxmox-color-text-primary);
-  font-size: var(--text-xl);
-  font-weight: 600;
 }
 
 .leveling-progress-card {
@@ -30,12 +20,7 @@
   border-color: var(--boxmox-color-border-default);
 }
 
-.leveling-progress-card :global(.ant-card-head) {
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-}
-
-.leveling-progress-card :global(.ant-card-head-title) {
+.card-title {
   color: var(--boxmox-color-text-primary);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -49,10 +34,6 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
-}
-
-.xp-info :global(.ant-typography) {
-  color: var(--boxmox-color-text-primary);
 }
 
 .xp-percent {
@@ -84,10 +65,6 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.location-details :global(.ant-typography) {
-  font-size: var(--text-xs);
 }
 
 .location-tag {

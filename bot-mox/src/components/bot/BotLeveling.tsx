@@ -28,39 +28,48 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
     <div className={styles['bot-leveling']}>
       <Row gutter={[16, 16]}>
         <Col span={8}>
-          <Card className={styles['leveling-stat-card']}>
+          <Card className={styles['leveling-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title="Current Level"
+              title={<span className={styles['stat-title']}>Current Level</span>}
               value={leveling.current_level}
               prefix={<RiseOutlined />}
-              valueStyle={{ color: '#722ed1' }}
+              valueStyle={{ color: '#722ed1', fontSize: 'var(--text-xl)', fontWeight: 600 }}
             />
           </Card>
         </Col>
         <Col span={8}>
-          <Card className={styles['leveling-stat-card']}>
+          <Card className={styles['leveling-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title="XP per Hour"
+              title={<span className={styles['stat-title']}>XP per Hour</span>}
               value={leveling.xp_per_hour.toLocaleString()}
               suffix="XP"
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: '#52c41a', fontSize: 'var(--text-xl)', fontWeight: 600 }}
             />
           </Card>
         </Col>
         <Col span={8}>
-          <Card className={styles['leveling-stat-card']}>
+          <Card className={styles['leveling-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title="Time to Level"
+              title={<span className={styles['stat-title']}>Time to Level</span>}
               value={leveling.estimated_time_to_level}
               suffix="h"
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: '#1890ff', fontSize: 'var(--text-xl)', fontWeight: 600 }}
             />
           </Card>
         </Col>
       </Row>
 
-      <Card className={styles['leveling-progress-card']} title="Experience Progress">
+      <Card
+        className={styles['leveling-progress-card']}
+        title={<span className={styles['card-title']}>Experience Progress</span>}
+        styles={{
+          header: {
+            background: 'var(--boxmox-color-surface-muted)',
+            borderBottom: '1px solid var(--boxmox-color-border-default)',
+          },
+        }}
+      >
         <div className={styles['xp-progress-section']}>
           <div className={styles['xp-info']}>
             <Text strong>Level {leveling.current_level}</Text>
@@ -82,7 +91,9 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
         <div className={styles['location-info']}>
           <AimOutlined className={styles['location-icon']} />
           <div className={styles['location-details']}>
-            <Text type="secondary">Current Location</Text>
+            <Text type="secondary" style={{ fontSize: 'var(--text-xs)' }}>
+              Current Location
+            </Text>
             <Tag className={styles['location-tag']}>{leveling.location}</Tag>
           </div>
         </div>
