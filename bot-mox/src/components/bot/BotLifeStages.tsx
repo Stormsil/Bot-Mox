@@ -152,6 +152,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
           <div className={styles['stage-selector-left']}>
             <Title level={5}>Life Stage</Title>
             <Select
+              variant="filled"
               value={currentStage}
               onChange={handleStageChange}
               className={styles['stage-select']}
@@ -196,15 +197,24 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
       </Card>
 
       <Row gutter={[16, 16]} className={styles['stages-content-row']}>
-        <Col span={18}>
+        <Col xs={24} xl={18}>
           <StagePanels
             currentStage={currentStage}
             renderTimestamp={renderTimestamp}
             formatDuration={formatDuration}
           />
         </Col>
-        <Col span={6}>
-          <Card className={styles['timeline-card']} title="Life Cycle">
+        <Col xs={24} xl={6}>
+          <Card
+            className={styles['timeline-card']}
+            title={<span className={styles['detail-card-title']}>Life Cycle</span>}
+            styles={{
+              header: {
+                background: 'var(--boxmox-color-surface-panel)',
+                borderBottom: '1px solid var(--boxmox-color-border-default)',
+              },
+            }}
+          >
             <StageTimeline currentStage={currentStage} />
             <Divider />
             {currentStage !== 'banned' ? (
@@ -214,6 +224,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
                 icon={<StopOutlined />}
                 onClick={() => setIsBanModalVisible(true)}
                 block
+                className={styles['timeline-action-btn']}
               >
                 Подтвердить блокировку
               </Button>
@@ -223,6 +234,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
                 icon={<CheckCircleOutlined />}
                 onClick={handleUnban}
                 block
+                className={styles['timeline-action-btn']}
               >
                 Подтвердить снятие бана
               </Button>

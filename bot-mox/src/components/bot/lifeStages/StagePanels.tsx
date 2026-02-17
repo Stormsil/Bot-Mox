@@ -85,7 +85,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           <Col span={8}>
             <Card className={styles['stage-stat-card']}>
               <Statistic
-                title="Current Level"
+                title={<span className={styles['stat-title']}>Current Level</span>}
                 value={leveling.current_level}
                 prefix={<RiseOutlined />}
                 valueStyle={{ color: '#722ed1' }}
@@ -95,7 +95,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           <Col span={8}>
             <Card className={styles['stage-stat-card']}>
               <Statistic
-                title="XP per Hour"
+                title={<span className={styles['stat-title']}>XP per Hour</span>}
                 value={leveling.xp_per_hour.toLocaleString()}
                 suffix="XP"
                 valueStyle={{ color: '#52c41a' }}
@@ -105,7 +105,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           <Col span={8}>
             <Card className={styles['stage-stat-card']}>
               <Statistic
-                title="Time to Level"
+                title={<span className={styles['stat-title']}>Time to Level</span>}
                 value={leveling.estimated_time_to_level}
                 suffix="h"
                 prefix={<ClockCircleOutlined />}
@@ -115,7 +115,16 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </Col>
         </Row>
 
-        <Card className={styles['stage-detail-card']} title="Experience Progress">
+        <Card
+          className={styles['stage-detail-card']}
+          title={<span className={styles['detail-card-title']}>Experience Progress</span>}
+          styles={{
+            header: {
+              background: 'var(--boxmox-color-surface-panel)',
+              borderBottom: '1px solid var(--boxmox-color-border-default)',
+            },
+          }}
+        >
           <div className={styles['xp-progress-section']}>
             <div className={styles['xp-info']}>
               <Text strong>Level {leveling.current_level}</Text>
@@ -133,7 +142,16 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </div>
         </Card>
 
-        <Card className={styles['stage-detail-card']} title="Current Location">
+        <Card
+          className={styles['stage-detail-card']}
+          title={<span className={styles['detail-card-title']}>Current Location</span>}
+          styles={{
+            header: {
+              background: 'var(--boxmox-color-surface-panel)',
+              borderBottom: '1px solid var(--boxmox-color-border-default)',
+            },
+          }}
+        >
           <div className={styles['location-info']}>
             <AimOutlined className={styles['location-icon']} />
             <div className={styles['location-details']}>
@@ -143,28 +161,40 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </div>
         </Card>
 
-        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Leveling Analytics">
+        <Card
+          className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')}
+          title={<span className={styles['detail-card-title']}>Leveling Analytics</span>}
+          styles={{
+            header: {
+              background: 'var(--boxmox-color-surface-panel)',
+              borderBottom: '1px solid var(--boxmox-color-border-default)',
+            },
+          }}
+        >
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic
-                title="Total Time"
+                title={<span className={styles['stat-title']}>Total Time</span>}
                 value={analytics.totalTime}
                 suffix="h"
                 prefix={<ClockCircleOutlined />}
+                valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
               />
             </Col>
             <Col span={8}>
               <Statistic
-                title="Levels Gained"
+                title={<span className={styles['stat-title']}>Levels Gained</span>}
                 value={analytics.levelsGained}
                 prefix={<RiseOutlined />}
+                valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
               />
             </Col>
             <Col span={8}>
               <Statistic
-                title="Avg XP/h"
+                title={<span className={styles['stat-title']}>Avg XP/h</span>}
                 value={analytics.avgXpPerHour.toLocaleString()}
                 prefix={<LineChartOutlined />}
+                valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
               />
             </Col>
           </Row>
@@ -229,28 +259,40 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           })}
         </Row>
 
-        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Professions Analytics">
+        <Card
+          className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')}
+          title={<span className={styles['detail-card-title']}>Professions Analytics</span>}
+          styles={{
+            header: {
+              background: 'var(--boxmox-color-surface-panel)',
+              borderBottom: '1px solid var(--boxmox-color-border-default)',
+            },
+          }}
+        >
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic
-                title="Training Time"
+                title={<span className={styles['stat-title']}>Training Time</span>}
                 value={analytics.totalTime}
                 suffix="h"
                 prefix={<ClockCircleOutlined />}
+                valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
               />
             </Col>
             <Col span={8}>
               <Statistic
-                title="Skill Points"
+                title={<span className={styles['stat-title']}>Skill Points</span>}
                 value={analytics.skillsGained}
                 prefix={<ToolOutlined />}
+                valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
               />
             </Col>
             <Col span={8}>
               <Statistic
-                title="Avg Gain/h"
+                title={<span className={styles['stat-title']}>Avg Gain/h</span>}
                 value={analytics.avgSkillPerHour}
                 prefix={<LineChartOutlined />}
+                valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
               />
             </Col>
           </Row>
@@ -277,7 +319,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           <Col span={8}>
             <Card className={styles['stage-stat-card']}>
               <Statistic
-                title="Total Gold"
+                title={<span className={styles['stat-title']}>Total Gold</span>}
                 value={farmStats.total_gold.toLocaleString()}
                 suffix="g"
                 prefix={<DollarOutlined />}
@@ -288,7 +330,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           <Col span={8}>
             <Card className={styles['stage-stat-card']}>
               <Statistic
-                title="Gold per Hour"
+                title={<span className={styles['stat-title']}>Gold per Hour</span>}
                 value={farmStats.gold_per_hour.toFixed(1)}
                 suffix="g/h"
                 prefix={<ThunderboltOutlined />}
@@ -299,7 +341,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           <Col span={8}>
             <Card className={styles['stage-stat-card']}>
               <Statistic
-                title="Session Time"
+                title={<span className={styles['stat-title']}>Session Time</span>}
                 value={formatDuration(sessionDuration)}
                 prefix={<ClockCircleOutlined />}
                 valueStyle={{ color: '#1890ff' }}
@@ -308,7 +350,16 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </Col>
         </Row>
 
-        <Card className={styles['stage-detail-card']} title="Inventory">
+        <Card
+          className={styles['stage-detail-card']}
+          title={<span className={styles['detail-card-title']}>Inventory</span>}
+          styles={{
+            header: {
+              background: 'var(--boxmox-color-surface-panel)',
+              borderBottom: '1px solid var(--boxmox-color-border-default)',
+            },
+          }}
+        >
           <List
             dataSource={inventory}
             renderItem={(item) => (
@@ -330,30 +381,42 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           />
         </Card>
 
-        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Farm Analytics">
+        <Card
+          className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')}
+          title={<span className={styles['detail-card-title']}>Farm Analytics</span>}
+          styles={{
+            header: {
+              background: 'var(--boxmox-color-surface-panel)',
+              borderBottom: '1px solid var(--boxmox-color-border-default)',
+            },
+          }}
+        >
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic
-                title="Farm Time"
+                title={<span className={styles['stat-title']}>Farm Time</span>}
                 value={analytics.totalTime}
                 suffix="h"
                 prefix={<ClockCircleOutlined />}
+                valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
               />
             </Col>
             <Col span={8}>
               <Statistic
-                title="Total Gold"
+                title={<span className={styles['stat-title']}>Total Gold</span>}
                 value={analytics.totalGold.toLocaleString()}
                 suffix="g"
                 prefix={<DollarOutlined />}
+                valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
               />
             </Col>
             <Col span={8}>
               <Statistic
-                title="Avg Income/h"
+                title={<span className={styles['stat-title']}>Avg Income/h</span>}
                 value={analytics.avgGoldPerHour.toFixed(1)}
                 suffix="g/h"
                 prefix={<BarChartOutlined />}
+                valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
               />
             </Col>
           </Row>
