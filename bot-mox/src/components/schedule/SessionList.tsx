@@ -90,13 +90,22 @@ export const SessionList: React.FC<SessionListProps> = ({
                     size="small"
                     checked={session.enabled}
                     onChange={(checked) => onToggle(session.id, checked)}
+                    // Ant Switch background is controlled by internal selectors; use inline style
+                    // so we don't need any `.ant-*` overrides in CSS Modules.
+                    style={{
+                      backgroundColor: session.enabled
+                        ? 'var(--boxmox-color-status-success)'
+                        : 'var(--boxmox-color-border-strong)',
+                    }}
                   />
                   <TableActionButton
+                    className={styles.sessionActionBtn}
                     icon={<EditOutlined />}
                     onClick={() => onEdit(session)}
                     tooltip="Edit session"
                   />
                   <TableActionButton
+                    className={styles.sessionActionBtn}
                     danger
                     icon={<DeleteOutlined />}
                     onClick={() => onDelete(session.id)}
