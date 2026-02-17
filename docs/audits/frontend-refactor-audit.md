@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T14:34:55Z**
+Last updated (UTC): **2026-02-17T14:37:48Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -390,6 +390,7 @@ Evidence:
 12. `bot-mox/src/pages/project/ProjectPage.module.css` (focus-visible ring for cell links)
 13. `bot-mox/src/components/vm/VMOperationLog.tsx` (dialog ARIA + Escape close + keyboard-accessible task rows)
 14. `bot-mox/src/components/vm/VMOperationLog.module.css` (focus-visible ring for task rows)
+15. `docs/DEV-WORKFLOW.md` (link to styling conventions)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)

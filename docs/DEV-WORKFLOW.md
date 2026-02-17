@@ -294,6 +294,10 @@ Legacy заметка:
 | `npm run stack:dev:up` | Docker стек с hot-reload |
 | `npm run stack:prod-sim:up` | Docker стек как в продакшене |
 
+### Frontend styling
+
+Конвенции и чеклист для добавления новых страниц: `docs/frontend/STYLING.md`.
+
 ## Деплой на VPS (когда будет готово)
 
 1. Пуш в `main` → GitHub Actions собирает Docker-образы → GHCR
