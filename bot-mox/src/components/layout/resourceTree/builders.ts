@@ -83,22 +83,9 @@ export function buildResourcesTreeData(): TreeItem[] {
       type: 'subscriptions',
     },
     {
-      key: 'resources_virtual_machines',
+      key: 'vms',
       title: 'Virtual Machines',
-      type: 'folder',
-      selectable: false,
-      children: [
-        {
-          key: 'vms',
-          title: 'VM Generator',
-          type: 'vms',
-        },
-        {
-          key: 'vms_list',
-          title: 'VM List',
-          type: 'vms_list',
-        },
-      ],
+      type: 'vms',
     },
   ];
 }

@@ -17,9 +17,9 @@ export interface ProxmoxVM {
   template?: boolean;
 }
 
-export type VMQueueItemStatus = 'pending' | 'cloning' | 'cloned' | 'configuring' | 'deleting' | 'done' | 'error';
+export type VMQueueItemStatus = 'pending' | 'cloning' | 'cloned' | 'configuring' | 'provisioning' | 'deleting' | 'done' | 'error';
 export type VMQueueItemAction = 'create' | 'delete';
-export type VMResourceMode = 'original' | 'project';
+export type VMResourceMode = 'original' | 'project' | 'custom';
 
 export interface VMHardwareConfig {
   cores: number;
@@ -34,6 +34,7 @@ export interface VMHardwareConfig {
 export interface VMProjectHardwareConfig {
   cores: number;
   memory: number;
+  diskGiB: number;
 }
 
 export interface VMHardwareApplyOptions {
@@ -57,12 +58,14 @@ export interface VMQueueItem {
   action?: VMQueueItemAction;
   name: string;
   storage: string;
+  storageMode?: 'auto' | 'manual';
   format: string;
   resourceMode?: VMResourceMode;
   cores?: number;
   sockets?: number;
   memory?: number;
   balloon?: number;
+  diskGiB?: number;
   projectId: 'wow_tbc' | 'wow_midnight';
   status: VMQueueItemStatus;
   vmId?: number;
@@ -70,6 +73,9 @@ export interface VMQueueItem {
   ip?: string;
   uuid?: string;
   error?: string;
+  unattendProfileId?: string;
+  unattendXmlOverride?: string;
+  playbookId?: string;
 }
 
 export interface ProxmoxClusterResource {
@@ -86,6 +92,11 @@ export interface VMStorageOption {
   value: string;
   label: string;
   details?: string;
+
+  // Optional capacity stats (bytes) when available.
+  usedBytes?: number;
+  totalBytes?: number;
+  vmCount?: number;
 }
 
 export interface CloneParams {
@@ -205,11 +216,15 @@ export interface VMGeneratorSettings {
     useKeyAuth: boolean;
   };
   storage: {
-    options: string[];
+    /** @deprecated Alias for enabledDisks in legacy data. */
+    options?: string[];
+    enabledDisks: string[];
+    autoSelectBest: boolean;
     default: string;
   };
   format: {
-    options: string[];
+    /** @deprecated Format is always 'raw'. */
+    options?: string[];
     default: string;
   };
   template: {

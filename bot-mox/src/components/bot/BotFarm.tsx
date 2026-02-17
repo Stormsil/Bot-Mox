@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Statistic, Row, Col, Typography, Tag, List } from 'antd';
 import { DollarOutlined, ClockCircleOutlined, ThunderboltOutlined, ShoppingOutlined } from '@ant-design/icons';
 import type { Bot, InventoryItem } from '../../types';
-import './BotFarm.css';
+import styles from './BotFarm.module.css';
 
 const { Text } = Typography;
 
@@ -66,10 +66,10 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
   };
 
   return (
-    <div className="bot-farm">
+    <div className={styles['bot-farm']}>
       <Row gutter={[16, 16]}>
         <Col span={8}>
-          <Card className="farm-stat-card">
+          <Card className={styles['farm-stat-card']}>
             <Statistic
               title="Total Gold"
               value={farmStats.total_gold.toLocaleString()}
@@ -80,7 +80,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card className="farm-stat-card">
+          <Card className={styles['farm-stat-card']}>
             <Statistic
               title="Gold per Hour"
               value={farmStats.gold_per_hour.toFixed(1)}
@@ -91,7 +91,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card className="farm-stat-card">
+          <Card className={styles['farm-stat-card']}>
             <Statistic
               title="Session Time"
               value={formatDuration(sessionDuration)}
@@ -102,18 +102,18 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
         </Col>
       </Row>
 
-      <Card className="inventory-card" title="Inventory">
+      <Card className={styles['inventory-card']} title="Inventory">
         <List
           dataSource={inventory}
           renderItem={(item) => (
-            <List.Item className="inventory-item">
-              <div className="inventory-item-info">
-                <ShoppingOutlined className="inventory-item-icon" />
-                <Text className="inventory-item-name" style={{ color: getQualityColor(item.quality) }}>
+            <List.Item className={styles['inventory-item']}>
+              <div className={styles['inventory-item-info']}>
+                <ShoppingOutlined className={styles['inventory-item-icon']} />
+                <Text className={styles['inventory-item-name']} style={{ color: getQualityColor(item.quality) }}>
                   {item.name}
                 </Text>
               </div>
-              <Tag className="inventory-item-quantity">x{item.quantity}</Tag>
+              <Tag className={styles['inventory-item-quantity']}>x{item.quantity}</Tag>
             </List.Item>
           )}
         />

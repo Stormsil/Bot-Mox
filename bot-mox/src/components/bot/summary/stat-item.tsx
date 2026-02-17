@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from '../BotSummary.module.css';
 
 interface SummaryStatItemProps {
   label: string;
@@ -8,11 +9,11 @@ interface SummaryStatItemProps {
 }
 
 export const SummaryStatItem: React.FC<SummaryStatItemProps> = ({ label, value, icon, valueClassName }) => (
-  <div className="summary-stat-item">
-    <span className="summary-stat-icon">{icon}</span>
-    <div className="summary-stat-content">
-      <span className="summary-stat-label">{label}</span>
-      <span className={`summary-stat-value ${valueClassName || ''}`}>{value}</span>
+  <div className={styles['summary-stat-item']}>
+    <span className={styles['summary-stat-icon']}>{icon}</span>
+    <div className={styles['summary-stat-content']}>
+      <span className={styles['summary-stat-label']}>{label}</span>
+      <span className={[styles['summary-stat-value'], valueClassName].filter(Boolean).join(' ')}>{value}</span>
     </div>
   </div>
 );

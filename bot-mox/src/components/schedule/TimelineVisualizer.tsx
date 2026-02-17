@@ -4,12 +4,13 @@ import { timeToMinutes, minutesToTime } from '../../utils/scheduleUtils';
 import { TimelineHeader } from './timeline/TimelineHeader';
 import { TimelineScale } from './timeline/TimelineScale';
 import { HOURS, getRestrictedSegments, getSessionSegments } from './timeline/helpers';
-import './TimelineVisualizer.css';
+import styles from './TimelineVisualizer.module.css';
 
 interface TimelineVisualizerProps {
   sessions: ScheduleSession[];
   onSessionChange?: (session: ScheduleSession) => void;
   allowedWindows?: Array<{ start: string; end: string }>;
+  variant?: 'default' | 'compact';
 }
 
 type DragState = {
@@ -24,7 +25,8 @@ type DragState = {
 export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
   sessions,
   onSessionChange,
-  allowedWindows = []
+  allowedWindows = [],
+  variant = 'default',
 }) => {
   const timelineRef = useRef<HTMLDivElement>(null);
   const [dragState, setDragState] = useState<DragState>({
@@ -194,14 +196,21 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
 
   if (sortedSessions.length === 0) {
     return (
-      <div className="timeline-visualizer">
-        <TimelineHeader showLegend={false} />
-        <div className="timeline-container disabled">
-          <div className="timeline-line-container" ref={timelineRef}>
-            <div className="timeline-base-line" />
+      <div
+        className={[
+          styles['timeline-visualizer'],
+          variant === 'compact' ? styles.compact : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        <TimelineHeader showLegend={false} variant={variant} />
+        <div className={[styles['timeline-container'], styles.disabled].join(' ')}>
+          <div className={styles['timeline-line-container']} ref={timelineRef}>
+            <div className={styles['timeline-base-line']} />
             <TimelineScale hours={HOURS} />
           </div>
-          <div className="timeline-overlay">
+          <div className={styles['timeline-overlay']}>
             <span>No Sessions</span>
           </div>
         </div>
@@ -210,22 +219,34 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
   }
 
   return (
-    <div className="timeline-visualizer">
-      <TimelineHeader showLegend />
+    <div
+      className={[
+        styles['timeline-visualizer'],
+        variant === 'compact' ? styles.compact : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <TimelineHeader showLegend variant={variant} />
 
-      <div className="timeline-container">
+      <div className={styles['timeline-container']}>
         <div
-          className={`timeline-line-container ${dragState.isDragging ? 'dragging' : ''}`}
+          className={[
+            styles['timeline-line-container'],
+            dragState.isDragging ? styles.dragging : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           ref={timelineRef}
         >
           {/* Основная линия (фон) */}
-          <div className="timeline-base-line" />
+          <div className={styles['timeline-base-line']} />
 
           {/* Отрисовка запрещенных зон (красный поверх серого) */}
           {restrictedSegments.map((seg, i) => (
             <div 
               key={i} 
-              className="restricted-zone-overlay" 
+              className={styles['restricted-zone-overlay']}
               style={{ left: `${seg.left}%`, width: `${seg.width}%` }}
             />
           ))}
@@ -239,7 +260,18 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
               <div key={segment.session.id}>
                 {/* Основной бар сессии */}
                 <div
-                  className={`timeline-session-bar ${isDraggingThis ? 'dragging' : ''} ${segment.isRestricted ? 'restricted' : segment.isOverlapping ? 'overlapping' : ''} ${onSessionChange ? 'draggable' : ''}`}
+                  className={[
+                    styles['timeline-session-bar'],
+                    isDraggingThis ? styles.dragging : '',
+                    segment.isRestricted
+                      ? styles.restricted
+                      : segment.isOverlapping
+                        ? styles.overlapping
+                        : '',
+                    onSessionChange ? styles.draggable : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                   style={{
                     left: `${segment.left}%`,
                     width: `${segment.width}%`
@@ -249,7 +281,7 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
                 >
                   {/* Подпись длительности сессии - только длительность по центру */}
                   {segment.width > 2 && (
-                    <span className="session-duration-label">
+                    <span className={styles['session-duration-label']}>
                       {preview ? `${preview.newStart} - ${preview.newEnd}` : `${segment.session.start} - ${segment.session.end}`}
                     </span>
                   )}
@@ -258,7 +290,7 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
                 {/* Превью позиции при перетаскивании */}
                 {preview && (
                   <div
-                    className="timeline-session-bar preview"
+                    className={[styles['timeline-session-bar'], styles.preview].join(' ')}
                     style={{
                       left: `${preview.left}%`,
                       width: `${preview.width}%`
@@ -287,13 +319,27 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
             return (
               <React.Fragment key={`${segment.session.id}-markers`}>
                 <div
-                  className={`timeline-marker start ${isDraggingThis && dragState.dragType === 'start' ? 'dragging' : ''} ${onSessionChange ? 'draggable' : ''}`}
+                  className={[
+                    styles['timeline-marker'],
+                    styles.start,
+                    isDraggingThis && dragState.dragType === 'start' ? styles.dragging : '',
+                    onSessionChange ? styles.draggable : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                   style={{ left: `${startLeft}%` }}
                   data-time={preview?.newStart || segment.session.start}
                   onMouseDown={(e) => handleMouseDown(e, segment.session, 'start')}
                 />
                 <div
-                  className={`timeline-marker end ${isDraggingThis && dragState.dragType === 'end' ? 'dragging' : ''} ${onSessionChange ? 'draggable' : ''}`}
+                  className={[
+                    styles['timeline-marker'],
+                    styles.end,
+                    isDraggingThis && dragState.dragType === 'end' ? styles.dragging : '',
+                    onSessionChange ? styles.draggable : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                   style={{ left: `${endLeft}%` }}
                   data-time={preview?.newEnd || segment.session.end}
                   onMouseDown={(e) => handleMouseDown(e, segment.session, 'end')}

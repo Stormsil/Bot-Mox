@@ -1,25 +1,8 @@
 const { parseBearerToken } = require('../utils/auth-token');
 const { createSupabaseServiceClient } = require('../repositories/supabase/client');
+const { verifyAgentToken } = require('../utils/agent-token');
 
 const API_ROLES_ALLOWLIST = ['api', 'admin', 'infra'];
-
-function toRoles(decodedToken = {}) {
-  const roles = [];
-
-  if (typeof decodedToken.role === 'string' && decodedToken.role.trim()) {
-    roles.push(decodedToken.role.trim());
-  }
-
-  if (Array.isArray(decodedToken.roles)) {
-    for (const role of decodedToken.roles) {
-      if (typeof role === 'string' && role.trim()) {
-        roles.push(role.trim());
-      }
-    }
-  }
-
-  return [...new Set(roles)];
-}
 
 function toSupabaseRoles(user = {}, env = {}) {
   const roles = ['api'];
@@ -54,23 +37,6 @@ function toSupabaseRoles(user = {}, env = {}) {
   }
 
   return [...new Set(roles)];
-}
-
-function pickTenantId(decodedToken = {}, fallbackTenantId = 'default') {
-  const candidates = [
-    decodedToken.tenant_id,
-    decodedToken.tenantId,
-    decodedToken?.claims?.tenant_id,
-    fallbackTenantId,
-  ];
-
-  for (const candidate of candidates) {
-    if (typeof candidate === 'string' && candidate.trim()) {
-      return candidate.trim();
-    }
-  }
-
-  return 'default';
 }
 
 function pickTenantIdFromSupabaseUser(user = {}, fallbackTenantId = 'default') {
@@ -152,7 +118,7 @@ function hasRole(auth, role) {
   return roles.includes(role);
 }
 
-function createAuthMiddleware({ admin, env, isFirebaseReady }) {
+function createAuthMiddleware({ env }) {
   const defaultTenantId = String(env?.defaultTenantId || 'default').trim() || 'default';
 
   async function authenticateSupabaseToken(token) {
@@ -196,37 +162,32 @@ function createAuthMiddleware({ admin, env, isFirebaseReady }) {
     }
   }
 
+  function authenticateAgentToken(token) {
+    const verified = verifyAgentToken(token, env?.agentAuthSecret);
+    if (!verified) {
+      return null;
+    }
+
+    return {
+      ok: true,
+      status: 200,
+      auth: {
+        source: 'agent',
+        uid: `agent:${verified.agentId}`,
+        email: null,
+        roles: ['agent'],
+        tenant_id: verified.tenantId,
+        agent_id: verified.agentId,
+        claims: {
+          agent: verified.claims,
+        },
+      },
+    };
+  }
+
   async function authenticateToken(token) {
     if (!token) {
       return makeAuthError(401, 'Bearer token is required');
-    }
-
-    if (env.internalInfraToken && token === env.internalInfraToken) {
-      return {
-        ok: true,
-        status: 200,
-        auth: {
-          source: 'internal',
-          uid: 'internal-infra',
-          email: 'infra@internal',
-          roles: ['infra', 'admin'],
-          tenant_id: defaultTenantId,
-        },
-      };
-    }
-
-    if (env.internalApiToken && token === env.internalApiToken) {
-      return {
-        ok: true,
-        status: 200,
-        auth: {
-          source: 'internal',
-          uid: 'internal-api',
-          email: 'api@internal',
-          roles: ['api'],
-          tenant_id: defaultTenantId,
-        },
-      };
     }
 
     const supabaseResult = await authenticateSupabaseToken(token);
@@ -234,32 +195,12 @@ function createAuthMiddleware({ admin, env, isFirebaseReady }) {
       return supabaseResult;
     }
 
-    if (!isFirebaseReady()) {
-      if (env?.supabaseUrl && env?.supabaseServiceRoleKey) {
-        return makeAuthError(401, 'Token verification failed');
-      }
-      return makeAuthError(401, 'Firebase Auth is not available for token verification');
+    const agentResult = authenticateAgentToken(token);
+    if (agentResult?.ok) {
+      return agentResult;
     }
 
-    try {
-      const decoded = await admin.auth().verifyIdToken(token);
-      const tenantId = pickTenantId(decoded, defaultTenantId);
-
-      return {
-        ok: true,
-        status: 200,
-        auth: {
-          source: 'firebase',
-          uid: decoded.uid,
-          email: decoded.email || null,
-          roles: toRoles(decoded),
-          claims: decoded,
-          tenant_id: tenantId,
-        },
-      };
-    } catch (error) {
-      return makeAuthError(401, 'Token verification failed', error instanceof Error ? error.message : String(error));
-    }
+    return makeAuthError(401, 'Token verification failed');
   }
 
   async function authenticateRequest(req, options = {}) {

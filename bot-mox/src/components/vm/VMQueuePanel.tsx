@@ -1,7 +1,57 @@
-import React from 'react';
-import { Select } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Button, InputNumber, Modal, Progress, Select, Space, Typography, Upload, message } from 'antd';
+import { FileTextOutlined } from '@ant-design/icons';
+import type { UploadProps } from 'antd';
 import type { VMQueueItem, VMQueueItemStatus, VMStorageOption } from '../../types';
-import './VMQueuePanel.css';
+import {
+  listUnattendProfiles,
+  migrateProfileConfig,
+  DEFAULT_PROFILE_CONFIG,
+  type UnattendProfile,
+} from '../../services/unattendProfileService';
+import {
+  listPlaybooks,
+  type Playbook,
+} from '../../services/playbookService';
+import {
+  buildFinalUnattendXml,
+  DEFAULT_UNATTEND_XML_TEMPLATE,
+  triggerXmlDownload,
+  validateUnattendXml,
+} from '../../utils/unattendXml';
+import styles from './VMQueuePanel.module.css';
+
+const { Text } = Typography;
+const cx = (...classNames: Array<string | false | null | undefined>) =>
+  classNames
+    .flatMap((name) => String(name || '').split(/\s+/))
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+
+type VMProjectId = 'wow_tbc' | 'wow_midnight';
+
+interface QueueResourcePreset {
+  label: string;
+  cores: number;
+  memoryMb: number;
+  diskGiB: number;
+}
+
+interface CustomEditorState {
+  itemId: string;
+  vmName: string;
+  baseProject: VMProjectId;
+  cores: number;
+  memoryGiB: number;
+  diskGiB: number;
+}
+
+interface UnattendEditorState {
+  itemId: string;
+  profileId?: string;
+  xmlOverride: string;
+}
 
 interface VMQueuePanelProps {
   queue: VMQueueItem[];
@@ -10,7 +60,8 @@ interface VMQueuePanelProps {
   canStartAll?: boolean;
   startingItemId?: string | null;
   storageOptions: VMStorageOption[];
-  projectOptions: Array<{ value: string; label: string }>;
+  projectOptions: Array<{ value: VMProjectId; label: string }>;
+  resourcePresets: Record<VMProjectId, QueueResourcePreset>;
   onAdd: () => void;
   onAddDelete?: () => void;
   onClear: () => void;
@@ -28,27 +79,31 @@ function toMemoryMb(memory?: number): number | null {
   return value;
 }
 
-function toMemoryGbInput(memory?: number): string {
-  const memoryMb = toMemoryMb(memory);
-  if (!memoryMb) return '';
-  const gb = memoryMb / 1024;
-  if (Number.isInteger(gb)) return String(gb);
-  return gb.toFixed(1);
+function formatMemoryGiB(memoryMb: number): string {
+  const gib = memoryMb / 1024;
+  if (Number.isInteger(gib)) {
+    return `${gib} GiB`;
+  }
+  return `${gib.toFixed(1)} GiB`;
 }
 
-function parseMemoryInputToMb(value: string): number | undefined {
-  const normalized = value.replace(',', '.').trim();
-  if (!normalized) return undefined;
-  const n = Number(normalized);
-  if (!Number.isFinite(n) || n <= 0) return undefined;
-  if (n <= 64) return Math.round(n * 1024);
-  return Math.round(n);
+function formatGb(bytes: number): string {
+  const gb = bytes / 1_000_000_000;
+  if (!Number.isFinite(gb) || gb < 0) return '0.00';
+  return gb.toFixed(2);
 }
 
-function parseCoresInput(value: string): number | undefined {
-  const n = Number(value.trim());
-  if (!Number.isFinite(n) || n < 1) return undefined;
-  return Math.max(1, Math.trunc(n));
+function buildStorageUsage(opt: VMStorageOption): null | { percent: number; label: string } {
+  const used = Number(opt.usedBytes);
+  const total = Number(opt.totalBytes);
+  if (!Number.isFinite(used) || used < 0 || !Number.isFinite(total) || total <= 0) return null;
+
+  const percent = (used / total) * 100;
+  const safePercent = Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) : 0;
+  return {
+    percent: safePercent,
+    label: `${safePercent.toFixed(2)}% (${formatGb(used)} GB of ${formatGb(total)} GB)`,
+  };
 }
 
 function getStatusDisplay(status: VMQueueItemStatus): { text: string; tone: 'idle' | 'running' | 'ok' | 'error' } {
@@ -61,6 +116,8 @@ function getStatusDisplay(status: VMQueueItemStatus): { text: string; tone: 'idl
       return { text: 'Running', tone: 'running' };
     case 'configuring':
       return { text: 'Running', tone: 'running' };
+    case 'provisioning':
+      return { text: 'Provisioning', tone: 'running' };
     case 'deleting':
       return { text: 'Deleting', tone: 'running' };
     case 'error':
@@ -78,6 +135,7 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
   startingItemId = null,
   storageOptions,
   projectOptions,
+  resourcePresets,
   onAdd,
   onAddDelete,
   onClear,
@@ -86,15 +144,195 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
   onRemove,
   onUpdate,
 }) => {
+  const [customEditor, setCustomEditor] = useState<CustomEditorState | null>(null);
+  const [unattendEditor, setUnattendEditor] = useState<UnattendEditorState | null>(null);
+  const [unattendProfiles, setUnattendProfiles] = useState<UnattendProfile[]>([]);
+  const [unattendProfilesLoading, setUnattendProfilesLoading] = useState(true);
+  const [unattendEditorError, setUnattendEditorError] = useState<string | null>(null);
+  const [playbookList, setPlaybookList] = useState<Playbook[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    void listUnattendProfiles()
+      .then((envelope) => {
+        if (!active) return;
+        setUnattendProfiles(envelope.data || []);
+      })
+      .catch(() => {
+        if (!active) return;
+        setUnattendProfiles([]);
+      })
+      .finally(() => {
+        if (!active) return;
+        setUnattendProfilesLoading(false);
+      });
+
+    void listPlaybooks()
+      .then((envelope) => {
+        if (!active) return;
+        setPlaybookList(envelope.data || []);
+      })
+      .catch(() => {
+        if (!active) return;
+        setPlaybookList([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const projectOptionById = useMemo(
+    () => new Map(projectOptions.map((option) => [option.value, option] as const)),
+    [projectOptions]
+  );
+
+  const unattendProfileById = useMemo(
+    () => new Map(unattendProfiles.map((profile) => [profile.id, profile] as const)),
+    [unattendProfiles],
+  );
+
+  const defaultUnattendProfile = useMemo(
+    () => unattendProfiles.find((profile) => profile.is_default) || unattendProfiles[0] || null,
+    [unattendProfiles],
+  );
+
+  const defaultPlaybook = useMemo(
+    () => playbookList.find((p) => p.is_default) || null,
+    [playbookList],
+  );
+
+  const openCustomEditor = (item: VMQueueItem) => {
+    const baseProject = item.projectId as VMProjectId;
+    const preset = resourcePresets[baseProject] || {
+      label: baseProject,
+      cores: 2,
+      memoryMb: 4096,
+      diskGiB: 128,
+    };
+
+    const currentMemoryMb = toMemoryMb(item.memory) ?? preset.memoryMb;
+    const currentDiskGiB = Number.isFinite(Number(item.diskGiB)) && Number(item.diskGiB) > 0
+      ? Math.max(1, Math.trunc(Number(item.diskGiB)))
+      : preset.diskGiB;
+
+    setCustomEditor({
+      itemId: item.id,
+      vmName: item.name,
+      baseProject,
+      cores: Math.max(1, Math.trunc(Number(item.cores) || preset.cores)),
+      memoryGiB: Math.max(1, Math.round(currentMemoryMb / 1024)),
+      diskGiB: Math.max(32, Math.trunc(currentDiskGiB)),
+    });
+  };
+
+  const applyCustomEditor = () => {
+    if (!customEditor) return;
+
+    onUpdate(customEditor.itemId, {
+      projectId: customEditor.baseProject,
+      resourceMode: 'custom',
+      cores: Math.max(1, Math.trunc(customEditor.cores)),
+      memory: Math.max(1024, Math.trunc(customEditor.memoryGiB) * 1024),
+      diskGiB: Math.max(32, Math.trunc(customEditor.diskGiB)),
+    });
+
+    setCustomEditor(null);
+  };
+
+  const openUnattendEditor = (item: VMQueueItem) => {
+    const preferredProfile = item.unattendProfileId
+      ? unattendProfileById.get(item.unattendProfileId)
+      : defaultUnattendProfile;
+
+    setUnattendEditor({
+      itemId: item.id,
+      profileId: item.unattendProfileId || preferredProfile?.id,
+      xmlOverride: String(item.unattendXmlOverride || ''),
+    });
+    setUnattendEditorError(null);
+  };
+
+  const activeUnattendPreview = useMemo(() => {
+    if (!unattendEditor) return null;
+    const queueItem = queue.find((item) => item.id === unattendEditor.itemId);
+    if (!queueItem) return null;
+
+    const profile = unattendEditor.profileId
+      ? unattendProfileById.get(unattendEditor.profileId) || defaultUnattendProfile
+      : defaultUnattendProfile;
+    const profileConfig = migrateProfileConfig(profile?.config || DEFAULT_PROFILE_CONFIG);
+
+    const templateXml = String(unattendEditor.xmlOverride || '').trim()
+      || String(profileConfig.xmlTemplate || DEFAULT_UNATTEND_XML_TEMPLATE).trim()
+      || DEFAULT_UNATTEND_XML_TEMPLATE;
+
+    const finalXml = buildFinalUnattendXml(templateXml, profileConfig);
+
+    return {
+      queueItem,
+      profile,
+      templateXml,
+      finalXml,
+    };
+  }, [unattendEditor, queue, unattendProfileById, defaultUnattendProfile]);
+
+  const handleQueueXmlImport: UploadProps['beforeUpload'] = async (file) => {
+    if (!unattendEditor) return false;
+
+    try {
+      const importedXml = await file.text();
+      const validation = validateUnattendXml(importedXml);
+      if (!validation.valid) {
+        setUnattendEditorError(validation.error);
+        message.error('Invalid XML file');
+        return false;
+      }
+
+      setUnattendEditor((prev) => (prev ? { ...prev, xmlOverride: importedXml } : prev));
+      setUnattendEditorError(null);
+      message.success('Queue XML override imported');
+    } catch {
+      message.error('Failed to import XML override');
+    }
+
+    return false;
+  };
+
+  const applyUnattendEditor = () => {
+    if (!unattendEditor) return;
+
+    onUpdate(unattendEditor.itemId, {
+      unattendProfileId: unattendEditor.profileId,
+      unattendXmlOverride: String(unattendEditor.xmlOverride || '').trim() || undefined,
+    });
+
+    setUnattendEditor(null);
+    setUnattendEditorError(null);
+  };
+
+  const exportUnattendTemplate = () => {
+    if (!activeUnattendPreview) return;
+    const vmName = activeUnattendPreview.queueItem.name || 'vm';
+    triggerXmlDownload(`${vmName}-template.xml`, activeUnattendPreview.templateXml);
+  };
+
+  const exportUnattendFinal = () => {
+    if (!activeUnattendPreview) return;
+    const vmName = activeUnattendPreview.queueItem.name || 'vm';
+    triggerXmlDownload(`${vmName}-final.xml`, activeUnattendPreview.finalXml);
+  };
+
   return (
-    <div className="vm-queue-panel">
-      <div className="vm-queue-panel-header">
-        <div className="vm-queue-panel-header-main">
-          <span className="vm-queue-panel-header-title">VM Queue</span>
+    <div className={`${cx('vm-queue-panel')} vm-queue-panel`}>
+      <div className={cx('vm-queue-panel-header')}>
+        <div className={cx('vm-queue-panel-header-main')}>
+          <span className={cx('vm-queue-panel-header-title')}>VM Queue</span>
         </div>
-        <div className="vm-queue-panel-header-actions">
+        <div className={cx('vm-queue-panel-header-actions')}>
           <button
-            className="vm-queue-panel-start-all"
+            className={cx('vm-queue-panel-start-all')}
             onClick={onStartAll}
             disabled={isProcessing || isStartActionRunning || !canStartAll || !onStartAll}
           >
@@ -106,20 +344,22 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
         </div>
       </div>
 
-      <div className="vm-queue-panel-list">
+      <div className={`${cx('vm-queue-panel-list')} vm-queue-panel-list`}>
         {queue.length === 0 ? (
-          <div className="vm-queue-panel-empty">
+          <div className={cx('vm-queue-panel-empty')}>
             Queue is empty. Press "+ VM" or Ctrl+N to create a VM.
           </div>
         ) : (
           <>
-            <div className="vm-queue-columns">
-              <span className="vm-queue-columns-name">VM</span>
-              <span>Storage</span>
-              <span>Project</span>
-              <span>Resources</span>
-              <span className="vm-queue-columns-status">State</span>
-              <span className="vm-queue-columns-remove" />
+            <div className={cx('vm-queue-columns')}>
+              <span className={cx('vm-queue-columns-name')}>VM</span>
+              <span>STORAGE</span>
+              <span>PROJECT</span>
+              <span>RESOURCES</span>
+              <span className={cx('vm-queue-columns-unattend')}>UNATTEND</span>
+              <span className={cx('vm-queue-columns-playbook')}>PLAYBOOK</span>
+              <span className={cx('vm-queue-columns-status')}>STATE</span>
+              <span className={cx('vm-queue-columns-remove')} />
             </div>
 
             {queue.map((item) => {
@@ -128,11 +368,6 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
               const status = getStatusDisplay(item.status);
               const deleteTargetVmId = Number(item.targetVmId ?? item.vmId);
               const hasDeleteTargetVmId = Number.isInteger(deleteTargetVmId) && deleteTargetVmId > 0;
-              const memoryMb = toMemoryMb(item.memory);
-              const memoryGbValue = toMemoryGbInput(item.memory);
-              const coresValue = Number.isFinite(item.cores) && Number(item.cores) > 0
-                ? String(Math.trunc(Number(item.cores)))
-                : '';
               const editableCreate = !isDeleteAction && (!isProcessing || item.status === 'pending');
               const canRemove = !isProcessing && !isStartActionRunning;
               const canStartItem = !isDeleteAction
@@ -145,13 +380,36 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                 ? `${item.name} [ID ${deleteTargetVmId}]`
                 : item.name;
 
+              const projectId = item.projectId as VMProjectId;
+              const preset = resourcePresets[projectId] || {
+                label: projectOptionById.get(projectId)?.label || projectId,
+                cores: 2,
+                memoryMb: 4096,
+                diskGiB: 128,
+              };
+
+              const effectiveCores = Number.isFinite(Number(item.cores)) && Number(item.cores) > 0
+                ? Math.trunc(Number(item.cores))
+                : preset.cores;
+              const effectiveMemoryMb = toMemoryMb(item.memory) ?? preset.memoryMb;
+              const effectiveDiskGiB = Number.isFinite(Number(item.diskGiB)) && Number(item.diskGiB) > 0
+                ? Math.max(1, Math.trunc(Number(item.diskGiB)))
+                : preset.diskGiB;
+
+              const projectSelectValue = item.resourceMode === 'custom' ? 'custom' : projectId;
+
+              const attachedProfile = item.unattendProfileId
+                ? unattendProfileById.get(item.unattendProfileId) || defaultUnattendProfile
+                : defaultUnattendProfile;
+              const hasXmlOverride = Boolean(String(item.unattendXmlOverride || '').trim());
+
               return (
-                <div key={item.id} className="vm-queue-item">
-                  <div className="vm-queue-item-vm">
+                <div key={item.id} className={cx('vm-queue-item')}>
+                  <div className={cx('vm-queue-item-vm')}>
                     <input
-                      className="vm-queue-item-input vm-queue-item-input--name"
+                      className={cx('vm-queue-item-input vm-queue-item-input--name')}
                       value={vmInputValue}
-                      onChange={e => {
+                      onChange={(e) => {
                         if (!isDeleteAction) {
                           onUpdate(item.id, { name: e.target.value });
                         }
@@ -161,105 +419,240 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                     />
                   </div>
 
-                  <div className="vm-queue-item-select vm-queue-item-select--storage">
+                  <div className={cx('vm-queue-item-select vm-queue-item-select--storage')}>
                     {isDeleteAction ? (
-                      <div className="vm-queue-item-placeholder">-</div>
+                      <div className={cx('vm-queue-item-placeholder')}>-</div>
                     ) : (
                       <Select
-                        className="vm-queue-storage-select"
+                        className={cx('vm-queue-storage-select')}
+                        size="small"
                         value={item.storage}
-                        onChange={value => onUpdate(item.id, { storage: value })}
+                        onChange={(value) => onUpdate(item.id, { storage: value, storageMode: 'manual' })}
                         disabled={!editableCreate}
                         optionLabelProp="label"
                         popupMatchSelectWidth={false}
-                        classNames={{ popup: { root: 'vm-queue-storage-dropdown' } }}
+                        listHeight={400}
+                        placement="bottomLeft"
+                        dropdownStyle={{
+                          background: 'var(--boxmox-color-surface-panel)',
+                          border: '1px solid var(--boxmox-color-border-default)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: 4,
+                        }}
                       >
-                        {storageOptions.map(opt => (
-                          <Select.Option
-                            key={opt.value}
-                            value={opt.value}
-                            label={opt.label}
+                        {storageOptions.map((opt) => {
+                          const usage = buildStorageUsage(opt);
+                          const vmCount = typeof opt.vmCount === 'number' ? opt.vmCount : null;
+
+                          return (
+                            <Select.Option
+                              key={opt.value}
+                              value={opt.value}
+                              label={opt.label}
+                            >
+                              <div className={cx('vm-queue-dropdown-option')}>
+                                <div className={cx('vm-queue-dropdown-option-head')}>
+                                  <Text strong>{opt.label}</Text>
+                                  {vmCount !== null ? (
+                                    <Text type="secondary" className={cx('vm-queue-dropdown-option-meta')}>
+                                      {vmCount} VMs
+                                    </Text>
+                                  ) : null}
+                                </div>
+
+                                {usage ? (
+                                  <div className={cx('vm-queue-dropdown-option-usage')}>
+                                    <Progress percent={usage.percent} showInfo={false} size="small" strokeColor="var(--boxmox-color-brand-primary)" trailColor="var(--boxmox-color-surface-hover)" />
+                                    <Text type="secondary" className={cx('vm-queue-dropdown-option-usage-text')}>
+                                      {usage.label}
+                                    </Text>
+                                  </div>
+                                ) : opt.details ? (
+                                  <Text type="secondary" className={cx('vm-queue-dropdown-option-usage-text')}>
+                                    {opt.details}
+                                  </Text>
+                                ) : null}
+                              </div>
+                            </Select.Option>
+                          );
+                        })}
+                      </Select>
+                    )}
+                  </div>
+
+                  <div className={cx('vm-queue-item-select vm-queue-item-select--project')}>
+                    {isDeleteAction ? (
+                      <div className={cx('vm-queue-item-placeholder')}>-</div>
+                    ) : (
+                      <Select
+                        className={cx('vm-queue-project-select')}
+                        size="small"
+                        value={projectSelectValue}
+                        disabled={!editableCreate}
+                        onChange={(value) => {
+                          if (value === 'custom') {
+                            openCustomEditor(item);
+                            return;
+                          }
+
+                          const selectedProject = value as VMProjectId;
+                          onUpdate(item.id, {
+                            projectId: selectedProject,
+                            resourceMode: 'project',
+                            cores: undefined,
+                            memory: undefined,
+                            diskGiB: resourcePresets[selectedProject]?.diskGiB,
+                          });
+                        }}
+                        popupMatchSelectWidth={300}
+                        listHeight={400}
+                        placement="bottomLeft"
+                        dropdownStyle={{
+                          background: 'var(--boxmox-color-surface-panel)',
+                          border: '1px solid var(--boxmox-color-border-default)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: 4,
+                        }}
+                        optionLabelProp="label"
+                      >
+                        {projectOptions.map((opt) => {
+                          const p = resourcePresets[opt.value];
+                          const meta = p ? `${p.cores} CPU · ${formatMemoryGiB(p.memoryMb)} · ${p.diskGiB} GB` : '';
+                          
+                          return (
+                            <Select.Option key={opt.value} value={opt.value} label={opt.label}>
+                              <div className={cx('vm-queue-dropdown-option')}>
+                                <div className={cx('vm-queue-dropdown-option-head')}>
+                                  <Text strong>{opt.label}</Text>
+                                </div>
+                                <Text type="secondary" className={cx('vm-queue-dropdown-option-usage-text')}>
+                                  {meta}
+                                </Text>
+                              </div>
+                            </Select.Option>
+                          );
+                        })}
+                        <Select.Option value="custom" label="Custom">
+                          <div className={cx('vm-queue-dropdown-option')}>
+                             <div className={cx('vm-queue-dropdown-option-head')}>
+                                <Text strong>Custom Configuration</Text>
+                             </div>
+                             <Text type="secondary" className={cx('vm-queue-dropdown-option-usage-text')}>
+                               Manually configure CPU, RAM, and Disk
+                             </Text>
+                          </div>
+                        </Select.Option>
+                      </Select>
+                    )}
+                  </div>
+
+                  <div className={cx('vm-queue-item-resources')}>
+                    {isDeleteAction ? (
+                      <div className={cx('vm-queue-item-placeholder')}>Delete operation</div>
+                    ) : (
+                      <div className={cx('vm-queue-item-resources-compact')}>
+                        <div className={cx('vm-queue-item-resources-text')}>
+                           {effectiveCores} CPU · {formatMemoryGiB(effectiveMemoryMb)} · {effectiveDiskGiB} GB
+                        </div>
+                        {item.resourceMode === 'custom' && (
+                          <Button
+                            type="text"
+                            size="small"
+                            className={cx('vm-queue-item-resource-edit')}
+                            style={{
+                              height: 20,
+                              paddingInline: 6,
+                              fontSize: 10,
+                              color: 'var(--boxmox-color-brand-primary)',
+                            }}
+                            onClick={() => openCustomEditor(item)}
+                            title="Edit Custom Resources"
                           >
-                            {opt.details ? `${opt.label} | ${opt.details}` : opt.label}
+                            Edit
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={cx('vm-queue-item-unattend')}>
+                    {isDeleteAction ? (
+                      <div className={cx('vm-queue-item-placeholder')}>-</div>
+                    ) : (
+                      <div className={cx('vm-queue-item-cell-compact')}>
+                        <div className={cx('vm-queue-item-cell-info')}>
+                          <Text
+                            className={cx('vm-queue-item-cell-text')}
+                            title={attachedProfile?.name || 'Default profile'}
+                          >
+                            {attachedProfile?.name || 'Default'}
+                          </Text>
+                          {hasXmlOverride && <div className={cx('vm-queue-dot-indicator')} title="XML Override Active" />}
+                        </div>
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<FileTextOutlined />}
+                          className={cx('vm-queue-item-cell-action')}
+                          onClick={() => openUnattendEditor(item)}
+                          disabled={!editableCreate}
+                          loading={unattendProfilesLoading}
+                          title="Configure Unattend"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={cx('vm-queue-item-playbook')}>
+                    {isDeleteAction ? (
+                      <div className={cx('vm-queue-item-placeholder')}>-</div>
+                    ) : (
+                      <Select
+                        className={cx('vm-queue-playbook-select')}
+                        value={item.playbookId || (defaultPlaybook?.id ?? 'none')}
+                        onChange={(value) => onUpdate(item.id, { playbookId: value === 'none' ? undefined : value })}
+                        disabled={!editableCreate}
+                        popupMatchSelectWidth={false}
+                        size="small"
+                        dropdownStyle={{
+                          background: 'var(--boxmox-color-surface-panel)',
+                          border: '1px solid var(--boxmox-color-border-default)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: 4,
+                        }}
+                      >
+                        <Select.Option value="none">None</Select.Option>
+                        {playbookList.map((p) => (
+                          <Select.Option key={p.id} value={p.id}>
+                            {p.is_default ? `* ${p.name}` : p.name}
                           </Select.Option>
                         ))}
                       </Select>
                     )}
                   </div>
 
-                  <div className="vm-queue-item-select vm-queue-item-select--project">
-                    {isDeleteAction ? (
-                      <div className="vm-queue-item-placeholder">-</div>
-                    ) : (
-                      <select
-                        value={item.projectId}
-                        onChange={e => onUpdate(item.id, { projectId: e.target.value as 'wow_tbc' | 'wow_midnight' })}
-                        disabled={!editableCreate}
-                      >
-                        {projectOptions.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-
-                  <div className="vm-queue-item-resources">
-                    {isDeleteAction ? (
-                      <div className="vm-queue-item-placeholder">Delete operation</div>
-                    ) : (
-                      <div className="vm-queue-item-resource-inputs">
-                        <label className="vm-queue-item-resource-row">
-                          <span>CPU</span>
-                          <input
-                            className="vm-queue-item-input"
-                            type="number"
-                            min={1}
-                            step={1}
-                            value={coresValue}
-                            onChange={e => onUpdate(item.id, { cores: parseCoresInput(e.target.value) })}
-                            disabled={!editableCreate}
-                          />
-                          <em>cores</em>
-                        </label>
-                        <label className="vm-queue-item-resource-row">
-                          <span>RAM</span>
-                          <input
-                            className="vm-queue-item-input"
-                            type="number"
-                            min={1}
-                            step={1}
-                            value={memoryGbValue}
-                            onChange={e => onUpdate(item.id, { memory: parseMemoryInputToMb(e.target.value) })}
-                            disabled={!editableCreate}
-                          />
-                          <em>{memoryMb ? `${memoryMb} MB` : '-'}</em>
-                        </label>
-                      </div>
-                    )}
-                  </div>
-
                   {canStartItem ? (
                     <button
-                      className="vm-queue-item-start"
+                      className={cx('vm-queue-item-start')}
                       onClick={() => onStartOne?.(item.id)}
                       disabled={isProcessing || isStartActionRunning}
                       title={item.vmId ? `Start VM ${item.vmId}` : 'Start VM'}
                     >
-                      {isItemStarting ? 'Starting...' : 'Start'}
+                      {isItemStarting ? 'STARTING' : 'START'}
                     </button>
                   ) : (
-                    <span className={`vm-queue-item-status vm-queue-item-status--${status.tone}`}>
-                      {status.text}
+                    <span className={cx('vm-queue-item-status', `vm-queue-item-status--${status.tone}`)}>
+                      {status.text.toUpperCase()}
                     </span>
                   )}
 
                   <button
-                    className="vm-queue-item-remove"
+                    className={cx('vm-queue-item-remove')}
                     onClick={() => onRemove(item.id)}
                     disabled={!canRemove}
                     title="Remove"
                   >
-                    x
+                    ×
                   </button>
                 </div>
               );
@@ -267,6 +660,144 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
           </>
         )}
       </div>
+
+      <Modal
+        title="Custom VM Resources"
+        open={Boolean(customEditor)}
+        onCancel={() => setCustomEditor(null)}
+        onOk={applyCustomEditor}
+        okText="Apply"
+        destroyOnHidden
+      >
+        {customEditor ? (
+          <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <div className={cx('vm-queue-modal-field')}>
+              <label>VM</label>
+              <Text>{customEditor.vmName}</Text>
+            </div>
+
+            <div className={cx('vm-queue-modal-field')}>
+              <label>Base Project</label>
+              <Select
+                value={customEditor.baseProject}
+                options={projectOptions}
+                onChange={(value) => setCustomEditor((prev) => (prev ? { ...prev, baseProject: value } : prev))}
+              />
+            </div>
+
+            <div className={cx('vm-queue-modal-grid')}>
+              <div className={cx('vm-queue-modal-field')}>
+                <label>CPU Cores</label>
+                <InputNumber
+                  value={customEditor.cores}
+                  min={1}
+                  max={64}
+                  step={1}
+                  style={{ width: '100%' }}
+                  onChange={(value) => setCustomEditor((prev) => (prev ? { ...prev, cores: Number(value) || 1 } : prev))}
+                />
+              </div>
+
+              <div className={cx('vm-queue-modal-field')}>
+                <label>RAM (GiB)</label>
+                <InputNumber
+                  value={customEditor.memoryGiB}
+                  min={1}
+                  max={512}
+                  step={1}
+                  style={{ width: '100%' }}
+                  onChange={(value) => setCustomEditor((prev) => (prev ? { ...prev, memoryGiB: Number(value) || 1 } : prev))}
+                />
+              </div>
+
+              <div className={cx('vm-queue-modal-field')}>
+                <label>Disk (GiB)</label>
+                <InputNumber
+                  value={customEditor.diskGiB}
+                  min={32}
+                  max={4096}
+                  step={1}
+                  style={{ width: '100%' }}
+                  onChange={(value) => setCustomEditor((prev) => (prev ? { ...prev, diskGiB: Number(value) || 32 } : prev))}
+                />
+              </div>
+            </div>
+          </Space>
+        ) : null}
+      </Modal>
+
+      <Modal
+        title="Queue VM Unattend XML"
+        open={Boolean(unattendEditor)}
+        onCancel={() => {
+          setUnattendEditor(null);
+          setUnattendEditorError(null);
+        }}
+        onOk={applyUnattendEditor}
+        okText="Apply"
+        destroyOnHidden
+        width={820}
+      >
+        {unattendEditor ? (
+          <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <div className={cx('vm-queue-modal-field')}>
+              <label>Profile</label>
+              <Select
+                placeholder="Select profile"
+                value={unattendEditor.profileId}
+                onChange={(value) => setUnattendEditor((prev) => (prev ? { ...prev, profileId: value } : prev))}
+                options={unattendProfiles.map((profile) => ({
+                  value: profile.id,
+                  label: profile.is_default ? `${profile.name} (default)` : profile.name,
+                }))}
+                allowClear
+                loading={unattendProfilesLoading}
+              />
+            </div>
+
+            <Space wrap>
+              <Upload beforeUpload={handleQueueXmlImport} showUploadList={false} accept=".xml,text/xml,application/xml">
+                <Button size="small">Import VM XML Override</Button>
+              </Upload>
+              <Button
+                size="small"
+                onClick={() => setUnattendEditor((prev) => (prev ? { ...prev, xmlOverride: '' } : prev))}
+              >
+                Use Profile Template
+              </Button>
+              <Button size="small" onClick={exportUnattendTemplate}>
+                Export Template
+              </Button>
+              <Button type="primary" size="small" onClick={exportUnattendFinal}>
+                Export Final XML
+              </Button>
+            </Space>
+
+            {unattendEditorError ? (
+              <div className={cx('vm-queue-unattend-error')}>{unattendEditorError}</div>
+            ) : null}
+
+            <div className={cx('vm-queue-modal-field')}>
+              <label>Current Source</label>
+              <Text type="secondary">
+                {String(unattendEditor.xmlOverride || '').trim()
+                  ? 'Per-VM XML override'
+                  : `Profile template${activeUnattendPreview?.profile ? `: ${activeUnattendPreview.profile.name}` : ''}`}
+              </Text>
+            </div>
+
+            <div className={cx('vm-queue-modal-field')}>
+              <label>Final XML Preview</label>
+              <textarea
+                className={cx('vm-queue-unattend-preview')}
+                value={activeUnattendPreview?.finalXml || ''}
+                readOnly
+              />
+            </div>
+          </Space>
+        ) : null}
+      </Modal>
     </div>
   );
 };
+

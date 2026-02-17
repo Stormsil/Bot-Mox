@@ -1,0 +1,53 @@
+.metricCard {
+  background: var(--boxmox-color-surface-panel) !important;
+  border: 1px solid var(--boxmox-color-border-default) !important;
+  border-radius: var(--radius-sm) !important;
+  height: 100%;
+}
+
+.metricCard :global(.ant-card-body) {
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.icon {
+  font-size: 20px;
+}
+
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--boxmox-color-text-muted) !important;
+  letter-spacing: 0.5px;
+}
+
+.value {
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.progress {
+  margin-bottom: 8px;
+}
+
+.progress :global(.ant-progress-inner) {
+  background-color: var(--boxmox-color-surface-muted);
+}
+
+.progress :global(.ant-progress-bg) {
+  border-radius: 0;
+}
+
+.subtext {
+  font-size: 12px;
+  color: var(--boxmox-color-text-muted) !important;
+}
+

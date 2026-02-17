@@ -1,5 +1,6 @@
 import React from 'react';
 import { Typography } from 'antd';
+import styles from './lifeStages.module.css';
 
 const { Text } = Typography;
 
@@ -13,15 +14,15 @@ export const SimpleBarChart: React.FC<SimpleBarChartProps> = ({ data, color, lab
   const max = Math.max(...data);
 
   return (
-    <div className="simple-bar-chart">
-      <Text type="secondary" className="chart-label">
+    <div className={styles['simple-bar-chart']}>
+      <Text type="secondary" className={styles['chart-label']}>
         {label}
       </Text>
-      <div className="chart-bars">
+      <div className={styles['chart-bars']}>
         {data.map((value, index) => (
           <div
             key={index}
-            className="chart-bar"
+            className={styles['chart-bar']}
             style={{
               height: `${(value / max) * 100}%`,
               backgroundColor: color,

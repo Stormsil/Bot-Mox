@@ -1,0 +1,30 @@
+.root {
+  padding: 16px 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.botOption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.botOptionTitle {
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.botOptionMeta {
+  opacity: 0.75;
+  font-size: 12px;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

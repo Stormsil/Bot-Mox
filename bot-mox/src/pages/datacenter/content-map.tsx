@@ -15,6 +15,16 @@ import type {
   NavPropsFactory,
 } from './content-map-types';
 
+import styles from './DatacenterPage.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
+
 const { Title, Text } = Typography;
 
 interface DatacenterContentMapProps {
@@ -64,13 +74,13 @@ export const DatacenterContentMap: React.FC<DatacenterContentMapProps> = ({
   expiringItems,
 }) => {
   return (
-    <div className="content-map">
-      <div className="content-map-header">
+    <div className={cx('content-map')}>
+      <div className={cx('content-map-header')}>
         <div>
-          <Title level={4} className="content-map-title">
+          <Title level={4} className={cx('content-map-title')}>
             Content Map
           </Title>
-          <Text type="secondary" className="content-map-subtitle">
+          <Text type="secondary" className={cx('content-map-subtitle')}>
             Быстрый доступ к ключевым разделам и их метрикам
           </Text>
         </div>

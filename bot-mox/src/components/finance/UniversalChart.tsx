@@ -14,7 +14,7 @@ import { Card, Select, Checkbox, Popover, Button, ColorPicker } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
 import type { TimeSeriesData, GoldPriceHistoryEntry } from '../../types';
 import { saveChartConfig, getChartConfig, type ChartSeriesConfig } from '../../services/financeService';
-import './UniversalChart.css';
+import styles from './UniversalChart.module.css';
 
 interface UniversalChartProps {
   timeSeriesData: TimeSeriesData[];
@@ -54,8 +54,8 @@ interface CustomChartTooltipProps {
 const CustomChartTooltip: React.FC<CustomChartTooltipProps> = ({ active, payload, label, config }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="universal-chart-tooltip">
-        <p className="tooltip-date">{label}</p>
+      <div className={styles.tooltip}>
+        <p className={styles.tooltipDate}>{label}</p>
         {payload.map((entry, index) => {
           const dataKey = String(entry.dataKey || '');
           const conf = config.find((item) => item.key === dataKey);
@@ -136,16 +136,16 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
   };
 
   const renderSettingsContent = () => (
-    <div className="chart-settings-popover">
+    <div className={styles.settingsPopover}>
       {config.map((item) => (
-        <div key={item.key} className="chart-setting-row">
+        <div key={item.key} className={styles.settingRow}>
           <Checkbox
             checked={item.visible}
             onChange={(e) => handleConfigChange(item.key, { visible: e.target.checked })}
           >
             {item.name}
           </Checkbox>
-          <div className="chart-setting-controls">
+          <div className={styles.settingControls}>
              <ColorPicker
                 value={item.color}
                 onChange={(c) => handleConfigChange(item.key, { color: c.toHexString() })}
@@ -169,7 +169,7 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
 
   return (
     <Card 
-      className="universal-chart-card" 
+      className={styles.card} 
       title="Financial Overview" 
       loading={loading}
       extra={
@@ -185,7 +185,7 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
         </Popover>
       }
     >
-      <div className="universal-chart-container">
+      <div className={styles.container}>
         <ResponsiveContainer width="100%" height={400}>
           <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--boxmox-color-border-default)" />

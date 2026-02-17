@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from '../TimelineVisualizer.module.css';
 
 interface TimelineScaleProps {
   hours: number[];
@@ -10,18 +11,18 @@ export const TimelineScale: React.FC<TimelineScaleProps> = ({ hours, labelStep =
     {hours.map((hour) => (
       <div
         key={hour}
-        className="timeline-tick"
+        className={styles['timeline-tick']}
         style={{ left: `${(hour / 24) * 100}%` }}
       />
     ))}
 
-    <div className="timeline-labels">
+    <div className={styles['timeline-labels']}>
       {hours
         .filter((hour) => hour % labelStep === 0)
         .map((hour) => (
           <span
             key={hour}
-            className="timeline-time-label"
+            className={styles['timeline-time-label']}
             style={{ left: `${(hour / 24) * 100}%` }}
           >
             {hour.toString().padStart(2, '0')}:00

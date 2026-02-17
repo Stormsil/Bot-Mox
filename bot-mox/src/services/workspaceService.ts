@@ -232,6 +232,7 @@ export function subscribeToCalendarEvents(
     callback,
     onError,
     {
+      key: 'workspace:calendar',
       intervalMs: 6000,
       immediate: true,
     }
@@ -305,6 +306,7 @@ export function subscribeToKanbanTasks(
     callback,
     onError,
     {
+      key: 'workspace:kanban',
       intervalMs: 6000,
       immediate: true,
     }

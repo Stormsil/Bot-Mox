@@ -25,7 +25,7 @@ interface UseVmStartAndQueueActionsParams {
   settings: VMGeneratorSettings | null;
   proxmoxNode: string;
   refreshVms: () => Promise<void> | void;
-  getResourcePreset: (projectId: VMProjectId, mode: VMResourceMode) => { cores: number; memory: number };
+  getResourcePreset: (projectId: VMProjectId, mode: VMResourceMode) => { cores: number; memory: number; diskGiB?: number };
   syncTemplateHardwareFromApi: () => Promise<{ cores: number; memory: number } | null>;
   onReset: () => void;
   onAddVM: () => void;
@@ -86,8 +86,8 @@ export const useVmStartAndQueueActions = ({
             : currentItem.resourceMode || 'project'
       ) as VMResourceMode;
 
-      const hasManualResourceValues = updates.cores !== undefined || updates.memory !== undefined;
-      const shouldApplyPreset = !hasManualResourceValues && (
+      const hasManualResourceValues = updates.cores !== undefined || updates.memory !== undefined || updates.diskGiB !== undefined;
+      const shouldApplyPreset = nextMode !== 'custom' && !hasManualResourceValues && (
         updates.projectId !== undefined || updates.resourceMode !== undefined
       );
 
@@ -102,6 +102,7 @@ export const useVmStartAndQueueActions = ({
               resourceMode: nextMode,
               cores: preset.cores,
               memory: preset.memory,
+              diskGiB: undefined,
             });
           })();
           return;
@@ -114,6 +115,7 @@ export const useVmStartAndQueueActions = ({
           resourceMode: nextMode,
           cores: preset.cores,
           memory: preset.memory,
+          diskGiB: preset.diskGiB,
         });
         return;
       }
@@ -225,6 +227,7 @@ export const useVmStartAndQueueActions = ({
       (item) =>
         item.status === 'cloning'
         || item.status === 'configuring'
+        || item.status === 'provisioning'
         || item.status === 'deleting'
     ).length;
     const done = queue.queue.filter((item) => item.status === 'done').length;

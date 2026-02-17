@@ -1,13 +1,13 @@
 import React from 'react';
 import { VMList } from '../../components/vm';
-import './VMListPage.css';
+import styles from './VMListPage.module.css';
 
 export const VMListPage: React.FC = () => {
   return (
-    <div className="vm-list-page">
-      <div className="vm-list-page-panel">
-        <div className="vm-list-page-header">Proxmox VM List</div>
-        <div className="vm-list-page-content">
+    <div className={styles.root}>
+      <div className={styles.panel}>
+        <div className={styles.header}>Proxmox VM List</div>
+        <div className={styles.content}>
           <VMList />
         </div>
       </div>

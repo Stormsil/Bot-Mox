@@ -7,7 +7,7 @@ import {
   DownloadOutlined,
 } from '@ant-design/icons';
 import type { Bot } from '../../types';
-import './BotFinance.css';
+import styles from './BotFinance.module.css';
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -43,7 +43,7 @@ const columns = [
     render: (type: string) => (
       <Tag
         color={type === 'income' ? 'green' : 'red'}
-        className="transaction-type-tag"
+        className={styles['transaction-type-tag']}
       >
         {type === 'income' ? 'Income' : 'Expense'}
       </Tag>
@@ -55,7 +55,7 @@ const columns = [
     key: 'category',
     width: 120,
     render: (category: string) => (
-      <Tag className="category-tag">{category}</Tag>
+      <Tag className={styles['category-tag']}>{category}</Tag>
     ),
   },
   {
@@ -72,7 +72,7 @@ const columns = [
     align: 'right' as const,
     render: (amount: number, record: { type: string; currency: string }) => (
       <Text
-        className={record.type === 'income' ? 'amount-income' : 'amount-expense'}
+        className={record.type === 'income' ? styles['amount-income'] : styles['amount-expense']}
       >
         {record.type === 'income' ? '+' : '-'}{amount.toLocaleString()} {record.currency}
       </Text>
@@ -98,11 +98,11 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
     : mockTransactions.filter(t => t.type === filterType);
 
   return (
-    <div className="bot-finance">
+    <div className={styles['bot-finance']}>
       {/* Финансовая сводка */}
-      <Row gutter={[16, 16]} className="finance-summary">
+      <Row gutter={[16, 16]} className={styles['finance-summary']}>
         <Col span={8}>
-          <Card className="finance-stat-card income">
+          <Card className={styles['finance-stat-card']}>
             <Statistic
               title="Total Income"
               value={totalIncome}
@@ -111,13 +111,13 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
               precision={2}
               valueStyle={{ color: 'var(--boxmox-color-status-success)' }}
             />
-            <div className="stat-detail">
-              <Text className="stat-label">From farming & sales</Text>
+            <div className={styles['stat-detail']}>
+              <Text className={styles['stat-label']}>From farming & sales</Text>
             </div>
           </Card>
         </Col>
         <Col span={8}>
-          <Card className="finance-stat-card expense">
+          <Card className={styles['finance-stat-card']}>
             <Statistic
               title="Total Expenses"
               value={totalExpenses}
@@ -126,13 +126,13 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
               precision={2}
               valueStyle={{ color: 'var(--boxmox-color-status-danger)' }}
             />
-            <div className="stat-detail">
-              <Text className="stat-label">Proxy, subs & session</Text>
+            <div className={styles['stat-detail']}>
+              <Text className={styles['stat-label']}>Proxy, subs & session</Text>
             </div>
           </Card>
         </Col>
         <Col span={8}>
-          <Card className="finance-stat-card profit">
+          <Card className={styles['finance-stat-card']}>
             <Statistic
               title="Net Profit"
               value={netProfit}
@@ -143,56 +143,56 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
                 color: netProfit >= 0 ? 'var(--boxmox-color-status-success)' : 'var(--boxmox-color-status-danger)'
               }}
             />
-            <div className="stat-detail">
-              <Text className="stat-label">Current balance</Text>
+            <div className={styles['stat-detail']}>
+              <Text className={styles['stat-label']}>Current balance</Text>
             </div>
           </Card>
         </Col>
       </Row>
 
       {/* Детализация затрат */}
-      <Row gutter={[16, 16]} className="costs-breakdown">
+      <Row gutter={[16, 16]} className={styles['costs-breakdown']}>
         <Col span={12}>
-          <Card className="costs-card" title="Cost Breakdown">
-            <div className="cost-item">
+          <Card className={styles['costs-card']} title="Cost Breakdown">
+            <div className={styles['cost-item']}>
               <Text>Proxy Costs</Text>
               <Text strong>$15.00</Text>
             </div>
-            <div className="cost-item">
+            <div className={styles['cost-item']}>
               <Text>Subscription</Text>
               <Text strong>$25.00</Text>
             </div>
-            <div className="cost-item">
+            <div className={styles['cost-item']}>
               <Text>Session Costs</Text>
               <Text strong>$5.00</Text>
             </div>
-            <div className="cost-divider" />
-            <div className="cost-item total">
+            <div className={styles['cost-divider']} />
+            <div className={[styles['cost-item'], styles.total].join(' ')}>
               <Text strong>Total Costs</Text>
-              <Text strong className="total-amount">
+              <Text strong className={styles['total-amount']}>
                 $45.00
               </Text>
             </div>
           </Card>
         </Col>
         <Col span={12}>
-          <Card className="roi-card" title="ROI Analysis">
-            <div className="roi-item">
+          <Card className={styles['roi-card']} title="ROI Analysis">
+            <div className={styles['roi-item']}>
               <Text>Total Invested</Text>
               <Text strong>$120.00</Text>
             </div>
-            <div className="roi-item">
+            <div className={styles['roi-item']}>
               <Text>Total Returned</Text>
-              <Text strong className="positive">$187.50</Text>
+              <Text strong className={styles.positive}>$187.50</Text>
             </div>
-            <div className="roi-item">
+            <div className={styles['roi-item']}>
               <Text>Payback Period</Text>
               <Text strong>12 days</Text>
             </div>
-            <div className="roi-divider" />
-            <div className="roi-item total">
+            <div className={styles['roi-divider']} />
+            <div className={[styles['roi-item'], styles.total].join(' ')}>
               <Text strong>Profit per Day</Text>
-              <Text strong className="positive">$5.62</Text>
+              <Text strong className={styles.positive}>$5.62</Text>
             </div>
           </Card>
         </Col>
@@ -200,9 +200,9 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
 
       {/* Таблица транзакций */}
       <Card
-        className="transactions-card"
+        className={styles['transactions-card']}
         title={
-          <div className="transactions-header">
+          <div className={styles['transactions-header']}>
             <span>Transaction History</span>
             <Space>
               <Select
@@ -230,7 +230,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
           rowKey="id"
           pagination={{ pageSize: 10 }}
           size="small"
-          className="transactions-table"
+          className={styles['transactions-table']}
         />
       </Card>
     </div>

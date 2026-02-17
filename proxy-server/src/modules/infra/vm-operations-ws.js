@@ -1,4 +1,5 @@
 const { WebSocketServer } = require('ws');
+const { logger } = require('../../observability/logger');
 
 function attachVmOperationsWebSocket({
   server,
@@ -168,7 +169,7 @@ function attachVmOperationsWebSocket({
       }
     }
 
-    console.log('WebSocket client connected to VM operations channel');
+    logger.info('WebSocket client connected to VM operations channel');
 
     ws.on('message', async (message) => {
       try {
@@ -192,7 +193,7 @@ function attachVmOperationsWebSocket({
     });
 
     ws.on('close', () => {
-      console.log('WebSocket client disconnected');
+      logger.info('WebSocket client disconnected');
     });
   }
 

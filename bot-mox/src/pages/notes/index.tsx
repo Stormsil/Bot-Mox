@@ -11,7 +11,7 @@ import type { Note } from '../../services/notesService';
 import {
   subscribeToNote,
 } from '../../services/notesService';
-import './NotesPage.css';
+import styles from './NotesPage.module.css';
 
 const NoteEditor = lazy(async () => ({
   default: (await import('../../components/notes/NoteEditor')).NoteEditor,
@@ -113,8 +113,8 @@ export const NotesPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="notes-page">
-      <div className="notes-layout">
+    <div className={styles.root}>
+      <div className={styles.layout}>
         {/* Боковая панель с списком заметок */}
         <NoteSidebar
           selectedNoteId={selectedNoteId}
@@ -126,16 +126,16 @@ export const NotesPage: React.FC = () => {
         />
 
         {/* Область редактора */}
-        <div className="notes-editor-container">
+        <div className={styles.editorContainer}>
           {loading ? (
-            <div className="notes-loading">
+            <div className={styles.loading}>
               <Spin size="large" />
               <span>Loading note...</span>
             </div>
           ) : currentNote ? (
             <Suspense
               fallback={(
-                <div className="notes-loading">
+                <div className={styles.loading}>
                   <Spin size="large" />
                   <span>Loading editor...</span>
                 </div>
@@ -148,11 +148,11 @@ export const NotesPage: React.FC = () => {
               />
             </Suspense>
           ) : (
-            <div className="notes-empty">
+            <div className={styles.empty}>
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description={
-                  <div className="notes-empty-content">
+                  <div className={styles.emptyContent}>
                     <p>Select a note from the sidebar</p>
                     <p>or create a new one</p>
                   </div>

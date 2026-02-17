@@ -5,7 +5,7 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import type { TextBlock, NoteBlockType } from '../../services/notesService';
-import './NotesComponents.css';
+import styles from './NotesComponents.module.css';
 
 interface BlockEditorProps {
   block: TextBlock;
@@ -45,20 +45,23 @@ const stripMarkdown = (content: string, type: NoteBlockType): string => {
   }
 };
 
+const cx = (...parts: Array<string | false | null | undefined>) =>
+  parts.filter(Boolean).join(' ');
+
 /**
  * Получает CSS класс для типа блока
  */
 const getBlockClassName = (type: NoteBlockType): string => {
   switch (type) {
     case 'heading_1':
-      return 'block-editor heading-1';
+      return cx(styles['block-editor'], styles['heading-1']);
     case 'heading_2':
-      return 'block-editor heading-2';
+      return cx(styles['block-editor'], styles['heading-2']);
     case 'heading_3':
-      return 'block-editor heading-3';
+      return cx(styles['block-editor'], styles['heading-3']);
     case 'paragraph':
     default:
-      return 'block-editor paragraph';
+      return cx(styles['block-editor'], styles.paragraph);
   }
 };
 
@@ -197,11 +200,11 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
   return (
     <div className={className} data-block-id={block.id} data-block-type={block.type}>
       {showPlaceholder && (
-        <div className="block-placeholder">{displayPlaceholder}</div>
+        <div className={styles['block-placeholder']}>{displayPlaceholder}</div>
       )}
       <div
         ref={contentRef}
-        className="block-content"
+        className={styles['block-content']}
         contentEditable
         suppressContentEditableWarning
         onInput={handleInput}

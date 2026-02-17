@@ -16,7 +16,7 @@ import {
   withLicenseRuntimeState,
 } from './license';
 import type { AssignLicenseFormValues, BotLicenseProps, LicenseFormValues, LicenseInfo } from './license';
-import './BotLicense.css';
+import styles from './license/license.module.css';
 
 export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
   const [license, setLicense] = useState<LicenseInfo | null>(null);
@@ -172,7 +172,7 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
 
   if (!license) {
     return (
-      <div className="bot-license">
+      <div className={styles['bot-license']}>
         <LicenseEmptyCard addMenuItems={addMenuItems} onAddMenuClick={handleAddMenuClick} />
 
         <LicenseFormModal
@@ -203,7 +203,7 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
   }
 
   return (
-    <div className="bot-license">
+    <div className={styles['bot-license']}>
       <LicenseDetailsCard
         bot={bot}
         license={license}

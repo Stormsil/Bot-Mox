@@ -11,7 +11,7 @@ import {
   SubscriptionModal,
 } from './subscription';
 import type { BotSubscriptionProps, SubscriptionFormData, SubscriptionWithDetails } from './subscription';
-import './BotSubscription.css';
+import styles from './subscription/subscription.module.css';
 
 const { Text } = Typography;
 const { confirm } = Modal;
@@ -109,8 +109,8 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
 
   if (loading) {
     return (
-      <div className="bot-subscription">
-        <Card className="subscription-card">
+      <div className={styles['bot-subscription']}>
+        <Card className={styles['subscription-card']}>
           <Spin size="large" />
         </Card>
       </div>
@@ -118,11 +118,11 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
   }
 
   return (
-    <div className="bot-subscription">
+    <div className={styles['bot-subscription']}>
       <ProblemSubscriptionsAlert subscriptions={problemSubscriptions} />
 
       <Card
-        className="subscription-card"
+        className={styles['subscription-card']}
         title={
           <Space>
             <CreditCardOutlined />

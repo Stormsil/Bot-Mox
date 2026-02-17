@@ -1,0 +1,63 @@
+.loadingState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.spinner {
+  min-height: 200px;
+}
+
+.skeleton {
+  padding: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.loadingCard {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+}
+
+.loadingCard :global(.ant-skeleton-content .ant-skeleton-title) {
+  background: var(--boxmox-color-surface-muted);
+}
+
+.loadingCard :global(.ant-skeleton-content .ant-skeleton-paragraph > li) {
+  background: var(--boxmox-color-surface-muted);
+}
+
+.tableLoadingState {
+  padding: 24px;
+}
+
+.tableLoadingState :global(.ant-skeleton-content .ant-skeleton-title),
+.tableLoadingState :global(.ant-skeleton-content .ant-skeleton-paragraph > li) {
+  background: var(--boxmox-color-surface-muted);
+}
+
+.listLoadingState {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.listLoadingItem {
+  padding: 12px;
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 4px;
+}
+
+.listLoadingItem :global(.ant-skeleton-content .ant-skeleton-title),
+.listLoadingItem :global(.ant-skeleton-content .ant-skeleton-paragraph > li) {
+  background: var(--boxmox-color-surface-muted);
+}
+

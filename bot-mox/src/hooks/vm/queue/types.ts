@@ -11,12 +11,17 @@ export interface UseVMQueueParams {
 export interface AddToQueueOverrides {
   name?: string;
   storage?: string;
+  storageMode?: 'auto' | 'manual';
   format?: string;
   projectId?: 'wow_tbc' | 'wow_midnight';
   resourceMode?: VMResourceMode;
   prefix?: string;
   cores?: number;
   memory?: number;
+  diskGiB?: number;
+  unattendProfileId?: string;
+  unattendXmlOverride?: string;
+  playbookId?: string;
 }
 
 export interface AddDeleteTaskOverrides {

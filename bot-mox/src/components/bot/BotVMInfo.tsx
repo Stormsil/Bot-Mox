@@ -3,7 +3,7 @@ import { Card, Typography, Empty, Space } from 'antd';
 import { DesktopOutlined } from '@ant-design/icons';
 import type { Bot } from '../../types';
 import dayjs from 'dayjs';
-import './BotVMInfo.css';
+import styles from './BotVMInfo.module.css';
 
 const { Text } = Typography;
 
@@ -48,8 +48,8 @@ export const BotVMInfo: React.FC<BotVMInfoProps> = ({ bot }) => {
 
   if (!vm) {
     return (
-      <div className="bot-vm-info">
-        <Card className="vm-card">
+      <div className={styles['bot-vm-info']}>
+        <Card className={styles['vm-card']}>
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
@@ -64,9 +64,9 @@ export const BotVMInfo: React.FC<BotVMInfoProps> = ({ bot }) => {
   }
 
   return (
-    <div className="bot-vm-info">
+    <div className={styles['bot-vm-info']}>
       <Card
-        className="vm-card"
+        className={styles['vm-card']}
         title={
           <Space>
             <DesktopOutlined />
@@ -74,21 +74,21 @@ export const BotVMInfo: React.FC<BotVMInfoProps> = ({ bot }) => {
           </Space>
         }
       >
-        <div className="vm-content">
-          <div className="vm-field">
-            <Text type="secondary" className="field-label">VM Name</Text>
+        <div className={styles['vm-content']}>
+          <div className={styles['vm-field']}>
+            <Text type="secondary" className={styles['field-label']}>VM Name</Text>
             <Text strong>{vm.name}</Text>
           </div>
 
-          <div className="vm-field">
-            <Text type="secondary" className="field-label">IP Address</Text>
-            <Text strong className="vm-ip" copyable>
+          <div className={styles['vm-field']}>
+            <Text type="secondary" className={styles['field-label']}>IP Address</Text>
+            <Text strong className={styles['vm-ip']} copyable>
               {vm.ip}
             </Text>
           </div>
 
-          <div className="vm-field">
-            <Text type="secondary" className="field-label">Created At</Text>
+          <div className={styles['vm-field']}>
+            <Text type="secondary" className={styles['field-label']}>Created At</Text>
             <Text>{formattedCreatedAt}</Text>
           </div>
         </div>

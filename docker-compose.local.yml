@@ -12,9 +12,8 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3001
-      DATA_BACKEND: ${DATA_BACKEND:-rtdb}
+      DATA_BACKEND: ${DATA_BACKEND:-supabase}
       SUPABASE_URL: ${SUPABASE_URL:-http://host.docker.internal:54321}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
     ports:
       - "3001:3001"
     extra_hosts:
@@ -33,4 +32,3 @@ services:
       - "5173:5173"
     depends_on:
       - backend
-

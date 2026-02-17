@@ -1,3 +1,5 @@
+const { logger } = require('../../observability/logger');
+
 function createUiServiceFallbackMiddleware({
   authorizeRequest,
   inferUiService,
@@ -51,7 +53,7 @@ function createUiServiceFallbackMiddleware({
         tinyFMUIProxy.web(req, res, { target: getTinyFmTarget() });
         return;
       } catch (error) {
-        console.warn('TinyFM fallback proxy failed:', error.message);
+        logger.warn({ err: error }, 'TinyFM fallback proxy failed');
       }
     }
 
@@ -66,7 +68,7 @@ function createUiServiceFallbackMiddleware({
         syncThingUIProxy.web(req, res, { target: getSyncThingTarget() });
         return;
       } catch (error) {
-        console.warn('SyncThing fallback proxy failed:', error.message);
+        logger.warn({ err: error }, 'SyncThing fallback proxy failed');
       }
     }
 

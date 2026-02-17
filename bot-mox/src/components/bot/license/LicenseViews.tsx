@@ -14,12 +14,13 @@ import type { MenuProps } from 'antd';
 import { TableActionButton } from '../../ui/TableActionButton';
 import { getDaysLeftColor, getLicenseStatusColor, getLicenseStatusText } from './helpers';
 import type { BotLicenseProps, LicenseInfo } from './types';
+import styles from './license.module.css';
 
 const { Text } = Typography;
 
 export const LicenseLoadingCard: React.FC = () => (
-  <div className="bot-license">
-    <Card className="license-card">
+  <div className={styles['bot-license']}>
+    <Card className={styles['license-card']}>
       <Spin size="large" />
     </Card>
   </div>
@@ -32,7 +33,7 @@ interface LicenseEmptyCardProps {
 
 export const LicenseEmptyCard: React.FC<LicenseEmptyCardProps> = ({ addMenuItems, onAddMenuClick }) => (
   <Card
-    className="license-card"
+    className={styles['license-card']}
     title={
       <Space>
         <KeyOutlined />
@@ -76,7 +77,7 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
   <>
     {(license.isExpired || license.isExpiringSoon) && (
       <Alert
-        className="license-alert"
+        className={styles['license-alert']}
         message={license.isExpired ? 'License Expired' : 'License Expiring Soon'}
         description={
           license.isExpired
@@ -90,7 +91,7 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
     )}
 
     <Card
-      className="license-card"
+      className={styles['license-card']}
       title={
         <Space>
           <KeyOutlined />
@@ -116,13 +117,13 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
         </Space>
       }
     >
-      <div className="license-content">
-        <div className="license-field">
-          <Text type="secondary" className="field-label">
+      <div className={styles['license-content']}>
+        <div className={styles['license-field']}>
+          <Text type="secondary" className={styles['field-label']}>
             License Key
           </Text>
-          <div className="license-key-container">
-            <Text className="license-key" copyable={{ text: license.key, icon: <CopyOutlined /> }}>
+          <div className={styles['license-key-container']}>
+            <Text className={styles['license-key']} copyable={{ text: license.key, icon: <CopyOutlined /> }}>
               {license.key.substring(0, 40)}...
             </Text>
             <TableActionButton icon={<CopyOutlined />} onClick={onCopyKey} tooltip="Copy">
@@ -131,9 +132,9 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
           </div>
         </div>
 
-        <div className="license-row">
-          <div className="license-field">
-            <Text type="secondary" className="field-label">
+        <div className={styles['license-row']}>
+          <div className={styles['license-field']}>
+            <Text type="secondary" className={styles['field-label']}>
               Bot Name
             </Text>
             <div>
@@ -141,8 +142,8 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
             </div>
           </div>
 
-          <div className="license-field">
-            <Text type="secondary" className="field-label">
+          <div className={styles['license-field']}>
+            <Text type="secondary" className={styles['field-label']}>
               Status
             </Text>
             <div>
@@ -164,9 +165,9 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
           </div>
         </div>
 
-        <div className="license-row">
-          <div className="license-field">
-            <Text type="secondary" className="field-label">
+        <div className={styles['license-row']}>
+          <div className={styles['license-field']}>
+            <Text type="secondary" className={styles['field-label']}>
               Created
             </Text>
             <div>
@@ -174,8 +175,8 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
             </div>
           </div>
 
-          <div className="license-field">
-            <Text type="secondary" className="field-label">
+          <div className={styles['license-field']}>
+            <Text type="secondary" className={styles['field-label']}>
               Last Updated
             </Text>
             <div>
@@ -184,9 +185,9 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
           </div>
         </div>
 
-        <div className="license-row">
-          <div className="license-field">
-            <Text type="secondary" className="field-label">
+        <div className={styles['license-row']}>
+          <div className={styles['license-field']}>
+            <Text type="secondary" className={styles['field-label']}>
               Expiration Date
             </Text>
             <div>
@@ -194,8 +195,8 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
             </div>
           </div>
 
-          <div className="license-field">
-            <Text type="secondary" className="field-label">
+          <div className={styles['license-field']}>
+            <Text type="secondary" className={styles['field-label']}>
               Days Left
             </Text>
             <div>
@@ -207,7 +208,7 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
         </div>
 
         {license.isExpired && (
-          <div className="license-actions">
+          <div className={styles['license-actions']}>
             <Alert
               message="Action Required"
               description="Please renew this license to continue bot operation."

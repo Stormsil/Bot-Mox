@@ -1,13 +1,10 @@
 {
   "name": "bot-mox-scripts",
   "version": "1.0.0",
-  "description": "Database maintenance scripts for Bot-Mox",
-  "main": "cleanup-database.js",
+  "description": "Maintenance scripts for Bot-Mox",
+  "main": "generate-firebase-decommission-audit.js",
   "scripts": {
-    "cleanup": "node cleanup-database.js"
+    "audit:firebase:decommission": "node generate-firebase-decommission-audit.js"
   },
-  "dependencies": {
-    "firebase": "^10.8.0",
-    "firebase-admin": "^12.0.0"
-  }
+  "dependencies": {}
 }

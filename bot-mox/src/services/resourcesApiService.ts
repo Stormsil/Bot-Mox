@@ -90,6 +90,7 @@ export function subscribeResources<T extends ResourceRecord>(
   options: SubscribeOptions = {}
 ): () => void {
   return createPollingSubscription(() => fetchResources<T>(kind), onData, onError, {
+    key: `resources:${kind}`,
     intervalMs: options.intervalMs ?? 7000,
     immediate: true,
   });

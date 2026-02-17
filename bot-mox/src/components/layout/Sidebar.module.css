@@ -1,0 +1,49 @@
+.proxmox-sidebar {
+  background: var(--boxmox-color-surface-muted);
+  border-right: 1px solid var(--boxmox-color-border-default);
+  min-height: calc(100vh - 45px);
+}
+
+.proxmox-menu {
+  background: transparent;
+  border-right: none;
+  padding-top: 8px;
+}
+
+.menu-item {
+  height: 40px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 20px;
+  border-left: 3px solid transparent;
+  color: inherit;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.menu-item:hover {
+  color: var(--boxmox-color-text-primary);
+}
+
+.menu-item-selected {
+  border-left-color: var(--boxmox-color-brand-primary);
+}
+
+.menu-item-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.menu-item-text {
+  font-size: 13px;
+  line-height: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

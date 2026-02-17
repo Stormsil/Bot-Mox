@@ -6,7 +6,10 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import type { ListBlock, ListItem } from '../../services/notesService';
 import { generateListItemId } from '../../services/notesService';
-import './NotesComponents.css';
+import styles from './NotesComponents.module.css';
+
+const cx = (...parts: Array<string | false | null | undefined>) =>
+  parts.filter(Boolean).join(' ');
 
 interface ListBlockProps {
   block: ListBlock;
@@ -107,15 +110,15 @@ const ListItemEditor: React.FC<ListItemEditorProps> = ({
   const marker = type === 'numbered_list' ? `${index + 1}.` : '•';
 
   return (
-    <div className="list-item" data-item-id={item.id}>
-      <span className="list-marker">{marker}</span>
-      <div className="list-item-content-wrapper">
+    <div className={styles['list-item']} data-item-id={item.id}>
+      <span className={styles['list-marker']}>{marker}</span>
+      <div className={styles['list-item-content-wrapper']}>
         {showPlaceholder && (
-          <div className="block-placeholder">List item</div>
+          <div className={styles['block-placeholder']}>List item</div>
         )}
         <div
           ref={contentRef}
-          className="list-item-content"
+          className={styles['list-item-content']}
           contentEditable
           suppressContentEditableWarning
           onInput={handleInput}
@@ -207,8 +210,8 @@ export const ListBlockComponent: React.FC<ListBlockProps> = ({
 
   const className =
     block.type === 'numbered_list'
-      ? 'list-block numbered-list'
-      : 'list-block bullet-list';
+      ? cx(styles['list-block'], styles['numbered-list'])
+      : cx(styles['list-block'], styles['bullet-list']);
 
   return (
     <div

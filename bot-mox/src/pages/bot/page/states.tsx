@@ -1,9 +1,10 @@
 import React from 'react';
 import { Alert, Spin } from 'antd';
+import styles from '../BotPage.module.css';
 
 export const BotPageLoading: React.FC = () => (
-  <div className="bot-page">
-    <div className="bot-page-loading">
+  <div className={styles.root}>
+    <div className={styles.loading}>
       <Spin size="large" />
       <p>Loading bot data...</p>
     </div>
@@ -16,7 +17,7 @@ interface BotPageAlertStateProps {
 }
 
 export const BotPageAlertState: React.FC<BotPageAlertStateProps> = ({ message, description }) => (
-  <div className="bot-page">
+  <div className={styles.root}>
     <Alert message={message} description={description} type="error" showIcon />
   </div>
 );

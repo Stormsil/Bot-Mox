@@ -1,0 +1,199 @@
+.bot-account {
+  padding: 16px;
+  max-width: 100%;
+}
+
+.account-card {
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.account-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-card-title {
+  color: var(--boxmox-color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.warning-icon {
+  color: #faad14;
+  font-size: 18px;
+}
+
+.account-form {
+  margin-top: 8px;
+}
+
+.account-workflow-alert {
+  margin-bottom: 10px;
+}
+
+.config-incomplete-alert {
+  margin-bottom: 10px;
+}
+
+.alert-title {
+  color: var(--boxmox-color-text-primary);
+  font-weight: 600;
+}
+
+.alert-description {
+  color: var(--boxmox-color-text-secondary);
+}
+
+.account-workflow-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.account-workflow-text {
+  font-size: var(--text-xs);
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.account-workflow-help-icon {
+  color: var(--boxmox-color-text-muted);
+  cursor: help;
+  font-size: 13px;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-warning-icon {
+  color: #faad14;
+  font-size: 14px;
+}
+
+.account-info-value {
+  color: var(--boxmox-color-text-primary);
+  font-size: var(--text-sm);
+  padding: 4px 0;
+  display: block;
+}
+
+/* Generator Options Card */
+.generator-options-card {
+  margin-top: 16px;
+}
+
+.generator-option-checkbox {
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* Generator presets */
+.generator-presets-card {
+  margin-top: 12px;
+}
+
+.generator-presets-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.generator-presets-row:last-child {
+  margin-bottom: 0;
+}
+
+.generator-template-select,
+.generator-template-name {
+  min-width: 180px;
+  flex: 1;
+}
+
+/* Form Actions */
+.account-form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--boxmox-color-border-default);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.generate-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.generate-label {
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.generate-btn {
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
+}
+
+.generate-btn:hover {
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
+}
+
+.unlock-btn {
+  border-color: var(--boxmox-color-brand-warning);
+  color: var(--boxmox-color-brand-warning);
+}
+
+.unlock-btn:hover {
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
+}
+
+.generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.restore-btn {
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-secondary);
+}
+
+.restore-btn:hover {
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .account-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .generate-section {
+    justify-content: center;
+  }
+
+  .action-buttons {
+    justify-content: center;
+  }
+}

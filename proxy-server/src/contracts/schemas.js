@@ -45,14 +45,26 @@ const workspaceKindParamSchema = z.object({
   kind: z.enum(WORKSPACE_KINDS),
 });
 
+const optionalNonEmptyStringSchema = z.preprocess((value) => {
+  if (typeof value !== 'string') return value;
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : undefined;
+}, z.string().trim().min(1).optional());
+
+const optionalFactionSchema = z.preprocess((value) => {
+  if (typeof value !== 'string') return value;
+  const normalized = value.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : undefined;
+}, z.enum(['alliance', 'horde']).optional());
+
 const characterSchema = z
   .object({
-    name: z.string().trim().min(1).optional(),
+    name: optionalNonEmptyStringSchema,
     level: z.coerce.number().int().min(1).max(100).optional(),
-    class: z.string().trim().min(1).optional(),
-    race: z.string().trim().min(1).optional(),
-    server: z.string().trim().min(1).optional(),
-    faction: z.enum(['alliance', 'horde']).optional(),
+    class: optionalNonEmptyStringSchema,
+    race: optionalNonEmptyStringSchema,
+    server: optionalNonEmptyStringSchema,
+    faction: optionalFactionSchema,
   })
   .partial();
 
@@ -464,18 +476,66 @@ const themePresetMutationSchema = z
   })
   .passthrough();
 
+const themeVisualSettingsMutationSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    mode: z.enum(['none', 'image']).optional(),
+    backgroundAssetId: z.union([stringIdSchema, z.null()]).optional(),
+    backgroundImageUrl: z.union([z.string().trim().url(), z.string().trim().length(0), z.null()]).optional(),
+    backgroundPosition: z.enum(['center', 'top', 'custom']).optional(),
+    backgroundSize: z.enum(['cover', 'contain', 'auto']).optional(),
+    overlayOpacity: z.coerce.number().min(0).max(1).optional(),
+    overlayColorLight: z.string().trim().optional(),
+    overlayColorDark: z.string().trim().optional(),
+    blurPx: z.coerce.number().min(0).max(24).optional(),
+    dimStrength: z.coerce.number().min(0).max(1).optional(),
+  })
+  .partial();
+
+const themeTypographyMutationSchema = z
+  .object({
+    fontPrimary: z.string().trim().min(1).optional(),
+    fontCondensed: z.string().trim().min(1).optional(),
+    fontMono: z.string().trim().min(1).optional(),
+  })
+  .partial();
+
+const themeShapeMutationSchema = z
+  .object({
+    radiusNone: z.coerce.number().int().min(0).max(24).optional(),
+    radiusSm: z.coerce.number().int().min(0).max(24).optional(),
+    radiusMd: z.coerce.number().int().min(0).max(24).optional(),
+    radiusLg: z.coerce.number().int().min(0).max(24).optional(),
+  })
+  .partial();
+
 const themeSettingsMutationSchema = requireNonEmpty(
   z
     .object({
       palettes: z.record(z.unknown()).optional(),
       presets: z.record(themePresetMutationSchema).optional(),
       active_preset_id: z.union([stringIdSchema, z.null()]).optional(),
+      visual: themeVisualSettingsMutationSchema.optional(),
+      typography: themeTypographyMutationSchema.optional(),
+      shape: themeShapeMutationSchema.optional(),
       updated_at: timestampSchema.optional(),
       updated_by: z.string().trim().optional(),
     })
     .passthrough(),
   'Theme payload must not be empty'
 );
+
+const themeAssetPresignUploadSchema = z.object({
+  filename: z.string().trim().min(1).max(255),
+  mime_type: z.enum(['image/jpeg', 'image/png', 'image/webp']),
+  size_bytes: z.coerce.number().int().min(1).max(20 * 1024 * 1024),
+});
+
+const themeAssetCompleteSchema = z.object({
+  asset_id: stringIdSchema,
+  width: z.coerce.number().int().min(1).max(8192).optional(),
+  height: z.coerce.number().int().min(1).max(8192).optional(),
+});
 
 const vmHardwarePartialSchema = z
   .object({
@@ -671,10 +731,10 @@ const financeOperationBaseSchema = z
     currency: z.string().trim().min(1),
     date: timestampSchema,
     description: z.string().trim().max(1000).optional(),
-    bot_id: z.string().trim().optional(),
-    project_id: z.string().trim().optional(),
-    gold_amount: z.coerce.number().finite().optional(),
-    gold_price_at_time: z.coerce.number().finite().optional(),
+    bot_id: z.union([z.string().trim(), z.null()]).optional(),
+    project_id: z.union([z.string().trim(), z.null()]).optional(),
+    gold_amount: z.union([z.null(), z.coerce.number().finite()]).optional(),
+    gold_price_at_time: z.union([z.null(), z.coerce.number().finite()]).optional(),
     updated_at: timestampSchema.optional(),
     created_at: timestampSchema.optional(),
   })
@@ -768,10 +828,22 @@ const upsertPayloadSchema = z.record(z.unknown());
 const agentPairingSchema = z.object({
   name: z.string().trim().min(1).max(200).optional(),
   expires_in_minutes: z.coerce.number().int().min(5).max(1440).optional().default(15),
+  owner_user_id: z.string().trim().min(1).max(200).optional(),
 });
 
 const agentRegisterSchema = z.object({
   pairing_code: z.string().trim().min(1).max(200),
+  machine_name: z.string().trim().min(1).max(200).optional(),
+  version: z.string().trim().max(100).optional(),
+  platform: z.string().trim().max(100).optional(),
+  capabilities: z.array(z.string().trim().min(1).max(200)).max(50).optional(),
+});
+
+const agentQuickPairSchema = z.object({
+  login: z.string().trim().min(1).max(320),
+  password: z.string().min(1).max(512),
+  machine_name: z.string().trim().min(1).max(200).optional(),
+  name: z.string().trim().min(1).max(200).optional(),
   version: z.string().trim().max(100).optional(),
   platform: z.string().trim().max(100).optional(),
   capabilities: z.array(z.string().trim().min(1).max(200)).max(50).optional(),
@@ -834,8 +906,160 @@ const secretBindingCreateSchema = z.object({
 
 const vmOpsCommandSchema = z.object({
   agent_id: z.string().trim().min(1).max(200),
-  action: z.string().trim().min(1).max(200),
   params: z.record(z.unknown()).optional().default({}),
+});
+
+// --- Unattend Profiles ---
+
+const keyboardLayoutPairSchema = z.object({
+  language: z.string().trim().min(1),
+  layout: z.string().trim().min(1),
+});
+
+const unattendProfileConfigSchema = z.object({
+  user: z.object({
+    nameMode: z.enum(['random', 'fixed', 'custom']),
+    customName: z.string().trim().max(200).optional(),
+    customNameSuffix: z.enum(['none', 'random_digits', 'sequential']).optional().default('none'),
+    displayName: z.string().trim().max(200).optional(),
+    password: z.string().max(200).default('1204'),
+    group: z.enum(['Administrators', 'Users']).default('Administrators'),
+    autoLogonCount: z.coerce.number().int().min(0).default(9999999),
+  }),
+  computerName: z.object({
+    mode: z.enum(['random', 'fixed', 'custom']),
+    customName: z.string().trim().max(15).optional(),
+  }),
+  locale: z.object({
+    uiLanguage: z.string().trim().default('en-US'),
+    // accept both old and new field names
+    inputLocales: z.array(z.string().trim()).optional(),
+    keyboardLayouts: z.array(keyboardLayoutPairSchema).optional(),
+    timeZone: z.string().trim().default('Turkey Standard Time'),
+    geoLocation: z.coerce.number().int().default(235),
+  }),
+  softwareRemoval: z.object({
+    mode: z.enum(['fixed', 'random', 'mixed', 'fixed_random']),
+    fixedPackages: z.array(z.string().trim()).default([]),
+    randomPool: z.array(z.string().trim()).default([]),
+    neverRemove: z.array(z.string().trim()).optional().default([]),
+    randomCount: z.object({
+      min: z.coerce.number().int().min(0).default(5),
+      max: z.coerce.number().int().min(0).default(15),
+    }).optional(),
+  }),
+  capabilityRemoval: z.object({
+    mode: z.enum(['fixed', 'random', 'mixed', 'fixed_random']),
+    fixedCapabilities: z.array(z.string().trim()).default([]),
+    randomPool: z.array(z.string().trim()).default([]),
+  }),
+  windowsSettings: z.object({
+    disableDefender: z.boolean().default(true),
+    disableWindowsUpdate: z.boolean().default(true),
+    disableUac: z.boolean().default(true),
+    disableSmartScreen: z.boolean().default(true),
+    disableSystemRestore: z.boolean().default(true),
+    enableLongPaths: z.boolean().default(true),
+    allowPowerShellScripts: z.boolean().default(true),
+    disableWidgets: z.boolean().default(true),
+    disableEdgeStartup: z.boolean().default(true),
+    preventDeviceEncryption: z.boolean().default(true),
+    disableStickyKeys: z.boolean().default(true),
+    enableRemoteDesktop: z.boolean().optional().default(false),
+  }),
+  visualEffects: z.object({
+    mode: z.enum(['default', 'appearance', 'performance', 'custom', 'custom_randomize',
+      // legacy compat
+      'balanced', 'random']).default('performance'),
+    effects: z.record(z.boolean()).optional().default({}),
+    // legacy compat
+    cursorShadow: z.boolean().optional(),
+    fontSmoothing: z.boolean().optional(),
+  }),
+  desktopIcons: z.object({
+    mode: z.enum(['default', 'custom', 'custom_randomize']).optional().default('default'),
+    icons: z.record(z.boolean()).optional().default({}),
+    startFolders: z.record(z.boolean()).optional().default({}),
+    deleteEdgeShortcut: z.boolean().optional().default(true),
+    // legacy compat
+    recycleBin: z.boolean().optional(),
+    thisPC: z.boolean().optional(),
+  }),
+  customScript: z.object({
+    executable: z.string().trim().default('START.exe'),
+    delaySeconds: z.coerce.number().int().min(0).max(600).default(20),
+  }).optional(),
+}).passthrough();
+
+const unattendProfileCreateSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  is_default: z.boolean().optional().default(false),
+  config: unattendProfileConfigSchema,
+});
+
+const unattendProfileUpdateSchema = z.object({
+  name: z.string().trim().min(1).max(200).optional(),
+  is_default: z.boolean().optional(),
+  config: unattendProfileConfigSchema.optional(),
+});
+
+const generateIsoPayloadSchema = z.object({
+  profile_id: z.string().trim().min(1).optional(),
+  profile_config: unattendProfileConfigSchema.optional(),
+  playbook_id: z.string().trim().min(1).optional(),
+  vm_uuid: z.string().trim().min(1),
+  ip: z.object({
+    address: z.string().trim().min(1),
+    netmask: z.string().trim().default('255.255.255.0'),
+    gateway: z.string().trim().min(1),
+    dns: z.array(z.string().trim()).default(['8.8.8.8']),
+  }),
+  vm_name: z.string().trim().max(200).optional(),
+});
+
+// --- Playbooks ---
+
+const playbookRoleEntrySchema = z.object({
+  role: z.string().trim().min(1),
+  when: z.string().trim().optional(),
+  tags: z.array(z.string().trim().min(1)).optional(),
+  vars: z.record(z.unknown()).optional(),
+});
+
+const playbookContentStructureSchema = z.object({
+  name: z.string().trim().min(1),
+  vars: z.record(z.unknown()).optional(),
+  pre_checks: z.array(z.object({
+    name: z.string().trim().min(1),
+    check: z.string().trim().min(1),
+  })).optional(),
+  roles: z.array(playbookRoleEntrySchema).min(1),
+  notifications: z.record(z.unknown()).optional(),
+});
+
+const playbookCreateSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  is_default: z.boolean().optional().default(false),
+  content: z.string().min(1).max(65536),
+});
+
+const playbookUpdateSchema = z.object({
+  name: z.string().trim().min(1).max(200).optional(),
+  is_default: z.boolean().optional(),
+  content: z.string().min(1).max(65536).optional(),
+});
+
+const provisioningValidateTokenSchema = z.object({
+  token: z.string().trim().min(1),
+  vm_uuid: z.string().trim().min(1),
+});
+
+const provisioningReportProgressSchema = z.object({
+  token: z.string().trim().min(1),
+  vm_uuid: z.string().trim().min(1),
+  step: z.string().trim().min(1).max(200),
+  status: z.enum(['pending', 'running', 'completed', 'failed']),
+  details: z.record(z.unknown()).optional().default({}),
 });
 
 function getResourceCreateSchema(kind) {
@@ -997,9 +1221,12 @@ module.exports = {
   artifactReleaseCreateSchema,
   artifactAssignSchema,
   artifactResolveDownloadSchema,
+  themeAssetPresignUploadSchema,
+  themeAssetCompleteSchema,
   upsertPayloadSchema,
   agentPairingSchema,
   agentRegisterSchema,
+  agentQuickPairSchema,
   agentHeartbeatSchema,
   agentRevokeSchema,
   agentListQuerySchema,
@@ -1009,4 +1236,13 @@ module.exports = {
   secretRotateSchema,
   secretBindingCreateSchema,
   vmOpsCommandSchema,
+  unattendProfileConfigSchema,
+  unattendProfileCreateSchema,
+  unattendProfileUpdateSchema,
+  generateIsoPayloadSchema,
+  provisioningValidateTokenSchema,
+  provisioningReportProgressSchema,
+  playbookContentStructureSchema,
+  playbookCreateSchema,
+  playbookUpdateSchema,
 };

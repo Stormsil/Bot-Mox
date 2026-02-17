@@ -3,6 +3,7 @@ import { Progress, Alert, Space, Tag, Typography } from 'antd';
 import { SafetyCertificateOutlined } from '@ant-design/icons';
 import { getFraudScoreColor, getFraudScoreLabel } from '../../../services/ipqsService';
 import type { IPQSResponse } from '../../../types';
+import styles from './proxy.module.css';
 
 const { Text } = Typography;
 
@@ -27,10 +28,10 @@ export const ProxyIpqsResults: React.FC<ProxyIpqsResultsProps> = ({ ipqsData }) 
         </Space>
       }
       description={
-        <div className="ipqs-results">
-          <div className="ipqs-row">
+        <div className={styles['ipqs-results']}>
+          <div className={styles['ipqs-row']}>
             <Text type="secondary">Fraud Score:</Text>
-            <div className="fraud-score-display">
+            <div className={styles['fraud-score-display']}>
               <Progress
                 percent={ipqsData.fraud_score}
                 size="small"
@@ -44,7 +45,7 @@ export const ProxyIpqsResults: React.FC<ProxyIpqsResultsProps> = ({ ipqsData }) 
             </div>
           </div>
 
-          <div className="ipqs-row">
+          <div className={styles['ipqs-row']}>
             <Text type="secondary">Country:</Text>
             <Text>
               {ipqsData.country_code || 'Unknown'} {ipqsData.city ? `- ${ipqsData.city}` : ''}
@@ -52,7 +53,7 @@ export const ProxyIpqsResults: React.FC<ProxyIpqsResultsProps> = ({ ipqsData }) 
           </div>
 
           {(ipqsData.vpn || ipqsData.proxy || ipqsData.tor || ipqsData.bot_status) && (
-            <div className="ipqs-flags">
+            <div className={styles['ipqs-flags']}>
               {ipqsData.vpn && <Tag color="orange">VPN</Tag>}
               {ipqsData.proxy && <Tag color="red">Proxy</Tag>}
               {ipqsData.tor && <Tag color="purple">TOR</Tag>}

@@ -222,7 +222,7 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
   }, []);
 
   /**
-   * Обновляет настройки из Firebase
+   * Обновляет настройки из backend API
    */
   const refreshSettings = useCallback(async () => {
     await loadSettings();

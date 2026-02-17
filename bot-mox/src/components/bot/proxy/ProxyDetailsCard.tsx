@@ -10,6 +10,7 @@ import {
   getProxyStatusText,
 } from './helpers';
 import type { ProxyInfo } from './types';
+import styles from './proxy.module.css';
 
 const { Text } = Typography;
 
@@ -21,7 +22,7 @@ interface ProxyDetailsCardProps {
 
 export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({ proxy, onEdit, onUnassign }) => (
   <Card
-    className="proxy-card"
+    className={styles['proxy-card']}
     title={
       <Space>
         <GlobalOutlined />
@@ -39,21 +40,21 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({ proxy, onEdi
       </Space>
     }
   >
-    <div className="proxy-content">
-      <div className="proxy-field proxy-string-field">
-        <Text type="secondary" className="field-label">
+    <div className={styles['proxy-content']}>
+      <div className={[styles['proxy-field'], styles['proxy-string-field']].join(' ')}>
+        <Text type="secondary" className={styles['field-label']}>
           Proxy String
         </Text>
-        <div className="proxy-string-container">
-          <Text strong className="proxy-string" copyable>
+        <div className={styles['proxy-string-container']}>
+          <Text strong className={styles['proxy-string']} copyable>
             {proxy.ip}:{proxy.port}:{proxy.login}:{proxy.password}
           </Text>
         </div>
       </div>
 
-      <div className="proxy-row">
-        <div className="proxy-field">
-          <Text type="secondary" className="field-label">
+      <div className={styles['proxy-row']}>
+        <div className={styles['proxy-field']}>
+          <Text type="secondary" className={styles['field-label']}>
             Type
           </Text>
           <div>
@@ -63,8 +64,8 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({ proxy, onEdi
           </div>
         </div>
 
-        <div className="proxy-field">
-          <Text type="secondary" className="field-label">
+        <div className={styles['proxy-field']}>
+          <Text type="secondary" className={styles['field-label']}>
             Status
           </Text>
           <div>
@@ -75,9 +76,9 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({ proxy, onEdi
         </div>
       </div>
 
-      <div className="proxy-row">
-        <div className="proxy-field">
-          <Text type="secondary" className="field-label">
+      <div className={styles['proxy-row']}>
+        <div className={styles['proxy-field']}>
+          <Text type="secondary" className={styles['field-label']}>
             Provider
           </Text>
           <div>
@@ -85,8 +86,8 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({ proxy, onEdi
           </div>
         </div>
 
-        <div className="proxy-field">
-          <Text type="secondary" className="field-label">
+        <div className={styles['proxy-field']}>
+          <Text type="secondary" className={styles['field-label']}>
             Country
           </Text>
           <div>
@@ -95,11 +96,11 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({ proxy, onEdi
         </div>
       </div>
 
-      <div className="proxy-field">
-        <Text type="secondary" className="field-label">
+      <div className={styles['proxy-field']}>
+        <Text type="secondary" className={styles['field-label']}>
           Fraud Score
         </Text>
-        <div className="fraud-score-container">
+        <div className={styles['fraud-score-container']}>
           <Progress
             percent={proxy.fraud_score}
             size="small"
@@ -113,11 +114,11 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({ proxy, onEdi
         </div>
       </div>
 
-      <div className="proxy-field">
-        <Text type="secondary" className="field-label">
+      <div className={styles['proxy-field']}>
+        <Text type="secondary" className={styles['field-label']}>
           Expiration Date
         </Text>
-        <div className="expiration-info">
+        <div className={styles['expiration-info']}>
           <Text
             strong
             style={{

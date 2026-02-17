@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { TableActionButton } from '../../../../components/ui/TableActionButton';
 import type { WorkspaceCalendarEvent } from '../../../../services/workspaceService';
 import type { CalendarEventListHandlers, SidebarMode } from './types';
+import styles from '../WorkspaceCalendarPage.module.css';
 
 const { Text } = Typography;
 
@@ -65,14 +66,14 @@ const renderSingleEventItem = (
           </Space>
         }
         description={
-          <Space direction="vertical" size={4} className="workspace-calendar-item-description">
+          <Space direction="vertical" size={4} className={styles.itemDescription}>
             <span>{event.description || 'No description'}</span>
             {linkedNoteTitle && (
               <Button
                 type="link"
                 icon={<FileTextOutlined />}
                 onClick={() => handlers.onOpenNote(event.linked_note_id!)}
-                className="workspace-calendar-note-link"
+                className={styles.noteLink}
               >
                 {linkedNoteTitle}
               </Button>
@@ -121,16 +122,16 @@ export const CalendarEventList: React.FC<CalendarEventListProps> = ({
   }
 
   return (
-    <div className="workspace-calendar-timeline">
-      <div className="workspace-calendar-section">
-        <div className="workspace-calendar-section-title">
+    <div className={styles.timeline}>
+      <div>
+        <div className={styles.sectionTitle}>
           <FlagOutlined /> Missed ({overdueEvents.length})
         </div>
         {renderEventsList(overdueEvents, 'No missed events', noteTitleById, handlers)}
       </div>
       <Divider />
-      <div className="workspace-calendar-section">
-        <div className="workspace-calendar-section-title">
+      <div>
+        <div className={styles.sectionTitle}>
           <ClockCircleOutlined /> Upcoming ({upcomingEvents.length})
         </div>
         {renderEventsList(upcomingEvents, 'No upcoming events', noteTitleById, handlers)}

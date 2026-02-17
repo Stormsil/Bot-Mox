@@ -2,6 +2,7 @@ import React from 'react';
 import { Input } from 'antd';
 import type { SettingsSectionProps } from './types';
 import { SecretField } from './SecretField';
+import layout from './SettingsSectionLayout.module.css';
 
 export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
   settings,
@@ -9,10 +10,10 @@ export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
   secretBindings,
   onSecretBindingChange,
 }) => (
-  <div className="vm-settings-section">
+  <div className={layout.section}>
     <h4>Proxmox Connection</h4>
-    <div className="vm-settings-row">
-      <div className="vm-settings-field">
+    <div className={layout.row}>
+      <div className={layout.field}>
         <label>URL</label>
         <Input
           value={settings.proxmox.url}
@@ -20,7 +21,7 @@ export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
           size="small"
         />
       </div>
-      <div className="vm-settings-field">
+      <div className={layout.field}>
         <label>Node</label>
         <Input
           value={settings.proxmox.node}
@@ -29,8 +30,8 @@ export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
         />
       </div>
     </div>
-    <div className="vm-settings-row">
-      <div className="vm-settings-field">
+    <div className={layout.row}>
+      <div className={layout.field}>
         <label>Username</label>
         <Input
           value={settings.proxmox.username}
@@ -46,7 +47,7 @@ export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
           onBindingChange={onSecretBindingChange}
         />
       ) : (
-        <div className="vm-settings-field">
+        <div className={layout.field}>
           <label>Password</label>
           <Input.Password
             value={settings.proxmox.password ?? ''}

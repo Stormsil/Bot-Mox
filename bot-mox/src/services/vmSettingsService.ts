@@ -19,6 +19,9 @@ const DEFAULT_DELETE_VM_FILTERS: NonNullable<VMGeneratorSettings['deleteVmFilter
   },
 };
 
+const LEGACY_STORAGE_PLACEHOLDER = 'disk';
+const FALLBACK_STORAGE_VALUES = ['data', 'nvme0n1'];
+
 const DEFAULT_SETTINGS: VMGeneratorSettings = {
   proxmox: {
     url: 'https://127.0.0.1:8006/',
@@ -32,8 +35,10 @@ const DEFAULT_SETTINGS: VMGeneratorSettings = {
     useKeyAuth: true,
   },
   storage: {
-    options: ['data', 'nvme0n1'],
-    default: 'data',
+    options: [...FALLBACK_STORAGE_VALUES],
+    enabledDisks: [...FALLBACK_STORAGE_VALUES],
+    autoSelectBest: true,
+    default: FALLBACK_STORAGE_VALUES[0],
   },
   format: {
     options: ['raw', 'qcow2'],
@@ -56,10 +61,12 @@ const DEFAULT_SETTINGS: VMGeneratorSettings = {
     wow_tbc: {
       cores: 2,
       memory: 4096,
+      diskGiB: 128,
     },
     wow_midnight: {
       cores: 2,
       memory: 4096,
+      diskGiB: 256,
     },
   },
   hardwareApply: {
@@ -92,6 +99,73 @@ function normalizeTinyFmUrl(input?: string): string {
   }
 }
 
+function normalizeStorageSettings(input: VMGeneratorSettings['storage']): VMGeneratorSettings['storage'] {
+  const normalizeList = (value: unknown): string[] => {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    const seen = new Set<string>();
+    const result: string[] = [];
+
+    for (const rawEntry of value) {
+      const entry = String(rawEntry ?? '').trim();
+      if (!entry) {
+        continue;
+      }
+      if (entry.toLowerCase() === LEGACY_STORAGE_PLACEHOLDER) {
+        continue;
+      }
+      if (seen.has(entry)) {
+        continue;
+      }
+      seen.add(entry);
+      result.push(entry);
+    }
+
+    return result;
+  };
+
+  const optionsRaw = normalizeList(input.options);
+  const enabledRaw = normalizeList(input.enabledDisks);
+  const defaultRaw = String(input.default ?? '').trim();
+  const defaultCandidate = defaultRaw && defaultRaw.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER
+    ? defaultRaw
+    : '';
+
+  const options: string[] = [...optionsRaw];
+  for (const entry of enabledRaw) {
+    if (!options.includes(entry)) {
+      options.push(entry);
+    }
+  }
+  if (defaultCandidate && !options.includes(defaultCandidate)) {
+    options.push(defaultCandidate);
+  }
+
+  if (options.length === 0) {
+    options.push(...FALLBACK_STORAGE_VALUES);
+  }
+
+  let enabled = enabledRaw.length > 0
+    ? enabledRaw.filter((entry) => options.includes(entry))
+    : [...options];
+  if (enabled.length === 0) {
+    enabled = [...options];
+  }
+
+  const defaultValue = defaultCandidate && enabled.includes(defaultCandidate)
+    ? defaultCandidate
+    : (enabled[0] || options[0] || FALLBACK_STORAGE_VALUES[0]);
+
+  return {
+    ...input,
+    options,
+    enabledDisks: enabled,
+    default: defaultValue,
+  };
+}
+
 function mergeSettings(data: Partial<VMGeneratorSettings> | undefined | null): VMGeneratorSettings {
   const legacyTiny = (data as Record<string, unknown> | null | undefined)?.tinyFM as Record<string, unknown> | undefined;
   const legacySyncThing = (data as Record<string, unknown> | null | undefined)?.syncThing as Record<string, unknown> | undefined;
@@ -104,12 +178,18 @@ function mergeSettings(data: Partial<VMGeneratorSettings> | undefined | null): V
   if (typeof legacySyncThing?.username === 'string') servicesFromLegacy.syncThingUsername = legacySyncThing.username;
   if (typeof legacySyncThing?.password === 'string') servicesFromLegacy.syncThingPassword = legacySyncThing.password;
 
+
+  const mergedStorage = normalizeStorageSettings({
+    ...DEFAULT_SETTINGS.storage,
+    ...(data?.storage || {}),
+  });
+
   return {
     ...DEFAULT_SETTINGS,
     ...data,
     proxmox: { ...DEFAULT_SETTINGS.proxmox, ...(data?.proxmox || {}) },
     ssh: { ...DEFAULT_SETTINGS.ssh, ...(data?.ssh || {}) },
-    storage: { ...DEFAULT_SETTINGS.storage, ...(data?.storage || {}) },
+    storage: mergedStorage,
     format: { ...DEFAULT_SETTINGS.format, ...(data?.format || {}) },
     template: { ...DEFAULT_SETTINGS.template, ...(data?.template || {}) },
     hardware: { ...DEFAULT_SETTINGS.hardware, ...(data?.hardware || {}) },
@@ -282,7 +362,7 @@ export function subscribeToVMSettings(
       console.error('Error subscribing to VM settings:', error);
       callback(DEFAULT_SETTINGS);
     },
-    { intervalMs: 4000, immediate: true }
+    { key: 'settings:vmgenerator', intervalMs: 4000, immediate: true }
   );
 }
 

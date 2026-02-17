@@ -1,0 +1,68 @@
+.content-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--boxmox-color-surface-base);
+  overflow: hidden;
+}
+
+/* Контейнер только для навигации табов (без content-holder) */
+.content-tabs-nav {
+  background: var(--boxmox-color-surface-panel);
+  border-bottom: 1px solid var(--boxmox-color-border-strong);
+  flex: 0 0 auto;
+  padding: 6px 8px;
+}
+
+.content-tabs-control {
+  width: 100%;
+}
+
+.tab-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab-label-icon {
+  font-size: 12px;
+}
+
+.tab-label-warning {
+  color: #faad14;
+}
+
+.tab-warning-icon {
+  color: #faad14;
+  font-size: 12px;
+  margin-left: 2px;
+}
+
+
+/* Контентная область */
+.content-body {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  padding: 16px;
+  background: var(--boxmox-color-surface-base);
+}
+
+/* Скроллбар */
+.content-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.content-body::-webkit-scrollbar-track {
+  background: var(--boxmox-color-surface-panel);
+}
+
+.content-body::-webkit-scrollbar-thumb {
+  background: var(--boxmox-color-border-default);
+  border-radius: var(--radius-sm);
+}
+
+.content-body::-webkit-scrollbar-thumb:hover {
+  background: var(--boxmox-color-border-subtle);
+}

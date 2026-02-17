@@ -6,6 +6,7 @@ import type { ParsedProxy } from '../../../utils/proxyUtils';
 import { ProxyIpqsResults } from './ProxyIpqsResults';
 import { ProxyParsedAlert } from './ProxyParsedAlert';
 import type { ProxyModalFormValues } from './types';
+import styles from './proxy.module.css';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -44,7 +45,7 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
   onTogglePassword,
 }) => (
   <Modal
-    className="proxy-modal"
+    className={styles['proxy-modal']}
     title={editing ? 'Edit Proxy' : 'Add Proxy'}
     open={open}
     onOk={onSubmit}
@@ -70,7 +71,7 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
       </Form.Item>
 
       {checkingIPQS && (
-        <div className="ipqs-loading">
+        <div className={styles['ipqs-loading']}>
           <Spin size="small" />
           <Text type="secondary">Checking IP quality...</Text>
         </div>

@@ -26,6 +26,7 @@ import { DatePicker } from 'antd';
 import type { PasswordOptions } from '../../../utils/accountGenerators';
 import type { AccountGenerationLocks, AccountGeneratorTemplate } from './types';
 import { TableActionButton } from '../../ui/TableActionButton';
+import styles from './account.module.css';
 
 const { Option } = Select;
 
@@ -42,9 +43,19 @@ export function PasswordGeneratorOptionsCard({
 }: PasswordGeneratorOptionsCardProps) {
   return (
     <Card
-      title="Password Generator Options"
+      title={<span style={{ fontSize: 'var(--text-xs)', fontWeight: 500 }}>Password Generator Options</span>}
       size="small"
-      className="generator-options-card"
+      className={styles['generator-options-card']}
+      style={{
+        background: 'var(--boxmox-color-surface-muted)',
+        borderColor: 'var(--boxmox-color-border-default)',
+      }}
+      headStyle={{
+        background: 'var(--boxmox-color-surface-muted)',
+        borderColor: 'var(--boxmox-color-border-default)',
+        minHeight: 40,
+      }}
+      bodyStyle={{ padding: '12px 16px' }}
     >
       <Row gutter={16} align="middle">
         <Col>
@@ -67,6 +78,7 @@ export function PasswordGeneratorOptionsCard({
           <Checkbox
             checked={passwordOptions.uppercase}
             disabled={accountLocked}
+            className={styles['generator-option-checkbox']}
             onChange={(event) =>
               setPasswordOptions((prev) => ({
                 ...prev,
@@ -81,6 +93,7 @@ export function PasswordGeneratorOptionsCard({
           <Checkbox
             checked={passwordOptions.lowercase}
             disabled={accountLocked}
+            className={styles['generator-option-checkbox']}
             onChange={(event) =>
               setPasswordOptions((prev) => ({
                 ...prev,
@@ -95,6 +108,7 @@ export function PasswordGeneratorOptionsCard({
           <Checkbox
             checked={passwordOptions.numbers}
             disabled={accountLocked}
+            className={styles['generator-option-checkbox']}
             onChange={(event) =>
               setPasswordOptions((prev) => ({
                 ...prev,
@@ -109,6 +123,7 @@ export function PasswordGeneratorOptionsCard({
           <Checkbox
             checked={passwordOptions.symbols}
             disabled={accountLocked}
+            className={styles['generator-option-checkbox']}
             onChange={(event) =>
               setPasswordOptions((prev) => ({
                 ...prev,
@@ -153,14 +168,24 @@ export function GeneratorPresetsCard({
 }: GeneratorPresetsCardProps) {
   return (
     <Card
-      title="Generator Presets"
+      title={<span style={{ fontSize: 'var(--text-xs)', fontWeight: 500 }}>Generator Presets</span>}
       size="small"
-      className="generator-presets-card"
+      className={styles['generator-presets-card']}
+      style={{
+        background: 'var(--boxmox-color-surface-muted)',
+        borderColor: 'var(--boxmox-color-border-default)',
+      }}
+      headStyle={{
+        background: 'var(--boxmox-color-surface-muted)',
+        borderColor: 'var(--boxmox-color-border-default)',
+        minHeight: 40,
+      }}
+      bodyStyle={{ padding: '12px 16px' }}
       extra={(
         <Button
           type="text"
           size="small"
-          className="generator-collapse-btn"
+          style={{ color: 'var(--boxmox-color-text-secondary)', paddingInline: 4 }}
           icon={presetsCollapsed ? <RightOutlined /> : <DownOutlined />}
           onClick={() => setPresetsCollapsed((prev) => !prev)}
         >
@@ -170,11 +195,11 @@ export function GeneratorPresetsCard({
     >
       {!presetsCollapsed && (
         <>
-          <div className="generator-presets-row">
+          <div className={styles['generator-presets-row']}>
             <Select
               value={selectedTemplateId}
               onChange={handleTemplateSelect}
-              className="generator-template-select"
+              className={styles['generator-template-select']}
             >
               <Option value="last">Last Used</Option>
               {templates.map((template) => (
@@ -202,12 +227,12 @@ export function GeneratorPresetsCard({
               Delete
             </TableActionButton>
           </div>
-          <div className="generator-presets-row">
+          <div className={styles['generator-presets-row']}>
             <Input
               placeholder="Template name"
               value={templateName}
               onChange={(event) => setTemplateName(event.target.value)}
-              className="generator-template-name"
+              className={styles['generator-template-name']}
             />
             <Button
               type="default"
@@ -237,7 +262,7 @@ export function RegistrationDateSection({
   return (
     <Form.Item
       label={(
-        <span className="field-label">
+        <span className={styles['field-label']}>
           Registration Date
           {registrationDateWarning}
         </span>
@@ -292,15 +317,15 @@ export function ActionButtonsSection({
   handleRestore,
 }: ActionButtonsSectionProps) {
   return (
-    <div className="account-form-actions">
-      <div className="generate-section">
-        <span className="generate-label">Generate:</span>
+    <div className={styles['account-form-actions']}>
+      <div className={styles['generate-section']}>
+        <span className={styles['generate-label']}>Generate:</span>
         <Tooltip title={locks.password ? 'Generation locked' : 'Generate password'}>
           <Button
             type="default"
             icon={locks.password ? <LockOutlined /> : <ThunderboltOutlined />}
             onClick={() => requestGeneration('password')}
-            className="generate-btn"
+            className={styles['generate-btn']}
             disabled={accountLocked}
           >
             Password
@@ -311,7 +336,7 @@ export function ActionButtonsSection({
             type="default"
             icon={locks.email ? <LockOutlined /> : <ThunderboltOutlined />}
             onClick={() => requestGeneration('email')}
-            className="generate-btn"
+            className={styles['generate-btn']}
             disabled={!isPersonComplete || accountLocked}
           >
             Email
@@ -322,7 +347,7 @@ export function ActionButtonsSection({
             type="default"
             icon={accountLocked ? <LockOutlined /> : <ThunderboltOutlined />}
             onClick={() => requestGeneration('both')}
-            className="generate-btn"
+            className={styles['generate-btn']}
             disabled={!isPersonComplete || accountLocked}
           >
             Both
@@ -334,7 +359,7 @@ export function ActionButtonsSection({
               type="default"
               icon={<UnlockOutlined />}
               onClick={handleUnlockGeneration}
-              className="unlock-btn"
+              className={styles['unlock-btn']}
             >
               Unlock
             </Button>
@@ -342,18 +367,18 @@ export function ActionButtonsSection({
         )}
         {!isPersonComplete && (
           <Tooltip title="Fill Person data first to generate email">
-            <ExclamationCircleOutlined className="field-warning-icon" />
+            <ExclamationCircleOutlined className={styles['field-warning-icon']} />
           </Tooltip>
         )}
       </div>
 
-      <div className="action-buttons">
+      <div className={styles['action-buttons']}>
         {hasBackup && (
           <Button
             type="default"
             icon={<UndoOutlined />}
             onClick={handleRestore}
-            className="restore-btn"
+            className={styles['restore-btn']}
             style={{ marginRight: '8px' }}
             disabled={accountLocked}
           >
@@ -365,7 +390,7 @@ export function ActionButtonsSection({
           htmlType="submit"
           icon={<SaveOutlined />}
           loading={saving}
-          className="save-btn"
+          className={styles['save-btn']}
           disabled={accountLocked}
         >
           Save Changes

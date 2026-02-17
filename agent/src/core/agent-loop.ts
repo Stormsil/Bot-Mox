@@ -8,6 +8,10 @@ import { executeCommand } from '../executors';
 // ---------------------------------------------------------------------------
 
 export type AgentStatus = 'idle' | 'connecting' | 'online' | 'error' | 'revoked';
+const HEARTBEAT_INTERVAL_MS = 30_000;
+const NEXT_COMMAND_TIMEOUT_MS = 25_000;
+const COMMAND_ERROR_BACKOFF_MS = 1_500;
+const RATE_LIMIT_COOLDOWN_MS = 45_000;
 
 interface QueuedCommand {
   id: string;
@@ -31,6 +35,9 @@ export class AgentLoop {
   private status: AgentStatus = 'idle';
   private onStatusChange: StatusCallback | null = null;
   private executing = false;
+  private nextTickAt = 0;
+  private running = false;
+  private commandLoopPromise: Promise<void> | null = null;
 
   constructor(
     private config: AgentConfig,
@@ -47,24 +54,40 @@ export class AgentLoop {
   }
 
   async start(): Promise<void> {
-    if (this.interval) return;
+    if (this.running) return;
 
+    this.running = true;
+    this.nextTickAt = 0;
     this.setStatus('connecting');
     this.logger.info('Agent loop starting...');
 
-    // Immediate first tick
-    await this.tick();
+    await this.sendHeartbeat();
 
-    // Then every 30 seconds
-    this.interval = setInterval(() => this.tick(), 30_000);
+    this.commandLoopPromise = this.runCommandLoop()
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(`Command loop crashed: ${message}`);
+      })
+      .finally(() => {
+        this.commandLoopPromise = null;
+      });
+
+    this.interval = setInterval(() => {
+      void this.sendHeartbeat();
+    }, HEARTBEAT_INTERVAL_MS);
   }
 
   stop(): void {
+    this.running = false;
     if (this.interval) {
       clearInterval(this.interval);
       this.interval = null;
     }
-    this.setStatus('idle');
+    this.nextTickAt = 0;
+    this.executing = false;
+    if (this.status !== 'revoked') {
+      this.setStatus('idle');
+    }
     this.logger.info('Agent loop stopped');
   }
 
@@ -75,53 +98,133 @@ export class AgentLoop {
     this.onStatusChange?.(status, message);
   }
 
-  private async tick(): Promise<void> {
+  private isRateLimitedError(err: unknown): boolean {
+    if (err instanceof ApiError) {
+      return err.status === 429 || err.code === 'RATE_LIMITED';
+    }
+    if (err instanceof Error) {
+      return /rate[- ]?limit|too many requests/i.test(err.message);
+    }
+    return false;
+  }
+
+  private isRevokedError(err: unknown): err is ApiError {
+    return err instanceof ApiError && (err.code === 'AGENT_REVOKED' || err.status === 403);
+  }
+
+  private async sendHeartbeat(): Promise<void> {
+    if (!this.running) {
+      return;
+    }
+
+    if (Date.now() < this.nextTickAt) {
+      return;
+    }
+
     try {
-      // 1. Heartbeat
       await this.apiClient.post('/api/v1/agents/heartbeat', {
         agent_id: this.config.agentId,
       });
-
       this.setStatus('online');
-
-      // 2. Poll for queued commands (skip if already executing)
-      if (this.executing) return;
-
-      const commands = await this.apiClient.get<QueuedCommand[]>(
-        `/api/v1/vm-ops/commands?agent_id=${this.config.agentId}&status=queued`,
-      );
-
-      if (!Array.isArray(commands) || commands.length === 0) return;
-
-      // 3. Execute each command sequentially
-      this.executing = true;
-      try {
-        for (const cmd of commands) {
-          await this.processCommand(cmd);
-        }
-      } finally {
-        this.executing = false;
-      }
     } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.code === 'AGENT_REVOKED' || err.status === 403) {
-          this.setStatus('revoked', err.message);
-          this.stop();
-          return;
-        }
+      if (this.isRateLimitedError(err)) {
+        this.nextTickAt = Date.now() + RATE_LIMIT_COOLDOWN_MS;
+        this.setStatus('error', `Rate limited, retrying in ${Math.ceil(RATE_LIMIT_COOLDOWN_MS / 1000)}s`);
+        return;
       }
+
+      if (this.isRevokedError(err)) {
+        this.setStatus('revoked', err.message);
+        this.stop();
+        return;
+      }
+
       const msg = err instanceof Error ? err.message : String(err);
       this.setStatus('error', msg);
     }
   }
 
-  private async processCommand(cmd: QueuedCommand): Promise<void> {
+  private async fetchNextCommand(): Promise<QueuedCommand | null> {
+    const command = await this.apiClient.get<QueuedCommand | null>(
+      `/api/v1/vm-ops/commands/next?agent_id=${encodeURIComponent(this.config.agentId)}&timeout_ms=${NEXT_COMMAND_TIMEOUT_MS}`,
+      // Long-poll: backend should respond within timeout_ms, but proxies/TCP stalls can hang.
+      // Give it a bit of headroom and then abort client-side.
+      { timeoutMs: NEXT_COMMAND_TIMEOUT_MS + 15_000 },
+    );
+
+    if (!command || typeof command !== 'object') {
+      return null;
+    }
+
+    const id = String(command.id || '').trim();
+    if (!id) {
+      return null;
+    }
+
+    return command;
+  }
+
+  private async runCommandLoop(): Promise<void> {
+    while (this.running) {
+      if (Date.now() < this.nextTickAt) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        continue;
+      }
+
+      try {
+        const command = await this.fetchNextCommand();
+        if (!this.running) {
+          return;
+        }
+        if (!command) {
+          continue;
+        }
+
+        this.executing = true;
+        try {
+          const result = await this.processCommand(command);
+          if (result === 'rate_limited') {
+            this.nextTickAt = Date.now() + RATE_LIMIT_COOLDOWN_MS;
+          }
+        } finally {
+          this.executing = false;
+        }
+      } catch (err) {
+        if (this.isRateLimitedError(err)) {
+          this.nextTickAt = Date.now() + RATE_LIMIT_COOLDOWN_MS;
+          this.setStatus('error', `Rate limited, retrying in ${Math.ceil(RATE_LIMIT_COOLDOWN_MS / 1000)}s`);
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          continue;
+        }
+
+        if (this.isRevokedError(err)) {
+          this.setStatus('revoked', err.message);
+          this.stop();
+          return;
+        }
+
+        const msg = err instanceof Error ? err.message : String(err);
+        this.setStatus('error', msg);
+        await new Promise((resolve) => setTimeout(resolve, COMMAND_ERROR_BACKOFF_MS));
+      }
+    }
+  }
+
+  private async processCommand(cmd: QueuedCommand): Promise<'done' | 'skipped' | 'rate_limited'> {
     this.logger.info(`Executing command ${cmd.id} (${cmd.command_type})`);
 
     // Check if expired
     if (cmd.expires_at && new Date(cmd.expires_at) < new Date()) {
       this.logger.warn(`Command ${cmd.id} already expired, skipping`);
-      return;
+      try {
+        await this.apiClient.patch(`/api/v1/vm-ops/commands/${cmd.id}`, {
+          status: 'failed',
+          error_message: 'Command expired before execution',
+        });
+      } catch (reportErr) {
+        this.logger.error(`Failed to mark expired command ${cmd.id}:`, reportErr);
+      }
+      return 'skipped';
     }
 
     // Mark as running
@@ -130,8 +233,12 @@ export class AgentLoop {
         status: 'running',
       });
     } catch (err) {
+      if (this.isRateLimitedError(err)) {
+        this.logger.warn(`Rate limited while claiming command ${cmd.id}, delaying further processing`);
+        return 'rate_limited';
+      }
       this.logger.error(`Failed to mark command ${cmd.id} as running:`, err);
-      return;
+      return 'skipped';
     }
 
     // Execute
@@ -149,6 +256,7 @@ export class AgentLoop {
       });
 
       this.logger.info(`Command ${cmd.id} succeeded`);
+      return 'done';
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       this.logger.error(`Command ${cmd.id} failed: ${errorMessage}`);
@@ -161,6 +269,11 @@ export class AgentLoop {
       } catch (reportErr) {
         this.logger.error(`Failed to report error for command ${cmd.id}:`, reportErr);
       }
+
+      if (this.isRateLimitedError(err)) {
+        return 'rate_limited';
+      }
+      return 'done';
     }
   }
 }

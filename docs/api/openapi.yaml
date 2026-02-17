@@ -50,11 +50,9 @@ components:
         timestamp:
           type: string
           format: date-time
-        firebase:
-          type: boolean
         data_backend:
           type: string
-          enum: [rtdb, supabase]
+          enum: [supabase]
         supabase_ready:
           type: boolean
         s3_ready:
@@ -66,7 +64,6 @@ components:
       required:
         - service
         - timestamp
-        - firebase
         - data_backend
         - supabase_ready
         - s3_ready
@@ -682,7 +679,7 @@ paths:
       summary: Merge settings subtree (path-aware validation)
       description: |
         The backend validates payload shape by concrete subpath and rejects
-        invalid RTDB path segments (`.`, `..`, `#`, `$`, `[`, `]`).
+        invalid path segments (`.`, `..`, `#`, `$`, `[`, `]`).
         Commonly used paths:
         - `alerts`
         - `api_keys`
@@ -1407,7 +1404,17 @@ paths:
   # --- Agents ---
   /api/v1/agents/pairings:
     post:
-      summary: Create agent pairing code (admin/infra)
+      summary: Create agent pairing code (authenticated)
+      description: |
+        Creates one-time pairing code and returns copy/paste pairing helpers:
+        - `pairing_bundle` (base64url payload)
+        - `pairing_uri` (`botmox://pair?...`)
+        - `pairing_url` (`https://.../agent/pair?...`, when public URL is resolvable)
+        - `proxmox_defaults` (non-secret URL/username/node hints for agent autofill)
+        Ownership behavior:
+        - by default pairing is bound to current authenticated user (`owner_user_id = auth.uid`)
+        - `owner_user_id` override is allowed only for `admin`/`infra`
+        - if owner cannot be resolved from auth context and is not explicitly provided, request is rejected
       requestBody:
         required: false
         content:
@@ -1420,14 +1427,63 @@ paths:
                 expires_in_minutes:
                   type: integer
                   default: 15
+                owner_user_id:
+                  type: string
       responses:
         '201':
           description: Pairing created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      tenant_id:
+                        type: string
+                      owner_user_id:
+                        type: string
+                      name:
+                        type: string
+                      status:
+                        type: string
+                      pairing_code:
+                        type: string
+                      pairing_expires_at:
+                        type: string
+                        format: date-time
+                      pairing_bundle:
+                        type: string
+                      pairing_uri:
+                        type: string
+                      pairing_url:
+                        type: string
+                      server_url:
+                        type: string
+                      proxmox_defaults:
+                        type: object
+                        properties:
+                          url:
+                            type: string
+                          username:
+                            type: string
+                          node:
+                            type: string
         '403':
           description: Forbidden
   /api/v1/agents/register:
     post:
-      summary: Register agent using pairing code
+      summary: Register agent using pairing code (public bootstrap endpoint)
+      description: |
+        This endpoint is intentionally accessible without Bearer auth.
+        Agent exchanges one-time pairing_code for agent_token used in subsequent calls.
+      security: []
       requestBody:
         required: true
         content:
@@ -1436,6 +1492,8 @@ paths:
               type: object
               properties:
                 pairing_code:
+                  type: string
+                machine_name:
                   type: string
                 version:
                   type: string
@@ -1448,7 +1506,34 @@ paths:
               required: [pairing_code]
       responses:
         '201':
-          description: Agent registered
+          description: Agent registered and agent token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      tenant_id:
+                        type: string
+                      name:
+                        type: string
+                      status:
+                        type: string
+                      paired_at:
+                        type: string
+                        format: date-time
+                      agent_token:
+                        type: string
+                      agent_token_expires_at:
+                        type: string
+                        format: date-time
         '404':
           description: Pairing not found
         '410':

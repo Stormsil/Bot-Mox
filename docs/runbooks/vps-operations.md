@@ -1,5 +1,33 @@
 # VPS Operations Runbook
 
+## Local Substitute (when VPS is not ready yet)
+
+Use the local production-like Docker stack as a direct substitute for VPS deploy flow:
+
+```bash
+# Start local production-like stack
+npm run deploy:local:up
+
+# Check status
+npm run deploy:local:ps
+
+# View logs
+npm run deploy:local:logs
+
+# Restart (simulates redeploy)
+npm run deploy:local:restart
+
+# Stop
+npm run deploy:local:down
+```
+
+This mode uses:
+- `deploy/compose.stack.yml`
+- `deploy/compose.prod-sim.env.example`
+- local images `bot-mox/frontend:prod-sim` and `bot-mox/backend:prod-sim`
+
+So you can validate full-stack behavior before real VPS appears.
+
 ## 1. Required Secrets
 
 ### GitHub Actions Secrets (repository settings)
@@ -16,18 +44,19 @@
 
 | Variable | Purpose |
 |---|---|
-| `INTERNAL_API_TOKEN` | Bearer token for API requests |
-| `INTERNAL_INFRA_TOKEN` | Bearer token for infra/admin operations |
 | `LICENSE_LEASE_SECRET` | HS256 signing key for execution leases (min 32 chars) |
+| `AGENT_AUTH_SECRET` | HS256 signing key for scoped agent tokens (can equal `LICENSE_LEASE_SECRET`) |
+| `AGENT_TOKEN_TTL_SECONDS` | Agent token TTL (recommended 30 days = `2592000`) |
+| `AGENT_PAIRING_PUBLIC_URL` | Public API URL used in generated pairing links (`https://api.example.com`) |
 | `SUPABASE_DB_PASSWORD` | PostgreSQL password |
 | `SUPABASE_JWT_SECRET` | Supabase JWT signing key (min 32 chars) |
 | `SUPABASE_ANON_KEY` | Supabase anonymous key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
+| `SUPABASE_ADMIN_EMAILS` | Comma-separated operator emails mapped to `admin` + `infra` |
+| `SUPABASE_ADMIN_USER_IDS` | Comma-separated operator user IDs mapped to `admin` + `infra` |
 | `MINIO_ROOT_PASSWORD` | MinIO root password |
 | `S3_ACCESS_KEY_ID` | MinIO backend access key |
 | `S3_SECRET_ACCESS_KEY` | MinIO backend secret key |
-| `FIREBASE_SERVICE_ACCOUNT_PATH` | Path to Firebase SA JSON (migration phase) |
-| `FIREBASE_DATABASE_URL` | Firebase RTDB URL (migration phase) |
 
 ### Secret Generation
 
@@ -87,6 +116,22 @@ mkdir -p backups/postgres backups/minio
 IMAGE_TAG=main-latest ./scripts/deploy-vps.sh
 ```
 
+### Fast Path (recommended after first setup)
+
+```bash
+# From GitHub UI:
+# 1) Build And Publish Images (push to main)
+# 2) Deploy Production -> image_tag=sha-<shortsha> (or main-latest)
+```
+
+What is now automated:
+
+1. Workflow updates repository on VPS (`git pull --ff-only`).
+2. Workflow computes GHCR repos from repository owner.
+3. `deploy-vps.sh` resolves image repos from env automatically if needed.
+4. `deploy-vps.sh` validates compose config before start.
+5. Healthcheck uses retries with timeout instead of single one-shot curl.
+
 ---
 
 ## 3. Deploy Flow
@@ -110,17 +155,16 @@ git pull origin main
 
 # Deploy specific tag
 IMAGE_TAG=sha-abc1234 \
-FRONTEND_IMAGE_REPO=ghcr.io/<org>/bot-mox-frontend \
-BACKEND_IMAGE_REPO=ghcr.io/<org>/bot-mox-backend \
 API_HEALTHCHECK_URL=https://api.example.com/api/v1/health \
 ./scripts/deploy-vps.sh
 
 # Dry-run (validate compose config only)
 IMAGE_TAG=sha-abc1234 \
-FRONTEND_IMAGE_REPO=ghcr.io/<org>/bot-mox-frontend \
-BACKEND_IMAGE_REPO=ghcr.io/<org>/bot-mox-backend \
 ./scripts/deploy-vps.sh --dry-run
 ```
+
+`FRONTEND_IMAGE_REPO`/`BACKEND_IMAGE_REPO` are optional in manual mode if they already exist in `.env.prod`
+(or can be derived from `FRONTEND_IMAGE`/`BACKEND_IMAGE` there).
 
 ### Post-deploy Verification
 
@@ -158,11 +202,11 @@ docker compose -f deploy/compose.stack.yml --env-file .env.prod logs --tail=50 f
 cd /opt/bot-mox
 
 PREVIOUS_TAG=sha-prev123 \
-FRONTEND_IMAGE_REPO=ghcr.io/<org>/bot-mox-frontend \
-BACKEND_IMAGE_REPO=ghcr.io/<org>/bot-mox-backend \
 API_HEALTHCHECK_URL=https://api.example.com/api/v1/health \
 ./scripts/rollback-vps.sh
 ```
+
+`FRONTEND_IMAGE_REPO`/`BACKEND_IMAGE_REPO` are optional in manual mode if configured in `.env.prod`.
 
 ### Database Rollback
 
@@ -298,7 +342,6 @@ docker compose -f deploy/compose.stack.yml --env-file .env.prod logs backend
 
 # Common causes:
 # - Missing env vars in .env.prod
-# - Firebase service account file not found
 # - Supabase/MinIO not reachable (check network)
 ```
 

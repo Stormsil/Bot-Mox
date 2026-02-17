@@ -36,6 +36,7 @@ import {
 } from './config';
 import type { LifeStage } from './config';
 import { SimpleBarChart } from './SimpleBarChart';
+import styles from './lifeStages.module.css';
 
 const { Text, Title } = Typography;
 
@@ -47,7 +48,7 @@ interface StagePanelsProps {
 
 export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTimestamp, formatDuration }) => {
   const renderPrepareContent = () => (
-    <div className="stage-content prepare-content">
+    <div className={[styles['stage-content'], styles['prepare-content']].join(' ')}>
       {currentStage === 'banned' ? (
         <Alert
           message="Bot is Banned"
@@ -60,7 +61,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
-            <div className="prepare-message">
+            <div className={styles['prepare-message']}>
               <Title level={4}>Bot is preparing</Title>
               <Text type="secondary">
                 At this stage, the bot is undergoing initial setup before launch.
@@ -79,10 +80,10 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
     const analytics = mockAnalytics.leveling;
 
     return (
-      <div className="stage-content leveling-content">
+      <div className={[styles['stage-content'], styles['leveling-content']].filter(Boolean).join(' ')}>
         <Row gutter={[16, 16]}>
           <Col span={8}>
-            <Card className="stage-stat-card">
+            <Card className={styles['stage-stat-card']}>
               <Statistic
                 title="Current Level"
                 value={leveling.current_level}
@@ -92,7 +93,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
             </Card>
           </Col>
           <Col span={8}>
-            <Card className="stage-stat-card">
+            <Card className={styles['stage-stat-card']}>
               <Statistic
                 title="XP per Hour"
                 value={leveling.xp_per_hour.toLocaleString()}
@@ -102,7 +103,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
             </Card>
           </Col>
           <Col span={8}>
-            <Card className="stage-stat-card">
+            <Card className={styles['stage-stat-card']}>
               <Statistic
                 title="Time to Level"
                 value={leveling.estimated_time_to_level}
@@ -114,9 +115,9 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </Col>
         </Row>
 
-        <Card className="stage-detail-card" title="Experience Progress">
-          <div className="xp-progress-section">
-            <div className="xp-info">
+        <Card className={styles['stage-detail-card']} title="Experience Progress">
+          <div className={styles['xp-progress-section']}>
+            <div className={styles['xp-info']}>
               <Text strong>Level {leveling.current_level}</Text>
               <Text type="secondary">
                 {leveling.current_xp.toLocaleString()} / {leveling.max_xp.toLocaleString()} XP
@@ -128,21 +129,21 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
               trailColor="var(--boxmox-color-border-default)"
               showInfo={false}
             />
-            <div className="xp-percent">{xpPercent}%</div>
+            <div className={styles['xp-percent']}>{xpPercent}%</div>
           </div>
         </Card>
 
-        <Card className="stage-detail-card" title="Current Location">
-          <div className="location-info">
-            <AimOutlined className="location-icon" />
-            <div className="location-details">
+        <Card className={styles['stage-detail-card']} title="Current Location">
+          <div className={styles['location-info']}>
+            <AimOutlined className={styles['location-icon']} />
+            <div className={styles['location-details']}>
               <Text type="secondary">Location</Text>
-              <Tag className="location-tag">{leveling.location}</Tag>
+              <Tag className={styles['location-tag']}>{leveling.location}</Tag>
             </div>
           </div>
         </Card>
 
-        <Card className="stage-detail-card analytics-card" title="Leveling Analytics">
+        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Leveling Analytics">
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic
@@ -183,7 +184,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
     const analytics = mockAnalytics.professions;
 
     return (
-      <div className="stage-content professions-content">
+      <div className={[styles['stage-content'], styles['professions-content']].filter(Boolean).join(' ')}>
         <Row gutter={[16, 16]}>
           {professions.map((profession) => {
             const percent = profession.max_skill_points > 0
@@ -195,19 +196,22 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
             return (
               <Col span={12} key={profession.name}>
                 <Card
-                  className={`profession-card ${isActive ? 'active' : 'inactive'}`}
+                  className={[
+                    styles['profession-card'],
+                    isActive ? styles.active : styles.inactive,
+                  ].join(' ')}
                   title={
-                    <div className="profession-header">
-                      <span className="profession-icon" style={{ color }}>
+                    <div className={styles['profession-header']}>
+                      <span className={styles['profession-icon']} style={{ color }}>
                         {getProfessionIcon(profession.name)}
                       </span>
-                      <span className="profession-name">{profession.name}</span>
-                      {isActive && <Tag color="success" className="profession-status">Active</Tag>}
+                      <span className={styles['profession-name']}>{profession.name}</span>
+                      {isActive && <Tag color="success" className={styles['profession-status']}>Active</Tag>}
                     </div>
                   }
                 >
-                  <div className="profession-progress">
-                    <div className="skill-info">
+                  <div className={styles['profession-progress']}>
+                    <div className={styles['skill-info']}>
                       <Text strong>{profession.skill_points}</Text>
                       <Text type="secondary">/ {profession.max_skill_points}</Text>
                     </div>
@@ -217,7 +221,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                       trailColor="var(--boxmox-color-border-default)"
                       showInfo={false}
                     />
-                    <div className="skill-percent">{percent}%</div>
+                    <div className={styles['skill-percent']}>{percent}%</div>
                   </div>
                 </Card>
               </Col>
@@ -225,7 +229,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           })}
         </Row>
 
-        <Card className="stage-detail-card analytics-card" title="Professions Analytics">
+        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Professions Analytics">
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic
@@ -268,10 +272,10 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
     const analytics = mockAnalytics.farm;
 
     return (
-      <div className="stage-content farm-content">
+      <div className={[styles['stage-content'], styles['farm-content']].filter(Boolean).join(' ')}>
         <Row gutter={[16, 16]}>
           <Col span={8}>
-            <Card className="stage-stat-card">
+            <Card className={styles['stage-stat-card']}>
               <Statistic
                 title="Total Gold"
                 value={farmStats.total_gold.toLocaleString()}
@@ -282,7 +286,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
             </Card>
           </Col>
           <Col span={8}>
-            <Card className="stage-stat-card">
+            <Card className={styles['stage-stat-card']}>
               <Statistic
                 title="Gold per Hour"
                 value={farmStats.gold_per_hour.toFixed(1)}
@@ -293,7 +297,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
             </Card>
           </Col>
           <Col span={8}>
-            <Card className="stage-stat-card">
+            <Card className={styles['stage-stat-card']}>
               <Statistic
                 title="Session Time"
                 value={formatDuration(sessionDuration)}
@@ -304,29 +308,29 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </Col>
         </Row>
 
-        <Card className="stage-detail-card" title="Inventory">
+        <Card className={styles['stage-detail-card']} title="Inventory">
           <List
             dataSource={inventory}
             renderItem={(item) => (
-              <List.Item className="inventory-item">
-                <div className="inventory-item-info">
-                  <ShoppingOutlined className="inventory-item-icon" />
-                  <div className="inventory-item-details">
+              <List.Item className={styles['inventory-item']}>
+                <div className={styles['inventory-item-info']}>
+                  <ShoppingOutlined className={styles['inventory-item-icon']} />
+                  <div className={styles['inventory-item-details']}>
                     <Text strong style={{ color: getQualityColor(item.quality) }}>
                       {item.name}
                     </Text>
-                    <Tag className="quality-tag" style={{ backgroundColor: getQualityColor(item.quality) }}>
+                    <Tag className={styles['quality-tag']} style={{ backgroundColor: getQualityColor(item.quality) }}>
                       {item.quality}
                     </Tag>
                   </div>
                 </div>
-                <Text className="inventory-item-quantity">x{item.quantity}</Text>
+                <Text className={styles['inventory-item-quantity']}>x{item.quantity}</Text>
               </List.Item>
             )}
           />
         </Card>
 
-        <Card className="stage-detail-card analytics-card" title="Farm Analytics">
+        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Farm Analytics">
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic

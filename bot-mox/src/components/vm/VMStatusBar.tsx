@@ -1,9 +1,7 @@
 import React from 'react';
 import { PlayCircleOutlined, StopOutlined } from '@ant-design/icons';
 import type { VMUiState } from '../../types';
-import './VMStatusBar.css';
-
-type VMServiceKind = 'proxmox' | 'tinyfm' | 'syncthing';
+import styles from './VMStatusBar.module.css';
 
 interface VMStatusBarProps {
   uiState: VMUiState;
@@ -18,10 +16,7 @@ interface VMStatusBarProps {
   onStart: () => void;
   onStop: () => void;
   onOpenSettings?: () => void;
-  onOpenPreview?: () => void;
-  activeTopPanel?: 'settings' | 'preview' | null;
-  activeService?: VMServiceKind;
-  onSelectService?: (service: VMServiceKind) => void;
+  activeTopPanel?: 'settings' | null;
 }
 
 const badgeLabels: Record<VMUiState, string> = {
@@ -30,6 +25,10 @@ const badgeLabels: Record<VMUiState, string> = {
   success: 'Success',
   error: 'Error',
 };
+
+function cx(...values: Array<string | false | null | undefined>): string {
+  return values.filter(Boolean).join(' ');
+}
 
 export const VMStatusBar: React.FC<VMStatusBarProps> = ({
   uiState,
@@ -44,92 +43,65 @@ export const VMStatusBar: React.FC<VMStatusBarProps> = ({
   onStart,
   onStop,
   onOpenSettings,
-  onOpenPreview,
   activeTopPanel = null,
-  activeService = 'proxmox',
-  onSelectService,
 }) => {
-  const hasTopPanelButtons = Boolean(onOpenSettings || onOpenPreview);
-  const hasServiceButtons = Boolean(onSelectService);
+  const hasTopPanelButtons = Boolean(onOpenSettings);
+  const badgeStateClass =
+    uiState === 'ready'
+      ? styles.badgeReady
+      : uiState === 'working'
+        ? styles.badgeWorking
+        : uiState === 'success'
+          ? styles.badgeSuccess
+          : styles.badgeError;
 
   return (
-    <div className="vm-status-bar">
-      <div className="vm-status-bar-controls">
+    <div className={styles.root}>
+      <div className={styles.controls}>
         <button
-          className="vm-status-bar-btn vm-status-bar-btn--start"
+          className={cx(styles.btn, styles.btnStart)}
           onClick={onStart}
           disabled={isProcessing || !hasPending}
           title="Start processing (F5)"
         >
-          <PlayCircleOutlined className="vm-status-bar-btn-icon" />
+          <PlayCircleOutlined className={styles.btnIcon} />
           <span>Start processing</span>
         </button>
         <button
-          className="vm-status-bar-btn vm-status-bar-btn--stop"
+          className={cx(styles.btn, styles.btnStop)}
           onClick={onStop}
           disabled={!isProcessing}
           title="Stop processing (F6)"
         >
-          <StopOutlined className="vm-status-bar-btn-icon" />
+          <StopOutlined className={styles.btnIcon} />
           <span>Stop processing</span>
         </button>
 
-        {hasTopPanelButtons && <div className="vm-status-bar-separator" />}
+        {hasTopPanelButtons && <div className={styles.separator} />}
 
         {onOpenSettings && (
           <button
-            className={`vm-status-bar-btn vm-status-bar-btn--service${activeTopPanel === 'settings' ? ' is-active' : ''}`}
+            className={cx(
+              styles.btn,
+              styles.btnService,
+              activeTopPanel === 'settings' && styles.btnServiceActive,
+            )}
             onClick={onOpenSettings}
           >
             Settings
           </button>
         )}
-        {onOpenPreview && (
-          <button
-            className={`vm-status-bar-btn vm-status-bar-btn--service${activeTopPanel === 'preview' ? ' is-active' : ''}`}
-            onClick={onOpenPreview}
-          >
-            Config Preview
-          </button>
-        )}
-
-        {hasServiceButtons && <div className="vm-status-bar-separator" />}
-
-        {hasServiceButtons && (
-          <button
-            className={`vm-status-bar-btn vm-status-bar-btn--service${activeService === 'proxmox' ? ' is-active' : ''}`}
-            onClick={() => onSelectService?.('proxmox')}
-          >
-            Proxmox
-          </button>
-        )}
-        {hasServiceButtons && (
-          <button
-            className={`vm-status-bar-btn vm-status-bar-btn--service${activeService === 'tinyfm' ? ' is-active' : ''}`}
-            onClick={() => onSelectService?.('tinyfm')}
-          >
-            TinyFM
-          </button>
-        )}
-        {hasServiceButtons && (
-          <button
-            className={`vm-status-bar-btn vm-status-bar-btn--service${activeService === 'syncthing' ? ' is-active' : ''}`}
-            onClick={() => onSelectService?.('syncthing')}
-          >
-            SyncThing
-          </button>
-        )}
       </div>
 
-      <div className="vm-status-bar-metrics">
-        <span className="vm-status-chip">Queue {queueTotal}</span>
-        <span className="vm-status-chip">Pending {pendingCount}</span>
-        <span className="vm-status-chip">Active {activeCount}</span>
-        <span className="vm-status-chip">Done {doneCount}</span>
-        {errorCount > 0 && <span className="vm-status-chip vm-status-chip--error">Errors {errorCount}</span>}
+      <div className={styles.metrics}>
+        <span className={styles.chip}>Queue {queueTotal}</span>
+        <span className={styles.chip}>Pending {pendingCount}</span>
+        <span className={styles.chip}>Active {activeCount}</span>
+        <span className={styles.chip}>Done {doneCount}</span>
+        {errorCount > 0 && <span className={cx(styles.chip, styles.chipError)}>Errors {errorCount}</span>}
       </div>
 
-      <span className={`vm-status-bar-badge vm-status-bar-badge--${uiState}`}>
+      <span className={cx(styles.badge, badgeStateClass)}>
         <span title={operationText}>{badgeLabels[uiState]}</span>
       </span>
     </div>

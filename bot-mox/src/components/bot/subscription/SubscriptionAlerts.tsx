@@ -3,6 +3,7 @@ import { Alert } from 'antd';
 import { WarningOutlined } from '@ant-design/icons';
 import type { SubscriptionWithDetails } from './types';
 import { getTypeLabel } from './helpers';
+import styles from './subscription.module.css';
 
 interface ProblemSubscriptionsAlertProps {
   subscriptions: SubscriptionWithDetails[];
@@ -17,14 +18,14 @@ export const ProblemSubscriptionsAlert: React.FC<ProblemSubscriptionsAlertProps>
 
   return (
     <Alert
-      className="subscription-alert"
+      className={styles['subscription-alert']}
       message={
         <span>
           <WarningOutlined /> {subscriptions.length} subscription(s) require attention
         </span>
       }
       description={
-        <ul className="alert-list">
+        <ul className={styles['alert-list']}>
           {subscriptions.map((subscription) => (
             <li key={subscription.id}>
               <strong>{getTypeLabel(subscription.type)}</strong> -{' '}
@@ -46,7 +47,7 @@ export const SubscriptionStatusAlert: React.FC<SubscriptionStatusAlertProps> = (
 
   return (
     <Alert
-      className="item-alert"
+      className={styles['item-alert']}
       message={subscription.isExpired ? 'Subscription expired' : 'Expiring soon'}
       type={subscription.isExpired ? 'error' : 'warning'}
       showIcon

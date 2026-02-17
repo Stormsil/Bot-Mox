@@ -7,6 +7,7 @@ import type { BotStatus } from '../../types';
 import type { BotRow } from './types';
 import { BOT_STATUS_ORDER } from './types';
 import { formatDaysRemaining, formatFaction, formatServerName } from './utils';
+import styles from './ProjectPage.module.css';
 
 const { Text } = Typography;
 
@@ -22,9 +23,9 @@ function renderStatusWithDays({
   onClick: () => void;
 }) {
   return (
-    <div className="project-cell-stack project-cell-link" onClick={onClick}>
+    <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={onClick}>
       <Tag color={color}>{label}</Tag>
-      <Text type="secondary" className="project-secondary">
+      <Text type="secondary" className={styles.secondary}>
         {formatDaysRemaining(daysRemaining)}
       </Text>
     </div>
@@ -48,9 +49,9 @@ export function createProjectColumns({
       width: 90,
       sorter: (a: BotRow, b: BotRow) => a.idShort.localeCompare(b.idShort),
       render: (_: string, record: BotRow) => (
-        <div className="project-cell-link" onClick={() => goToBot(record.id, 'summary')}>
+        <div className={styles.cellLink} onClick={() => goToBot(record.id, 'summary')}>
           <Tooltip title={record.id}>
-            <Text className="project-id">{record.idShort}</Text>
+            <Text className={styles.id}>{record.idShort}</Text>
           </Tooltip>
         </div>
       ),
@@ -62,7 +63,7 @@ export function createProjectColumns({
       width: 130,
       sorter: (a: BotRow, b: BotRow) => BOT_STATUS_ORDER[a.botStatus] - BOT_STATUS_ORDER[b.botStatus],
       render: (status: BotStatus, record: BotRow) => (
-        <div className="project-cell-link" onClick={() => goToBot(record.id, 'summary')}>
+        <div className={styles.cellLink} onClick={() => goToBot(record.id, 'summary')}>
           <StatusBadge status={status} size="small" />
         </div>
       ),
@@ -74,7 +75,7 @@ export function createProjectColumns({
       width: 120,
       sorter: (a: BotRow, b: BotRow) => (a.vmName || '').localeCompare(b.vmName || ''),
       render: (value: string, record: BotRow) => (
-        <div className="project-cell-link" onClick={() => goToBot(record.id, 'vmInfo')}>
+        <div className={styles.cellLink} onClick={() => goToBot(record.id, 'vmInfo')}>
           <Text>{value || '-'}</Text>
         </div>
       ),
@@ -85,9 +86,9 @@ export function createProjectColumns({
       width: 220,
       sorter: (a: BotRow, b: BotRow) => (a.email || '').localeCompare(b.email || ''),
       render: (_: unknown, record: BotRow) => (
-        <div className="project-cell-stack project-cell-link" onClick={() => goToBot(record.id, 'account')}>
+        <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={() => goToBot(record.id, 'account')}>
           <Text>{record.email || '-'}</Text>
-          <Text type="secondary" className="project-secondary">
+          <Text type="secondary" className={styles.secondary}>
             {record.password || '-'}
           </Text>
         </div>
@@ -108,12 +109,12 @@ export function createProjectColumns({
           : serverLabel;
 
         return (
-          <div className="project-cell-stack project-cell-link" onClick={() => goToBot(record.id, 'character')}>
+          <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={() => goToBot(record.id, 'character')}>
             <Text strong>
               {record.characterName}
               {typeof record.level === 'number' ? ` (${record.level})` : ''}
             </Text>
-            <Text type="secondary" className="project-secondary">
+            <Text type="secondary" className={styles.secondary}>
               {secondary}
             </Text>
           </div>
@@ -170,7 +171,7 @@ export function createProjectColumns({
       render: (_: unknown, record: BotRow) => {
         const isDeleting = Boolean(deletingBotIds[record.id]);
         return (
-          <div className="project-row-actions">
+          <div className={styles.rowActions}>
             <Popconfirm
               title="Delete account?"
               description={`This will remove ${record.idShort} from database.`}
@@ -182,7 +183,7 @@ export function createProjectColumns({
               <TableActionButton
                 danger
                 icon={<DeleteOutlined />}
-                className="project-delete-button"
+                className={styles.deleteButton}
                 loading={isDeleting}
                 onClick={(event) => event.stopPropagation()}
                 tooltip="Delete account"

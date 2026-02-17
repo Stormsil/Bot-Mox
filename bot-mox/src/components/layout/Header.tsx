@@ -12,17 +12,19 @@ import {
 import { useGetIdentity, useLogout } from '@refinedev/core';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { subscribeBotById } from '../../services/botsApiService';
-import './Header.css';
+import { useThemeRuntime } from '../../theme/themeRuntime';
+import styles from './Header.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
 
 const { Header: AntHeader } = Layout;
 const { Text } = Typography;
-
-type ThemeMode = 'light' | 'dark';
-
-interface HeaderProps {
-  themeMode: ThemeMode;
-  onThemeChange: (mode: ThemeMode) => void;
-}
 
 interface BreadcrumbItem {
   label: string;
@@ -99,7 +101,8 @@ const computeBotStatus = (bot: BotBreadcrumbData): string | undefined => {
   return bot.status;
 };
 
-export const Header: React.FC<HeaderProps> = ({ themeMode, onThemeChange }) => {
+export const Header: React.FC = () => {
+  const { themeMode, setThemeMode } = useThemeRuntime();
   const { data: user } = useGetIdentity();
   const { mutate: logout } = useLogout();
   const isDark = themeMode === 'dark';
@@ -269,19 +272,19 @@ export const Header: React.FC<HeaderProps> = ({ themeMode, onThemeChange }) => {
   }, [location.pathname, location.search, botContext]);
 
   return (
-    <AntHeader className="proxmox-header">
-      <div className="header-left">
-        <div className="header-path">
+    <AntHeader className={cx('proxmox-header')}>
+      <div className={cx('header-left')}>
+        <div className={cx('header-path')}>
           <button
             type="button"
-            className="path-back"
+            className={cx('path-back')}
             onClick={() => navigate(-1)}
             aria-label="Back"
             title="Back"
           >
             <ArrowLeftOutlined />
           </button>
-          <div className="path-breadcrumbs">
+          <div className={cx('path-breadcrumbs')}>
             {breadcrumbs.map((crumb, index) => {
               const isLast = index === breadcrumbs.length - 1;
               const isClickable = Boolean(crumb.to) && !isLast;
@@ -290,15 +293,15 @@ export const Header: React.FC<HeaderProps> = ({ themeMode, onThemeChange }) => {
                   {isClickable ? (
                     <button
                       type="button"
-                      className="path-crumb"
+                      className={cx('path-crumb')}
                       onClick={() => navigate(crumb.to!)}
                     >
                       {crumb.label}
                     </button>
                   ) : (
-                    <span className={`path-crumb ${isLast ? 'current' : 'muted'}`}>{crumb.label}</span>
+                    <span className={cx(`path-crumb ${isLast ? 'current' : 'muted'}`)}>{crumb.label}</span>
                   )}
-                  {!isLast && <span className="path-sep">/</span>}
+                  {!isLast && <span className={cx('path-sep')}>/</span>}
                 </React.Fragment>
               );
             })}
@@ -306,28 +309,32 @@ export const Header: React.FC<HeaderProps> = ({ themeMode, onThemeChange }) => {
         </div>
       </div>
 
-      <div className="header-right">
+      <div className={cx('header-right')}>
         <Space size="large">
           <Tooltip title={isDark ? 'Dark theme' : 'Light theme'}>
             <Switch
-              className="theme-switch"
               checked={isDark}
-              onChange={(checked) => onThemeChange(checked ? 'dark' : 'light')}
+              onChange={(checked) => setThemeMode(checked ? 'dark' : 'light')}
               checkedChildren={<MoonOutlined />}
               unCheckedChildren={<BulbOutlined />}
+              style={{
+                background: isDark
+                  ? 'var(--boxmox-color-brand-primary)'
+                  : 'var(--boxmox-color-header-hover)',
+              }}
             />
           </Tooltip>
           <Dropdown menu={{ items: menuItems }} placement="bottomRight">
-            <Space className="user-menu">
+            <Space className={cx('user-menu')}>
               <Avatar
                 size="small"
                 icon={<UserOutlined />}
                 style={{ backgroundColor: 'var(--boxmox-color-brand-primary)' }}
               />
-              <Text className="user-email">
+              <Text className={cx('user-email')}>
                 {user?.email || 'admin@botmox.local'}
               </Text>
-              <DownOutlined className="dropdown-icon" />
+              <DownOutlined className={cx('dropdown-icon')} />
             </Space>
           </Dropdown>
         </Space>

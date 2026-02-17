@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Card, List, Progress, Typography } from 'antd';
 import type { CategoryBreakdown } from '../../types';
+import styles from './FinanceSummary.module.css';
 
 const { Text } = Typography;
 
@@ -40,8 +41,8 @@ export const CostAnalysis: React.FC<CostAnalysisProps> = ({
   return (
     <Card 
       title="Cost Structure Analysis" 
-      bordered={false} 
-      className="cost-analysis-card"
+      variant="borderless" 
+      className={styles.costAnalysisCard}
       loading={loading}
     >
       <List

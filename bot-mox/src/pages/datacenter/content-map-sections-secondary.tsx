@@ -14,6 +14,15 @@ import type {
   ExpiringItem,
   NavPropsFactory,
 } from './content-map-types';
+import styles from './DatacenterPage.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
 
 const { Text } = Typography;
 
@@ -36,7 +45,7 @@ function SectionToggle({
     <Button
       type="text"
       size="small"
-      className="content-map-toggle"
+      className={cx('content-map-toggle')}
       onClick={() => onToggle(section)}
       icon={collapsed ? <RightOutlined /> : <DownOutlined />}
       aria-label={collapsed ? `Expand ${readable}` : `Collapse ${readable}`}
@@ -73,9 +82,9 @@ export function FinanceNotesSection({
   latestNotes: Array<{ id: string; title?: string }>;
 }) {
   return (
-    <div className="content-map-section">
-      <div className="content-map-section-head">
-        <div className="content-map-section-title">Finance & Notes</div>
+    <div className={cx('content-map-section')}>
+      <div className={cx('content-map-section-head')}>
+        <div className={cx('content-map-section-title')}>Finance & Notes</div>
         <SectionToggle
           section="finance_notes"
           collapsedSections={collapsedSections}
@@ -83,72 +92,72 @@ export function FinanceNotesSection({
         />
       </div>
       {!collapsedSections.finance_notes && (
-        <div className="content-map-grid content-map-grid--primary">
-          <Card className="map-card map-card--clickable" hoverable loading={loading.finance} {...navProps('/finance')}>
-            <div className="map-card-head">
-              <div className="map-card-title">
+        <div className={cx('content-map-grid content-map-grid--primary')}>
+          <Card className={cx('map-card map-card--clickable')} hoverable loading={loading.finance} {...navProps('/finance')}>
+            <div className={cx('map-card-head')}>
+              <div className={cx('map-card-title')}>
                 <DollarOutlined /> Finance
               </div>
-              <Tag className="map-card-tag">{financeWindowDays} Days</Tag>
+              <Tag className={cx('map-card-tag')}>{financeWindowDays} Days</Tag>
             </div>
-            <div className="map-kpi-grid">
-              <div className="map-kpi">
-                <span className="map-kpi-label">Income</span>
-                <span className="map-kpi-value">{formatCurrency(financeSummary.totalIncome)}</span>
+            <div className={cx('map-kpi-grid')}>
+              <div className={cx('map-kpi')}>
+                <span className={cx('map-kpi-label')}>Income</span>
+                <span className={cx('map-kpi-value')}>{formatCurrency(financeSummary.totalIncome)}</span>
               </div>
-              <div className="map-kpi">
-                <span className="map-kpi-label">Expenses</span>
-                <span className="map-kpi-value">{formatCurrency(financeSummary.totalExpenses)}</span>
+              <div className={cx('map-kpi')}>
+                <span className={cx('map-kpi-label')}>Expenses</span>
+                <span className={cx('map-kpi-value')}>{formatCurrency(financeSummary.totalExpenses)}</span>
               </div>
-              <div className="map-kpi">
-                <span className="map-kpi-label">Net</span>
-                <span className="map-kpi-value">{formatSignedCurrency(financeSummary.netProfit)}</span>
+              <div className={cx('map-kpi')}>
+                <span className={cx('map-kpi-label')}>Net</span>
+                <span className={cx('map-kpi-value')}>{formatSignedCurrency(financeSummary.netProfit)}</span>
               </div>
-              <div className="map-kpi map-kpi--stack">
-                <span className="map-kpi-label">Sold Gold</span>
-                <div className="map-kpi-lines">
-                  <div className="map-kpi-line">
-                    <span className="map-kpi-line-label">WoW TBC</span>
-                    <span className="map-kpi-line-value">{financeGoldByProject.wow_tbc.totalGold.toLocaleString()} g</span>
-                    <span className="map-kpi-line-sub">${financeGoldByProject.wow_tbc.avgPrice.toFixed(4)}/1000g</span>
+              <div className={cx('map-kpi map-kpi--stack')}>
+                <span className={cx('map-kpi-label')}>Sold Gold</span>
+                <div className={cx('map-kpi-lines')}>
+                  <div className={cx('map-kpi-line')}>
+                    <span className={cx('map-kpi-line-label')}>WoW TBC</span>
+                    <span className={cx('map-kpi-line-value')}>{financeGoldByProject.wow_tbc.totalGold.toLocaleString()} g</span>
+                    <span className={cx('map-kpi-line-sub')}>${financeGoldByProject.wow_tbc.avgPrice.toFixed(4)}/1000g</span>
                   </div>
-                  <div className="map-kpi-line">
-                    <span className="map-kpi-line-label">WoW Midnight</span>
-                    <span className="map-kpi-line-value">{financeGoldByProject.wow_midnight.totalGold.toLocaleString()} g</span>
-                    <span className="map-kpi-line-sub">${financeGoldByProject.wow_midnight.avgPrice.toFixed(4)}/1000g</span>
+                  <div className={cx('map-kpi-line')}>
+                    <span className={cx('map-kpi-line-label')}>WoW Midnight</span>
+                    <span className={cx('map-kpi-line-value')}>{financeGoldByProject.wow_midnight.totalGold.toLocaleString()} g</span>
+                    <span className={cx('map-kpi-line-sub')}>${financeGoldByProject.wow_midnight.avgPrice.toFixed(4)}/1000g</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="map-card-footer">
+            <div className={cx('map-card-footer')}>
               <span>Open finance</span>
               <RightOutlined />
             </div>
           </Card>
 
-          <Card className="map-card map-card--clickable" hoverable loading={loading.notes} {...navProps('/notes')}>
-            <div className="map-card-head">
-              <div className="map-card-title">
+          <Card className={cx('map-card map-card--clickable')} hoverable loading={loading.notes} {...navProps('/notes')}>
+            <div className={cx('map-card-head')}>
+              <div className={cx('map-card-title')}>
                 <FileTextOutlined /> Notes
               </div>
-              <Tag className="map-card-tag">{notesStats.total} total</Tag>
+              <Tag className={cx('map-card-tag')}>{notesStats.total} total</Tag>
             </div>
-            <div className="map-stats-row">
-              <div className="map-stat-chip">
-                <span className="map-stat-value">{notesStats.pinned}</span>
-                <span className="map-stat-label">Pinned</span>
+            <div className={cx('map-stats-row')}>
+              <div className={cx('map-stat-chip')}>
+                <span className={cx('map-stat-value')}>{notesStats.pinned}</span>
+                <span className={cx('map-stat-label')}>Pinned</span>
               </div>
-              <div className="map-stat-chip">
-                <span className="map-stat-value">{notesStats.total - notesStats.pinned}</span>
-                <span className="map-stat-label">Regular</span>
+              <div className={cx('map-stat-chip')}>
+                <span className={cx('map-stat-value')}>{notesStats.total - notesStats.pinned}</span>
+                <span className={cx('map-stat-label')}>Regular</span>
               </div>
             </div>
-            <div className="map-card-meta map-card-meta--stack">
+            <div className={cx('map-card-meta map-card-meta--stack')}>
               {latestNotes.length > 0 ? (
-                <div className="map-notes-list">
+                <div className={cx('map-notes-list')}>
                   {latestNotes.map((note) => (
-                    <div key={note.id} className="map-note-item">
-                      <span className="map-note-title">{note.title || 'Untitled'}</span>
+                    <div key={note.id} className={cx('map-note-item')}>
+                      <span className={cx('map-note-title')}>{note.title || 'Untitled'}</span>
                     </div>
                   ))}
                 </div>
@@ -156,7 +165,7 @@ export function FinanceNotesSection({
                 <Text type="secondary">No notes yet</Text>
               )}
             </div>
-            <div className="map-card-footer">
+            <div className={cx('map-card-footer')}>
               <span>Open notes</span>
               <RightOutlined />
             </div>
@@ -179,9 +188,9 @@ export function ExpiringSection({
   expiringItems: ExpiringItem[];
 }) {
   return (
-    <div className="content-map-section">
-      <div className="content-map-section-head">
-        <div className="content-map-section-title">Expiring Soon</div>
+    <div className={cx('content-map-section')}>
+      <div className={cx('content-map-section-head')}>
+        <div className={cx('content-map-section-title')}>Expiring Soon</div>
         <SectionToggle
           section="expiring"
           collapsedSections={collapsedSections}
@@ -189,36 +198,36 @@ export function ExpiringSection({
         />
       </div>
       {!collapsedSections.expiring && (
-        <Card className="map-card" loading={loading.licenses || loading.proxies || loading.subscriptions}>
-          <div className="map-card-head">
-            <div className="map-card-title">
+        <Card className={cx('map-card')} loading={loading.licenses || loading.proxies || loading.subscriptions}>
+          <div className={cx('map-card-head')}>
+            <div className={cx('map-card-title')}>
               <WarningOutlined /> Alerts
             </div>
-            <Tag className="map-card-tag">{expiringItems.length} items</Tag>
+            <Tag className={cx('map-card-tag')}>{expiringItems.length} items</Tag>
           </div>
 
           {expiringItems.length > 0 ? (
-            <div className="expiring-list">
+            <div className={cx('expiring-list')}>
               {expiringItems.slice(0, 4).map((item) => (
-                <div key={item.id} className="expiring-row">
+                <div key={item.id} className={cx('expiring-row')}>
                   <Tag className={`expiring-tag expiring-tag--${item.type}`}>
                     {item.type}
                   </Tag>
-                  <div className="expiring-main">
-                    <span className="expiring-name">{item.name}</span>
-                    {item.botName && <span className="expiring-bot">{item.botName}</span>}
+                  <div className={cx('expiring-main')}>
+                    <span className={cx('expiring-name')}>{item.name}</span>
+                    {item.botName && <span className={cx('expiring-bot')}>{item.botName}</span>}
                   </div>
-                  <div className="expiring-meta">
+                  <div className={cx('expiring-meta')}>
                     <span className={`expiring-days ${item.daysRemaining <= 3 ? 'danger' : 'warning'}`}>
                       {item.daysRemaining}d
                     </span>
-                    <span className="expiring-date">{dayjs(item.expiresAt).format('DD.MM.YYYY')}</span>
+                    <span className={cx('expiring-date')}>{dayjs(item.expiresAt).format('DD.MM.YYYY')}</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="expiring-empty">
+            <div className={cx('expiring-empty')}>
               <Text type="secondary">No items expiring soon</Text>
             </div>
           )}

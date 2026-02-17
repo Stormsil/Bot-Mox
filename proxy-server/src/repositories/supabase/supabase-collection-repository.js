@@ -4,19 +4,19 @@
  * Stores entity data as JSONB in a table with columns:
  *   (tenant_id TEXT, id TEXT, data JSONB, created_at, updated_at)
  *
- * Matches the same interface as RtdbCollectionRepository:
+ * Collection interface contract:
  *   { list, getById, create, patch, remove }
  */
 
 const { randomUUID } = require('crypto');
 
 // ---------------------------------------------------------------------------
-// Deep-path merge (matches Firebase update() semantics)
+// Deep-path merge (slash-delimited keys update nested objects)
 // ---------------------------------------------------------------------------
 
 /**
  * Apply a patch object to a base object.
- * Keys containing '/' are treated as deep paths (Firebase convention).
+ * Keys containing '/' are treated as deep paths.
  * Keys with null values remove the key from the result.
  */
 function applyPatch(base, patch) {

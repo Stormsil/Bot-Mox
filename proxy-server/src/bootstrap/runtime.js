@@ -22,9 +22,28 @@ function createStartupBanner({ port, corsOptions }) {
   `;
 }
 
+function logInfo(logger, message, fields) {
+  if (logger && typeof logger.info === 'function') {
+    if (fields) {
+      logger.info(fields, message);
+      return;
+    }
+    logger.info(message);
+    return;
+  }
+
+  if (logger && typeof logger.log === 'function') {
+    logger.log(message);
+    return;
+  }
+
+  // eslint-disable-next-line no-console
+  console.log(message);
+}
+
 function registerShutdownHandlers({ server, logger = console }) {
   const shutdown = (signal) => {
-    logger.log(`${signal} received, shutting down...`);
+    logInfo(logger, `${signal} received, shutting down...`);
     server.close();
     process.exit(0);
   };
@@ -44,7 +63,19 @@ function startServerRuntime({
   logger = console,
 }) {
   const server = app.listen(port, () => {
-    logger.log(
+    logInfo(
+      logger,
+      'server_started',
+      {
+        port,
+        cors: {
+          origin: corsOptions?.origin ?? null,
+        },
+      }
+    );
+    // Keep the human-readable banner in dev consoles only (it is still a single JSON log entry if logger is pino).
+    logInfo(
+      logger,
       createStartupBanner({
         port,
         corsOptions,

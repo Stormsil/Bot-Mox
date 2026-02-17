@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Progress, Statistic, Row, Col, Typography, Tag } from 'antd';
 import { RiseOutlined, ClockCircleOutlined, AimOutlined } from '@ant-design/icons';
 import type { Bot, LevelingProgress } from '../../types';
-import './BotLeveling.css';
+import styles from './BotLeveling.module.css';
 
 const { Text } = Typography;
 
@@ -25,10 +25,10 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
   const xpPercent = Math.round((leveling.current_xp / leveling.max_xp) * 100);
 
   return (
-    <div className="bot-leveling">
+    <div className={styles['bot-leveling']}>
       <Row gutter={[16, 16]}>
         <Col span={8}>
-          <Card className="leveling-stat-card">
+          <Card className={styles['leveling-stat-card']}>
             <Statistic
               title="Current Level"
               value={leveling.current_level}
@@ -38,7 +38,7 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card className="leveling-stat-card">
+          <Card className={styles['leveling-stat-card']}>
             <Statistic
               title="XP per Hour"
               value={leveling.xp_per_hour.toLocaleString()}
@@ -48,7 +48,7 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card className="leveling-stat-card">
+          <Card className={styles['leveling-stat-card']}>
             <Statistic
               title="Time to Level"
               value={leveling.estimated_time_to_level}
@@ -60,9 +60,9 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
         </Col>
       </Row>
 
-      <Card className="leveling-progress-card" title="Experience Progress">
-        <div className="xp-progress-section">
-          <div className="xp-info">
+      <Card className={styles['leveling-progress-card']} title="Experience Progress">
+        <div className={styles['xp-progress-section']}>
+          <div className={styles['xp-info']}>
             <Text strong>Level {leveling.current_level}</Text>
             <Text type="secondary">
               {leveling.current_xp.toLocaleString()} / {leveling.max_xp.toLocaleString()} XP
@@ -74,16 +74,16 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
             trailColor="var(--boxmox-color-border-default)"
             showInfo={false}
           />
-          <div className="xp-percent">{xpPercent}%</div>
+          <div className={styles['xp-percent']}>{xpPercent}%</div>
         </div>
       </Card>
 
-      <Card className="leveling-location-card">
-        <div className="location-info">
-          <AimOutlined className="location-icon" />
-          <div className="location-details">
+      <Card className={styles['leveling-location-card']}>
+        <div className={styles['location-info']}>
+          <AimOutlined className={styles['location-icon']} />
+          <div className={styles['location-details']}>
             <Text type="secondary">Current Location</Text>
-            <Tag className="location-tag">{leveling.location}</Tag>
+            <Tag className={styles['location-tag']}>{leveling.location}</Tag>
           </div>
         </div>
       </Card>

@@ -102,6 +102,7 @@ export function subscribeBotsList(
   options: SubscribeOptions = {}
 ): () => void {
   return createPollingSubscription(fetchBotsList, onData, onError, {
+    key: 'bots:list',
     intervalMs: options.intervalMs ?? 5000,
     immediate: true,
   });
@@ -113,6 +114,7 @@ export function subscribeBotsMap(
   options: SubscribeOptions = {}
 ): () => void {
   return createPollingSubscription(fetchBotsMap, onData, onError, {
+    key: 'bots:map',
     intervalMs: options.intervalMs ?? 5000,
     immediate: true,
   });
@@ -131,6 +133,7 @@ export function subscribeBotById(
   }
 
   return createPollingSubscription(() => fetchBotById(id), onData, onError, {
+    key: `bots:id:${id}`,
     intervalMs: options.intervalMs ?? 5000,
     immediate: true,
   });

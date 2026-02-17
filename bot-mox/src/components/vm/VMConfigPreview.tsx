@@ -3,7 +3,7 @@ import { Button, Space } from 'antd';
 import { ThunderboltOutlined, CopyOutlined } from '@ant-design/icons';
 import { generateSmbios, generateMac, generateSsdSerial } from '../../utils/vm';
 import type { SmbiosResult } from '../../utils/vm';
-import './VMConfigPreview.css';
+import styles from './VMConfigPreview.module.css';
 
 export const VMConfigPreview: React.FC = () => {
   const [smbiosResult, setSmbiosResult] = useState<SmbiosResult | null>(null);
@@ -21,7 +21,7 @@ export const VMConfigPreview: React.FC = () => {
   };
 
   return (
-    <div className="vm-config-preview">
+    <div className={styles.root}>
       <Space>
         <Button
           type="primary"
@@ -34,26 +34,26 @@ export const VMConfigPreview: React.FC = () => {
 
       {smbiosResult && (
         <>
-          <div className="vm-config-preview-details">
-            <div className="vm-config-preview-detail">
-              <div className="detail-label">Brand / Board</div>
-              <div className="detail-value">{smbiosResult.brand} / {smbiosResult.product}</div>
+          <div className={styles.details}>
+            <div className={styles.detail}>
+              <div className={styles.detailLabel}>Brand / Board</div>
+              <div className={styles.detailValue}>{smbiosResult.brand} / {smbiosResult.product}</div>
             </div>
-            <div className="vm-config-preview-detail">
-              <div className="detail-label">CPU</div>
-              <div className="detail-value">{smbiosResult.cpu}</div>
+            <div className={styles.detail}>
+              <div className={styles.detailLabel}>CPU</div>
+              <div className={styles.detailValue}>{smbiosResult.cpu}</div>
             </div>
-            <div className="vm-config-preview-detail">
-              <div className="detail-label">MAC Address</div>
-              <div className="detail-value">{mac}</div>
+            <div className={styles.detail}>
+              <div className={styles.detailLabel}>MAC Address</div>
+              <div className={styles.detailValue}>{mac}</div>
             </div>
-            <div className="vm-config-preview-detail">
-              <div className="detail-label">SSD Serial</div>
-              <div className="detail-value">{serial}</div>
+            <div className={styles.detail}>
+              <div className={styles.detailLabel}>SSD Serial</div>
+              <div className={styles.detailValue}>{serial}</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className={styles.actionsRow}>
             <Button
               size="small"
               icon={<CopyOutlined />}
@@ -63,7 +63,7 @@ export const VMConfigPreview: React.FC = () => {
             </Button>
           </div>
 
-          <div className="vm-config-preview-output">
+          <div className={styles.output}>
             {smbiosResult.args}
           </div>
         </>

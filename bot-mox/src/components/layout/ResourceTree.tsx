@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Tree } from 'antd';
+import type { TreeDataNode } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { subscribeBotsMap } from '../../services/botsApiService';
 import type { BotRecord } from '../../services/botsApiService';
@@ -33,7 +34,15 @@ import {
   parseStatusGroupKey,
 } from './resourceTree/tree-utils';
 import { resolveStaticPathForTreeKey } from './resourceTree/navigation';
-import './ResourceTree.css';
+import styles from './ResourceTree.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
 
 export type { BotStatus } from './resourceTree/types';
 
@@ -293,7 +302,20 @@ export const ResourceTree: React.FC = () => {
     };
   }, []);
 
-  const treeDataNodes = useMemo(() => convertToTreeData(treeData), [treeData]);
+  const treeDataNodes = useMemo(() => convertToTreeData(treeData, cx), [treeData]);
+
+  const selectedKeySet = useMemo(() => new Set(selectedKeys.map(String)), [selectedKeys]);
+  const titleRender = useCallback((node: TreeDataNode) => {
+    const key = String(node.key);
+    const isSelected = selectedKeySet.has(key);
+    const rawTitle =
+      typeof node.title === 'function' ? node.title(node) : (node.title as React.ReactNode);
+    return (
+      <span className={cx(`resource-tree-node-content ${isSelected ? 'selected' : ''}`)}>
+        {rawTitle}
+      </span>
+    );
+  }, [selectedKeySet]);
 
   const selectedRootKey = useMemo(() => {
     if (selectedKeys.length === 0) return '';
@@ -350,7 +372,7 @@ export const ResourceTree: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className={`resource-tree-container ${isCollapsed ? 'collapsed' : ''} ${isResizing ? 'resizing' : ''}`}
+      className={cx(`resource-tree-container ${isCollapsed ? 'collapsed' : ''} ${isResizing ? 'resizing' : ''}`)}
       style={{ width: isCollapsed ? COLLAPSED_TREE_WIDTH : treeWidth }}
     >
       <ResourceTreeToolbar
@@ -362,7 +384,7 @@ export const ResourceTree: React.FC = () => {
         onToggleExpandAll={() => setExpandedKeys(isAllExpanded ? [] : expandableKeys)}
       />
 
-      <div className="resource-tree-resizer" onMouseDown={handleResizeStart} />
+      <div className={cx('resource-tree-resizer')} onMouseDown={handleResizeStart} />
 
       <ResourceTreeFilters
         showFilters={showFilters}
@@ -380,7 +402,7 @@ export const ResourceTree: React.FC = () => {
       )}
 
       <Tree
-        className="resource-tree"
+        className={cx('resource-tree')}
         treeData={treeDataNodes}
         expandedKeys={expandedKeys}
         selectedKeys={selectedKeys}
@@ -393,6 +415,7 @@ export const ResourceTree: React.FC = () => {
         showLine={{ showLeafIcon: false }}
         showIcon={false}
         blockNode
+        titleRender={titleRender}
       />
     </div>
   );

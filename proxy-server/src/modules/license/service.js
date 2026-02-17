@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { buildTenantPath } = require('../../repositories/rtdb/tenant-paths');
+const { createSupabaseServiceClient } = require('../../repositories/supabase/client');
 
 class LicenseServiceError extends Error {
   constructor(status, code, message, details) {
@@ -106,11 +106,6 @@ function verifyJwtHs256(token, secret) {
   return payload;
 }
 
-function toObjectEntries(value) {
-  if (!value || typeof value !== 'object') return [];
-  return Object.entries(value);
-}
-
 function ensureModuleAllowed(entitlementsEntry, moduleName) {
   const normalizedModule = String(moduleName || '').trim();
   if (!normalizedModule) {
@@ -150,15 +145,12 @@ function isLicenseActive(license, now) {
   const type = String(license.type || '').trim().toLowerCase();
   if (type === 'perpetual' || type === 'alltime') return true;
 
-  const expiresAt = Number(license.expires_at || 0);
+  const expiresAt = Number(license.expires_at || license.expires_at_ms || 0);
   if (!Number.isFinite(expiresAt) || expiresAt <= 0) return false;
   return expiresAt > now;
 }
 
-function createLicenseService({ admin, env, vmRegistryService }) {
-  if (!admin || typeof admin.database !== 'function') {
-    throw new Error('createLicenseService requires Firebase admin instance');
-  }
+function createLicenseService({ env, vmRegistryService }) {
   if (!vmRegistryService || typeof vmRegistryService.resolveVm !== 'function') {
     throw new Error('createLicenseService requires vmRegistryService');
   }
@@ -166,8 +158,12 @@ function createLicenseService({ admin, env, vmRegistryService }) {
   const defaultLeaseTtlSeconds = Math.max(60, Number(env?.licenseLeaseTtlSeconds || 300));
   const signingSecret = String(env?.licenseLeaseSecret || '').trim();
 
-  function tenantPath(tenantId, ...segments) {
-    return buildTenantPath(tenantId, ...segments);
+  function getClient() {
+    const result = createSupabaseServiceClient(env);
+    if (!result.ok || !result.client) {
+      throw new LicenseServiceError(503, 'SERVICE_UNAVAILABLE', 'Supabase is not configured');
+    }
+    return result.client;
   }
 
   async function ensureVmOwnership({ tenantId, userId, vmUuid }) {
@@ -187,12 +183,30 @@ function createLicenseService({ admin, env, vmRegistryService }) {
   }
 
   async function ensureActiveLicense({ tenantId, userId }) {
-    const licensesSnapshot = await admin.database().ref(tenantPath(tenantId, 'licenses')).once('value');
-    const licenses = licensesSnapshot.val();
+    const client = getClient();
+    const { data: rows, error } = await client
+      .from('tenant_licenses')
+      .select('id, user_id, type, status, expires_at_ms, metadata')
+      .eq('tenant_id', String(tenantId || '').trim() || 'default');
+
+    if (error) {
+      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to read licenses: ${error.message}`);
+    }
+
     const now = Date.now();
 
-    const candidates = toObjectEntries(licenses)
-      .map(([id, value]) => ({ id, ...(value && typeof value === 'object' ? value : {}) }))
+    const candidates = (rows || [])
+      .map((row) => {
+        const meta = row?.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+        return {
+          id: row?.id,
+          user_id: row?.user_id || '',
+          type: row?.type || 'subscription',
+          status: row?.status || 'active',
+          expires_at_ms: row?.expires_at_ms || 0,
+          ...meta,
+        };
+      })
       .filter((license) => {
         const ownerId = String(license.user_id || '').trim();
         return !ownerId || ownerId === String(userId || '').trim();
@@ -207,8 +221,21 @@ function createLicenseService({ admin, env, vmRegistryService }) {
   }
 
   async function ensureEntitlement({ tenantId, userId, moduleName }) {
-    const entitlementsSnapshot = await admin.database().ref(tenantPath(tenantId, 'entitlements', userId)).once('value');
-    const entry = entitlementsSnapshot.val();
+    const client = getClient();
+    const normalizedTenantId = String(tenantId || '').trim() || 'default';
+    const normalizedUserId = String(userId || '').trim();
+    const { data, error } = await client
+      .from('tenant_entitlements')
+      .select('modules')
+      .eq('tenant_id', normalizedTenantId)
+      .eq('user_id', normalizedUserId)
+      .maybeSingle();
+
+    if (error) {
+      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to read entitlements: ${error.message}`);
+    }
+
+    const entry = data ? { modules: data.modules || {} } : null;
     ensureModuleAllowed(entry, moduleName);
     return entry;
   }
@@ -277,13 +304,13 @@ function createLicenseService({ admin, env, vmRegistryService }) {
 
     const record = {
       id: leaseId,
+      tenant_id: normalizedTenantId,
       token,
       status: 'active',
-      created_at: Date.now(),
-      updated_at: Date.now(),
-      expires_at: (nowSeconds + ttlSeconds) * 1000,
-      last_heartbeat_at: Date.now(),
-      tenant_id: normalizedTenantId,
+      created_at_ms: Date.now(),
+      updated_at_ms: Date.now(),
+      expires_at_ms: (nowSeconds + ttlSeconds) * 1000,
+      last_heartbeat_at_ms: Date.now(),
       user_id: normalizedUserId,
       vm_uuid: normalizedVmUuid,
       vm_name: String(vm.vm_name || ''),
@@ -294,12 +321,19 @@ function createLicenseService({ admin, env, vmRegistryService }) {
       license_id: String(license.id || ''),
     };
 
-    await admin.database().ref(tenantPath(normalizedTenantId, 'execution_leases', leaseId)).set(record);
+    const client = getClient();
+    const { error } = await client
+      .from('execution_leases')
+      .insert(record);
+
+    if (error) {
+      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to create execution lease: ${error.message}`);
+    }
 
     return {
       lease_id: leaseId,
       token,
-      expires_at: record.expires_at,
+      expires_at: record.expires_at_ms,
       tenant_id: normalizedTenantId,
       user_id: normalizedUserId,
       vm_uuid: normalizedVmUuid,
@@ -308,19 +342,28 @@ function createLicenseService({ admin, env, vmRegistryService }) {
   }
 
   async function heartbeatLease({ tenantId, leaseId, userId }) {
+    const client = getClient();
     const normalizedTenantId = String(tenantId || '').trim() || 'default';
     const normalizedLeaseId = String(leaseId || '').trim();
     if (!normalizedLeaseId) {
       throw new LicenseServiceError(400, 'BAD_REQUEST', 'lease_id is required');
     }
 
-    const ref = admin.database().ref(tenantPath(normalizedTenantId, 'execution_leases', normalizedLeaseId));
-    const snapshot = await ref.once('value');
-    if (!snapshot.exists()) {
+    const { data: lease, error: lookupError } = await client
+      .from('execution_leases')
+      .select('*')
+      .eq('tenant_id', normalizedTenantId)
+      .eq('id', normalizedLeaseId)
+      .maybeSingle();
+
+    if (lookupError) {
+      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to read execution lease: ${lookupError.message}`);
+    }
+
+    if (!lease) {
       throw new LicenseServiceError(404, 'LEASE_NOT_FOUND', 'Execution lease not found');
     }
 
-    const lease = snapshot.val() || {};
     const normalizedUserId = String(userId || '').trim();
     const leaseUserId = String(lease.user_id || '').trim();
     if (leaseUserId && leaseUserId !== normalizedUserId) {
@@ -332,51 +375,77 @@ function createLicenseService({ admin, env, vmRegistryService }) {
       throw new LicenseServiceError(409, 'LEASE_INACTIVE', 'Execution lease is not active');
     }
 
-    const expiresAt = Number(lease.expires_at || 0);
+    const expiresAt = Number(lease.expires_at_ms || 0);
     if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
       throw new LicenseServiceError(409, 'LEASE_EXPIRED', 'Execution lease is expired');
     }
 
     const patch = {
-      last_heartbeat_at: Date.now(),
-      updated_at: Date.now(),
+      last_heartbeat_at_ms: Date.now(),
+      updated_at_ms: Date.now(),
     };
-    await ref.update(patch);
+    const { error: updateError } = await client
+      .from('execution_leases')
+      .update(patch)
+      .eq('tenant_id', normalizedTenantId)
+      .eq('id', normalizedLeaseId);
+
+    if (updateError) {
+      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to update execution lease heartbeat: ${updateError.message}`);
+    }
 
     return {
       lease_id: normalizedLeaseId,
       status: 'active',
       expires_at: expiresAt,
-      last_heartbeat_at: patch.last_heartbeat_at,
+      last_heartbeat_at: patch.last_heartbeat_at_ms,
     };
   }
 
   async function revokeLease({ tenantId, leaseId, actorId, reason }) {
+    const client = getClient();
     const normalizedTenantId = String(tenantId || '').trim() || 'default';
     const normalizedLeaseId = String(leaseId || '').trim();
     if (!normalizedLeaseId) {
       throw new LicenseServiceError(400, 'BAD_REQUEST', 'lease_id is required');
     }
 
-    const ref = admin.database().ref(tenantPath(normalizedTenantId, 'execution_leases', normalizedLeaseId));
-    const snapshot = await ref.once('value');
-    if (!snapshot.exists()) {
+    const { data: lease, error: lookupError } = await client
+      .from('execution_leases')
+      .select('id, status')
+      .eq('tenant_id', normalizedTenantId)
+      .eq('id', normalizedLeaseId)
+      .maybeSingle();
+
+    if (lookupError) {
+      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to read execution lease: ${lookupError.message}`);
+    }
+
+    if (!lease) {
       throw new LicenseServiceError(404, 'LEASE_NOT_FOUND', 'Execution lease not found');
     }
 
     const patch = {
       status: 'revoked',
-      revoked_at: Date.now(),
+      revoked_at_ms: Date.now(),
       revoked_by: String(actorId || '').trim() || null,
       revoke_reason: String(reason || '').trim() || null,
-      updated_at: Date.now(),
+      updated_at_ms: Date.now(),
     };
-    await ref.update(patch);
+    const { error: updateError } = await client
+      .from('execution_leases')
+      .update(patch)
+      .eq('tenant_id', normalizedTenantId)
+      .eq('id', normalizedLeaseId);
+
+    if (updateError) {
+      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to revoke execution lease: ${updateError.message}`);
+    }
 
     return {
       lease_id: normalizedLeaseId,
       status: 'revoked',
-      revoked_at: patch.revoked_at,
+      revoked_at: patch.revoked_at_ms,
     };
   }
 
@@ -386,6 +455,7 @@ function createLicenseService({ admin, env, vmRegistryService }) {
     expectedVmUuid,
     expectedModule,
   }) {
+    const client = getClient();
     const normalizedTenantId = String(tenantId || '').trim() || 'default';
     if (!signingSecret) {
       throw new LicenseServiceError(500, 'CONFIG_ERROR', 'LICENSE_LEASE_SECRET is not configured');
@@ -397,13 +467,21 @@ function createLicenseService({ admin, env, vmRegistryService }) {
       throw new LicenseServiceError(401, 'UNAUTHORIZED', 'lease_token does not contain jti');
     }
 
-    const ref = admin.database().ref(tenantPath(normalizedTenantId, 'execution_leases', leaseId));
-    const snapshot = await ref.once('value');
-    if (!snapshot.exists()) {
+    const { data: lease, error: lookupError } = await client
+      .from('execution_leases')
+      .select('*')
+      .eq('tenant_id', normalizedTenantId)
+      .eq('id', leaseId)
+      .maybeSingle();
+
+    if (lookupError) {
+      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to read execution lease: ${lookupError.message}`);
+    }
+
+    if (!lease) {
       throw new LicenseServiceError(404, 'LEASE_NOT_FOUND', 'Execution lease not found');
     }
 
-    const lease = snapshot.val() || {};
     if (lease.token && String(lease.token || '').trim() !== String(token || '').trim()) {
       throw new LicenseServiceError(401, 'UNAUTHORIZED', 'Execution lease token mismatch');
     }
@@ -418,7 +496,7 @@ function createLicenseService({ admin, env, vmRegistryService }) {
       throw new LicenseServiceError(409, 'LEASE_INACTIVE', 'Execution lease is not active');
     }
 
-    const expiresAtMs = Number(lease.expires_at || Number(payload.exp || 0) * 1000);
+    const expiresAtMs = Number(lease.expires_at_ms || Number(payload.exp || 0) * 1000);
     if (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now()) {
       throw new LicenseServiceError(409, 'LEASE_EXPIRED', 'Execution lease is expired');
     }

@@ -15,6 +15,7 @@ import {
 } from '../../../components/bot';
 import type { Bot } from '../../../types';
 import type { ConfigureSection, ConfigureTab, ExtendedBot, MainTab, ResourceSection } from './types';
+import styles from '../BotPage.module.css';
 
 interface BuildConfigureSectionsOptions {
   bot: ExtendedBot;
@@ -98,9 +99,9 @@ export const renderTabContent = ({
 
   if (activeTab === 'configure') {
     return (
-      <div className="bot-configure">
+      <div className={styles.configure}>
         <Collapse
-          className="bot-configure-collapse"
+          className={styles.configureCollapse}
           accordion
           activeKey={openConfigureKey}
           onChange={(key) => {
@@ -113,25 +114,25 @@ export const renderTabContent = ({
           items={configureSections.map((section, index) => ({
             key: `configure-${section.key}`,
             label: (
-              <div className="bot-configure-panel-header">
-                <div className="bot-configure-panel-title">
+              <div className={styles.configurePanelHeader}>
+                <div className={styles.configurePanelTitle}>
                   {section.complete ? (
-                    <span className="bot-configure-panel-icon complete">
+                    <span className={`${styles.configurePanelIcon} ${styles.configurePanelIconComplete}`}>
                       <CheckOutlined />
                     </span>
                   ) : (
-                    <span className="bot-configure-panel-icon warning">
+                    <span className={`${styles.configurePanelIcon} ${styles.configurePanelIconWarning}`}>
                       <ExclamationOutlined />
                     </span>
                   )}
-                  <span className="bot-configure-panel-index">{index + 1}.</span>
-                  <span className="bot-configure-panel-label">{section.label}</span>
+                  <span className={styles.configurePanelIndex}>{index + 1}.</span>
+                  <span className={styles.configurePanelLabel}>{section.label}</span>
                 </div>
-                <div className="bot-configure-panel-desc">{section.description}</div>
+                <div className={styles.configurePanelDesc}>{section.description}</div>
               </div>
             ),
             children: (
-              <section id={`configure-${section.key}`} className="bot-section">
+              <section id={`configure-${section.key}`} className={styles.section}>
                 {section.content}
               </section>
             ),
@@ -143,9 +144,9 @@ export const renderTabContent = ({
 
   if (activeTab === 'resources') {
     return (
-      <div className="bot-subtabs-content">
+      <div className={styles.subtabsContent}>
         {resourcesSections.map((section) => (
-          <section key={section.key} id={`resources-${section.key}`} className="bot-section">
+          <section key={section.key} id={`resources-${section.key}`} className={styles.section}>
             {section.content}
           </section>
         ))}

@@ -11,7 +11,7 @@ import {
 } from '../../services/financeService';
 import type { FinanceOperation, FinanceOperationFormData } from '../../types';
 import dayjs from 'dayjs';
-import './FinancePage.css';
+import styles from './FinancePage.module.css';
 
 const { RangePicker } = DatePicker;
 const { Text, Title } = Typography;
@@ -181,17 +181,17 @@ export const FinancePage: React.FC = () => {
   );
 
   return (
-    <div className="finance-page">
+    <div className={styles.root}>
       {/* Global Filter Bar */}
-      <Card bordered={false} className="finance-filter-bar" bodyStyle={{ padding: '14px 16px' }}>
-        <div className="finance-toolbar">
-          <div className="finance-toolbar-left">
-            <Title level={4} className="finance-title">Finance</Title>
-            <Text type="secondary" className="finance-subtitle">
+      <Card variant="borderless" className={styles.filterBar} styles={{ body: { padding: '14px 16px' } }}>
+        <div className={styles.toolbar}>
+          <div className={styles.toolbarLeft}>
+            <Title level={4} className={styles.title}>Finance</Title>
+            <Text type="secondary" className={styles.subtitle}>
               Operational cashflow and performance
             </Text>
           </div>
-          <div className="finance-toolbar-right">
+          <div className={styles.toolbarRight}>
             {headerExtra}
           </div>
         </div>
@@ -201,7 +201,7 @@ export const FinancePage: React.FC = () => {
         type="finance"
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab as FinanceTab)}
-        className="finance-content-panel"
+        className={styles.contentPanel}
       >
         {renderTabContent()}
       </ContentPanel>

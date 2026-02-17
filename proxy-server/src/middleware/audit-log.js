@@ -1,3 +1,5 @@
+const { logger } = require('../observability/logger');
+
 function normalizeActor(req) {
   const auth = req?.auth || {};
   const roles = Array.isArray(auth.roles)
@@ -63,7 +65,7 @@ function createAuditLogMiddleware(options = {}) {
         bodyShape: getBodyShape(req.body),
       };
 
-      console.log(`[AUDIT] ${JSON.stringify(event)}`);
+      logger.info({ audit: event }, 'audit');
     });
 
     return next();

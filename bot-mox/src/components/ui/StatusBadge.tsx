@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge } from 'antd';
 import type { BotStatus } from '../../types';
-import './StatusBadge.css';
+import styles from './StatusBadge.module.css';
 
 interface StatusBadgeProps {
   status: BotStatus;
@@ -26,7 +26,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   const config = statusConfig[status];
 
   return (
-    <span className={`status-badge status-badge--${status} status-badge--${size}`}>
+    <span className={styles.statusBadge} data-status={status} data-size={size}>
       <Badge
         color={config.color}
         text={showText ? config.text : undefined}

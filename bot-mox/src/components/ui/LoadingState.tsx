@@ -1,6 +1,6 @@
 import React from 'react';
 import { Spin, Card, Skeleton } from 'antd';
-import './LoadingState.css';
+import styles from './LoadingState.module.css';
 
 interface LoadingStateProps {
   type?: 'spinner' | 'skeleton' | 'card';
@@ -15,7 +15,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 }) => {
   if (type === 'spinner') {
     return (
-      <div className="loading-state spinner">
+      <div className={`${styles.loadingState} ${styles.spinner}`}>
         <Spin size="large" />
       </div>
     );
@@ -23,7 +23,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 
   if (type === 'skeleton') {
     return (
-      <div className="loading-state skeleton">
+      <div className={`${styles.loadingState} ${styles.skeleton}`}>
         <Skeleton active paragraph={{ rows }} />
       </div>
     );
@@ -31,9 +31,9 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 
   if (type === 'card') {
     return (
-      <div className="loading-state card">
+      <div className={`${styles.loadingState} ${styles.card}`}>
         {Array.from({ length: count }).map((_, index) => (
-          <Card key={index} className="loading-card">
+          <Card key={index} className={styles.loadingCard}>
             <Skeleton active paragraph={{ rows }} />
           </Card>
         ))}
@@ -46,16 +46,16 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 
 // Компонент для отображения состояния загрузки в таблице
 export const TableLoadingState: React.FC = () => (
-  <div className="table-loading-state">
+  <div className={styles.tableLoadingState}>
     <Skeleton active paragraph={{ rows: 6 }} />
   </div>
 );
 
 // Компонент для отображения состояния загрузки в списке
 export const ListLoadingState: React.FC<{ count?: number }> = ({ count = 5 }) => (
-  <div className="list-loading-state">
+  <div className={styles.listLoadingState}>
     {Array.from({ length: count }).map((_, index) => (
-      <div key={index} className="list-loading-item">
+      <div key={index} className={styles.listLoadingItem}>
         <Skeleton active avatar paragraph={{ rows: 1 }} />
       </div>
     ))}

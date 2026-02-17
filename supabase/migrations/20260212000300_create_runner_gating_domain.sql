@@ -1,4 +1,4 @@
--- Runner gating domain (Supabase-backed replacement for tenant-scoped RTDB paths)
+-- Runner gating domain (Supabase-backed replacement for legacy tenant-scoped paths)
 -- Targets:
 -- - tenants/{tenantId}/vm_registry/*
 -- - tenants/{tenantId}/licenses/*
@@ -84,4 +84,3 @@ create index if not exists idx_execution_leases_tenant_status
 
 create index if not exists idx_execution_leases_tenant_vm
   on public.execution_leases (tenant_id, vm_uuid, created_at_ms desc);
-

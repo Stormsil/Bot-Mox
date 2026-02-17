@@ -42,10 +42,6 @@ export default defineConfig(({ mode }) => {
               return 'vendor-editor';
             }
 
-            if (id.includes('firebase')) {
-              return 'vendor-firebase';
-            }
-
             if (id.includes('@refinedev')) {
               return 'vendor-refine';
             }

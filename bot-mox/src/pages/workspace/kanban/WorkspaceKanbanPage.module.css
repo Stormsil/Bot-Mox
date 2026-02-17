@@ -1,0 +1,91 @@
+.root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  margin: 0 !important;
+  color: var(--boxmox-color-text-primary) !important;
+}
+
+.title :global(.anticon) {
+  color: var(--boxmox-color-brand-primary);
+  margin-right: 8px;
+}
+
+.board {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.column {
+  min-height: 0;
+  border-color: var(--boxmox-color-border-default);
+}
+
+.column :global(.ant-card-body) {
+  min-height: 200px;
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
+}
+
+.tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.task {
+  border-color: var(--boxmox-color-border-default);
+  background: var(--boxmox-color-surface-panel);
+}
+
+.task :global(.ant-card-body) {
+  padding: 10px 12px;
+}
+
+.taskHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.taskDescription {
+  display: block;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+}
+
+.taskFooter {
+  display: flex;
+  justify-content: flex-start;
+}
+
+@media (max-width: 1024px) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+
+  .column :global(.ant-card-body) {
+    max-height: none;
+  }
+}
+

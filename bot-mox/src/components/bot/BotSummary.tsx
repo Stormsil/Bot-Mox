@@ -29,7 +29,7 @@ import type {
   SummaryMainTab,
   SummaryResourcesTab,
 } from './summary/types';
-import './BotSummary.css';
+import styles from './BotSummary.module.css';
 
 export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
   const [activeSection, setActiveSection] = useState('overview');
@@ -198,8 +198,8 @@ export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
 
   if (loading) {
     return (
-      <div className="bot-summary">
-        <Card className="summary-loading">
+      <div className={styles['bot-summary']}>
+        <Card className={styles['summary-loading']}>
           <Spin size="large" />
         </Card>
       </div>
@@ -207,23 +207,28 @@ export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
   }
 
   return (
-    <div className="bot-summary">
-      <div className="bot-subtabs-layout">
-        <div className="bot-subtabs-nav">
+    <div className={styles['bot-summary']}>
+      <div className={styles['bot-subtabs-layout']}>
+        <div className={styles['bot-subtabs-nav']}>
           {SUMMARY_SECTIONS.map((section) => (
             <button
               key={section.key}
               type="button"
-              className={`bot-subtab ${activeSection === section.key ? 'active' : ''}`}
+              className={[
+                styles['bot-subtab'],
+                activeSection === section.key ? styles.active : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               onClick={() => handleSummaryNavClick(section.key)}
             >
-              <span className="bot-subtab-icon">{section.icon}</span>
-              <span className="bot-subtab-label">{section.label}</span>
+              <span className={styles['bot-subtab-icon']}>{section.icon}</span>
+              <span className={styles['bot-subtab-label']}>{section.label}</span>
             </button>
           ))}
         </div>
 
-        <div className="bot-subtabs-content">
+        <div className={styles['bot-subtabs-content']}>
           <SummaryOverviewSection health={health} statusInfo={statusInfo} />
           <SummaryCharacterSection bot={bot} />
           <SummaryBotInfoSection bot={bot} statusInfo={statusInfo} formatProjectName={formatProjectName} />

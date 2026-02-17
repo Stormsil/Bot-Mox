@@ -10,6 +10,15 @@ import type { CSSProperties } from 'react';
 import type { BotStatus, TreeItem } from './types';
 import { statusConfig } from './types';
 import { getIcon } from './tree-utils';
+import styles from '../ResourceTree.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
 
 interface ResourceTreeToolbarProps {
   isCollapsed: boolean;
@@ -29,32 +38,32 @@ export function ResourceTreeToolbar({
   onToggleExpandAll,
 }: ResourceTreeToolbarProps) {
   return (
-    <div className="resource-tree-toolbar">
+    <div className={cx('resource-tree-toolbar')}>
       <button
         type="button"
-        className="resource-tree-collapse-btn"
+        className={cx('resource-tree-collapse-btn')}
         onClick={onToggleCollapse}
         title={isCollapsed ? 'Show sidebar' : 'Hide sidebar'}
         aria-label={isCollapsed ? 'Show sidebar' : 'Hide sidebar'}
       >
-        {isCollapsed ? <RightOutlined /> : <LeftOutlined />}
+        {isCollapsed ? <RightOutlined className={cx('resource-tree-icon-16')} /> : <LeftOutlined className={cx('resource-tree-icon-16')} />}
       </button>
-      <div className="resource-tree-toolbar-right">
+      <div className={cx('resource-tree-toolbar-right')}>
         {loading && (
-          <div className="resource-tree-loading-inline" title="Loading bots">
+          <div className={cx('resource-tree-loading-inline')} title="Loading bots">
             <Spin size="small" />
           </div>
         )}
-        <div className="resource-tree-actions">
+        <div className={cx('resource-tree-actions')}>
           <button
             type="button"
-            className="resource-tree-action-btn"
+            className={cx('resource-tree-action-btn')}
             onClick={onToggleExpandAll}
             title={isAllExpanded ? 'Collapse all' : 'Expand all'}
             aria-label={isAllExpanded ? 'Collapse all' : 'Expand all'}
             disabled={!hasExpandableKeys}
           >
-            {isAllExpanded ? <MinusSquareOutlined /> : <PlusSquareOutlined />}
+            {isAllExpanded ? <MinusSquareOutlined className={cx('resource-tree-icon-14')} /> : <PlusSquareOutlined className={cx('resource-tree-icon-14')} />}
           </button>
         </div>
       </div>
@@ -76,30 +85,30 @@ export function ResourceTreeFilters({
   onToggleStatus,
 }: ResourceTreeFiltersProps) {
   return (
-    <div className="resource-tree-filters-compact">
-      <div className="resource-tree-filters-header">
+    <div className={cx('resource-tree-filters-compact')}>
+      <div className={cx('resource-tree-filters-header')}>
         <Button
           type="text"
           size="small"
-          className="filters-toggle-btn"
+          className={cx('filters-toggle-btn')}
           onClick={onToggleShowFilters}
-          icon={showFilters ? <DownOutlined /> : <RightOutlined />}
+          icon={showFilters ? <DownOutlined className={cx('resource-tree-icon-14')} /> : <RightOutlined className={cx('resource-tree-icon-14')} />}
         >
           Bot filters
         </Button>
       </div>
 
       {showFilters && (
-        <div className="filters-panel">
+        <div className={cx('filters-panel')}>
           {(Object.keys(statusConfig) as BotStatus[]).map((status) => (
             <button
               key={status}
-              className={`filter-chip ${visibleStatuses.includes(status) ? 'active' : ''}`}
+              className={cx(`filter-chip ${visibleStatuses.includes(status) ? 'active' : ''}`)}
               onClick={() => onToggleStatus(status)}
               style={{ '--status-color': statusConfig[status].color } as CSSProperties}
             >
-              <span className="filter-chip-indicator" />
-              <span className="filter-chip-label">{statusConfig[status].title}</span>
+              <span className={cx('filter-chip-indicator')} />
+              <span className={cx('filter-chip-label')}>{statusConfig[status].title}</span>
             </button>
           ))}
         </div>
@@ -120,17 +129,19 @@ export function ResourceTreeCollapsedNav({
   onRootClick,
 }: ResourceTreeCollapsedNavProps) {
   return (
-    <div className="resource-tree-collapsed-nav">
+    <div className={cx('resource-tree-collapsed-nav')}>
       {treeData.map((item) => (
         <button
           key={item.key}
           type="button"
-          className={`resource-tree-collapsed-item ${selectedRootKey === item.key ? 'active' : ''}`}
+          className={cx(`resource-tree-collapsed-item ${selectedRootKey === item.key ? 'active' : ''}`)}
           onClick={() => onRootClick(item)}
           title={item.title}
           aria-label={item.title}
         >
-          {getIcon(item.type, item.status, item.sectionKind)}
+          <span className={cx('resource-tree-icon-16')}>
+            {getIcon(item.type, item.status, item.sectionKind)}
+          </span>
         </button>
       ))}
     </div>

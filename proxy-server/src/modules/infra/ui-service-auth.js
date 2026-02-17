@@ -1,9 +1,9 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { logger } = require('../../observability/logger');
 
 function createUiServiceAuth({
-  admin,
-  isFirebaseReady,
+  settingsReader,
   httpsAgent,
 }) {
   const tinyFMSession = {
@@ -98,14 +98,8 @@ function createUiServiceAuth({
       syncThingPassword: String(process.env.SYNCTHING_PASSWORD || ''),
     };
 
-    if (typeof isFirebaseReady === 'function' && !isFirebaseReady()) {
-      return fallback;
-    }
-
     try {
-      const db = admin.database();
-      const rootSnapshot = await db.ref('settings/vmgenerator').once('value');
-      const rootData = rootSnapshot.val() || {};
+      const rootData = await settingsReader?.readPath('settings/vmgenerator', { fallback: {} }) || {};
       const servicesData = rootData.services || {};
       const legacyTiny = rootData.tinyFM || {};
       const legacySyncThing = rootData.syncThing || {};
@@ -179,7 +173,7 @@ function createUiServiceAuth({
         ),
       };
     } catch (error) {
-      console.error('Error reading VM service settings from Firebase:', error.message);
+      logger.error({ err: error }, 'Error reading VM service settings from Supabase settings');
       return fallback;
     }
   }
@@ -263,9 +257,9 @@ function createUiServiceAuth({
       tinyFMSession.baseUrl = baseUrl;
       tinyFMSession.cookieHeader = cookieHeader;
       tinyFMSession.expiresAt = Date.now() + 30 * 60 * 1000;
-      console.log('TinyFM session prepared');
+      logger.info('TinyFM session prepared');
     } catch (error) {
-      console.warn('TinyFM auto login failed:', error.message);
+      logger.warn({ err: error }, 'TinyFM auto login failed');
     }
   }
 
@@ -370,9 +364,9 @@ function createUiServiceAuth({
       syncThingSession.baseUrl = baseUrl;
       syncThingSession.cookieHeader = cookieHeader;
       syncThingSession.expiresAt = Date.now() + 30 * 60 * 1000;
-      console.log('SyncThing session prepared');
+      logger.info('SyncThing session prepared');
     } catch (error) {
-      console.warn('SyncThing auto login failed:', error.message);
+      logger.warn({ err: error }, 'SyncThing auto login failed');
     }
   }
 
@@ -415,8 +409,9 @@ function createUiServiceAuth({
           maxRedirects: 0,
           validateStatus: () => true,
         });
-        console.warn(
-          `SyncThing preferred URL unreachable (${normalizedPreferred}), fallback to ${fallbackLocalUrl}: ${error.message}`
+        logger.warn(
+          { err: error },
+          `SyncThing preferred URL unreachable (${normalizedPreferred}), fallback to ${fallbackLocalUrl}`
         );
         syncThingResolvedUrlCache.sourceUrl = normalizedPreferred;
         syncThingResolvedUrlCache.resolvedUrl = fallbackLocalUrl;

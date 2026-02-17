@@ -1,0 +1,100 @@
+.bot-leveling {
+  padding: 16px;
+}
+
+.leveling-stat-card {
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.leveling-stat-card :global(.ant-card-body) {
+  padding: 16px;
+}
+
+.leveling-stat-card :global(.ant-statistic-title) {
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.leveling-stat-card :global(.ant-statistic-content) {
+  color: var(--boxmox-color-text-primary);
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.leveling-progress-card {
+  margin-top: 16px;
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.leveling-progress-card :global(.ant-card-head) {
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.leveling-progress-card :global(.ant-card-head-title) {
+  color: var(--boxmox-color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.xp-progress-section {
+  padding: 8px 0;
+}
+
+.xp-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.xp-info :global(.ant-typography) {
+  color: var(--boxmox-color-text-primary);
+}
+
+.xp-percent {
+  text-align: center;
+  margin-top: 8px;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: #722ed1;
+}
+
+.leveling-location-card {
+  margin-top: 16px;
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.location-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.location-icon {
+  font-size: 24px;
+  color: var(--boxmox-color-brand-primary);
+}
+
+.location-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.location-details :global(.ant-typography) {
+  font-size: var(--text-xs);
+}
+
+.location-tag {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
+}
+

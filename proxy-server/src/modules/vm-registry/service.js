@@ -1,4 +1,4 @@
-const { buildTenantPath } = require('../../repositories/rtdb/tenant-paths');
+const { createSupabaseServiceClient } = require('../../repositories/supabase/client');
 
 const VM_UUID_PATTERN = /^[A-Za-z0-9:_-]{8,128}$/;
 
@@ -25,17 +25,13 @@ function normalizeVmUuid(vmUuid) {
   return normalized;
 }
 
-function createVmRegistryService({ admin }) {
-  if (!admin || typeof admin.database !== 'function') {
-    throw new Error('createVmRegistryService requires Firebase admin instance');
-  }
-
-  function vmRegistryPath(tenantId) {
-    return buildTenantPath(tenantId, 'vm_registry');
-  }
-
-  function vmEntryPath(tenantId, vmUuid) {
-    return `${vmRegistryPath(tenantId)}/${normalizeVmUuid(vmUuid)}`;
+function createVmRegistryService({ env }) {
+  function getClient() {
+    const result = createSupabaseServiceClient(env);
+    if (!result.ok || !result.client) {
+      throw new VmRegistryServiceError(503, 'SERVICE_UNAVAILABLE', 'Supabase is not configured');
+    }
+    return result.client;
   }
 
   async function registerVm({
@@ -54,38 +50,67 @@ function createVmRegistryService({ admin }) {
       throw new VmRegistryServiceError(400, 'BAD_REQUEST', 'user_id is required');
     }
 
+    const client = getClient();
     const now = Date.now();
-    const ref = admin.database().ref(vmEntryPath(normalizedTenantId, normalizedVmUuid));
-    const existingSnapshot = await ref.once('value');
-    const existing = existingSnapshot.val();
+    const { data: existing, error: existingError } = await client
+      .from('vm_registry')
+      .select('created_at_ms')
+      .eq('tenant_id', normalizedTenantId)
+      .eq('vm_uuid', normalizedVmUuid)
+      .maybeSingle();
 
-    const payload = {
-      vm_uuid: normalizedVmUuid,
+    if (existingError) {
+      throw new VmRegistryServiceError(500, 'DB_ERROR', `Failed to read VM registry entry: ${existingError.message}`);
+    }
+
+    const row = {
       tenant_id: normalizedTenantId,
+      vm_uuid: normalizedVmUuid,
       user_id: normalizedUserId,
       vm_name: typeof vmName === 'string' ? vmName.trim() : '',
       project_id: typeof projectId === 'string' ? projectId.trim() : '',
       status: String(status || 'active').trim().toLowerCase() || 'active',
       metadata: metadata && typeof metadata === 'object' ? metadata : {},
-      created_at: Number(existing?.created_at || now),
-      updated_at: now,
+      created_at_ms: Number(existing?.created_at_ms || now),
+      updated_at_ms: now,
     };
 
-    await ref.set(payload);
-    return payload;
+    const { error } = await client
+      .from('vm_registry')
+      .upsert(row, { onConflict: 'tenant_id,vm_uuid' });
+
+    if (error) {
+      throw new VmRegistryServiceError(500, 'DB_ERROR', `Failed to write VM registry entry: ${error.message}`);
+    }
+
+    return {
+      ...row,
+      created_at: row.created_at_ms,
+      updated_at: row.updated_at_ms,
+    };
   }
 
   async function resolveVm({ tenantId, vmUuid }) {
     const normalizedVmUuid = normalizeVmUuid(vmUuid);
     const normalizedTenantId = String(tenantId || '').trim() || 'default';
-    const snapshot = await admin.database().ref(vmEntryPath(normalizedTenantId, normalizedVmUuid)).once('value');
-    if (!snapshot.exists()) return null;
-    const value = snapshot.val();
-    if (!value || typeof value !== 'object') return null;
+    const client = getClient();
+
+    const { data, error } = await client
+      .from('vm_registry')
+      .select('*')
+      .eq('tenant_id', normalizedTenantId)
+      .eq('vm_uuid', normalizedVmUuid)
+      .maybeSingle();
+
+    if (error) {
+      throw new VmRegistryServiceError(500, 'DB_ERROR', `Failed to resolve VM: ${error.message}`);
+    }
+
+    if (!data) return null;
     return {
-      vm_uuid: normalizedVmUuid,
-      tenant_id: normalizedTenantId,
-      ...value,
+      ...data,
+      created_at: Number(data.created_at_ms || 0),
+      updated_at: Number(data.updated_at_ms || 0),
     };
   }
 

@@ -7,7 +7,7 @@ import { validateGenerationParams } from '../../utils/scheduleUtils';
 import { TableActionButton } from '../ui/TableActionButton';
 import { CONSTRAINTS, DEFAULT_PARAMS, toTemplatesList } from './generator-config';
 import dayjs from 'dayjs';
-import './ScheduleGenerator.css';
+import styles from './ScheduleGenerator.module.css';
 
 interface ScheduleGeneratorProps {
   onGenerate: (params: ScheduleGenerationParams) => void;
@@ -137,8 +137,8 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
   };
 
   const popoverContent = (
-    <div className="schedule-generator-form">
-      <div className="generator-tabs-header">
+    <div className={styles['schedule-generator-form']}>
+      <div className={styles['generator-tabs-header']}>
         <Button 
           type={!showTemplates ? "primary" : "default"} 
           size="small" 
@@ -160,8 +160,8 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
 
       {!showTemplates ? (
         <Form layout="vertical" size="small">
-          <div className="generator-section-title">Time Window 1</div>
-          <div className="generator-row">
+          <div className={styles['generator-section-title']}>Time Window 1</div>
+          <div className={styles['generator-row']}>
             <Form.Item label="Start">
               <TimePicker
                 value={dayjs(params.startTime, 'HH:mm')}
@@ -182,8 +182,8 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
             </Form.Item>
           </div>
 
-          <div className="generator-window-toggle">
-            <span className="toggle-label">Second Window (e.g. night sessions)</span>
+          <div className={styles['generator-window-toggle']}>
+            <span className={styles['toggle-label']}>Second Window (e.g. night sessions)</span>
             <Switch 
               size="small" 
               checked={params.useSecondWindow} 
@@ -192,7 +192,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           </div>
 
           {params.useSecondWindow && (
-            <div className="generator-row">
+            <div className={styles['generator-row']}>
               <Form.Item label="Start 2">
                 <TimePicker
                   value={dayjs(params.startTime2 || '00:00', 'HH:mm')}
@@ -217,7 +217,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           <Divider style={{ margin: '8px 0' }} />
 
           <Form.Item 
-            className="highlight-param"
+            className={styles['highlight-param']}
             label={`Target Active Time: ${params.targetActiveMinutes} min (${Math.floor(params.targetActiveMinutes / 60)}h ${params.targetActiveMinutes % 60}m)`}
           >
             <InputNumber
@@ -231,7 +231,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
             />
           </Form.Item>
 
-          <div className="generator-row">
+          <div className={styles['generator-row']}>
             <Form.Item label="Min Session">
               <InputNumber
                 min={CONSTRAINTS.minSessionMinutes.min}
@@ -255,7 +255,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           </div>
 
           <Form.Item 
-            className="highlight-param randomness-param"
+            className={[styles['highlight-param'], styles['randomness-param']].join(' ')}
             label={
               <Space>
                 <span>Randomization Factor: ±{params.randomOffsetMinutes} min</span>
@@ -277,12 +277,12 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           </Form.Item>
 
           {errors.length > 0 && (
-            <div className="generator-errors">
-              {errors.map((err, i) => <div key={i} className="error-item">{err}</div>)}
+            <div className={styles['generator-errors']}>
+              {errors.map((err, i) => <div key={i} className={styles['error-item']}>{err}</div>)}
             </div>
           )}
 
-          <div className="generator-template-save">
+          <div className={styles['generator-template-save']}>
             <Input 
               placeholder="Template name" 
               size="small" 
@@ -300,7 +300,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
             </Button>
           </div>
 
-          <div className="generator-actions">
+          <div className={styles['generator-actions']}>
             <Button size="small" onClick={() => setParams(DEFAULT_PARAMS)}>
               Reset
             </Button>
@@ -315,18 +315,18 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           </div>
         </Form>
       ) : (
-        <div className="templates-list-container">
+        <div className={styles['templates-list-container']}>
           <List
             size="small"
             dataSource={templates}
             renderItem={item => (
               <List.Item 
-                className="template-item"
+                className={styles['template-item']}
                 actions={[
                   <Button 
                     type="primary"
                     size="small"
-                    className="template-apply-btn"
+                    className={styles['template-apply-btn']}
                     icon={<ThunderboltOutlined />}
                     onClick={() => handleApplyTemplate(item)}
                   >
@@ -347,9 +347,9 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
                   </Space>
                 ]}
               >
-                <div className="template-info">
-                  <div className="template-name">{item.name}</div>
-                  <div className="template-details">
+                <div className={styles['template-info']}>
+                  <div className={styles['template-name']}>{item.name}</div>
+                  <div className={styles['template-details']}>
                     {Math.floor(item.params.targetActiveMinutes / 60)}h {item.params.targetActiveMinutes % 60}m 
                     {item.params.useSecondWindow ? ' | 2 Windows' : ''}
                   </div>

@@ -10,7 +10,15 @@ import { MetricCard } from '../../components/ui/MetricCard';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import type { Bot } from '../../types';
 import { subscribeBotsList } from '../../services/botsApiService';
-import './Dashboard.css';
+import styles from './Dashboard.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
 
 const { Title } = Typography;
 
@@ -32,8 +40,8 @@ const columns = [
     key: 'name',
     render: (character: BotData['character'], record: BotData) => (
       <div>
-        <div className="bot-name">{character.name}</div>
-        <div className="bot-id">{record.id.substring(0, 8)}...</div>
+        <div className={cx('bot-name')}>{character.name}</div>
+        <div className={cx('bot-id')}>{record.id.substring(0, 8)}...</div>
       </div>
     ),
   },
@@ -49,8 +57,8 @@ const columns = [
     key: 'character',
     render: (character: BotData['character']) => (
       <div>
-        <div className="char-name">{character.name}</div>
-        <div className="char-info">Lv.{character.level} {character.race} {character.class}</div>
+        <div className={cx('char-name')}>{character.name}</div>
+        <div className={cx('char-info')}>Lv.{character.level} {character.race} {character.class}</div>
       </div>
     ),
   },
@@ -121,8 +129,8 @@ export const DashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="dashboard-page">
-        <div className="dashboard-loading">
+      <div className={cx('dashboard-page')}>
+        <div className={cx('dashboard-loading')}>
           <Spin size="large" />
           <p>Loading dashboard...</p>
         </div>
@@ -131,12 +139,12 @@ export const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="dashboard-page">
-      <Title level={2} className="page-title">
+    <div className={cx('dashboard-page')}>
+      <Title level={2} className={cx('page-title')}>
         Dashboard
       </Title>
 
-      <Row gutter={[16, 16]} className="metrics-row">
+      <Row gutter={[16, 16]} className={cx('metrics-row')}>
         <Col span={6}>
           <MetricCard
             label="Total Bots"
@@ -167,7 +175,7 @@ export const DashboardPage: React.FC = () => {
         </Col>
       </Row>
 
-      <Card title={`Bot List (${bots.length})`} className="bot-list-card">
+      <Card title={`Bot List (${bots.length})`} className={cx('bot-list-card')}>
         <Table
           dataSource={bots}
           columns={columns}

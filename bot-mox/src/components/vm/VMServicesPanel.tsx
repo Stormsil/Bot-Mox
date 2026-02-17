@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from 'antd';
 import { LinkOutlined } from '@ant-design/icons';
 import { getVMSettings } from '../../services/vmSettingsService';
-import './VMServicesPanel.css';
+import styles from './VMServicesPanel.module.css';
 
 interface ServiceInfo {
   name: string;
@@ -36,18 +36,18 @@ export const VMServicesPanel: React.FC = () => {
   }, []);
 
   return (
-    <div className="vm-services-panel">
+    <div className={styles.root}>
       {services.map(service => (
-        <div key={service.name} className="vm-service-card">
-          <div className="service-name">{service.name}</div>
-          <div className="service-url">{service.url}</div>
-          <div className="service-description">{service.description}</div>
+        <div key={service.name} className={styles.card}>
+          <div className={styles.name}>{service.name}</div>
+          <div className={styles.url}>{service.url}</div>
+          <div className={styles.description}>{service.description}</div>
           <Button
             type="primary"
             size="small"
             icon={<LinkOutlined />}
             onClick={() => window.open(service.url, '_blank')}
-            style={{ alignSelf: 'flex-start', marginTop: 4 }}
+            className={styles.openBtn}
           >
             Open
           </Button>

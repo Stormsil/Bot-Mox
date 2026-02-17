@@ -159,16 +159,20 @@ export async function createFinanceOperation(
     throw new Error(`Invalid date format: ${data.date}. Expected YYYY-MM-DD`);
   }
 
-  const operation = {
+  const operation: Record<string, unknown> = {
     type: data.type,
     category,
-    bot_id: data.bot_id || null,
-    project_id: data.project_id || null,
-    description: data.description || '',
+    ...(data.bot_id ? { bot_id: data.bot_id } : {}),
+    ...(data.project_id ? { project_id: data.project_id } : {}),
+    ...(data.description ? { description: data.description } : {}),
     amount: Number(data.amount),
     currency: data.currency || 'USD',
-    gold_price_at_time: data.gold_price_at_time || null,
-    ...(data.gold_amount !== undefined ? { gold_amount: Number(data.gold_amount) } : {}),
+    ...(data.gold_price_at_time !== null && data.gold_price_at_time !== undefined
+      ? { gold_price_at_time: Number(data.gold_price_at_time) }
+      : {}),
+    ...(data.gold_amount !== undefined && data.gold_amount !== null
+      ? { gold_amount: Number(data.gold_amount) }
+      : {}),
     date: dateTimestamp,
     created_at: Date.now(),
   };
@@ -226,7 +230,7 @@ export function subscribeToFinanceOperations(
     (error) => {
       onError?.(error);
     },
-    { intervalMs: 4000, immediate: true }
+    { key: 'finance:operations', intervalMs: 4000, immediate: true }
   );
 }
 

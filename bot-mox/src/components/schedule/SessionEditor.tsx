@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, TimePicker, Switch, Alert } from 'antd';
+import { Modal, Form, TimePicker, Switch, Alert, theme } from 'antd';
 import type { ScheduleSession } from '../../types';
 import { hasOverlap, timeToMinutes, generateSessionId } from '../../utils/scheduleUtils';
 import dayjs from 'dayjs';
-import './SessionEditor.css';
 
 interface SessionEditorProps {
   session?: ScheduleSession | null;
@@ -23,6 +22,7 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
   const [form] = Form.useForm();
   const [error, setError] = useState<string | null>(null);
   const isEditing = !!session;
+  const { token } = theme.useToken();
 
   useEffect(() => {
     if (visible) {
@@ -103,12 +103,28 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
 
   return (
     <Modal
-      title={isEditing ? 'Edit Session' : 'Add Session'}
+      title={
+        <span style={{ color: token.colorText }}>
+          {isEditing ? 'Edit Session' : 'Add Session'}
+        </span>
+      }
       open={visible}
       onOk={handleOk}
       onCancel={handleCancel}
       okText={isEditing ? 'Save' : 'Add'}
-      className="session-editor-modal"
+      styles={{
+        content: {
+          background: token.colorBgElevated,
+          border: `1px solid ${token.colorBorderSecondary}`,
+        },
+        header: {
+          background: token.colorFillTertiary,
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
+        },
+        footer: {
+          borderTop: `1px solid ${token.colorBorderSecondary}`,
+        },
+      }}
     >
       {error && (
         <Alert
@@ -124,7 +140,6 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
       <Form
         form={form}
         layout="vertical"
-        className="session-editor-form"
       >
         <Form.Item
           label="Start Time"

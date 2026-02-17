@@ -12,7 +12,6 @@ try {
 }
 
 const express = require('express');
-const admin = require('firebase-admin');
 const { env } = require('./config/env');
 const { createApiV1Router } = require('./modules/v1');
 const { createAuthMiddleware } = require('./middleware/auth');
@@ -28,9 +27,10 @@ const {
 } = require('./modules/infra/ui-fallback-middleware');
 const { createIpqsService } = require('./modules/ipqs/service');
 const wowNamesService = require('./modules/wow-names/service');
-const { initializeFirebaseAdmin } = require('./bootstrap/firebase-admin');
 const { startServerRuntime } = require('./bootstrap/runtime');
+const { logger } = require('./observability/logger');
 const { createUiTargets } = require('./bootstrap/ui-targets');
+const { createAppSettingsReader } = require('./repositories/supabase/app-settings-reader');
 const {
   createCorsOptions,
   mountCoreHttpMiddleware,
@@ -39,14 +39,10 @@ const {
 
 const app = express();
 const PORT = env.port || process.env.PORT || 3001;
-
-// Firebase Admin SDK initialization
-let firebaseInitialized = false;
 const authMiddleware = createAuthMiddleware({
-  admin,
   env,
-  isFirebaseReady: () => firebaseInitialized,
 });
+const settingsReader = createAppSettingsReader({ env });
 
 async function authorizeInfraRequest(req) {
   const authResult = await authMiddleware.authenticateRequest(req, {
@@ -74,14 +70,12 @@ const {
   proxmoxRequest,
   sshExec,
 } = createInfraConnectors({
-  admin,
-  isFirebaseReady: () => firebaseInitialized,
+  settingsReader,
   setProxmoxTarget: uiTargets.setProxmoxTarget,
 });
 
 const uiServiceAuth = createUiServiceAuth({
-  admin,
-  isFirebaseReady: () => firebaseInitialized,
+  settingsReader,
   httpsAgent: proxmoxAgent,
 });
 
@@ -142,17 +136,15 @@ mountCoreHttpMiddleware({
 });
 
 const ipqsService = createIpqsService({
-  admin,
-  isFirebaseReady: () => firebaseInitialized,
+  settingsReader,
 });
 
 // Canonical API v1.
 app.use(
   '/api/v1',
   createApiV1Router({
-    admin,
-    isFirebaseReady: () => firebaseInitialized,
     authMiddleware,
+    env,
     proxmoxLogin,
     proxmoxRequest,
     sshExec,
@@ -196,12 +188,11 @@ app.use(
 
 mountLegacyErrorHandlers(app);
 
-firebaseInitialized = initializeFirebaseAdmin({ admin });
-
 startServerRuntime({
   app,
   port: PORT,
   corsOptions,
+  logger,
   attachUiProxyUpgradeHandler,
   attachUiProxyUpgradeParams: {
     authorizeUpgradeRequest: authorizeInfraRequest,

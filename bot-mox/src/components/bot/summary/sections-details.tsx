@@ -21,6 +21,7 @@ import type {
   SummaryConfigureTab,
   SummaryResourcesTab,
 } from './types';
+import styles from '../BotSummary.module.css';
 
 const { Text } = Typography;
 
@@ -49,36 +50,36 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
   onActivate,
   formatDate,
 }) => (
-  <section id="summary-configure" className="bot-section">
-    <Row gutter={[16, 16]} className="details-row">
+  <section id="summary-configure" className={styles['bot-section']}>
+    <Row gutter={[16, 16]} className={styles['details-row']}>
       <Col span={8}>
         <Card
           title={
-            <div className="link-card-title">
-              <MailOutlined className="link-card-icon" />
+            <div className={styles['link-card-title']}>
+              <MailOutlined className={styles['link-card-icon']} />
               <span>Account</span>
             </div>
           }
-          className="detail-card link-card"
+          className={[styles['detail-card'], styles['link-card']].join(' ')}
           hoverable
           onClick={() => goToConfigure('account')}
           role="button"
           tabIndex={0}
           onKeyDown={onActivate(() => goToConfigure('account'))}
         >
-          <div className="link-card-header">
+          <div className={styles['link-card-header']}>
             <Tag color={accountComplete ? 'success' : 'warning'}>{accountComplete ? 'Complete' : 'Incomplete'}</Tag>
           </div>
-          <div className="summary-stats-list">
+          <div className={styles['summary-stats-list']}>
             <SummaryStatItem
               label="Email"
               value={
                 accountEmail ? (
-                  <Text copyable={{ text: accountEmail }} className="summary-copy-text">
+                  <Text copyable={{ text: accountEmail }} className={styles['summary-copy-text']}>
                     {accountEmail}
                   </Text>
                 ) : (
-                  <span className="summary-copy-empty">Email not set</span>
+                  <span className={styles['summary-copy-empty']}>Email not set</span>
                 )
               }
               icon={<MailOutlined />}
@@ -87,15 +88,15 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
               label="Password"
               value={
                 accountPassword ? (
-                  <Text copyable={{ text: accountPassword }} className="summary-copy-text">
+                  <Text copyable={{ text: accountPassword }} className={styles['summary-copy-text']}>
                     {accountPassword}
                   </Text>
                 ) : (
-                  <span className="summary-copy-empty">Password not set</span>
+                  <span className={styles['summary-copy-empty']}>Password not set</span>
                 )
               }
               icon={<KeyOutlined />}
-              valueClassName="summary-stat-mono"
+              valueClassName={styles['summary-stat-mono']}
             />
             {bot.account?.mail_provider && (
               <SummaryStatItem label="Provider" value={bot.account.mail_provider} icon={<GlobalOutlined />} />
@@ -108,22 +109,22 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
       <Col span={8}>
         <Card
           title={
-            <div className="link-card-title">
-              <IdcardOutlined className="link-card-icon" />
+            <div className={styles['link-card-title']}>
+              <IdcardOutlined className={styles['link-card-icon']} />
               <span>Person</span>
             </div>
           }
-          className="detail-card link-card"
+          className={[styles['detail-card'], styles['link-card']].join(' ')}
           hoverable
           onClick={() => goToConfigure('person')}
           role="button"
           tabIndex={0}
           onKeyDown={onActivate(() => goToConfigure('person'))}
         >
-          <div className="link-card-header">
+          <div className={styles['link-card-header']}>
             <Tag color={personComplete ? 'success' : 'warning'}>{personComplete ? 'Complete' : 'Incomplete'}</Tag>
           </div>
-          <div className="summary-stats-list">
+          <div className={styles['summary-stats-list']}>
             <SummaryStatItem
               label="Name"
               value={
@@ -150,24 +151,24 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
       <Col span={8}>
         <Card
           title={
-            <div className="link-card-title">
-              <CalendarOutlined className="link-card-icon" />
+            <div className={styles['link-card-title']}>
+              <CalendarOutlined className={styles['link-card-icon']} />
               <span>Schedule</span>
             </div>
           }
-          className="detail-card link-card"
+          className={[styles['detail-card'], styles['link-card']].join(' ')}
           hoverable
           onClick={() => goToConfigure('schedule')}
           role="button"
           tabIndex={0}
           onKeyDown={onActivate(() => goToConfigure('schedule'))}
         >
-          <div className="link-card-header">
+          <div className={styles['link-card-header']}>
             <Tag color={scheduleStats.enabledSessions > 0 ? 'success' : undefined}>
               {scheduleStats.enabledSessions > 0 ? 'Configured' : 'Not Set'}
             </Tag>
           </div>
-          <div className="summary-stats-list">
+          <div className={styles['summary-stats-list']}>
             <SummaryStatItem
               label="Active Sessions"
               value={`${scheduleStats.enabledSessions}/${scheduleStats.totalSessions}`}
@@ -202,18 +203,18 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
   formatDate,
   formatDaysLeft,
 }) => (
-  <section id="summary-resources" className="bot-section">
-    <Card className="status-summary-card" title="Status Summary">
+  <section id="summary-resources" className={styles['bot-section']}>
+    <Card className={styles['status-summary-card']} title="Status Summary">
       <Row gutter={[16, 16]}>
         <Col span={8}>
           <div
-            className="status-item clickable"
+            className={[styles['status-item'], styles.clickable].join(' ')}
             role="button"
             tabIndex={0}
             onClick={() => goToResources('license')}
             onKeyDown={onActivate(() => goToResources('license'))}
           >
-            <KeyOutlined className="status-icon" />
+            <KeyOutlined className={styles['status-icon']} />
             <div>
               <Text type="secondary">License</Text>
               <br />
@@ -226,10 +227,10 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
               ) : (
                 <Tag color="success">Active</Tag>
               )}
-              <div className="status-meta">
+              <div className={styles['status-meta']}>
                 <span>Key: {formatCompactKey(linkedResources.license?.key)}</span>
               </div>
-              <div className="status-meta">
+              <div className={styles['status-meta']}>
                 <span>Expires: {formatDate(linkedResources.license?.expires_at)}</span>
               </div>
             </div>
@@ -237,13 +238,13 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
         </Col>
         <Col span={8}>
           <div
-            className="status-item clickable"
+            className={[styles['status-item'], styles.clickable].join(' ')}
             role="button"
             tabIndex={0}
             onClick={() => goToResources('proxy')}
             onKeyDown={onActivate(() => goToResources('proxy'))}
           >
-            <GlobalOutlined className="status-icon" />
+            <GlobalOutlined className={styles['status-icon']} />
             <div>
               <Text type="secondary">Proxy</Text>
               <br />
@@ -258,7 +259,7 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
               ) : (
                 <Tag color="success">Active</Tag>
               )}
-              <div className="status-meta">
+              <div className={styles['status-meta']}>
                 <span>
                   IP:{' '}
                   {linkedResources.proxy?.ip
@@ -266,7 +267,7 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
                     : '—'}
                 </span>
               </div>
-              <div className="status-meta">
+              <div className={styles['status-meta']}>
                 <span>Expires: {formatDate(linkedResources.proxy?.expires_at)}</span>
               </div>
             </div>
@@ -274,13 +275,13 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
         </Col>
         <Col span={8}>
           <div
-            className="status-item clickable"
+            className={[styles['status-item'], styles.clickable].join(' ')}
             role="button"
             tabIndex={0}
             onClick={() => goToResources('subscription')}
             onKeyDown={onActivate(() => goToResources('subscription'))}
           >
-            <CreditCardOutlined className="status-icon" />
+            <CreditCardOutlined className={styles['status-icon']} />
             <div>
               <Text type="secondary">Subscriptions</Text>
               <br />
@@ -293,12 +294,12 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
               ) : (
                 <Tag color="success">All Active</Tag>
               )}
-              <div className="status-meta">
+              <div className={styles['status-meta']}>
                 <span>
                   Active: {subscriptionSummary.activeCount}/{subscriptionSummary.total}
                 </span>
               </div>
-              <div className="status-meta">
+              <div className={styles['status-meta']}>
                 <span>
                   Next:{' '}
                   {subscriptionSummary.nextExpiry

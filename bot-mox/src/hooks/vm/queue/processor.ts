@@ -2,13 +2,18 @@ import type { VMHardwareConfig, VMQueueItem, VMResourceMode } from '../../../typ
 import {
   cloneVM,
   deleteVM,
-  pollTaskStatus,
+  waitForTask,
+  waitForVmPresence,
   listVMs,
+  getClusterResources,
   getVMConfig,
+  resizeVMDisk,
   updateVMConfig,
-  upsertBotVM,
+  registerVmResource,
 } from '../../../services/vmService';
 import { getVMSettings } from '../../../services/vmSettingsService';
+import { generateIsoPayload } from '../../../services/unattendProfileService';
+import { executeVmOps } from '../../../services/vmOpsService';
 import { patchConfig } from '../../../utils/vm';
 import { DEFAULT_HARDWARE, TASK_CONFIG_DIFF_FIELDS } from './constants';
 import type { ProcessVmQueueContext } from './types';
@@ -31,6 +36,141 @@ import {
   proxmoxConfigToText,
   sleep,
 } from './utils';
+
+const PROJECT_DISK_FALLBACK_GIB: Record<string, number> = {
+  wow_tbc: 128,
+  wow_midnight: 256,
+};
+const LEGACY_STORAGE_PLACEHOLDER = 'disk';
+
+function estimateProjectDiskBytes(params: { projectId: string; diskGiB?: unknown }): number {
+  const configured = Number(params.diskGiB);
+  const gib = Number.isFinite(configured) && configured > 0
+    ? configured
+    : (PROJECT_DISK_FALLBACK_GIB[params.projectId] ?? 128);
+  return gib * (1024 ** 3);
+}
+
+async function loadStorageFreeBytes(targetNode: string): Promise<Map<string, number>> {
+  const freeBytes = new Map<string, number>();
+
+  const resources = await getClusterResources('storage');
+  for (const resource of resources) {
+    if (resource.type !== 'storage') {
+      continue;
+    }
+    if (resource.node && String(resource.node).trim() && String(resource.node).trim() !== targetNode) {
+      continue;
+    }
+
+    const storageName = String(resource.storage || '').trim();
+    if (!storageName) {
+      continue;
+    }
+
+    const used = Number(resource.disk);
+    const total = Number(resource.maxdisk);
+    if (!Number.isFinite(used) || used < 0 || !Number.isFinite(total) || total <= 0) {
+      continue;
+    }
+
+    freeBytes.set(storageName, Math.max(0, total - used));
+  }
+
+  return freeBytes;
+}
+
+function pickBestStorageByFree(params: {
+  candidates: string[];
+  freeBytesByStorage: Map<string, number>;
+  estimateBytes: number;
+}): string | null {
+  const candidates = params.candidates;
+  if (!Array.isArray(candidates) || candidates.length === 0) {
+    return null;
+  }
+
+  let best: { name: string; free: number } | null = null;
+  let bestFits: { name: string; free: number } | null = null;
+
+  for (const name of candidates) {
+    const free = Number(params.freeBytesByStorage.get(name));
+    if (!Number.isFinite(free)) {
+      continue;
+    }
+
+    if (!best || free > best.free) {
+      best = { name, free };
+    }
+
+    if (free >= params.estimateBytes) {
+      if (!bestFits || free > bestFits.free) {
+        bestFits = { name, free };
+      }
+    }
+  }
+
+  return bestFits?.name || best?.name || candidates[0] || null;
+}
+
+const RESIZE_VOLUME_KEY = /^(?:ide|sata|scsi|virtio)\d+$/i;
+
+function parseSizeBytesFromVolume(value: unknown): number | null {
+  const text = String(value ?? '').trim();
+  if (!text) return null;
+
+  const match = text.match(/(?:^|,)\s*size=([0-9]+(?:\.[0-9]+)?)([KMGTP])?\s*(?:,|$)/i);
+  if (!match) return null;
+
+  const amount = Number(match[1]);
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+
+  const unit = (match[2] || 'B').toUpperCase();
+  const mul =
+    unit === 'K'
+      ? 1024
+      : unit === 'M'
+        ? 1024 ** 2
+        : unit === 'G'
+          ? 1024 ** 3
+          : unit === 'T'
+            ? 1024 ** 4
+            : unit === 'P'
+              ? 1024 ** 5
+              : 1;
+
+  return Math.round(amount * mul);
+}
+
+function pickPrimaryVolumeFromConfig(config: Record<string, unknown>): { disk: string; sizeBytes: number } | null {
+  let best: { disk: string; sizeBytes: number } | null = null;
+
+  for (const [key, value] of Object.entries(config)) {
+    if (!RESIZE_VOLUME_KEY.test(key)) {
+      continue;
+    }
+
+    const sizeBytes = parseSizeBytesFromVolume(value);
+    if (!sizeBytes) {
+      continue;
+    }
+
+    if (!best || sizeBytes > best.sizeBytes) {
+      best = { disk: key, sizeBytes };
+    }
+  }
+
+  return best;
+}
+
+function bytesToGiBRounded(bytes: number): number {
+  const gib = bytes / (1024 ** 3);
+  if (!Number.isFinite(gib) || gib <= 0) {
+    return 0;
+  }
+
+  return Math.round(gib);
+}
 
 export async function processVmQueue(context: ProcessVmQueueContext): Promise<void> {
   const {
@@ -142,44 +282,22 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
           });
           if (deleteResult.upid) {
             log.taskLog(vmTaskKey, `Delete task UPID: ${deleteResult.upid}`);
-            let taskDone = false;
-            let attempts = 0;
-            while (!taskDone && attempts < 240) {
-              if (cancelRef.current) break;
-              await sleep(1000);
-              attempts++;
-              try {
-                const status = await pollTaskStatus(deleteResult.upid, targetNode);
-                if (status.status === 'stopped') {
-                  taskDone = true;
-                  if (status.exitstatus && status.exitstatus !== 'OK') {
-                    throw new Error(`Delete task failed: ${status.exitstatus}`);
-                  }
-                }
-              } catch (pollErr) {
-                if ((pollErr as Error).message.includes('Delete task failed')) throw pollErr;
-              }
-            }
-            if (!taskDone) {
-              throw new Error('Delete task timed out after 4 minutes');
+            const status = await waitForTask(deleteResult.upid, targetNode, {
+              timeoutMs: 240_000,
+              intervalMs: 1_000,
+            });
+            if (status.exitstatus && status.exitstatus !== 'OK') {
+              throw new Error(`Delete task failed: ${status.exitstatus}`);
             }
           } else {
             log.taskLog(vmTaskKey, 'Delete request returned no UPID, verifying VM removal');
           }
 
-          let vmStillExists = true;
-          for (let verifyAttempt = 0; verifyAttempt < 45; verifyAttempt++) {
-            if (cancelRef.current) break;
-            try {
-              const vmList = await listVMs(targetNode);
-              vmStillExists = vmList.some(vm => vm.vmid === vmId);
-              if (!vmStillExists) break;
-            } catch {
-              // ignore transient list errors
-            }
-            await sleep(1000);
-          }
-          if (vmStillExists) {
+          const deletePresence = await waitForVmPresence(vmId, targetNode, false, {
+            timeoutMs: 45_000,
+            intervalMs: 1_000,
+          });
+          if (deletePresence.exists) {
             throw new Error(`VM ${vmId} is still present after delete request`);
           }
 
@@ -230,6 +348,94 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
         usedIds.forEach(id => reservedVmIds.add(id));
       }
 
+      const storageAssignments = new Map<string, string>();
+      if (settings.storage?.autoSelectBest) {
+        const enabledTargets = Array.isArray(settings.storage.enabledDisks) && settings.storage.enabledDisks.length > 0
+          ? Array.from(
+            new Set(
+              settings.storage.enabledDisks
+                .map((v) => String(v).trim())
+                .filter((value) => value && value.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER)
+            )
+          )
+          : [];
+
+        const statsCandidates: string[] = [];
+        let remainingFree = new Map<string, number>();
+
+        try {
+          const freeBytesByStorage = await loadStorageFreeBytes(targetNode);
+          statsCandidates.push(...Array.from(freeBytesByStorage.keys()));
+
+          const normalizedEnabledTargets = enabledTargets.filter((name) => freeBytesByStorage.has(name));
+          const pool = (normalizedEnabledTargets.length > 0 ? normalizedEnabledTargets : statsCandidates).filter(Boolean);
+          remainingFree = new Map(pool.map((name) => [name, freeBytesByStorage.get(name) ?? 0] as const));
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : 'Unknown error';
+          log.warn(`Failed to load storage usage stats (${msg}). Falling back to basic balancing.`);
+          const pool = enabledTargets.length > 0
+            ? enabledTargets
+            : pendingCreateItems.map((item) => String(item.storage || '').trim()).filter(Boolean);
+          remainingFree = new Map(pool.map((name) => [name, 0] as const));
+        }
+
+        // Reserve space for manual items first so auto items try to spread across disks.
+        for (const item of pendingCreateItems) {
+          if (item.storageMode !== 'manual') {
+            continue;
+          }
+
+          const storage = String(item.storage || '').trim();
+          if (!storage || !remainingFree.has(storage)) {
+            continue;
+          }
+
+          const estimateBytes = estimateProjectDiskBytes({
+            projectId: String(item.projectId),
+            diskGiB: Number.isFinite(Number(item.diskGiB)) && Number(item.diskGiB) > 0
+              ? Number(item.diskGiB)
+              : settings.projectHardware?.[item.projectId]?.diskGiB,
+          });
+          remainingFree.set(storage, (remainingFree.get(storage) ?? 0) - estimateBytes);
+        }
+
+        const candidates = Array.from(remainingFree.keys());
+
+        for (const item of pendingCreateItems) {
+          if (item.storageMode === 'manual') {
+            continue;
+          }
+
+          const estimateBytes = estimateProjectDiskBytes({
+            projectId: String(item.projectId),
+            diskGiB: Number.isFinite(Number(item.diskGiB)) && Number(item.diskGiB) > 0
+              ? Number(item.diskGiB)
+              : settings.projectHardware?.[item.projectId]?.diskGiB,
+          });
+          const picked = pickBestStorageByFree({
+            candidates,
+            freeBytesByStorage: remainingFree,
+            estimateBytes,
+          });
+
+          if (!picked) {
+            continue;
+          }
+
+          storageAssignments.set(item.id, picked);
+          remainingFree.set(picked, (remainingFree.get(picked) ?? 0) - estimateBytes);
+        }
+
+        if (storageAssignments.size > 0) {
+          for (const item of pendingCreateItems) {
+            const assigned = storageAssignments.get(item.id);
+            if (assigned && assigned !== item.storage) {
+              updateQueueItem(item.id, { storage: assigned, storageMode: 'auto' });
+            }
+          }
+        }
+      }
+
       for (const item of pendingCreateItems) {
         if (cancelRef.current) {
           log.warn('Processing cancelled by user');
@@ -256,25 +462,33 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
           setOperationText(`Cloning ${itemName}...`);
           log.info(`Cloning ${itemName}...`, itemName);
 
+          const effectiveStorage = storageAssignments.get(item.id)
+            || String(item.storage || '').trim()
+            || (() => {
+              const configuredDefault = String(settings.storage?.default || '').trim();
+              return configuredDefault.toLowerCase() === LEGACY_STORAGE_PLACEHOLDER ? '' : configuredDefault;
+            })()
+            || 'data';
+
           log.table(`Clone parameters - ${itemName}`, [
             { field: 'Template', value: String(templateVmId) },
             { field: 'New VM ID', value: String(cloneNewId) },
             { field: 'Name', value: itemName },
-            { field: 'Storage', value: item.storage },
+            { field: 'Storage', value: effectiveStorage },
             { field: 'Format', value: item.format },
             { field: 'Full clone', value: 'Yes' },
             { field: 'Node', value: targetNode },
           ], itemName);
           log.taskLog(
             vmTaskKey,
-            `Template=${templateVmId}, newid=${cloneNewId}, storage=${item.storage}, format=${item.format}`
+            `Template=${templateVmId}, newid=${cloneNewId}, storage=${effectiveStorage}, format=${item.format}`
           );
 
           const cloneResult = await cloneVM({
             templateVmId,
             newid: cloneNewId,
             name: itemName,
-            storage: item.storage,
+            storage: effectiveStorage,
             format: item.format,
             full: true,
             node: targetNode,
@@ -283,50 +497,28 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
           log.debug(`UPID: ${cloneResult.upid}`, itemName);
           log.taskLog(vmTaskKey, `Clone task UPID: ${cloneResult.upid}`);
 
-          let taskDone = false;
-          let attempts = 0;
-          while (!taskDone && attempts < 300) {
-            if (cancelRef.current) break;
-            await sleep(1000);
-            attempts++;
-            try {
-              const status = await pollTaskStatus(cloneResult.upid, targetNode);
-              if (status.status === 'stopped') {
-                taskDone = true;
-                if (status.exitstatus !== 'OK') {
-                  throw new Error(`Clone task failed: ${status.exitstatus}`);
-                }
-                log.debug(`Clone task finished with status: ${status.exitstatus || 'OK'}`, item.name);
-              }
-            } catch (pollErr) {
-              if ((pollErr as Error).message.includes('Clone task failed')) throw pollErr;
-            }
-          }
-
           if (cancelRef.current) {
             log.taskLog(vmTaskKey, 'Cancelled by user', 'warn');
             log.finishTask(vmTaskKey, 'cancelled', 'Cancelled by user');
             continue;
           }
-          if (!taskDone) throw new Error('Clone timed out after 5 minutes');
+
+          const cloneStatus = await waitForTask(cloneResult.upid, targetNode, {
+            timeoutMs: 300_000,
+            intervalMs: 1_000,
+          });
+          if (cloneStatus.exitstatus && cloneStatus.exitstatus !== 'OK') {
+            throw new Error(`Clone task failed: ${cloneStatus.exitstatus}`);
+          }
+          log.debug(`Clone task finished with status: ${cloneStatus.exitstatus || 'OK'}`, item.name);
 
           const newVmId = cloneNewId;
 
-          let vmVisible = false;
-          for (let verifyAttempt = 0; verifyAttempt < 45; verifyAttempt++) {
-            if (cancelRef.current) break;
-            try {
-              const vmList = await listVMs(targetNode);
-              if (vmList.some(vm => vm.vmid === newVmId)) {
-                vmVisible = true;
-                break;
-              }
-            } catch {
-              // ignore transient list errors
-            }
-            await sleep(1000);
-          }
-          if (!vmVisible) {
+          const clonePresence = await waitForVmPresence(newVmId, targetNode, true, {
+            timeoutMs: 45_000,
+            intervalMs: 1_000,
+          });
+          if (!clonePresence.exists) {
             throw new Error(`Clone task finished, but VM ${newVmId} not found on node ${targetNode}`);
           }
 
@@ -440,9 +632,9 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
           ], item.name);
 
           log.step(`VM ${vmId}: patching config (name=${item.name})`, item.name);
-          const patchResult = patchConfig(configText, item.name);
+          const patchResult = patchConfig(configText, item.name, vmId);
           generatedIp = patchResult.generatedIp;
-          const vmIndex = extractVmIndex(item.name);
+          const vmIndex = extractVmIndex(item.name) ?? Math.max(1, vmId - 100);
           log.taskLog(
             vmTaskKey,
             `Patch context: vmName=${item.name}, vmIndex=${vmIndex ?? '-'}, targetBridge=${vmIndex !== null ? `vmbr${vmIndex}` : '(derived from name)'}, vncPort=${patchResult.vncPort}`
@@ -501,30 +693,15 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
               log.warn(`VM ${vmId}: mutable patch returned no UPID, continuing with final config verification`, item.name);
               await sleep(1200);
             } else {
-              let spoofTaskDone = false;
-              let spoofAttempts = 0;
-              while (!spoofTaskDone && spoofAttempts < 120) {
-                if (cancelRef.current) break;
-                await sleep(1000);
-                spoofAttempts++;
-                try {
-                  const status = await pollTaskStatus(spoofTask.upid, targetNode);
-                  if (status.status === 'stopped') {
-                    spoofTaskDone = true;
-                    if (status.exitstatus && status.exitstatus !== 'OK') {
-                      throw new Error(`VM spoof config task failed: ${status.exitstatus}`);
-                    }
-                    log.info(`VM ${vmId}: mutable patch task finished (${status.exitstatus || 'OK'})`, item.name);
-                    log.taskLog(vmTaskKey, `Mutable patch task finished (${status.exitstatus || 'OK'})`);
-                  }
-                } catch (pollErr) {
-                  const pollMsg = pollErr instanceof Error ? pollErr.message : 'Unknown poll error';
-                  log.debug(`VM ${vmId}: mutable patch poll retry (${spoofAttempts}): ${pollMsg}`, item.name);
-                }
+              const spoofStatus = await waitForTask(spoofTask.upid, targetNode, {
+                timeoutMs: 120_000,
+                intervalMs: 1_000,
+              });
+              if (spoofStatus.exitstatus && spoofStatus.exitstatus !== 'OK') {
+                throw new Error(`VM spoof config task failed: ${spoofStatus.exitstatus}`);
               }
-              if (!spoofTaskDone) {
-                throw new Error('VM spoof config task timed out after 2 minutes');
-              }
+              log.info(`VM ${vmId}: mutable patch task finished (${spoofStatus.exitstatus || 'OK'})`, item.name);
+              log.taskLog(vmTaskKey, `Mutable patch task finished (${spoofStatus.exitstatus || 'OK'})`);
             }
             log.taskLog(
               vmTaskKey,
@@ -537,6 +714,88 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
 
           const projectHardware = settings.projectHardware?.[item.projectId];
           const resourceMode: VMResourceMode = item.resourceMode || 'original';
+
+          const primaryVolume = pickPrimaryVolumeFromConfig(apiConfig);
+          const currentDiskGiB = primaryVolume ? bytesToGiBRounded(primaryVolume.sizeBytes) : 0;
+          const configuredDiskGiB = Number(projectHardware?.diskGiB);
+          const customDiskGiB = Number(item.diskGiB);
+          const desiredDiskGiB = Number.isFinite(customDiskGiB) && customDiskGiB > 0
+            ? Math.max(1, Math.trunc(customDiskGiB))
+            : resourceMode === 'project' && Number.isFinite(configuredDiskGiB) && configuredDiskGiB > 0
+              ? Math.max(1, Math.trunc(configuredDiskGiB))
+              : null;
+
+          if (desiredDiskGiB && primaryVolume && currentDiskGiB > 0) {
+            const incrementGiB = desiredDiskGiB - currentDiskGiB;
+
+            if (incrementGiB > 0) {
+              log.step(
+                `VM ${vmId}: resizing ${primaryVolume.disk} ${currentDiskGiB} -> ${desiredDiskGiB} GiB`,
+                item.name
+              );
+              log.taskLog(
+                vmTaskKey,
+                `Resizing ${primaryVolume.disk}: +${incrementGiB}G (from ${currentDiskGiB}GiB to ${desiredDiskGiB}GiB)`
+              );
+
+              const resizeTask = await resizeVMDisk({
+                vmid: vmId,
+                node: targetNode,
+                disk: primaryVolume.disk,
+                size: `+${incrementGiB}G`,
+              });
+              log.debug(`VM ${vmId}: resize task UPID: ${resizeTask.upid || '(none)'}`, item.name);
+
+              if (!resizeTask.upid || String(resizeTask.upid).trim() === '') {
+                log.warn(`VM ${vmId}: resize returned no UPID, waiting briefly for convergence`, item.name);
+                await sleep(1500);
+              } else {
+                const resizeStatus = await waitForTask(resizeTask.upid, targetNode, {
+                  timeoutMs: 300_000,
+                  intervalMs: 1_000,
+                });
+                if (resizeStatus.exitstatus && resizeStatus.exitstatus !== 'OK') {
+                  throw new Error(`VM resize task failed: ${resizeStatus.exitstatus}`);
+                }
+                log.info(`VM ${vmId}: resize task finished (${resizeStatus.exitstatus || 'OK'})`, item.name);
+                log.taskLog(vmTaskKey, `Resize task finished (${resizeStatus.exitstatus || 'OK'})`);
+              }
+            } else if (incrementGiB < 0) {
+              log.warn(
+                `VM ${vmId}: disk shrink requested (${currentDiskGiB} -> ${desiredDiskGiB} GiB). Shrinking is not supported; keeping ${currentDiskGiB} GiB.`,
+                item.name
+              );
+              log.taskLog(
+                vmTaskKey,
+                `Disk resize skipped: shrink requested (${currentDiskGiB}GiB -> ${desiredDiskGiB}GiB). Grow-only is supported.`,
+                'warn'
+              );
+            }
+          } else if (desiredDiskGiB && (!primaryVolume || currentDiskGiB <= 0)) {
+            log.warn(`VM ${vmId}: cannot determine primary disk to resize; skipping disk resize`, item.name);
+            log.taskLog(vmTaskKey, 'Disk resize skipped: cannot detect primary volume key/size', 'warn');
+          }
+
+          const finalDiskGiB = desiredDiskGiB && currentDiskGiB > 0
+            ? Math.max(currentDiskGiB, desiredDiskGiB)
+            : currentDiskGiB;
+
+          const diskPlanText = (() => {
+            if (currentDiskGiB <= 0) {
+              return desiredDiskGiB ? `${desiredDiskGiB} GiB (desired; current unknown)` : '(unknown)';
+            }
+            if (!desiredDiskGiB) {
+              return `${finalDiskGiB} GiB (keep)`;
+            }
+            if (desiredDiskGiB === currentDiskGiB) {
+              return `${currentDiskGiB} GiB`;
+            }
+            if (desiredDiskGiB > currentDiskGiB) {
+              return `${currentDiskGiB} -> ${finalDiskGiB} GiB`;
+            }
+            return `${currentDiskGiB} GiB (keep; shrink requested ${desiredDiskGiB} GiB)`;
+          })();
+
           const templateCores = liveTemplateCores;
           const templateMemory = liveTemplateMemory;
           const projectCores = normalizeCores(
@@ -547,8 +806,8 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
             projectHardware?.memory,
             templateMemory
           );
-          const modeBaseCores = resourceMode === 'project' ? projectCores : templateCores;
-          const modeBaseMemory = resourceMode === 'project' ? projectMemory : templateMemory;
+          const modeBaseCores = resourceMode === 'project' || resourceMode === 'custom' ? projectCores : templateCores;
+          const modeBaseMemory = resourceMode === 'project' || resourceMode === 'custom' ? projectMemory : templateMemory;
           const normalizedItemCores = normalizeCores(item.cores, modeBaseCores);
           const normalizedItemMemory = normalizeMemory(item.memory, modeBaseMemory);
           const staleOriginalDefaults =
@@ -566,10 +825,11 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
           const queueOverride = [
             item.cores !== undefined ? `${normalizedItemCores} cores` : 'cores=auto',
             item.memory !== undefined ? `memory=${formatMemoryWithGb(normalizedItemMemory)}` : 'memory=auto',
+            desiredDiskGiB ? `disk=${desiredDiskGiB}GiB` : 'disk=keep',
           ].join(', ');
           log.taskLog(
             vmTaskKey,
-            `Resource policy: source=${resourceMode === 'project' ? 'project profile' : 'original template'}, project=${item.projectId}`
+            `Resource policy: source=${resourceMode === 'project' ? 'project profile' : resourceMode === 'custom' ? 'custom override' : 'original template'}, project=${item.projectId}`
           );
           log.taskLog(
             vmTaskKey,
@@ -577,57 +837,113 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
           );
           log.taskLog(
             vmTaskKey,
-            `Resource target: cores ${initialCores} -> ${cores}, memory ${formatMemoryWithGb(initialMemory)} -> ${formatMemoryWithGb(memory)}`
+            `Resource target: cores ${initialCores} -> ${cores}, memory ${formatMemoryWithGb(initialMemory)} -> ${formatMemoryWithGb(memory)}, disk ${diskPlanText}`
           );
 
           log.table(`Resource config - ${item.name}`, [
             { field: 'Project', value: item.projectId },
-            { field: 'Mode', value: resourceMode === 'project' ? 'project profile' : 'original template' },
+            { field: 'Mode', value: resourceMode === 'project' ? 'project profile' : resourceMode === 'custom' ? 'custom override' : 'original template' },
             { field: 'Cores', value: String(cores) },
             { field: 'Memory (MB)', value: String(memory) },
+            { field: 'Disk', value: primaryVolume ? `${primaryVolume.disk}: ${diskPlanText}` : diskPlanText },
             { field: 'Other VM settings', value: 'Kept as cloned' },
           ], item.name);
 
           log.step(`VM ${vmId}: applying cores/memory`, item.name);
           log.taskLog(vmTaskKey, `Applying resources: cores=${cores}, memory=${memory}MB`);
-          const configTask = await updateVMConfig({
-            vmid: vmId,
-            node: targetNode,
-            cores,
-            memory,
-          });
-          log.debug(`VM ${vmId}: cores/memory task UPID: ${configTask.upid}`, item.name);
+          const applyResources = async (): Promise<void> => {
+            const configTask = await updateVMConfig({
+              vmid: vmId,
+              node: targetNode,
+              cores,
+              memory,
+            });
+            log.debug(`VM ${vmId}: cores/memory task UPID: ${configTask.upid}`, item.name);
 
-          if (!configTask.upid || String(configTask.upid).trim() === '') {
-            log.warn(`VM ${vmId}: cores/memory update returned no UPID, continuing with final config verification`, item.name);
-            await sleep(1200);
-          } else {
-            let configTaskDone = false;
-            let configAttempts = 0;
-            while (!configTaskDone && configAttempts < 120) {
-              if (cancelRef.current) break;
-              await sleep(1000);
-              configAttempts++;
+            if (!configTask.upid || String(configTask.upid).trim() === '') {
+              log.warn(
+                `VM ${vmId}: cores/memory update returned no UPID, waiting for config convergence`,
+                item.name
+              );
+              await sleep(1200);
+              return;
+            }
+
+            const configStatus = await waitForTask(configTask.upid, targetNode, {
+              timeoutMs: 120_000,
+              intervalMs: 1_000,
+            });
+            if (configStatus.exitstatus && configStatus.exitstatus !== 'OK') {
+              throw new Error(`VM config task failed: ${configStatus.exitstatus}`);
+            }
+            log.info(`VM ${vmId}: cores/memory task finished (${configStatus.exitstatus || 'OK'})`, item.name);
+            log.taskLog(vmTaskKey, `Resources task finished (${configStatus.exitstatus || 'OK'})`);
+          };
+
+          const waitForResourceConvergence = async (
+            expectedCores: number,
+            expectedMemory: number,
+            timeoutMs = 25_000,
+            intervalMs = 1_500
+          ): Promise<{ ok: boolean; observedCores: number | null; observedMemory: number | null; attempts: number }> => {
+            const deadline = Date.now() + timeoutMs;
+            let attempts = 0;
+            let observedCores: number | null = null;
+            let observedMemory: number | null = null;
+
+            while (Date.now() < deadline && !cancelRef.current) {
+              attempts += 1;
               try {
-                const status = await pollTaskStatus(configTask.upid, targetNode);
-                if (status.status === 'stopped') {
-                  configTaskDone = true;
-                    if (status.exitstatus && status.exitstatus !== 'OK') {
-                      throw new Error(`VM config task failed: ${status.exitstatus}`);
-                    }
-                    log.info(`VM ${vmId}: cores/memory task finished (${status.exitstatus || 'OK'})`, item.name);
-                    log.taskLog(vmTaskKey, `Resources task finished (${status.exitstatus || 'OK'})`);
-                  }
-                } catch (pollErr) {
-                  const pollMsg = pollErr instanceof Error ? pollErr.message : 'Unknown poll error';
-                log.debug(`VM ${vmId}: cores/memory poll retry (${configAttempts}): ${pollMsg}`, item.name);
+                const config = await getVMConfig(vmId, targetNode) as Record<string, unknown>;
+                const parsedCores = Number(config.cores);
+                const parsedMemory = Number(config.memory);
+                observedCores = Number.isFinite(parsedCores) && parsedCores > 0
+                  ? Math.trunc(parsedCores)
+                  : null;
+                observedMemory = Number.isFinite(parsedMemory) && parsedMemory > 0
+                  ? Math.trunc(parsedMemory)
+                  : null;
+
+                if (observedCores === expectedCores && observedMemory === expectedMemory) {
+                  return { ok: true, observedCores, observedMemory, attempts };
+                }
+              } catch (error) {
+                const msg = error instanceof Error ? error.message : 'Unknown error';
+                log.warn(`VM ${vmId}: failed to read config during resource verify: ${msg}`, item.name);
               }
+
+              await sleep(intervalMs);
             }
-            if (!configTaskDone) {
-              throw new Error('VM cores/memory task timed out after 2 minutes');
-            }
+
+            return { ok: false, observedCores, observedMemory, attempts };
+          };
+
+          await applyResources();
+          let convergence = await waitForResourceConvergence(cores, memory);
+          if (!convergence.ok && !cancelRef.current) {
+            log.warn(
+              `VM ${vmId}: resource verify mismatch after first apply (cores=${convergence.observedCores ?? '-'}, memory=${convergence.observedMemory ?? '-'}MB), retrying once`,
+              item.name
+            );
+            log.taskLog(vmTaskKey, 'Resource verification mismatch after first apply, retrying update', 'warn');
+            await applyResources();
+            convergence = await waitForResourceConvergence(cores, memory);
           }
-          log.taskLog(vmTaskKey, `Resources applied: cores=${cores}, memory=${memory}MB`);
+
+          if (cancelRef.current) {
+            throw new Error('Cancelled by user');
+          }
+
+          if (!convergence.ok) {
+            throw new Error(
+              `Resource verify failed: expected cores=${cores}, memory=${memory}MB, got cores=${convergence.observedCores ?? '-'}, memory=${convergence.observedMemory ?? '-'}MB`
+            );
+          }
+
+          log.taskLog(
+            vmTaskKey,
+            `Resources applied: cores=${cores}, memory=${memory}MB (verified in ${convergence.attempts} attempt${convergence.attempts === 1 ? '' : 's'})`
+          );
 
           log.step(`VM ${vmId}: reading final config`, item.name);
           log.taskLog(vmTaskKey, 'Reading final VM config');
@@ -714,31 +1030,36 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
           effectiveIp = finalMeta.ip || generatedIp || effectiveIp;
           const effectiveName = finalName || item.name;
 
-          log.step(`VM ${vmId}: upserting Firebase record`, item.name);
-          log.taskLog(vmTaskKey, 'Upserting Firebase bot record');
-          log.table(`Firebase payload - ${item.name}`, [
+          log.step(`VM ${vmId}: registering VM resource`, item.name);
+          log.taskLog(vmTaskKey, 'Registering VM resource');
+          log.table(`VM resource payload - ${item.name}`, [
             { field: 'UUID', value: effectiveUuid || '(missing)' },
             { field: 'Project', value: item.projectId || 'wow_tbc' },
             { field: 'Name', value: effectiveName },
             { field: 'IP', value: effectiveIp || '(empty)' },
           ], item.name);
 
-          const firebaseResult = await upsertBotVM(
-            effectiveUuid,
-            effectiveName,
-            effectiveIp,
-            item.projectId
-          );
-          if (firebaseResult.mode === 'skipped') {
-            log.warn('[Firebase] UUID not found, record was not written', item.name);
-            log.taskLog(vmTaskKey, 'Firebase upsert skipped: UUID missing', 'warn');
+          if (!effectiveUuid) {
+            log.warn('[VM registry] UUID not found, VM resource was not registered', item.name);
+            log.taskLog(vmTaskKey, 'VM resource registration skipped: UUID missing', 'warn');
           } else {
-            log.info(`[Firebase] Bot record ${firebaseResult.mode}`, item.name);
+            await registerVmResource({
+              vmUuid: effectiveUuid,
+              vmName: effectiveName,
+              projectId: item.projectId,
+              metadata: {
+                source: 'vm_generator',
+                vmid: vmId,
+                node: targetNode,
+                ip: effectiveIp || undefined,
+              },
+            });
+            log.info('[VM registry] VM resource registered', item.name);
             log.debug(
-              `[Firebase] Bot upserted: uuid=${effectiveUuid}, project_id=${item.projectId}, name=${effectiveName}, ip=${effectiveIp}`,
+              `[VM registry] Registered: vm_uuid=${effectiveUuid}, project_id=${item.projectId}, name=${effectiveName}, ip=${effectiveIp}, vmid=${vmId}, node=${targetNode}`,
               item.name
             );
-            log.taskLog(vmTaskKey, `Firebase record ${firebaseResult.mode}`);
+            log.taskLog(vmTaskKey, 'VM resource registered');
           }
 
           updateQueueItem(item.id, {
@@ -766,6 +1087,124 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
         }
       }
 
+      // Phase 3: Provisioning ISO
+      const provisionedVmIds: number[] = [];
+      let provisionErrorCount = 0;
+
+      if (completedVmIds.length > 0 && !cancelRef.current) {
+        log.step('Phase 3 - Provisioning ISO');
+
+        for (const { item, vmId } of clonedItems) {
+          if (cancelRef.current) {
+            log.warn('Processing cancelled by user');
+            break;
+          }
+
+          // Only process successfully completed items
+          const currentItem = queueRef.current.find(qi => qi.id === item.id);
+          if (!currentItem || currentItem.status !== 'done') {
+            continue;
+          }
+
+          const vmTaskKey = `vm:${item.id}`;
+          const itemIp = currentItem.ip || '';
+          const itemUuid = currentItem.uuid || '';
+
+          if (!itemUuid || !itemIp) {
+            log.warn(`VM ${vmId}: skipping ISO provisioning — missing UUID or IP`, item.name);
+            log.taskLog(vmTaskKey, 'ISO provisioning skipped: missing UUID or IP', 'warn');
+            continue;
+          }
+
+          try {
+            updateQueueItem(item.id, { status: 'provisioning' });
+            setOperationText(`Provisioning ISO for ${item.name}...`);
+            log.taskLog(vmTaskKey, 'Phase 3 started — generating provisioning ISO');
+
+            // Parse IP into components (format: 10.0.X.Y)
+            const ipParts = itemIp.split('.');
+            const gateway = ipParts.length >= 3
+              ? `${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.1`
+              : '10.0.0.1';
+
+            const isoPayload = await generateIsoPayload({
+              vm_uuid: itemUuid,
+              ip: {
+                address: itemIp,
+                netmask: '255.255.255.0',
+                gateway,
+                dns: ['8.8.8.8'],
+              },
+              vm_name: item.name,
+              profile_id: currentItem.unattendProfileId,
+              playbook_id: currentItem.playbookId,
+            });
+
+            const files = isoPayload.data?.files;
+            if (!files || Object.keys(files).length === 0) {
+              throw new Error('generateIsoPayload returned no files');
+            }
+
+            log.info(`VM ${vmId}: ISO payload generated (${Object.keys(files).length} files)`, item.name);
+            log.taskLog(vmTaskKey, `ISO payload generated: ${Object.keys(files).join(', ')}`);
+
+            // Create ISO on Proxmox host
+            const isoName = `provision-${vmId}.iso`;
+            log.taskLog(vmTaskKey, `Creating ISO: ${isoName}`);
+
+            await executeVmOps({
+              type: 'proxmox',
+              action: 'create-provision-iso',
+              params: {
+                vmid: vmId,
+                files,
+                isoName,
+                node: targetNode,
+              },
+              timeoutMs: 60_000,
+            });
+
+            log.info(`VM ${vmId}: ISO created on host`, item.name);
+            log.taskLog(vmTaskKey, `ISO ${isoName} created on host`);
+
+            // Attach ISO as CD-ROM
+            const isoPath = `local:iso/${isoName}`;
+            log.taskLog(vmTaskKey, `Attaching ISO: ${isoPath}`);
+
+            await executeVmOps({
+              type: 'proxmox',
+              action: 'attach-cdrom',
+              params: {
+                vmid: vmId,
+                isoPath,
+                node: targetNode,
+              },
+              timeoutMs: 30_000,
+            });
+
+            log.info(`VM ${vmId}: ISO attached as CD-ROM`, item.name);
+            log.taskLog(vmTaskKey, 'ISO attached as ide2 CD-ROM');
+
+            updateQueueItem(item.id, { status: 'done' });
+            provisionedVmIds.push(vmId);
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            log.warn(`VM ${vmId}: ISO provisioning failed: ${msg}`, item.name);
+            log.taskLog(vmTaskKey, `ISO provisioning failed: ${msg}`, 'warn');
+            // Revert status to done — ISO is optional, VM is still usable
+            updateQueueItem(item.id, { status: 'done' });
+            provisionErrorCount += 1;
+          }
+        }
+
+        if (provisionedVmIds.length > 0) {
+          log.step(`Phase 3 complete: ${provisionedVmIds.length} VMs provisioned with ISO`);
+        }
+        if (provisionErrorCount > 0) {
+          log.warn(`Phase 3: ${provisionErrorCount} ISO provisioning error(s) (non-fatal)`);
+        }
+      }
+
       const totalErrorCount = deleteErrorCount + cloneErrorCount + configErrorCount;
       if (completedVmIds.length > 0) {
         setReadyVmIds(completedVmIds);
@@ -788,6 +1227,13 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unexpected queue processing error';
+      const fallbackStatus = cancelRef.current ? 'cancelled' : 'error';
+      for (const queueItem of queueRef.current) {
+        if (queueItem.status === 'done' || queueItem.status === 'error') {
+          continue;
+        }
+        log.finishTask(`vm:${queueItem.id}`, fallbackStatus, msg);
+      }
       log.error(msg);
       setUiState('error');
     }

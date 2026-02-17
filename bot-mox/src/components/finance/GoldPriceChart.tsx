@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import { Card, Empty, Spin } from 'antd';
 import type { GoldPriceHistoryEntry } from '../../types';
-import './GoldPriceChart.css';
+import styles from './GoldPriceChart.module.css';
 
 interface GoldPriceChartProps {
   data: GoldPriceHistoryEntry[];
@@ -57,11 +57,11 @@ function formatPrice(price: number): string {
 const GoldChartTooltip: React.FC<GoldChartTooltipProps> = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="gold-price-tooltip">
-        <p className="tooltip-date">{label}</p>
+      <div className={styles.tooltip}>
+        <p className={styles.tooltipDate}>{label}</p>
         {payload.map((entry, index) =>
           entry.value !== null ? (
-            <p key={index} className="tooltip-price" style={{ color: entry.color }}>
+            <p key={index} className={styles.tooltipPrice} style={{ color: entry.color }}>
               {entry.name}: {formatPrice(entry.value)}
             </p>
           ) : null
@@ -116,8 +116,8 @@ export const GoldPriceChart: React.FC<GoldPriceChartProps> = ({
 
   if (loading) {
     return (
-      <Card title="Gold Price History" className="gold-price-chart-card">
-        <div className="chart-loading">
+      <Card title="Gold Price History" className={styles.card}>
+        <div className={styles.loading}>
           <Spin size="large" />
         </div>
       </Card>
@@ -126,18 +126,18 @@ export const GoldPriceChart: React.FC<GoldPriceChartProps> = ({
 
   if (chartData.length === 0) {
     return (
-      <Card title="Gold Price History" className="gold-price-chart-card">
+      <Card title="Gold Price History" className={styles.card}>
         <Empty
           description="No gold price data available. Add gold sale transactions to see the history."
-          className="chart-empty"
+          className={styles.empty}
         />
       </Card>
     );
   }
 
   return (
-    <Card title="Gold Price History" className="gold-price-chart-card">
-      <div className="chart-container">
+    <Card title="Gold Price History" className={styles.card}>
+      <div className={styles.container}>
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -191,8 +191,8 @@ export const GoldPriceChart: React.FC<GoldPriceChartProps> = ({
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="chart-info">
-        <p className="chart-info-text">
+      <div className={styles.info}>
+        <p className={styles.infoText}>
           Prices are recorded from gold sale transactions. Each point represents a sale.
         </p>
       </div>

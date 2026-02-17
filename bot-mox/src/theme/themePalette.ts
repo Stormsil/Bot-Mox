@@ -34,6 +34,36 @@ export const THEME_COLOR_DEFINITIONS = [
 export type ThemeColorVariable = (typeof THEME_COLOR_DEFINITIONS)[number]['cssVar'];
 export type ThemePalette = Record<ThemeColorVariable, string>;
 export type ThemePalettes = Record<ThemeMode, ThemePalette>;
+export type ThemeVisualMode = 'none' | 'image';
+export type ThemeVisualPosition = 'center' | 'top' | 'custom';
+export type ThemeVisualSize = 'cover' | 'contain' | 'auto';
+
+export interface ThemeVisualSettings {
+  enabled: boolean;
+  mode: ThemeVisualMode;
+  backgroundAssetId?: string;
+  backgroundImageUrl?: string;
+  backgroundPosition: ThemeVisualPosition;
+  backgroundSize: ThemeVisualSize;
+  overlayOpacity: number;
+  overlayColorLight: string;
+  overlayColorDark: string;
+  blurPx: number;
+  dimStrength: number;
+}
+
+export interface ThemeTypographySettings {
+  fontPrimary: string;
+  fontCondensed: string;
+  fontMono: string;
+}
+
+export interface ThemeShapeSettings {
+  radiusNone: number;
+  radiusSm: number;
+  radiusMd: number;
+  radiusLg: number;
+}
 
 const LEGACY_THEME_COLOR_KEYS: Record<ThemeColorVariable, string[]> = {
   '--boxmox-color-surface-base': ['--proxmox-bg-primary', '--proxmox-bg'],
@@ -136,6 +166,33 @@ export const createDefaultThemePalettes = (): ThemePalettes => ({
   dark: { ...DEFAULT_DARK_THEME_PALETTE },
 });
 
+export const DEFAULT_THEME_TYPOGRAPHY_SETTINGS: ThemeTypographySettings = {
+  fontPrimary: "'Roboto', 'Segoe UI', sans-serif",
+  fontCondensed: "'Roboto Condensed', sans-serif",
+  fontMono: "'Roboto Mono', monospace",
+};
+
+export const DEFAULT_THEME_SHAPE_SETTINGS: ThemeShapeSettings = {
+  radiusNone: 0,
+  radiusSm: 2,
+  radiusMd: 4,
+  radiusLg: 6,
+};
+
+export const DEFAULT_THEME_VISUAL_SETTINGS: ThemeVisualSettings = {
+  enabled: false,
+  mode: 'none',
+  backgroundAssetId: undefined,
+  backgroundImageUrl: undefined,
+  backgroundPosition: 'center',
+  backgroundSize: 'cover',
+  overlayOpacity: 0.42,
+  overlayColorLight: '#f2f4f7',
+  overlayColorDark: '#121518',
+  blurPx: 2,
+  dimStrength: 0.2,
+};
+
 const clampToByte = (value: number): number => Math.max(0, Math.min(255, Math.round(value)));
 
 const normalizeFromHex = (value: string): string | null => {
@@ -235,6 +292,91 @@ export const sanitizeThemePalettes = (source: unknown): ThemePalettes => {
   };
 };
 
+function sanitizeBackgroundUrl(input: unknown): string | undefined {
+  if (typeof input !== 'string') return undefined;
+  const trimmed = input.trim();
+  if (!trimmed) return undefined;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  return undefined;
+}
+
+function clampNumber(input: unknown, fallback: number, min: number, max: number): number {
+  const value = Number(input);
+  if (!Number.isFinite(value)) return fallback;
+  return Math.max(min, Math.min(max, value));
+}
+
+export const sanitizeThemeVisualSettings = (source: unknown): ThemeVisualSettings => {
+  const payload = (source ?? {}) as Record<string, unknown>;
+  const fallback = DEFAULT_THEME_VISUAL_SETTINGS;
+
+  const mode = payload.mode === 'image' ? 'image' : 'none';
+  const backgroundPosition: ThemeVisualPosition = payload.backgroundPosition === 'top'
+    ? 'top'
+    : payload.backgroundPosition === 'custom'
+      ? 'custom'
+      : 'center';
+  const backgroundSize: ThemeVisualSize = payload.backgroundSize === 'contain'
+    ? 'contain'
+    : payload.backgroundSize === 'auto'
+      ? 'auto'
+      : 'cover';
+  const backgroundAssetId = typeof payload.backgroundAssetId === 'string' && payload.backgroundAssetId.trim()
+    ? payload.backgroundAssetId.trim()
+    : undefined;
+
+  return {
+    enabled: payload.enabled === true,
+    mode,
+    backgroundAssetId,
+    backgroundImageUrl: sanitizeBackgroundUrl(payload.backgroundImageUrl),
+    backgroundPosition,
+    backgroundSize,
+    overlayOpacity: clampNumber(payload.overlayOpacity, fallback.overlayOpacity, 0, 1),
+    overlayColorLight: normalizeHexColor(String(payload.overlayColorLight ?? ''), fallback.overlayColorLight),
+    overlayColorDark: normalizeHexColor(String(payload.overlayColorDark ?? ''), fallback.overlayColorDark),
+    blurPx: clampNumber(payload.blurPx, fallback.blurPx, 0, 24),
+    dimStrength: clampNumber(payload.dimStrength, fallback.dimStrength, 0, 1),
+  };
+};
+
+export const sanitizeThemeTypographySettings = (source: unknown): ThemeTypographySettings => {
+  const payload = (source ?? {}) as Record<string, unknown>;
+  const fallback = DEFAULT_THEME_TYPOGRAPHY_SETTINGS;
+
+  const normalizeFont = (value: unknown, fallbackValue: string): string => {
+    if (typeof value !== 'string') return fallbackValue;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : fallbackValue;
+  };
+
+  return {
+    fontPrimary: normalizeFont(payload.fontPrimary, fallback.fontPrimary),
+    fontCondensed: normalizeFont(payload.fontCondensed, fallback.fontCondensed),
+    fontMono: normalizeFont(payload.fontMono, fallback.fontMono),
+  };
+};
+
+export const sanitizeThemeShapeSettings = (source: unknown): ThemeShapeSettings => {
+  const payload = (source ?? {}) as Record<string, unknown>;
+  const fallback = DEFAULT_THEME_SHAPE_SETTINGS;
+
+  const clamp = (value: unknown, fallbackValue: number, min: number, max: number): number => {
+    const num = typeof value === 'number' ? value : Number(value);
+    if (!Number.isFinite(num)) return fallbackValue;
+    return Math.max(min, Math.min(max, Math.round(num)));
+  };
+
+  return {
+    radiusNone: clamp(payload.radiusNone, fallback.radiusNone, 0, 24),
+    radiusSm: clamp(payload.radiusSm, fallback.radiusSm, 0, 24),
+    radiusMd: clamp(payload.radiusMd, fallback.radiusMd, 0, 24),
+    radiusLg: clamp(payload.radiusLg, fallback.radiusLg, 0, 24),
+  };
+};
+
 export const applyThemePaletteToDocument = (palette: ThemePalette): void => {
   if (typeof document === 'undefined') return;
 
@@ -255,4 +397,21 @@ export const applyThemePaletteToDocument = (palette: ThemePalette): void => {
     '--boxmox-color-brand-primary-rgb',
     `${r}, ${g}, ${b}`
   );
+};
+
+export const applyThemeTypographyToDocument = (typography: ThemeTypographySettings): void => {
+  if (typeof document === 'undefined') return;
+  const next = sanitizeThemeTypographySettings(typography);
+  document.documentElement.style.setProperty('--font-primary', next.fontPrimary);
+  document.documentElement.style.setProperty('--font-condensed', next.fontCondensed);
+  document.documentElement.style.setProperty('--font-mono', next.fontMono);
+};
+
+export const applyThemeShapeToDocument = (shape: ThemeShapeSettings): void => {
+  if (typeof document === 'undefined') return;
+  const next = sanitizeThemeShapeSettings(shape);
+  document.documentElement.style.setProperty('--radius-none', `${next.radiusNone}px`);
+  document.documentElement.style.setProperty('--radius-sm', `${next.radiusSm}px`);
+  document.documentElement.style.setProperty('--radius-md', `${next.radiusMd}px`);
+  document.documentElement.style.setProperty('--radius-lg', `${next.radiusLg}px`);
 };

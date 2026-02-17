@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import type { BotScheduleV2, ScheduleSession } from '../../types';
 import { TimelineVisualizer } from './TimelineVisualizer';
 import { sortSessions, getDayName, formatDateShort, getWeekDates } from '../../utils/scheduleUtils';
-import './WeekOverview.css';
+import styles from './WeekOverview.module.css';
 
 interface WeekOverviewProps {
   schedule: BotScheduleV2 | null;
@@ -71,24 +71,24 @@ export const WeekOverview: React.FC<WeekOverviewProps> = ({
 
   if (!schedule) {
     return (
-      <div className="week-overview-empty">
+      <div className={styles['week-overview-empty']}>
         <p>No schedule data available</p>
       </div>
     );
   }
 
   return (
-    <div className="week-overview">
+    <div className={styles['week-overview']}>
       {/* Header */}
-      <div className="week-overview-header">
-        <div className="week-overview-title">
+      <div className={styles['week-overview-header']}>
+        <div className={styles['week-overview-title']}>
           <h3>Week Overview</h3>
-          <span className="week-overview-subtitle">7 days at a glance</span>
+          <span className={styles['week-overview-subtitle']}>7 days at a glance</span>
         </div>
       </div>
 
       {/* 7 Timeline rows - Top to Bottom (MON at top) */}
-      <div className="week-overview-timelines">
+      <div className={styles['week-overview-timelines']}>
         {DAY_ORDER.map((dayIndex) => {
           const dayData = getDayData(dayIndex);
           const date = getDateForDay(dayIndex);
@@ -96,20 +96,26 @@ export const WeekOverview: React.FC<WeekOverviewProps> = ({
           const hasSessions = dayData.enabled && dayData.sessions && dayData.sessions.some(s => s.enabled);
 
           return (
-            <div key={dayIndex} className="week-day-row">
+            <div key={dayIndex} className={styles['week-day-row']}>
               <button
-                className="week-day-label"
+                className={styles['week-day-label']}
                 onClick={() => onDaySelect(dayIndex)}
                 title={`Click to edit ${dayName}`}
               >
-                <span className="week-day-name">{dayName}</span>
-                <span className="week-day-date">{formatDateShort(date)}</span>
-                <span className={`week-day-status ${hasSessions ? 'active' : 'disabled'}`} />
+                <span className={styles['week-day-name']}>{dayName}</span>
+                <span className={styles['week-day-date']}>{formatDateShort(date)}</span>
+                <span
+                  className={[
+                    styles['week-day-status'],
+                    hasSessions ? styles.active : styles.disabled,
+                  ].join(' ')}
+                />
               </button>
-              <div className="week-day-timeline-wrapper">
+              <div className={styles['week-day-timeline-wrapper']}>
                 <TimelineVisualizer
                   sessions={dayData.sessions}
                   allowedWindows={schedule.allowedWindows}
+                  variant="compact"
                   onSessionChange={(session) => handleSessionChange(dayIndex, session)}
                 />
               </div>
@@ -119,25 +125,25 @@ export const WeekOverview: React.FC<WeekOverviewProps> = ({
       </div>
 
       {/* Legend */}
-      <div className="week-overview-legend">
-        <div className="legend-item">
-          <div className="legend-bar" />
+      <div className={styles['week-overview-legend']}>
+        <div className={styles['legend-item']}>
+          <div className={styles['legend-bar']} />
           <span>Active</span>
         </div>
-        <div className="legend-item">
-          <div className="legend-bar overlap" />
+        <div className={styles['legend-item']}>
+          <div className={[styles['legend-bar'], styles.overlap].join(' ')} />
           <span>Overlap (Fix manually)</span>
         </div>
-        <div className="legend-item">
-          <div className="legend-marker start" />
+        <div className={styles['legend-item']}>
+          <div className={[styles['legend-marker'], styles.start].join(' ')} />
           <span>Start</span>
         </div>
-        <div className="legend-item">
-          <div className="legend-marker end" />
+        <div className={styles['legend-item']}>
+          <div className={[styles['legend-marker'], styles.end].join(' ')} />
           <span>End</span>
         </div>
-        <div className="legend-item">
-          <span className="legend-text">Drag bars to move, edges to resize. Red areas are restricted.</span>
+        <div className={styles['legend-item']}>
+          <span className={styles['legend-text']}>Drag bars to move, edges to resize. Red areas are restricted.</span>
         </div>
       </div>
     </div>

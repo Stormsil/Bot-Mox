@@ -10,11 +10,11 @@ import {
   Space,
   Typography,
   Divider,
+  theme,
 } from 'antd';
 import type { FinanceOperation, FinanceOperationFormData, FinanceOperationType } from '../../types';
 import { formatTimestampToDate } from '../../services/financeService';
 import dayjs from 'dayjs';
-import './TransactionForm.css';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -54,6 +54,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [goldAmount, setGoldAmount] = useState<number>(0);
   const [goldPrice, setGoldPrice] = useState<number>(0);
+  const { token } = theme.useToken();
 
   const isEdit = !!operation;
   const isGoldSale = selectedCategory === 'sale';
@@ -171,18 +172,33 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
   return (
     <Modal
-      title={isEdit ? 'Edit Transaction' : 'Add Transaction'}
+      title={
+        <span style={{ color: token.colorText }}>
+          {isEdit ? 'Edit Transaction' : 'Add Transaction'}
+        </span>
+      }
       open={visible}
       onOk={handleSubmit}
       onCancel={onCancel}
       confirmLoading={loading}
       width={600}
-      className="transaction-form-modal"
+      styles={{
+        content: {
+          background: token.colorBgElevated,
+          border: `1px solid ${token.colorBorderSecondary}`,
+        },
+        header: {
+          background: token.colorBgElevated,
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
+        },
+        footer: {
+          borderTop: `1px solid ${token.colorBorderSecondary}`,
+        },
+      }}
     >
       <Form
         form={form}
         layout="vertical"
-        className="transaction-form"
         initialValues={{ type: 'expense', currency: 'USD' }}
       >
         {/* Тип транзакции */}
@@ -194,6 +210,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
           <Radio.Group
             onChange={(e) => handleTypeChange(e.target.value)}
             disabled={isEdit}
+            buttonStyle="solid"
+            style={{ display: 'flex', gap: 8 }}
           >
             <Radio.Button value="income">Income</Radio.Button>
             <Radio.Button value="expense">Expense</Radio.Button>
@@ -273,9 +291,19 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
                 />
               </Form.Item>
 
-              <div className="calculated-amount">
+              <div
+                style={{
+                  background: token.colorFillTertiary,
+                  padding: '12px 16px',
+                  borderRadius: token.borderRadius,
+                  border: `1px solid ${token.colorBorderSecondary}`,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
                 <Text type="secondary">Calculated Amount: </Text>
-                <Text strong className="amount-value">
+                <Text strong style={{ color: token.colorSuccess, fontSize: token.fontSizeLG }}>
                   ${calculatedAmount.toFixed(2)}
                 </Text>
               </div>

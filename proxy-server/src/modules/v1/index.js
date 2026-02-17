@@ -17,12 +17,19 @@ const { createArtifactsRoutes } = require('./artifacts.routes');
 const { createAgentsRoutes } = require('./agents.routes');
 const { createSecretsRoutes } = require('./secrets.routes');
 const { createVmOpsRoutes } = require('./vm-ops.routes');
+const { createThemeAssetsRoutes } = require('./theme-assets.routes');
+const { createProvisioningRoutes } = require('./provisioning.routes');
+const { createPlaybookRoutes } = require('./playbooks.routes');
 const { createVmRegistryService } = require('../vm-registry/service');
 const { createLicenseService } = require('../license/service');
 const { createArtifactsService } = require('../artifacts/service');
 const { createAgentService } = require('../agents/service');
 const { createSecretsService } = require('../secrets/service');
 const { createVmOpsService } = require('../vm-ops/service');
+const { createThemeAssetsService } = require('../theme-assets/service');
+const { createProvisioningService } = require('../provisioning/service');
+const { createProvisioningS3Service } = require('../provisioning/s3-service');
+const { createPlaybookService } = require('../playbooks/service');
 const { createRepositories } = require('../../repositories/repository-factory');
 const { createAuditLogMiddleware } = require('../../middleware/audit-log');
 const { asyncHandler } = require('./helpers');
@@ -34,8 +41,7 @@ const {
 } = require('./health');
 
 function createApiV1Router({
-  admin,
-  isFirebaseReady,
+  env: injectedEnv,
   proxmoxLogin,
   proxmoxRequest,
   sshExec,
@@ -43,23 +49,41 @@ function createApiV1Router({
   wowNamesService,
   authMiddleware: injectedAuthMiddleware,
 }) {
+  const runtimeEnv = injectedEnv || env;
   const router = express.Router();
-  const authMiddleware = injectedAuthMiddleware || createAuthMiddleware({ admin, env, isFirebaseReady });
+  const authMiddleware = injectedAuthMiddleware || createAuthMiddleware({ env: runtimeEnv });
   const { authenticate, requireRole } = authMiddleware;
-  const repos = createRepositories({ admin, env });
-  const vmRegistryService = createVmRegistryService({ admin });
+  const repos = createRepositories({ env: runtimeEnv });
+  const vmRegistryService = createVmRegistryService({ env: runtimeEnv });
   const licenseService = createLicenseService({
-    admin,
-    env,
+    env: runtimeEnv,
     vmRegistryService,
   });
   const artifactsService = createArtifactsService({
-    env,
+    env: runtimeEnv,
     licenseService,
   });
-  const agentService = createAgentService({ env });
-  const secretsService = createSecretsService({ env });
-  const vmOpsService = createVmOpsService({ env, agentService });
+  const agentService = createAgentService({ env: runtimeEnv });
+  const secretsService = createSecretsService({ env: runtimeEnv });
+  const vmOpsService = createVmOpsService({ env: runtimeEnv, agentService });
+  const themeAssetsService = createThemeAssetsService({ env: runtimeEnv });
+  const provisioningService = createProvisioningService({ env: runtimeEnv });
+  const provisioningS3Service = createProvisioningS3Service({ env: runtimeEnv });
+  const playbookService = createPlaybookService({ env: runtimeEnv });
+
+  function isPublicAgentBootstrap(req) {
+    const method = String(req?.method || '').toUpperCase();
+    const path = String(req?.path || '').trim();
+    if (method !== 'POST') return false;
+    return path === '/agents/register' || path === '/agents/quick-pair';
+  }
+
+  function isPublicProvisioningEndpoint(req) {
+    const method = String(req?.method || '').toUpperCase();
+    const path = String(req?.path || '').trim();
+    if (method !== 'POST') return false;
+    return path === '/provisioning/validate-token' || path === '/provisioning/report-progress';
+  }
 
   router.get('/health/live', (_req, res) => {
     res.json(success(buildLivenessPayload()));
@@ -68,7 +92,7 @@ function createApiV1Router({
   router.get(
     '/health/ready',
     asyncHandler(async (_req, res) => {
-      const checks = await getHealthChecks({ env, isFirebaseReady });
+      const checks = await getHealthChecks({ env: runtimeEnv });
       const payload = buildReadinessPayload({ checks });
       const statusCode = payload.ready ? 200 : 503;
       res.status(statusCode).json(success(payload));
@@ -78,13 +102,28 @@ function createApiV1Router({
   router.get(
     '/health',
     asyncHandler(async (_req, res) => {
-      const checks = await getHealthChecks({ env, isFirebaseReady });
-      res.json(success(buildHealthPayload({ env, checks })));
+      const checks = await getHealthChecks({ env: runtimeEnv });
+      res.json(success(buildHealthPayload({ env: runtimeEnv, checks })));
     })
   );
 
   router.use('/auth', createAuthRoutes({ authenticate }));
-  router.use(authenticate);
+  router.use(asyncHandler(async (req, res, next) => {
+    if (isPublicAgentBootstrap(req)) {
+      const optionalAuth = await authMiddleware.authenticateRequest(req, { allowQueryToken: false });
+      if (optionalAuth?.ok) {
+        req.auth = optionalAuth.auth;
+      }
+      return next();
+    }
+
+    // VM provisioning endpoints use their own token auth (in request body)
+    if (isPublicProvisioningEndpoint(req)) {
+      return next();
+    }
+
+    return authenticate(req, res, next);
+  }));
 
   router.use('/resources', createResourcesRoutes({ repositories: repos.resources }));
   router.use('/workspace', createWorkspaceRoutes({ repositories: repos.workspace }));
@@ -94,9 +133,12 @@ function createApiV1Router({
   router.use('/vm', createVmRoutes({ vmRegistryService }));
   router.use('/license', createLicenseRoutes({ licenseService, authMiddleware }));
   router.use('/artifacts', createArtifactsRoutes({ artifactsService, authMiddleware }));
-  router.use('/agents', createAgentsRoutes({ agentService, authMiddleware }));
+  router.use('/agents', createAgentsRoutes({ agentService, authMiddleware, env: runtimeEnv }));
   router.use('/secrets', createSecretsRoutes({ secretsService, authMiddleware }));
   router.use('/vm-ops', createVmOpsRoutes({ vmOpsService, authMiddleware }));
+  router.use('/theme-assets', createThemeAssetsRoutes({ themeAssetsService }));
+  router.use('/', createProvisioningRoutes({ provisioningService, playbookService, s3Service: provisioningS3Service, env: runtimeEnv }));
+  router.use('/playbooks', createPlaybookRoutes({ playbookService }));
   if (ipqsService) {
     router.use('/ipqs', createIpqsRoutes({ ipqsService }));
   }
@@ -110,7 +152,7 @@ function createApiV1Router({
       scope: 'api.v1.infra',
       methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
     }),
-    createInfraRoutes({ proxmoxLogin, proxmoxRequest, sshExec, env })
+    createInfraRoutes({ proxmoxLogin, proxmoxRequest, sshExec, env: runtimeEnv })
   );
 
   router.use((req, res) => {

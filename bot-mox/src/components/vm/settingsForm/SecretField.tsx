@@ -3,6 +3,7 @@ import { Button, Input, Modal, Tag, message } from 'antd';
 import { CheckCircleOutlined, LockOutlined } from '@ant-design/icons';
 import type { SecretBinding } from '../../../types';
 import { setVmSettingsSecret } from '../../../services/secretsService';
+import layout from './SettingsSectionLayout.module.css';
 
 interface SecretFieldProps {
   fieldName: string;
@@ -50,9 +51,9 @@ export const SecretField: React.FC<SecretFieldProps> = ({
   };
 
   return (
-    <div className="vm-settings-field">
+    <div className={layout.field}>
       <label>{label}</label>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div className={layout.inlineRow}>
         {isBound ? (
           <Tag icon={<CheckCircleOutlined />} color="success">
             Secret set
@@ -78,9 +79,9 @@ export const SecretField: React.FC<SecretFieldProps> = ({
         }}
         confirmLoading={saving}
         okText={isBound ? 'Rotate' : 'Save'}
-        destroyOnClose
+        destroyOnHidden
       >
-        <p style={{ marginBottom: 12, color: '#666' }}>
+        <p className={layout.helperText}>
           {isBound
             ? 'Enter a new value to replace the existing secret.'
             : 'Enter the password. It will be encrypted client-side before storage.'}

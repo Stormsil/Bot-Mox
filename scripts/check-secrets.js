@@ -5,7 +5,7 @@ const { execFileSync } = require('child_process');
 const root = process.cwd();
 
 const secretRules = [
-  { name: 'Firebase API key', pattern: /AIza[0-9A-Za-z\-_]{35}/g },
+  { name: 'Google API key pattern', pattern: /AIza[0-9A-Za-z\-_]{35}/g },
   { name: 'Private key block', pattern: /-----BEGIN (RSA|EC|OPENSSH|PRIVATE) PRIVATE KEY-----/g },
 ];
 

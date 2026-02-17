@@ -22,7 +22,7 @@ import {
   renderTabContent,
 } from './page';
 import type { ConfigureTab, ExtendedBot, MainTab } from './page';
-import './BotPage.css';
+import styles from './BotPage.module.css';
 
 export const BotPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -172,7 +172,7 @@ export const BotPage: React.FC = () => {
   });
 
   return (
-    <div className="bot-page">
+    <div className={styles.root}>
       <ContentPanel
         type="bot"
         activeTab={activeTab}

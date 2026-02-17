@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Progress, Typography } from 'antd';
-import './MetricCard.css';
+import styles from './MetricCard.module.css';
 
 const { Text } = Typography;
 
@@ -22,16 +22,16 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   color = 'var(--boxmox-color-brand-primary)',
 }) => {
   return (
-    <Card className="metric-card" bordered={false}>
-      <div className="metric-header">
-        {icon && <div className="metric-icon" style={{ color }}>{icon}</div>}
-        <Text className="metric-label">{label}</Text>
+    <Card className={styles.metricCard} variant="borderless">
+      <div className={styles.header}>
+        {icon && <div className={styles.icon} style={{ color }}>{icon}</div>}
+        <Text className={styles.label}>{label}</Text>
       </div>
-      <div className="metric-value" style={{ color }}>
+      <div className={styles.value} style={{ color }}>
         {value}
       </div>
       {progress !== undefined && (
-        <div className="metric-progress">
+        <div className={styles.progress}>
           <Progress
             percent={progress}
             size="small"
@@ -42,7 +42,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         </div>
       )}
       {subtext && (
-        <Text className="metric-subtext">{subtext}</Text>
+        <Text className={styles.subtext}>{subtext}</Text>
       )}
     </Card>
   );

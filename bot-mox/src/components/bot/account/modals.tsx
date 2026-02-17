@@ -17,12 +17,25 @@ export function ConfirmGenerationModal({
 }: ConfirmGenerationModalProps) {
   return (
     <Modal
-      title="Confirm Generation"
+      title={<span style={{ color: 'var(--boxmox-color-text-primary)' }}>Confirm Generation</span>}
       open={open}
       onOk={onConfirm}
       onCancel={onCancel}
       okText="Generate"
       cancelText="Cancel"
+      styles={{
+        mask: { background: 'rgba(0,0,0,0.65)' },
+        content: {
+          background: 'var(--boxmox-color-surface-panel)',
+          border: '1px solid var(--boxmox-color-border-default)',
+        },
+        header: {
+          background: 'var(--boxmox-color-surface-muted)',
+          borderBottom: '1px solid var(--boxmox-color-border-default)',
+        },
+        body: { color: 'var(--boxmox-color-text-primary)' },
+        footer: { borderTop: '1px solid var(--boxmox-color-border-default)' },
+      }}
     >
       <Alert
         message="Warning"

@@ -20,10 +20,9 @@ npm install
 
 ### Data backend mode
 
-Поддерживаются два режима:
+Runtime mode:
 
-1. `DATA_BACKEND=rtdb` (по умолчанию) — Firebase RTDB.
-2. `DATA_BACKEND=supabase` — Supabase/Postgres (в текущей итерации подключен path `settings/storage_policy`).
+1. `DATA_BACKEND=supabase` (по умолчанию и единственный runtime режим) — Supabase/Postgres.
 
 Для `supabase` режима обязательны:
 
@@ -32,7 +31,7 @@ npm install
 
 Ключ IPQS может задаваться:
 
-1. через Firebase RTDB: `settings/api_keys/ipqs/api_key` (предпочтительно)
+1. через app settings path: `settings/api_keys/ipqs/api_key` (предпочтительно)
 2. через `IPQS_API_KEY` в `.env`
 
 ## Запуск

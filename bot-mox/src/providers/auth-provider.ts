@@ -1,22 +1,12 @@
 import type { AuthProvider } from '@refinedev/core';
-import { buildApiUrl } from '../config/env';
+import { apiRequest } from '../services/apiClient';
 import { hasSupabaseAuth, supabase } from '../utils/supabase';
 
 const AUTH_TOKEN_KEY = 'botmox.auth.token';
 const AUTH_IDENTITY_KEY = 'botmox.auth.identity';
 const AUTH_VERIFY_TS_KEY = 'botmox.auth.verify_at';
 const VERIFY_TTL_MS = 5 * 60 * 1000;
-const DEV_DEFAULT_INTERNAL_API_TOKEN = 'change-me-api-token';
-const DEV_AUTH_BYPASS_ENABLED =
-  import.meta.env.DEV &&
-  String(import.meta.env.VITE_DEV_BYPASS_AUTH || 'true').trim().toLowerCase() !== 'false';
-const DEV_IDENTITY: StoredIdentity = {
-  id: 'dev-user',
-  name: 'Dev User',
-  email: 'dev@localhost',
-  roles: ['admin', 'infra'],
-};
-let hasLoggedDevBypassWarning = false;
+const verifyInFlightByToken = new Map<string, Promise<StoredIdentity | null>>();
 
 interface StoredIdentity {
   id: string;
@@ -37,19 +27,6 @@ function clearSession(): void {
   localStorage.removeItem(AUTH_VERIFY_TS_KEY);
 }
 
-function ensureDevBypassSession(): void {
-  const internalToken = String(import.meta.env.VITE_INTERNAL_API_TOKEN || '').trim();
-  const token = internalToken || DEV_DEFAULT_INTERNAL_API_TOKEN;
-  saveSession(token, DEV_IDENTITY);
-
-  if (!internalToken && !hasLoggedDevBypassWarning) {
-    hasLoggedDevBypassWarning = true;
-    console.warn(
-      `[Auth] VITE_DEV_BYPASS_AUTH enabled without VITE_INTERNAL_API_TOKEN. Using fallback token '${DEV_DEFAULT_INTERNAL_API_TOKEN}' for local dev.`
-    );
-  }
-}
-
 function readIdentity(): StoredIdentity | null {
   const raw = localStorage.getItem(AUTH_IDENTITY_KEY);
   if (!raw) return null;
@@ -61,26 +38,48 @@ function readIdentity(): StoredIdentity | null {
 }
 
 async function verifyTokenWithBackend(token: string): Promise<StoredIdentity | null> {
-  const response = await fetch(buildApiUrl('/api/v1/auth/verify'), {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok || !payload?.success) {
+  const normalizedToken = String(token || '').trim();
+  if (!normalizedToken) {
     return null;
   }
 
-  const data = payload.data || {};
-  return {
-    id: String(data.uid || 'unknown'),
-    name: String(data.email || data.uid || 'User'),
-    email: String(data.email || ''),
-    roles: Array.isArray(data.roles) ? data.roles : [],
-  };
+  const pending = verifyInFlightByToken.get(normalizedToken);
+  if (pending) {
+    return pending;
+  }
+
+  const request = (async () => {
+    try {
+      const payload = await apiRequest<{
+        uid?: unknown;
+        email?: unknown;
+        roles?: unknown;
+      }>('/api/v1/auth/verify', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${normalizedToken}`,
+        },
+      });
+
+      const data = payload.data || {};
+      return {
+        id: String(data.uid || 'unknown'),
+        name: String(data.email || data.uid || 'User'),
+        email: String(data.email || ''),
+        roles: Array.isArray(data.roles) ? data.roles : [],
+      };
+    } catch {
+      return null;
+    }
+  })();
+
+  verifyInFlightByToken.set(normalizedToken, request);
+
+  try {
+    return await request;
+  } finally {
+    verifyInFlightByToken.delete(normalizedToken);
+  }
 }
 
 async function ensureSessionValid(): Promise<boolean> {
@@ -113,6 +112,13 @@ async function ensureSupabaseSessionValid(): Promise<boolean> {
     return false;
   }
 
+  const cachedToken = String(localStorage.getItem(AUTH_TOKEN_KEY) || '');
+  const lastVerify = Number(localStorage.getItem(AUTH_VERIFY_TS_KEY) || 0);
+  const stillFresh = Number.isFinite(lastVerify) && Date.now() - lastVerify < VERIFY_TTL_MS;
+  if (stillFresh && cachedToken && cachedToken === session.access_token && readIdentity()) {
+    return true;
+  }
+
   const verified = await verifyTokenWithBackend(session.access_token);
   if (verified) {
     saveSession(session.access_token, verified);
@@ -136,35 +142,6 @@ async function ensureSupabaseSessionValid(): Promise<boolean> {
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
-    if (DEV_AUTH_BYPASS_ENABLED) {
-      ensureDevBypassSession();
-      return {
-        success: true,
-        redirectTo: '/',
-      };
-    }
-
-    const internalToken = String(import.meta.env.VITE_INTERNAL_API_TOKEN || '').trim();
-
-    if (internalToken && email && password) {
-      const verified = await verifyTokenWithBackend(internalToken);
-      if (!verified) {
-        return {
-          success: false,
-          error: {
-            name: 'InternalTokenVerificationFailed',
-            message: 'Unable to verify internal API token against backend',
-          },
-        };
-      }
-
-      saveSession(internalToken, verified);
-      return {
-        success: true,
-        redirectTo: '/',
-      };
-    }
-
     if (!email || !password) {
       return {
         success: false,
@@ -181,7 +158,7 @@ export const authProvider: AuthProvider = {
         error: {
           name: 'SupabaseNotConfigured',
           message:
-            'Supabase Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (dev: bot-mox/.env; docker: runtime-config.js) or use VITE_INTERNAL_API_TOKEN for internal mode.',
+            'Supabase Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.',
         },
       };
     }
@@ -249,14 +226,6 @@ export const authProvider: AuthProvider = {
   },
 
   logout: async () => {
-    if (DEV_AUTH_BYPASS_ENABLED) {
-      clearSession();
-      return {
-        success: true,
-        redirectTo: '/',
-      };
-    }
-
     clearSession();
 
     if (supabase) {
@@ -274,13 +243,6 @@ export const authProvider: AuthProvider = {
   },
 
   check: async () => {
-    if (DEV_AUTH_BYPASS_ENABLED) {
-      ensureDevBypassSession();
-      return {
-        authenticated: true,
-      };
-    }
-
     const isValid = (await ensureSupabaseSessionValid()) || (await ensureSessionValid());
 
     if (isValid) {
@@ -297,24 +259,11 @@ export const authProvider: AuthProvider = {
   },
 
   getPermissions: async () => {
-    if (DEV_AUTH_BYPASS_ENABLED) {
-      return DEV_IDENTITY.roles || [];
-    }
-
     const identity = readIdentity();
     return identity?.roles || [];
   },
 
   getIdentity: async () => {
-    if (DEV_AUTH_BYPASS_ENABLED) {
-      return {
-        id: DEV_IDENTITY.id,
-        name: DEV_IDENTITY.name,
-        email: DEV_IDENTITY.email,
-        roles: DEV_IDENTITY.roles || [],
-      };
-    }
-
     const identity = readIdentity();
     if (!identity) return null;
 
@@ -327,10 +276,6 @@ export const authProvider: AuthProvider = {
   },
 
   onError: async (error) => {
-    if (DEV_AUTH_BYPASS_ENABLED) {
-      return { error };
-    }
-
     if (error?.statusCode === 401 || error?.statusCode === 403) {
       clearSession();
       return {

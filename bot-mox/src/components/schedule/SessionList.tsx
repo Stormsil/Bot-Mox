@@ -4,7 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ScheduleSession } from '../../types';
 import { formatDuration, timeToMinutes } from '../../utils/scheduleUtils';
 import { TableActionButton } from '../ui/TableActionButton';
-import './SessionList.css';
+import styles from './SessionList.module.css';
 
 interface SessionListProps {
   sessions: ScheduleSession[];
@@ -12,6 +12,7 @@ interface SessionListProps {
   onEdit: (session: ScheduleSession) => void;
   onDelete: (id: string) => void;
   onToggle: (id: string, enabled: boolean) => void;
+  className?: string;
 }
 
 export const SessionList: React.FC<SessionListProps> = ({
@@ -19,7 +20,8 @@ export const SessionList: React.FC<SessionListProps> = ({
   onAdd,
   onEdit,
   onDelete,
-  onToggle
+  onToggle,
+  className,
 }) => {
   // Ensure sessions is an array
   const sessionsArray = Array.isArray(sessions) ? sessions : [];
@@ -40,8 +42,8 @@ export const SessionList: React.FC<SessionListProps> = ({
   };
 
   return (
-    <div className="session-list">
-      <div className="session-list-header">
+    <div className={[styles['session-list'], className].filter(Boolean).join(' ')}>
+      <div className={styles['session-list-header']}>
         <h4>Sessions</h4>
         <Button
           type="primary"
@@ -57,28 +59,33 @@ export const SessionList: React.FC<SessionListProps> = ({
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description="No sessions for this day"
-          className="session-empty"
+          className={styles['session-empty']}
         />
       ) : (
-        <div className="session-items-scrollable">
-          <div className="session-items">
+        <div className={styles['session-items-scrollable']}>
+          <div className={styles['session-items']}>
             {sortedSessions.map((session, index) => (
               <div
                 key={session.id}
-                className={`session-item ${!session.enabled ? 'disabled' : ''}`}
+                className={[
+                  styles['session-item'],
+                  !session.enabled ? styles.disabled : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
-                <div className="session-number">{index + 1}</div>
+                <div className={styles['session-number']}>{index + 1}</div>
 
-                <div className="session-time">
-                  <span className="time-range">
+                <div className={styles['session-time']}>
+                  <span className={styles['time-range']}>
                     {session.start} - {session.end}
                   </span>
-                  <span className="duration">
+                  <span className={styles.duration}>
                     ({getSessionDuration(session)})
                   </span>
                 </div>
 
-                <div className="session-actions">
+                <div className={styles['session-actions']}>
                   <Switch
                     size="small"
                     checked={session.enabled}

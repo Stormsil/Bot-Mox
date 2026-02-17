@@ -1,0 +1,200 @@
+.bot-finance {
+  padding: 0;
+}
+
+.finance-summary {
+  margin-bottom: 16px;
+}
+
+.finance-stat-card {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+}
+
+.finance-stat-card :global(.ant-card-body) {
+  padding: 20px;
+}
+
+.finance-stat-card :global(.ant-statistic-title) {
+  color: var(--boxmox-color-text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.finance-stat-card :global(.ant-statistic-content) {
+  font-family: var(--font-condensed);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+}
+
+.finance-stat-card :global(.ant-statistic-content-prefix) {
+  margin-right: 8px;
+  font-size: var(--text-lg);
+}
+
+.stat-detail {
+  margin-top: 8px;
+}
+
+.stat-label {
+  color: var(--boxmox-color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.costs-breakdown {
+  margin-bottom: 16px;
+}
+
+.costs-card,
+.roi-card {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+}
+
+.costs-card :global(.ant-card-head),
+.roi-card :global(.ant-card-head) {
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+}
+
+.cost-item,
+.roi-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--boxmox-color-surface-muted);
+}
+
+.total {
+  /* marker class for total rows */
+}
+
+.cost-item:last-child,
+.roi-item:last-child {
+  border-bottom: none;
+}
+
+.cost-item :global(.ant-typography),
+.roi-item :global(.ant-typography) {
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.cost-item :global(.ant-typography-strong),
+.roi-item :global(.ant-typography-strong) {
+  color: var(--boxmox-color-text-primary);
+}
+
+.cost-divider,
+.roi-divider {
+  height: 1px;
+  background: var(--boxmox-color-border-default);
+  margin: 8px 0;
+}
+
+.cost-item.total :global(.ant-typography),
+.roi-item.total :global(.ant-typography) {
+  font-size: var(--text-md);
+}
+
+.total-amount {
+  color: var(--boxmox-color-brand-primary) !important;
+}
+
+.positive {
+  color: var(--boxmox-color-status-success) !important;
+}
+
+/* Transactions Table */
+.transactions-card {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+}
+
+.transactions-card :global(.ant-card-head) {
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+}
+
+.transactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.transactions-table {
+  background: transparent;
+}
+
+.transactions-table :global(.ant-table) {
+  background: transparent;
+}
+
+.transactions-table :global(.ant-table-thead) > tr > th {
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-primary);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  font-weight: 600;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.transactions-table :global(.ant-table-tbody) > tr > td {
+  border-bottom: 1px solid var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-secondary);
+}
+
+.transactions-table :global(.ant-table-tbody) > tr:hover > td {
+  background: var(--boxmox-color-surface-hover);
+}
+
+.transaction-type-tag {
+  font-size: var(--text-xs);
+  padding: 0 6px;
+  height: 18px;
+  line-height: 18px;
+  border: none;
+}
+
+.category-tag {
+  background: var(--boxmox-color-surface-muted);
+  border: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-xs);
+  padding: 0 6px;
+  height: 18px;
+  line-height: 18px;
+}
+
+.amount-income {
+  color: var(--boxmox-color-status-success);
+  font-weight: 500;
+}
+
+.amount-expense {
+  color: var(--boxmox-color-status-danger);
+  font-weight: 500;
+}
+
+.transactions-table :global(.ant-pagination) {
+  margin-top: 16px;
+}
+
+.transactions-table :global(.ant-pagination-item) {
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.transactions-table :global(.ant-pagination-item-active) {
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
+}
+
+.transactions-table :global(.ant-pagination-item-active) a {
+  color: var(--boxmox-color-text-primary);
+}

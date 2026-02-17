@@ -1,0 +1,52 @@
+/** Windows UI language definitions (locale tag → display name). */
+export interface WindowsLanguage {
+  tag: string;
+  name: string;
+  nativeName: string;
+}
+
+export const WINDOWS_LANGUAGES: WindowsLanguage[] = [
+  { tag: 'af-ZA', name: 'Afrikaans', nativeName: 'Afrikaans' },
+  { tag: 'ar-SA', name: 'Arabic', nativeName: '\u0627\u0644\u0639\u0631\u0628\u064A\u0629' },
+  { tag: 'bg-BG', name: 'Bulgarian', nativeName: '\u0411\u044A\u043B\u0433\u0430\u0440\u0441\u043A\u0438' },
+  { tag: 'ca-ES', name: 'Catalan', nativeName: 'Catal\u00E0' },
+  { tag: 'cs-CZ', name: 'Czech', nativeName: '\u010Ce\u0161tina' },
+  { tag: 'da-DK', name: 'Danish', nativeName: 'Dansk' },
+  { tag: 'de-DE', name: 'German', nativeName: 'Deutsch' },
+  { tag: 'el-GR', name: 'Greek', nativeName: '\u0395\u03BB\u03BB\u03B7\u03BD\u03B9\u03BA\u03AC' },
+  { tag: 'en-GB', name: 'English (UK)', nativeName: 'English (United Kingdom)' },
+  { tag: 'en-US', name: 'English (US)', nativeName: 'English (United States)' },
+  { tag: 'es-ES', name: 'Spanish (Spain)', nativeName: 'Espa\u00F1ol (Espa\u00F1a)' },
+  { tag: 'es-MX', name: 'Spanish (Mexico)', nativeName: 'Espa\u00F1ol (M\u00E9xico)' },
+  { tag: 'et-EE', name: 'Estonian', nativeName: 'Eesti' },
+  { tag: 'fi-FI', name: 'Finnish', nativeName: 'Suomi' },
+  { tag: 'fr-CA', name: 'French (Canada)', nativeName: 'Fran\u00E7ais (Canada)' },
+  { tag: 'fr-FR', name: 'French (France)', nativeName: 'Fran\u00E7ais (France)' },
+  { tag: 'he-IL', name: 'Hebrew', nativeName: '\u05E2\u05D1\u05E8\u05D9\u05EA' },
+  { tag: 'hi-IN', name: 'Hindi', nativeName: '\u0939\u093F\u0928\u094D\u0926\u0940' },
+  { tag: 'hr-HR', name: 'Croatian', nativeName: 'Hrvatski' },
+  { tag: 'hu-HU', name: 'Hungarian', nativeName: 'Magyar' },
+  { tag: 'id-ID', name: 'Indonesian', nativeName: 'Bahasa Indonesia' },
+  { tag: 'it-IT', name: 'Italian', nativeName: 'Italiano' },
+  { tag: 'ja-JP', name: 'Japanese', nativeName: '\u65E5\u672C\u8A9E' },
+  { tag: 'ko-KR', name: 'Korean', nativeName: '\uD55C\uAD6D\uC5B4' },
+  { tag: 'lt-LT', name: 'Lithuanian', nativeName: 'Lietuvi\u0173' },
+  { tag: 'lv-LV', name: 'Latvian', nativeName: 'Latvie\u0161u' },
+  { tag: 'nb-NO', name: 'Norwegian (Bokm\u00E5l)', nativeName: 'Norsk bokm\u00E5l' },
+  { tag: 'nl-NL', name: 'Dutch', nativeName: 'Nederlands' },
+  { tag: 'pl-PL', name: 'Polish', nativeName: 'Polski' },
+  { tag: 'pt-BR', name: 'Portuguese (Brazil)', nativeName: 'Portugu\u00EAs (Brasil)' },
+  { tag: 'pt-PT', name: 'Portuguese (Portugal)', nativeName: 'Portugu\u00EAs (Portugal)' },
+  { tag: 'ro-RO', name: 'Romanian', nativeName: 'Rom\u00E2n\u0103' },
+  { tag: 'ru-RU', name: 'Russian', nativeName: '\u0420\u0443\u0441\u0441\u043A\u0438\u0439' },
+  { tag: 'sk-SK', name: 'Slovak', nativeName: 'Sloven\u010Dina' },
+  { tag: 'sl-SI', name: 'Slovenian', nativeName: 'Sloven\u0161\u010Dina' },
+  { tag: 'sr-Latn-RS', name: 'Serbian (Latin)', nativeName: 'Srpski (latinica)' },
+  { tag: 'sv-SE', name: 'Swedish', nativeName: 'Svenska' },
+  { tag: 'th-TH', name: 'Thai', nativeName: '\u0E44\u0E17\u0E22' },
+  { tag: 'tr-TR', name: 'Turkish', nativeName: 'T\u00FCrk\u00E7e' },
+  { tag: 'uk-UA', name: 'Ukrainian', nativeName: '\u0423\u043A\u0440\u0430\u0457\u043D\u0441\u044C\u043A\u0430' },
+  { tag: 'vi-VN', name: 'Vietnamese', nativeName: 'Ti\u1EBFng Vi\u1EC7t' },
+  { tag: 'zh-CN', name: 'Chinese (Simplified)', nativeName: '\u4E2D\u6587(\u7B80\u4F53)' },
+  { tag: 'zh-TW', name: 'Chinese (Traditional)', nativeName: '\u4E2D\u6587(\u7E41\u9AD4)' },
+];

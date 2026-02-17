@@ -5,7 +5,7 @@ Bot-Mox is a SaaS control-plane and automation toolkit for managing bot infrastr
 Current stack:
 1. Frontend: React + TypeScript + Vite (`bot-mox/`)
 2. Backend: Express API (`proxy-server/`)
-3. Data: Firebase RTDB (current) with phased Supabase migration
+3. Data: Supabase/Postgres (primary runtime)
 4. Infra runtime: Docker Compose + Caddy + MinIO (production-like stack)
 
 ## Repository Layout

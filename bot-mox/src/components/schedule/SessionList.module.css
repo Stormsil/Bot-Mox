@@ -1,0 +1,140 @@
+.session-list {
+  padding: 16px;
+  background: var(--boxmox-color-surface-panel);
+  display: flex;
+  flex-direction: column;
+}
+
+.session-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.session-list-header h4 {
+  margin: 0;
+  color: var(--boxmox-color-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.session-empty {
+  padding: 32px;
+  color: var(--boxmox-color-text-secondary);
+}
+
+.session-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Scrollable container for session items only */
+.session-items-scrollable {
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.session-items-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.session-items-scrollable::-webkit-scrollbar-track {
+  background: var(--boxmox-color-surface-muted);
+  border-radius: 3px;
+}
+
+.session-items-scrollable::-webkit-scrollbar-thumb {
+  background: var(--boxmox-color-border-default);
+  border-radius: 3px;
+}
+
+.session-items-scrollable::-webkit-scrollbar-thumb:hover {
+  background: var(--boxmox-color-brand-primary);
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--boxmox-color-surface-muted);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  min-height: 36px;
+}
+
+.session-item:hover {
+  border-color: var(--boxmox-color-brand-primary);
+}
+
+.session-item.disabled {
+  opacity: 0.6;
+  background: var(--boxmox-color-surface-panel);
+}
+
+.session-number {
+  display: none;
+}
+
+.session-time {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.time-range {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--boxmox-color-text-primary);
+  font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.duration {
+  font-size: 11px;
+  color: var(--boxmox-color-text-secondary);
+}
+
+.session-profile {
+  flex-shrink: 0;
+}
+
+.profile-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--boxmox-color-brand-soft);
+  color: var(--boxmox-color-brand-contrast);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: capitalize;
+  border-radius: 4px;
+}
+
+.session-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.session-actions :global(.ant-btn) {
+  color: var(--boxmox-color-text-secondary);
+}
+
+.session-actions :global(.ant-btn):hover {
+  color: var(--boxmox-color-brand-primary);
+}
+
+.session-actions :global(.ant-switch) {
+  background-color: #8c8c8c;
+}
+
+.session-actions :global(.ant-switch-checked) {
+  background-color: #52c41a;
+}
+

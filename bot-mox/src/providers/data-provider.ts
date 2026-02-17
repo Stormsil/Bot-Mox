@@ -16,14 +16,7 @@ import type {
   UpdateResponse,
 } from '@refinedev/core';
 import { buildApiUrl } from '../config/env';
-
-const AUTH_TOKEN_KEY = 'botmox.auth.token';
-
-function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem(AUTH_TOKEN_KEY);
-  if (!token) return {};
-  return { Authorization: `Bearer ${token}` };
-}
+import { apiRequest, type ApiSuccessEnvelope } from '../services/apiClient';
 
 function resolveResourcePath(resource: string): string {
   const normalized = String(resource || '').trim().toLowerCase();
@@ -55,32 +48,23 @@ function resolveResourcePath(resource: string): string {
   return `/api/v1/${normalized}`;
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const requestUrl = /^https?:\/\//i.test(path) ? path : buildApiUrl(path);
-  const response = await fetch(requestUrl, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeaders(),
-      ...(init.headers || {}),
-    },
-  });
-
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok || !payload?.success) {
-    const message = payload?.error?.message || payload?.error || `HTTP ${response.status}`;
-    throw new Error(String(message));
+async function request<T>(path: string, init: RequestInit = {}): Promise<ApiSuccessEnvelope<T>> {
+  const headers = new Headers(init.headers || {});
+  if (init.body !== undefined && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
   }
 
-  return payload as T;
+  return apiRequest<T>(path, {
+    ...init,
+    headers,
+  });
 }
 
 function normalizeListResponse<TData extends BaseRecord = BaseRecord>(
-  payload: { data?: TData[]; meta?: { total?: number } }
+  payload: ApiSuccessEnvelope<TData[]>
 ): GetListResponse<TData> {
   const data = Array.isArray(payload.data) ? payload.data : [];
-  const total = Number(payload?.meta?.total ?? data.length);
+  const total = Number(payload.meta?.total ?? data.length);
   return { data, total };
 }
 
@@ -117,7 +101,7 @@ export const dataProvider: DataProvider = {
   ): Promise<GetListResponse<TData>> => {
     const basePath = resolveResourcePath(params.resource);
     const query = extractQueryFromListParams(params);
-    const payload = await request<{ data?: TData[]; meta?: { total?: number } }>(`${basePath}${query}`);
+    const payload = await request<TData[]>(`${basePath}${query}`);
     return normalizeListResponse(payload);
   },
 
@@ -125,7 +109,7 @@ export const dataProvider: DataProvider = {
     params: GetOneParams
   ): Promise<GetOneResponse<TData>> => {
     const basePath = resolveResourcePath(params.resource);
-    const payload = await request<{ data: TData }>(`${basePath}/${encodeURIComponent(String(params.id))}`);
+    const payload = await request<TData>(`${basePath}/${encodeURIComponent(String(params.id))}`);
     return { data: payload.data };
   },
 
@@ -133,7 +117,7 @@ export const dataProvider: DataProvider = {
     params: CreateParams<TVariables>
   ): Promise<CreateResponse<TData>> => {
     const basePath = resolveResourcePath(params.resource);
-    const payload = await request<{ data: TData }>(basePath, {
+    const payload = await request<TData>(basePath, {
       method: 'POST',
       body: JSON.stringify(params.variables || {}),
     });
@@ -144,7 +128,7 @@ export const dataProvider: DataProvider = {
     params: UpdateParams<TVariables>
   ): Promise<UpdateResponse<TData>> => {
     const basePath = resolveResourcePath(params.resource);
-    const payload = await request<{ data: TData }>(`${basePath}/${encodeURIComponent(String(params.id))}`, {
+    const payload = await request<TData>(`${basePath}/${encodeURIComponent(String(params.id))}`, {
       method: 'PATCH',
       body: JSON.stringify(params.variables || {}),
     });
@@ -170,7 +154,7 @@ export const dataProvider: DataProvider = {
     const basePath = resolveResourcePath(params.resource);
     const items = await Promise.all(
       params.ids.map(async (id) => {
-        const payload = await request<{ data: TData }>(`${basePath}/${encodeURIComponent(String(id))}`);
+        const payload = await request<TData>(`${basePath}/${encodeURIComponent(String(id))}`);
         return payload.data;
       })
     );
@@ -187,7 +171,7 @@ export const dataProvider: DataProvider = {
         : {};
     const method = String(customParams.method || 'GET').toUpperCase();
     const path = String(customParams.url || '/api/v1/health');
-    const payload = await request<{ data: TData }>(path, {
+    const payload = await request<TData>(path, {
       method,
       body: customParams.payload ? JSON.stringify(customParams.payload) : undefined,
     });

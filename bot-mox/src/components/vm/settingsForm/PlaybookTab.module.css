@@ -1,0 +1,108 @@
+.loading {
+  text-align: center;
+  padding: 48px;
+}
+
+.layout {
+  display: flex;
+  gap: 16px;
+  min-height: 500px;
+}
+
+.sidebarCard {
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.sidebarList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebarItem {
+  padding: 6px 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--boxmox-color-text-primary);
+  font-size: 12px;
+  line-height: 1.25;
+  user-select: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.sidebarItem:hover {
+  background: var(--boxmox-color-surface-hover);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.sidebarItemActive {
+  background: var(--boxmox-color-brand-soft);
+  border-color: color-mix(in srgb, var(--boxmox-color-brand-primary) 55%, var(--boxmox-color-border-default));
+}
+
+.sidebarItemDefault {
+  font-weight: 700;
+}
+
+.sidebarEmpty {
+  font-size: 12px;
+}
+
+.editorCard {
+  flex: 1;
+  min-width: 0;
+}
+
+.headerRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nameInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.editorBox {
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--boxmox-color-surface-muted);
+}
+
+.footerRow {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.validation {
+  min-width: 0;
+  flex: 1;
+}
+
+.validationLine {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebarCard {
+    width: 100%;
+  }
+
+  .footerRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { message } from 'antd';
 import { startAndSendKeyBatch } from '../../services/vmService';
+import styles from './VMCommandPanel.module.css';
 
 interface VMCommandPanelProps {
   vmIds: number[];
@@ -60,14 +61,14 @@ export const VMCommandPanel: React.FC<VMCommandPanelProps> = ({
   };
 
   return (
-    <div className="vm-command-panel">
-      <div className="vm-command-panel-header">VM Start Action</div>
-      <div className="vm-command-panel-body">
-        <code className="vm-command-panel-code">Ready VM IDs: {vmIdsText}</code>
-        <div className="vm-command-panel-actions">
+    <div className={styles.root}>
+      <div className={styles.header}>VM Start Action</div>
+      <div className={styles.body}>
+        <code className={styles.code}>Ready VM IDs: {vmIdsText}</code>
+        <div className={styles.actions}>
           <button
             onClick={handleRun}
-            className="vm-command-run-btn"
+            className={`${styles.actionBtn} ${styles.runBtn}`}
             disabled={isRunning}
           >
             {isRunning ? 'Starting...' : 'Start VMs'}

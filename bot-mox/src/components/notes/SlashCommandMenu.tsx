@@ -11,7 +11,10 @@ import {
   OrderedListOutlined,
 } from '@ant-design/icons';
 import type { NoteBlockType } from '../../services/notesService';
-import './NotesComponents.css';
+import styles from './NotesComponents.module.css';
+
+const cx = (...parts: Array<string | false | null | undefined>) =>
+  parts.filter(Boolean).join(' ');
 
 /**
  * Опция меню команд
@@ -32,21 +35,21 @@ const COMMANDS: CommandOption[] = [
     type: 'heading_1',
     label: 'Heading 1',
     description: 'Large section heading',
-    icon: <span className="slash-command-custom-icon">H1</span>,
+    icon: <span className={styles['slash-command-custom-icon']}>H1</span>,
     shortcut: '#',
   },
   {
     type: 'heading_2',
     label: 'Heading 2',
     description: 'Medium section heading',
-    icon: <span className="slash-command-custom-icon">H2</span>,
+    icon: <span className={styles['slash-command-custom-icon']}>H2</span>,
     shortcut: '##',
   },
   {
     type: 'heading_3',
     label: 'Heading 3',
     description: 'Small section heading',
-    icon: <span className="slash-command-custom-icon">H3</span>,
+    icon: <span className={styles['slash-command-custom-icon']}>H3</span>,
     shortcut: '###',
   },
   {
@@ -206,13 +209,13 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
     return (
       <div
         ref={menuRef}
-        className="slash-command-menu"
+        className={styles['slash-command-menu']}
         style={{
           left: position.x,
           top: position.y,
         }}
       >
-        <div className="slash-command-empty">No commands found</div>
+        <div className={styles['slash-command-empty']}>No commands found</div>
       </div>
     );
   }
@@ -220,7 +223,7 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
   return (
     <div
       ref={menuRef}
-      className="slash-command-menu"
+      className={styles['slash-command-menu']}
       style={{
         left: position.x,
         top: position.y,
@@ -229,20 +232,21 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
       {filteredCommands.map((command, index) => (
         <div
           key={command.type}
-          className={`slash-command-item ${
-            index === selectedIndex ? 'selected' : ''
-          }`}
+          className={cx(
+            styles['slash-command-item'],
+            index === selectedIndex && styles.selected
+          )}
           onClick={() => handleSelect(command.type)}
           onMouseEnter={() => handleMouseEnter(index)}
         >
-          <div className="slash-command-icon">{command.icon}</div>
-          <div className="slash-command-content">
-            <div className="slash-command-label">{command.label}</div>
-            <div className="slash-command-description">
+          <div className={styles['slash-command-icon']}>{command.icon}</div>
+          <div className={styles['slash-command-content']}>
+            <div className={styles['slash-command-label']}>{command.label}</div>
+            <div className={styles['slash-command-description']}>
               {command.description}
             </div>
           </div>
-          <div className="slash-command-shortcut">{command.shortcut}</div>
+          <div className={styles['slash-command-shortcut']}>{command.shortcut}</div>
         </div>
       ))}
     </div>

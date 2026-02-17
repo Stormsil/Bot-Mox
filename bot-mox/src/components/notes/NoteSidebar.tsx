@@ -22,7 +22,7 @@ import {
   updateNote,
 } from '../../services/notesService';
 import { TableActionButton } from '../ui/TableActionButton';
-import './NotesComponents.css';
+import styles from './NotesComponents.module.css';
 
 interface NoteSidebarProps {
   selectedNoteId: string | null;
@@ -91,6 +91,9 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
   collapsed = false,
   onToggle,
 }) => {
+  const cx = (...parts: Array<string | false | null | undefined>) =>
+    parts.filter(Boolean).join(' ');
+
   const [notes, setNotes] = useState<NoteIndex[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -191,17 +194,17 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
   }, []);
 
   return (
-    <div className={`note-sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <div className={cx(styles['note-sidebar'], collapsed && styles.collapsed)}>
       {/* Заголовок и кнопка создания */}
-      <div className="note-sidebar-header">
-        {!collapsed && <h3 className="note-sidebar-title">Notes</h3>}
-        <div className="note-sidebar-header-actions">
+      <div className={styles['note-sidebar-header']}>
+        {!collapsed && <h3 className={styles['note-sidebar-title']}>Notes</h3>}
+        <div className={styles['note-sidebar-header-actions']}>
           <Tooltip title={collapsed ? 'Expand' : 'Collapse'}>
             <Button
               type="text"
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={onToggle}
-              className="note-sidebar-toggle-btn"
+              className={styles['note-sidebar-toggle-btn']}
             />
           </Tooltip>
           {!collapsed && (
@@ -219,7 +222,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
 
       {/* Поиск - скрыт в collapsed режиме */}
       {!collapsed && (
-        <div className="note-sidebar-search">
+        <div className={styles['note-sidebar-search']}>
           <Input
             placeholder="Search notes..."
             prefix={<SearchOutlined />}
@@ -232,9 +235,9 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
       )}
 
       {/* Список заметок */}
-      <div className="note-sidebar-list">
+      <div className={styles['note-sidebar-list']}>
         {loading ? (
-          <div className="note-sidebar-loading">
+          <div className={styles['note-sidebar-loading']}>
             <Spin size="small" />
             {!collapsed && <span>Loading notes...</span>}
           </div>
@@ -245,7 +248,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
               description={
                 searchQuery ? 'No notes found' : 'No notes yet'
               }
-              className="note-sidebar-empty"
+              className={styles['note-sidebar-empty']}
             >
               {!searchQuery && (
                 <Button
@@ -265,71 +268,82 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
               <List.Item style={{ padding: 0, border: 'none', marginBottom: collapsed ? 4 : 8 }}>
                 <Card
                   key={note.id}
-                  className={`note-list-item ${
-                    selectedNoteId === note.id ? 'selected' : ''
-                  } ${note.is_pinned ? 'pinned' : ''} ${collapsed ? 'collapsed' : ''}`}
+                  className={cx(
+                    styles['note-list-item'],
+                    selectedNoteId === note.id && styles.selected,
+                    note.is_pinned && styles.pinned,
+                    collapsed && styles.collapsed
+                  )}
                   onClick={() => onSelectNote(note.id)}
-                  bodyStyle={{ padding: collapsed ? '8px' : '12px 16px' }}
+                  styles={{ body: { padding: collapsed ? '8px' : '12px 16px' } }}
                   style={{ borderRadius: collapsed ? 4 : 8, width: '100%' }}
                 >
                   {collapsed ? (
                     // Collapsed view - только иконка/индикатор
-                    <div className="note-list-item-collapsed">
+                    <div className={styles['note-list-item-collapsed']}>
                       {note.is_pinned ? (
-                        <PushpinFilled className="note-list-item-pin-icon" />
+                        <PushpinFilled className={styles['note-list-item-pin-icon']} />
                       ) : (
-                        <div className={`note-list-item-indicator ${selectedNoteId === note.id ? 'selected' : ''}`} />
+                        <div
+                          className={cx(
+                            styles['note-list-item-indicator'],
+                            selectedNoteId === note.id && styles.selected
+                          )}
+                        />
                       )}
                     </div>
                   ) : (
                     // Full view
                     <>
-                      <div className="note-list-item-content">
-                        <div className="note-list-item-header">
+                      <div className={styles['note-list-item-content']}>
+                        <div className={styles['note-list-item-header']}>
                           {note.is_pinned && (
-                            <PushpinFilled className="note-list-item-pin-icon" />
+                            <PushpinFilled className={styles['note-list-item-pin-icon']} />
                           )}
-                          <span className="note-list-item-title">
+                          <span className={styles['note-list-item-title']}>
                             {note.title || 'Untitled'}
                           </span>
                         </div>
 
                         {note.preview && (
-                          <div className="note-list-item-preview">
+                          <div className={styles['note-list-item-preview']}>
                             {note.preview}
                           </div>
                         )}
 
-                        <div className="note-list-item-footer">
+                        <div className={styles['note-list-item-footer']}>
                           {note.tags?.length > 0 && (
-                            <div className="note-list-item-tags">
+                            <div className={styles['note-list-item-tags']}>
                               {note.tags.slice(0, 3).map(tag => (
                                 <Tag
                                   key={tag}
                                   color={getTagColor(tag)}
-                                  className="note-list-item-tag"
+                                  className={styles['note-list-item-tag']}
                                 >
                                   {tag}
                                 </Tag>
                               ))}
                               {note.tags.length > 3 && (
-                                <Tag className="note-list-item-tag">
+                                <Tag className={styles['note-list-item-tag']}>
                                   +{note.tags.length - 3}
                                 </Tag>
                               )}
                             </div>
                           )}
-                          <span className="note-list-item-date">
+                          <span className={styles['note-list-item-date']}>
                             {formatDate(note.updated_at)}
                           </span>
                         </div>
                       </div>
 
                       {/* Hover actions */}
-                      <div className="note-list-item-actions">
+                      <div className={styles['note-list-item-actions']}>
                         <TableActionButton
                           icon={note.is_pinned ? <PushpinFilled /> : <PushpinOutlined />}
-                          className={`note-list-item-action ${note.is_pinned ? 'pinned' : ''}`}
+                          className={cx(
+                            styles['note-list-item-action'],
+                            note.is_pinned && styles.pinned
+                          )}
                           onClick={(e) => handleTogglePin(note, e as React.MouseEvent)}
                           tooltip={note.is_pinned ? 'Unpin' : 'Pin'}
                         />
@@ -345,7 +359,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                           <TableActionButton
                             danger
                             icon={<DeleteOutlined />}
-                            className="note-list-item-action"
+                            className={styles['note-list-item-action']}
                             onClick={(e) => (e as React.MouseEvent).stopPropagation()}
                             tooltip="Delete"
                           />
@@ -362,7 +376,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
 
       {/* Статистика - скрыта в collapsed режиме */}
       {!loading && !collapsed && (
-        <div className="note-sidebar-footer">
+        <div className={styles['note-sidebar-footer']}>
           <span>
             {notes?.length || 0} {(notes?.length || 0) === 1 ? 'note' : 'notes'}
           </span>

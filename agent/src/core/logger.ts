@@ -29,11 +29,15 @@ export class Logger {
     }).join(' ') : '';
     const line = `[${ts}] ${level} ${message}${extra}\n`;
 
-    // Console
-    if (level === 'ERROR') {
-      process.stderr.write(line);
-    } else {
-      process.stdout.write(line);
+    // Console (may throw EPIPE in Electron when no TTY is attached)
+    try {
+      if (level === 'ERROR') {
+        process.stderr.write(line);
+      } else {
+        process.stdout.write(line);
+      }
+    } catch {
+      // Ignore — logging should never crash the agent
     }
 
     // File

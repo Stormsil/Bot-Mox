@@ -20,7 +20,7 @@ import {
   sortSessions,
   generateSchedule
 } from '../../utils/scheduleUtils';
-import './BotSchedule.css';
+import styles from './BotSchedule.module.css';
 
 interface BotScheduleProps {
   botId: string;
@@ -255,7 +255,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
 
   if (loading) {
     return (
-      <div className="bot-schedule-loading">
+      <div className={styles['bot-schedule-loading']}>
         <Spin size="large" />
       </div>
     );
@@ -263,7 +263,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
 
   if (error) {
     return (
-      <div className="bot-schedule-error">
+      <div className={styles['bot-schedule-error']}>
         <Alert
           message="Error"
           description={error}
@@ -277,12 +277,12 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
   const currentDay = getCurrentDaySchedule();
 
   return (
-    <div className="bot-schedule">
+    <div className={styles['bot-schedule']}>
       <Card
         title="Schedule"
-        className="schedule-card schedule-card-fixed"
+        className={styles['schedule-card']}
         extra={
-          <div className="schedule-actions">
+          <div className={styles['schedule-actions']}>
             <Button
               icon={<CalendarOutlined />}
               size="small"
@@ -300,7 +300,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
                 icon={<UnlockOutlined />}
                 size="small"
                 onClick={handleUnlockGeneration}
-                className="schedule-unlock-btn"
+                className={styles['schedule-unlock-btn']}
               >
                 Unlock
               </Button>
@@ -330,19 +330,19 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
             message="You have unsaved changes"
             type="warning"
             showIcon
-            className="unsaved-alert"
+            className={styles['unsaved-alert']}
             closable
           />
         )}
 
-        <div className="schedule-content-wrapper">
+        <div className={styles['schedule-content-wrapper']}>
           <WeekPanel
             schedule={schedule}
             selectedDay={selectedDay}
             onDaySelect={setSelectedDay}
           />
 
-          <div className="schedule-main-content">
+          <div className={styles['schedule-main-content']}>
             <DayTabs
               selectedDay={selectedDay}
               onDayChange={setSelectedDay}
@@ -375,9 +375,10 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
                   onEdit={handleEditSession}
                   onDelete={handleDeleteSession}
                   onToggle={handleToggleSession}
+                  className={styles['panel-block']}
                 />
 
-                <DayStats sessions={currentDay.sessions} />
+                <DayStats sessions={currentDay.sessions} className={styles['panel-block']} />
               </>
             )}
           </div>

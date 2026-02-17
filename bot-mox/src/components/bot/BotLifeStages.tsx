@@ -30,7 +30,7 @@ import { formatDate, getStageColor, getStageIcon, getStageLabel } from './lifeSt
 import type { LifeStage } from './lifeStages/config';
 import { StagePanels } from './lifeStages/StagePanels';
 import { StageTimeline } from './lifeStages/StageTimeline';
-import './BotLifeStages.css';
+import styles from './lifeStages/lifeStages.module.css';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -130,7 +130,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
 
   if (loading) {
     return (
-      <div className="bot-life-stages loading">
+      <div className={[styles['bot-life-stages'], styles.loading].join(' ')}>
         <Spin size="large" />
         <p>Loading data...</p>
       </div>
@@ -139,56 +139,55 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
 
   if (error) {
     return (
-      <div className="bot-life-stages">
+      <div className={styles['bot-life-stages']}>
         <Alert message="Error" description={error} type="error" showIcon />
       </div>
     );
   }
 
   return (
-    <div className="bot-life-stages">
-      <Card className="stage-selector-card">
-        <div className="stage-selector-header">
-          <div className="stage-selector-left">
+    <div className={styles['bot-life-stages']}>
+      <Card className={styles['stage-selector-card']}>
+        <div className={styles['stage-selector-header']}>
+          <div className={styles['stage-selector-left']}>
             <Title level={5}>Life Stage</Title>
             <Select
               value={currentStage}
               onChange={handleStageChange}
-              className="stage-select"
-              popupClassName="stage-select-dropdown"
+              className={styles['stage-select']}
               disabled={currentStage === 'banned'}
             >
               <Option value="prepare">
-                <span className="stage-option">
+                <span className={styles['stage-option']}>
                   <LoadingOutlined style={{ color: getStageColor('prepare') }} />
                   Preparation
                 </span>
               </Option>
               <Option value="leveling">
-                <span className="stage-option">
+                <span className={styles['stage-option']}>
                   <RiseOutlined style={{ color: getStageColor('leveling') }} />
                   Leveling
                 </span>
               </Option>
               <Option value="professions">
-                <span className="stage-option">
+                <span className={styles['stage-option']}>
                   <ToolOutlined style={{ color: getStageColor('professions') }} />
                   Professions
                 </span>
               </Option>
               <Option value="farm">
-                <span className="stage-option">
+                <span className={styles['stage-option']}>
                   <GoldOutlined style={{ color: getStageColor('farm') }} />
                   Farm
                 </span>
               </Option>
             </Select>
           </div>
-          <div className="stage-indicator">
+          <div className={styles['stage-indicator']}>
             <Tag
               icon={getStageIcon(currentStage)}
               color={getStageColor(currentStage)}
-              className="current-stage-tag"
+              className={styles['current-stage-tag']}
             >
               {getStageLabel(currentStage)}
             </Tag>
@@ -196,7 +195,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
         </div>
       </Card>
 
-      <Row gutter={[16, 16]} className="stages-content-row">
+      <Row gutter={[16, 16]} className={styles['stages-content-row']}>
         <Col span={18}>
           <StagePanels
             currentStage={currentStage}
@@ -205,7 +204,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
           />
         </Col>
         <Col span={6}>
-          <Card className="timeline-card" title="Life Cycle">
+          <Card className={styles['timeline-card']} title="Life Cycle">
             <StageTimeline currentStage={currentStage} />
             <Divider />
             {currentStage !== 'banned' ? (

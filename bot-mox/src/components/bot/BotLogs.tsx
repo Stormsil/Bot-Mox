@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, List, Tag, Button, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import type { Bot, LogEntry, LogEventType } from '../../types';
-import './BotLogs.css';
+import styles from './BotLogs.module.css';
 
 const { Text } = Typography;
 
@@ -65,9 +65,9 @@ export const BotLogs: React.FC<BotLogsProps> = ({ bot }) => {
   };
 
   return (
-    <div className="bot-logs">
+    <div className={styles['bot-logs']}>
       <Card
-        className="logs-card"
+        className={styles['logs-card']}
         title="Important Events"
         extra={
           <Button
@@ -83,10 +83,10 @@ export const BotLogs: React.FC<BotLogsProps> = ({ bot }) => {
         <List
           dataSource={logs}
           renderItem={(log) => (
-            <List.Item className="log-entry">
-              <div className="log-timestamp">{formatTime(log.timestamp)}</div>
+            <List.Item className={styles['log-entry']}>
+              <div className={styles['log-timestamp']}>{formatTime(log.timestamp)}</div>
               <Tag
-                className="log-type-tag"
+                className={styles['log-type-tag']}
                 style={{
                   backgroundColor: `${getEventColor(log.type)}20`,
                   borderColor: getEventColor(log.type),
@@ -95,7 +95,7 @@ export const BotLogs: React.FC<BotLogsProps> = ({ bot }) => {
               >
                 {getEventLabel(log.type)}
               </Tag>
-              <Text className="log-message">{log.message}</Text>
+              <Text className={styles['log-message']}>{log.message}</Text>
             </List.Item>
           )}
           locale={{ emptyText: 'No important events' }}

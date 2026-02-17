@@ -2,6 +2,7 @@ import React from 'react';
 import { Input, Switch } from 'antd';
 import type { SettingsSectionProps } from './types';
 import { SecretField } from './SecretField';
+import layout from './SettingsSectionLayout.module.css';
 
 export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
   settings,
@@ -9,10 +10,10 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
   secretBindings,
   onSecretBindingChange,
 }) => (
-  <div className="vm-settings-section">
+  <div className={layout.section}>
     <h4>Service URLs</h4>
-    <div className="vm-settings-row single">
-      <div className="vm-settings-field">
+    <div className={`${layout.row} ${layout.rowSingle}`}>
+      <div className={layout.field}>
         <label>Proxmox UI URL</label>
         <Input
           value={settings.services.proxmoxUrl}
@@ -21,8 +22,8 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
         />
       </div>
     </div>
-    <div className="vm-settings-row single">
-      <div className="vm-settings-field">
+    <div className={`${layout.row} ${layout.rowSingle}`}>
+      <div className={layout.field}>
         <label>Proxmox Auto Login</label>
         <div>
           <Switch
@@ -33,8 +34,8 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
         </div>
       </div>
     </div>
-    <div className="vm-settings-row">
-      <div className="vm-settings-field">
+    <div className={layout.row}>
+      <div className={layout.field}>
         <label>TinyFileManager URL</label>
         <Input
           value={settings.services.tinyFmUrl}
@@ -42,7 +43,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
           size="small"
         />
       </div>
-      <div className="vm-settings-field">
+      <div className={layout.field}>
         <label>SyncThing URL</label>
         <Input
           value={settings.services.syncThingUrl}
@@ -51,8 +52,8 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
         />
       </div>
     </div>
-    <div className="vm-settings-row">
-      <div className="vm-settings-field">
+    <div className={layout.row}>
+      <div className={layout.field}>
         <label>TinyFM Username</label>
         <Input
           value={settings.services.tinyFmUsername}
@@ -68,7 +69,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
           onBindingChange={onSecretBindingChange}
         />
       ) : (
-        <div className="vm-settings-field">
+        <div className={layout.field}>
           <label>TinyFM Password</label>
           <Input.Password
             value={settings.services.tinyFmPassword ?? ''}
@@ -78,8 +79,8 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
         </div>
       )}
     </div>
-    <div className="vm-settings-row">
-      <div className="vm-settings-field">
+    <div className={layout.row}>
+      <div className={layout.field}>
         <label>TinyFM Auto Login</label>
         <div>
           <Switch
@@ -89,7 +90,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
           />
         </div>
       </div>
-      <div className="vm-settings-field">
+      <div className={layout.field}>
         <label>SyncThing Auto Login</label>
         <div>
           <Switch
@@ -100,8 +101,8 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
         </div>
       </div>
     </div>
-    <div className="vm-settings-row">
-      <div className="vm-settings-field">
+    <div className={layout.row}>
+      <div className={layout.field}>
         <label>SyncThing Username</label>
         <Input
           value={settings.services.syncThingUsername}
@@ -117,7 +118,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
           onBindingChange={onSecretBindingChange}
         />
       ) : (
-        <div className="vm-settings-field">
+        <div className={layout.field}>
           <label>SyncThing Password</label>
           <Input.Password
             value={settings.services.syncThingPassword ?? ''}

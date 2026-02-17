@@ -29,7 +29,7 @@ import type {
 import { buildSubscriptionColumns } from './subscription-columns';
 import { ExpiringSubscriptionsAlert } from './ExpiringSubscriptionsAlert';
 import { SubscriptionsStats } from './SubscriptionsStats';
-import './SubscriptionsPage.css';
+import styles from './SubscriptionsPage.module.css';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -167,10 +167,10 @@ export const SubscriptionsPage: React.FC = () => {
   const expiringSoon = getExpiringSoon().sort((a, b) => a.expires_at - b.expires_at);
 
   return (
-    <div className="subscriptions-page">
-      <Card className="subscriptions-header">
-        <div className="header-content">
-          <div className="header-title">
+    <div className={styles.root}>
+      <Card className={styles.header}>
+        <div className={styles.headerContent}>
+          <div className={styles.headerTitle}>
             <Title level={4}>
               <CreditCardOutlined /> Subscriptions
             </Title>
@@ -195,7 +195,7 @@ export const SubscriptionsPage: React.FC = () => {
 
       <SubscriptionsStats collapsed={statsCollapsed} stats={stats} />
 
-      <Card className="subscriptions-filters">
+      <Card className={styles.filters}>
         <Space wrap>
           <Input
             placeholder="Search by bot or character..."
@@ -222,7 +222,7 @@ export const SubscriptionsPage: React.FC = () => {
         </Space>
       </Card>
 
-      <Card className="subscriptions-table-card">
+      <Card className={styles.tableCard}>
         <Table
           dataSource={filteredSubscriptions}
           columns={columns}

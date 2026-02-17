@@ -36,14 +36,6 @@ function normalizeStoragePolicy(record) {
 }
 
 function createSupabaseStoragePolicyRepository({ env }) {
-  const backend = String(env?.dataBackend || 'rtdb').trim().toLowerCase();
-  if (backend !== 'supabase') {
-    return {
-      enabled: false,
-      reason: 'DATA_BACKEND is not set to supabase',
-    };
-  }
-
   const clientResult = createSupabaseServiceClient(env);
   if (!clientResult.ok || !clientResult.client) {
     return {
@@ -120,4 +112,3 @@ module.exports = {
   createSupabaseStoragePolicyRepository,
   SupabaseStoragePolicyRepositoryError,
 };
-

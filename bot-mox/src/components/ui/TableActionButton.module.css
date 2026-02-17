@@ -1,0 +1,9 @@
+.tableActionGroup {
+  display: inline-flex;
+}
+
+.tableActionBtn {
+  min-width: 28px;
+  padding-inline: 8px;
+  border-radius: 6px;
+}

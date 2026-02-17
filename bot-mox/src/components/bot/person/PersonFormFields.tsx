@@ -3,6 +3,7 @@ import { Button, Col, Form, Input, Row, Select } from 'antd';
 import { ExclamationCircleOutlined, LockOutlined, SaveOutlined, ThunderboltOutlined, UnlockOutlined } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
 import type { PersonFormValues } from './types';
+import styles from './person.module.css';
 
 interface PersonFormFieldsProps {
   form: FormInstance<PersonFormValues>;
@@ -24,9 +25,9 @@ interface FieldLabelProps {
 }
 
 const FieldLabel: React.FC<FieldLabelProps> = ({ form, field, label }) => (
-  <span className="field-label">
+  <span className={styles['field-label']}>
     {label}
-    {!form.getFieldValue(field) && <ExclamationCircleOutlined className="field-warning-icon" />}
+    {!form.getFieldValue(field) && <ExclamationCircleOutlined className={styles['field-warning-icon']} />}
   </span>
 );
 
@@ -96,13 +97,13 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
       </Col>
     </Row>
 
-    <div className="person-form-actions">
-      <div className="generate-section">
-        <span className="generate-label">Generate random data for:</span>
+    <div className={styles['person-form-actions']}>
+      <div className={styles['generate-section']}>
+        <span className={styles['generate-label']}>Generate random data for:</span>
         <Select
           value={selectedCountry}
           onChange={onSelectedCountryChange}
-          className="country-select"
+          className={styles['country-select']}
           style={{ width: 120 }}
           options={availableCountries.map((country) => ({ value: country, label: country }))}
           disabled={manualEditLocked}
@@ -111,7 +112,7 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
           type="default"
           icon={generationLocked ? <LockOutlined /> : <ThunderboltOutlined />}
           onClick={onGenerateData}
-          className="generate-btn"
+          className={styles['generate-btn']}
           disabled={generationLocked}
         >
           {generationLocked ? 'Locked' : 'Generate Data'}
@@ -121,7 +122,7 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
             type="default"
             icon={<UnlockOutlined />}
             onClick={onUnlockGeneration}
-            className="unlock-btn"
+            className={styles['unlock-btn']}
           >
             Unlock
           </Button>
@@ -133,7 +134,7 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
         htmlType="submit"
         icon={<SaveOutlined />}
         loading={saving}
-        className="save-btn"
+        className={styles['save-btn']}
         disabled={manualEditLocked}
       >
         Save Changes

@@ -30,9 +30,7 @@ import {
   updateSubscriptionSettings,
 } from '../../services/settingsService';
 import { getStoragePolicy, updateStoragePolicy } from '../../services/storagePolicyService';
-import {
-  type ThemePalettes,
-} from '../../theme/themePalette';
+import { useThemeRuntime } from '../../theme/themeRuntime';
 import { ApiKeysCard, NotificationsCard, ProjectsCard, ProxyAndAlertsCards, StoragePolicyCard } from './SettingsSections';
 import { ThemeSettingsPanel } from './ThemeSettingsPanel';
 import type {
@@ -42,19 +40,29 @@ import type {
   StoragePolicyFormValues,
 } from './types';
 import { useThemeSettings } from './useThemeSettings';
-import './SettingsPage.css';
+import styles from './SettingsPage.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
 
 const { Title } = Typography;
 
-interface SettingsPageProps {
-  themePalettes?: ThemePalettes;
-  onThemePalettesChange?: (palettes: ThemePalettes) => void;
-}
-
-export const SettingsPage: React.FC<SettingsPageProps> = ({
-  themePalettes,
-  onThemePalettesChange,
-}) => {
+export const SettingsPage: React.FC = () => {
+  const {
+    themePalettes,
+    setThemePalettes,
+    visualSettings,
+    setVisualSettings,
+    typographySettings,
+    setTypographySettings,
+    shapeSettings,
+    setShapeSettings,
+  } = useThemeRuntime();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [projectsVisible, setProjectsVisible] = useState(false);
@@ -70,7 +78,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const [globalAlerts, setGlobalAlerts] = useState<SubscriptionSettings>(getDefaultSettings());
   const theme = useThemeSettings({
     themePalettes,
-    onThemePalettesChange,
+    onThemePalettesChange: setThemePalettes,
+    visualSettings,
+    onVisualSettingsChange: setVisualSettings,
+    typographySettings,
+    onTypographySettingsChange: setTypographySettings,
+    shapeSettings,
+    onShapeSettingsChange: setShapeSettings,
   });
 
   const loadSettings = useCallback(async () => {
@@ -249,10 +263,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   });
 
   return (
-    <div className="settings-page">
-      <div className="settings-header">
-        <Title level={4} className="settings-title">
-          <ToolOutlined /> Settings
+    <div className={cx('settings-page')}>
+      <div className={cx('settings-header')}>
+        <Title
+          level={4}
+          className={cx('settings-title')}
+          style={{ margin: 0, color: 'var(--boxmox-color-text-primary)' }}
+        >
+          <ToolOutlined className={cx('settings-title-icon')} /> Settings
         </Title>
         <Button
           icon={<ReloadOutlined />}
@@ -323,6 +341,20 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           onThemeInputChange={theme.handleThemeInputChange}
           onThemeInputCommit={theme.commitThemeInput}
           onPickColorFromScreen={theme.handlePickColorFromScreen}
+          localTypographySettings={theme.localTypographySettings}
+          localShapeSettings={theme.localShapeSettings}
+          onTypographySettingsChange={theme.handleTypographySettingsChange}
+          onShapeSettingsChange={theme.handleShapeSettingsChange}
+          localVisualSettings={theme.localVisualSettings}
+          themeAssets={theme.themeAssets}
+          themeAssetsLoading={theme.themeAssetsLoading}
+          themeAssetUploading={theme.themeAssetUploading}
+          onRefreshThemeAssets={theme.handleRefreshThemeAssets}
+          onUploadThemeAsset={theme.handleUploadThemeAsset}
+          onSelectThemeBackground={theme.handleSelectThemeBackground}
+          onDeleteThemeAsset={theme.handleDeleteThemeAsset}
+          onVisualSettingsChange={theme.handleVisualSettingsChange}
+          onSaveVisualSettings={theme.handleSaveVisualSettings}
         />
       </Row>
     </div>

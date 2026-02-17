@@ -1,13 +1,29 @@
 import React from 'react';
-import { Button, Progress, Space, Tag, Typography } from 'antd';
+import { Button, Progress, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { CopyOutlined, DeleteOutlined, EditOutlined, RobotOutlined, SyncOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { Proxy } from '../../types';
 import { getFraudScoreColor } from '../../services/ipqsService';
 import { TableActionButton, TableActionGroup } from '../../components/ui/TableActionButton';
+import styles from './ProxiesPage.module.css';
 
 const { Text } = Typography;
+
+const headerTitle = (text: string) => (
+  <span style={{ textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: 11, fontWeight: 600 }}>
+    {text}
+  </span>
+);
+
+const tagStyle: React.CSSProperties = {
+  borderRadius: 2,
+  fontSize: 10,
+  fontWeight: 500,
+  padding: '0 6px',
+  textTransform: 'uppercase',
+  margin: 0,
+};
 
 export interface ProxyWithBot extends Proxy {
   botName?: string;
@@ -36,7 +52,7 @@ export function buildProxyColumns({
 }: BuildProxyColumnsParams): ColumnsType<ProxyWithBot> {
   return [
     {
-      title: 'Status',
+      title: headerTitle('Status'),
       dataIndex: 'status',
       key: 'status',
       width: 85,
@@ -56,57 +72,55 @@ export function buildProxyColumns({
         }
 
         return (
-          <Tag color={color}>
+          <Tag color={color} style={tagStyle}>
             {text.toUpperCase()}
           </Tag>
         );
       },
     },
     {
-      title: 'Proxy',
+      title: headerTitle('Proxy'),
       key: 'proxy',
       render: (_: unknown, record: ProxyWithBot) => (
-        <Space direction="vertical" size={2}>
+        <div className={styles.proxyCell}>
           <Button
             type="text"
             size="small"
-            className="proxy-copy-btn"
+            className={styles.proxyCopyBtn}
             onClick={(e) => copyProxyString(record, e)}
             icon={<CopyOutlined />}
           >
-            <Text strong>
+            <Text strong className={styles.proxyCopyText}>
               {record.ip}:{record.port}
             </Text>
           </Button>
-          <Text type="secondary" className="proxy-credentials">
+          <Text type="secondary" className={styles.proxyCredentials}>
             {record.login}:{record.password}
           </Text>
-        </Space>
+        </div>
       ),
     },
     {
-      title: 'Location',
+      title: headerTitle('Location'),
       key: 'location',
       width: 100,
       render: (_: unknown, record: ProxyWithBot) => {
         const countryCode = (record.country_code || record.country || '').toString().trim().toUpperCase();
 
         return (
-          <Space direction="vertical" size={0}>
-            <Space size={4}>
-              <Text strong>{countryCode}</Text>
-            </Space>
-            <Space size={4}>
-              {record.vpn && <Tag color="orange" style={{ fontSize: 9, margin: 0 }}>VPN</Tag>}
-              {record.proxy && <Tag color="blue" style={{ fontSize: 9, margin: 0 }}>PROXY</Tag>}
-              {record.tor && <Tag color="red" style={{ fontSize: 9, margin: 0 }}>TOR</Tag>}
-            </Space>
-          </Space>
+          <div className={styles.locationCell}>
+            <Text strong>{countryCode}</Text>
+            <div className={styles.inlineTags}>
+              {record.vpn && <Tag color="orange" style={{ ...tagStyle, fontSize: 9 }}>VPN</Tag>}
+              {record.proxy && <Tag color="blue" style={{ ...tagStyle, fontSize: 9 }}>PROXY</Tag>}
+              {record.tor && <Tag color="red" style={{ ...tagStyle, fontSize: 9 }}>TOR</Tag>}
+            </div>
+          </div>
         );
       },
     },
     {
-      title: 'Fraud Score',
+      title: headerTitle('Fraud Score'),
       dataIndex: 'fraud_score',
       key: 'fraud_score',
       width: 110,
@@ -116,44 +130,43 @@ export function buildProxyColumns({
 
         if (!hasBeenChecked) {
           return (
-            <Tag color="default" style={{ fontSize: 10, margin: 0 }}>
+            <Tag color="default" style={tagStyle}>
               Unknown
             </Tag>
           );
         }
 
         return (
-          <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-            <Space direction="vertical" size={2} style={{ width: '100%', alignItems: 'center' }}>
-              <div className="fraud-score-cell">
-                <Progress
-                  percent={actualScore}
-                  size="small"
-                  strokeColor={getFraudScoreColor(actualScore)}
-                  trailColor="var(--boxmox-color-surface-muted)"
-                  format={(percent) => (
-                    <span style={{
-                      color: getFraudScoreColor(actualScore),
-                      fontSize: 11,
-                      fontWeight: 600,
-                    }}>
-                      {percent}
-                    </span>
-                  )}
-                />
-              </div>
-              <Space size={4}>
-                {record.vpn && <Tag color="orange" style={{ fontSize: 9, margin: 0 }}>VPN</Tag>}
-                {record.proxy && <Tag color="blue" style={{ fontSize: 9, margin: 0 }}>PROXY</Tag>}
-                {record.tor && <Tag color="red" style={{ fontSize: 9, margin: 0 }}>TOR</Tag>}
-              </Space>
-            </Space>
+          <div className={styles.fraudCell}>
+            <div className={styles.fraudScoreCell}>
+              <Progress
+                percent={actualScore}
+                size="small"
+                strokeColor={getFraudScoreColor(actualScore)}
+                trailColor="var(--boxmox-color-surface-muted)"
+                strokeLinecap="round"
+                format={(percent) => (
+                  <span style={{
+                    color: getFraudScoreColor(actualScore),
+                    fontSize: 11,
+                    fontWeight: 600,
+                  }}>
+                    {percent}
+                  </span>
+                )}
+              />
+            </div>
+            <div className={styles.inlineTags}>
+              {record.vpn && <Tag color="orange" style={{ ...tagStyle, fontSize: 9 }}>VPN</Tag>}
+              {record.proxy && <Tag color="blue" style={{ ...tagStyle, fontSize: 9 }}>PROXY</Tag>}
+              {record.tor && <Tag color="red" style={{ ...tagStyle, fontSize: 9 }}>TOR</Tag>}
+            </div>
           </div>
         );
       },
     },
     {
-      title: 'Bot',
+      title: headerTitle('Bot'),
       key: 'bot',
       width: 280,
       render: (_: unknown, record: ProxyWithBot) => (
@@ -170,7 +183,7 @@ export function buildProxyColumns({
       ),
     },
     {
-      title: 'Expires',
+      title: headerTitle('Expires'),
       dataIndex: 'expires_at',
       key: 'expires_at',
       width: 100,
@@ -192,7 +205,7 @@ export function buildProxyColumns({
       },
     },
     {
-      title: 'Days Left',
+      title: headerTitle('Days Left'),
       key: 'days_left',
       width: 60,
       render: (_: unknown, record: ProxyWithBot) => {
@@ -214,21 +227,23 @@ export function buildProxyColumns({
       },
     },
     {
-      title: 'Actions',
+      title: headerTitle('Actions'),
       key: 'actions',
       width: 130,
       render: (_: unknown, record: ProxyWithBot) => (
-        <TableActionGroup>
-          <TableActionButton
-            icon={<SyncOutlined spin={checkingProxyId === record.id} />}
-            onClick={() => handleRecheckIPQS(record)}
-            disabled={checkingProxyId === record.id}
-            tooltip="Recheck IPQS"
-          />
-          <TableActionButton icon={<EditOutlined />} onClick={() => openEditModal(record)} tooltip="Edit" />
-          <TableActionButton icon={<CopyOutlined />} onClick={() => copyProxyString(record)} tooltip="Copy" />
-          <TableActionButton danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)} tooltip="Delete" />
-        </TableActionGroup>
+        <div className={styles.actionsCell}>
+          <TableActionGroup>
+            <TableActionButton
+              icon={<SyncOutlined spin={checkingProxyId === record.id} />}
+              onClick={() => handleRecheckIPQS(record)}
+              disabled={checkingProxyId === record.id}
+              tooltip="Recheck IPQS"
+            />
+            <TableActionButton icon={<EditOutlined />} onClick={() => openEditModal(record)} tooltip="Edit" />
+            <TableActionButton icon={<CopyOutlined />} onClick={() => copyProxyString(record)} tooltip="Copy" />
+            <TableActionButton danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)} tooltip="Delete" />
+          </TableActionGroup>
+        </div>
       ),
     },
   ];

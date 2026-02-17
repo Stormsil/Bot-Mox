@@ -1,3 +1,5 @@
+const { logger } = require('../observability/logger');
+
 function requestLogger(req, res, next) {
   const startedAt = Date.now();
 
@@ -6,8 +8,16 @@ function requestLogger(req, res, next) {
     const timestamp = new Date().toISOString();
     const correlationId = req.correlationId || '-';
 
-    console.log(
-      `[${timestamp}] [${correlationId}] ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs}ms`
+    logger.info(
+      {
+        timestamp,
+        correlation_id: correlationId,
+        method: req.method,
+        path: req.originalUrl,
+        status_code: res.statusCode,
+        duration_ms: durationMs,
+      },
+      'request'
     );
   });
 

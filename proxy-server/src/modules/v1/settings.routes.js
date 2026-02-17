@@ -2,7 +2,7 @@ const express = require('express');
 const { env } = require('../../config/env');
 const { success, failure } = require('../../contracts/envelope');
 const { resolveSettingsMutationSchema } = require('../../contracts/schemas');
-const { buildTenantPath } = require('../../repositories/rtdb/tenant-paths');
+const { buildTenantPath } = require('../../utils/tenant-paths');
 const {
   createSupabaseStoragePolicyRepository,
   SupabaseStoragePolicyRepositoryError,
@@ -10,7 +10,7 @@ const {
 const { asyncHandler } = require('./helpers');
 
 const SETTINGS_ROOT = 'settings';
-const INVALID_RTD_PATH_SEGMENT_PATTERN = /[.#$\[\]]/;
+const INVALID_PATH_SEGMENT_PATTERN = /[.#$\[\]]/;
 
 function parseSettingsPath(pathValue) {
   const rawPath = String(pathValue || '').trim();
@@ -32,7 +32,7 @@ function parseSettingsPath(pathValue) {
       !segment ||
       segment === '.' ||
       segment === '..' ||
-      INVALID_RTD_PATH_SEGMENT_PATTERN.test(segment)
+      INVALID_PATH_SEGMENT_PATTERN.test(segment)
     ) {
       return {
         success: false,
@@ -67,7 +67,7 @@ function isStoragePolicySubPath(parsedPath) {
 }
 
 function shouldUseSupabaseStoragePolicy(parsedPath) {
-  return env.dataBackend === 'supabase' && isStoragePolicySubPath(parsedPath);
+  return isStoragePolicySubPath(parsedPath);
 }
 
 function resolveTenantId(auth) {

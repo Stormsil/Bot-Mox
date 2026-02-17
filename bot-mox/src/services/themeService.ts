@@ -1,5 +1,20 @@
 import { apiGet, apiPut } from './apiClient';
-import { createDefaultThemePalettes, sanitizeThemePalettes, type ThemeMode, type ThemePalette, type ThemePalettes } from '../theme/themePalette';
+import {
+  DEFAULT_THEME_VISUAL_SETTINGS,
+  DEFAULT_THEME_SHAPE_SETTINGS,
+  DEFAULT_THEME_TYPOGRAPHY_SETTINGS,
+  createDefaultThemePalettes,
+  sanitizeThemePalettes,
+  sanitizeThemeShapeSettings,
+  sanitizeThemeTypographySettings,
+  sanitizeThemeVisualSettings,
+  type ThemeMode,
+  type ThemePalette,
+  type ThemePalettes,
+  type ThemeShapeSettings,
+  type ThemeTypographySettings,
+  type ThemeVisualSettings,
+} from '../theme/themePalette';
 
 const THEME_SETTINGS_PATH = '/api/v1/settings/theme';
 
@@ -15,6 +30,9 @@ export interface ThemeSettings {
   palettes: ThemePalettes;
   presets: Record<string, ThemePreset>;
   active_preset_id?: string;
+  visual: ThemeVisualSettings;
+  typography: ThemeTypographySettings;
+  shape: ThemeShapeSettings;
   updated_at: number;
   updated_by?: string;
 }
@@ -22,6 +40,9 @@ export interface ThemeSettings {
 export const getDefaultThemeSettings = (): ThemeSettings => ({
   palettes: createDefaultThemePalettes(),
   presets: {},
+  visual: { ...DEFAULT_THEME_VISUAL_SETTINGS },
+  typography: { ...DEFAULT_THEME_TYPOGRAPHY_SETTINGS },
+  shape: { ...DEFAULT_THEME_SHAPE_SETTINGS },
   updated_at: Date.now(),
 });
 
@@ -78,6 +99,9 @@ export const getThemeSettings = async (): Promise<ThemeSettings> => {
       palettes?: unknown;
       presets?: unknown;
       active_preset_id?: unknown;
+      visual?: unknown;
+      typography?: unknown;
+      shape?: unknown;
       updated_at?: unknown;
       updated_by?: unknown;
     };
@@ -91,6 +115,9 @@ export const getThemeSettings = async (): Promise<ThemeSettings> => {
       palettes: sanitizeThemePalettes(value.palettes),
       presets,
       active_preset_id: activePresetId,
+      visual: sanitizeThemeVisualSettings(value.visual),
+      typography: sanitizeThemeTypographySettings(value.typography),
+      shape: sanitizeThemeShapeSettings(value.shape),
       updated_at: typeof value.updated_at === 'number' ? value.updated_at : Date.now(),
       updated_by: typeof value.updated_by === 'string' ? value.updated_by : undefined,
     };
@@ -104,7 +131,10 @@ export const updateThemeSettings = async (
   palettes: ThemePalettes,
   userId?: string,
   activePresetId?: string,
-  options?: { syncActivePreset?: boolean }
+  options?: { syncActivePreset?: boolean },
+  visualSettings?: ThemeVisualSettings,
+  typographySettings?: ThemeTypographySettings,
+  shapeSettings?: ThemeShapeSettings
 ): Promise<void> => {
   const current = await getThemeSettings();
 
@@ -130,6 +160,9 @@ export const updateThemeSettings = async (
     palettes: normalizedPalettes,
     presets: nextPresets,
     active_preset_id: nextActivePresetId,
+    visual: sanitizeThemeVisualSettings(visualSettings ?? current.visual),
+    typography: sanitizeThemeTypographySettings(typographySettings ?? current.typography),
+    shape: sanitizeThemeShapeSettings(shapeSettings ?? current.shape),
     updated_at: Date.now(),
   };
 
@@ -151,7 +184,28 @@ export const updateThemePalette = async (
       ...current.palettes,
       [mode]: palette,
     },
-    userId
+    userId,
+    current.active_preset_id,
+    undefined,
+    current.visual,
+    current.typography,
+    current.shape
+  );
+};
+
+export const updateThemeVisualSettings = async (
+  visual: ThemeVisualSettings,
+  userId?: string
+): Promise<void> => {
+  const current = await getThemeSettings();
+  await updateThemeSettings(
+    current.palettes,
+    userId,
+    current.active_preset_id,
+    undefined,
+    visual,
+    current.typography,
+    current.shape
   );
 };
 
@@ -184,6 +238,9 @@ export const saveThemePreset = async (
       [preset.id]: preset,
     },
     active_preset_id: preset.id,
+    visual: current.visual,
+    typography: current.typography,
+    shape: current.shape,
     updated_at: timestamp,
   };
 
@@ -210,6 +267,9 @@ export const applyThemePreset = async (
     palettes: sanitizeThemePalettes(preset.palettes),
     presets: current.presets,
     active_preset_id: preset.id,
+    visual: current.visual,
+    typography: current.typography,
+    shape: current.shape,
     updated_at: Date.now(),
   };
 
@@ -240,6 +300,9 @@ export const deleteThemePreset = async (
     palettes: current.palettes,
     presets: restPresets,
     active_preset_id: nextActivePresetId,
+    visual: current.visual,
+    typography: current.typography,
+    shape: current.shape,
     updated_at: Date.now(),
   };
 

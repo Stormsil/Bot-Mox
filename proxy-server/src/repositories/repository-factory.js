@@ -1,139 +1,14 @@
 /**
- * Repository factory — creates domain repositories based on DATA_BACKEND config.
- *
- * Each repository exposes a uniform interface so routes remain backend-agnostic:
- *
- *   CollectionRepository: { list, getById, create, patch, remove }
- *   BotsRepository:       extends CollectionRepository + { writeLifecycleLog, writeArchiveEntry }
- *   FinanceRepository:    extends CollectionRepository (operations) + { getDailyStats, getGoldPriceHistory }
- *   SettingsRepository:   { read, write } (tree-based, not collection-based)
- *
- * Backends: RTDB (default) and Supabase (when DATA_BACKEND=supabase).
+ * Repository factory — creates Supabase-backed domain repositories.
  */
 
-const { RtdbCollectionRepository, readRtdbPath, writeRtdbPath } = require('./rtdb/rtdb-repository');
-const { RTDB_PATHS } = require('./rtdb/paths');
+const { randomUUID } = require('crypto');
 const { SupabaseCollectionRepository } = require('./supabase/supabase-collection-repository');
 const { createSupabaseServiceClient } = require('./supabase/client');
 
-// ===========================================================================
-// RTDB backend
-// ===========================================================================
-
-function createRtdbCollectionRepo(admin, path) {
-  const repo = new RtdbCollectionRepository(admin, path);
-  return {
-    list: () => repo.list(),
-    getById: (id) => repo.getById(id),
-    create: (payload, explicitId) => repo.create(payload, explicitId),
-    patch: (id, payload) => repo.patch(id, payload),
-    remove: (id) => repo.remove(id),
-  };
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
-
-function createRtdbResourcesRepositories(admin) {
-  return {
-    licenses: createRtdbCollectionRepo(admin, RTDB_PATHS.resources.licenses),
-    proxies: createRtdbCollectionRepo(admin, RTDB_PATHS.resources.proxies),
-    subscriptions: createRtdbCollectionRepo(admin, RTDB_PATHS.resources.subscriptions),
-  };
-}
-
-function createRtdbWorkspaceRepositories(admin) {
-  return {
-    notes: createRtdbCollectionRepo(admin, RTDB_PATHS.workspace.notes),
-    calendar: createRtdbCollectionRepo(admin, RTDB_PATHS.workspace.calendar),
-    kanban: createRtdbCollectionRepo(admin, RTDB_PATHS.workspace.kanban),
-  };
-}
-
-function createRtdbBotsRepository(admin) {
-  const repo = new RtdbCollectionRepository(admin, RTDB_PATHS.bots);
-
-  return {
-    list: () => repo.list(),
-    getById: (id) => repo.getById(id),
-    create: (payload, explicitId) => repo.create(payload, explicitId),
-    patch: (id, payload) => repo.patch(id, payload),
-    remove: (id) => repo.remove(id),
-
-    async writeLifecycleLog(botId, type, message, details) {
-      const logRef = admin.database().ref(RTDB_PATHS.logs.botLifecycle).push();
-      await logRef.set({
-        id: logRef.key,
-        bot_id: String(botId),
-        type: String(type),
-        message: String(message),
-        details: details || null,
-        timestamp: Date.now(),
-      });
-    },
-
-    async writeArchiveEntry(botId, botSnapshot, banDetails) {
-      const archiveRef = admin.database().ref(RTDB_PATHS.archive).push();
-      await archiveRef.set({
-        id: archiveRef.key,
-        bot_id: String(botId),
-        reason: 'banned',
-        archived_at: Date.now(),
-        ban_details: banDetails,
-        snapshot: {
-          project_id: botSnapshot?.project_id || '',
-          character: botSnapshot?.character || null,
-          final_level: Number(botSnapshot?.character?.level || 0),
-          total_farmed: Number(botSnapshot?.farm?.all_farmed_gold || 0),
-          total_earned_gold: Number(botSnapshot?.farm?.all_earned_gold || 0),
-          total_runtime_hours: Number(botSnapshot?.monitor?.total_runtime_hours || 0),
-        },
-      });
-    },
-  };
-}
-
-function createRtdbFinanceRepository(admin) {
-  const operationsRepo = new RtdbCollectionRepository(admin, RTDB_PATHS.finance.operations);
-
-  return {
-    list: () => operationsRepo.list(),
-    getById: (id) => operationsRepo.getById(id),
-    create: (payload, explicitId) => operationsRepo.create(payload, explicitId),
-    patch: (id, payload) => operationsRepo.patch(id, payload),
-    remove: (id) => operationsRepo.remove(id),
-
-    async getDailyStats() {
-      return (await readRtdbPath(admin, RTDB_PATHS.finance.dailyStats)) || {};
-    },
-
-    async getGoldPriceHistory() {
-      return (await readRtdbPath(admin, RTDB_PATHS.finance.goldPriceHistory)) || {};
-    },
-  };
-}
-
-function createRtdbSettingsRepository(admin) {
-  return {
-    async read(path) {
-      return readRtdbPath(admin, path);
-    },
-    async write(path, payload, options) {
-      return writeRtdbPath(admin, path, payload, options);
-    },
-  };
-}
-
-function createRtdbRepositories(admin) {
-  return {
-    resources: createRtdbResourcesRepositories(admin),
-    workspace: createRtdbWorkspaceRepositories(admin),
-    bots: createRtdbBotsRepository(admin),
-    finance: createRtdbFinanceRepository(admin),
-    settings: createRtdbSettingsRepository(admin),
-  };
-}
-
-// ===========================================================================
-// Supabase backend
-// ===========================================================================
 
 function createSupabaseCollectionRepo(client, table, tenantId) {
   const repo = new SupabaseCollectionRepository(client, table, tenantId);
@@ -164,7 +39,6 @@ function createSupabaseWorkspaceRepositories(client, tenantId) {
 
 function createSupabaseBotsRepository(client, tenantId) {
   const repo = new SupabaseCollectionRepository(client, 'bots', tenantId);
-  const { randomUUID } = require('crypto');
 
   return {
     list: () => repo.list(),
@@ -268,7 +142,6 @@ function createSupabaseSettingsRepository(client, tenantId) {
         return tree;
       }
 
-      // Navigate into the tree for sub-paths like 'settings/vmgenerator'
       const segments = normalizedPath.split('/').filter(Boolean);
       const startIdx = segments[0] === SETTINGS_ROOT ? 1 : 0;
       let current = tree;
@@ -291,7 +164,9 @@ function createSupabaseSettingsRepository(client, tenantId) {
 
       let updatedTree;
       if (!normalizedPath || normalizedPath === SETTINGS_ROOT) {
-        updatedTree = options?.merge ? { ...tree, ...payload } : payload;
+        updatedTree = (options?.merge && isPlainObject(tree) && isPlainObject(payload))
+          ? { ...tree, ...payload }
+          : payload;
       } else {
         const segments = normalizedPath.split('/').filter(Boolean);
         const startIdx = segments[0] === SETTINGS_ROOT ? 1 : 0;
@@ -307,7 +182,7 @@ function createSupabaseSettingsRepository(client, tenantId) {
 
         const lastSeg = segments[segments.length - 1];
         if (lastSeg) {
-          if (options?.merge && target[lastSeg] && typeof target[lastSeg] === 'object') {
+          if (options?.merge && isPlainObject(target[lastSeg]) && isPlainObject(payload)) {
             target[lastSeg] = { ...target[lastSeg], ...payload };
           } else {
             target[lastSeg] = payload;
@@ -332,7 +207,7 @@ function createSupabaseSettingsRepository(client, tenantId) {
 }
 
 function createSupabaseRepositories(env) {
-  const tenantId = String(env.defaultTenantId || 'default').trim() || 'default';
+  const tenantId = String(env?.defaultTenantId || 'default').trim() || 'default';
   const clientResult = createSupabaseServiceClient(env);
 
   if (!clientResult.ok) {
@@ -350,28 +225,20 @@ function createSupabaseRepositories(env) {
   };
 }
 
-// ===========================================================================
-// Factory entry point
-// ===========================================================================
-
 /**
- * Create all domain repositories for the given backend configuration.
+ * Create all domain repositories for backend runtime.
  *
- * @param {{ admin: object, env?: object }} params
+ * @param {{ env?: object }} params
  * @returns {{
  *   resources: { licenses, proxies, subscriptions },
  *   workspace: { notes, calendar, kanban },
  *   bots: object,
  *   finance: object,
- *   settings: object,
+ *   settings: object
  * }}
  */
-function createRepositories({ admin, env }) {
-  if (env?.dataBackend === 'supabase') {
-    return createSupabaseRepositories(env);
-  }
-
-  return createRtdbRepositories(admin);
+function createRepositories({ env }) {
+  return createSupabaseRepositories(env);
 }
 
 module.exports = {

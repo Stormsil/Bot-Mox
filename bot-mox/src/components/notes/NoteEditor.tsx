@@ -1,6 +1,6 @@
 /**
  * @fileoverview Markdown редактор заметки на базе @uiw/react-md-editor
- * Управляет редактированием markdown текста, автосохранением и взаимодействием с Firebase
+ * Управляет редактированием markdown текста, автосохранением и взаимодействием с backend API
  */
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
@@ -21,7 +21,7 @@ import { updateNote, deleteNote } from '../../services/notesService';
 import { TableActionButton } from '../ui/TableActionButton';
 import '@uiw/react-md-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
-import './NotesComponents.css';
+import styles from './NotesComponents.module.css';
 
 interface NoteEditorProps {
   note: Note;
@@ -80,6 +80,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   onNoteChange,
   onNoteDelete,
 }) => {
+  const cx = (...parts: Array<string | false | null | undefined>) =>
+    parts.filter(Boolean).join(' ');
+
   // Локальное состояние заметки
   const [localNote, setLocalNote] = useState<Note>({
     ...note,
@@ -218,11 +221,11 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   }, [editorMode]);
 
   return (
-    <div className="note-editor">
+    <div className={styles['note-editor']}>
       {/* Заголовок заметки */}
-      <div className="note-editor-header">
+      <div className={styles['note-editor-header']}>
         <Input
-          className="note-title-input"
+          className={styles['note-title-input']}
           placeholder="Note title"
           value={localNote.title}
           onChange={handleTitleChange}
@@ -230,7 +233,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
         />
         <Space>
           {/* Переключатель режимов */}
-          <div className="editor-mode-switcher">
+          <div className={styles['editor-mode-switcher']}>
             <Button
               type={editorMode === 'edit' ? 'primary' : 'text'}
               icon={<EditOutlined />}
@@ -282,9 +285,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
 
       {/* Теги */}
       {localNote.tags?.length > 0 && (
-        <div className="note-tags">
+        <div className={styles['note-tags']}>
           {localNote.tags.map(tag => (
-            <Tag key={tag} className="note-tag">
+            <Tag key={tag} className={styles['note-tag']}>
               {tag}
             </Tag>
           ))}
@@ -292,7 +295,10 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
       )}
 
       {/* Редактор контента */}
-      <div className="note-content-editor note-md-editor-root" data-color-mode={colorMode}>
+      <div
+        className={cx(styles['note-content-editor'], styles['note-md-editor-root'])}
+        data-color-mode={colorMode}
+      >
         <MDEditor
           value={localNote.content || ''}
           onChange={handleContentChange}
@@ -304,14 +310,14 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           }}
           previewOptions={{
             remarkPlugins: [remarkGfm],
-            className: 'notes-md-preview',
+            className: styles['notes-md-preview'],
           }}
         />
       </div>
 
       {/* Индикатор сохранения */}
       {hasChanges && (
-        <div className="note-save-indicator">
+        <div className={styles['note-save-indicator']}>
           <span>Unsaved changes</span>
         </div>
       )}

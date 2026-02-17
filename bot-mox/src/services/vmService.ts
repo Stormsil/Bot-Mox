@@ -7,8 +7,44 @@ import type {
   ProxmoxVMConfig,
   VMConfigUpdateParams,
 } from '../types';
-import { apiGet, apiPatch, apiPost, ApiClientError } from './apiClient';
+import { apiPost, ApiClientError } from './apiClient';
 import { executeVmOps } from './vmOpsService';
+
+export interface ProxmoxTargetInfo {
+  id: string;
+  label: string;
+  url: string;
+  username: string;
+  node: string;
+  isActive?: boolean;
+  sshConfigured?: boolean;
+}
+
+const AGENT_CONNECTIVITY_ERROR_CODES = new Set([
+  'AGENT_OFFLINE',
+  'AGENT_NOT_FOUND',
+  'AGENT_OWNER_UNASSIGNED',
+  'AGENT_OWNER_MISMATCH',
+]);
+
+export interface ProxmoxConnectionSnapshot {
+  agentOnline: boolean;
+  proxmoxConnected: boolean;
+}
+
+export interface SshConnectionStatus {
+  connected: boolean;
+  configured: boolean;
+  code?: string;
+  message?: string;
+  mode?: string;
+  host?: string;
+  port?: number;
+  username?: string;
+}
+
+const SSH_STATUS_CACHE_TTL_MS = 3_000;
+let cachedSshStatus: { expiresAtMs: number; value: SshConnectionStatus } | null = null;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -22,21 +58,94 @@ function isRunningStatus(status: unknown): boolean {
   return String(status || '').toLowerCase() === 'running';
 }
 
+function extractUpid(value: unknown, depth = 0): string {
+  if (depth > 6 || value === null || value === undefined) {
+    return '';
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim();
+    if (!normalized || normalized === '[object Object]') {
+      return '';
+    }
+    const match = normalized.match(/UPID:[^\s'"]+/i);
+    return match ? match[0] : normalized;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const extracted = extractUpid(item, depth + 1);
+      if (extracted) return extracted;
+    }
+    return '';
+  }
+
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    const candidates: unknown[] = [
+      record.upid,
+      record.UPID,
+      record.task,
+      record.taskId,
+      record.task_id,
+      record.id,
+      record.value,
+      record.data,
+      record.result,
+    ];
+
+    for (const candidate of candidates) {
+      const extracted = extractUpid(candidate, depth + 1);
+      if (extracted) return extracted;
+    }
+    return '';
+  }
+
+  return '';
+}
+
 // ============================================================
 // Proxmox operations (via agent command bus → /api/v1/vm-ops)
 // ============================================================
 
 export async function testProxmoxConnection(): Promise<boolean> {
+  const snapshot = await getProxmoxConnectionSnapshot();
+  return snapshot.proxmoxConnected;
+}
+
+export async function getProxmoxConnectionSnapshot(): Promise<ProxmoxConnectionSnapshot> {
   try {
     const result = await executeVmOps<{ connected?: boolean }>({
       type: 'proxmox',
       action: 'status',
       timeoutMs: 15_000,
     });
-    return Boolean(result?.connected);
-  } catch {
-    return false;
+    return {
+      agentOnline: true,
+      proxmoxConnected: Boolean(result?.connected),
+    };
+  } catch (error) {
+    if (error instanceof ApiClientError && AGENT_CONNECTIVITY_ERROR_CODES.has(String(error.code || '').trim())) {
+      return {
+        agentOnline: false,
+        proxmoxConnected: false,
+      };
+    }
+
+    return {
+      agentOnline: false,
+      proxmoxConnected: false,
+    };
   }
+}
+
+export async function listProxmoxTargets(): Promise<ProxmoxTargetInfo[]> {
+  const result = await executeVmOps<ProxmoxTargetInfo[]>({
+    type: 'proxmox',
+    action: 'list-targets',
+    timeoutMs: 10_000,
+  });
+  return Array.isArray(result) ? result : [];
 }
 
 export async function proxmoxLogin(): Promise<boolean> {
@@ -57,10 +166,13 @@ export async function listVMs(node = 'h1'): Promise<ProxmoxVM[]> {
   return Array.isArray(result) ? result : [];
 }
 
-export async function getClusterResources(): Promise<ProxmoxClusterResource[]> {
+export async function getClusterResources(
+  resourceType: string = 'storage'
+): Promise<ProxmoxClusterResource[]> {
   const result = await executeVmOps<ProxmoxClusterResource[]>({
     type: 'proxmox',
     action: 'cluster-resources',
+    params: { type: resourceType },
   });
   return Array.isArray(result) ? result : [];
 }
@@ -80,17 +192,62 @@ export async function cloneVM(params: CloneParams): Promise<{ upid: string }> {
     },
     timeoutMs: 300_000,
   });
-  const upid = String(result?.upid || '').trim();
+  const upid = extractUpid(result?.upid ?? result);
   if (!upid) throw new Error('Clone completed without UPID');
   return { upid };
 }
 
-export async function pollTaskStatus(upid: string, node = 'h1'): Promise<ProxmoxTaskStatus> {
+export async function resizeVMDisk(params: {
+  vmid: number;
+  node?: string;
+  disk: string;
+  size: string;
+}): Promise<{ upid: string | null }> {
+  const result = await executeVmOps<{ upid?: string }>({
+    type: 'proxmox',
+    action: 'resize-disk',
+    params: {
+      vmid: params.vmid,
+      node: params.node,
+      disk: params.disk,
+      size: params.size,
+    },
+    timeoutMs: 120_000,
+  });
+  const upid = extractUpid(result?.upid ?? result);
+  return { upid: upid || null };
+}
+
+export async function pollTaskStatus(upid: unknown, node = 'h1'): Promise<ProxmoxTaskStatus> {
+  const normalizedUpid = extractUpid(upid);
+  if (!normalizedUpid) {
+    throw new Error('Task status requested without a valid UPID');
+  }
   const result = await executeVmOps<ProxmoxTaskStatus>({
     type: 'proxmox',
     action: 'task-status',
-    params: { upid, node },
+    params: { upid: normalizedUpid, node },
     timeoutMs: 15_000,
+  });
+  return result;
+}
+
+export async function waitForTask(
+  upid: unknown,
+  node = 'h1',
+  options: { timeoutMs?: number; intervalMs?: number } = {}
+): Promise<ProxmoxTaskStatus> {
+  const normalizedUpid = extractUpid(upid);
+  if (!normalizedUpid) {
+    throw new Error('Task wait requested without a valid UPID');
+  }
+  const timeoutMs = Math.max(1_000, Math.trunc(options.timeoutMs ?? 300_000));
+  const intervalMs = Math.max(250, Math.trunc(options.intervalMs ?? 1_000));
+  const result = await executeVmOps<ProxmoxTaskStatus>({
+    type: 'proxmox',
+    action: 'wait-task',
+    params: { upid: normalizedUpid, node, timeoutMs, intervalMs },
+    timeoutMs: timeoutMs + 30_000,
   });
   return result;
 }
@@ -102,7 +259,7 @@ export async function startVM(vmid: number, node = 'h1'): Promise<string | null>
     params: { vmid, node },
     timeoutMs: 30_000,
   });
-  return String(result?.upid || '').trim() || null;
+  return extractUpid(result?.upid ?? result) || null;
 }
 
 export async function stopVM(vmid: number, node = 'h1'): Promise<void> {
@@ -135,7 +292,7 @@ export async function deleteVM(
     },
     timeoutMs: 60_000,
   });
-  return { upid: String(result?.upid || '').trim() || null };
+  return { upid: extractUpid(result?.upid ?? result) || null };
 }
 
 export async function getVMStatus(vmid: number, node = 'h1'): Promise<ProxmoxVM> {
@@ -144,6 +301,38 @@ export async function getVMStatus(vmid: number, node = 'h1'): Promise<ProxmoxVM>
     action: 'vm-status',
     params: { vmid, node },
     timeoutMs: 15_000,
+  });
+}
+
+export async function waitForVmStatus(
+  vmid: number,
+  node = 'h1',
+  desiredStatus = 'running',
+  options: { timeoutMs?: number; intervalMs?: number } = {}
+): Promise<ProxmoxVM> {
+  const timeoutMs = Math.max(1_000, Math.trunc(options.timeoutMs ?? 120_000));
+  const intervalMs = Math.max(250, Math.trunc(options.intervalMs ?? 1_000));
+  return executeVmOps<ProxmoxVM>({
+    type: 'proxmox',
+    action: 'wait-vm-status',
+    params: { vmid, node, desiredStatus, timeoutMs, intervalMs },
+    timeoutMs: timeoutMs + 30_000,
+  });
+}
+
+export async function waitForVmPresence(
+  vmid: number,
+  node = 'h1',
+  exists = true,
+  options: { timeoutMs?: number; intervalMs?: number } = {}
+): Promise<{ vmid: number; exists: boolean }> {
+  const timeoutMs = Math.max(1_000, Math.trunc(options.timeoutMs ?? 45_000));
+  const intervalMs = Math.max(250, Math.trunc(options.intervalMs ?? 1_000));
+  return executeVmOps<{ vmid: number; exists: boolean }>({
+    type: 'proxmox',
+    action: 'wait-vm-presence',
+    params: { vmid, node, exists, timeoutMs, intervalMs },
+    timeoutMs: timeoutMs + 30_000,
   });
 }
 
@@ -193,13 +382,13 @@ async function waitUntilVmRunning(
   timeoutMs: number,
   pollIntervalMs: number
 ): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    const status = await getVMStatus(vmid, node);
-    if (isRunningStatus(status.status)) return;
-    await sleep(pollIntervalMs);
+  const status = await waitForVmStatus(vmid, node, 'running', {
+    timeoutMs,
+    intervalMs: pollIntervalMs,
+  });
+  if (!isRunningStatus(status.status)) {
+    throw new Error(`VM ${vmid} did not reach running state within ${Math.ceil(timeoutMs / 1000)}s`);
   }
-  throw new Error(`VM ${vmid} did not reach running state within ${Math.ceil(timeoutMs / 1000)}s`);
 }
 
 async function waitForTaskCompletion(
@@ -209,19 +398,14 @@ async function waitForTaskCompletion(
   pollIntervalMs: number,
   taskLabel: string
 ): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    const status = await pollTaskStatus(upid, node);
-    if (String(status?.status || '').toLowerCase() === 'stopped') {
-      const exitStatus = String(status?.exitstatus || '').trim();
-      if (exitStatus && exitStatus.toUpperCase() !== 'OK') {
-        throw new Error(`${taskLabel} failed: ${exitStatus}`);
-      }
-      return;
-    }
-    await sleep(pollIntervalMs);
+  const status = await waitForTask(upid, node, {
+    timeoutMs,
+    intervalMs: pollIntervalMs,
+  });
+  const exitStatus = String(status?.exitstatus || '').trim();
+  if (exitStatus && exitStatus.toUpperCase() !== 'OK') {
+    throw new Error(`${taskLabel} failed: ${exitStatus}`);
   }
-  throw new Error(`${taskLabel} timed out after ${Math.ceil(timeoutMs / 1000)}s`);
 }
 
 async function runSendKeySpam(
@@ -370,8 +554,8 @@ export async function getVMConfig(vmid: number, node = 'h1'): Promise<ProxmoxVMC
   });
 }
 
-export async function updateVMConfig(params: VMConfigUpdateParams): Promise<{ upid: string }> {
-  const result = await executeVmOps<{ upid: string }>({
+export async function updateVMConfig(params: VMConfigUpdateParams): Promise<{ upid: string | null }> {
+  const result = await executeVmOps<{ upid?: string }>({
     type: 'proxmox',
     action: 'update-config',
     params: {
@@ -388,9 +572,8 @@ export async function updateVMConfig(params: VMConfigUpdateParams): Promise<{ up
     },
     timeoutMs: 30_000,
   });
-  const upid = String(result?.upid || '').trim();
-  if (!upid) throw new Error('VM config update completed without UPID');
-  return { upid };
+  const upid = extractUpid(result?.upid ?? result);
+  return { upid: upid || null };
 }
 
 // ============================================================
@@ -398,15 +581,80 @@ export async function updateVMConfig(params: VMConfigUpdateParams): Promise<{ up
 // ============================================================
 
 export async function testSSHConnection(): Promise<boolean> {
+  const status = await getSshConnectionStatus();
+  return status.connected;
+}
+
+export async function getSshConnectionStatus(options: { forceRefresh?: boolean } = {}): Promise<SshConnectionStatus> {
+  const forceRefresh = options.forceRefresh === true;
+  if (!forceRefresh && cachedSshStatus && cachedSshStatus.expiresAtMs > Date.now()) {
+    return cachedSshStatus.value;
+  }
+
   try {
-    await executeVmOps({ type: 'proxmox', action: 'ssh-test', timeoutMs: 15_000 });
-    return true;
+    const result = await executeVmOps<Partial<SshConnectionStatus>>({
+      type: 'proxmox',
+      action: 'ssh-status',
+      timeoutMs: 15_000,
+    });
+
+    const normalized: SshConnectionStatus = {
+      connected: Boolean(result?.connected),
+      configured: Boolean(result?.configured),
+      code: typeof result?.code === 'string' ? result.code : undefined,
+      message: typeof result?.message === 'string' ? result.message : undefined,
+      mode: typeof result?.mode === 'string' ? result.mode : undefined,
+      host: typeof result?.host === 'string' ? result.host : undefined,
+      port: typeof result?.port === 'number' ? result.port : undefined,
+      username: typeof result?.username === 'string' ? result.username : undefined,
+    };
+
+    cachedSshStatus = {
+      expiresAtMs: Date.now() + SSH_STATUS_CACHE_TTL_MS,
+      value: normalized,
+    };
+    return normalized;
   } catch {
-    return false;
+    const fallback: SshConnectionStatus = {
+      connected: false,
+      configured: false,
+      code: 'SSH_CHECK_FAILED',
+    };
+    cachedSshStatus = {
+      expiresAtMs: Date.now() + 1_000,
+      value: fallback,
+    };
+    return fallback;
+  }
+}
+
+async function ensureSshReadyForOperation(operation: string): Promise<void> {
+  const status = await getSshConnectionStatus({ forceRefresh: true });
+  if (!status.configured) {
+    throw new ApiClientError(
+      'SSH is not configured for the selected computer. Configure SSH to use this feature.',
+      {
+        status: 400,
+        code: 'SSH_REQUIRED',
+        details: { operation, status },
+      },
+    );
+  }
+
+  if (!status.connected) {
+    throw new ApiClientError(
+      status.message || 'SSH is currently unavailable for the selected computer.',
+      {
+        status: 409,
+        code: status.code || 'SSH_UNREACHABLE',
+        details: { operation, status },
+      },
+    );
   }
 }
 
 export async function readVMConfig(vmid: number): Promise<string> {
+  await ensureSshReadyForOperation('read-vm-config');
   const result = await executeVmOps<{ config?: string }>({
     type: 'proxmox',
     action: 'ssh-read-config',
@@ -417,6 +665,7 @@ export async function readVMConfig(vmid: number): Promise<string> {
 }
 
 export async function writeVMConfig(vmid: number, content: string): Promise<void> {
+  await ensureSshReadyForOperation('write-vm-config');
   await executeVmOps({
     type: 'proxmox',
     action: 'ssh-write-config',
@@ -426,6 +675,7 @@ export async function writeVMConfig(vmid: number, content: string): Promise<void
 }
 
 export async function executeSSH(command: string, timeout?: number): Promise<SSHResult> {
+  await ensureSshReadyForOperation('ssh-exec');
   const result = await executeVmOps<SSHResult>({
     type: 'proxmox',
     action: 'ssh-exec',
@@ -440,59 +690,34 @@ export async function executeSSH(command: string, timeout?: number): Promise<SSH
 }
 
 // ============================================================
-// API upsert (replacement for FirebaseService.UpsertBotVmAsync)
+// VM resource registry (independent from bot records)
 // ============================================================
 
-export async function upsertBotVM(
-  uuid: string,
-  vmName: string,
-  ip: string,
-  projectId: string = 'wow_tbc'
-): Promise<{ mode: 'created' | 'updated' | 'skipped' }> {
-  if (!uuid) return { mode: 'skipped' };
-  if (!projectId) projectId = 'wow_tbc';
+export interface VmResourceRegistrationPayload {
+  vmUuid: string;
+  vmName: string;
+  projectId?: string;
+  metadata?: Record<string, unknown>;
+}
 
-  const normalizedVmName = String(vmName || '').trim();
-  const normalizedIp = String(ip || '').trim();
-  let exists = false;
-
-  try {
-    await apiGet(`/api/v1/bots/${encodeURIComponent(uuid)}`);
-    exists = true;
-  } catch (error) {
-    if (!(error instanceof ApiClientError) || error.status !== 404) {
-      throw error;
-    }
+export async function registerVmResource(
+  payload: VmResourceRegistrationPayload
+): Promise<{ vm_uuid: string; user_id: string; status: string }> {
+  const vmUuid = String(payload.vmUuid || '').trim().toLowerCase();
+  if (!vmUuid) {
+    throw new Error('vmUuid is required for VM resource registration');
   }
 
-  if (!exists) {
-    await apiPost('/api/v1/bots', {
-      id: uuid,
-      project_id: projectId,
-      status: 'prepare',
-      character: {
-        class: '',
-        faction: '',
-        level: 1,
-        name: '',
-        race: '',
-        server: '',
-        updated_at: 0,
-      },
-      vm: {
-        name: normalizedVmName,
-        ip: normalizedIp,
-        created_at: new Date().toISOString(),
-      },
-    });
-    return { mode: 'created' };
-  }
+  const vmName = String(payload.vmName || '').trim();
+  const projectId = String(payload.projectId || '').trim();
 
-  await apiPatch(`/api/v1/bots/${encodeURIComponent(uuid)}`, {
-    id: uuid,
-    project_id: projectId,
-    'vm/name': normalizedVmName,
-    'vm/ip': normalizedIp,
+  const response = await apiPost<{ vm_uuid: string; user_id: string; status: string }>('/api/v1/vm/register', {
+    vm_uuid: vmUuid,
+    vm_name: vmName || undefined,
+    project_id: projectId || undefined,
+    status: 'active',
+    metadata: payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : undefined,
   });
-  return { mode: 'updated' };
+
+  return response.data;
 }

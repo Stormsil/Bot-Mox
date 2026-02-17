@@ -11,6 +11,7 @@ export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) 
   const [readyVmIds, setReadyVmIds] = useState<number[]>([]);
   const cancelRef = useRef(false);
   const queueRef = useRef<VMQueueItem[]>([]);
+  const processLockRef = useRef(false);
 
   const syncQueue = useCallback((updater: (prev: VMQueueItem[]) => VMQueueItem[]) => {
     setQueue(prev => {
@@ -30,11 +31,16 @@ export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) 
       id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       name,
       storage: overrides?.storage || 'data',
+      storageMode: overrides?.storageMode || 'manual',
       format: overrides?.format || 'raw',
       resourceMode: overrides?.resourceMode || 'project',
       cores: overrides?.cores,
       memory: overrides?.memory,
+      diskGiB: overrides?.diskGiB,
       projectId: overrides?.projectId || 'wow_tbc',
+      unattendProfileId: overrides?.unattendProfileId,
+      unattendXmlOverride: overrides?.unattendXmlOverride,
+      playbookId: overrides?.playbookId,
       status: 'pending',
     };
     syncQueue(prev => [...prev, newItem]);
@@ -103,21 +109,30 @@ export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) 
   /**
    * Two-phase processing.
    * Phase 1: clone all pending items.
-   * Phase 2: patch config + apply only cores/memory + Firebase.
+   * Phase 2: patch config + apply only cores/memory + backend upsert.
    */
   const processQueue = useCallback(async () => {
-    await processVmQueue({
-      log,
-      usedIds,
-      node,
-      queueRef,
-      cancelRef,
-      setIsProcessing,
-      setUiState,
-      setOperationText,
-      setReadyVmIds,
-      updateQueueItem,
-    });
+    if (processLockRef.current) {
+      return;
+    }
+
+    processLockRef.current = true;
+    try {
+      await processVmQueue({
+        log,
+        usedIds,
+        node,
+        queueRef,
+        cancelRef,
+        setIsProcessing,
+        setUiState,
+        setOperationText,
+        setReadyVmIds,
+        updateQueueItem,
+      });
+    } finally {
+      processLockRef.current = false;
+    }
   }, [log, usedIds, node, updateQueueItem]);
 
   return {

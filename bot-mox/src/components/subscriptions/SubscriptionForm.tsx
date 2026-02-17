@@ -4,14 +4,13 @@ import {
   Select,
   DatePicker,
   Button,
-  Space,
   Alert,
 } from 'antd';
 import { PlusOutlined, EditOutlined } from '@ant-design/icons';
 import type { SubscriptionFormData, SubscriptionWithDetails } from '../../types';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
-import './SubscriptionForm.css';
+import styles from './SubscriptionForm.module.css';
 
 const { Option } = Select;
 
@@ -121,7 +120,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
       form={form}
       layout="vertical"
       onFinish={handleSubmit}
-      className="subscription-form"
+      className={styles.root}
     >
       {dateError && (
         <Alert
@@ -144,23 +143,22 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
           <Select
             placeholder="Select bot"
             showSearch
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              (option?.children as unknown as string)
-                ?.toLowerCase()
-                .includes(input.toLowerCase())
-            }
+            optionFilterProp="label"
             disabled={loading}
           >
             {availableBots.map((bot) => {
-              // Формат: CharacterName (VM-Name) - shortUUID
               const vmName = bot.vmName || bot.name || 'Unknown';
               const characterName = bot.character || 'Unknown';
-              const displayLabel = `${characterName} (${vmName}) - ${bot.id}`;
+
+              // Search string. Keep it user-facing (no IDs).
+              const searchLabel = `${characterName} ${vmName} ${bot.account_email ?? ''}`.trim();
 
               return (
-                <Option key={bot.id} value={bot.id}>
-                  {displayLabel}
+                <Option key={bot.id} value={bot.id} label={searchLabel}>
+                  <div className={styles.botOption}>
+                    <div className={styles.botOptionTitle}>{characterName}</div>
+                    <div className={styles.botOptionMeta}>{vmName}</div>
+                  </div>
                 </Option>
               );
             })}
@@ -189,7 +187,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
 
       {/* Buttons */}
       <Form.Item>
-        <Space>
+        <div className={styles.actions}>
           <Button
             type="primary"
             htmlType="submit"
@@ -203,7 +201,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
               Cancel
             </Button>
           )}
-        </Space>
+        </div>
       </Form.Item>
     </Form>
   );

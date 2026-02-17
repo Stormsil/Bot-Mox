@@ -1,10 +1,6 @@
 const { createSupabaseServiceClient } = require('../../repositories/supabase/client');
 const { createS3StorageProvider } = require('../../repositories/s3/storage-provider');
 
-function isFirebaseRequired(env) {
-  return String(env?.dataBackend || '').toLowerCase() === 'rtdb' || Boolean(env?.requireFirebaseReady);
-}
-
 function isSupabaseRequired(env) {
   return String(env?.dataBackend || '').toLowerCase() === 'supabase' || Boolean(env?.requireSupabaseReady);
 }
@@ -88,16 +84,10 @@ async function probeS3(env) {
   };
 }
 
-async function getHealthChecks({ env, isFirebaseReady }) {
+async function getHealthChecks({ env }) {
   const [supabase, s3] = await Promise.all([probeSupabase(env), probeS3(env)]);
-  const firebaseReady = Boolean(isFirebaseReady());
-  const firebaseRequired = isFirebaseRequired(env);
 
   return {
-    firebase: {
-      required: firebaseRequired,
-      ready: firebaseReady,
-    },
     supabase,
     s3,
   };
@@ -107,7 +97,6 @@ function buildHealthPayload({ env, checks }) {
   return {
     service: 'bot-mox-api-v1',
     timestamp: new Date().toISOString(),
-    firebase: checks.firebase.ready,
     data_backend: env.dataBackend,
     supabase_ready: checks.supabase.ready,
     s3_ready: checks.s3.ready,
@@ -126,7 +115,6 @@ function buildLivenessPayload() {
 
 function buildReadinessPayload({ checks }) {
   const ready =
-    (!checks.firebase.required || checks.firebase.ready) &&
     (!checks.supabase.required || checks.supabase.ready) &&
     (!checks.s3.required || checks.s3.ready);
   return {

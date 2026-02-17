@@ -8,6 +8,8 @@ build/
 coverage/
 .cache/
 *.tsbuildinfo
+bot-mox/test-results/
+bot-mox/playwright-report/
 
 # Logs
 logs/

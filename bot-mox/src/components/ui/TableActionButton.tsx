@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Space, Tooltip } from 'antd';
 import type { ButtonProps, SpaceProps } from 'antd';
-import './TableActionButton.css';
+import styles from './TableActionButton.module.css';
 
 type TableActionButtonProps = Omit<ButtonProps, 'type' | 'size'> & {
   tooltip?: React.ReactNode;
@@ -17,7 +17,7 @@ export const TableActionButton: React.FC<TableActionButtonProps> = ({
   children,
   ...buttonProps
 }) => {
-  const mergedClassName = ['table-action-btn', className].filter(Boolean).join(' ');
+  const mergedClassName = [styles.tableActionBtn, className].filter(Boolean).join(' ');
 
   const button = (
     <Button
@@ -40,6 +40,6 @@ export const TableActionButton: React.FC<TableActionButtonProps> = ({
 type TableActionGroupProps = SpaceProps;
 
 export const TableActionGroup: React.FC<TableActionGroupProps> = ({ className, ...props }) => {
-  const mergedClassName = ['table-action-group', className].filter(Boolean).join(' ');
+  const mergedClassName = [styles.tableActionGroup, className].filter(Boolean).join(' ');
   return <Space size="small" className={mergedClassName} {...props} />;
 };

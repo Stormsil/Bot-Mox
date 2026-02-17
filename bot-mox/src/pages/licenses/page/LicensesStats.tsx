@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card } from 'antd';
 import type { LicensesStats } from './types';
+import styles from '../LicensesPage.module.css';
 
 interface LicensesStatsProps {
   stats: LicensesStats;
@@ -13,26 +14,26 @@ export const LicensesStatsPanel: React.FC<LicensesStatsProps> = ({ stats, collap
   }
 
   return (
-    <div className="licenses-stats">
-      <Card className="stat-card">
-        <div className="stat-value">{stats.total}</div>
-        <div className="stat-label">Total</div>
+    <div className={styles.stats}>
+      <Card className={styles.statCard}>
+        <div className={styles.statValue}>{stats.total}</div>
+        <div className={styles.statLabel}>Total</div>
       </Card>
-      <Card className="stat-card active">
-        <div className="stat-value">{stats.active}</div>
-        <div className="stat-label">Active</div>
+      <Card className={`${styles.statCard} ${styles.statCardActive}`}>
+        <div className={styles.statValue}>{stats.active}</div>
+        <div className={styles.statLabel}>Active</div>
       </Card>
-      <Card className="stat-card warning">
-        <div className="stat-value">{stats.expiringSoon}</div>
-        <div className="stat-label">Expiring Soon</div>
+      <Card className={`${styles.statCard} ${styles.statCardWarning}`}>
+        <div className={styles.statValue}>{stats.expiringSoon}</div>
+        <div className={styles.statLabel}>Expiring Soon</div>
       </Card>
-      <Card className="stat-card expired">
-        <div className="stat-value">{stats.expired}</div>
-        <div className="stat-label">Expired</div>
+      <Card className={`${styles.statCard} ${styles.statCardExpired}`}>
+        <div className={styles.statValue}>{stats.expired}</div>
+        <div className={styles.statLabel}>Expired</div>
       </Card>
-      <Card className="stat-card">
-        <div className="stat-value">{stats.unassigned}</div>
-        <div className="stat-label">Unassigned</div>
+      <Card className={styles.statCard}>
+        <div className={styles.statValue}>{stats.unassigned}</div>
+        <div className={styles.statLabel}>Unassigned</div>
       </Card>
     </div>
   );

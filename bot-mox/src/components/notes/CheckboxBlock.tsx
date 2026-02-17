@@ -6,7 +6,10 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Checkbox } from 'antd';
 import type { CheckboxBlock } from '../../services/notesService';
-import './NotesComponents.css';
+import styles from './NotesComponents.module.css';
+
+const cx = (...parts: Array<string | false | null | undefined>) =>
+  parts.filter(Boolean).join(' ');
 
 interface CheckboxBlockProps {
   block: CheckboxBlock;
@@ -114,24 +117,24 @@ export const CheckboxBlockComponent: React.FC<CheckboxBlockProps> = ({
 
   return (
     <div
-      className={`checkbox-block ${block.checked ? 'checked' : ''}`}
+      className={cx(styles['checkbox-block'], block.checked && styles.checked)}
       data-block-id={block.id}
       data-block-type="checkbox"
     >
-      <div className="checkbox-wrapper" onClick={handleCheckboxClick}>
+      <div className={styles['checkbox-wrapper']} onClick={handleCheckboxClick}>
         <Checkbox
           checked={block.checked}
           onChange={handleCheckboxChange}
-          className="checkbox-input"
+          className={styles['checkbox-input']}
         />
       </div>
-      <div className="checkbox-content-wrapper">
+      <div className={styles['checkbox-content-wrapper']}>
         {showPlaceholder && (
-          <div className="block-placeholder">To-do</div>
+          <div className={styles['block-placeholder']}>To-do</div>
         )}
         <div
           ref={contentRef}
-          className="checkbox-content"
+          className={styles['checkbox-content']}
           contentEditable
           suppressContentEditableWarning
           onInput={handleInput}

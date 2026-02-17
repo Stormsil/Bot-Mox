@@ -1,0 +1,53 @@
+.section {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 2px;
+  padding: 16px;
+}
+
+.section h4 {
+  margin: 0 0 12px 0;
+  color: var(--boxmox-color-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  padding-bottom: 8px;
+}
+
+.matrixWrap {
+  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--boxmox-color-surface-panel);
+}
+
+.matrixTable thead th {
+  background: var(--boxmox-color-surface-panel);
+  color: var(--boxmox-color-text-secondary);
+  vertical-align: bottom;
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+}
+
+.matrixTable tbody td {
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  background: transparent;
+}
+
+.parameter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hint {
+  font-size: 11px;
+}
+
+.projectHead {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.projectDesc {
+  font-size: 11px;
+  line-height: 1.3;
+}

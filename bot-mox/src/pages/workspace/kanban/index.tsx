@@ -31,7 +31,7 @@ import {
   updateKanbanTask,
 } from '../../../services/workspaceService';
 import { TableActionButton } from '../../../components/ui/TableActionButton';
-import './WorkspaceKanbanPage.css';
+import styles from './WorkspaceKanbanPage.module.css';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -182,9 +182,9 @@ export const WorkspaceKanbanPage: React.FC = () => {
   };
 
   return (
-    <div className="workspace-kanban-page">
-      <div className="workspace-kanban-header">
-        <Title level={4} className="workspace-kanban-title">
+    <div className={styles.root}>
+      <div className={styles.header}>
+        <Title level={4} className={styles.title}>
           <CheckCircleOutlined /> Workspace Kanban
         </Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal('todo')}>
@@ -192,13 +192,13 @@ export const WorkspaceKanbanPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="workspace-kanban-board">
+      <div className={styles.board}>
         {STATUSES.map((column) => {
           const columnTasks = tasksByStatus[column.key];
           return (
             <Card
               key={column.key}
-              className="workspace-kanban-column"
+              className={styles.column}
               title={
                 <Space>
                   <span>{column.title}</span>
@@ -222,10 +222,10 @@ export const WorkspaceKanbanPage: React.FC = () => {
                   description={<Text type="secondary">No tasks</Text>}
                 />
               ) : (
-                <div className="workspace-kanban-tasks">
+                <div className={styles.tasks}>
                   {columnTasks.map((task) => (
-                    <Card key={task.id} className="workspace-kanban-task" size="small">
-                      <div className="workspace-kanban-task-header">
+                    <Card key={task.id} className={styles.task} size="small">
+                      <div className={styles.taskHeader}>
                         <Text strong>{task.title}</Text>
                         <Space size={2}>
                           {task.status !== 'done' && (
@@ -251,13 +251,13 @@ export const WorkspaceKanbanPage: React.FC = () => {
                         </Space>
                       </div>
                       {task.description ? (
-                        <Text className="workspace-kanban-task-description">{task.description}</Text>
+                        <Text className={styles.taskDescription}>{task.description}</Text>
                       ) : (
-                        <Text type="secondary" className="workspace-kanban-task-description">
+                        <Text type="secondary" className={styles.taskDescription}>
                           No description
                         </Text>
                       )}
-                      <div className="workspace-kanban-task-footer">
+                      <div className={styles.taskFooter}>
                         {task.due_date ? (
                           <Tag color={dayjs(task.due_date).isBefore(dayjs(), 'day') ? 'error' : 'blue'}>
                             Due {dayjs(task.due_date).format('DD MMM')}

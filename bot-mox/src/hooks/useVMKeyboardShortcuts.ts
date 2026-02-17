@@ -11,6 +11,9 @@ interface VMKeyboardActions {
 export function useVMKeyboardShortcuts(actions: VMKeyboardActions) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Ignore auto-repeat to avoid duplicate queue/process actions.
+      if (e.repeat) return;
+
       // Don't intercept when typing in inputs
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;

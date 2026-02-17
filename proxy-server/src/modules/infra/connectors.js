@@ -3,10 +3,10 @@ const https = require('https');
 const path = require('path');
 const fs = require('fs');
 const { Client: SSHClient } = require('ssh2');
+const { logger } = require('../../observability/logger');
 
 function createInfraConnectors({
-  admin,
-  isFirebaseReady,
+  settingsReader,
   setProxmoxTarget,
 }) {
   const proxmoxAgent = new https.Agent({ rejectUnauthorized: false });
@@ -29,17 +29,11 @@ function createInfraConnectors({
       node: String(process.env.PROXMOX_NODE || 'h1').trim(),
     };
 
-    if (typeof isFirebaseReady === 'function' && !isFirebaseReady()) {
-      return fallback;
-    }
-
     try {
-      const db = admin.database();
-      const snapshot = await db.ref('settings/vmgenerator/proxmox').once('value');
-      const data = snapshot.val();
+      const data = await settingsReader?.readPath('settings/vmgenerator/proxmox', { fallback: null });
       if (data) return data;
     } catch (error) {
-      console.error('Error reading Proxmox settings from Firebase:', error.message);
+      logger.error({ err: error }, 'Error reading Proxmox settings from Supabase settings');
     }
 
     return fallback;
@@ -55,17 +49,11 @@ function createInfraConnectors({
       privateKeyPath: String(process.env.SSH_PRIVATE_KEY_PATH || '').trim(),
     };
 
-    if (typeof isFirebaseReady === 'function' && !isFirebaseReady()) {
-      return fallback;
-    }
-
     try {
-      const db = admin.database();
-      const snapshot = await db.ref('settings/vmgenerator/ssh').once('value');
-      const data = snapshot.val();
+      const data = await settingsReader?.readPath('settings/vmgenerator/ssh', { fallback: null });
       if (data) return data;
     } catch (error) {
-      console.error('Error reading SSH settings from Firebase:', error.message);
+      logger.error({ err: error }, 'Error reading SSH settings from Supabase settings');
     }
 
     return fallback;
@@ -109,7 +97,7 @@ function createInfraConnectors({
       setProxmoxTarget(baseUrl);
     }
 
-    console.log('Proxmox session authenticated');
+    logger.info('Proxmox session authenticated');
     return proxmoxSession;
   }
 

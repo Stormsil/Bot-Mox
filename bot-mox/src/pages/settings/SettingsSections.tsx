@@ -34,8 +34,35 @@ import type {
   ProxySettingsFormValues,
   StoragePolicyFormValues,
 } from './types';
+import styles from './SettingsPage.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
 
 const { Text } = Typography;
+
+const INNER_SETTINGS_CARD_STYLE: React.CSSProperties = {
+  background: 'var(--boxmox-color-surface-muted)',
+  border: '1px solid var(--boxmox-color-border-default)',
+};
+
+const INNER_SETTINGS_CARD_STYLES: NonNullable<React.ComponentProps<typeof Card>['styles']> = {
+  header: {
+    background: 'var(--boxmox-color-surface-hover)',
+    borderBottom: '1px solid var(--boxmox-color-border-default)',
+    padding: '8px 12px',
+    fontSize: 14,
+  },
+  body: {
+    background: 'var(--boxmox-color-surface-muted)',
+    padding: 16,
+  },
+};
 
 interface ApiKeysCardProps {
   form: FormInstance<ApiKeysFormValues>;
@@ -54,7 +81,7 @@ export const ApiKeysCard: React.FC<ApiKeysCardProps> = ({ form, loading, saving,
             <span>API Keys</span>
           </Space>
         )}
-        className="settings-card"
+        className={cx('settings-card')}
       >
         <Row gutter={[32, 16]}>
           <Col xs={24} lg={12}>
@@ -66,7 +93,8 @@ export const ApiKeysCard: React.FC<ApiKeysCardProps> = ({ form, loading, saving,
                   <span>IPQualityScore</span>
                 </Space>
               )}
-              className="inner-settings-card"
+              style={INNER_SETTINGS_CARD_STYLE}
+              styles={INNER_SETTINGS_CARD_STYLES}
             >
               <Form
                 form={form}
@@ -112,7 +140,8 @@ export const ApiKeysCard: React.FC<ApiKeysCardProps> = ({ form, loading, saving,
                   <span>Telegram Bot</span>
                 </Space>
               )}
-              className="inner-settings-card"
+              style={INNER_SETTINGS_CARD_STYLE}
+              styles={INNER_SETTINGS_CARD_STYLES}
             >
               <Form
                 form={form}
@@ -180,7 +209,7 @@ export const ProxyAndAlertsCards: React.FC<ProxyAndAlertsCardsProps> = ({
 }) => {
   return (
     <Col xs={24} lg={12}>
-      <div className="settings-column-stack">
+      <div className={cx('settings-column-stack')}>
         <Card
           title={(
             <Space>
@@ -188,7 +217,7 @@ export const ProxyAndAlertsCards: React.FC<ProxyAndAlertsCardsProps> = ({
               <span>Proxy Settings</span>
             </Space>
           )}
-          className="settings-card"
+          className={cx('settings-card')}
         >
           <Form
             form={proxyForm}
@@ -242,7 +271,7 @@ export const ProxyAndAlertsCards: React.FC<ProxyAndAlertsCardsProps> = ({
               <span>Global Alerts</span>
             </Space>
           )}
-          className="settings-card"
+          className={cx('settings-card')}
         >
           <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
             Common expiration warning threshold for licenses, proxies and subscriptions.
@@ -291,7 +320,7 @@ interface NotificationsCardProps {
 
 export const NotificationsCard: React.FC<NotificationsCardProps> = ({ form, loading, saving, onSave }) => {
   return (
-    <Col xs={24} lg={12} className="settings-notifications-col">
+    <Col xs={24} lg={12} className={cx('settings-notifications-col')}>
       <Card
         title={(
           <Space>
@@ -299,7 +328,7 @@ export const NotificationsCard: React.FC<NotificationsCardProps> = ({ form, load
             <span>Notifications</span>
           </Space>
         )}
-        className="settings-card settings-notifications-card"
+        className={cx('settings-card settings-notifications-card')}
       >
         <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
           Select events to notify via Telegram
@@ -359,7 +388,7 @@ export const StoragePolicyCard: React.FC<StoragePolicyCardProps> = ({
             <span>Storage Policy</span>
           </Space>
         )}
-        className="settings-card"
+        className={cx('settings-card')}
       >
         <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
           Configure where operational data is stored. Secrets remain local-only on agent.
@@ -440,26 +469,26 @@ export const ProjectsCard: React.FC<ProjectsCardProps> = ({ projectsVisible, pro
             {projectsVisible ? 'Hide' : 'Show'}
           </Button>
         )}
-        className="settings-card"
+        className={cx('settings-card')}
       >
         <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
           View configured projects only. New project support is added by developers.
         </Text>
         {!projectsVisible ? null : projectEntries.length === 0 ? (
-          <div className="project-settings-empty">
+          <div className={cx('project-settings-empty')}>
             <Text type="secondary">No projects configured yet</Text>
           </div>
         ) : (
-          <div className="project-settings-list">
+          <div className={cx('project-settings-list')}>
             {projectEntries.map(([projectId, project]) => (
-              <div key={projectId} className="project-settings-item">
-                <div className="project-settings-item-header">
-                  <div className="project-settings-item-title">
+              <div key={projectId} className={cx('project-settings-item')}>
+                <div className={cx('project-settings-item-header')}>
+                  <div className={cx('project-settings-item-title')}>
                     <Text strong>{project.name || projectId}</Text>
                     <Text code>{projectId}</Text>
                   </div>
                 </div>
-                <div className="project-settings-item-meta">
+                <div className={cx('project-settings-item-meta')}>
                   <Text type="secondary">Game: {project.game || '-'}</Text>
                   <Text type="secondary">Expansion: {project.expansion || '-'}</Text>
                   <Text type="secondary">

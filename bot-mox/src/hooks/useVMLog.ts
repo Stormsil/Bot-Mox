@@ -14,6 +14,8 @@ let logIdCounter = 0;
 let taskIdCounter = 0;
 const VM_LOG_TASKS_API_PATH = '/api/v1/settings/vmgenerator/task_logs';
 const LOG_PERSIST_DEBOUNCE_MS = 250;
+const RUNNING_TASK_TIMEOUT_MS = 10 * 60 * 1000;
+const RUNNING_TASK_SWEEP_INTERVAL_MS = 15_000;
 
 async function loadPersistedTasks(): Promise<VMTaskEntry[]> {
   const response = await apiGet<unknown>(VM_LOG_TASKS_API_PATH);
@@ -105,6 +107,12 @@ function parsePersistedTasks(data: unknown): VMTaskEntry[] {
     .sort((a, b) => a.startedAt - b.startedAt);
 }
 
+function hasTaskTimedOut(task: VMTaskEntry, now: number): boolean {
+  if (task.status !== 'running') return false;
+  if (!Number.isFinite(task.startedAt) || task.startedAt <= 0) return false;
+  return (now - task.startedAt) >= RUNNING_TASK_TIMEOUT_MS;
+}
+
 export function useVMLog() {
   const [entries, setEntries] = useState<VMLogEntry[]>([]);
   const [tasks, setTasks] = useState<VMTaskEntry[]>([]);
@@ -137,6 +145,19 @@ export function useVMLog() {
     }, LOG_PERSIST_DEBOUNCE_MS);
   }, []);
 
+  const persistTasksImmediately = useCallback(async (nextTasks: VMTaskEntry[]) => {
+    const serialized = JSON.stringify(nextTasks);
+    if (serialized === lastPersistedHashRef.current) return;
+
+    if (persistTimerRef.current) {
+      clearTimeout(persistTimerRef.current);
+      persistTimerRef.current = null;
+    }
+
+    await apiPut(VM_LOG_TASKS_API_PATH, nextTasks);
+    lastPersistedHashRef.current = serialized;
+  }, []);
+
   useEffect(() => {
     const applyHydratedTasks = (parsed: VMTaskEntry[]) => {
       const serialized = JSON.stringify(parsed);
@@ -156,7 +177,7 @@ export function useVMLog() {
         console.error('Failed to load VM task history:', error);
         hydratedRef.current = true;
       },
-      { intervalMs: 4000, immediate: true }
+      { key: 'settings:vmgenerator:task_logs', intervalMs: 4000, immediate: true }
     );
 
     return () => {
@@ -183,6 +204,41 @@ export function useVMLog() {
     tasksRef.current = cloned;
     setTasks(cloned);
     persistTasks(cloned);
+  }, [persistTasks]);
+
+  const closeRunningTaskById = useCallback((
+    taskId: string,
+    status: VMTaskStatus,
+    summary: string,
+    level: VMTaskDetailLevel
+  ): boolean => {
+    const idx = tasksRef.current.findIndex((task) => task.id === taskId);
+    if (idx < 0) return false;
+    const current = tasksRef.current[idx];
+    if (current.status !== 'running') return false;
+
+    const now = Date.now();
+    const updated: VMTaskEntry = {
+      ...current,
+      status,
+      finishedAt: now,
+      details: [
+        ...current.details,
+        {
+          id: nextLogId(),
+          timestamp: now,
+          level,
+          message: summary,
+        },
+      ],
+    };
+
+    const cloned = [...tasksRef.current];
+    cloned[idx] = updated;
+    tasksRef.current = cloned;
+    setTasks(cloned);
+    persistTasks(cloned);
+    return true;
   }, [persistTasks]);
 
   const startTask = useCallback((taskKey: string, description: string, meta?: StartTaskMeta) => {
@@ -276,6 +332,46 @@ export function useVMLog() {
     }));
   }, [updateTask]);
 
+  const cancelTask = useCallback((taskId: string, reason?: string): boolean => {
+    const summary = String(reason || '').trim() || 'Task cancelled by user from Operation Console';
+    return closeRunningTaskById(taskId, 'cancelled', summary, 'warn');
+  }, [closeRunningTaskById]);
+
+  const timeoutStaleRunningTasks = useCallback(() => {
+    const now = Date.now();
+    let changed = false;
+
+    const nextTasks = tasksRef.current.map((task) => {
+      if (!hasTaskTimedOut(task, now)) {
+        return task;
+      }
+
+      changed = true;
+      return {
+        ...task,
+        status: 'error' as VMTaskStatus,
+        finishedAt: now,
+        details: [
+          ...task.details,
+          {
+            id: nextLogId(),
+            timestamp: now,
+            level: 'error' as VMTaskDetailLevel,
+            message: `Task timed out after ${Math.trunc(RUNNING_TASK_TIMEOUT_MS / 60000)} minutes and was auto-stopped.`,
+          },
+        ],
+      };
+    });
+
+    if (!changed) {
+      return;
+    }
+
+    tasksRef.current = nextTasks;
+    setTasks(nextTasks);
+    persistTasks(nextTasks);
+  }, [persistTasks]);
+
   const info = useCallback((message: string, vmName?: string) => {
     push({
       id: nextLogId(),
@@ -348,13 +444,24 @@ export function useVMLog() {
     } as VMLogDiff);
   }, [push]);
 
-  const clear = useCallback(() => {
+  const clear = useCallback(async () => {
     entriesRef.current = [];
     tasksRef.current = [];
     setEntries([]);
     setTasks([]);
-    persistTasks([]);
-  }, [persistTasks]);
+    hydratedRef.current = true;
+    await persistTasksImmediately([]);
+  }, [persistTasksImmediately]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      timeoutStaleRunningTasks();
+    }, RUNNING_TASK_SWEEP_INTERVAL_MS);
+
+    timeoutStaleRunningTasks();
+
+    return () => clearInterval(timer);
+  }, [timeoutStaleRunningTasks]);
 
   const getFullLog = useCallback((): string => {
     return entriesRef.current.map(entry => {
@@ -391,6 +498,7 @@ export function useVMLog() {
     step,
     table,
     diffTable,
+    cancelTask,
     clear,
     getFullLog,
   };

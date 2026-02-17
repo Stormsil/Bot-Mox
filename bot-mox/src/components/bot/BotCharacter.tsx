@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Badge, Card, Form, Tooltip, message } from 'antd';
+import { Card, Form, Tooltip, message } from 'antd';
 import { EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { apiGet, apiPatch } from '../../services/apiClient';
 import { subscribeBotById } from '../../services/botsApiService';
@@ -16,7 +16,7 @@ import {
   toReferenceData,
 } from './character';
 import type { BotCharacterProps, CharacterFormData, ReferenceData } from './character';
-import './BotCharacter.css';
+import styles from './character/character.module.css';
 
 export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }) => {
   const [characterForm] = Form.useForm<CharacterFormData>();
@@ -275,20 +275,25 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
   }
 
   return (
-    <div className="bot-character">
+    <div className={styles['bot-character']}>
       <Card
-        className="character-card"
+        className={styles['character-card']}
         title={
-          <div className="character-card-header">
-            {mode === 'view' ? <EyeOutlined className="header-icon" /> : <EditOutlined className="header-icon" />}
-            <span>{mode === 'view' ? 'Character Information' : 'Character Configuration'}</span>
+          <div className={styles['character-card-header']}>
+            {mode === 'view' ? <EyeOutlined className={styles['header-icon']} /> : <EditOutlined className={styles['header-icon']} />}
+            <span className={styles['character-card-title']}>{mode === 'view' ? 'Character Information' : 'Character Configuration'}</span>
             {!complete && (
               <Tooltip title="Character data is incomplete">
-                <Badge dot className="incomplete-badge" />
+                <span className={styles['incomplete-dot']} aria-hidden="true" />
               </Tooltip>
             )}
           </div>
         }
+        headStyle={{
+          background: 'var(--boxmox-color-surface-muted)',
+          borderColor: 'var(--boxmox-color-border-default)',
+        }}
+        bodyStyle={{ padding: 16 }}
       >
         {mode === 'view' ? (
           <CharacterViewMode formData={formData} referenceData={referenceData} raceIconUrl={raceIconUrl} />

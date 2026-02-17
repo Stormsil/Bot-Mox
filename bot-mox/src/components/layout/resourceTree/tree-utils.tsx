@@ -125,17 +125,17 @@ export const getIcon = (type: TreeItem['type'], status?: BotStatus, sectionKind?
   }
 };
 
-export const convertToTreeData = (items: TreeItem[]): TreeDataNode[] =>
+export const convertToTreeData = (items: TreeItem[], cx: (classNames: string) => string): TreeDataNode[] =>
   items.map((item) => ({
     key: item.key,
     selectable: item.selectable ?? true,
     title: (
-      <span className="resource-tree-node">
-        <span className="resource-tree-icon">{getIcon(item.type, item.status, item.sectionKind)}</span>
-        <span className="resource-tree-title">{item.title}</span>
+      <span className={cx('resource-tree-node')}>
+        <span className={cx('resource-tree-icon')}>{getIcon(item.type, item.status, item.sectionKind)}</span>
+        <span className={cx('resource-tree-title')}>{item.title}</span>
       </span>
     ),
-    children: item.children ? convertToTreeData(item.children) : undefined,
+    children: item.children ? convertToTreeData(item.children, cx) : undefined,
   }));
 
 export const findNodePath = (
@@ -210,7 +210,8 @@ export const getSelectedKeysForLocation = (pathname: string, search: string): st
   if (pathname === '/proxies') return ['proxies'];
   if (pathname === '/subscriptions') return ['subscriptions'];
   if (pathname === '/vms') return ['vms'];
-  if (pathname === '/vms/list') return ['vms_list'];
+  if (pathname === '/vms/list') return ['vms'];
+  if (pathname === '/vms/unattend-profiles') return ['vms'];
   if (pathname === '/vms/sites/proxmox' || pathname === '/vms/proxmox') return ['vms_site_proxmox'];
   if (pathname === '/vms/sites/tinyfm' || pathname === '/vms/tinyfm') return ['vms_site_tinyfm'];
   if (pathname === '/vms/sites/syncthing' || pathname === '/vms/syncthing') return ['vms_site_syncthing'];

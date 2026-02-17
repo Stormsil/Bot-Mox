@@ -2,41 +2,45 @@
 
 ## Primary Store
 
-- Firebase Realtime Database (RTDB) is the primary runtime store.
+- Supabase/Postgres is the primary runtime store.
 - Frontend accesses data through backend API (`/api/v1/*`) for business operations.
-- Supabase/Postgres migration is staged via `DATA_BACKEND` feature flag.
 
-## Key RTDB Domains
+## Supabase Runtime Domains
 
-- `bots/*`
-- `resources/licenses/*`
-- `resources/proxies/*`
-- `resources/subscriptions/*`
-- `workspace/notes_v2/*`
-- `workspace/notes_index/*`
-- `workspace/calendar_events/*`
-- `workspace/kanban_tasks/*`
-- `settings/*`
-- `finance/operations/*`
-- `finance/daily_stats/*`
-- `finance/gold_price_history/*`
-- `tenants/{tenantId}/vm_registry/*`
-- `tenants/{tenantId}/licenses/*`
-- `tenants/{tenantId}/entitlements/*`
-- `tenants/{tenantId}/execution_leases/*`
-- `tenants/{tenantId}/settings/storage_policy`
-
-## Supabase (Staged)
-
-- `public.storage_policies` (first migrated path for `settings/storage_policy` when `DATA_BACKEND=supabase`)
-- `public.artifact_releases` (tenant-scoped artifact release metadata)
-- `public.artifact_assignments` (tenant default + per-user release assignment)
-- `public.artifact_download_audit` (lease-gated artifact resolve audit trail)
-
-## Rules
-
-- RTDB rules: `database.rules.json`
-- Firestore rules (default deny): `firestore.rules`
+- `public.resources_licenses`
+- `public.resources_proxies`
+- `public.resources_subscriptions`
+- `public.workspace_notes`
+- `public.workspace_calendar_events`
+- `public.workspace_kanban_tasks`
+- `public.bots`
+- `public.bot_lifecycle_log`
+- `public.bot_archive`
+- `public.finance_operations`
+- `public.finance_aggregates`
+- `public.app_settings`
+- `public.storage_policies`
+- `public.agents`
+  - uses `owner_user_id` for user-scoped ownership; non-privileged API paths require assigned owner.
+- `public.agent_commands`
+- `public.secrets_ciphertext`
+- `public.secret_bindings`
+- `public.artifact_releases`
+- `public.artifact_assignments`
+- `public.artifact_download_audit`
+- `public.vm_registry`
+- `public.execution_leases`
+- `public.tenant_licenses`
+- `public.tenant_entitlements`
+- `public.unattend_profiles`
+  - пользовательские шаблоны autounattend.xml для персонализации Windows-установки
+  - unique constraint на `(tenant_id, user_id, name)`
+- `public.provisioning_tokens`
+  - JWT-токены привязанные к VM для авторизации bootstrap-процесса
+  - статусы: `active`, `used`, `expired`, `revoked`
+  - unique constraint на `(tenant_id, vm_uuid)`
+- `public.vm_setup_progress`
+  - трекинг шагов установки VM (windows_installed → downloader_ready → app_downloaded → playbook_running → completed)
 
 ## API Access Surface
 
@@ -54,12 +58,16 @@
 - `POST /api/v1/artifacts/assign`
 - `GET /api/v1/artifacts/assign/{userId}/{module}`
 - `POST /api/v1/artifacts/resolve-download`
+- `GET|POST|PUT|DELETE /api/v1/unattend-profiles/*`
+- `POST /api/v1/provisioning/generate-iso-payload`
+- `POST /api/v1/provisioning/validate-token`
+- `POST /api/v1/provisioning/report-progress`
+- `GET /api/v1/provisioning/progress/{vmUuid}`
 
 Legacy `/api/*` adapters are removed.
-
-Migration plan: `docs/plans/supabase-saas-agent-mvp.md`.
 
 ## History
 
 - `docs/history/architecture/refactor-baseline.md`
 - `docs/history/architecture/refactor-handoff-2026-02-10.md`
+- `docs/history/firebase-config/` (Firebase project config + rules/indexes archive)

@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Tag, message } from 'antd';
+import { Button, Input, Modal, Table, Tag, message } from 'antd';
 import {
+  EditOutlined,
   PlayCircleOutlined,
   PoweroffOutlined,
+  RedoOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import type { ProxmoxVM } from '../../types';
-import { startVM, stopVM } from '../../services/vmService';
+import { startVM, stopVM, updateVMConfig, waitForTask } from '../../services/vmService';
 import { useProxmox } from '../../hooks/useProxmox';
 import { TableActionButton, TableActionGroup } from '../ui/TableActionButton';
-import './VMList.css';
+import styles from './VMList.module.css';
 
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
+const headerTitle = (text: string) => (
+  <span style={{ textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: 11 }}>
+    {text}
+  </span>
+);
 
 function formatUptime(seconds: number): string {
   if (!seconds) return '-';
@@ -30,11 +30,42 @@ function formatUptime(seconds: number): string {
   return `${h}h ${m}m`;
 }
 
+interface VMListViewProps {
+  vms: ProxmoxVM[];
+  loading: boolean;
+  connected: boolean;
+  node: string;
+  refreshVMs: () => Promise<void> | void;
+  onRecreate?: (vm: ProxmoxVM) => void;
+}
+
 export const VMList: React.FC = () => {
-  const { vms, loading, connected, node, refreshVMs } = useProxmox();
+  const proxmox = useProxmox();
+  return (
+    <VMListView
+      vms={proxmox.vms}
+      loading={proxmox.loading}
+      connected={proxmox.connected}
+      node={proxmox.node}
+      refreshVMs={proxmox.refreshVMs}
+    />
+  );
+};
+
+export const VMListView: React.FC<VMListViewProps> = ({
+  vms,
+  loading,
+  connected,
+  node,
+  refreshVMs,
+  onRecreate,
+}) => {
   const [tableHeight, setTableHeight] = useState(() => (
     typeof window === 'undefined' ? 520 : Math.max(260, window.innerHeight - 300)
   ));
+  const [renameTarget, setRenameTarget] = useState<ProxmoxVM | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [renameSaving, setRenameSaving] = useState(false);
 
   useEffect(() => {
     const updateHeight = () => {
@@ -50,7 +81,7 @@ export const VMList: React.FC = () => {
     try {
       await startVM(vmid, node);
       message.success(`VM ${vmid} start requested`);
-      setTimeout(refreshVMs, 2000);
+      void refreshVMs();
     } catch (err) {
       message.error(`Failed to start VM ${vmid}: ${(err as Error).message}`);
     }
@@ -60,36 +91,77 @@ export const VMList: React.FC = () => {
     try {
       await stopVM(vmid, node);
       message.success(`VM ${vmid} stop requested`);
-      setTimeout(refreshVMs, 2000);
+      void refreshVMs();
     } catch (err) {
       message.error(`Failed to stop VM ${vmid}: ${(err as Error).message}`);
     }
   };
 
-  const runningCount = vms.filter(vm => vm.status === 'running').length;
-  const stoppedCount = vms.filter(vm => vm.status === 'stopped').length;
+  const openRenameModal = (vm: ProxmoxVM) => {
+    setRenameTarget(vm);
+    setRenameValue(String(vm.name || `VM ${vm.vmid}`));
+  };
+
+  const handleRenameSubmit = async () => {
+    if (!renameTarget) {
+      return;
+    }
+
+    const nextName = String(renameValue || '').trim();
+    if (!nextName) {
+      message.warning('VM name is required');
+      return;
+    }
+
+    setRenameSaving(true);
+    try {
+      const result = await updateVMConfig({
+        vmid: renameTarget.vmid,
+        node,
+        config: { name: nextName },
+      });
+
+      if (result.upid) {
+        const status = await waitForTask(result.upid, node, { timeoutMs: 90_000, intervalMs: 1_000 });
+        if (status.exitstatus && status.exitstatus !== 'OK') {
+          throw new Error(status.exitstatus);
+        }
+      }
+
+      message.success(`VM ${renameTarget.vmid} renamed to ${nextName}`);
+      setRenameTarget(null);
+      setRenameValue('');
+      void refreshVMs();
+    } catch (err) {
+      message.error(`Rename failed: ${(err as Error).message}`);
+    } finally {
+      setRenameSaving(false);
+    }
+  };
+
+  const runningCount = vms.filter((vm) => vm.status === 'running').length;
+  const stoppedCount = vms.filter((vm) => vm.status === 'stopped').length;
 
   const columns = [
     {
-      title: 'VMID',
+      title: headerTitle('VMID'),
       dataIndex: 'vmid',
       key: 'vmid',
-      width: 70,
+      width: 80,
       sorter: (a: ProxmoxVM, b: ProxmoxVM) => a.vmid - b.vmid,
       defaultSortOrder: 'ascend' as const,
     },
     {
-      title: 'Name',
+      title: headerTitle('Name'),
       dataIndex: 'name',
       key: 'name',
-      width: 150,
       sorter: (a: ProxmoxVM, b: ProxmoxVM) => (a.name || '').localeCompare(b.name || ''),
     },
     {
-      title: 'Status',
+      title: headerTitle('Status'),
       dataIndex: 'status',
       key: 'status',
-      width: 100,
+      width: 110,
       render: (status: string) => {
         const colorMap: Record<string, string> = {
           running: 'success',
@@ -105,33 +177,16 @@ export const VMList: React.FC = () => {
       onFilter: (value: React.Key | boolean, record: ProxmoxVM) => record.status === value,
     },
     {
-      title: 'CPU',
-      dataIndex: 'cpu',
-      key: 'cpu',
-      width: 70,
-      render: (val: number) => val ? `${(val * 100).toFixed(0)}%` : '-',
-    },
-    {
-      title: 'Memory',
-      dataIndex: 'mem',
-      key: 'mem',
-      width: 120,
-      render: (_: number, record: ProxmoxVM) => {
-        if (!record.maxmem) return '-';
-        return `${formatBytes(record.mem)} / ${formatBytes(record.maxmem)}`;
-      },
-    },
-    {
-      title: 'Uptime',
+      title: headerTitle('Uptime'),
       dataIndex: 'uptime',
       key: 'uptime',
-      width: 100,
+      width: 110,
       render: (val: number) => formatUptime(val),
     },
     {
-      title: 'Actions',
+      title: headerTitle('Actions'),
       key: 'actions',
-      width: 100,
+      width: 150,
       render: (_: unknown, record: ProxmoxVM) => (
         <TableActionGroup>
           {record.status === 'stopped' ? (
@@ -148,21 +203,34 @@ export const VMList: React.FC = () => {
               tooltip="Stop"
             />
           )}
+
+          <TableActionButton
+            icon={<EditOutlined />}
+            onClick={() => openRenameModal(record)}
+            tooltip="Rename"
+          />
+
+          <TableActionButton
+            icon={<RedoOutlined />}
+            onClick={() => onRecreate?.(record)}
+            tooltip="Recreate (delete + create in queue)"
+            disabled={!onRecreate}
+          />
         </TableActionGroup>
       ),
     },
   ];
 
   return (
-    <div className="vm-list">
-      <div className="vm-list-header">
-        <div className="vm-list-stats">
-          <span className="stat-item">
-            <span className="stat-dot running" />
+    <div className={`${styles.root} vm-list`}>
+      <div className={styles.header}>
+        <div className={styles.stats}>
+          <span className={styles.statItem}>
+            <span className={`${styles.statDot} ${styles.statDotRunning}`} />
             {runningCount} running
           </span>
-          <span className="stat-item">
-            <span className="stat-dot stopped" />
+          <span className={styles.statItem}>
+            <span className={`${styles.statDot} ${styles.statDotStopped}`} />
             {stoppedCount} stopped
           </span>
           <span>Total: {vms.length}</span>
@@ -188,7 +256,33 @@ export const VMList: React.FC = () => {
         loading={loading}
         pagination={{ pageSize: 50, showSizeChanger: true, pageSizeOptions: ['25', '50', '100'] }}
         scroll={{ y: tableHeight }}
+        className={styles.tableWrap}
       />
+
+      <Modal
+        title={renameTarget ? `Rename VM ${renameTarget.vmid}` : 'Rename VM'}
+        open={Boolean(renameTarget)}
+        onCancel={() => {
+          setRenameTarget(null);
+          setRenameValue('');
+        }}
+        onOk={handleRenameSubmit}
+        okText="Rename"
+        confirmLoading={renameSaving}
+        destroyOnHidden
+      >
+        <Input
+          value={renameValue}
+          onChange={(event) => setRenameValue(event.target.value)}
+          maxLength={64}
+          placeholder="Enter VM name"
+          onPressEnter={() => {
+            if (!renameSaving) {
+              void handleRenameSubmit();
+            }
+          }}
+        />
+      </Modal>
     </div>
   );
 };

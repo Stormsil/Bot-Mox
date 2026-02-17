@@ -21,7 +21,7 @@ import {
   mapEventsByDate,
 } from './page';
 import type { CalendarEventFormValues, CalendarViewMode, SidebarMode } from './page';
-import './WorkspaceCalendarPage.css';
+import styles from './WorkspaceCalendarPage.module.css';
 
 const { Title } = Typography;
 
@@ -198,9 +198,9 @@ export const WorkspaceCalendarPage: React.FC = () => {
     : 'Missed + Upcoming';
 
   return (
-    <div className="workspace-calendar-page">
-      <div className="workspace-calendar-header">
-        <Title level={4} className="workspace-calendar-title">
+    <div className={styles.root}>
+      <div className={styles.header}>
+        <Title level={4} className={styles.title}>
           <CalendarOutlined /> Workspace Calendar
         </Title>
         <Space>
@@ -218,7 +218,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
         </Space>
       </div>
 
-      <div className="workspace-calendar-layout">
+      <div className={styles.layout}>
         <CalendarMainPanel
           loading={loading}
           calendarView={calendarView}
@@ -233,7 +233,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
         />
 
         <Card
-          className="workspace-calendar-sidebar"
+          className={styles.sidebar}
           title={sidebarTitle}
           extra={
             <Space>

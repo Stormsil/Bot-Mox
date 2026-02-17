@@ -20,6 +20,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Compute image repos
+        id: repos
+        shell: bash
+        run: |
+          OWNER_LC="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+          echo "frontend_repo=ghcr.io/${OWNER_LC}/bot-mox-frontend" >> "$GITHUB_OUTPUT"
+          echo "backend_repo=ghcr.io/${OWNER_LC}/bot-mox-backend" >> "$GITHUB_OUTPUT"
+
       - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -33,10 +41,17 @@ jobs:
           VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
           IMAGE_TAG: ${{ github.event.inputs.image_tag }}
           API_HEALTHCHECK_URL: ${{ secrets.API_HEALTHCHECK_URL }}
+          FRONTEND_IMAGE_REPO: ${{ steps.repos.outputs.frontend_repo }}
+          BACKEND_IMAGE_REPO: ${{ steps.repos.outputs.backend_repo }}
         run: |
           ssh -o StrictHostKeyChecking=no "${VPS_USER}@${VPS_HOST}" "
             cd '${VPS_DEPLOY_PATH}' && \
+            git fetch origin main && \
+            git checkout main && \
+            git pull --ff-only origin main && \
             IMAGE_TAG='${IMAGE_TAG}' \
+            FRONTEND_IMAGE_REPO='${FRONTEND_IMAGE_REPO}' \
+            BACKEND_IMAGE_REPO='${BACKEND_IMAGE_REPO}' \
             API_HEALTHCHECK_URL='${API_HEALTHCHECK_URL}' \
             ./scripts/deploy-vps.sh
           "

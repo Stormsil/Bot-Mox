@@ -2,6 +2,7 @@ import { Button, Col, Form, Input, Row, Select } from 'antd';
 import type { ReactNode } from 'react';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import { popularEmailDomains } from '../../../utils/accountGenerators';
+import styles from './account.module.css';
 
 const { Option } = Select;
 
@@ -31,7 +32,7 @@ export function EmailSection({
       <Col xs={24} md={16}>
         <Form.Item
           label={(
-            <span className="field-label">
+            <span className={styles['field-label']}>
               Email
               {emailWarning}
             </span>
@@ -117,7 +118,7 @@ export function PasswordSection({
       <Col xs={24} md={16}>
         <Form.Item
           label={(
-            <span className="field-label">
+            <span className={styles['field-label']}>
               Password
               {passwordWarning}
             </span>

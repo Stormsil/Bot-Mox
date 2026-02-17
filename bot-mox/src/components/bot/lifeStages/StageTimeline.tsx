@@ -9,6 +9,7 @@ import {
   ToolOutlined,
 } from '@ant-design/icons';
 import type { LifeStage } from './config';
+import styles from './lifeStages.module.css';
 
 const { Text } = Typography;
 
@@ -17,14 +18,19 @@ interface StageTimelineProps {
 }
 
 export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) => (
-  <div className="stage-timeline">
+  <div className={styles['stage-timeline']}>
     <Timeline
       items={[
         {
           dot: currentStage === 'prepare' ? <LoadingOutlined /> : <CheckCircleOutlined />,
           color: currentStage === 'prepare' ? 'blue' : 'green',
           children: (
-            <div className={`timeline-item ${currentStage === 'prepare' ? 'active' : ''}`}>
+            <div
+              className={[
+                styles['timeline-item'],
+                currentStage === 'prepare' ? styles.active : '',
+              ].filter(Boolean).join(' ')}
+            >
               <Text strong>Preparation</Text>
               <br />
               <Text type="secondary">Initial setup</Text>
@@ -35,7 +41,12 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
           dot: currentStage === 'leveling' ? <RiseOutlined /> : (['professions', 'farm', 'banned'].includes(currentStage) ? <CheckCircleOutlined /> : null),
           color: currentStage === 'leveling' ? 'purple' : (['professions', 'farm', 'banned'].includes(currentStage) ? 'green' : 'gray'),
           children: (
-            <div className={`timeline-item ${currentStage === 'leveling' ? 'active' : ''}`}>
+            <div
+              className={[
+                styles['timeline-item'],
+                currentStage === 'leveling' ? styles.active : '',
+              ].filter(Boolean).join(' ')}
+            >
               <Text strong>Leveling</Text>
               <br />
               <Text type="secondary">Level 1-70</Text>
@@ -46,7 +57,12 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
           dot: currentStage === 'professions' ? <ToolOutlined /> : (['farm', 'banned'].includes(currentStage) ? <CheckCircleOutlined /> : null),
           color: currentStage === 'professions' ? 'cyan' : (['farm', 'banned'].includes(currentStage) ? 'green' : 'gray'),
           children: (
-            <div className={`timeline-item ${currentStage === 'professions' ? 'active' : ''}`}>
+            <div
+              className={[
+                styles['timeline-item'],
+                currentStage === 'professions' ? styles.active : '',
+              ].filter(Boolean).join(' ')}
+            >
               <Text strong>Professions</Text>
               <br />
               <Text type="secondary">Skill development</Text>
@@ -57,7 +73,12 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
           dot: currentStage === 'farm' ? <GoldOutlined /> : (currentStage === 'banned' ? <CheckCircleOutlined /> : null),
           color: currentStage === 'farm' ? 'orange' : (currentStage === 'banned' ? 'green' : 'gray'),
           children: (
-            <div className={`timeline-item ${currentStage === 'farm' ? 'active' : ''}`}>
+            <div
+              className={[
+                styles['timeline-item'],
+                currentStage === 'farm' ? styles.active : '',
+              ].filter(Boolean).join(' ')}
+            >
               <Text strong>Farm</Text>
               <br />
               <Text type="secondary">Gold earning</Text>
@@ -68,7 +89,13 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
           dot: currentStage === 'banned' ? <StopOutlined /> : null,
           color: currentStage === 'banned' ? 'red' : 'gray',
           children: (
-            <div className={`timeline-item ${currentStage === 'banned' ? 'active banned' : ''}`}>
+            <div
+              className={[
+                styles['timeline-item'],
+                currentStage === 'banned' ? styles.active : '',
+                currentStage === 'banned' ? styles.banned : '',
+              ].filter(Boolean).join(' ')}
+            >
               <Text strong style={{ color: currentStage === 'banned' ? '#ff4d4f' : undefined }}>Banned</Text>
               <br />
               <Text type="secondary">Archived</Text>

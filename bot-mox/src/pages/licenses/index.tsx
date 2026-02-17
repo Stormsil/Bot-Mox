@@ -19,7 +19,7 @@ import {
   withBotDetails,
 } from './page';
 import type { AddBotFormValues, LicenseFormValues } from './page';
-import './LicensesPage.css';
+import styles from './LicensesPage.module.css';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -200,10 +200,10 @@ export const LicensesPage: React.FC = () => {
   });
 
   return (
-    <div className="licenses-page">
-      <Card className="licenses-header">
-        <div className="header-content">
-          <div className="header-title">
+    <div className={styles.root}>
+      <Card className={styles.header}>
+        <div className={styles.headerContent}>
+          <div className={styles.headerTitle}>
             <Title level={4}>
               <KeyOutlined /> Bot Licenses
             </Title>
@@ -226,7 +226,7 @@ export const LicensesPage: React.FC = () => {
 
       <LicensesStatsPanel stats={stats} collapsed={statsCollapsed} />
 
-      <Card className="licenses-filters">
+      <Card className={styles.filters}>
         <Space wrap>
           <Input
             placeholder="Search by key or bot..."
@@ -259,7 +259,7 @@ export const LicensesPage: React.FC = () => {
         </Space>
       </Card>
 
-      <Card className="licenses-table-card">
+      <Card className={styles.tableCard}>
         <Table
           dataSource={filteredLicenses}
           columns={columns}

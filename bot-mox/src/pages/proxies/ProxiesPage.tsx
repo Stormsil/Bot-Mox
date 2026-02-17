@@ -5,7 +5,6 @@ import {
   Input,
   Modal,
   Select,
-  Space,
   Table,
   Typography,
   message,
@@ -34,7 +33,7 @@ import {
   updateProxyWithIPQSData,
 } from '../../services/ipqsService';
 import { ProxyCrudModal } from './ProxyCrudModal';
-import './ProxiesPage.css';
+import styles from './ProxiesPage.module.css';
 
 const DEFAULT_PROVIDERS = ['IPRoyal', 'Smartproxy', 'Luminati', 'Oxylabs'];
 const STATS_COLLAPSED_KEY = 'proxiesStatsCollapsed';
@@ -271,16 +270,16 @@ export const ProxiesPage: React.FC = () => {
   );
 
   return (
-    <div className="proxies-page">
-      <Card className="proxies-header">
-        <div className="header-content">
-          <div className="header-title">
-            <Title level={4}>
+    <div className={styles.root}>
+      <Card className={styles.header}>
+        <div className={styles.headerContent}>
+          <div className={styles.headerTitle}>
+            <Title level={4} className={styles.pageTitle}>
               <GlobalOutlined /> Proxies
             </Title>
-            <Text type="secondary">Manage proxy servers for bots</Text>
+            <Text type="secondary" className={styles.headerSubtitle}>Manage proxy servers for bots</Text>
           </div>
-          <Space>
+          <div className={styles.headerActions}>
             <Button
               type="text"
               icon={statsCollapsed ? <RightOutlined /> : <DownOutlined />}
@@ -291,41 +290,56 @@ export const ProxiesPage: React.FC = () => {
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditModal()}>
               Add Proxy
             </Button>
-          </Space>
+          </div>
         </div>
       </Card>
 
       {!statsCollapsed && (
-        <div className="proxies-stats">
-          <Card className="stat-card"><div className="stat-value">{stats.total}</div><div className="stat-label">Total</div></Card>
-          <Card className="stat-card active"><div className="stat-value">{stats.active}</div><div className="stat-label">Active</div></Card>
-          <Card className="stat-card warning"><div className="stat-value">{stats.expiringSoon}</div><div className="stat-label">Expiring Soon</div></Card>
-          <Card className="stat-card expired"><div className="stat-value">{stats.expired}</div><div className="stat-label">Expired</div></Card>
-          <Card className="stat-card"><div className="stat-value">{stats.unassigned}</div><div className="stat-label">Unassigned</div></Card>
+        <div className={styles.stats}>
+          <Card className={styles.statCard}><div className={styles.statValue}>{stats.total}</div><div className={styles.statLabel}>Total</div></Card>
+          <Card className={`${styles.statCard} ${styles.statCardActive}`}><div className={styles.statValue}>{stats.active}</div><div className={styles.statLabel}>Active</div></Card>
+          <Card className={`${styles.statCard} ${styles.statCardWarning}`}><div className={styles.statValue}>{stats.expiringSoon}</div><div className={styles.statLabel}>Expiring Soon</div></Card>
+          <Card className={`${styles.statCard} ${styles.statCardExpired}`}><div className={styles.statValue}>{stats.expired}</div><div className={styles.statLabel}>Expired</div></Card>
+          <Card className={styles.statCard}><div className={styles.statValue}>{stats.unassigned}</div><div className={styles.statLabel}>Unassigned</div></Card>
         </div>
       )}
 
-      <Card className="proxies-filters">
-        <Space wrap>
+      <Card className={styles.filters}>
+        <div className={styles.filtersRow}>
           <Input
             placeholder="Search by IP, provider, country, ISP..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
-            style={{ width: 320 }}
+            className={styles.filterSearch}
           />
-          <Select placeholder="Status" value={statusFilter} onChange={setStatusFilter} style={{ width: 120 }}>
+          <Select
+            placeholder="Status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            className={styles.filterSelectMd}
+          >
             <Option value="all">All Statuses</Option>
             <Option value="active">Active</Option>
             <Option value="expired">Expired</Option>
             <Option value="banned">Banned</Option>
           </Select>
-          <Select placeholder="Type" value={typeFilter} onChange={setTypeFilter} style={{ width: 100 }}>
+          <Select
+            placeholder="Type"
+            value={typeFilter}
+            onChange={setTypeFilter}
+            className={styles.filterSelectSm}
+          >
             <Option value="all">All Types</Option>
             <Option value="http">HTTP</Option>
             <Option value="socks5">SOCKS5</Option>
           </Select>
-          <Select placeholder="Country" value={countryFilter} onChange={setCountryFilter} style={{ width: 120 }}>
+          <Select
+            placeholder="Country"
+            value={countryFilter}
+            onChange={setCountryFilter}
+            className={styles.filterSelectMd}
+          >
             <Option value="all">All Countries</Option>
             {countries.map((country) => (
               <Option key={country} value={country}>{country}</Option>
@@ -342,10 +356,10 @@ export const ProxiesPage: React.FC = () => {
           >
             Reset
           </Button>
-        </Space>
+        </div>
       </Card>
 
-      <Card className="proxies-table-card">
+      <Card className={styles.tableCard}>
         <Table
           dataSource={filteredProxies}
           columns={columns}
@@ -357,6 +371,8 @@ export const ProxiesPage: React.FC = () => {
             showTotal: (total) => `Total ${total} proxies`,
           }}
           size="small"
+          tableLayout="fixed"
+          scroll={{ x: 1170 }}
         />
       </Card>
 

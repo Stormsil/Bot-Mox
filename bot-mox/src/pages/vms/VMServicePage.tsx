@@ -5,7 +5,7 @@ import { getVMSettings } from '../../services/vmSettingsService';
 import { proxmoxLogin } from '../../services/vmService';
 import type { VMGeneratorSettings } from '../../types';
 import { buildProxyUiUrl } from '../../config/env';
-import './VMServicePage.css';
+import styles from './VMServicePage.module.css';
 
 type ServiceKind = 'proxmox' | 'tinyfm' | 'syncthing';
 const AUTH_TOKEN_KEY = 'botmox.auth.token';
@@ -332,10 +332,10 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
   }, [kind, settings]);
 
   return (
-    <div className="vm-service-page">
-      <div className="vm-service-page-toolbar">
-        <div className="vm-service-page-title-wrap">
-          <span className="vm-service-page-title">{getTitle(kind)}</span>
+    <div className={styles.root}>
+      <div className={styles.toolbar}>
+        <div className={styles.titleWrap}>
+          <span className={styles.title}>{getTitle(kind)}</span>
           {kind === 'proxmox' && settings?.services.proxmoxAutoLogin && (
             <Tag color="success">Auto Login</Tag>
           )}
@@ -359,9 +359,9 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
         </Button>
       </div>
 
-      <div className="vm-service-page-frame-wrap">
+      <div className={styles.frameWrap}>
         {loading ? (
-          <div className="vm-service-page-loading">
+          <div className={styles.loading}>
             <Spin />
             <span>{loadingText}</span>
           </div>
@@ -378,7 +378,7 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
             }}
           />
         ) : (
-          <div className="vm-service-page-loading">Service URL is not configured in VM settings.</div>
+          <div className={styles.loading}>Service URL is not configured in VM settings.</div>
         )}
       </div>
     </div>

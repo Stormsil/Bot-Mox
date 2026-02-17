@@ -4,12 +4,19 @@ import type {
   VMTaskEntry,
   VMTaskStatus,
 } from '../../types';
-import { message } from 'antd';
-import './VMOperationLog.css';
+import { Popconfirm, message } from 'antd';
+import styles from './VMOperationLog.module.css';
+const cx = (...classNames: Array<string | false | null | undefined>) =>
+  classNames
+    .flatMap((name) => String(name || '').split(/\s+/))
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
 
 interface VMOperationLogProps {
   tasks: VMTaskEntry[];
-  onClear: () => void;
+  onClear: () => void | Promise<void>;
+  onCancelTask: (taskId: string) => void;
   getFullLog: () => string;
 }
 
@@ -92,10 +99,16 @@ function getTaskText(task: VMTaskEntry): string {
   return `${head}\n\n${details}`;
 }
 
-export const VMOperationLog: React.FC<VMOperationLogProps> = ({ tasks, onClear, getFullLog }) => {
+export const VMOperationLog: React.FC<VMOperationLogProps> = ({
+  tasks,
+  onClear,
+  onCancelTask,
+  getFullLog,
+}) => {
   const [expanded, setExpanded] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   const sortedTasks = useMemo(
     () => [...tasks].sort((a, b) => b.startedAt - a.startedAt),
@@ -136,32 +149,54 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({ tasks, onClear, 
     message.success('Task log copied');
   };
 
+  const cancelSelectedTask = () => {
+    if (!selectedTask || selectedTask.status !== 'running') {
+      return;
+    }
+    onCancelTask(selectedTask.id);
+    message.info('Cancellation requested');
+  };
+
+  const handleClear = async () => {
+    try {
+      setIsClearing(true);
+      await onClear();
+      setTaskModalOpen(false);
+      message.success('Operation history cleared');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to clear operation history';
+      message.error(errorMessage);
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
   const renderTaskDetailMessage = (entry: VMTaskDetailEntry) => {
     const parsedDiff = splitDiffMessage(entry.message);
     if (!parsedDiff) {
       return (
-        <span className="vm-task-log-message">
+        <span className={cx('vm-task-log-message')}>
           {entry.message}
         </span>
       );
     }
 
     return (
-      <span className="vm-task-log-message">
+      <span className={cx('vm-task-log-message')}>
         {parsedDiff.prefix && (
-          <span className="vm-task-log-diff-prefix">{parsedDiff.prefix}</span>
+          <span className={cx('vm-task-log-diff-prefix')}>{parsedDiff.prefix}</span>
         )}
-        <span className="vm-task-log-diff-old">{parsedDiff.oldValue}</span>
-        <span className="vm-task-log-diff-arrow"> -&gt; </span>
-        <span className="vm-task-log-diff-new">{parsedDiff.newValue}</span>
+        <span className={cx('vm-task-log-diff-old')}>{parsedDiff.oldValue}</span>
+        <span className={cx('vm-task-log-diff-arrow')}> -&gt; </span>
+        <span className={cx('vm-task-log-diff-new')}>{parsedDiff.newValue}</span>
       </span>
     );
   };
 
   const tasksView = (
-    <div className="vm-task-console">
-      <div className="vm-task-table-wrap">
-        <table className="vm-task-table">
+    <div className={cx('vm-task-console')}>
+      <div className={cx('vm-task-table-wrap')}>
+        <table className={cx('vm-task-table')}>
           <thead>
             <tr>
               <th>Start Time</th>
@@ -173,23 +208,23 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({ tasks, onClear, 
           <tbody>
             {sortedTasks.length === 0 ? (
               <tr>
-                <td colSpan={4} className="vm-task-table-empty">No tasks yet.</td>
+                <td colSpan={4} className={cx('vm-task-table-empty')}>No tasks yet.</td>
               </tr>
             ) : (
               sortedTasks.map((task) => (
                 <tr
                   key={task.id}
-                  className={[
+                  className={cx(
                     'vm-task-table-row',
                     `vm-task-table-row--${task.status}`,
                     taskModalOpen && selectedTask?.id === task.id ? 'selected' : '',
-                  ].join(' ')}
+                  )}
                   onClick={() => openTaskModal(task.id)}
                 >
                   <td>{formatTaskDate(task.startedAt)}</td>
                   <td>{formatTaskDate(task.finishedAt)}</td>
                   <td>{task.description}</td>
-                  <td className={`vm-task-status vm-task-status--${task.status}`}>
+                  <td className={cx('vm-task-status', `vm-task-status--${task.status}`)}>
                     {statusLabel(task.status)}
                   </td>
                 </tr>
@@ -198,38 +233,61 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({ tasks, onClear, 
           </tbody>
         </table>
       </div>
-      <div className="vm-task-open-hint">Click a task to open a detailed log window.</div>
+      <div className={cx('vm-task-open-hint')}>Click a task to open a detailed log window.</div>
     </div>
   );
 
   const logContent = (
     <>
-      <div className="vm-operation-log-toolbar">
-        <span className="vm-operation-log-toolbar-title">Operation Console</span>
-        <span className="vm-operation-log-toolbar-stat">{toolbarStat}</span>
-        <button onClick={onClear}>Clear</button>
+      <div className={cx('vm-operation-log-toolbar')}>
+        <span className={cx('vm-operation-log-toolbar-title')}>Operation Console</span>
+        <span className={cx('vm-operation-log-toolbar-stat')}>{toolbarStat}</span>
+        <Popconfirm
+          title="Clear operation history?"
+          description="This will permanently delete task history from the database."
+          okText="Clear"
+          cancelText="Cancel"
+          okButtonProps={{ danger: true, loading: isClearing }}
+          placement="top"
+          onConfirm={() => void handleClear()}
+        >
+          <button disabled={isClearing}>Clear</button>
+        </Popconfirm>
         <button onClick={() => setExpanded(e => !e)}>{expanded ? 'Minimize' : 'Fullscreen'}</button>
         <button onClick={handleCopy}>Copy</button>
       </div>
 
-      <div className="vm-operation-log-content-shell">
-        <div className="vm-operation-log-tab-body">
+      <div className={cx('vm-operation-log-content-shell')}>
+        <div className={cx('vm-operation-log-tab-body')}>
           {tasksView}
         </div>
       </div>
 
       {taskModalOpen && selectedTask && (
-        <div className="vm-task-log-modal-overlay" onClick={closeTaskModal}>
-          <div className="vm-task-log-modal" onClick={e => e.stopPropagation()}>
-            <div className="vm-task-log-modal-header">
-              <div className="vm-task-log-modal-title">Task Viewer</div>
-              <div className="vm-task-log-modal-actions">
+        <div className={cx('vm-task-log-modal-overlay')} onClick={closeTaskModal}>
+          <div className={cx('vm-task-log-modal')} onClick={e => e.stopPropagation()}>
+            <div className={cx('vm-task-log-modal-header')}>
+              <div className={cx('vm-task-log-modal-title')}>Task Viewer</div>
+              <div className={cx('vm-task-log-modal-actions')}>
+                {selectedTask.status === 'running' && (
+                  <Popconfirm
+                    title="Cancel this running task?"
+                    description="The task will be marked as cancelled."
+                    okText="Cancel Task"
+                    cancelText="Back"
+                    okButtonProps={{ danger: true }}
+                    placement="bottomRight"
+                    onConfirm={cancelSelectedTask}
+                  >
+                    <button type="button" className={cx('vm-task-log-modal-cancel-btn')}>Cancel Task</button>
+                  </Popconfirm>
+                )}
                 <button type="button" onClick={copyTaskModalLog}>Copy</button>
                 <button type="button" onClick={closeTaskModal}>OK</button>
               </div>
             </div>
 
-            <div className="vm-task-log-modal-meta">
+            <div className={cx('vm-task-log-modal-meta')}>
               <span><strong>Description:</strong> {selectedTask.description}</span>
               <span><strong>Node:</strong> {selectedTask.node || '-'}</span>
               <span><strong>User:</strong> {selectedTask.userName || '-'}</span>
@@ -238,18 +296,18 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({ tasks, onClear, 
               <span><strong>Status:</strong> {statusLabel(selectedTask.status)}</span>
             </div>
 
-            <div className="vm-task-log-modal-content">
+            <div className={cx('vm-task-log-modal-content')}>
               {selectedTask.details.length === 0 ? (
-                <div className="vm-task-log-empty">No details for this task yet.</div>
+                <div className={cx('vm-task-log-empty')}>No details for this task yet.</div>
               ) : (
-                <div className="vm-task-log-modal-pre">
+                <div className={cx('vm-task-log-modal-pre')}>
                   {selectedTask.details.map((entry) => (
-                    <div key={entry.id} className={`vm-task-log-line vm-task-log-line--${entry.level}`}>
-                      <span className="vm-task-log-time">[{formatClock(entry.timestamp)}]</span>
+                    <div key={entry.id} className={cx('vm-task-log-line', `vm-task-log-line--${entry.level}`)}>
+                      <span className={cx('vm-task-log-time')}>[{formatClock(entry.timestamp)}]</span>
                       {entry.level !== 'info' && (
-                        <span className="vm-task-log-level"> {entry.level.toUpperCase()}:</span>
+                        <span className={cx('vm-task-log-level')}> {entry.level.toUpperCase()}:</span>
                       )}
-                      <span className="vm-task-log-gap"> </span>
+                      <span className={cx('vm-task-log-gap')}> </span>
                       {renderTaskDetailMessage(entry)}
                     </div>
                   ))}
@@ -265,9 +323,9 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({ tasks, onClear, 
   if (expanded) {
     return (
       <>
-        <div className="vm-operation-log" style={{ height: 0 }} />
-        <div className="vm-log-modal-overlay" onClick={() => setExpanded(false)}>
-          <div className="vm-log-modal" onClick={e => e.stopPropagation()}>
+        <div className={`${cx('vm-operation-log')} vm-operation-log`} style={{ height: 0 }} />
+        <div className={cx('vm-log-modal-overlay')} onClick={() => setExpanded(false)}>
+          <div className={cx('vm-log-modal')} onClick={e => e.stopPropagation()}>
             {logContent}
           </div>
         </div>
@@ -276,8 +334,9 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({ tasks, onClear, 
   }
 
   return (
-    <div className="vm-operation-log">
+    <div className={`${cx('vm-operation-log')} vm-operation-log`}>
       {logContent}
     </div>
   );
 };
+

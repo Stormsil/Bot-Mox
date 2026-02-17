@@ -36,42 +36,26 @@ function normalizeAxiosError(error, fallbackMessage = 'Internal server error') {
   return createServiceError(500, 'INTERNAL_ERROR', fallbackMessage);
 }
 
-function createIpqsService({ admin, isFirebaseReady }) {
-  async function getApiKeyFromFirebase() {
-    if (!isFirebaseReady()) {
-      return null;
+function createIpqsService({ settingsReader }) {
+  async function getApiKeyFromSettings() {
+    const apiKey = await settingsReader?.readPath('settings/api_keys/ipqs/api_key', { fallback: null });
+    if (typeof apiKey === 'string' && apiKey.trim()) {
+      return apiKey.trim();
     }
-
-    try {
-      const db = admin.database();
-      const snapshot = await db.ref('settings/api_keys/ipqs/api_key').once('value');
-      const apiKey = snapshot.val();
-      if (typeof apiKey === 'string' && apiKey.trim()) {
-        return apiKey.trim();
-      }
-      return null;
-    } catch (_error) {
-      return null;
-    }
+    return null;
   }
 
   async function getApiKey() {
-    const firebaseKey = await getApiKeyFromFirebase();
-    if (firebaseKey) return firebaseKey;
+    const settingsKey = await getApiKeyFromSettings();
+    if (settingsKey) return settingsKey;
 
     const envKey = String(process.env.IPQS_API_KEY || '').trim();
     return envKey || null;
   }
 
   async function isEnabled() {
-    if (!isFirebaseReady()) {
-      return Boolean(String(process.env.IPQS_API_KEY || '').trim());
-    }
-
     try {
-      const db = admin.database();
-      const snapshot = await db.ref('settings/api_keys/ipqs/enabled').once('value');
-      const enabledInDb = snapshot.val();
+      const enabledInDb = await settingsReader?.readPath('settings/api_keys/ipqs/enabled', { fallback: null });
       if (enabledInDb === null || enabledInDb === undefined) {
         const key = await getApiKey();
         return Boolean(key);
@@ -87,7 +71,7 @@ function createIpqsService({ admin, isFirebaseReady }) {
     return {
       enabled,
       configured: Boolean(apiKey),
-      firebaseInitialized: isFirebaseReady(),
+      supabaseSettingsConnected: Boolean(settingsReader),
     };
   }
 
@@ -134,7 +118,7 @@ function createIpqsService({ admin, isFirebaseReady }) {
       throw createServiceError(
         503,
         'IPQS_KEY_MISSING',
-        'IPQS API key not configured. Please add API key to Firebase Realtime Database at settings/api_keys/ipqs/api_key or set IPQS_API_KEY in .env'
+        'IPQS API key not configured. Please add API key to settings/api_keys/ipqs/api_key or set IPQS_API_KEY in .env'
       );
     }
 

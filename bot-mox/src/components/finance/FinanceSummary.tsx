@@ -12,7 +12,7 @@ import type { FinanceSummary as FinanceSummaryType, CategoryBreakdown, TimeSerie
 import { UniversalChart } from './UniversalChart';
 import { ProjectPerformanceTable } from './ProjectPerformanceTable';
 import { CostAnalysis } from './CostAnalysis';
-import './FinanceSummary.css';
+import styles from './FinanceSummary.module.css';
 
 const { Text } = Typography;
 
@@ -51,9 +51,9 @@ const PieTooltipContent: React.FC<PieTooltipContentProps> = ({ active, payload, 
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="chart-tooltip">
-        <p className="chart-tooltip-label">{data.name}</p>
-        <p className="chart-tooltip-value">
+      <div className={styles.chartTooltip}>
+        <p className={styles.chartTooltipLabel}>{data.name}</p>
+        <p className={styles.chartTooltipValue}>
           {formatCurrency(data.value)} ({data.percentage}%)
         </p>
       </div>
@@ -64,13 +64,26 @@ const PieTooltipContent: React.FC<PieTooltipContentProps> = ({ active, payload, 
 };
 
 const MetricBlock: React.FC<MetricBlockProps> = ({ label, value, unit, hint, tone, loading }) => (
-  <Card className={`metric-card metric-${tone}`} loading={loading} bordered={false}>
-    <div className="metric-header">
-      <Text className="metric-title">{label}</Text>
-      <Text className="metric-unit">{unit}</Text>
+  <Card
+    className={[
+      styles.metricCard,
+      tone === 'positive'
+        ? styles.metricPositive
+        : tone === 'negative'
+          ? styles.metricNegative
+          : tone === 'accent'
+            ? styles.metricAccent
+            : styles.metricNeutral,
+    ].join(' ')}
+    loading={loading}
+    variant="borderless"
+  >
+    <div className={styles.metricHeader}>
+      <Text className={styles.metricTitle}>{label}</Text>
+      <Text className={styles.metricUnit}>{unit}</Text>
     </div>
-    <div className={`metric-value metric-${tone}`}>{value}</div>
-    <Text className="metric-label">{hint}</Text>
+    <div className={styles.metricValue}>{value}</div>
+    <Text className={styles.metricLabel}>{hint}</Text>
   </Card>
 );
 
@@ -157,13 +170,13 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
     }
 
     return (
-      <div className="metric-multi">
-        <div className="metric-multi-row">
-          <span className="metric-multi-label">WoW TBC</span>
+      <div className={styles.metricMulti}>
+        <div className={styles.metricMultiRow}>
+          <span className={styles.metricMultiLabel}>WoW TBC</span>
           <span>{goldByProject.wow_tbc.totalGold.toLocaleString()} g</span>
         </div>
-        <div className="metric-multi-row">
-          <span className="metric-multi-label">WoW Midnight</span>
+        <div className={styles.metricMultiRow}>
+          <span className={styles.metricMultiLabel}>WoW Midnight</span>
           <span>{goldByProject.wow_midnight.totalGold.toLocaleString()} g</span>
         </div>
       </div>
@@ -176,7 +189,7 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
     }
 
     return (
-      <span className="metric-hint-stack">
+      <span className={styles.metricHintStack}>
         <span>WoW TBC: ${goldByProject.wow_tbc.avgPrice.toFixed(4)}/1000g</span>
         <span>WoW Midnight: ${goldByProject.wow_midnight.avgPrice.toFixed(4)}/1000g</span>
       </span>
@@ -184,9 +197,9 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
   };
 /*  */
   return (
-    <div className="finance-summary-container">
+    <div className={styles.container}>
       {/* Основные метрики */}
-      <Row gutter={[16, 16]} className="metrics-row">
+      <Row gutter={[16, 16]} className={styles.metricsRow}>
         <Col span={6}>
           <MetricBlock
             label="Total Income"
@@ -239,16 +252,16 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
       />
 
       {/* Project Performance Table */}
-      <Row gutter={[16, 16]} className="charts-row">
+      <Row gutter={[16, 16]}>
          <Col span={24}>
             <ProjectPerformanceTable operations={operations} loading={loading} />
          </Col>
       </Row>
 
       {/* Expense Analysis (Pie + Cost Structure) */}
-      <Row gutter={[16, 16]} className="charts-row">
+      <Row gutter={[16, 16]}>
         <Col span={12}>
-          <Card className="chart-card" title="Expenses Distribution" loading={loading} bordered={false}>
+          <Card className={styles.chartCard} title="Expenses Distribution" loading={loading} variant="borderless">
             {expensePieData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>

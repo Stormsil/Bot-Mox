@@ -1,0 +1,72 @@
+.layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 14px;
+  min-height: 520px;
+}
+
+.sidebar {
+  border-right: 1px solid var(--boxmox-color-border-default);
+  padding-right: 10px;
+}
+
+.main {
+  min-width: 0;
+  max-height: 64vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.headCard,
+.sectionCard {
+  border-radius: 2px !important;
+}
+
+.sectionCard {
+  margin-top: 12px;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.headTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.error {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--boxmox-color-status-danger);
+  background: rgba(255, 77, 79, 0.08);
+  color: var(--boxmox-color-status-danger);
+  font-size: 12px;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--boxmox-color-border-default);
+    padding-right: 0;
+    padding-bottom: 8px;
+  }
+
+  .main {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .head {
+    flex-direction: column;
+  }
+}
+

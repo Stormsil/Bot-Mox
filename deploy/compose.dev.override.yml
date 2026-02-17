@@ -2,16 +2,17 @@ services:
   frontend:
     image: node:20-bookworm
     working_dir: /app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    # Dev server behind Caddy (single entrypoint: http://localhost)
+    # Use port 80 inside the docker network so Caddy can keep reverse_proxy frontend:80.
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 80 --strictPort"
     environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
-      VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost:3001}
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost}
+      VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost}
       VITE_SUPABASE_URL: ${SUPABASE_PUBLIC_URL:-http://localhost}
       VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
     volumes:
       - ../bot-mox:/app
-    ports:
-      - "${FRONTEND_BIND_PORT:-5173}:5173"
+    # No host port binding: access via Caddy on http://localhost
 
   backend:
     image: node:20-bookworm
@@ -20,7 +21,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: ${BACKEND_PORT:-3001}
-      DATA_BACKEND: ${DATA_BACKEND:-rtdb}
+      DATA_BACKEND: ${DATA_BACKEND:-supabase}
       SUPABASE_URL: ${SUPABASE_URL:-http://host.docker.internal:54321}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
       S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}

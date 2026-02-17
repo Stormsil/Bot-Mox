@@ -1,0 +1,201 @@
+.bot-person {
+  padding: 16px;
+  max-width: 100%;
+}
+
+.person-card {
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.person-card :global(.ant-card-head) {
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.person-card :global(.ant-card-head-title) {
+  color: var(--boxmox-color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.person-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.warning-icon {
+  color: #faad14;
+  font-size: 18px;
+}
+
+.incomplete-badge :global(.ant-badge-dot) {
+  width: 8px;
+  height: 8px;
+  background: #faad14;
+}
+
+.person-form {
+  margin-top: 8px;
+}
+
+.person-workflow-alert {
+  border-left: 3px solid var(--boxmox-color-brand-primary);
+  padding: 6px 10px !important;
+  margin-bottom: 10px !important;
+}
+
+.person-workflow-alert :global(.ant-alert-message) {
+  margin-bottom: 0 !important;
+  font-size: var(--text-xs);
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.person-workflow-alert :global(.ant-alert-description) {
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  line-height: 1.2;
+}
+
+.person-workflow-alert :global(.ant-alert-icon) {
+  font-size: 14px;
+  margin-inline-end: 8px !important;
+}
+
+.config-incomplete-alert {
+  border-color: var(--boxmox-color-brand-warning) !important;
+  background: color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted)) !important;
+}
+
+.config-incomplete-alert :global(.ant-alert-message) {
+  color: var(--boxmox-color-text-primary) !important;
+}
+
+.config-incomplete-alert :global(.ant-alert-description) {
+  color: var(--boxmox-color-text-secondary) !important;
+}
+
+.person-workflow-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.person-workflow-help-icon {
+  color: var(--boxmox-color-text-muted);
+  cursor: help;
+  font-size: 13px;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-warning-icon {
+  color: #faad14;
+  font-size: 14px;
+}
+
+.person-card :global(.ant-form-item-label > label) {
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.person-card :global(.ant-input),
+.person-card :global(.ant-select-selector) {
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
+}
+
+.person-card :global(.ant-input:hover),
+.person-card :global(.ant-input:focus),
+.person-card :global(.ant-select-selector:hover),
+.person-card :global(.ant-select-selector:focus) {
+  border-color: var(--boxmox-color-brand-primary);
+}
+
+.person-card :global(.ant-select-arrow) {
+  color: var(--boxmox-color-text-muted);
+}
+
+.person-form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--boxmox-color-border-default);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.generate-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.generate-label {
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.country-select :global(.ant-select-selector) {
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
+}
+
+.generate-btn {
+  background: var(--boxmox-color-surface-muted);
+  border-color: var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
+}
+
+.generate-btn:hover {
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
+}
+
+.unlock-btn {
+  border-color: var(--boxmox-color-brand-warning);
+  color: var(--boxmox-color-brand-warning);
+}
+
+.unlock-btn:hover {
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-brand-primary);
+}
+
+.save-btn {
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
+}
+
+.save-btn:hover {
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .person-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .generate-section {
+    justify-content: center;
+  }
+
+  .save-btn {
+    width: 100%;
+  }
+}
+

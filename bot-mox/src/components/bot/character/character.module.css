@@ -1,0 +1,326 @@
+.bot-character {
+  padding: 16px;
+  max-width: 100%;
+}
+
+.character-card {
+  background: var(--boxmox-color-surface-panel);
+  border-color: var(--boxmox-color-border-default);
+}
+
+.character-card-title {
+  color: var(--boxmox-color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.character-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  color: var(--boxmox-color-brand-primary);
+  font-size: 16px;
+}
+
+.incomplete-dot {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--boxmox-color-status-warning);
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  gap: 16px;
+}
+
+.loading-text {
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* View Mode */
+.character-view-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.character-header-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+}
+
+.character-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.character-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--boxmox-color-brand-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: white;
+  border: 2px solid var(--boxmox-color-border-subtle);
+}
+
+/* Large race avatar in header */
+.character-race-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid var(--boxmox-color-border-subtle);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.character-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.character-name {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--boxmox-color-text-primary);
+  margin: 0;
+}
+
+.character-subtitle {
+  font-size: var(--text-sm);
+  color: var(--boxmox-color-text-secondary);
+  text-transform: capitalize;
+}
+
+.edit-button {
+  background: var(--boxmox-color-brand-primary);
+  border-color: var(--boxmox-color-brand-primary);
+}
+
+.edit-button:hover {
+  background: var(--boxmox-color-brand-primary-hover);
+  border-color: var(--boxmox-color-brand-primary-hover);
+}
+
+/* Stats Grid */
+.character-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: var(--boxmox-color-surface-muted);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.stat-icon {
+  font-size: 20px;
+  color: var(--boxmox-color-brand-primary);
+  margin-top: 2px;
+}
+
+.stat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  color: var(--boxmox-color-text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  color: var(--boxmox-color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+/* Race display with icon */
+.race-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.race-display-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.race-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Level display (read-only) */
+.level-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 28px;
+  padding: 0 10px;
+  background: var(--boxmox-color-brand-primary);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+
+.level-hint {
+  font-size: var(--text-xs);
+  color: var(--boxmox-color-text-muted);
+  font-style: italic;
+}
+
+/* Edit Form */
+.character-form {
+  margin-top: 8px;
+}
+
+.character-workflow-alert {
+  margin-bottom: 10px;
+}
+
+.character-workflow-text {
+  font-size: var(--text-xs);
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.character-workflow-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.character-workflow-help-icon {
+  color: var(--boxmox-color-text-muted);
+  cursor: help;
+  font-size: 13px;
+}
+
+.character-generate-btn {
+  height: 28px;
+  padding: 0 8px;
+}
+
+.character-name-actions {
+  display: inline-flex;
+  align-items: center;
+}
+
+.character-unlock-btn {
+  height: 28px;
+  padding: 0 8px;
+}
+
+.character-unlock-btn:hover {
+  color: var(--boxmox-color-brand-primary);
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-label-icon {
+  color: var(--boxmox-color-brand-primary);
+}
+
+/* Form Actions */
+.form-actions {
+  margin-top: 24px;
+  margin-bottom: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--boxmox-color-border-default);
+}
+
+.form-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-actions-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unsaved-changes-text {
+  font-size: var(--text-xs);
+  color: var(--boxmox-color-status-warning);
+}
+
+/* Alert Styles */
+.config-incomplete-alert {
+  margin-bottom: 10px;
+}
+
+.alert-title {
+  color: var(--boxmox-color-text-primary);
+  font-weight: 600;
+}
+
+.alert-description {
+  color: var(--boxmox-color-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bot-character {
+    padding: 12px;
+  }
+
+  .character-header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .character-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

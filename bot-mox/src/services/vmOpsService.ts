@@ -1,4 +1,5 @@
-import { apiGet, apiPost } from './apiClient';
+import { ApiClientError, apiGet, apiPost } from './apiClient';
+import { subscribeToVmOpsEvents, type VmOpsCommandEvent } from './vmOpsEventsService';
 
 const VM_OPS_PREFIX = '/api/v1/vm-ops';
 const AGENTS_PREFIX = '/api/v1/agents';
@@ -18,10 +19,12 @@ interface CommandEnvelope {
 }
 
 interface CommandStatus extends CommandEnvelope {
+  payload?: Record<string, unknown>;
   result?: unknown;
   error_message?: string;
   started_at?: string;
   completed_at?: string;
+  created_by?: string | null;
 }
 
 interface AgentSummary {
@@ -31,49 +34,408 @@ interface AgentSummary {
   last_seen_at: string | null;
 }
 
+const PROXMOX_TARGET_STORAGE_KEY = 'botmox.proxmox.target.id';
+const PROXMOX_TARGET_NODE_STORAGE_KEY = 'botmox.proxmox.target.node';
+
+export interface AgentPairingDefaults {
+  url?: string;
+  username?: string;
+  node?: string;
+}
+
+export interface AgentPairingRecord {
+  id: string;
+  tenant_id: string;
+  name: string;
+  status: string;
+  pairing_code: string;
+  pairing_expires_at: string;
+  pairing_bundle?: string;
+  pairing_uri?: string;
+  pairing_url?: string;
+  server_url?: string;
+  proxmox_defaults?: AgentPairingDefaults;
+}
+
 // ---------------------------------------------------------------------------
 // Agent discovery
 // ---------------------------------------------------------------------------
 
+const AGENT_ONLINE_WINDOW_MS = 120_000;
+const AGENT_CACHE_TTL_MS = 10_000;
+const AGENT_NULL_CACHE_TTL_MS = 2_000;
+const DEDUPED_VM_OPS = new Set([
+  'proxmox.status',
+  'proxmox.ssh-status',
+  'proxmox.ssh-test',
+  'proxmox.list-vms',
+  'proxmox.list-targets',
+  'proxmox.cluster-resources',
+  'proxmox.get-config',
+  'proxmox.vm-status',
+]);
+const AGENT_UNAVAILABLE_BACKOFF_MS = 3_000;
+
 let cachedAgentId: string | null = null;
+let cachedAgentExpiresAtMs = 0;
+const inFlightVmOps = new Map<string, Promise<unknown>>();
+const inFlightCommandWaits = new Map<string, Promise<unknown>>();
+let agentUnavailableUntilMs = 0;
+let inFlightAgentLookup: Promise<string | null> | null = null;
 
-/**
- * Get the first online agent for the current tenant.
- * Caches the result for the session to avoid repeated queries.
- */
-export async function getActiveAgentId(): Promise<string | null> {
-  if (cachedAgentId) return cachedAgentId;
+function canUseLocalStorage(): boolean {
+  return typeof window !== 'undefined' && Boolean(window.localStorage);
+}
 
+export function getSelectedProxmoxTargetId(): string | null {
+  if (!canUseLocalStorage()) return null;
+  const value = String(window.localStorage.getItem(PROXMOX_TARGET_STORAGE_KEY) || '').trim();
+  return value || null;
+}
+
+export function getSelectedProxmoxTargetNode(): string | null {
+  if (!canUseLocalStorage()) return null;
+  const value = String(window.localStorage.getItem(PROXMOX_TARGET_NODE_STORAGE_KEY) || '').trim();
+  return value || null;
+}
+
+export function setSelectedProxmoxTargetId(targetId: string | null): void {
+  if (!canUseLocalStorage()) return;
+  const normalized = String(targetId || '').trim();
+  if (!normalized) {
+    window.localStorage.removeItem(PROXMOX_TARGET_STORAGE_KEY);
+    window.localStorage.removeItem(PROXMOX_TARGET_NODE_STORAGE_KEY);
+    return;
+  }
+  window.localStorage.setItem(PROXMOX_TARGET_STORAGE_KEY, normalized);
+}
+
+export function setSelectedProxmoxTargetNode(node: string | null): void {
+  if (!canUseLocalStorage()) return;
+  const normalized = String(node || '').trim();
+  if (!normalized) {
+    window.localStorage.removeItem(PROXMOX_TARGET_NODE_STORAGE_KEY);
+    return;
+  }
+  window.localStorage.setItem(PROXMOX_TARGET_NODE_STORAGE_KEY, normalized);
+}
+
+function parseTimestampMs(value: string | null | undefined): number {
+  if (!value) return 0;
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function isAgentOnline(agent: AgentSummary, nowMs = Date.now()): boolean {
+  if (String(agent.status || '').trim().toLowerCase() !== 'active') {
+    return false;
+  }
+  const lastSeenAtMs = parseTimestampMs(agent.last_seen_at);
+  if (lastSeenAtMs <= 0) {
+    return false;
+  }
+  return (nowMs - lastSeenAtMs) < AGENT_ONLINE_WINDOW_MS;
+}
+
+function hasFreshAgentCache(nowMs = Date.now()): boolean {
+  return cachedAgentExpiresAtMs > nowMs;
+}
+
+function setCachedAgentId(agentId: string | null): void {
+  cachedAgentId = agentId;
+  cachedAgentExpiresAtMs = Date.now() + (agentId ? AGENT_CACHE_TTL_MS : AGENT_NULL_CACHE_TTL_MS);
+}
+
+async function lookupActiveAgentId(): Promise<string | null> {
   try {
     const { data } = await apiGet<AgentSummary[]>(`${AGENTS_PREFIX}?status=active`);
     const agents = Array.isArray(data) ? data : [];
-    const online = agents.find(
-      (a) => a.status === 'active' && a.last_seen_at,
-    );
+    const nowMs = Date.now();
+    const online = agents
+      .filter((agent) => isAgentOnline(agent, nowMs))
+      .sort((first, second) => parseTimestampMs(second.last_seen_at) - parseTimestampMs(first.last_seen_at))[0];
     if (online) {
-      cachedAgentId = online.id;
+      setCachedAgentId(online.id);
       return online.id;
     }
   } catch {
     // Agent list unavailable — fall through.
   }
 
+  setCachedAgentId(null);
   return null;
+}
+
+/**
+ * Get the first online agent for the current tenant.
+ * Caches the result for the session to avoid repeated queries.
+ */
+export async function getActiveAgentId(options: { forceRefresh?: boolean } = {}): Promise<string | null> {
+  const forceRefresh = options.forceRefresh === true;
+  if (!forceRefresh && hasFreshAgentCache()) {
+    return cachedAgentId;
+  }
+
+  if (inFlightAgentLookup) {
+    return inFlightAgentLookup;
+  }
+
+  const lookupPromise = lookupActiveAgentId();
+  inFlightAgentLookup = lookupPromise;
+  try {
+    return await lookupPromise;
+  } finally {
+    if (inFlightAgentLookup === lookupPromise) {
+      inFlightAgentLookup = null;
+    }
+  }
 }
 
 export function clearAgentCache(): void {
   cachedAgentId = null;
+  cachedAgentExpiresAtMs = 0;
+  inFlightAgentLookup = null;
+}
+
+function shouldRetryWithFreshAgent(error: unknown): boolean {
+  if (!(error instanceof ApiClientError)) {
+    return false;
+  }
+
+  return new Set([
+    'AGENT_OFFLINE',
+    'AGENT_NOT_FOUND',
+    'AGENT_OWNER_UNASSIGNED',
+    'AGENT_OWNER_MISMATCH',
+  ]).has(String(error.code || '').trim());
+}
+
+function isAgentOfflineError(error: unknown): boolean {
+  return error instanceof ApiClientError && String(error.code || '').trim() === 'AGENT_OFFLINE';
+}
+
+function hasAgentUnavailableBackoff(nowMs = Date.now()): boolean {
+  return agentUnavailableUntilMs > nowMs;
+}
+
+function setAgentUnavailableBackoff(durationMs = AGENT_UNAVAILABLE_BACKOFF_MS): void {
+  agentUnavailableUntilMs = Date.now() + Math.max(1_000, durationMs);
+}
+
+function clearAgentUnavailableBackoff(): void {
+  agentUnavailableUntilMs = 0;
+}
+
+function buildDedupeKey(params: {
+  type: 'proxmox' | 'syncthing';
+  action: string;
+  params?: Record<string, unknown>;
+}, agentId: string): string | null {
+  const opKey = `${params.type}.${params.action}`;
+  if (!DEDUPED_VM_OPS.has(opKey)) {
+    return null;
+  }
+
+  const payload = params.params && typeof params.params === 'object' ? params.params : {};
+  return `${agentId}|${opKey}|${JSON.stringify(payload)}`;
+}
+
+export async function createAgentPairing(params?: {
+  name?: string;
+  expiresInMinutes?: number;
+}): Promise<AgentPairingRecord> {
+  const payload: Record<string, unknown> = {};
+  if (params?.name && String(params.name).trim()) {
+    payload.name = String(params.name).trim();
+  }
+  if (typeof params?.expiresInMinutes === 'number' && Number.isFinite(params.expiresInMinutes)) {
+    payload.expires_in_minutes = Math.max(5, Math.min(1440, Math.trunc(params.expiresInMinutes)));
+  }
+
+  const { data } = await apiPost<AgentPairingRecord>(`${AGENTS_PREFIX}/pairings`, payload);
+  return data;
 }
 
 // ---------------------------------------------------------------------------
 // Command dispatch + poll
 // ---------------------------------------------------------------------------
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+const TERMINAL_STATES = new Set(['succeeded', 'failed', 'expired', 'cancelled']);
+const VM_OPS_WAIT_TIMEOUT_MS = 120_000;
+const VM_OPS_STATUS_POLL_INTERVAL_MS = 1_500;
+
+function commandErrorFromStatus(status: CommandStatus): Error {
+  const statusValue = String(status.status || '').trim().toLowerCase();
+  if (statusValue === 'failed') {
+    const rawMessage = String(status.error_message || 'Command failed').trim();
+    const tagged = rawMessage.match(/^([A-Z_]+):\s*(.+)$/);
+    if (tagged) {
+      return new ApiClientError(tagged[2], {
+        status: 409,
+        code: tagged[1],
+        details: {
+          command_id: status.id,
+          command_type: status.command_type,
+        },
+      });
+    }
+    return new Error(rawMessage || 'Command failed');
+  }
+  return new Error(`Command ${statusValue || 'unknown'}`);
 }
 
-const TERMINAL_STATES = new Set(['succeeded', 'failed', 'expired', 'cancelled']);
+async function fetchCommandStatus(commandId: string): Promise<CommandStatus> {
+  const { data } = await apiGet<CommandStatus>(`${VM_OPS_PREFIX}/commands/${encodeURIComponent(commandId)}`);
+  return data;
+}
+
+function isTerminalStatus(status: string): boolean {
+  return TERMINAL_STATES.has(String(status || '').trim().toLowerCase());
+}
+
+async function waitForCommandTerminal<T>(params: {
+  commandId: string;
+  timeoutMs?: number;
+  pollIntervalMs?: number;
+  agentId?: string;
+}): Promise<T> {
+  const commandId = String(params.commandId || '').trim();
+  if (!commandId) {
+    throw new Error('commandId is required');
+  }
+
+  const existingWait = inFlightCommandWaits.get(commandId);
+  if (existingWait) {
+    return existingWait as Promise<T>;
+  }
+
+  const waitPromise = (async (): Promise<T> => {
+    const timeoutMs = params.timeoutMs ?? VM_OPS_WAIT_TIMEOUT_MS;
+    const pollIntervalMs = Math.max(500, Math.min(10_000, Math.trunc(
+      params.pollIntervalMs ?? VM_OPS_STATUS_POLL_INTERVAL_MS,
+    )));
+    const initialStatus = await fetchCommandStatus(commandId);
+    if (isTerminalStatus(initialStatus.status)) {
+      if (initialStatus.status === 'succeeded') {
+        return initialStatus.result as T;
+      }
+      throw commandErrorFromStatus(initialStatus);
+    }
+
+    return new Promise<T>((resolve, reject) => {
+      let settled = false;
+      let pollTimer: ReturnType<typeof setTimeout> | null = null;
+
+      const cleanupCallbacks: Array<() => void> = [];
+      const cleanup = () => {
+        cleanupCallbacks.forEach((fn) => {
+          try {
+            fn();
+          } catch {
+            // noop
+          }
+        });
+        cleanupCallbacks.length = 0;
+      };
+
+      const settle = (handler: () => void) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        handler();
+      };
+
+      const handleTerminalStatus = (status: CommandStatus) => {
+        settle(() => {
+          if (status.status === 'succeeded') {
+            resolve(status.result as T);
+            return;
+          }
+          reject(commandErrorFromStatus(status));
+        });
+      };
+
+      const pollCommandStatus = async () => {
+        if (settled) return;
+        try {
+          const status = await fetchCommandStatus(commandId);
+          if (isTerminalStatus(status.status)) {
+            handleTerminalStatus(status);
+            return;
+          }
+        } catch {
+          // Ignore transient poll errors; timeout handler will do final check.
+        }
+        if (!settled) {
+          pollTimer = globalThis.setTimeout(() => {
+            pollTimer = null;
+            void pollCommandStatus();
+          }, pollIntervalMs);
+        }
+      };
+
+      cleanupCallbacks.push(() => {
+        if (pollTimer) {
+          globalThis.clearTimeout(pollTimer);
+          pollTimer = null;
+        }
+      });
+
+      const unsubscribe = subscribeToVmOpsEvents(
+        (event: VmOpsCommandEvent) => {
+          const command = event.command;
+          if (String(command.id || '').trim() !== commandId) {
+            return;
+          }
+          if (!isTerminalStatus(command.status)) {
+            return;
+          }
+
+          handleTerminalStatus(command as CommandStatus);
+        },
+        undefined,
+        { agentId: params.agentId, commandId }
+      );
+      cleanupCallbacks.push(unsubscribe);
+
+      pollTimer = globalThis.setTimeout(() => {
+        pollTimer = null;
+        void pollCommandStatus();
+      }, Math.min(300, pollIntervalMs));
+
+      const timeout = globalThis.setTimeout(async () => {
+        try {
+          const status = await fetchCommandStatus(commandId);
+          settle(() => {
+            if (status.status === 'succeeded') {
+              resolve(status.result as T);
+              return;
+            }
+            if (isTerminalStatus(status.status)) {
+              reject(commandErrorFromStatus(status));
+              return;
+            }
+            reject(new Error('Command timed out'));
+          });
+        } catch (error) {
+          settle(() => {
+            reject(error instanceof Error ? error : new Error('Command timed out'));
+          });
+        }
+      }, timeoutMs);
+      cleanupCallbacks.push(() => globalThis.clearTimeout(timeout));
+    });
+  })();
+
+  inFlightCommandWaits.set(commandId, waitPromise);
+  try {
+    return await waitPromise;
+  } finally {
+    if (inFlightCommandWaits.get(commandId) === waitPromise) {
+      inFlightCommandWaits.delete(commandId);
+    }
+  }
+}
 
 export async function dispatchAndPoll<T = unknown>(params: {
   type: 'proxmox' | 'syncthing';
@@ -88,27 +450,12 @@ export async function dispatchAndPoll<T = unknown>(params: {
     { agent_id: params.agentId, params: params.params },
   );
 
-  const timeout = params.timeoutMs ?? 120_000;
-  const interval = params.pollIntervalMs ?? 2_000;
-  const deadline = Date.now() + timeout;
-
-  while (Date.now() < deadline) {
-    await sleep(interval);
-
-    const { data: status } = await apiGet<CommandStatus>(
-      `${VM_OPS_PREFIX}/commands/${cmd.id}`,
-    );
-
-    if (!TERMINAL_STATES.has(status.status)) continue;
-
-    if (status.status === 'succeeded') return status.result as T;
-    if (status.status === 'failed') {
-      throw new Error(status.error_message || 'Command failed');
-    }
-    throw new Error(`Command ${status.status}`);
-  }
-
-  throw new Error('Command timed out');
+  return waitForCommandTerminal<T>({
+    commandId: cmd.id,
+    timeoutMs: params.timeoutMs,
+    pollIntervalMs: params.pollIntervalMs,
+    agentId: params.agentId,
+  });
 }
 
 /**
@@ -121,11 +468,92 @@ export async function executeVmOps<T = unknown>(params: {
   params?: Record<string, unknown>;
   timeoutMs?: number;
 }): Promise<T> {
-  const agentId = await getActiveAgentId();
-  if (!agentId) {
-    throw new Error(
-      'No active agent found. VM operations require a connected agent.',
-    );
-  }
-  return dispatchAndPoll<T>({ ...params, agentId });
+  const selectedProxmoxTargetId = params.type === 'proxmox'
+    ? getSelectedProxmoxTargetId()
+    : null;
+  const selectedProxmoxTargetNode = params.type === 'proxmox'
+    ? getSelectedProxmoxTargetNode()
+    : null;
+
+  const commandParams = (() => {
+    const source = params.params && typeof params.params === 'object'
+      ? params.params
+      : {};
+    if (!selectedProxmoxTargetId) {
+      return source;
+    }
+    if (params.action === 'list-targets') {
+      return source;
+    }
+    return {
+      ...source,
+      target: selectedProxmoxTargetId,
+      ...(selectedProxmoxTargetNode ? { node: selectedProxmoxTargetNode } : {}),
+    };
+  })();
+
+  const run = async (): Promise<T> => {
+    const backoffActiveAtStart = hasAgentUnavailableBackoff();
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const forceRefresh = attempt > 0 || backoffActiveAtStart;
+      const agentId = await getActiveAgentId({ forceRefresh });
+      if (!agentId) {
+        if (attempt === 0) {
+          clearAgentCache();
+          setAgentUnavailableBackoff();
+          continue;
+        }
+        setAgentUnavailableBackoff();
+        throw new ApiClientError(
+          'Agent is currently offline or reconnecting. Please retry in a few seconds.',
+          {
+            status: 409,
+            code: 'AGENT_OFFLINE',
+            details: { reason: 'NO_ACTIVE_AGENT' },
+          },
+        );
+      }
+
+      const dedupeKey = buildDedupeKey({ ...params, params: commandParams }, agentId);
+      if (dedupeKey) {
+        const existing = inFlightVmOps.get(dedupeKey);
+        if (existing) {
+          return existing as Promise<T>;
+        }
+      }
+
+      const requestPromise = dispatchAndPoll<T>({
+        ...params,
+        params: commandParams,
+        agentId,
+      });
+      if (dedupeKey) {
+        inFlightVmOps.set(dedupeKey, requestPromise);
+      }
+
+      try {
+        const result = await requestPromise;
+        clearAgentUnavailableBackoff();
+        return result;
+      } catch (error) {
+        if (isAgentOfflineError(error)) {
+          setAgentUnavailableBackoff();
+        }
+        if (attempt === 0 && shouldRetryWithFreshAgent(error)) {
+          clearAgentCache();
+          continue;
+        }
+        throw error;
+      } finally {
+        if (dedupeKey && inFlightVmOps.get(dedupeKey) === requestPromise) {
+          inFlightVmOps.delete(dedupeKey);
+        }
+      }
+    }
+
+    throw new Error('Failed to resolve active agent');
+  };
+
+  return run();
 }

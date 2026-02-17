@@ -1,13 +1,13 @@
 -- D-02: Domain entity tables for Supabase backend
 --
--- These tables mirror the domains currently stored in Firebase RTDB:
+-- These tables mirror domains imported from the legacy document store:
 --   resources (licenses, proxies, subscriptions)
 --   workspace (notes, calendar, kanban)
 --   bots (+ lifecycle log + archive)
 --   finance (operations + aggregates)
 --   settings (tree-based key-value)
 --
--- Data is stored as JSONB to maintain full parity with the RTDB schema-less model.
+-- Data is stored as JSONB to preserve parity with the original schema-less model.
 -- updated_at is managed by the application layer (no triggers).
 
 -- ============================================================

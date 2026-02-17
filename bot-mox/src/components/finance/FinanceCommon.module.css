@@ -1,0 +1,10 @@
+.financeTag {
+  border-radius: 2px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--boxmox-color-text-secondary) !important;
+  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--boxmox-color-surface-muted);
+}
+

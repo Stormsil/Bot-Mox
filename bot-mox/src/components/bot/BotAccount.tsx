@@ -32,7 +32,7 @@ import type {
   BotAccountProps,
   PendingGenerationState,
 } from './account/types';
-import './BotAccount.css';
+import styles from './account/account.module.css';
 
 export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
   const [form] = Form.useForm<AccountFormValues>();
@@ -271,7 +271,7 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
     } else if (fieldName === 'registration_date') {
       isEmpty = !formValues.registration_date;
     }
-    return isEmpty ? <ExclamationCircleOutlined className="field-warning-icon" /> : null;
+    return isEmpty ? <ExclamationCircleOutlined className={styles['field-warning-icon']} /> : null;
   };
 
   const hasIncompleteData = !(formValues.email?.trim() && formValues.password?.trim());
@@ -286,10 +286,15 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
   }
 
   return (
-    <div className="bot-account">
+    <div className={styles['bot-account']}>
       <Card
         title={<AccountCardTitle hasIncompleteData={hasIncompleteData} />}
-        className="account-card"
+        className={styles['account-card']}
+        headStyle={{
+          background: 'var(--boxmox-color-surface-muted)',
+          borderColor: 'var(--boxmox-color-border-default)',
+        }}
+        bodyStyle={{ padding: 16 }}
       >
         {hasIncompleteData && <IncompleteAccountAlert />}
 
@@ -300,7 +305,7 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
           layout="vertical"
           onFinish={handleSave}
           onValuesChange={handleValuesChange}
-          className="account-form"
+          className={styles['account-form']}
           autoComplete="off"
         >
           <EmailSection

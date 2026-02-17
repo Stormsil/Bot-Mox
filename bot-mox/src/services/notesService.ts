@@ -427,7 +427,7 @@ export function subscribeToNote(
       console.error(`Error subscribing to note ${id}:`, error);
       callback(null);
     },
-    { intervalMs: 2000, immediate: true }
+    { key: `notes:${id}`, intervalMs: 2000, immediate: true }
   );
 }
 
@@ -441,7 +441,7 @@ export function subscribeToAllNotes(
       console.error('Error subscribing to all notes:', error);
       callback([]);
     },
-    { intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
+    { key: 'notes:all', intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
   );
 }
 
@@ -456,7 +456,7 @@ export function subscribeToNotesByBot(
       console.error(`Error subscribing to notes by bot ${botId}:`, error);
       callback([]);
     },
-    { intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
+    { key: `notes:bot:${botId}`, intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
   );
 }
 
@@ -470,7 +470,7 @@ export function subscribeToNotesIndex(
       console.error('Error subscribing to notes index:', error);
       callback([]);
     },
-    { intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
+    { key: 'notes:index', intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
   );
 }
 

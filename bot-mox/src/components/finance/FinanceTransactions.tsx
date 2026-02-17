@@ -25,7 +25,8 @@ import {
 import type { FinanceOperation, FinanceOperationType, FinanceCategory } from '../../types';
 import { formatTimestampToDate } from '../../services/financeService';
 import { TableActionButton, TableActionGroup } from '../ui/TableActionButton';
-import './FinanceTransactions.css';
+import commonStyles from './FinanceCommon.module.css';
+import styles from './FinanceTransactions.module.css';
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -111,7 +112,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       key: 'type',
       width: 100,
       render: (type: FinanceOperationType) => (
-        <Tag className="finance-tag transaction-type-tag">
+        <Tag className={`${commonStyles.financeTag} ${styles.transactionTypeTag}`}>
           {type === 'income' ? 'Income' : 'Expense'}
         </Tag>
       ),
@@ -127,7 +128,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       key: 'category',
       width: 150,
       render: (category: string) => (
-        <Tag className="finance-tag">
+        <Tag className={commonStyles.financeTag}>
           {CATEGORY_LABELS[category] || category}
         </Tag>
       ),
@@ -140,7 +141,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       render: (projectId: string | null) => {
         if (!projectId) return '-';
         return (
-          <Tag className="finance-tag">
+          <Tag className={commonStyles.financeTag}>
             {projectId === 'wow_tbc' ? 'TBC' : 'Midnight'}
           </Tag>
         );
@@ -169,7 +170,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       width: 150,
       align: 'right' as const,
       render: (amount: number, record: FinanceOperation) => (
-        <Text className="amount-neutral">
+        <Text className={styles.amountNeutral}>
           {record.type === 'income' ? '+' : '-'}${amount.toFixed(2)}
         </Text>
       ),
@@ -218,9 +219,9 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
   };
 
   return (
-    <div className="finance-transactions-container">
+    <div className={styles.container}>
       {/* Фильтры */}
-      <Card className="filters-card">
+      <Card className={styles.filtersCard}>
         <Row gutter={[16, 16]} align="middle">
           <Col flex="auto">
             <Space wrap>
@@ -293,7 +294,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       </Card>
 
       {/* Таблица транзакций */}
-      <Card className="transactions-card">
+      <Card className={styles.transactionsCard}>
         <Table
           dataSource={filteredOperations}
           columns={columns}
@@ -305,7 +306,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
             showTotal: (total) => `Total ${total} transactions`,
           }}
           size="small"
-          className="transactions-table"
+          className={styles.transactionsTable}
           locale={{
             emptyText: <Empty description="No transactions found" />,
           }}

@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Progress, Row, Col, Typography, Tag } from 'antd';
 import { ToolOutlined, FireOutlined, ExperimentOutlined, BuildOutlined } from '@ant-design/icons';
 import type { Bot, ProfessionProgress } from '../../types';
-import './BotProfession.css';
+import styles from './BotProfession.module.css';
 
 const { Text } = Typography;
 
@@ -50,7 +50,7 @@ export const BotProfession: React.FC<BotProfessionProps> = () => {
   const professions = mockProfessions;
 
   return (
-    <div className="bot-profession">
+    <div className={styles['bot-profession']}>
       <Row gutter={[16, 16]}>
         {professions.map((profession) => {
           const percent = profession.max_skill_points > 0
@@ -62,19 +62,22 @@ export const BotProfession: React.FC<BotProfessionProps> = () => {
           return (
             <Col span={12} key={profession.name}>
               <Card
-                className={`profession-card ${isActive ? 'active' : 'inactive'}`}
+                className={[
+                  styles['profession-card'],
+                  isActive ? styles.active : styles.inactive,
+                ].join(' ')}
                 title={
-                  <div className="profession-header">
-                    <span className="profession-icon" style={{ color }}>
+                  <div className={styles['profession-header']}>
+                    <span className={styles['profession-icon']} style={{ color }}>
                       {getProfessionIcon(profession.name)}
                     </span>
-                    <span className="profession-name">{profession.name}</span>
-                    {isActive && <Tag color="success" className="profession-status">Active</Tag>}
+                    <span className={styles['profession-name']}>{profession.name}</span>
+                    {isActive && <Tag color="success" className={styles['profession-status']}>Active</Tag>}
                   </div>
                 }
               >
-                <div className="profession-progress">
-                  <div className="skill-info">
+                <div className={styles['profession-progress']}>
+                  <div className={styles['skill-info']}>
                     <Text strong>{profession.skill_points}</Text>
                     <Text type="secondary">/ {profession.max_skill_points}</Text>
                   </div>
@@ -84,7 +87,7 @@ export const BotProfession: React.FC<BotProfessionProps> = () => {
                     trailColor="var(--boxmox-color-border-default)"
                     showInfo={false}
                   />
-                  <div className="skill-percent">{percent}%</div>
+                  <div className={styles['skill-percent']}>{percent}%</div>
                 </div>
               </Card>
             </Col>

@@ -1,41 +1,44 @@
 import React from 'react';
 import type { ScheduleSession } from '../../types';
 import { calculateDayStats, formatDuration } from '../../utils/scheduleUtils';
-import './DayStats.css';
+import styles from './DayStats.module.css';
 
 interface DayStatsProps {
   sessions: ScheduleSession[];
+  className?: string;
 }
 
-export const DayStats: React.FC<DayStatsProps> = ({ sessions }) => {
+export const DayStats: React.FC<DayStatsProps> = ({ sessions, className }) => {
   const stats = calculateDayStats(sessions);
 
   return (
-    <div className="day-stats">
-      <div className="stat-item">
-        <span className="stat-value">{formatDuration(stats.totalActiveMinutes)}</span>
-        <span className="stat-label">Active Time</span>
+    <div
+      className={[styles['day-stats'], className].filter(Boolean).join(' ')}
+    >
+      <div className={styles['stat-item']}>
+        <span className={styles['stat-value']}>{formatDuration(stats.totalActiveMinutes)}</span>
+        <span className={styles['stat-label']}>Active Time</span>
       </div>
 
-      <div className="stat-divider" />
+      <div className={styles['stat-divider']} />
 
-      <div className="stat-item">
-        <span className="stat-value">{formatDuration(stats.totalBreakMinutes)}</span>
-        <span className="stat-label">Break Time</span>
+      <div className={styles['stat-item']}>
+        <span className={styles['stat-value']}>{formatDuration(stats.totalBreakMinutes)}</span>
+        <span className={styles['stat-label']}>Break Time</span>
       </div>
 
-      <div className="stat-divider" />
+      <div className={styles['stat-divider']} />
 
-      <div className="stat-item">
-        <span className="stat-value">{stats.sessionCount}</span>
-        <span className="stat-label">Sessions</span>
+      <div className={styles['stat-item']}>
+        <span className={styles['stat-value']}>{stats.sessionCount}</span>
+        <span className={styles['stat-label']}>Sessions</span>
       </div>
 
-      <div className="stat-divider" />
+      <div className={styles['stat-divider']} />
 
-      <div className="stat-item">
-        <span className="stat-value">{stats.activePercentage}%</span>
-        <span className="stat-label">Of Day</span>
+      <div className={styles['stat-item']}>
+        <span className={styles['stat-value']}>{stats.activePercentage}%</span>
+        <span className={styles['stat-label']}>Of Day</span>
       </div>
     </div>
   );

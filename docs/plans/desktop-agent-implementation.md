@@ -15,7 +15,7 @@
 |--------|---------|--------|
 | Формат | Electron (tray-only, без окна) | Нативный tray, пользователь хочет трей |
 | Язык | TypeScript | Единообразие с фронтом и бэком |
-| Авторизация | Internal API Token (MVP) | Уже есть, 1 поле вместо 4 |
+| Авторизация | Scoped Agent Token (из `/api/v1/agents/register`) | Токен привязан к `agent_id` и `tenant_id`, безопаснее internal токенов |
 | Секреты | Proxmox credentials хранятся локально в config.json | MVP: агент на машине пользователя, это безопасно |
 | Обновление | Ручное (скачать новый .exe) | MVP |
 | Сборка | electron-builder → portable .exe | Без установщика |
@@ -76,7 +76,7 @@ agent/
 ```typescript
 interface AgentConfig {
   serverUrl: string;            // http://localhost:3001 (dev) или https://botmox.example.com
-  apiToken: string;             // INTERNAL_API_TOKEN
+  agentToken: string;           // scoped token из /api/v1/agents/register
   agentId: string;              // UUID из register response
   agentName: string;
   proxmox: {

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type { ScheduleDay } from '../../types';
 import { getDayName, formatDateShort } from '../../utils/scheduleUtils';
-import './DayTabs.css';
+import styles from './DayTabs.module.css';
 
 interface DayTabsProps {
   selectedDay: number;
@@ -68,8 +68,8 @@ export const DayTabs: React.FC<DayTabsProps> = ({
   const weekDates = carouselDates.slice(0, 7);
 
   return (
-    <div className="day-tabs-container">
-      <div className="day-tabs-carousel" ref={scrollContainerRef}>
+    <div className={styles['day-tabs-container']}>
+      <div className={styles['day-tabs-carousel']} ref={scrollContainerRef}>
         {weekDates.map((date, index) => {
           const dayIndex = date.getDay(); // 0 = Sun, 1 = Mon, etc.
           const status = getDayStatus(dayIndex);
@@ -79,12 +79,19 @@ export const DayTabs: React.FC<DayTabsProps> = ({
           return (
             <button
               key={index}
-              className={`day-tab ${isSelected ? 'selected' : ''} ${status} ${isToday ? 'today' : ''}`}
+              className={[
+                styles['day-tab'],
+                isSelected ? styles.selected : '',
+                styles[status],
+                isToday ? styles.today : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               onClick={() => handleDayClick(dayIndex)}
             >
-              <span className="day-name">{getDayName(dayIndex, true)}</span>
-              <span className="day-date">{formatDateShort(date)}</span>
-              <span className={`day-indicator ${status}`} />
+              <span className={styles['day-name']}>{getDayName(dayIndex, true)}</span>
+              <span className={styles['day-date']}>{formatDateShort(date)}</span>
+              <span className={[styles['day-indicator'], styles[status]].join(' ')} />
             </button>
           );
         })}

@@ -90,6 +90,7 @@ export const subscribeToProjectSettings = (
   onError?: (error: Error) => void
 ): (() => void) => {
   return createPollingSubscription(getProjectSettings, callback, onError, {
+    key: 'settings:projects',
     intervalMs: 8000,
     immediate: true,
   });

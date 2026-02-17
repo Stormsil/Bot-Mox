@@ -1,4 +1,5 @@
 const httpProxy = require('http-proxy');
+const { logger } = require('../../observability/logger');
 
 function createUnavailableHtml(title, errorMessage, hint) {
   return (
@@ -65,7 +66,7 @@ function createUiProxyStack({
   });
 
   proxmoxUIProxy.on('error', (err, _req, res) => {
-    console.error('Proxmox UI proxy error:', err.message);
+    logger.error({ err }, 'Proxmox UI proxy error');
     if (res && res.writeHead) {
       res.writeHead(502, { 'Content-Type': 'text/html' });
       res.end(
@@ -79,7 +80,7 @@ function createUiProxyStack({
   });
 
   tinyFMUIProxy.on('error', (err, _req, res) => {
-    console.error('TinyFM UI proxy error:', err.message);
+    logger.error({ err }, 'TinyFM UI proxy error');
     if (res && res.writeHead) {
       res.writeHead(502, { 'Content-Type': 'text/html' });
       res.end(
@@ -93,7 +94,7 @@ function createUiProxyStack({
   });
 
   syncThingUIProxy.on('error', (err, _req, res) => {
-    console.error('SyncThing UI proxy error:', err.message);
+    logger.error({ err }, 'SyncThing UI proxy error');
     if (res && res.writeHead) {
       res.writeHead(502, { 'Content-Type': 'text/html' });
       res.end(

@@ -1,0 +1,75 @@
+.container {
+  padding: 16px;
+}
+
+.filtersCard {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  margin-bottom: 16px;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.transactionsCard {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.transactionsCard :global(.ant-card-body) {
+  padding: 0;
+}
+
+.transactionsTable {
+  background: transparent;
+}
+
+.transactionsTable :global(.ant-table-thead > tr > th) {
+  background: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-primary);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.transactionsTable :global(.ant-table-tbody > tr > td) {
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-secondary);
+}
+
+.transactionsTable :global(.ant-table-tbody > tr:hover > td) {
+  background: var(--boxmox-color-surface-muted);
+}
+
+.transactionTypeTag {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.amountNeutral {
+  color: var(--boxmox-color-text-primary);
+  font-weight: 500;
+}
+
+.filtersCard :global(.ant-select-selector),
+.filtersCard :global(.ant-picker),
+.filtersCard :global(.ant-input) {
+  background: var(--boxmox-color-surface-muted) !important;
+  border-color: var(--boxmox-color-border-default) !important;
+  color: var(--boxmox-color-text-primary) !important;
+}
+
+.filtersCard :global(.ant-select-selection-placeholder),
+.filtersCard :global(.ant-input)::placeholder {
+  color: var(--boxmox-color-text-muted) !important;
+}
+
+.filtersCard :global(.ant-picker-suffix),
+.filtersCard :global(.ant-select-arrow) {
+  color: var(--boxmox-color-text-muted) !important;
+}
+

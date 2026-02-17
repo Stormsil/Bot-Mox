@@ -18,7 +18,7 @@ import {
   withProxyComputedState,
 } from './proxy';
 import type { BotProxyProps, ProxyInfo, ProxyModalFormValues } from './proxy';
-import './BotProxy.css';
+import styles from './proxy/proxy.module.css';
 
 const { confirm } = Modal;
 
@@ -217,8 +217,8 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
 
   if (loading) {
     return (
-      <div className="bot-proxy">
-        <Card className="proxy-card">
+      <div className={styles['bot-proxy']}>
+        <Card className={styles['proxy-card']}>
           <Spin size="large" />
         </Card>
       </div>
@@ -226,7 +226,7 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
   }
 
   return (
-    <div className="bot-proxy">
+    <div className={styles['bot-proxy']}>
       {proxy ? (
         <>
           <ProxyStatusAlert proxy={proxy} />

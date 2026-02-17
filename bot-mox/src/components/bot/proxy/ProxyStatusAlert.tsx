@@ -3,6 +3,7 @@ import { Alert } from 'antd';
 import { WarningOutlined } from '@ant-design/icons';
 import { getProxyAlertState } from './helpers';
 import type { ProxyInfo } from './types';
+import styles from './proxy.module.css';
 
 interface ProxyStatusAlertProps {
   proxy: ProxyInfo;
@@ -16,7 +17,7 @@ export const ProxyStatusAlert: React.FC<ProxyStatusAlertProps> = ({ proxy }) => 
 
   return (
     <Alert
-      className="proxy-alert"
+      className={styles['proxy-alert']}
       message={alertState.message}
       description={alertState.description}
       type={alertState.type}

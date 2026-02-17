@@ -13,6 +13,7 @@ import { TableActionButton, TableActionGroup } from '../../../components/ui/Tabl
 import type { LicenseWithBots } from '../../../types';
 import { ONE_DAY_MS, isExpired, isExpiringSoon } from './helpers';
 import type { LicenseColumnsHandlers } from './types';
+import styles from '../LicensesPage.module.css';
 
 const { Text } = Typography;
 
@@ -84,7 +85,7 @@ export const buildLicenseColumns = ({
     key: 'key',
     render: (key: string, record) => (
       <Space direction="vertical" size={0}>
-        <Text copyable={{ text: key, icon: <CopyOutlined /> }} className="license-key" style={{ fontSize: '12px' }}>
+        <Text copyable={{ text: key, icon: <CopyOutlined /> }} className={styles.licenseKey} style={{ fontSize: '12px' }}>
           {key}
         </Text>
         {record.type && (

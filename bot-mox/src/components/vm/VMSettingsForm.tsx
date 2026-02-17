@@ -1,45 +1,102 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { message } from 'antd';
-import type { VMGeneratorSettings } from '../../types';
-import type { SecretBinding, SecretBindingsMap } from '../../types/secrets';
+import { message, Tabs } from 'antd';
+import type { VMGeneratorSettings, VMStorageOption } from '../../types';
 import { getVMSettings, updateVMSettings, stripPasswords } from '../../services/vmSettingsService';
-import { loadVmSettingsBindings } from '../../services/secretsService';
-import { getVMConfig, testProxmoxConnection, testSSHConnection } from '../../services/vmService';
+import { getVMConfig } from '../../services/vmService';
+import { getSelectedProxmoxTargetNode } from '../../services/vmOpsService';
 import {
   normalizeTemplateCores,
   normalizeTemplateMemoryMb,
   ProjectResourcesSection,
-  ProxmoxSection,
-  ServiceUrlsSection,
   SettingsActions,
-  SshSection,
-  TemplateStorageSection,
   updateSettingsByPath,
 } from './settingsForm';
-import type { TemplateSyncState } from './settingsForm';
-import './VMSettingsForm.css';
+import type { TemplateSyncState, TemplateVmSummary } from './settingsForm';
+import { ProxmoxTab } from './settingsForm/ProxmoxTab';
+import { UnattendTab } from './settingsForm/UnattendTab';
+import { PlaybookTab } from './settingsForm/PlaybookTab';
+import styles from './VMSettingsForm.module.css';
 
-export const VMSettingsForm: React.FC = () => {
+const TEMPLATE_VOLUME_KEY = /^(?:ide|sata|scsi|virtio)\d+$/i;
+const parseSizeBytesFromVolume = (value: unknown): number | null => {
+  const text = String(value ?? '').trim();
+  if (!text) return null;
+
+  const match = text.match(/(?:^|,)\s*size=([0-9]+(?:\.[0-9]+)?)([KMGTP])?\s*(?:,|$)/i);
+  if (!match) return null;
+
+  const amount = Number(match[1]);
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+
+  const unit = (match[2] || 'B').toUpperCase();
+  const mul =
+    unit === 'K'
+      ? 1024
+      : unit === 'M'
+        ? 1024 ** 2
+        : unit === 'G'
+          ? 1024 ** 3
+          : unit === 'T'
+            ? 1024 ** 4
+            : unit === 'P'
+              ? 1024 ** 5
+              : 1;
+
+  return Math.round(amount * mul);
+};
+
+const buildTemplateSummary = (params: {
+  node: string;
+  vmId: number;
+  config: Record<string, unknown>;
+  cores: number | null;
+  memoryMb: number | null;
+}): TemplateVmSummary => {
+  const diskSizes: number[] = [];
+
+  for (const [key, value] of Object.entries(params.config)) {
+    if (!TEMPLATE_VOLUME_KEY.test(key)) continue;
+    const sizeBytes = parseSizeBytesFromVolume(value);
+    if (sizeBytes) diskSizes.push(sizeBytes);
+  }
+
+  const diskBytes = diskSizes.length > 0 ? Math.max(...diskSizes) : null;
+
+  let display: string | null = null;
+  const vga = params.config['vga'];
+  if (typeof vga === 'string' && vga.trim()) {
+    display = vga.trim();
+  }
+
+  return {
+    node: params.node,
+    vmId: params.vmId,
+    cores: params.cores,
+    memoryMb: params.memoryMb,
+    diskBytes,
+    display,
+  };
+};
+
+interface VMSettingsFormProps {
+  storageOptions?: VMStorageOption[];
+}
+
+export const VMSettingsForm: React.FC<VMSettingsFormProps> = ({
+  storageOptions = [],
+}) => {
   const [settings, setSettings] = useState<VMGeneratorSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [proxmoxOk, setProxmoxOk] = useState<boolean | null>(null);
-  const [sshOk, setSshOk] = useState<boolean | null>(null);
-  const [testing, setTesting] = useState(false);
   const [templateSyncState, setTemplateSyncState] = useState<TemplateSyncState>('idle');
   const [templateSyncMessage, setTemplateSyncMessage] = useState('');
+  const [templateSummary, setTemplateSummary] = useState<TemplateVmSummary | null>(null);
   const lastTemplateSyncKeyRef = useRef<string>('');
   const templateSyncRequestRef = useRef(0);
 
-  const [secretBindings, setSecretBindings] = useState<SecretBindingsMap>({});
-
   useEffect(() => {
-    Promise.all([
-      getVMSettings(),
-      loadVmSettingsBindings().catch(() => ({}) as SecretBindingsMap),
-    ]).then(([loadedSettings, bindings]) => {
+    getVMSettings().then((loadedSettings) => {
       setSettings(loadedSettings);
-      setSecretBindings(bindings);
       setLoading(false);
     });
   }, []);
@@ -57,23 +114,8 @@ export const VMSettingsForm: React.FC = () => {
     setSaving(false);
   };
 
-  const handleTestConnections = async () => {
-    setTesting(true);
-    const [proxmoxStatus, sshStatus] = await Promise.all([
-      testProxmoxConnection(),
-      testSSHConnection(),
-    ]);
-    setProxmoxOk(proxmoxStatus);
-    setSshOk(sshStatus);
-    setTesting(false);
-  };
-
   const handleFieldChange = (path: string, value: unknown) => {
     setSettings((prev) => (prev ? updateSettingsByPath(prev, path, value) : prev));
-  };
-
-  const handleSecretBindingChange = (fieldName: string, binding: SecretBinding) => {
-    setSecretBindings((prev) => ({ ...prev, [fieldName]: binding }));
   };
 
   useEffect(() => {
@@ -82,7 +124,7 @@ export const VMSettingsForm: React.FC = () => {
     const vmId = Number(settings.template.vmId);
     if (!Number.isFinite(vmId) || vmId < 1) return;
 
-    const node = settings.proxmox.node || 'h1';
+    const node = getSelectedProxmoxTargetNode() || settings.proxmox.node || 'h1';
     const syncKey = `${node}:${vmId}`;
     if (lastTemplateSyncKeyRef.current === syncKey) return;
 
@@ -91,6 +133,7 @@ export const VMSettingsForm: React.FC = () => {
 
     const timer = window.setTimeout(async () => {
       setTemplateSyncState('loading');
+      setTemplateSummary(null);
       setTemplateSyncMessage(`Loading parameters from VM ${vmId}...`);
 
       try {
@@ -120,22 +163,25 @@ export const VMSettingsForm: React.FC = () => {
           };
         });
 
-        if (loadedCores !== null && loadedMemory !== null) {
-          setTemplateSyncState('ok');
-          setTemplateSyncMessage(`Auto-loaded from VM ${vmId}: cores=${loadedCores}, memory=${loadedMemory}MB`);
-        } else if (loadedCores !== null) {
-          setTemplateSyncState('ok');
-          setTemplateSyncMessage(`Auto-loaded from VM ${vmId}: cores=${loadedCores} (memory kept from current settings)`);
-        } else if (loadedMemory !== null) {
-          setTemplateSyncState('ok');
-          setTemplateSyncMessage(`Auto-loaded from VM ${vmId}: memory=${loadedMemory}MB (cores kept from current settings)`);
-        } else {
-          setTemplateSyncState('error');
-          setTemplateSyncMessage(`VM ${vmId} config does not expose cores/memory. Kept current settings.`);
-        }
+        const summary = buildTemplateSummary({
+          node,
+          vmId,
+          config: config as Record<string, unknown>,
+          cores: loadedCores,
+          memoryMb: loadedMemory,
+        });
+        setTemplateSummary(summary);
+
+        setTemplateSyncState('ok');
+        const meta: string[] = [];
+        if (loadedCores !== null) meta.push(`cores=${loadedCores}`);
+        if (loadedMemory !== null) meta.push(`memory=${loadedMemory}MB`);
+        const suffix = meta.length > 0 ? ` (${meta.join(', ')})` : '';
+        setTemplateSyncMessage(`Template VM ${vmId} found on ${node}${suffix}`);
       } catch (error) {
         if (requestId !== templateSyncRequestRef.current) return;
         console.error('Failed to auto-load template VM params:', error);
+        setTemplateSummary(null);
         setTemplateSyncState('error');
         setTemplateSyncMessage(`Failed to load parameters from VM ${vmId}`);
       }
@@ -148,42 +194,49 @@ export const VMSettingsForm: React.FC = () => {
     return null;
   }
 
-  return (
-    <div className="vm-settings-form">
-      <ProxmoxSection
-        settings={settings}
-        onFieldChange={handleFieldChange}
-        secretBindings={secretBindings}
-        onSecretBindingChange={handleSecretBindingChange}
-      />
-      <SshSection
-        settings={settings}
-        onFieldChange={handleFieldChange}
-        secretBindings={secretBindings}
-        onSecretBindingChange={handleSecretBindingChange}
-      />
-      <TemplateStorageSection
-        settings={settings}
-        onFieldChange={handleFieldChange}
-        syncState={templateSyncState}
-        syncMessage={templateSyncMessage}
-      />
-      <ProjectResourcesSection settings={settings} onFieldChange={handleFieldChange} />
-      <ServiceUrlsSection
-        settings={settings}
-        onFieldChange={handleFieldChange}
-        secretBindings={secretBindings}
-        onSecretBindingChange={handleSecretBindingChange}
-      />
+  const tabItems = [
+    {
+      key: 'proxmox',
+      label: 'Proxmox',
+      children: (
+        <div>
+          <ProxmoxTab
+            settings={settings}
+            onFieldChange={handleFieldChange}
+            syncState={templateSyncState}
+            syncMessage={templateSyncMessage}
+            templateSummary={templateSummary}
+            storageOptions={storageOptions}
+          />
+          <SettingsActions saving={saving} onSave={handleSave} />
+        </div>
+      ),
+    },
+    {
+      key: 'resources',
+      label: 'Resources',
+      children: (
+        <div>
+          <ProjectResourcesSection settings={settings} onFieldChange={handleFieldChange} />
+          <SettingsActions saving={saving} onSave={handleSave} />
+        </div>
+      ),
+    },
+    {
+      key: 'unattend',
+      label: 'Unattend Profile',
+      children: <UnattendTab />,
+    },
+    {
+      key: 'playbooks',
+      label: 'Playbooks',
+      children: <PlaybookTab />,
+    },
+  ];
 
-      <SettingsActions
-        saving={saving}
-        testing={testing}
-        proxmoxOk={proxmoxOk}
-        sshOk={sshOk}
-        onSave={handleSave}
-        onTestConnections={handleTestConnections}
-      />
+  return (
+    <div className={styles.root}>
+      <Tabs defaultActiveKey="proxmox" items={tabItems} />
     </div>
   );
 };

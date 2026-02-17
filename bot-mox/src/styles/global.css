@@ -1,14 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap');
 @import './variables.css';
 
-/* Global Reset */
+/* Global reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   font-family: var(--font-primary);
   font-size: var(--text-base);
   background-color: var(--boxmox-color-surface-base);
@@ -21,8 +22,12 @@ html, body {
   height: 100%;
 }
 
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-condensed);
   font-weight: 600;
   color: var(--boxmox-color-text-primary);
@@ -34,7 +39,7 @@ h2 { font-size: var(--text-xl); }
 h3 { font-size: var(--text-lg); }
 h4 { font-size: var(--text-md); }
 
-/* Scrollbar Styling */
+/* Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -51,229 +56,4 @@ h4 { font-size: var(--text-md); }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--boxmox-color-border-default);
-}
-
-/* Ant Design Overrides - Proxmox Style */
-.ant-layout {
-  background: var(--boxmox-color-surface-base);
-}
-
-.ant-layout-sider {
-  background: var(--boxmox-color-surface-panel);
-}
-
-.ant-layout-header {
-  background: var(--boxmox-color-header-bg);
-  padding: 0;
-  height: var(--header-height);
-  line-height: var(--header-height);
-  border-bottom: 1px solid var(--boxmox-color-header-border);
-  color: var(--boxmox-color-header-text);
-}
-
-/* Tree Component Styling */
-.ant-tree {
-  background: transparent;
-  color: var(--boxmox-color-text-secondary);
-}
-
-.ant-tree-treenode {
-  padding: 2px 0 !important;
-}
-
-.ant-tree-node-content-wrapper {
-  color: var(--boxmox-color-text-secondary);
-  padding: 2px 8px !important;
-  border-radius: 0 !important;
-}
-
-.ant-tree-node-content-wrapper:hover {
-  background: var(--boxmox-color-surface-hover) !important;
-}
-
-.ant-tree-node-selected {
-  background: var(--boxmox-color-brand-soft) !important;
-  color: var(--boxmox-color-brand-contrast) !important;
-}
-
-.ant-tree-node-selected .ant-tree-title {
-  color: var(--boxmox-color-brand-contrast) !important;
-}
-
-.ant-tree-switcher {
-  color: var(--boxmox-color-text-muted);
-}
-
-/* Tabs Styling - Proxmox Style */
-.ant-tabs {
-  color: var(--boxmox-color-text-secondary);
-}
-
-.ant-tabs-nav {
-  background: var(--boxmox-color-surface-panel);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-  margin-bottom: 0 !important;
-}
-
-.ant-tabs-tab {
-  color: var(--boxmox-color-text-muted);
-  background: transparent;
-  border: none !important;
-  border-radius: 0 !important;
-  margin: 0 !important;
-  padding: 8px 16px !important;
-}
-
-.ant-tabs-tab:hover {
-  color: var(--boxmox-color-text-primary);
-  background: var(--boxmox-color-surface-hover);
-}
-
-.ant-tabs-tab-active {
-  background: var(--boxmox-color-surface-muted) !important;
-  color: var(--boxmox-color-text-primary) !important;
-}
-
-.ant-tabs-ink-bar {
-  background: var(--boxmox-color-brand-primary) !important;
-}
-
-/* Card Styling */
-.ant-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-  border-radius: var(--radius-sm);
-}
-
-.ant-card-head {
-  background: var(--boxmox-color-surface-muted);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-  padding: 8px 16px;
-  min-height: auto;
-}
-
-.ant-card-head-title {
-  font-family: var(--font-condensed);
-  font-size: var(--text-md);
-  font-weight: 600;
-  color: var(--boxmox-color-text-primary);
-}
-
-.ant-card-body {
-  padding: 16px;
-}
-
-/* Table Styling */
-.ant-table {
-  background: transparent;
-  color: var(--boxmox-color-text-secondary);
-}
-
-.ant-table-thead > tr > th {
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-primary);
-  border-bottom: 1px solid var(--boxmox-color-border-strong);
-  font-weight: 600;
-  font-size: var(--text-sm);
-  padding: 8px 12px;
-}
-
-.ant-table-tbody > tr > td {
-  border-bottom: 1px solid var(--boxmox-color-border-subtle);
-  padding: 8px 12px;
-}
-
-.ant-table-tbody > tr:hover > td {
-  background: var(--boxmox-color-surface-hover);
-}
-
-/* Button Styling */
-.ant-btn {
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-}
-
-.ant-btn-primary {
-  background: var(--boxmox-color-brand-primary);
-  border-color: var(--boxmox-color-brand-primary);
-}
-
-.ant-btn-primary:hover {
-  background: var(--boxmox-color-brand-primary-hover);
-  border-color: var(--boxmox-color-brand-primary-hover);
-}
-
-/* Input Styling */
-.ant-input {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
-  border-radius: var(--radius-sm);
-}
-
-.ant-input:focus {
-  border-color: var(--boxmox-color-brand-primary);
-  box-shadow: 0 0 0 2px rgba(59, 125, 184, 0.18);
-}
-
-/* Select Styling */
-.ant-select-selector {
-  background: var(--boxmox-color-surface-panel) !important;
-  border: 1px solid var(--boxmox-color-border-default) !important;
-  color: var(--boxmox-color-text-primary) !important;
-  border-radius: var(--radius-sm) !important;
-}
-
-/* Divider */
-.ant-divider {
-  border-color: var(--boxmox-color-border-default);
-}
-
-/* Badge */
-.ant-badge-count {
-  background: var(--boxmox-color-brand-primary);
-}
-
-/* Tooltip */
-.ant-tooltip-inner {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-  border-radius: var(--radius-sm);
-  color: var(--boxmox-color-text-primary);
-}
-
-/* Dropdown */
-.ant-dropdown-menu {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-  border-radius: var(--radius-sm);
-}
-
-.ant-dropdown-menu-item {
-  color: var(--boxmox-color-text-secondary);
-}
-
-.ant-dropdown-menu-item:hover {
-  background: var(--boxmox-color-surface-hover);
-  color: var(--boxmox-color-text-primary);
-}
-
-/* Proxmox Layout */
-.proxmox-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: var(--boxmox-color-surface-base);
-}
-
-.proxmox-body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.proxmox-content {
-  flex: 1;
-  overflow: auto;
-  background: var(--boxmox-color-surface-base);
 }

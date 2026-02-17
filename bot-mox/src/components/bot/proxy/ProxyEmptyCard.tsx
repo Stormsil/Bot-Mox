@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Card, Empty, Space, Typography } from 'antd';
 import { GlobalOutlined, PlusOutlined } from '@ant-design/icons';
+import styles from './proxy.module.css';
 
 const { Text } = Typography;
 
@@ -10,7 +11,7 @@ interface ProxyEmptyCardProps {
 
 export const ProxyEmptyCard: React.FC<ProxyEmptyCardProps> = ({ onAdd }) => (
   <Card
-    className="proxy-card"
+    className={styles['proxy-card']}
     title={
       <Space>
         <GlobalOutlined />
@@ -24,7 +25,7 @@ export const ProxyEmptyCard: React.FC<ProxyEmptyCardProps> = ({ onAdd }) => (
     }
   >
     <Empty
-      className="proxy-empty"
+      className={styles['proxy-empty']}
       image={Empty.PRESENTED_IMAGE_SIMPLE}
       description={
         <span>

@@ -1,0 +1,110 @@
+.proxmox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background: var(--boxmox-color-header-bg);
+  border-bottom: 1px solid var(--boxmox-color-header-border);
+  height: var(--header-height);
+  line-height: var(--header-height);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.user-menu {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+}
+
+.user-menu:hover {
+  background: var(--boxmox-color-header-hover);
+}
+
+.user-email {
+  color: var(--boxmox-color-header-text);
+  font-size: var(--text-sm);
+}
+
+.dropdown-icon {
+  color: var(--boxmox-color-header-text-muted);
+  font-size: 10px;
+}
+
+.header-path {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.path-back {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--boxmox-color-header-border);
+  background: transparent;
+  color: var(--boxmox-color-header-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.path-back:hover {
+  background: var(--boxmox-color-header-hover);
+}
+
+.path-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--boxmox-color-header-text-muted);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.path-crumb {
+  font-size: 12px;
+  color: var(--boxmox-color-header-text);
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  max-width: 180px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.path-crumb.current {
+  color: var(--boxmox-color-header-text);
+  cursor: default;
+}
+
+.path-crumb.muted {
+  color: var(--boxmox-color-header-text-muted);
+  cursor: default;
+}
+
+.path-crumb:hover:not(.current):not(.muted) {
+  background: var(--boxmox-color-header-hover);
+}
+
+.path-sep {
+  color: var(--boxmox-color-header-text-muted);
+  font-size: 11px;
+}

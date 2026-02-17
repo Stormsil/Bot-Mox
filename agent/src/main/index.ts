@@ -65,9 +65,25 @@ function showPairing(): void {
   });
 }
 
+function logout(): void {
+  if (agentLoop) {
+    agentLoop.stop();
+    agentLoop = null;
+  }
+  configStore.clear();
+  logger.info('User logged out — config cleared');
+  tray.setAgentName('Not paired');
+  tray.updateStatus('idle');
+  showPairing();
+}
+
 // ---------------------------------------------------------------------------
 // App lifecycle
 // ---------------------------------------------------------------------------
+
+// Silence EPIPE on stdout/stderr — Electron on Windows has no TTY
+process.stdout?.on?.('error', () => {});
+process.stderr?.on?.('error', () => {});
 
 app.on('ready', () => {
   configStore = new ConfigStore();
@@ -79,6 +95,7 @@ app.on('ready', () => {
 
   tray.setCallbacks({
     onRepair: () => showPairing(),
+    onLogout: () => logout(),
     onQuit: () => {
       logger.info('User requested quit');
       if (agentLoop) agentLoop.stop();

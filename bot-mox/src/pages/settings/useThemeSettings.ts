@@ -5,15 +5,28 @@ import {
   deleteThemePreset,
   saveThemePreset,
   updateThemeSettings,
+  updateThemeVisualSettings,
   type ThemePreset,
   type ThemeSettings,
 } from '../../services/themeService';
 import {
+  deleteThemeAsset,
+  listThemeAssets,
+  uploadThemeAsset,
+  type ThemeBackgroundAsset,
+} from '../../services/themeAssetsService';
+import {
   createDefaultThemePalettes,
   normalizeHexColor,
+  sanitizeThemeShapeSettings,
+  sanitizeThemeTypographySettings,
+  sanitizeThemeVisualSettings,
   type ThemeColorVariable,
   type ThemeMode,
   type ThemePalettes,
+  type ThemeShapeSettings,
+  type ThemeTypographySettings,
+  type ThemeVisualSettings,
 } from '../../theme/themePalette';
 
 const DEFAULT_THEME_PALETTES = createDefaultThemePalettes();
@@ -33,6 +46,12 @@ interface WindowWithEyeDropper extends Window {
 interface UseThemeSettingsArgs {
   themePalettes?: ThemePalettes;
   onThemePalettesChange?: (palettes: ThemePalettes) => void;
+  visualSettings?: ThemeVisualSettings;
+  onVisualSettingsChange?: (visual: ThemeVisualSettings) => void;
+  typographySettings?: ThemeTypographySettings;
+  onTypographySettingsChange?: (typography: ThemeTypographySettings) => void;
+  shapeSettings?: ThemeShapeSettings;
+  onShapeSettingsChange?: (shape: ThemeShapeSettings) => void;
 }
 
 interface UseThemeSettingsResult {
@@ -52,6 +71,12 @@ interface UseThemeSettingsResult {
   setNewThemePresetName: (name: string) => void;
   localThemePalettes: ThemePalettes;
   themeInputValues: ThemePalettes;
+  localVisualSettings: ThemeVisualSettings;
+  localTypographySettings: ThemeTypographySettings;
+  localShapeSettings: ThemeShapeSettings;
+  themeAssets: ThemeBackgroundAsset[];
+  themeAssetsLoading: boolean;
+  themeAssetUploading: boolean;
   themePresetOptions: Array<{ label: string; value: string }>;
   applyThemeSettings: (settings: ThemeSettings) => void;
   updateThemeColor: (
@@ -65,6 +90,14 @@ interface UseThemeSettingsResult {
   handlePickColorFromScreen: (mode: ThemeMode, cssVar: ThemeColorVariable) => Promise<void>;
   handleResetCurrentPalette: () => void;
   handleSaveThemeColors: () => Promise<void>;
+  handleSaveVisualSettings: () => Promise<void>;
+  handleVisualSettingsChange: (patch: Partial<ThemeVisualSettings>) => void;
+  handleTypographySettingsChange: (patch: Partial<ThemeTypographySettings>) => void;
+  handleShapeSettingsChange: (patch: Partial<ThemeShapeSettings>) => void;
+  handleRefreshThemeAssets: () => Promise<void>;
+  handleUploadThemeAsset: (file: File) => Promise<void>;
+  handleSelectThemeBackground: (assetId?: string) => void;
+  handleDeleteThemeAsset: (assetId: string) => Promise<void>;
   handleSaveCurrentAsPreset: () => Promise<void>;
   handleApplySelectedPreset: () => Promise<void>;
   handleDeleteSelectedPreset: () => Promise<void>;
@@ -81,6 +114,12 @@ const mapThemePresetsToList = (presets: Record<string, ThemePreset>): ThemePrese
 export function useThemeSettings({
   themePalettes,
   onThemePalettesChange,
+  visualSettings,
+  onVisualSettingsChange,
+  typographySettings,
+  onTypographySettingsChange,
+  shapeSettings,
+  onShapeSettingsChange,
 }: UseThemeSettingsArgs): UseThemeSettingsResult {
   const [themeSaving, setThemeSaving] = useState(false);
   const [themePresetSaving, setThemePresetSaving] = useState(false);
@@ -92,11 +131,23 @@ export function useThemeSettings({
   const [selectedPresetId, setSelectedPresetId] = useState<string | undefined>();
   const [activePresetId, setActivePresetId] = useState<string | undefined>();
   const [newThemePresetName, setNewThemePresetName] = useState('');
+  const [themeAssetsLoading, setThemeAssetsLoading] = useState(false);
+  const [themeAssetUploading, setThemeAssetUploading] = useState(false);
+  const [themeAssets, setThemeAssets] = useState<ThemeBackgroundAsset[]>([]);
   const [localThemePalettes, setLocalThemePalettes] = useState<ThemePalettes>(() =>
     cloneThemePalettes(themePalettes ?? DEFAULT_THEME_PALETTES)
   );
   const [themeInputValues, setThemeInputValues] = useState<ThemePalettes>(() =>
     cloneThemePalettes(themePalettes ?? DEFAULT_THEME_PALETTES)
+  );
+  const [localVisualSettings, setLocalVisualSettings] = useState<ThemeVisualSettings>(() =>
+    sanitizeThemeVisualSettings(visualSettings)
+  );
+  const [localTypographySettings, setLocalTypographySettings] = useState<ThemeTypographySettings>(() =>
+    sanitizeThemeTypographySettings(typographySettings)
+  );
+  const [localShapeSettings, setLocalShapeSettings] = useState<ThemeShapeSettings>(() =>
+    sanitizeThemeShapeSettings(shapeSettings)
   );
 
   useEffect(() => {
@@ -106,16 +157,54 @@ export function useThemeSettings({
     setThemeInputValues(cloned);
   }, [themePalettes]);
 
+  useEffect(() => {
+    setLocalVisualSettings(sanitizeThemeVisualSettings(visualSettings));
+  }, [visualSettings]);
+
+  useEffect(() => {
+    setLocalTypographySettings(sanitizeThemeTypographySettings(typographySettings));
+  }, [typographySettings]);
+
+  useEffect(() => {
+    setLocalShapeSettings(sanitizeThemeShapeSettings(shapeSettings));
+  }, [shapeSettings]);
+
+  const handleRefreshThemeAssets = useCallback(async () => {
+    setThemeAssetsLoading(true);
+    try {
+      const data = await listThemeAssets();
+      setThemeAssets(data.items.filter((item) => item.status === 'ready' || item.status === 'pending'));
+    } catch (error) {
+      console.error('Error loading theme assets:', error);
+      message.error('Failed to load background images');
+    } finally {
+      setThemeAssetsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void handleRefreshThemeAssets();
+  }, [handleRefreshThemeAssets]);
+
   const applyThemeSettings = useCallback((settings: ThemeSettings) => {
     const nextPalettes = cloneThemePalettes(settings.palettes);
     const presets = mapThemePresetsToList(settings.presets);
+    const nextVisual = sanitizeThemeVisualSettings(settings.visual);
+    const nextTypography = sanitizeThemeTypographySettings(settings.typography);
+    const nextShape = sanitizeThemeShapeSettings(settings.shape);
     setLocalThemePalettes(nextPalettes);
     setThemeInputValues(nextPalettes);
     setThemePresets(presets);
     setActivePresetId(settings.active_preset_id);
     setSelectedPresetId(settings.active_preset_id ?? presets[0]?.id);
+    setLocalVisualSettings(nextVisual);
+    setLocalTypographySettings(nextTypography);
+    setLocalShapeSettings(nextShape);
     onThemePalettesChange?.(settings.palettes);
-  }, [onThemePalettesChange]);
+    onVisualSettingsChange?.(nextVisual);
+    onTypographySettingsChange?.(nextTypography);
+    onShapeSettingsChange?.(nextShape);
+  }, [onShapeSettingsChange, onThemePalettesChange, onTypographySettingsChange, onVisualSettingsChange]);
 
   const updateThemeColor = useCallback((
     mode: ThemeMode,
@@ -213,7 +302,7 @@ export function useThemeSettings({
     try {
       await updateThemeSettings(localThemePalettes, undefined, activePresetId, {
         syncActivePreset: true,
-      });
+      }, localVisualSettings, localTypographySettings, localShapeSettings);
       message.success('Theme colors saved');
     } catch (error) {
       console.error('Error saving theme colors:', error);
@@ -221,7 +310,110 @@ export function useThemeSettings({
     } finally {
       setThemeSaving(false);
     }
-  }, [activePresetId, localThemePalettes]);
+  }, [activePresetId, localShapeSettings, localThemePalettes, localTypographySettings, localVisualSettings]);
+
+  const handleVisualSettingsChange = useCallback((patch: Partial<ThemeVisualSettings>) => {
+    setLocalVisualSettings((current) => {
+      const next = sanitizeThemeVisualSettings({ ...current, ...patch });
+      onVisualSettingsChange?.(next);
+      return next;
+    });
+  }, [onVisualSettingsChange]);
+
+  const handleTypographySettingsChange = useCallback((patch: Partial<ThemeTypographySettings>) => {
+    setLocalTypographySettings((current) => {
+      const next = sanitizeThemeTypographySettings({ ...current, ...patch });
+      onTypographySettingsChange?.(next);
+      return next;
+    });
+  }, [onTypographySettingsChange]);
+
+  const handleShapeSettingsChange = useCallback((patch: Partial<ThemeShapeSettings>) => {
+    setLocalShapeSettings((current) => {
+      const next = sanitizeThemeShapeSettings({ ...current, ...patch });
+      onShapeSettingsChange?.(next);
+      return next;
+    });
+  }, [onShapeSettingsChange]);
+
+  const handleSaveVisualSettings = useCallback(async () => {
+    setThemeSaving(true);
+    try {
+      await updateThemeVisualSettings(localVisualSettings);
+      message.success('Visual theme settings saved');
+    } catch (error) {
+      console.error('Error saving visual theme settings:', error);
+      message.error('Failed to save visual theme settings');
+    } finally {
+      setThemeSaving(false);
+    }
+  }, [localVisualSettings]);
+
+  const handleUploadThemeAsset = useCallback(async (file: File) => {
+    setThemeAssetUploading(true);
+    try {
+      const uploaded = await uploadThemeAsset(file);
+      setThemeAssets((current) => [uploaded, ...current.filter((item) => item.id !== uploaded.id)]);
+      setLocalVisualSettings((current) => {
+        const next = sanitizeThemeVisualSettings({
+          ...current,
+          enabled: true,
+          mode: 'image',
+          backgroundAssetId: uploaded.id,
+          backgroundImageUrl: uploaded.image_url || undefined,
+        });
+        onVisualSettingsChange?.(next);
+        return next;
+      });
+      message.success('Background image uploaded');
+    } catch (error) {
+      console.error('Error uploading theme asset:', error);
+      message.error(error instanceof Error ? error.message : 'Failed to upload background image');
+    } finally {
+      setThemeAssetUploading(false);
+    }
+  }, [onVisualSettingsChange]);
+
+  const handleSelectThemeBackground = useCallback((assetId?: string) => {
+    const selectedAsset = themeAssets.find((item) => item.id === assetId);
+
+    setLocalVisualSettings((current) => {
+      const next = sanitizeThemeVisualSettings({
+        ...current,
+        enabled: Boolean(assetId),
+        mode: assetId ? 'image' : 'none',
+        backgroundAssetId: assetId,
+        backgroundImageUrl: selectedAsset?.image_url || undefined,
+      });
+      onVisualSettingsChange?.(next);
+      return next;
+    });
+  }, [onVisualSettingsChange, themeAssets]);
+
+  const handleDeleteThemeAsset = useCallback(async (assetId: string) => {
+    try {
+      await deleteThemeAsset(assetId);
+      setThemeAssets((current) => current.filter((item) => item.id !== assetId));
+      setLocalVisualSettings((current) => {
+        if (current.backgroundAssetId !== assetId) {
+          return current;
+        }
+        const next = sanitizeThemeVisualSettings({
+          ...current,
+          enabled: false,
+          mode: 'none',
+          backgroundAssetId: undefined,
+          backgroundImageUrl: undefined,
+        });
+        onVisualSettingsChange?.(next);
+        return next;
+      });
+      message.success('Background image deleted');
+    } catch (error) {
+      console.error('Error deleting theme asset:', error);
+      message.error('Failed to delete background image');
+    }
+  }, [onVisualSettingsChange]);
 
   const handleSaveCurrentAsPreset = useCallback(async () => {
     const presetName = newThemePresetName.trim();
@@ -261,12 +453,21 @@ export function useThemeSettings({
     try {
       const nextSettings = await applyThemePreset(selectedPresetId);
       const nextPalettes = cloneThemePalettes(nextSettings.palettes);
+      const nextVisual = sanitizeThemeVisualSettings(nextSettings.visual);
+      const nextTypography = sanitizeThemeTypographySettings(nextSettings.typography);
+      const nextShape = sanitizeThemeShapeSettings(nextSettings.shape);
       setLocalThemePalettes(nextPalettes);
       setThemeInputValues(nextPalettes);
+      setLocalVisualSettings(nextVisual);
+      setLocalTypographySettings(nextTypography);
+      setLocalShapeSettings(nextShape);
       setThemePresets(mapThemePresetsToList(nextSettings.presets));
       setActivePresetId(nextSettings.active_preset_id);
       setSelectedPresetId(nextSettings.active_preset_id ?? selectedPresetId);
       onThemePalettesChange?.(nextSettings.palettes);
+      onVisualSettingsChange?.(nextVisual);
+      onTypographySettingsChange?.(nextTypography);
+      onShapeSettingsChange?.(nextShape);
       message.success('Theme applied');
     } catch (error) {
       console.error('Error applying theme preset:', error);
@@ -274,7 +475,7 @@ export function useThemeSettings({
     } finally {
       setThemePresetApplying(false);
     }
-  }, [onThemePalettesChange, selectedPresetId]);
+  }, [onShapeSettingsChange, onThemePalettesChange, onTypographySettingsChange, onVisualSettingsChange, selectedPresetId]);
 
   const handleDeleteSelectedPreset = useCallback(async () => {
     if (!selectedPresetId) {
@@ -285,9 +486,15 @@ export function useThemeSettings({
     try {
       const nextSettings = await deleteThemePreset(selectedPresetId);
       const nextPresets = mapThemePresetsToList(nextSettings.presets);
+      const nextTypography = sanitizeThemeTypographySettings(nextSettings.typography);
+      const nextShape = sanitizeThemeShapeSettings(nextSettings.shape);
       setThemePresets(nextPresets);
       setActivePresetId(nextSettings.active_preset_id);
       setSelectedPresetId(nextSettings.active_preset_id ?? nextPresets[0]?.id);
+      setLocalTypographySettings(nextTypography);
+      setLocalShapeSettings(nextShape);
+      onTypographySettingsChange?.(nextTypography);
+      onShapeSettingsChange?.(nextShape);
       message.success('Theme preset deleted');
     } catch (error) {
       console.error('Error deleting theme preset:', error);
@@ -295,7 +502,7 @@ export function useThemeSettings({
     } finally {
       setThemePresetDeleting(false);
     }
-  }, [selectedPresetId]);
+  }, [onShapeSettingsChange, onTypographySettingsChange, selectedPresetId]);
 
   const themePresetOptions = useMemo(() => {
     return themePresets.map((preset) => ({
@@ -321,6 +528,12 @@ export function useThemeSettings({
     setNewThemePresetName,
     localThemePalettes,
     themeInputValues,
+    localVisualSettings,
+    localTypographySettings,
+    localShapeSettings,
+    themeAssets,
+    themeAssetsLoading,
+    themeAssetUploading,
     themePresetOptions,
     applyThemeSettings,
     updateThemeColor,
@@ -329,6 +542,14 @@ export function useThemeSettings({
     handlePickColorFromScreen,
     handleResetCurrentPalette,
     handleSaveThemeColors,
+    handleSaveVisualSettings,
+    handleVisualSettingsChange,
+    handleTypographySettingsChange,
+    handleShapeSettingsChange,
+    handleRefreshThemeAssets,
+    handleUploadThemeAsset,
+    handleSelectThemeBackground,
+    handleDeleteThemeAsset,
     handleSaveCurrentAsPreset,
     handleApplySelectedPreset,
     handleDeleteSelectedPreset,

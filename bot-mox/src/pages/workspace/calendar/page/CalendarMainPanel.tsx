@@ -4,6 +4,7 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
 import type { WorkspaceCalendarEvent } from '../../../../services/workspaceService';
 import type { CalendarViewMode } from './types';
+import styles from '../WorkspaceCalendarPage.module.css';
 
 const { Text } = Typography;
 
@@ -28,15 +29,15 @@ export const CalendarMainPanel: React.FC<CalendarMainPanelProps> = ({
   onSelectDate,
   onShiftWeek,
 }) => (
-  <Card className="workspace-calendar-main" loading={loading}>
-    <div className="workspace-calendar-legend">
+  <Card className={styles.main} loading={loading}>
+    <div className={styles.legend}>
       <Space size={16}>
-        <span className="workspace-calendar-legend-item">
-          <span className="workspace-calendar-legend-circle" />
+        <span className={styles.legendItem}>
+          <span className={styles.legendCircle} />
           Circle: events count
         </span>
-        <span className="workspace-calendar-legend-item">
-          <span className="workspace-calendar-legend-selected" />
+        <span className={styles.legendItem}>
+          <span className={styles.legendSelected} />
           Rectangle: selected day
         </span>
       </Space>
@@ -56,16 +57,16 @@ export const CalendarMainPanel: React.FC<CalendarMainPanelProps> = ({
           }
 
           return (
-            <div className="workspace-calendar-cell">
+            <div className={styles.cell}>
               {info.originNode}
-              <span className="workspace-calendar-cell-badge">{count}</span>
+              <span className={styles.cellBadge}>{count}</span>
             </div>
           );
         }}
       />
     ) : (
-      <div className="workspace-calendar-week">
-        <div className="workspace-calendar-week-toolbar">
+      <div className={styles.week}>
+        <div className={styles.weekToolbar}>
           <Space>
             <Button icon={<LeftOutlined />} onClick={() => onShiftWeek(-1)} />
             <Button onClick={() => onSelectDate(dayjs())}>Today</Button>
@@ -76,7 +77,7 @@ export const CalendarMainPanel: React.FC<CalendarMainPanelProps> = ({
           </Text>
         </div>
 
-        <div className="workspace-calendar-week-grid">
+        <div className={styles.weekGrid}>
           {weekDays.map((day) => {
             const dayKey = day.format('YYYY-MM-DD');
             const dayEvents = eventsByDate.get(dayKey) ?? [];
@@ -86,20 +87,20 @@ export const CalendarMainPanel: React.FC<CalendarMainPanelProps> = ({
               <button
                 key={dayKey}
                 type="button"
-                className={`workspace-calendar-week-day ${isSelected ? 'selected' : ''}`}
+                className={`${styles.weekDay} ${isSelected ? styles.weekDaySelected : ''}`}
                 onClick={() => onSelectDate(day)}
               >
-                <div className="workspace-calendar-week-day-header">
+                <div className={styles.weekDayHeader}>
                   <span>{day.format('ddd')}</span>
                   <span>{day.format('DD')}</span>
                 </div>
-                <div className="workspace-calendar-week-day-body">
+                <div className={styles.weekDayBody}>
                   {dayEvents.length === 0 ? (
                     <Text type="secondary">No events</Text>
                   ) : (
                     <>
                       {dayEvents.slice(0, 3).map((event) => (
-                        <Tag key={event.id} className="workspace-calendar-week-tag">
+                        <Tag key={event.id} className={styles.weekTag}>
                           {event.title}
                         </Tag>
                       ))}

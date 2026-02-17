@@ -1,4 +1,4 @@
-const { S3Client, GetObjectCommand, HeadObjectCommand, HeadBucketCommand } = require('@aws-sdk/client-s3');
+const { S3Client, GetObjectCommand, HeadObjectCommand, HeadBucketCommand, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 const DEFAULT_REGION = 'us-east-1';
@@ -124,6 +124,11 @@ class S3StorageProvider {
     return clamp(requested, MIN_PRESIGN_TTL_SECONDS, MAX_PRESIGN_TTL_SECONDS);
   }
 
+  resolveBucket(bucketName) {
+    const normalized = String(bucketName || '').trim();
+    return normalized || this.config.bucket;
+  }
+
   extractErrorReason(error) {
     if (!error) return 'unknown-s3-error';
     if (typeof error === 'string') return error;
@@ -150,12 +155,13 @@ class S3StorageProvider {
     }
   }
 
-  async headObject({ objectKey }) {
+  async headObject({ objectKey, bucket }) {
     const key = normalizeObjectKey(objectKey);
+    const targetBucket = this.resolveBucket(bucket);
     try {
       const response = await this.client.send(
         new HeadObjectCommand({
-          Bucket: this.config.bucket,
+          Bucket: targetBucket,
           Key: key,
         })
       );
@@ -186,13 +192,14 @@ class S3StorageProvider {
     }
   }
 
-  async createPresignedDownloadUrl({ objectKey, expiresInSeconds }) {
+  async createPresignedDownloadUrl({ objectKey, expiresInSeconds, bucket }) {
     const key = normalizeObjectKey(objectKey);
     const ttlSeconds = this.normalizeTtl(expiresInSeconds);
+    const targetBucket = this.resolveBucket(bucket);
 
     try {
       const command = new GetObjectCommand({
-        Bucket: this.config.bucket,
+        Bucket: targetBucket,
         Key: key,
       });
       const url = await getSignedUrl(this.client, command, { expiresIn: ttlSeconds });
@@ -210,6 +217,41 @@ class S3StorageProvider {
         502,
         'S3_PRESIGN_FAILED',
         'Failed to generate presigned S3 download URL',
+        this.extractErrorReason(error)
+      );
+    }
+  }
+
+  async createPresignedUploadUrl({ objectKey, contentType, expiresInSeconds, bucket }) {
+    const key = normalizeObjectKey(objectKey);
+    const ttlSeconds = this.normalizeTtl(expiresInSeconds);
+    const targetBucket = this.resolveBucket(bucket);
+    const normalizedContentType = String(contentType || '').trim();
+
+    try {
+      const command = new PutObjectCommand({
+        Bucket: targetBucket,
+        Key: key,
+        ...(normalizedContentType ? { ContentType: normalizedContentType } : {}),
+      });
+
+      const url = await getSignedUrl(this.client, command, { expiresIn: ttlSeconds });
+      const nowMs = Date.now();
+      const expiresAtMs = nowMs + ttlSeconds * 1000;
+
+      return {
+        url,
+        objectKey: key,
+        bucket: targetBucket,
+        contentType: normalizedContentType || null,
+        expiresInSeconds: ttlSeconds,
+        expiresAtMs,
+      };
+    } catch (error) {
+      throw new S3StorageProviderError(
+        502,
+        'S3_PRESIGN_FAILED',
+        'Failed to generate presigned S3 upload URL',
         this.extractErrorReason(error)
       );
     }

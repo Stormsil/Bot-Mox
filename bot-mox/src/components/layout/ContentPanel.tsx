@@ -1,6 +1,5 @@
 import React from 'react';
-import { Tabs } from 'antd';
-import type { TabsProps } from 'antd';
+import { Segmented } from 'antd';
 import {
   InfoCircleOutlined,
   AppstoreOutlined,
@@ -10,7 +9,15 @@ import {
   UnorderedListOutlined,
   DesktopOutlined,
 } from '@ant-design/icons';
-import './ContentPanel.css';
+import styles from './ContentPanel.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
 
 export type TabType = 'summary' | 'monitoring' | 'configure' | 'resources' | 'vmInfo' | 'transactions' | 'gold_price';
 
@@ -24,93 +31,89 @@ interface ContentPanelProps {
   hideTabs?: boolean;
 }
 
+type TabOption = { value: TabType; label: React.ReactNode };
+
 // Табы для бота (новая структура)
 const botTabMeta: Array<{ key: TabType; icon: React.ReactNode; label: string }> = [
-  { key: 'summary', icon: <InfoCircleOutlined />, label: 'Summary' },
-  { key: 'monitoring', icon: <EyeOutlined />, label: 'Monitoring' },
-  { key: 'configure', icon: <SettingOutlined />, label: 'Configure' },
-  { key: 'resources', icon: <AppstoreOutlined />, label: 'Resources' },
-  { key: 'vmInfo', icon: <DesktopOutlined />, label: 'VM Info' },
+  { key: 'summary', icon: <InfoCircleOutlined className={cx('tab-label-icon')} />, label: 'Summary' },
+  { key: 'monitoring', icon: <EyeOutlined className={cx('tab-label-icon')} />, label: 'Monitoring' },
+  { key: 'configure', icon: <SettingOutlined className={cx('tab-label-icon')} />, label: 'Configure' },
+  { key: 'resources', icon: <AppstoreOutlined className={cx('tab-label-icon')} />, label: 'Resources' },
+  { key: 'vmInfo', icon: <DesktopOutlined className={cx('tab-label-icon')} />, label: 'VM Info' },
 ];
 
-const botTabs: TabsProps['items'] = botTabMeta.map((tab) => ({
-  key: tab.key,
+const botTabs: TabOption[] = botTabMeta.map((tab) => ({
+  value: tab.key,
   label: (
-    <span className="tab-label">
+    <span className={cx('tab-label')}>
       {tab.icon}
       <span>{tab.label}</span>
     </span>
   ),
-  children: null,
 }));
 
 // Табы для датацентра
-const datacenterTabs: TabsProps['items'] = [
+const datacenterTabs: TabOption[] = [
   {
-    key: 'summary',
+    value: 'summary',
     label: (
-      <span className="tab-label">
-        <InfoCircleOutlined />
+      <span className={cx('tab-label')}>
+        <InfoCircleOutlined className={cx('tab-label-icon')} />
         <span>Summary</span>
       </span>
     ),
-    children: null,
   },
 ];
 
 // Табы для проекта
-const projectTabs: TabsProps['items'] = [
+const projectTabs: TabOption[] = [
   {
-    key: 'summary',
+    value: 'summary',
     label: (
-      <span className="tab-label">
-        <InfoCircleOutlined />
+      <span className={cx('tab-label')}>
+        <InfoCircleOutlined className={cx('tab-label-icon')} />
         <span>Summary</span>
       </span>
     ),
-    children: null,
   },
 ];
 
 // Табы для метрик
-const metricsTabs: TabsProps['items'] = [
+const metricsTabs: TabOption[] = [
   {
-    key: 'summary',
+    value: 'summary',
     label: (
-      <span className="tab-label">
-        <InfoCircleOutlined />
+      <span className={cx('tab-label')}>
+        <InfoCircleOutlined className={cx('tab-label-icon')} />
         <span>Summary</span>
       </span>
     ),
-    children: null,
   },
 ];
 
 // Табы для финансов
-const financeTabs: TabsProps['items'] = [
+const financeTabs: TabOption[] = [
   {
-    key: 'summary',
+    value: 'summary',
     label: (
-      <span className="tab-label">
-        <InfoCircleOutlined />
+      <span className={cx('tab-label')}>
+        <InfoCircleOutlined className={cx('tab-label-icon')} />
         <span>Summary</span>
       </span>
     ),
-    children: null,
   },
   {
-    key: 'transactions',
+    value: 'transactions',
     label: (
-      <span className="tab-label">
-        <UnorderedListOutlined />
+      <span className={cx('tab-label')}>
+        <UnorderedListOutlined className={cx('tab-label-icon')} />
         <span>Transactions</span>
       </span>
     ),
-    children: null,
   },
 ];
 
-const tabsMap: Record<NonNullable<ContentPanelProps['type']>, TabsProps['items']> = {
+const tabsMap: Record<NonNullable<ContentPanelProps['type']>, TabOption[]> = {
   bot: botTabs,
   datacenter: datacenterTabs,
   project: projectTabs,
@@ -119,19 +122,18 @@ const tabsMap: Record<NonNullable<ContentPanelProps['type']>, TabsProps['items']
 };
 
 // Function to create tabs with incomplete indicators
-const createBotTabsWithWarnings = (incompleteTabs: TabType[] = []): TabsProps['items'] => {
+const createBotTabsWithWarnings = (incompleteTabs: TabType[] = []): TabOption[] => {
   return botTabMeta.map((tab) => {
     const isIncomplete = incompleteTabs.includes(tab.key);
     return {
-      key: tab.key,
+      value: tab.key,
       label: (
-        <span className={`tab-label ${isIncomplete ? 'tab-label-warning' : ''}`}>
+        <span className={cx(`tab-label ${isIncomplete ? 'tab-label-warning' : ''}`)}>
           {tab.icon}
           <span>{tab.label}</span>
-          {isIncomplete && <ExclamationCircleOutlined className="tab-warning-icon" />}
+          {isIncomplete && <ExclamationCircleOutlined className={cx('tab-warning-icon')} />}
         </span>
       ),
-      children: null,
     };
   });
 };
@@ -155,20 +157,20 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   };
 
   return (
-    <div className={`content-panel ${className || ''}`}>
+    <div className={`${cx('content-panel')} ${className || ''}`}>
       {!hideTabs && (
-        <div className="content-tabs-nav">
-          <Tabs
-            activeKey={activeTab}
-            onChange={handleTabChange}
-            items={tabs}
-            type="card"
-            className="content-tabs-ant"
-            renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} />}
+        <div className={cx('content-tabs-nav')}>
+          <Segmented
+            className={cx('content-tabs-control')}
+            size="small"
+            block
+            value={activeTab}
+            onChange={(value) => handleTabChange(String(value))}
+            options={tabs}
           />
         </div>
       )}
-      <div className="content-body">{children}</div>
+      <div className={cx('content-body')}>{children}</div>
     </div>
   );
 };

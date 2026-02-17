@@ -1,0 +1,155 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.metricsRow :global(.ant-card) {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.metricCard {
+  position: relative;
+  min-height: 96px;
+  padding: 4px 2px;
+}
+
+.metricHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.metricTitle {
+  font-size: 11px;
+  color: var(--boxmox-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.metricUnit {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--boxmox-color-text-strong);
+}
+
+.metricValue {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--boxmox-color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.metricLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 8px;
+  display: block;
+  color: var(--boxmox-color-text-muted);
+}
+
+.metricMulti {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.metricMultiRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.metricMultiLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--boxmox-color-text-muted);
+}
+
+.metricHintStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.metricPositive,
+.metricNegative,
+.metricNeutral,
+.metricAccent {
+  border-left: 3px solid var(--boxmox-color-border-subtle);
+}
+
+.chartCard {
+  border-radius: 0;
+  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--boxmox-color-surface-panel);
+  overflow: hidden;
+}
+
+.chartTooltip {
+  background-color: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 2px;
+  padding: 12px;
+  box-shadow: 0 8px 18px rgba(31, 52, 73, 0.12);
+}
+
+.chartTooltipLabel {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--boxmox-color-text-primary);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  padding-bottom: 4px;
+}
+
+.chartTooltipValue {
+  margin: 0;
+  padding: 2px 0;
+  font-size: 13px;
+}
+
+.projectPerformanceCard,
+.costAnalysisCard {
+  border-radius: 0;
+  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--boxmox-color-surface-panel);
+  box-shadow: none;
+}
+
+.projectPerformanceCard :global(.ant-table) {
+  background: transparent;
+}
+
+.projectPerformanceCard :global(.ant-table-tbody > tr > td) {
+  border-bottom: 1px solid var(--boxmox-color-border-default);
+  color: var(--boxmox-color-text-secondary);
+}
+
+.projectPerformanceCard :global(.ant-table-tbody > tr:hover > td) {
+  background: var(--boxmox-color-surface-muted);
+}
+
+.projectPerformanceCard :global(.ant-table-thead > tr > th),
+.costAnalysisCard :global(.ant-table-thead > tr > th) {
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-primary);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+

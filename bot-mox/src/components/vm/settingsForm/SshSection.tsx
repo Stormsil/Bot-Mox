@@ -2,6 +2,7 @@ import React from 'react';
 import { Input, InputNumber, Switch } from 'antd';
 import type { SettingsSectionProps } from './types';
 import { SecretField } from './SecretField';
+import layout from './SettingsSectionLayout.module.css';
 
 export const SshSection: React.FC<SettingsSectionProps> = ({
   settings,
@@ -9,10 +10,10 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
   secretBindings,
   onSecretBindingChange,
 }) => (
-  <div className="vm-settings-section">
+  <div className={layout.section}>
     <h4>SSH Connection</h4>
-    <div className="vm-settings-row">
-      <div className="vm-settings-field">
+    <div className={layout.row}>
+      <div className={layout.field}>
         <label>Host</label>
         <Input
           value={settings.ssh.host}
@@ -20,7 +21,7 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
           size="small"
         />
       </div>
-      <div className="vm-settings-field">
+      <div className={layout.field}>
         <label>Port</label>
         <InputNumber
           value={settings.ssh.port}
@@ -32,8 +33,8 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
         />
       </div>
     </div>
-    <div className="vm-settings-row">
-      <div className="vm-settings-field">
+    <div className={layout.row}>
+      <div className={layout.field}>
         <label>Username</label>
         <Input
           value={settings.ssh.username}
@@ -41,7 +42,7 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
           size="small"
         />
       </div>
-      <div className="vm-settings-field">
+      <div className={layout.field}>
         <label>Use Key Auth</label>
         <div>
           <Switch
@@ -53,7 +54,7 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
       </div>
     </div>
     {!settings.ssh.useKeyAuth && (
-      <div className="vm-settings-row single">
+      <div className={`${layout.row} ${layout.rowSingle}`}>
         {onSecretBindingChange ? (
           <SecretField
             fieldName="ssh.password"
@@ -62,7 +63,7 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
             onBindingChange={onSecretBindingChange}
           />
         ) : (
-          <div className="vm-settings-field">
+          <div className={layout.field}>
             <label>Password</label>
             <Input.Password
               value={settings.ssh.password || ''}

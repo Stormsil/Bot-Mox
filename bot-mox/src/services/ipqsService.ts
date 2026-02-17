@@ -9,20 +9,20 @@ const IPQS_API_PREFIX = '/api/v1/ipqs';
 interface BackendStatusPayload {
   enabled?: unknown;
   configured?: unknown;
-  firebaseInitialized?: unknown;
+  supabaseSettingsConnected?: unknown;
 }
 
 interface BackendStatus {
   enabled: boolean;
   configured: boolean;
-  firebaseInitialized: boolean;
+  supabaseSettingsConnected: boolean;
 }
 
 function normalizeBackendStatus(payload: BackendStatusPayload): BackendStatus {
   return {
     enabled: Boolean(payload.enabled),
     configured: Boolean(payload.configured),
-    firebaseInitialized: Boolean(payload.firebaseInitialized),
+    supabaseSettingsConnected: Boolean(payload.supabaseSettingsConnected),
   };
 }
 
@@ -222,7 +222,7 @@ export function updateProxyWithIPQSData(
     updated_at: Date.now(),
   };
 
-  // Удаляем undefined поля чтобы избежать ошибок Firebase
+  // Удаляем undefined поля перед отправкой на backend
   Object.keys(updates).forEach((key) => {
     if (updates[key as keyof Proxy] === undefined) {
       delete updates[key as keyof Proxy];

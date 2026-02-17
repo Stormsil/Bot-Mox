@@ -6,6 +6,7 @@ import { TableActionButton } from '../../ui/TableActionButton';
 import { getDaysLeftColor, getStatusColor, getStatusIcon, getStatusText } from './helpers';
 import { SubscriptionStatusAlert } from './SubscriptionAlerts';
 import type { SubscriptionWithDetails } from './types';
+import styles from './subscription.module.css';
 
 const { Text } = Typography;
 
@@ -21,7 +22,7 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
   onDelete,
 }) => (
   <List.Item
-    className="subscription-item"
+    className={styles['subscription-item']}
     actions={[
       <TableActionButton
         key="edit"
@@ -38,9 +39,9 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
       />,
     ]}
   >
-    <div className="subscription-item-content">
-      <div className="subscription-header">
-        <div className="subscription-type">
+    <div className={styles['subscription-item-content']}>
+      <div className={styles['subscription-header']}>
+        <div className={styles['subscription-type']}>
           <Tag
             color={getStatusColor(subscription.computedStatus)}
             icon={getStatusIcon(subscription.computedStatus)}
@@ -71,8 +72,8 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
         </div>
       )}
 
-      <div className="subscription-details">
-        <div className="detail-row">
+      <div className={styles['subscription-details']}>
+        <div className={styles['detail-row']}>
           <Text type="secondary">Expires:</Text>
           <Text
             strong
@@ -88,11 +89,11 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
             {dayjs(subscription.expires_at).format('DD.MM.YYYY')}
           </Text>
         </div>
-        <div className="detail-row">
+        <div className={styles['detail-row']}>
           <Text type="secondary">Created:</Text>
           <Text style={{ fontSize: '12px' }}>{dayjs(subscription.created_at).format('DD.MM.YYYY')}</Text>
         </div>
-        <div className="detail-row">
+        <div className={styles['detail-row']}>
           <Text type="secondary">Days Left:</Text>
           <Text
             strong

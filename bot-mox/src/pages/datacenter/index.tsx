@@ -23,7 +23,15 @@ import {
   FINANCE_WINDOW_DAYS,
   MS_PER_DAY,
 } from './page-helpers';
-import './DatacenterPage.css';
+import styles from './DatacenterPage.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
 
 export const DatacenterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -354,9 +362,9 @@ export const DatacenterPage: React.FC = () => {
 
   if (initialLoading) {
     return (
-      <div className="datacenter-page">
+      <div className={cx('datacenter-page')}>
         <ContentPanel type="datacenter">
-          <div className="loading-container">
+          <div className={cx('loading-container')}>
             <Spin size="large" />
           </div>
         </ContentPanel>
@@ -365,7 +373,7 @@ export const DatacenterPage: React.FC = () => {
   }
 
   return (
-    <div className="datacenter-page">
+    <div className={cx('datacenter-page')}>
       <ContentPanel type="datacenter">
         <DatacenterContentMap
           collapsedSections={collapsedSections}

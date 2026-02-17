@@ -1,0 +1,50 @@
+/* App shell layout primitives. Keep these scoped to App.tsx to avoid global leakage. */
+
+.proxmox-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--boxmox-color-surface-base);
+}
+
+.proxmox-body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.proxmox-body > *:not(.theme-visual-layer) {
+  position: relative;
+  z-index: 1;
+}
+
+.proxmox-content {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  overflow: auto;
+  background: transparent;
+}
+
+.theme-visual-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.theme-visual-image {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  transform-origin: center;
+}
+
+.theme-visual-overlay {
+  position: absolute;
+  inset: 0;
+}
+

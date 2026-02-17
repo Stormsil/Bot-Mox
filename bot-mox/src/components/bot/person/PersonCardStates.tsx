@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, Badge, Card, Spin, Tooltip } from 'antd';
 import { ExclamationCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import styles from './person.module.css';
 
 interface PersonCardTitleProps {
   hasIncompleteData: boolean;
@@ -12,12 +13,12 @@ interface PersonStatusAlertsProps {
 }
 
 export const PersonCardTitle: React.FC<PersonCardTitleProps> = ({ hasIncompleteData }) => (
-  <div className="person-card-header">
+  <div className={styles['person-card-header']}>
     <span>Person Information</span>
     {hasIncompleteData && (
       <Tooltip title="Some fields are empty. Please fill in all person data.">
-        <Badge dot color="orange" className="incomplete-badge">
-          <ExclamationCircleOutlined className="warning-icon" />
+        <Badge dot color="orange" className={styles['incomplete-badge']}>
+          <ExclamationCircleOutlined className={styles['warning-icon']} />
         </Badge>
       </Tooltip>
     )}
@@ -28,7 +29,7 @@ export const PersonStatusAlerts: React.FC<PersonStatusAlertsProps> = ({ hasIncom
   <>
     {hasIncompleteData && (
       <Alert
-        className="config-incomplete-alert"
+        className={styles['config-incomplete-alert']}
         message="Incomplete Person Data"
         description="Some fields are empty. Please fill in all person data or use the Generate button to create random data."
         type="warning"
@@ -40,12 +41,12 @@ export const PersonStatusAlerts: React.FC<PersonStatusAlertsProps> = ({ hasIncom
 
     {manualEditLocked && (
       <Alert
-        className="person-workflow-alert"
+        className={styles['person-workflow-alert']}
         message={
-          <span className="person-workflow-message">
+          <span className={styles['person-workflow-message']}>
             Person data is locked
             <Tooltip title="Unlock -> edit or generate -> Save to lock again.">
-              <QuestionCircleOutlined className="person-workflow-help-icon" />
+              <QuestionCircleOutlined className={styles['person-workflow-help-icon']} />
             </Tooltip>
           </span>
         }
@@ -58,14 +59,14 @@ export const PersonStatusAlerts: React.FC<PersonStatusAlertsProps> = ({ hasIncom
 );
 
 export const PersonUnavailableState: React.FC = () => (
-  <div className="bot-person">
+  <div className={styles['bot-person']}>
     <Alert message="Error" description="Bot data is not available" type="error" showIcon />
   </div>
 );
 
 export const PersonLoadingState: React.FC = () => (
-  <div className="bot-person">
-    <Card title="Person Information" className="person-card">
+  <div className={styles['bot-person']}>
+    <Card title="Person Information" className={styles['person-card']}>
       <div style={{ textAlign: 'center', padding: '40px' }}>
         <Spin size="large" />
         <p style={{ marginTop: '16px', color: 'var(--boxmox-color-text-secondary)' }}>

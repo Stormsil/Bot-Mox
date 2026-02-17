@@ -19,7 +19,7 @@ import {
   toPersonPayload,
 } from './person';
 import type { BotPersonProps, PersonFormValues } from './person';
-import './BotPerson.css';
+import styles from './person/person.module.css';
 
 export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
   const [form] = Form.useForm<PersonFormValues>();
@@ -148,15 +148,15 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
   }
 
   return (
-    <div className="bot-person">
-      <Card title={<PersonCardTitle hasIncompleteData={hasIncompleteData} />} className="person-card">
+    <div className={styles['bot-person']}>
+      <Card title={<PersonCardTitle hasIncompleteData={hasIncompleteData} />} className={styles['person-card']}>
         <PersonStatusAlerts hasIncompleteData={hasIncompleteData} manualEditLocked={manualEditLocked} />
 
         <Form
           form={form}
           layout="vertical"
           onFinish={handleSave}
-          className="person-form"
+          className={styles['person-form']}
           autoComplete="off"
         >
           <PersonFormFields

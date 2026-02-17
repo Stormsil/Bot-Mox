@@ -1,5 +1,4 @@
 import { Tray, Menu, nativeImage, shell } from 'electron';
-import * as path from 'path';
 import { AgentStatus } from '../core/agent-loop';
 
 // ---------------------------------------------------------------------------
@@ -7,6 +6,10 @@ import { AgentStatus } from '../core/agent-loop';
 // ---------------------------------------------------------------------------
 
 function createColorIcon(r: number, g: number, b: number): Electron.NativeImage {
+  if (!nativeImage || typeof nativeImage.createFromBuffer !== 'function') {
+    throw new Error('Electron nativeImage API is unavailable');
+  }
+
   // 16x16 RGBA bitmap
   const size = 16;
   const buf = Buffer.alloc(size * size * 4);
@@ -27,13 +30,15 @@ function createColorIcon(r: number, g: number, b: number): Electron.NativeImage 
   return nativeImage.createFromBuffer(buf, { width: size, height: size });
 }
 
-const icons: Record<AgentStatus, Electron.NativeImage> = {
-  idle: createColorIcon(128, 128, 128),      // gray
-  connecting: createColorIcon(255, 200, 0),   // yellow
-  online: createColorIcon(0, 180, 0),         // green
-  error: createColorIcon(220, 50, 50),        // red
-  revoked: createColorIcon(100, 100, 100),    // dark gray
-};
+function createIcons(): Record<AgentStatus, Electron.NativeImage> {
+  return {
+    idle: createColorIcon(128, 128, 128),      // gray
+    connecting: createColorIcon(255, 200, 0),  // yellow
+    online: createColorIcon(0, 180, 0),        // green
+    error: createColorIcon(220, 50, 50),       // red
+    revoked: createColorIcon(100, 100, 100),   // dark gray
+  };
+}
 
 const statusLabels: Record<AgentStatus, string> = {
   idle: 'Idle',
@@ -49,25 +54,30 @@ const statusLabels: Record<AgentStatus, string> = {
 
 export class AgentTray {
   private tray: Tray;
+  private icons: Record<AgentStatus, Electron.NativeImage>;
   private status: AgentStatus = 'idle';
   private agentName = 'Not paired';
   private statusMessage = '';
   private onRepair: (() => void) | null = null;
+  private onLogout: (() => void) | null = null;
   private onQuit: (() => void) | null = null;
   private logPath = '';
 
   constructor() {
-    this.tray = new Tray(icons.idle);
+    this.icons = createIcons();
+    this.tray = new Tray(this.icons.idle);
     this.tray.setToolTip('Bot-Mox Agent');
     this.rebuildMenu();
   }
 
   setCallbacks(opts: {
     onRepair: () => void;
+    onLogout: () => void;
     onQuit: () => void;
     logPath: string;
   }): void {
     this.onRepair = opts.onRepair;
+    this.onLogout = opts.onLogout;
     this.onQuit = opts.onQuit;
     this.logPath = opts.logPath;
     this.rebuildMenu();
@@ -76,7 +86,7 @@ export class AgentTray {
   updateStatus(status: AgentStatus, message?: string): void {
     this.status = status;
     this.statusMessage = message || '';
-    this.tray.setImage(icons[status]);
+    this.tray.setImage(this.icons[status]);
     this.tray.setToolTip(`Bot-Mox Agent — ${statusLabels[status]}`);
     this.rebuildMenu();
   }
@@ -96,8 +106,12 @@ export class AgentTray {
       { label: `Agent: ${this.agentName}`, enabled: false },
       { type: 'separator' },
       {
-        label: 'Re-pair...',
+        label: 'Pair Again...',
         click: () => this.onRepair?.(),
+      },
+      {
+        label: 'Log Out',
+        click: () => this.onLogout?.(),
       },
       {
         label: 'Open Logs',

@@ -51,7 +51,15 @@ npm run supabase:create-user -- --email "admin@example.com" --password "ChangeMe
 - `scripts/deploy-vps.sh`
 - `scripts/rollback-vps.sh`
 
-`deploy-vps.sh` поддерживает `--dry-run` (валидация compose-конфига без запуска).
+`deploy-vps.sh` поддерживает:
+
+- `--dry-run` (валидация compose-конфига без запуска)
+- `--skip-pull`
+- `--skip-healthcheck`
+- `--wait-timeout <seconds>` (таймаут healthcheck, default `120`)
+
+Оба скрипта (`deploy-vps.sh`, `rollback-vps.sh`) умеют резолвить `FRONTEND_IMAGE_REPO`/`BACKEND_IMAGE_REPO`
+из `.env.prod` и fallback-ить к `FRONTEND_IMAGE`/`BACKEND_IMAGE`, поэтому ручная передача repo-переменных обычно не требуется.
 
 ## Backups
 
@@ -81,15 +89,27 @@ Gitignored файлы (например, локальные `.env`/secrets) в �
 node scripts/check-secrets.js
 ```
 
-## `cleanup-database.js`
+## `check-style-guardrails.js`
 
-Ручной maintenance-скрипт для Firebase RTDB (очистка/нормализация данных).
-Используется точечно и требует валидной конфигурации доступа к базе.
+Проверяет style guardrails для фронтенда:
+
+1. Нет глобальных `.ant-*` селекторов в shared стилях (`global.css`, `index.css`, `App.css`).
+2. Количество `!important` не превышает зафиксированный baseline-порог.
 
 Запуск:
 
 ```bash
-node scripts/cleanup-database.js
+node scripts/check-style-guardrails.js
+```
+
+## `generate-firebase-decommission-audit.js`
+
+Генерирует живой аудит статуса полного удаления Firebase/RTDB из активного контура проекта.
+
+Запуск:
+
+```bash
+npm run audit:firebase:decommission
 ```
 
 ## `artifacts-e2e-smoke.js`
@@ -174,4 +194,4 @@ Interval: every 30-60 seconds. If no heartbeat for > 2x interval, server may con
 
 ## Removed Legacy
 
-Одноразовые миграции, legacy Firebase upload-утилиты и локальные backup/node_modules из `scripts/` удалены в рамках зачистки репозитория.
+Legacy Firebase maintenance/migration scripts удалены из активного `scripts/` набора.

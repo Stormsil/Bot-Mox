@@ -93,7 +93,7 @@ export function getDefaultNotificationEvents(): NotificationEvents {
 }
 
 /**
- * Получает API ключи из Firebase
+ * Получает API ключи из backend API
  */
 export async function getApiKeys(): Promise<ApiKeys> {
   try {

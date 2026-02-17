@@ -3,6 +3,7 @@ import { WarningOutlined } from '@ant-design/icons';
 import { Alert } from 'antd';
 import dayjs from 'dayjs';
 import type { SubscriptionWithDetails } from '../../types';
+import styles from './SubscriptionsPage.module.css';
 
 interface ExpiringSubscriptionsAlertProps {
   subscriptions: SubscriptionWithDetails[];
@@ -15,10 +16,10 @@ export const ExpiringSubscriptionsAlert: React.FC<ExpiringSubscriptionsAlertProp
 
   return (
     <Alert
-      className="expiring-alert"
+      className={styles.expiringAlert}
       message={`${subscriptions.length} subscription(s) expiring soon`}
       description={
-        <ul className="expiring-list">
+        <ul className={styles.expiringList}>
           {subscriptions.slice(0, 5).map((sub) => (
             <li key={sub.id}>
               <strong>{sub.botName || sub.bot_id}</strong> - {sub.type.toUpperCase()} expires in {sub.daysRemaining} days (

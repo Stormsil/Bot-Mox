@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { Table, Tag, Card, Typography } from 'antd';
 import type { FinanceOperation } from '../../types';
+import commonStyles from './FinanceCommon.module.css';
+import styles from './FinanceSummary.module.css';
 
 const { Text } = Typography;
 
@@ -127,9 +129,9 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       key: 'margin',
       render: (val: number, record: ProjectStats) => {
         // If it's pure expense (Global), margin doesn't make sense
-        if (record.income === 0) return <Tag className="finance-tag">N/A</Tag>;
+        if (record.income === 0) return <Tag className={commonStyles.financeTag}>N/A</Tag>;
         
-        return <Tag className="finance-tag">{val.toFixed(1)}%</Tag>;
+        return <Tag className={commonStyles.financeTag}>{val.toFixed(1)}%</Tag>;
       },
     },
     {
@@ -143,8 +145,8 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
   return (
     <Card 
       title="Project Performance Analysis" 
-      bordered={false} 
-      className="project-performance-card"
+      variant="borderless" 
+      className={styles.projectPerformanceCard}
       loading={loading}
     >
       <Table 

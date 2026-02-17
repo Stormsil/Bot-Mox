@@ -16,6 +16,15 @@ import type {
   DatacenterResourceStats,
   NavPropsFactory,
 } from './content-map-types';
+import styles from './DatacenterPage.module.css';
+
+function cx(classNames: string): string {
+  return classNames
+    .split(' ')
+    .filter(Boolean)
+    .map((name) => styles[name] || name)
+    .join(' ');
+}
 
 function SectionToggle({
   section,
@@ -32,7 +41,7 @@ function SectionToggle({
     <Button
       type="text"
       size="small"
-      className="content-map-toggle"
+      className={cx('content-map-toggle')}
       onClick={() => onToggle(section)}
       icon={collapsed ? <RightOutlined /> : <DownOutlined />}
       aria-label={collapsed ? `Expand ${readable}` : `Collapse ${readable}`}
@@ -54,70 +63,70 @@ export function ProjectsSection({
   projectStats: DatacenterProjectStatsState;
 }) {
   return (
-    <div className="content-map-section">
-      <div className="content-map-section-head">
-        <div className="content-map-section-title">Projects</div>
+    <div className={cx('content-map-section')}>
+      <div className={cx('content-map-section-head')}>
+        <div className={cx('content-map-section-title')}>Projects</div>
         <SectionToggle section="projects" collapsedSections={collapsedSections} onToggle={toggleSection} />
       </div>
       {!collapsedSections.projects && (
-        <div className="content-map-grid content-map-grid--projects">
-          <Card className="map-card map-card--clickable" hoverable loading={loading.bots} {...navProps('/project/wow_tbc')}>
-            <div className="map-card-head">
-              <div className="map-card-title">
+        <div className={cx('content-map-grid content-map-grid--projects')}>
+          <Card className={cx('map-card map-card--clickable')} hoverable loading={loading.bots} {...navProps('/project/wow_tbc')}>
+            <div className={cx('map-card-head')}>
+              <div className={cx('map-card-title')}>
                 <DesktopOutlined /> WoW TBC
               </div>
-              <Tag className="map-card-tag">{projectStats.wow_tbc.total} bots</Tag>
+              <Tag className={cx('map-card-tag')}>{projectStats.wow_tbc.total} bots</Tag>
             </div>
-            <div className="map-stats-row">
-              <div className="map-stat-chip map-stat-chip--active">
-                <span className="map-stat-value">{projectStats.wow_tbc.active}</span>
-                <span className="map-stat-label">Active</span>
+            <div className={cx('map-stats-row')}>
+              <div className={cx('map-stat-chip map-stat-chip--active')}>
+                <span className={cx('map-stat-value')}>{projectStats.wow_tbc.active}</span>
+                <span className={cx('map-stat-label')}>Active</span>
               </div>
-              <div className="map-stat-chip map-stat-chip--prepare">
-                <span className="map-stat-value">{projectStats.wow_tbc.prepare}</span>
-                <span className="map-stat-label">Prepare</span>
+              <div className={cx('map-stat-chip map-stat-chip--prepare')}>
+                <span className={cx('map-stat-value')}>{projectStats.wow_tbc.prepare}</span>
+                <span className={cx('map-stat-label')}>Prepare</span>
               </div>
-              <div className="map-stat-chip map-stat-chip--offline">
-                <span className="map-stat-value">{projectStats.wow_tbc.offline}</span>
-                <span className="map-stat-label">Offline</span>
+              <div className={cx('map-stat-chip map-stat-chip--offline')}>
+                <span className={cx('map-stat-value')}>{projectStats.wow_tbc.offline}</span>
+                <span className={cx('map-stat-label')}>Offline</span>
               </div>
-              <div className="map-stat-chip map-stat-chip--banned">
-                <span className="map-stat-value">{projectStats.wow_tbc.banned}</span>
-                <span className="map-stat-label">Banned</span>
+              <div className={cx('map-stat-chip map-stat-chip--banned')}>
+                <span className={cx('map-stat-value')}>{projectStats.wow_tbc.banned}</span>
+                <span className={cx('map-stat-label')}>Banned</span>
               </div>
             </div>
-            <div className="map-card-footer">
+            <div className={cx('map-card-footer')}>
               <span>Open project</span>
               <RightOutlined />
             </div>
           </Card>
 
-          <Card className="map-card map-card--clickable" hoverable loading={loading.bots} {...navProps('/project/wow_midnight')}>
-            <div className="map-card-head">
-              <div className="map-card-title">
+          <Card className={cx('map-card map-card--clickable')} hoverable loading={loading.bots} {...navProps('/project/wow_midnight')}>
+            <div className={cx('map-card-head')}>
+              <div className={cx('map-card-title')}>
                 <DesktopOutlined /> WoW Midnight
               </div>
-              <Tag className="map-card-tag">{projectStats.wow_midnight.total} bots</Tag>
+              <Tag className={cx('map-card-tag')}>{projectStats.wow_midnight.total} bots</Tag>
             </div>
-            <div className="map-stats-row">
-              <div className="map-stat-chip map-stat-chip--active">
-                <span className="map-stat-value">{projectStats.wow_midnight.active}</span>
-                <span className="map-stat-label">Active</span>
+            <div className={cx('map-stats-row')}>
+              <div className={cx('map-stat-chip map-stat-chip--active')}>
+                <span className={cx('map-stat-value')}>{projectStats.wow_midnight.active}</span>
+                <span className={cx('map-stat-label')}>Active</span>
               </div>
-              <div className="map-stat-chip map-stat-chip--prepare">
-                <span className="map-stat-value">{projectStats.wow_midnight.prepare}</span>
-                <span className="map-stat-label">Prepare</span>
+              <div className={cx('map-stat-chip map-stat-chip--prepare')}>
+                <span className={cx('map-stat-value')}>{projectStats.wow_midnight.prepare}</span>
+                <span className={cx('map-stat-label')}>Prepare</span>
               </div>
-              <div className="map-stat-chip map-stat-chip--offline">
-                <span className="map-stat-value">{projectStats.wow_midnight.offline}</span>
-                <span className="map-stat-label">Offline</span>
+              <div className={cx('map-stat-chip map-stat-chip--offline')}>
+                <span className={cx('map-stat-value')}>{projectStats.wow_midnight.offline}</span>
+                <span className={cx('map-stat-label')}>Offline</span>
               </div>
-              <div className="map-stat-chip map-stat-chip--banned">
-                <span className="map-stat-value">{projectStats.wow_midnight.banned}</span>
-                <span className="map-stat-label">Banned</span>
+              <div className={cx('map-stat-chip map-stat-chip--banned')}>
+                <span className={cx('map-stat-value')}>{projectStats.wow_midnight.banned}</span>
+                <span className={cx('map-stat-label')}>Banned</span>
               </div>
             </div>
-            <div className="map-card-footer">
+            <div className={cx('map-card-footer')}>
               <span>Open project</span>
               <RightOutlined />
             </div>
@@ -148,34 +157,34 @@ function ResourceCard({
   hasUnassigned?: boolean;
 }) {
   return (
-    <Card className="map-card map-card--clickable" hoverable loading={loading} {...navPropsValue}>
-      <div className="map-card-head">
-        <div className="map-card-title">
+    <Card className={cx('map-card map-card--clickable')} hoverable loading={loading} {...navPropsValue}>
+      <div className={cx('map-card-head')}>
+        <div className={cx('map-card-title')}>
           {icon} {title}
         </div>
-        <Tag className="map-card-tag">{tagText}</Tag>
+        <Tag className={cx('map-card-tag')}>{tagText}</Tag>
       </div>
-      <div className="map-stats-row">
-        <div className="map-stat-chip map-stat-chip--active">
-          <span className="map-stat-value">{stats.active}</span>
-          <span className="map-stat-label">Active</span>
+      <div className={cx('map-stats-row')}>
+        <div className={cx('map-stat-chip map-stat-chip--active')}>
+          <span className={cx('map-stat-value')}>{stats.active}</span>
+          <span className={cx('map-stat-label')}>Active</span>
         </div>
-        <div className="map-stat-chip map-stat-chip--warning">
-          <span className="map-stat-value">{stats.expiringSoon}</span>
-          <span className="map-stat-label">Expiring Soon</span>
+        <div className={cx('map-stat-chip map-stat-chip--warning')}>
+          <span className={cx('map-stat-value')}>{stats.expiringSoon}</span>
+          <span className={cx('map-stat-label')}>Expiring Soon</span>
         </div>
-        <div className="map-stat-chip map-stat-chip--expired">
-          <span className="map-stat-value">{stats.expired}</span>
-          <span className="map-stat-label">Expired</span>
+        <div className={cx('map-stat-chip map-stat-chip--expired')}>
+          <span className={cx('map-stat-value')}>{stats.expired}</span>
+          <span className={cx('map-stat-label')}>Expired</span>
         </div>
         {hasUnassigned && 'unassigned' in stats && (
-          <div className="map-stat-chip map-stat-chip--unassigned">
-            <span className="map-stat-value">{stats.unassigned}</span>
-            <span className="map-stat-label">Unassigned</span>
+          <div className={cx('map-stat-chip map-stat-chip--unassigned')}>
+            <span className={cx('map-stat-value')}>{stats.unassigned}</span>
+            <span className={cx('map-stat-label')}>Unassigned</span>
           </div>
         )}
       </div>
-      <div className="map-card-footer">
+      <div className={cx('map-card-footer')}>
         <span>{footerText}</span>
         <RightOutlined />
       </div>
@@ -201,13 +210,13 @@ export function ResourcesSection({
   subscriptionStats: DatacenterResourceStats;
 }) {
   return (
-    <div className="content-map-section">
-      <div className="content-map-section-head">
-        <div className="content-map-section-title">Resources</div>
+    <div className={cx('content-map-section')}>
+      <div className={cx('content-map-section-head')}>
+        <div className={cx('content-map-section-title')}>Resources</div>
         <SectionToggle section="resources" collapsedSections={collapsedSections} onToggle={toggleSection} />
       </div>
       {!collapsedSections.resources && (
-        <div className="content-map-grid content-map-grid--resources">
+        <div className={cx('content-map-grid content-map-grid--resources')}>
           <ResourceCard
             icon={<KeyOutlined />}
             title="Licenses"

@@ -1,9 +1,64 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const crypto = require('crypto');
 const { correlationIdMiddleware } = require('../middleware/correlation-id');
-const { requestLogger } = require('../middleware/request-logger');
+const pinoHttp = require('pino-http');
+const { logger, getTraceIds } = require('../observability/logger');
 const { createSimpleRateLimiter } = require('../middleware/rate-limit');
+const { verifyAgentToken } = require('../utils/agent-token');
+
+function getBearerToken(headers) {
+  const auth = headers?.authorization;
+  if (typeof auth !== 'string' || !auth.startsWith('Bearer ')) {
+    return '';
+  }
+  return auth.slice(7).trim();
+}
+
+function isAgentCommandBusRoute(req) {
+  const method = String(req?.method || '').toUpperCase();
+  const path = String(req?.path || req?.originalUrl || '').trim();
+
+  if (method === 'POST' && path === '/v1/agents/heartbeat') {
+    return true;
+  }
+  if (method === 'GET' && path === '/v1/vm-ops/commands') {
+    return true;
+  }
+  if (method === 'GET' && path === '/v1/vm-ops/commands/next') {
+    return true;
+  }
+  if (method === 'GET' && path === '/v1/vm-ops/events') {
+    return true;
+  }
+  if (method === 'PATCH' && /^\/v1\/vm-ops\/commands\/[^/]+$/.test(path)) {
+    return true;
+  }
+
+  return false;
+}
+
+function isRateLimitExemptRoute(req) {
+  const method = String(req?.method || '').toUpperCase();
+  const path = String(req?.path || req?.originalUrl || '').trim();
+
+  if (method === 'OPTIONS') {
+    // CORS preflight should never consume API budget.
+    return true;
+  }
+
+  // Refine auth provider and app boot may call these endpoints frequently.
+  // Keep them outside generic API throttle to prevent auth/theme lockouts.
+  if (method === 'GET' && path === '/v1/auth/verify') {
+    return true;
+  }
+  if (method === 'GET' && path === '/v1/settings/theme') {
+    return true;
+  }
+
+  return false;
+}
 
 function createCorsOptions(env) {
   const isDev = String(env?.nodeEnv || '').toLowerCase() === 'development';
@@ -32,14 +87,63 @@ function createCorsOptions(env) {
             new RegExp(`^https?:\\/\\/10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:${internalNetworkPortPattern}$`),
           ]
         : devLocalOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'X-Requested-With',
+      'X-Correlation-Id',
+      'traceparent',
+      'tracestate',
+      'baggage',
+    ],
+    exposedHeaders: ['x-trace-id', 'x-span-id', 'x-correlation-id'],
     credentials: true,
   };
 }
 
 function mountCoreHttpMiddleware({ app, env, corsOptions }) {
   app.use(correlationIdMiddleware);
+
+  // JSON request/response logs correlated by trace_id/span_id.
+  app.use(
+    pinoHttp({
+      logger,
+      quietReqLogger: true,
+      customProps: (req) => {
+        const ids = getTraceIds();
+        return {
+          correlation_id: req?.correlationId || null,
+          trace_id: ids.trace_id,
+          span_id: ids.span_id,
+        };
+      },
+      redact: {
+        paths: [
+          'req.headers.authorization',
+          'req.headers.cookie',
+          'req.headers["x-internal-api-token"]',
+          'req.headers["x-internal-infra-token"]',
+        ],
+        remove: true,
+      },
+    })
+  );
+
+  // Make trace identifiers easily discoverable by clients/Playwright.
+  app.use((req, res, next) => {
+    const ids = getTraceIds();
+    if (ids.trace_id) {
+      res.setHeader('x-trace-id', ids.trace_id);
+    }
+    if (ids.span_id) {
+      res.setHeader('x-span-id', ids.span_id);
+    }
+    // correlation id header is set by correlationIdMiddleware
+    return next();
+  });
+
   app.use(
     helmet({
       contentSecurityPolicy: false,
@@ -54,15 +158,33 @@ function mountCoreHttpMiddleware({ app, env, corsOptions }) {
       windowMs: env.apiRateLimitWindowMs,
       max: env.apiRateLimitMax,
       skip: (req) => {
-        // Internal/infra tokens are trusted server-to-server calls — skip rate limit
-        const auth = req.headers?.authorization;
-        if (!auth) return false;
-        const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-        return token === env.internalApiToken || token === env.internalInfraToken;
+        if (isRateLimitExemptRoute(req)) {
+          return true;
+        }
+
+        // Keep agent command-bus + heartbeat traffic outside user-facing API limits.
+        // This prevents false "agent offline" during heavy command queues.
+        if (isAgentCommandBusRoute(req)) {
+          return true;
+        }
+
+        // Agent token is already cryptographically scoped and short-lived.
+        // Do not throttle agent command bus/heartbeat traffic with user API limits.
+        const token = getBearerToken(req.headers);
+        if (!token) return false;
+        return Boolean(verifyAgentToken(token, env.agentAuthSecret));
+      },
+      keyGenerator: (req) => {
+        const token = getBearerToken(req.headers);
+        if (token) {
+          const hash = crypto.createHash('sha256').update(token).digest('base64url');
+          return `auth:${hash}`;
+        }
+        return req.ip || req.socket?.remoteAddress || 'unknown';
       },
     })
   );
-  app.use(requestLogger);
+  app.options('/api/*', cors(corsOptions));
 }
 
 function mountLegacyErrorHandlers(app) {
@@ -74,7 +196,7 @@ function mountLegacyErrorHandlers(app) {
   });
 
   app.use((err, req, res, next) => {
-    console.error('❌ Unhandled error:', err);
+    logger.error({ err, path: req?.originalUrl || req?.url }, 'Unhandled error');
     res.status(500).json({
       success: false,
       error: 'Internal server error',

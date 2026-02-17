@@ -12,7 +12,7 @@ import { createProjectColumns } from './columns';
 import { buildBotRows, buildProjectStats, buildResourcesByBotMaps, filterBotRows } from './selectors';
 import type { BotRecord, StatusFilter } from './types';
 import { formatProjectTitle, parseStatusFilterFromParams } from './utils';
-import './ProjectPage.css';
+import styles from './ProjectPage.module.css';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -222,7 +222,7 @@ export const ProjectPage: React.FC = () => {
 
   if (!projectId) {
     return (
-      <div className="project-page">
+      <div className={styles.root}>
         <ContentPanel type="project" hideTabs>
           <Alert
             message="Project not found"
@@ -241,43 +241,43 @@ export const ProjectPage: React.FC = () => {
   const projectTitle = projectsMeta[projectId]?.name || formatProjectTitle(projectId);
 
   return (
-    <div className="project-page">
+    <div className={styles.root}>
       <ContentPanel type="project" hideTabs>
-        <Card className="project-header">
-          <div className="header-content">
-            <div className="header-title">
-              <Title level={4}>
+        <Card className={styles.header}>
+          <div className={styles.headerContent}>
+            <div className={styles.headerTitle}>
+              <Title level={4} className={styles.headerHeading}>
                 <DesktopOutlined /> {projectTitle}
               </Title>
-              <Text type="secondary">Accounts summary table</Text>
+              <Text type="secondary" className={styles.headerSubtitle}>Accounts summary table</Text>
             </div>
           </div>
         </Card>
 
-        <div className="project-stats">
-          <Card className="stat-card">
-            <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Total</div>
+        <div className={styles.stats}>
+          <Card className={styles.statCard}>
+            <div className={styles.statValue}>{stats.total}</div>
+            <div className={styles.statLabel}>Total</div>
           </Card>
-          <Card className="stat-card active">
-            <div className="stat-value">{stats.active}</div>
-            <div className="stat-label">Active</div>
+          <Card className={`${styles.statCard} ${styles.statCardActive}`}>
+            <div className={styles.statValue}>{stats.active}</div>
+            <div className={styles.statLabel}>Active</div>
           </Card>
-          <Card className="stat-card prepare">
-            <div className="stat-value">{stats.prepare}</div>
-            <div className="stat-label">Prepare</div>
+          <Card className={`${styles.statCard} ${styles.statCardPrepare}`}>
+            <div className={styles.statValue}>{stats.prepare}</div>
+            <div className={styles.statLabel}>Prepare</div>
           </Card>
-          <Card className="stat-card warning">
-            <div className="stat-value">{stats.offline}</div>
-            <div className="stat-label">Offline</div>
+          <Card className={`${styles.statCard} ${styles.statCardWarning}`}>
+            <div className={styles.statValue}>{stats.offline}</div>
+            <div className={styles.statLabel}>Offline</div>
           </Card>
-          <Card className="stat-card banned">
-            <div className="stat-value">{stats.banned}</div>
-            <div className="stat-label">Banned</div>
+          <Card className={`${styles.statCard} ${styles.statCardBanned}`}>
+            <div className={styles.statValue}>{stats.banned}</div>
+            <div className={styles.statLabel}>Banned</div>
           </Card>
         </div>
 
-        <Card className="project-filters">
+        <Card className={styles.filters}>
           <Space wrap>
             <Input
               placeholder="Search by ID, character, email, server..."
@@ -312,7 +312,7 @@ export const ProjectPage: React.FC = () => {
           </Space>
         </Card>
 
-        <Card className="project-table-card">
+        <Card className={styles.tableCard}>
           <Table
             dataSource={filteredRows}
             columns={columns}

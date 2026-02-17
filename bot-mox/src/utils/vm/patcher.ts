@@ -39,6 +39,24 @@ export function extractVmNumber(name: string): number {
   return 0;
 }
 
+function deriveVmNumber(vmName: string, vmSeedId?: number): number {
+  const byName = extractVmNumber(vmName);
+  if (byName > 0) {
+    return byName;
+  }
+
+  const seed = Number(vmSeedId);
+  if (Number.isFinite(seed) && seed > 0) {
+    const normalizedSeed = Math.trunc(seed);
+    if (normalizedSeed >= 100) {
+      return Math.max(1, normalizedSeed - 100);
+    }
+    return normalizedSeed;
+  }
+
+  return 1;
+}
+
 function extractFirst(lines: string[], rx: RegExp, group: number): string {
   for (const l of lines) {
     const m = l.match(rx);
@@ -57,10 +75,10 @@ function extractPort(argsLine: string): string {
  * Patch a QEMU VM config with new hardware identifiers.
  * Direct port of Patcher.cs BuildPatchedAsync.
  */
-export function patchConfig(cfg: string, vmName: string): PatchResult {
-  // 1. Extract number from name (WoW8 -> 8)
-  const vmNumber = extractVmNumber(vmName);
-  const vmbr = vmNumber;
+export function patchConfig(cfg: string, vmName: string, vmSeedId?: number): PatchResult {
+  // 1. Resolve VM index from name suffix, fallback to VM ID.
+  const vmNumber = deriveVmNumber(vmName, vmSeedId);
+  const vmbr = Math.max(1, vmNumber);
 
   // 2. Calculate IP: subnet = 110 + (vmbr - 1)
   const subnet = 110 + (vmbr - 1);

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { BotScheduleV2, ScheduleDay } from '../../types';
 import { calculateDayStats, formatDuration, timeToMinutes } from '../../utils/scheduleUtils';
-import './WeekPanel.css';
+import styles from './WeekPanel.module.css';
 
 interface WeekPanelProps {
   schedule: BotScheduleV2 | null;
@@ -107,16 +107,16 @@ export const WeekPanel: React.FC<WeekPanelProps> = ({
   };
 
   return (
-    <div className="week-panel">
-      <div className="week-panel-header">
-        <h3 className="week-panel-title">WEEK</h3>
+    <div className={styles['week-panel']}>
+      <div className={styles['week-panel-header']}>
+        <h3 className={styles['week-panel-title']}>WEEK</h3>
       </div>
 
-      <div className="week-panel-selected-day">
+      <div className={styles['week-panel-selected-day']}>
         {FULL_DAY_NAMES[jsToUiDay(selectedDay)]}
       </div>
 
-      <div className="week-panel-timelines">
+      <div className={styles['week-panel-timelines']}>
         {DAY_NAMES.map((dayName, uiIndex) => {
           const jsDayIndex = uiToJsDay(uiIndex);
           const dayData = getDayData(jsDayIndex);
@@ -127,16 +127,22 @@ export const WeekPanel: React.FC<WeekPanelProps> = ({
           return (
             <button
               key={dayName}
-              className={`week-day-item ${isSelected ? 'selected' : ''} ${isEnabled ? 'enabled' : 'disabled'}`}
+              className={[
+                styles['week-day-item'],
+                isSelected ? styles.selected : '',
+                isEnabled ? styles.enabled : styles.disabled,
+              ]
+                .filter(Boolean)
+                .join(' ')}
               onClick={() => onDaySelect(jsDayIndex)}
             >
-              <span className="week-day-name">{dayName}</span>
-              <div className="week-day-timeline">
-                <div className="week-day-timeline-track">
+              <span className={styles['week-day-name']}>{dayName}</span>
+              <div className={styles['week-day-timeline']}>
+                <div className={styles['week-day-timeline-track']}>
                   {segments.map((segment, segIndex) => (
                     <div
                       key={segIndex}
-                      className="week-day-timeline-segment"
+                      className={styles['week-day-timeline-segment']}
                       style={{
                         left: `${segment.left}%`,
                         width: `${segment.width}%`
@@ -150,27 +156,27 @@ export const WeekPanel: React.FC<WeekPanelProps> = ({
         })}
       </div>
 
-      <div className="week-panel-divider" />
+      <div className={styles['week-panel-divider']} />
 
-      <div className="week-panel-stats">
-        <div className="week-stat-item">
-          <span className="week-stat-value">{formatDuration(weekStats.avgActiveMinutes)}</span>
-          <span className="week-stat-label">Avg Active</span>
+      <div className={styles['week-panel-stats']}>
+        <div className={styles['week-stat-item']}>
+          <span className={styles['week-stat-value']}>{formatDuration(weekStats.avgActiveMinutes)}</span>
+          <span className={styles['week-stat-label']}>Avg Active</span>
         </div>
 
-        <div className="week-stat-item">
-          <span className="week-stat-value">{formatDuration(weekStats.avgBreakMinutes)}</span>
-          <span className="week-stat-label">Avg Break</span>
+        <div className={styles['week-stat-item']}>
+          <span className={styles['week-stat-value']}>{formatDuration(weekStats.avgBreakMinutes)}</span>
+          <span className={styles['week-stat-label']}>Avg Break</span>
         </div>
 
-        <div className="week-stat-item">
-          <span className="week-stat-value">{weekStats.avgSessionCount}</span>
-          <span className="week-stat-label">Avg Sessions</span>
+        <div className={styles['week-stat-item']}>
+          <span className={styles['week-stat-value']}>{weekStats.avgSessionCount}</span>
+          <span className={styles['week-stat-label']}>Avg Sessions</span>
         </div>
 
-        <div className="week-stat-item">
-          <span className="week-stat-value">{weekStats.avgActivePercentage}%</span>
-          <span className="week-stat-label">Avg Day %</span>
+        <div className={styles['week-stat-item']}>
+          <span className={styles['week-stat-value']}>{weekStats.avgActivePercentage}%</span>
+          <span className={styles['week-stat-label']}>Avg Day %</span>
         </div>
       </div>
     </div>
