@@ -37,7 +37,6 @@ interface SummaryConfigureSectionProps {
   accountCreatedAt: number;
   scheduleStats: ScheduleStats;
   goToConfigure: (subtab: SummaryConfigureTab) => void;
-  onActivate: (action: () => void) => (event: React.KeyboardEvent<HTMLElement>) => void;
   formatDate: (timestamp?: number) => string;
 }
 
@@ -50,7 +49,6 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
   accountCreatedAt,
   scheduleStats,
   goToConfigure,
-  onActivate,
   formatDate,
 }) => (
   <section id="summary-configure" className={styles['bot-section']}>
@@ -66,13 +64,16 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
           className={[styles['detail-card'], styles['link-card']].join(' ')}
           styles={detailCardStyles}
           hoverable
-          onClick={() => goToConfigure('account')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={onActivate(() => goToConfigure('account'))}
         >
           <div className={styles['link-card-header']}>
             <Tag color={accountComplete ? 'success' : 'warning'}>{accountComplete ? 'Complete' : 'Incomplete'}</Tag>
+            <button
+              type="button"
+              className={styles['link-card-open-btn']}
+              onClick={() => goToConfigure('account')}
+            >
+              Open
+            </button>
           </div>
           <div className={styles['summary-stats-list']}>
             <SummaryStatItem
@@ -139,13 +140,16 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
           className={[styles['detail-card'], styles['link-card']].join(' ')}
           styles={detailCardStyles}
           hoverable
-          onClick={() => goToConfigure('person')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={onActivate(() => goToConfigure('person'))}
         >
           <div className={styles['link-card-header']}>
             <Tag color={personComplete ? 'success' : 'warning'}>{personComplete ? 'Complete' : 'Incomplete'}</Tag>
+            <button
+              type="button"
+              className={styles['link-card-open-btn']}
+              onClick={() => goToConfigure('person')}
+            >
+              Open
+            </button>
           </div>
           <div className={styles['summary-stats-list']}>
             <SummaryStatItem
@@ -182,15 +186,18 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
           className={[styles['detail-card'], styles['link-card']].join(' ')}
           styles={detailCardStyles}
           hoverable
-          onClick={() => goToConfigure('schedule')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={onActivate(() => goToConfigure('schedule'))}
         >
           <div className={styles['link-card-header']}>
             <Tag color={scheduleStats.enabledSessions > 0 ? 'success' : undefined}>
               {scheduleStats.enabledSessions > 0 ? 'Configured' : 'Not Set'}
             </Tag>
+            <button
+              type="button"
+              className={styles['link-card-open-btn']}
+              onClick={() => goToConfigure('schedule')}
+            >
+              Open
+            </button>
           </div>
           <div className={styles['summary-stats-list']}>
             <SummaryStatItem

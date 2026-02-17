@@ -308,6 +308,29 @@
 
 .link-card-header {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 8px;
+}
+
+.link-card-open-btn {
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--boxmox-color-surface-panel);
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.link-card-open-btn:hover {
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-text-primary);
+}
+
+.link-card-open-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--boxmox-color-brand-primary) 55%, transparent);
+  outline-offset: 1px;
 }

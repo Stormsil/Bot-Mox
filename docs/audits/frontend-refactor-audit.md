@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T22:39:18Z**
+Last updated (UTC): **2026-02-17T22:44:45Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -97,7 +97,7 @@ Evidence:
 
 - [x] `GREEN` Strip broad `.ant-*` component skinning from `global.css`.
 - [x] `GREEN` Move base visuals to antd `token/components` config.
-- [ ] `WIP` Re-scope unavoidable exceptions locally.
+- [x] `GREEN` Re-scope unavoidable exceptions locally.
 
 Evidence:
 1. `bot-mox/src/styles/global.css`
@@ -131,11 +131,11 @@ Evidence:
 
 ## Phase 3 — CSS Modules Migration (Domain by Domain)
 
-- [ ] `WIP` Layout domain migration.
-- [ ] `WIP` VM domain migration.
-- [ ] `WIP` Resources domain migration.
-- [ ] `WIP` Workspace domain migration.
-- [ ] `WIP` Bot + Finance domain migration.
+- [x] `GREEN` Layout domain migration.
+- [x] `GREEN` VM domain migration.
+- [x] `GREEN` Resources domain migration.
+- [x] `GREEN` Workspace domain migration.
+- [x] `GREEN` Bot + Finance domain migration.
 
 Evidence (Layout):
 1. `bot-mox/src/components/layout/Header.tsx`
@@ -374,9 +374,9 @@ Evidence:
 
 ## Phase 5 — Hardening and Cleanup
 
-- [ ] `WIP` Remove dead CSS and obsolete variables.
-- [ ] `WIP` Final accessibility/contrast pass (focus-visible + keyboard navigation).
-- [ ] `WIP` Final performance pass for background mode.
+- [x] `GREEN` Remove dead CSS and obsolete variables.
+- [x] `GREEN` Final accessibility/contrast pass (focus-visible + keyboard navigation).
+- [x] `GREEN` Final performance pass for background mode.
 - [x] `GREEN` Update dev docs for adding new themed pages.
 
 Evidence:
@@ -392,7 +392,7 @@ Evidence:
 10. `docs/frontend/STYLING.md` (styling conventions + themed page + background-mode QA checklist)
 11. `bot-mox/src/pages/project/columns.tsx` (keyboard-accessible table cell navigation)
 12. `bot-mox/src/pages/project/ProjectPage.module.css` (focus-visible ring for cell links)
-13. `bot-mox/src/components/vm/VMOperationLog.tsx` (dialog ARIA + Escape close + keyboard-accessible task rows)
+13. `bot-mox/src/components/vm/VMOperationLog.tsx` (dialog ARIA + Escape close + keyboard-accessible task open controls)
 14. `bot-mox/src/components/vm/VMOperationLog.module.css` (focus-visible ring for task rows)
 15. `docs/DEV-WORKFLOW.md` (link to styling conventions)
 16. `bot-mox/src/components/bot/lifeStages/lifeStages.module.css` (prefers-reduced-motion support)
@@ -430,9 +430,14 @@ Evidence:
 48. `docs/frontend/STYLING.md` (new-page skeleton + regression matrix for themed pages)
 49. `docs/DEV-WORKFLOW.md` (explicit frontend checklist reference for every page change)
 50. `bot-mox/src/components/notes/CheckboxBlock.tsx` (a11y: remove interactive wrapper click handler; handle checkbox click on native control)
+51. `bot-mox/src/components/bot/summary/sections-details.tsx` (a11y: remove `role="button"` cards; explicit action buttons in card headers)
+52. `bot-mox/src/components/bot/BotSummary.tsx` (a11y: remove obsolete keyboard-activation prop from configure section wiring)
+53. `bot-mox/src/components/vm/VMOperationLog.tsx` (a11y: replace clickable task rows with native task open buttons)
+54. `bot-mox/src/components/vm/VMOperationLog.module.css` (a11y: focus-visible and hover states for task open buttons)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)
+2. `node scripts/report-unused-css-module-classes.js` (pass: no obvious unused CSS module classes)
 
 ## Risks and Watchlist
 

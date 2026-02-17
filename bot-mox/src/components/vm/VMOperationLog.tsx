@@ -175,13 +175,6 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({
     };
   }, [taskModalOpen, expanded, closeTaskModal, closeExpanded]);
 
-  const handleTaskRowKeyDown = (taskId: string) => (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      openTaskModal(taskId);
-    }
-  };
-
   const copyTaskModalLog = () => {
     if (!selectedTask) return;
     navigator.clipboard.writeText(getTaskText(selectedTask));
@@ -258,14 +251,18 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({
                     `vm-task-table-row--${task.status}`,
                     taskModalOpen && selectedTask?.id === task.id ? 'selected' : '',
                   )}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openTaskModal(task.id)}
-                  onKeyDown={handleTaskRowKeyDown(task.id)}
                 >
                   <td>{formatTaskDate(task.startedAt)}</td>
                   <td>{formatTaskDate(task.finishedAt)}</td>
-                  <td>{task.description}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className={cx('vm-task-open-btn')}
+                      onClick={() => openTaskModal(task.id)}
+                    >
+                      {task.description}
+                    </button>
+                  </td>
                   <td className={cx('vm-task-status', `vm-task-status--${task.status}`)}>
                     {statusLabel(task.status)}
                   </td>
@@ -275,7 +272,7 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({
           </tbody>
         </table>
       </div>
-      <div className={cx('vm-task-open-hint')}>Click a task to open a detailed log window.</div>
+      <div className={cx('vm-task-open-hint')}>Use the task description button to open a detailed log window.</div>
     </div>
   );
 

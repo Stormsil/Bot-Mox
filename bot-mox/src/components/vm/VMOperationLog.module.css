@@ -131,7 +131,7 @@
 }
 
 .vm-task-table-row {
-  cursor: pointer;
+  cursor: default;
 }
 
 .vm-task-table-row:nth-child(even) {
@@ -142,13 +142,31 @@
   background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
 }
 
-.vm-task-table-row:focus-visible {
-  outline: 2px solid rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
-  outline-offset: -2px;
-}
-
 .vm-task-table-row.selected {
   background: var(--vmx-accent-soft, var(--boxmox-color-brand-soft));
+}
+
+.vm-task-open-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vm-task-open-btn:hover {
+  color: var(--vmx-accent, var(--boxmox-color-brand-primary));
+}
+
+.vm-task-open-btn:focus-visible {
+  outline: 2px solid rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
+  outline-offset: 2px;
 }
 
 .vm-task-table-row--error {
