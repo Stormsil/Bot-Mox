@@ -227,7 +227,7 @@ export const UnattendTab: React.FC = () => {
       </aside>
 
       <section className={styles.main}>
-        <Card size="small" className={styles.headCard} style={cardRadiusStyle}>
+        <Card size="small" style={cardRadiusStyle}>
           <div className={styles.head}>
             <div className={styles.headTitle}>
               <Title level={5} style={{ margin: 0 }}>

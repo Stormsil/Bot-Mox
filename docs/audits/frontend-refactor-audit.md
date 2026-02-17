@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T14:10:34Z**
+Last updated (UTC): **2026-02-17T14:14:42Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -381,6 +381,8 @@ Evidence:
 3. `bot-mox/src/components/bot/lifeStages/lifeStages.module.css` (removed empty placeholder classes)
 4. `bot-mox/src/components/bot/lifeStages/StagePanels.tsx` (removed unused CSS module class hooks)
 5. `bot-mox/src/components/bot/lifeStages/StageTimeline.tsx` (removed unused CSS module class hooks)
+6. `bot-mox/src/components/vm/settingsForm/UnattendTab.module.css` (removed empty selector block)
+7. `bot-mox/src/components/vm/settingsForm/UnattendTab.tsx` (removed unused CSS module class hook)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)
