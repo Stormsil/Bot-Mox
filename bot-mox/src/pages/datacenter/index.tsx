@@ -23,15 +23,7 @@ import {
   FINANCE_WINDOW_DAYS,
   MS_PER_DAY,
 } from './page-helpers';
-import styles from './DatacenterPage.module.css';
-
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+import { cx } from './datacenterUi';
 
 export const DatacenterPage: React.FC = () => {
   const navigate = useNavigate();

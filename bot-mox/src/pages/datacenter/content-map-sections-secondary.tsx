@@ -1,8 +1,7 @@
 import React from 'react';
-import { Button, Card, Tag, Typography } from 'antd';
+import { Card, Tag, Typography } from 'antd';
 import {
   DollarOutlined,
-  DownOutlined,
   FileTextOutlined,
   RightOutlined,
   WarningOutlined,
@@ -14,44 +13,14 @@ import type {
   ExpiringItem,
   NavPropsFactory,
 } from './content-map-types';
-import styles from './DatacenterPage.module.css';
-
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+import { SectionToggle } from './content-map-toggle';
+import { cx, mapCardStyles } from './datacenterUi';
 
 const { Text } = Typography;
 
 const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
 const formatSignedCurrency = (value: number) =>
   `${value >= 0 ? '+' : '-'}${formatCurrency(Math.abs(value))}`;
-
-function SectionToggle({
-  section,
-  collapsedSections,
-  onToggle,
-}: {
-  section: ContentMapSection;
-  collapsedSections: Record<ContentMapSection, boolean>;
-  onToggle: (section: ContentMapSection) => void;
-}) {
-  const collapsed = collapsedSections[section];
-  const readable = section.replace('_', ' ');
-  return (
-    <Button
-      type="text"
-      size="small"
-      className={cx('content-map-toggle')}
-      onClick={() => onToggle(section)}
-      icon={collapsed ? <RightOutlined /> : <DownOutlined />}
-      aria-label={collapsed ? `Expand ${readable}` : `Collapse ${readable}`}
-    />
-  );
-}
 
 export function FinanceNotesSection({
   collapsedSections,
@@ -93,7 +62,13 @@ export function FinanceNotesSection({
       </div>
       {!collapsedSections.finance_notes && (
         <div className={cx('content-map-grid content-map-grid--primary')}>
-          <Card className={cx('map-card map-card--clickable')} hoverable loading={loading.finance} {...navProps('/finance')}>
+          <Card
+            className={cx('map-card map-card--clickable')}
+            hoverable
+            loading={loading.finance}
+            styles={mapCardStyles}
+            {...navProps('/finance')}
+          >
             <div className={cx('map-card-head')}>
               <div className={cx('map-card-title')}>
                 <DollarOutlined /> Finance
@@ -135,7 +110,13 @@ export function FinanceNotesSection({
             </div>
           </Card>
 
-          <Card className={cx('map-card map-card--clickable')} hoverable loading={loading.notes} {...navProps('/notes')}>
+          <Card
+            className={cx('map-card map-card--clickable')}
+            hoverable
+            loading={loading.notes}
+            styles={mapCardStyles}
+            {...navProps('/notes')}
+          >
             <div className={cx('map-card-head')}>
               <div className={cx('map-card-title')}>
                 <FileTextOutlined /> Notes
@@ -198,7 +179,11 @@ export function ExpiringSection({
         />
       </div>
       {!collapsedSections.expiring && (
-        <Card className={cx('map-card')} loading={loading.licenses || loading.proxies || loading.subscriptions}>
+        <Card
+          className={cx('map-card')}
+          loading={loading.licenses || loading.proxies || loading.subscriptions}
+          styles={mapCardStyles}
+        >
           <div className={cx('map-card-head')}>
             <div className={cx('map-card-title')}>
               <WarningOutlined /> Alerts
@@ -210,7 +195,7 @@ export function ExpiringSection({
             <div className={cx('expiring-list')}>
               {expiringItems.slice(0, 4).map((item) => (
                 <div key={item.id} className={cx('expiring-row')}>
-                  <Tag className={`expiring-tag expiring-tag--${item.type}`}>
+                  <Tag className={cx(`expiring-tag expiring-tag--${item.type}`)}>
                     {item.type}
                   </Tag>
                   <div className={cx('expiring-main')}>
@@ -218,7 +203,11 @@ export function ExpiringSection({
                     {item.botName && <span className={cx('expiring-bot')}>{item.botName}</span>}
                   </div>
                   <div className={cx('expiring-meta')}>
-                    <span className={`expiring-days ${item.daysRemaining <= 3 ? 'danger' : 'warning'}`}>
+                    <span
+                      className={cx(
+                        `expiring-days ${item.daysRemaining <= 3 ? 'expiring-days--danger' : 'expiring-days--warning'}`
+                      )}
+                    >
                       {item.daysRemaining}d
                     </span>
                     <span className={cx('expiring-date')}>{dayjs(item.expiresAt).format('DD.MM.YYYY')}</span>
