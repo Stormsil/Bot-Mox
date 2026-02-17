@@ -22,8 +22,6 @@ pnpm-debug.log*
 .env.*
 !.env.example
 *.local
-Assets/firebase-key.json
-/firebase-key.json
 
 # IDE / OS
 .DS_Store
@@ -31,11 +29,20 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Firebase / runtime artifacts
-firebase-debug.log
-firebase-debug.*.log
+# Local agent/IDE config (may contain secrets)
+.claude/settings.local.json
+
+# Local side-project (keep out of this repo)
+Winsible/
+
+# Supabase / runtime artifacts
 supabase/.temp/
 supabase/.branches/
+
+# Local prod-sim env (do not commit)
+deploy/compose.prod-sim.env
+deploy/compose.prod.env
+deploy/compose.*.env
 
 # Misc
 tmp/
