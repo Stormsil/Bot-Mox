@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T22:30:23Z**
+Last updated (UTC): **2026-02-17T22:33:48Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -425,6 +425,8 @@ Evidence:
 43. `bot-mox/src/pages/vms/VMsPage.module.css` (dead CSS: removed unused selector)
 44. `bot-mox/src/components/layout/ResourceTree.tsx` (a11y: keyboard-accessible resizer + ARIA separator semantics)
 45. `bot-mox/src/components/layout/ResourceTree.module.css` (a11y: focus-visible and hover affordance for resizer handle)
+46. `bot-mox/src/components/bot/summary/sections-details.tsx` (a11y: status summary cards use native button semantics)
+47. `bot-mox/src/components/bot/BotSummary.module.css` (a11y: focus-visible states for interactive summary cards)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)

@@ -235,10 +235,9 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
     >
       <Row gutter={[16, 16]}>
         <Col span={8}>
-          <div
-            className={[styles['status-item'], styles.clickable].join(' ')}
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
+            className={[styles['status-item'], styles['status-item-button'], styles.clickable].join(' ')}
             onClick={() => goToResources('license')}
             onKeyDown={onActivate(() => goToResources('license'))}
           >
@@ -262,13 +261,12 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
                 <span>Expires: {formatDate(linkedResources.license?.expires_at)}</span>
               </div>
             </div>
-          </div>
+          </button>
         </Col>
         <Col span={8}>
-          <div
-            className={[styles['status-item'], styles.clickable].join(' ')}
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
+            className={[styles['status-item'], styles['status-item-button'], styles.clickable].join(' ')}
             onClick={() => goToResources('proxy')}
             onKeyDown={onActivate(() => goToResources('proxy'))}
           >
@@ -299,13 +297,12 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
                 <span>Expires: {formatDate(linkedResources.proxy?.expires_at)}</span>
               </div>
             </div>
-          </div>
+          </button>
         </Col>
         <Col span={8}>
-          <div
-            className={[styles['status-item'], styles.clickable].join(' ')}
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
+            className={[styles['status-item'], styles['status-item-button'], styles.clickable].join(' ')}
             onClick={() => goToResources('subscription')}
             onKeyDown={onActivate(() => goToResources('subscription'))}
           >
@@ -336,7 +333,7 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
                 </span>
               </div>
             </div>
-          </div>
+          </button>
         </Col>
       </Row>
     </Card>
