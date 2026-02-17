@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T21:20:07Z**
+Last updated (UTC): **2026-02-17T22:24:47Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -49,6 +49,7 @@ Date: 2026-02-17
 5. Theme typography + shape (radius) persisted + applied: **YES**
 6. VM domain components migrated to CSS Modules: **20** (`VMQueuePanel`, `VMOperationLog`, `VMSettingsForm`, `ProxmoxTab`, `ProjectResourcesSection`, `UnattendTab`, `PlaybookTab`, `ProxmoxSection`, `SshSection`, `ServiceUrlsSection`, `SecretField`, `SettingsActions`, `VMList`, `VMStatusBar`, `VMConfigPreview`, `VMServicesPanel`, `VMCommandPanel`, `VMListPage`, `VMsPage`, `VMServicePage`)
 7. Remaining `.ant-*` selectors in CSS Modules: **0** (across **0** files)
+8. ESLint guardrail: explicit button types enforced: **YES** (`react/button-has-type`)
 
 ## Target KPIs
 
@@ -63,6 +64,7 @@ Date: 2026-02-17
 ## Phase 0 — Guardrails and Baseline
 
 - [x] `GREEN` Add style debt guard checks (new global `.ant-*`, new `!important`, cap `.ant-*` selectors in CSS Modules).
+- [x] `GREEN` Add lint guardrail: enforce explicit button types in React (`type="button"` when not submitting).
 - [ ] `TODO` Capture page-level visual baseline screenshots.
 - [x] `GREEN` Create roadmap and evergreen audit docs.
 
@@ -71,6 +73,8 @@ Evidence:
 2. `docs/audits/frontend-refactor-audit.md`
 3. `scripts/check-style-guardrails.js`
 4. `package.json` (`check:styles:guardrails`, `check:all`)
+5. `bot-mox/eslint.config.js` (`react/button-has-type`)
+6. `bot-mox/package.json` (`eslint-plugin-react`)
 
 ## Phase 1 — Theme Core Consolidation
 
