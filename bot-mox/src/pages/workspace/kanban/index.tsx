@@ -199,6 +199,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
             <Card
               key={column.key}
               className={styles.column}
+              classNames={{ body: styles.columnBody }}
               title={
                 <Space>
                   <span>{column.title}</span>
@@ -224,7 +225,12 @@ export const WorkspaceKanbanPage: React.FC = () => {
               ) : (
                 <div className={styles.tasks}>
                   {columnTasks.map((task) => (
-                    <Card key={task.id} className={styles.task} size="small">
+                    <Card
+                      key={task.id}
+                      className={styles.task}
+                      classNames={{ body: styles.taskBody }}
+                      size="small"
+                    >
                       <div className={styles.taskHeader}>
                         <Text strong>{task.title}</Text>
                         <Space size={2}>
