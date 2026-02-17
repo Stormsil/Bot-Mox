@@ -15,11 +15,11 @@
   color: var(--boxmox-color-text-secondary);
 }
 
-.card :global(.ant-card-extra .ant-btn) {
+.settingsButton {
   color: var(--boxmox-color-text-secondary);
 }
 
-.card :global(.ant-card-extra .ant-btn:hover) {
+.settingsButton:hover {
   color: var(--boxmox-color-text-primary);
   background: var(--boxmox-color-surface-hover);
 }

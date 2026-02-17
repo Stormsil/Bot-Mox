@@ -179,7 +179,12 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
           trigger="click"
           placement="bottomRight"
         >
-          <Button icon={<SettingOutlined />} size="small" type="text">
+          <Button
+            className={styles.settingsButton}
+            icon={<SettingOutlined />}
+            size="small"
+            type="text"
+          >
             Settings
           </Button>
         </Popover>
