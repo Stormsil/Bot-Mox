@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T14:05:39Z**
+Last updated (UTC): **2026-02-17T14:10:34Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -370,7 +370,7 @@ Evidence:
 
 ## Phase 5 — Hardening and Cleanup
 
-- [ ] `TODO` Remove dead CSS and obsolete variables.
+- [ ] `WIP` Remove dead CSS and obsolete variables.
 - [ ] `WIP` Final accessibility/contrast pass (focus-visible + keyboard navigation).
 - [ ] `TODO` Final performance pass for background mode.
 - [ ] `TODO` Update dev docs for adding new themed pages.
@@ -378,6 +378,9 @@ Evidence:
 Evidence:
 1. `bot-mox/src/components/notes/NotesComponents.module.css` (focus-within ring for contenteditable blocks)
 2. `bot-mox/src/components/vm/VMQueuePanel.module.css` (focus-visible ring for queue inputs)
+3. `bot-mox/src/components/bot/lifeStages/lifeStages.module.css` (removed empty placeholder classes)
+4. `bot-mox/src/components/bot/lifeStages/StagePanels.tsx` (removed unused CSS module class hooks)
+5. `bot-mox/src/components/bot/lifeStages/StageTimeline.tsx` (removed unused CSS module class hooks)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)

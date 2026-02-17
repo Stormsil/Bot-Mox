@@ -127,7 +127,6 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 styles['timeline-item'],
                 styles['timeline-item-content'],
                 currentStage === 'banned' ? styles.active : '',
-                currentStage === 'banned' ? styles.banned : '',
               ].filter(Boolean).join(' ')}
             >
               <Text strong style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}>

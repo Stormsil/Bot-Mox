@@ -80,7 +80,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
     const analytics = mockAnalytics.leveling;
 
     return (
-      <div className={[styles['stage-content'], styles['leveling-content']].filter(Boolean).join(' ')}>
+      <div className={styles['stage-content']}>
         <Row gutter={[16, 16]}>
           <Col span={8}>
             <Card className={styles['stage-stat-card']}>
@@ -214,7 +214,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
     const analytics = mockAnalytics.professions;
 
     return (
-      <div className={[styles['stage-content'], styles['professions-content']].filter(Boolean).join(' ')}>
+      <div className={styles['stage-content']}>
         <Row gutter={[16, 16]}>
           {professions.map((profession) => {
             const percent = profession.max_skill_points > 0
@@ -314,7 +314,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
     const analytics = mockAnalytics.farm;
 
     return (
-      <div className={[styles['stage-content'], styles['farm-content']].filter(Boolean).join(' ')}>
+      <div className={styles['stage-content']}>
         <Row gutter={[16, 16]}>
           <Col span={8}>
             <Card className={styles['stage-stat-card']}>
