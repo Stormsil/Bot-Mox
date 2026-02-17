@@ -30,6 +30,7 @@ import styles from './UnattendTab.module.css';
 const { Text, Title } = Typography;
 
 export const UnattendTab: React.FC = () => {
+  const cardRadiusStyle: React.CSSProperties = { borderRadius: 2 };
   const [profiles, setProfiles] = useState<UnattendProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -226,7 +227,7 @@ export const UnattendTab: React.FC = () => {
       </aside>
 
       <section className={styles.main}>
-        <Card size="small" className={styles.headCard}>
+        <Card size="small" className={styles.headCard} style={cardRadiusStyle}>
           <div className={styles.head}>
             <div className={styles.headTitle}>
               <Title level={5} style={{ margin: 0 }}>
@@ -263,7 +264,7 @@ export const UnattendTab: React.FC = () => {
           />
         </Card>
 
-        <Card size="small" title="XML Template" className={styles.sectionCard}>
+        <Card size="small" title="XML Template" className={styles.sectionCard} style={cardRadiusStyle}>
           <Space wrap>
             <Upload beforeUpload={handleImportTemplate} showUploadList={false} accept=".xml,text/xml,application/xml">
               <Button size="small" icon={<UploadOutlined />}>Import XML</Button>
@@ -288,31 +289,31 @@ export const UnattendTab: React.FC = () => {
           )}
         </Card>
 
-        <Card id="unattend-region" size="small" title="Region & Language" className={styles.sectionCard}>
+        <Card id="unattend-region" size="small" title="Region & Language" className={styles.sectionCard} style={cardRadiusStyle}>
           <RegionLanguageSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-account" size="small" title="Account" className={styles.sectionCard}>
+        <Card id="unattend-account" size="small" title="Account" className={styles.sectionCard} style={cardRadiusStyle}>
           <AccountSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-visual" size="small" title="Visual Effects" className={styles.sectionCard}>
+        <Card id="unattend-visual" size="small" title="Visual Effects" className={styles.sectionCard} style={cardRadiusStyle}>
           <VisualEffectsSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-desktop" size="small" title="Desktop & Icons" className={styles.sectionCard}>
+        <Card id="unattend-desktop" size="small" title="Desktop & Icons" className={styles.sectionCard} style={cardRadiusStyle}>
           <DesktopIconsSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-bloatware" size="small" title="Bloatware & Capabilities" className={styles.sectionCard}>
+        <Card id="unattend-bloatware" size="small" title="Bloatware & Capabilities" className={styles.sectionCard} style={cardRadiusStyle}>
           <BloatwareSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-windows" size="small" title="Windows Settings" className={styles.sectionCard}>
+        <Card id="unattend-windows" size="small" title="Windows Settings" className={styles.sectionCard} style={cardRadiusStyle}>
           <WindowsSettingsSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-script" size="small" title="Custom Script" className={styles.sectionCard}>
+        <Card id="unattend-script" size="small" title="Custom Script" className={styles.sectionCard} style={cardRadiusStyle}>
           <CustomScriptSection config={config} updateConfig={updateConfig} />
         </Card>
       </section>

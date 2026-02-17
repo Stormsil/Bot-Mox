@@ -344,9 +344,14 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           <List
             size="small"
             dataSource={templates}
-            renderItem={item => (
+            renderItem={(item, index) => (
               <List.Item 
                 className={styles['template-item']}
+                style={{
+                  padding: '10px 8px',
+                  borderBottom:
+                    index === templates.length - 1 ? 'none' : '1px solid rgba(255, 255, 255, 0.05)',
+                }}
               >
                 <div className={styles['template-row']}>
                   <div className={styles['template-info']}>

@@ -157,9 +157,9 @@
 }
 
 .vm-task-table-empty {
-  text-align: center !important;
+  text-align: center;
   color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
-  padding: 20px !important;
+  padding: 20px;
 }
 
 .vm-task-status {

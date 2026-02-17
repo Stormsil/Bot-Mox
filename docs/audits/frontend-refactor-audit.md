@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T11:09:37Z**
+Last updated (UTC): **2026-02-17T11:21:54Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -42,7 +42,7 @@ Date: 2026-02-16
 
 Date: 2026-02-17
 
-1. `!important` count in frontend: **19**
+1. `!important` count in frontend: **0**
 2. Global `.ant-*` selectors in `bot-mox/src/styles/global.css`: **NO**
 3. Theme runtime provider introduced and wired into app shell: **YES**
 4. Theme visual background API + UI + shell layers: **YES**

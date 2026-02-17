@@ -26,10 +26,18 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       className={styles.metricCard}
       variant="borderless"
       styles={{ body: { padding: 16 } }}
+      style={{
+        background: 'var(--boxmox-color-surface-panel)',
+        border: '1px solid var(--boxmox-color-border-default)',
+        borderRadius: 'var(--radius-sm)',
+        height: '100%',
+      }}
     >
       <div className={styles.header}>
         {icon && <div className={styles.icon} style={{ color }}>{icon}</div>}
-        <Text className={styles.label}>{label}</Text>
+        <Text className={styles.label} style={{ color: 'var(--boxmox-color-text-muted)' }}>
+          {label}
+        </Text>
       </div>
       <div className={styles.value} style={{ color }}>
         {value}
@@ -47,7 +55,9 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         </div>
       )}
       {subtext && (
-        <Text className={styles.subtext}>{subtext}</Text>
+        <Text className={styles.subtext} style={{ color: 'var(--boxmox-color-text-muted)' }}>
+          {subtext}
+        </Text>
       )}
     </Card>
   );

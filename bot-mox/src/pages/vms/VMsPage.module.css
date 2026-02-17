@@ -628,7 +628,7 @@
 
 @media (max-width: 1240px) {
   .vm-generator-workspace {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 
   .vm-generator-service-pane {

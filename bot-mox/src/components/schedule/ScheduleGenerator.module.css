@@ -101,13 +101,7 @@
 
 .template-item {
   transition: background 0.2s;
-  padding: 10px 8px !important;
   border-radius: 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
-
-.template-item:last-child {
-  border-bottom: none !important;
 }
 
 .template-item:hover {
@@ -130,9 +124,6 @@
 }
 
 .template-apply-btn {
-  background-color: var(--boxmox-color-brand-primary) !important;
-  border-color: var(--boxmox-color-brand-primary) !important;
-  color: #fff !important;
   font-weight: 500;
   height: 24px;
   padding: 0 8px;
@@ -141,7 +132,6 @@
 
 .template-apply-btn:hover {
   filter: brightness(1.1);
-  color: #fff !important;
 }
 
 .template-info {

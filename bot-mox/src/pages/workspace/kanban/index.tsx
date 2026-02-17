@@ -184,8 +184,15 @@ export const WorkspaceKanbanPage: React.FC = () => {
   return (
     <div className={styles.root}>
       <div className={styles.header}>
-        <Title level={4} className={styles.title}>
-          <CheckCircleOutlined /> Workspace Kanban
+        <Title
+          level={4}
+          className={styles.title}
+          style={{ margin: 0, color: 'var(--boxmox-color-text-primary)' }}
+        >
+          <span className={styles.titleIcon} aria-hidden>
+            <CheckCircleOutlined />
+          </span>
+          Workspace Kanban
         </Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal('todo')}>
           Add task
