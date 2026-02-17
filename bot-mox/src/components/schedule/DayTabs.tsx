@@ -79,6 +79,7 @@ export const DayTabs: React.FC<DayTabsProps> = ({
           return (
             <button
               key={index}
+              type="button"
               className={[
                 styles['day-tab'],
                 isSelected ? styles.selected : '',

@@ -332,15 +332,16 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
         </div>
         <div className={cx('vm-queue-panel-header-actions')}>
           <button
+            type="button"
             className={cx('vm-queue-panel-start-all')}
             onClick={onStartAll}
             disabled={isProcessing || isStartActionRunning || !canStartAll || !onStartAll}
           >
             {isStartActionRunning ? 'Starting...' : 'Start all'}
           </button>
-          <button onClick={onAddDelete} disabled={isProcessing || !onAddDelete}>Delete VM</button>
-          <button onClick={onAdd} disabled={isProcessing}>+ VM</button>
-          <button onClick={onClear} disabled={isProcessing || isStartActionRunning}>Clear</button>
+          <button type="button" onClick={onAddDelete} disabled={isProcessing || !onAddDelete}>Delete VM</button>
+          <button type="button" onClick={onAdd} disabled={isProcessing}>+ VM</button>
+          <button type="button" onClick={onClear} disabled={isProcessing || isStartActionRunning}>Clear</button>
         </div>
       </div>
 
@@ -633,6 +634,7 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
 
                   {canStartItem ? (
                     <button
+                      type="button"
                       className={cx('vm-queue-item-start')}
                       onClick={() => onStartOne?.(item.id)}
                       disabled={isProcessing || isStartActionRunning}
@@ -647,6 +649,7 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                   )}
 
                   <button
+                    type="button"
                     className={cx('vm-queue-item-remove')}
                     onClick={() => onRemove(item.id)}
                     disabled={!canRemove}

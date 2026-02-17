@@ -67,6 +67,7 @@ export const VMCommandPanel: React.FC<VMCommandPanelProps> = ({
         <code className={styles.code}>Ready VM IDs: {vmIdsText}</code>
         <div className={styles.actions}>
           <button
+            type="button"
             onClick={handleRun}
             className={`${styles.actionBtn} ${styles.runBtn}`}
             disabled={isRunning}

@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T14:44:37Z**
+Last updated (UTC): **2026-02-17T20:25:38Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -393,6 +393,13 @@ Evidence:
 15. `docs/DEV-WORKFLOW.md` (link to styling conventions)
 16. `bot-mox/src/components/bot/lifeStages/lifeStages.module.css` (prefers-reduced-motion support)
 17. `bot-mox/src/components/vm/VMOperationLog.tsx` (toolbar button semantics: type=button + aria-pressed)
+18. `bot-mox/src/components/layout/resourceTree/parts.tsx` (button semantics: explicit type=button)
+19. `bot-mox/src/components/schedule/DayTabs.tsx` (button semantics: explicit type=button)
+20. `bot-mox/src/components/schedule/WeekOverview.tsx` (button semantics: explicit type=button)
+21. `bot-mox/src/components/schedule/WeekPanel.tsx` (button semantics: explicit type=button)
+22. `bot-mox/src/components/vm/VMCommandPanel.tsx` (button semantics: explicit type=button)
+23. `bot-mox/src/components/vm/VMQueuePanel.tsx` (button semantics: explicit type=button)
+24. `bot-mox/src/components/vm/VMStatusBar.tsx` (button semantics: explicit type=button)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)

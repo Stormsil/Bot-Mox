@@ -127,6 +127,7 @@ export const WeekPanel: React.FC<WeekPanelProps> = ({
           return (
             <button
               key={dayName}
+              type="button"
               className={[
                 styles['week-day-item'],
                 isSelected ? styles.selected : '',

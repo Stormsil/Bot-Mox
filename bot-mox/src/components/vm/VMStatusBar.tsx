@@ -59,6 +59,7 @@ export const VMStatusBar: React.FC<VMStatusBarProps> = ({
     <div className={styles.root}>
       <div className={styles.controls}>
         <button
+          type="button"
           className={cx(styles.btn, styles.btnStart)}
           onClick={onStart}
           disabled={isProcessing || !hasPending}
@@ -68,6 +69,7 @@ export const VMStatusBar: React.FC<VMStatusBarProps> = ({
           <span>Start processing</span>
         </button>
         <button
+          type="button"
           className={cx(styles.btn, styles.btnStop)}
           onClick={onStop}
           disabled={!isProcessing}
@@ -81,6 +83,7 @@ export const VMStatusBar: React.FC<VMStatusBarProps> = ({
 
         {onOpenSettings && (
           <button
+            type="button"
             className={cx(
               styles.btn,
               styles.btnService,

@@ -103,6 +103,7 @@ export function ResourceTreeFilters({
           {(Object.keys(statusConfig) as BotStatus[]).map((status) => (
             <button
               key={status}
+              type="button"
               className={cx(`filter-chip ${visibleStatuses.includes(status) ? 'active' : ''}`)}
               onClick={() => onToggleStatus(status)}
               style={{ '--status-color': statusConfig[status].color } as CSSProperties}

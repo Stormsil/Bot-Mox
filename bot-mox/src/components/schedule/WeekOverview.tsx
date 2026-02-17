@@ -98,6 +98,7 @@ export const WeekOverview: React.FC<WeekOverviewProps> = ({
           return (
             <div key={dayIndex} className={styles['week-day-row']}>
               <button
+                type="button"
                 className={styles['week-day-label']}
                 onClick={() => onDaySelect(dayIndex)}
                 title={`Click to edit ${dayName}`}
