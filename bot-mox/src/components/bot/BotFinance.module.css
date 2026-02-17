@@ -52,10 +52,6 @@
   border-bottom: 1px solid var(--boxmox-color-surface-muted);
 }
 
-.total {
-  /* marker class for total rows */
-}
-
 .cost-item:last-child,
 .roi-item:last-child {
   border-bottom: none;

@@ -188,7 +188,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
               <Text className={styles.lineValue}>$5.00</Text>
             </div>
             <div className={styles['cost-divider']} />
-            <div className={[styles['cost-item'], styles.total].join(' ')}>
+            <div className={styles['cost-item']}>
               <Text className={styles.lineLabelStrong}>Total Costs</Text>
               <Text className={[styles.lineValueStrong, styles.totalAmount].join(' ')}>
                 $45.00
@@ -211,7 +211,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
               <Text className={styles.lineValue}>12 days</Text>
             </div>
             <div className={styles['roi-divider']} />
-            <div className={[styles['roi-item'], styles.total].join(' ')}>
+            <div className={styles['roi-item']}>
               <Text className={styles.lineLabelStrong}>Profit per Day</Text>
               <Text className={[styles.lineValueStrong, styles.positive].join(' ')}>$5.62</Text>
             </div>
