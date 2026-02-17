@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T09:27:59Z**
+Last updated (UTC): **2026-02-17T09:34:20Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -48,7 +48,7 @@ Date: 2026-02-17
 4. Theme visual background API + UI + shell layers: **YES**
 5. Theme typography + shape (radius) persisted + applied: **YES**
 6. VM domain components migrated to CSS Modules: **20** (`VMQueuePanel`, `VMOperationLog`, `VMSettingsForm`, `ProxmoxTab`, `ProjectResourcesSection`, `UnattendTab`, `PlaybookTab`, `ProxmoxSection`, `SshSection`, `ServiceUrlsSection`, `SecretField`, `SettingsActions`, `VMList`, `VMStatusBar`, `VMConfigPreview`, `VMServicesPanel`, `VMCommandPanel`, `VMListPage`, `VMsPage`, `VMServicePage`)
-7. Remaining `.ant-*` selectors in CSS Modules: **51** (across **14** files)
+7. Remaining `.ant-*` selectors in CSS Modules: **45** (across **13** files)
 
 ## Target KPIs
 
