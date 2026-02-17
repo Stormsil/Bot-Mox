@@ -82,6 +82,8 @@ function buildThemeConfig(
       colorTextSecondary: palette['--boxmox-color-text-secondary'],
       colorTextPlaceholder: palette['--boxmox-color-text-muted'],
       colorBorder: palette['--boxmox-color-border-default'],
+      colorFillContent: palette['--boxmox-color-surface-muted'],
+      colorFillContentHover: palette['--boxmox-color-surface-hover'],
       controlOutline: 'rgba(var(--boxmox-color-brand-primary-rgb), 0.22)',
       borderRadius: safeShape.radiusMd,
       borderRadiusSM: safeShape.radiusSm,
