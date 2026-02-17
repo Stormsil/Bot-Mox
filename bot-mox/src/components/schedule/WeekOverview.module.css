@@ -42,12 +42,6 @@
   font-size: 12px;
 }
 
-.week-overview-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
 /* Timeline rows container */
 .week-overview-timelines {
   display: flex;
@@ -180,10 +174,6 @@
     flex-direction: column;
     gap: 12px;
     align-items: flex-start;
-  }
-
-  .week-overview-actions {
-    flex-wrap: wrap;
   }
 
   .week-day-row {

@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T20:42:40Z**
+Last updated (UTC): **2026-02-17T20:49:17Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -402,6 +402,12 @@ Evidence:
 24. `bot-mox/src/components/vm/VMStatusBar.tsx` (button semantics: explicit type=button)
 25. `bot-mox/src/App.tsx` (background mode: memoized inline styles to reduce redundant DOM updates)
 26. `bot-mox/src/AppShell.module.css` (background mode: contain + will-change hints for blur/overlay layers)
+27. `scripts/report-unused-css-module-classes.js` (dead CSS: report-only helper for finding unused CSS module classes)
+28. `bot-mox/src/pages/settings/SettingsPage.module.css` (dead CSS: removed unused selector)
+29. `bot-mox/src/components/schedule/WeekOverview.module.css` (dead CSS: removed unused selector)
+30. `bot-mox/src/components/schedule/TimelineVisualizer.module.css` (dead CSS: removed unused selector)
+31. `bot-mox/src/components/bot/account/account.module.css` (dead CSS: removed unused selector)
+32. `bot-mox/src/components/bot/BotSummary.module.css` (dead CSS: removed unused selector)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)

@@ -63,13 +63,6 @@
   background: #ff4d4f;
 }
 
-.timeline-header-legend .legend-line {
-  width: 16px;
-  height: 2px;
-  background: #4a4a4a;
-  border-radius: 1px;
-}
-
 .timeline-header-legend .legend-marker {
   width: 8px;
   height: 8px;
