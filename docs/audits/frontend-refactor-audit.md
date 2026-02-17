@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T09:34:20Z**
+Last updated (UTC): **2026-02-17T09:40:55Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -48,7 +48,7 @@ Date: 2026-02-17
 4. Theme visual background API + UI + shell layers: **YES**
 5. Theme typography + shape (radius) persisted + applied: **YES**
 6. VM domain components migrated to CSS Modules: **20** (`VMQueuePanel`, `VMOperationLog`, `VMSettingsForm`, `ProxmoxTab`, `ProjectResourcesSection`, `UnattendTab`, `PlaybookTab`, `ProxmoxSection`, `SshSection`, `ServiceUrlsSection`, `SecretField`, `SettingsActions`, `VMList`, `VMStatusBar`, `VMConfigPreview`, `VMServicesPanel`, `VMCommandPanel`, `VMListPage`, `VMsPage`, `VMServicePage`)
-7. Remaining `.ant-*` selectors in CSS Modules: **45** (across **13** files)
+7. Remaining `.ant-*` selectors in CSS Modules: **40** (across **12** files)
 
 ## Target KPIs
 
@@ -346,10 +346,7 @@ Evidence (Finance components):
 13. `bot-mox/src/components/finance/TransactionForm.module.css`
 
 Checks run (this batch):
-1. `npm --prefix bot-mox run lint` (pass with known warnings only)
-2. `npm --prefix bot-mox run build` (pass)
-3. `npm run check:styles:guardrails` (pass)
-4. `npm run stack:dev:up` (pass)
+1. `npm run check:all` (pass)
 
 ## Phase 4 — Visual Background Theme (Anime/Art)
 

@@ -678,20 +678,6 @@
   padding-top: 2px;
 }
 
-.checkbox-input :global(.ant-checkbox-inner) {
-  background-color: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-}
-
-.checkbox-input :global(.ant-checkbox-checked) :global(.ant-checkbox-inner) {
-  background-color: var(--boxmox-color-brand-primary);
-  border-color: var(--boxmox-color-brand-primary);
-}
-
-.checkbox-input :global(.ant-checkbox-checked) :global(.ant-checkbox-inner)::after {
-  border-color: var(--boxmox-color-text-primary);
-}
-
 .checkbox-content-wrapper {
   position: relative;
   flex: 1;

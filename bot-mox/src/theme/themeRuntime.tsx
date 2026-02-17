@@ -163,6 +163,9 @@ function buildThemeConfig(
         itemSelectedBg: palette['--boxmox-color-surface-muted'],
         itemSelectedColor: palette['--boxmox-color-text-primary'],
       },
+      Checkbox: {
+        colorBgContainer: palette['--boxmox-color-surface-muted'],
+      },
       Menu: {
         itemBg: 'transparent',
         itemColor: palette['--boxmox-color-text-secondary'],
