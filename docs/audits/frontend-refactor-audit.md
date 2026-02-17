@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T20:32:14Z**
+Last updated (UTC): **2026-02-17T20:34:09Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -129,7 +129,7 @@ Evidence:
 
 - [ ] `WIP` Layout domain migration.
 - [ ] `WIP` VM domain migration.
-- [ ] `TODO` Resources domain migration.
+- [ ] `WIP` Resources domain migration.
 - [ ] `WIP` Workspace domain migration.
 - [ ] `WIP` Bot + Finance domain migration.
 
