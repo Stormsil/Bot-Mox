@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T20:34:09Z**
+Last updated (UTC): **2026-02-17T20:39:09Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -372,7 +372,7 @@ Evidence:
 
 - [ ] `WIP` Remove dead CSS and obsolete variables.
 - [ ] `WIP` Final accessibility/contrast pass (focus-visible + keyboard navigation).
-- [ ] `TODO` Final performance pass for background mode.
+- [ ] `WIP` Final performance pass for background mode.
 - [ ] `WIP` Update dev docs for adding new themed pages.
 
 Evidence:
@@ -400,6 +400,8 @@ Evidence:
 22. `bot-mox/src/components/vm/VMCommandPanel.tsx` (button semantics: explicit type=button)
 23. `bot-mox/src/components/vm/VMQueuePanel.tsx` (button semantics: explicit type=button)
 24. `bot-mox/src/components/vm/VMStatusBar.tsx` (button semantics: explicit type=button)
+25. `bot-mox/src/App.tsx` (background mode: memoized inline styles to reduce redundant DOM updates)
+26. `bot-mox/src/AppShell.module.css` (background mode: contain + will-change hints for blur/overlay layers)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)

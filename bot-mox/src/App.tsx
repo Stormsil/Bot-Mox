@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo } from 'react';
 import { Authenticated, Refine } from '@refinedev/core';
 import { useNotificationProvider } from '@refinedev/antd';
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
@@ -16,17 +16,34 @@ const ProxmoxLayout: React.FC = () => {
   const { themeMode, visualSettings } = useThemeRuntime();
   const isVisualImage = visualSettings.enabled && visualSettings.mode === 'image' && Boolean(visualSettings.backgroundImageUrl);
   const overlayColor = themeMode === 'dark' ? visualSettings.overlayColorDark : visualSettings.overlayColorLight;
-  const backgroundStyle: React.CSSProperties = isVisualImage ? {
-    backgroundImage: `url(${visualSettings.backgroundImageUrl})`,
-    backgroundPosition: visualSettings.backgroundPosition === 'top' ? 'top center' : 'center center',
-    backgroundSize: visualSettings.backgroundSize,
-    filter: visualSettings.blurPx > 0 ? `blur(${visualSettings.blurPx}px)` : undefined,
-    transform: visualSettings.blurPx > 0 ? 'scale(1.02)' : undefined,
-  } : {};
-  const overlayStyle: React.CSSProperties = isVisualImage ? {
-    backgroundColor: overlayColor,
-    opacity: Math.max(0, Math.min(1, visualSettings.overlayOpacity + visualSettings.dimStrength)),
-  } : {};
+  const isBlurred = isVisualImage && visualSettings.blurPx > 0;
+
+  // Keep these memoized so React doesn't re-apply identical inline styles on unrelated renders.
+  const backgroundStyle = useMemo<React.CSSProperties>(() => {
+    if (!isVisualImage) return {};
+    return {
+      backgroundImage: `url(${visualSettings.backgroundImageUrl})`,
+      backgroundPosition: visualSettings.backgroundPosition === 'top' ? 'top center' : 'center center',
+      backgroundSize: visualSettings.backgroundSize,
+      filter: isBlurred ? `blur(${visualSettings.blurPx}px)` : undefined,
+      transform: isBlurred ? 'scale(1.02)' : undefined,
+    };
+  }, [
+    isBlurred,
+    isVisualImage,
+    visualSettings.backgroundImageUrl,
+    visualSettings.backgroundPosition,
+    visualSettings.backgroundSize,
+    visualSettings.blurPx,
+  ]);
+
+  const overlayStyle = useMemo<React.CSSProperties>(() => {
+    if (!isVisualImage) return {};
+    return {
+      backgroundColor: overlayColor,
+      opacity: Math.max(0, Math.min(1, visualSettings.overlayOpacity + visualSettings.dimStrength)),
+    };
+  }, [isVisualImage, overlayColor, visualSettings.dimStrength, visualSettings.overlayOpacity]);
 
   return (
     <div className={shellStyles['proxmox-layout']}>
@@ -34,7 +51,10 @@ const ProxmoxLayout: React.FC = () => {
       <div className={shellStyles['proxmox-body']}>
         {isVisualImage ? (
           <div className={shellStyles['theme-visual-layer']} aria-hidden="true">
-            <div className={shellStyles['theme-visual-image']} style={backgroundStyle} />
+            <div
+              className={[shellStyles['theme-visual-image'], isBlurred ? shellStyles['theme-visual-imageBlurred'] : ''].join(' ')}
+              style={backgroundStyle}
+            />
             <div className={shellStyles['theme-visual-overlay']} style={overlayStyle} />
           </div>
         ) : null}
