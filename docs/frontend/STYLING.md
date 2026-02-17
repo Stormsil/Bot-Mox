@@ -65,7 +65,31 @@ Example:
    - prefer tokens first,
    - otherwise use component props (`styles`, `className`, `rootClassName`) locally.
 5. Ensure keyboard focus is visible for primary interactions.
-6. Run:
+6. Make sure the page stays readable with **visual backgrounds enabled**:
+   - do not rely on raw text over the shell background layer,
+   - ensure primary content sits on a surface (`var(--boxmox-color-surface-panel)` / antd `colorBgContainer`) with adequate contrast.
+7. Run:
    - `npm run check:styles:guardrails`
    - `npm run check:all` before committing.
 
+## Background Mode Safety (Do Not Skip)
+
+When `settings/theme.visual.enabled` is on, the app shell renders an image layer + overlay under the content. Pages must be resilient to that.
+
+Rules:
+1. **Do not make entire pages transparent**. Keep content inside a panel/container surface.
+2. Avoid fragile contrast tricks (e.g. light text directly on background). Prefer semantic text tokens.
+3. If you introduce translucent surfaces, test in both light/dark with multiple background images and overlay settings.
+
+Quick manual QA:
+1. Enable a busy background image in Settings.
+2. Check the page in light and dark themes.
+3. Keyboard-tab through primary interactions (focus ring visible).
+4. Verify any table/list row hover/selected states remain readable.
+
+## If You Need A New Token (Instead of Hardcoding)
+
+Preferred flow:
+1. First try existing semantic vars (examples earlier in this doc).
+2. If semantics are missing, extend the token mapping in `bot-mox/src/theme/themeRuntime.tsx` (antd tokens/components) and, only if needed, the legacy CSS vars bridge.
+3. Document the new semantic token name in this file (so future pages reuse it).
