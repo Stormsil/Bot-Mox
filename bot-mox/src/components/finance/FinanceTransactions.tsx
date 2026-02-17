@@ -102,6 +102,8 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       dataIndex: 'date',
       key: 'date',
       width: 120,
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (date: number) => formatTimestampToDate(date),
       sorter: (a: FinanceOperation, b: FinanceOperation) => a.date - b.date,
       defaultSortOrder: 'descend' as const,
@@ -111,6 +113,8 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       dataIndex: 'type',
       key: 'type',
       width: 100,
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (type: FinanceOperationType) => (
         <Tag className={`${commonStyles.financeTag} ${styles.transactionTypeTag}`}>
           {type === 'income' ? 'Income' : 'Expense'}
@@ -127,6 +131,8 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       dataIndex: 'category',
       key: 'category',
       width: 150,
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (category: string) => (
         <Tag className={commonStyles.financeTag}>
           {CATEGORY_LABELS[category] || category}
@@ -138,6 +144,8 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       dataIndex: 'project_id',
       key: 'project_id',
       width: 120,
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (projectId: string | null) => {
         if (!projectId) return '-';
         return (
@@ -152,12 +160,16 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       dataIndex: 'description',
       key: 'description',
       ellipsis: true,
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
     },
     {
       title: 'Gold Amount',
       dataIndex: 'gold_amount',
       key: 'gold_amount',
       width: 120,
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (amount: number | undefined) => {
         if (!amount) return '-';
         return <Text>{amount.toLocaleString()}g</Text>;
@@ -169,6 +181,8 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       key: 'amount',
       width: 150,
       align: 'right' as const,
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (amount: number, record: FinanceOperation) => (
         <Text className={styles.amountNeutral}>
           {record.type === 'income' ? '+' : '-'}${amount.toFixed(2)}
@@ -180,6 +194,8 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       title: 'Actions',
       key: 'actions',
       width: 120,
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (_value: unknown, record: FinanceOperation) => (
         <TableActionGroup>
           <TableActionButton icon={<EditOutlined />} onClick={() => onEdit(record)} tooltip="Edit" />
@@ -226,6 +242,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
           <Col flex="auto">
             <Space wrap>
               <Select
+                variant="filled"
                 value={filterType}
                 onChange={setFilterType}
                 style={{ width: 120 }}
@@ -237,6 +254,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
                 ]}
               />
               <Select
+                variant="filled"
                 value={filterCategory}
                 onChange={setFilterCategory}
                 style={{ width: 150 }}
@@ -252,6 +270,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
                 ]}
               />
               <Select
+                variant="filled"
                 value={filterProject}
                 onChange={setFilterProject}
                 style={{ width: 120 }}
@@ -263,6 +282,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
                 ]}
               />
               <RangePicker
+                variant="filled"
                 onChange={(dates) => {
                   if (dates) {
                     setDateRange([dates[0]!.format('YYYY-MM-DD'), dates[1]!.format('YYYY-MM-DD')]);
@@ -272,6 +292,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
                 }}
               />
               <Input
+                variant="filled"
                 placeholder="Search..."
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
@@ -294,12 +315,13 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       </Card>
 
       {/* Таблица транзакций */}
-      <Card className={styles.transactionsCard}>
+      <Card className={styles.transactionsCard} styles={{ body: { padding: 0 } }}>
         <Table
           dataSource={filteredOperations}
           columns={columns}
           rowKey="id"
           loading={loading}
+          rowClassName={() => styles.tableRow}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,

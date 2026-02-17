@@ -17,15 +17,11 @@
   box-shadow: none;
 }
 
-.transactionsCard :global(.ant-card-body) {
-  padding: 0;
-}
-
 .transactionsTable {
   background: transparent;
 }
 
-.transactionsTable :global(.ant-table-thead > tr > th) {
+.tableHeaderCell {
   background: var(--boxmox-color-surface-muted);
   border-bottom: 1px solid var(--boxmox-color-border-default);
   color: var(--boxmox-color-text-primary);
@@ -35,12 +31,12 @@
   letter-spacing: 0.4px;
 }
 
-.transactionsTable :global(.ant-table-tbody > tr > td) {
+.tableCell {
   border-bottom: 1px solid var(--boxmox-color-border-default);
   color: var(--boxmox-color-text-secondary);
 }
 
-.transactionsTable :global(.ant-table-tbody > tr:hover > td) {
+.tableRow:hover td {
   background: var(--boxmox-color-surface-muted);
 }
 
@@ -53,23 +49,5 @@
 .amountNeutral {
   color: var(--boxmox-color-text-primary);
   font-weight: 500;
-}
-
-.filtersCard :global(.ant-select-selector),
-.filtersCard :global(.ant-picker),
-.filtersCard :global(.ant-input) {
-  background: var(--boxmox-color-surface-muted) !important;
-  border-color: var(--boxmox-color-border-default) !important;
-  color: var(--boxmox-color-text-primary) !important;
-}
-
-.filtersCard :global(.ant-select-selection-placeholder),
-.filtersCard :global(.ant-input)::placeholder {
-  color: var(--boxmox-color-text-muted) !important;
-}
-
-.filtersCard :global(.ant-picker-suffix),
-.filtersCard :global(.ant-select-arrow) {
-  color: var(--boxmox-color-text-muted) !important;
 }
 
