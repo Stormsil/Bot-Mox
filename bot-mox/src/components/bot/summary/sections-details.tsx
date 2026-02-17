@@ -2,7 +2,9 @@ import React from 'react';
 import { Card, Col, Row, Tag, Typography } from 'antd';
 import {
   CalendarOutlined,
+  CheckOutlined,
   ClockCircleOutlined,
+  CopyOutlined,
   CreditCardOutlined,
   FlagOutlined,
   GlobalOutlined,
@@ -21,6 +23,7 @@ import type {
   SummaryConfigureTab,
   SummaryResourcesTab,
 } from './types';
+import { detailCardStyles, statusSummaryCardStyles } from './summaryUi';
 import styles from '../BotSummary.module.css';
 
 const { Text } = Typography;
@@ -61,6 +64,7 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
             </div>
           }
           className={[styles['detail-card'], styles['link-card']].join(' ')}
+          styles={detailCardStyles}
           hoverable
           onClick={() => goToConfigure('account')}
           role="button"
@@ -75,7 +79,16 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
               label="Email"
               value={
                 accountEmail ? (
-                  <Text copyable={{ text: accountEmail }} className={styles['summary-copy-text']}>
+                  <Text
+                    copyable={{
+                      text: accountEmail,
+                      icon: [
+                        <CopyOutlined className={styles['summary-copy-icon']} />,
+                        <CheckOutlined className={styles['summary-copy-icon']} />,
+                      ],
+                    }}
+                    className={styles['summary-copy-text']}
+                  >
                     {accountEmail}
                   </Text>
                 ) : (
@@ -88,7 +101,16 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
               label="Password"
               value={
                 accountPassword ? (
-                  <Text copyable={{ text: accountPassword }} className={styles['summary-copy-text']}>
+                  <Text
+                    copyable={{
+                      text: accountPassword,
+                      icon: [
+                        <CopyOutlined className={styles['summary-copy-icon']} />,
+                        <CheckOutlined className={styles['summary-copy-icon']} />,
+                      ],
+                    }}
+                    className={styles['summary-copy-text']}
+                  >
                     {accountPassword}
                   </Text>
                 ) : (
@@ -115,6 +137,7 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
             </div>
           }
           className={[styles['detail-card'], styles['link-card']].join(' ')}
+          styles={detailCardStyles}
           hoverable
           onClick={() => goToConfigure('person')}
           role="button"
@@ -157,6 +180,7 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
             </div>
           }
           className={[styles['detail-card'], styles['link-card']].join(' ')}
+          styles={detailCardStyles}
           hoverable
           onClick={() => goToConfigure('schedule')}
           role="button"
@@ -204,7 +228,11 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
   formatDaysLeft,
 }) => (
   <section id="summary-resources" className={styles['bot-section']}>
-    <Card className={styles['status-summary-card']} title="Status Summary">
+    <Card
+      className={styles['status-summary-card']}
+      title={<span className={styles['detail-card-title']}>Status Summary</span>}
+      styles={statusSummaryCardStyles}
+    >
       <Row gutter={[16, 16]}>
         <Col span={8}>
           <div
