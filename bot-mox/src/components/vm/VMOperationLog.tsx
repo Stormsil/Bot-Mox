@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   VMTaskDetailEntry,
   VMTaskEntry,
@@ -139,8 +139,47 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({
     setTaskModalOpen(true);
   };
 
-  const closeTaskModal = () => {
+  const closeTaskModal = useCallback(() => {
     setTaskModalOpen(false);
+  }, []);
+
+  const closeExpanded = useCallback(() => {
+    setExpanded(false);
+  }, []);
+
+  useEffect(() => {
+    if (!taskModalOpen && !expanded) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (taskModalOpen) {
+        closeTaskModal();
+        return;
+      }
+
+      if (expanded) {
+        closeExpanded();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [taskModalOpen, expanded, closeTaskModal, closeExpanded]);
+
+  const handleTaskRowKeyDown = (taskId: string) => (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openTaskModal(taskId);
+    }
   };
 
   const copyTaskModalLog = () => {
@@ -219,7 +258,10 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({
                     `vm-task-table-row--${task.status}`,
                     taskModalOpen && selectedTask?.id === task.id ? 'selected' : '',
                   )}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => openTaskModal(task.id)}
+                  onKeyDown={handleTaskRowKeyDown(task.id)}
                 >
                   <td>{formatTaskDate(task.startedAt)}</td>
                   <td>{formatTaskDate(task.finishedAt)}</td>
@@ -265,9 +307,15 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({
 
       {taskModalOpen && selectedTask && (
         <div className={cx('vm-task-log-modal-overlay')} onClick={closeTaskModal}>
-          <div className={cx('vm-task-log-modal')} onClick={e => e.stopPropagation()}>
+          <div
+            className={cx('vm-task-log-modal')}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="vm-task-log-modal-title"
+            onClick={e => e.stopPropagation()}
+          >
             <div className={cx('vm-task-log-modal-header')}>
-              <div className={cx('vm-task-log-modal-title')}>Task Viewer</div>
+              <div className={cx('vm-task-log-modal-title')} id="vm-task-log-modal-title">Task Viewer</div>
               <div className={cx('vm-task-log-modal-actions')}>
                 {selectedTask.status === 'running' && (
                   <Popconfirm
@@ -324,8 +372,14 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({
     return (
       <>
         <div className={`${cx('vm-operation-log')} vm-operation-log`} style={{ height: 0 }} />
-        <div className={cx('vm-log-modal-overlay')} onClick={() => setExpanded(false)}>
-          <div className={cx('vm-log-modal')} onClick={e => e.stopPropagation()}>
+        <div className={cx('vm-log-modal-overlay')} onClick={closeExpanded}>
+          <div
+            className={cx('vm-log-modal')}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Operation Console"
+            onClick={e => e.stopPropagation()}
+          >
             {logContent}
           </div>
         </div>

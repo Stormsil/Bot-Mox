@@ -142,6 +142,11 @@
   background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
 }
 
+.vm-task-table-row:focus-visible {
+  outline: 2px solid rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
+  outline-offset: -2px;
+}
+
 .vm-task-table-row.selected {
   background: var(--vmx-accent-soft, var(--boxmox-color-brand-soft));
 }
