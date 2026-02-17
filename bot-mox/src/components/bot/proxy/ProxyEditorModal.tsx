@@ -1,5 +1,5 @@
 import React from 'react';
-import { DatePicker, Form, Input, Modal, Spin, Typography } from 'antd';
+import { DatePicker, Form, Input, Modal, Spin, Typography, theme } from 'antd';
 import type { FormInstance } from 'antd';
 import type { IPQSResponse } from '../../../types';
 import type { ParsedProxy } from '../../../utils/proxyUtils';
@@ -43,51 +43,78 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
   onFinish,
   onProxyInputChange,
   onTogglePassword,
-}) => (
-  <Modal
-    className={styles['proxy-modal']}
-    title={editing ? 'Edit Proxy' : 'Add Proxy'}
-    open={open}
-    onOk={onSubmit}
-    onCancel={onCancel}
-    okText={editing ? 'Update' : 'Add'}
-    width={600}
-    okButtonProps={{ disabled: !parsedProxy }}
-  >
-    <Form form={form} layout="vertical" onFinish={onFinish}>
-      <Form.Item
-        label="Proxy String"
-        required
-        validateStatus={parseError ? 'error' : parsedProxy ? 'success' : ''}
-        help={parseError || (parsedProxy ? 'Valid proxy format detected' : 'Format: ip:port:login:password')}
-      >
-        <TextArea
-          placeholder="Enter proxy string (ip:port:login:password)"
-          value={proxyInput}
-          onChange={(event) => onProxyInputChange(event.target.value)}
-          rows={2}
-          style={{ fontFamily: 'monospace' }}
-        />
-      </Form.Item>
+}) => {
+  const { token } = theme.useToken();
 
-      {checkingIPQS && (
-        <div className={styles['ipqs-loading']}>
-          <Spin size="small" />
-          <Text type="secondary">Checking IP quality...</Text>
-        </div>
-      )}
+  return (
+    <Modal
+      title={
+        <span className={styles['modal-title']} style={{ color: token.colorText }}>
+          {editing ? 'Edit Proxy' : 'Add Proxy'}
+        </span>
+      }
+      open={open}
+      onOk={onSubmit}
+      onCancel={onCancel}
+      okText={editing ? 'Update' : 'Add'}
+      width={600}
+      okButtonProps={{ disabled: !parsedProxy }}
+      styles={{
+        content: {
+          background: token.colorBgElevated,
+          border: `1px solid ${token.colorBorderSecondary}`,
+        },
+        header: {
+          background: token.colorBgElevated,
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
+        },
+        footer: {
+          borderTop: `1px solid ${token.colorBorderSecondary}`,
+        },
+      }}
+    >
+      <Form form={form} layout="vertical" onFinish={onFinish}>
+        <Form.Item
+          label="Proxy String"
+          required
+          validateStatus={parseError ? 'error' : parsedProxy ? 'success' : ''}
+          help={parseError || (parsedProxy ? 'Valid proxy format detected' : 'Format: ip:port:login:password')}
+        >
+          <TextArea
+            placeholder="Enter proxy string (ip:port:login:password)"
+            value={proxyInput}
+            onChange={(event) => onProxyInputChange(event.target.value)}
+            rows={2}
+            style={{ fontFamily: 'monospace' }}
+            variant="filled"
+          />
+        </Form.Item>
 
-      {parsedProxy && <ProxyParsedAlert parsedProxy={parsedProxy} showPassword={showPassword} onTogglePassword={onTogglePassword} />}
+        {checkingIPQS && (
+          <div className={styles['ipqs-loading']}>
+            <Spin size="small" />
+            <Text type="secondary">Checking IP quality...</Text>
+          </div>
+        )}
 
-      <ProxyIpqsResults ipqsData={ipqsData} />
+        {parsedProxy && (
+          <ProxyParsedAlert
+            parsedProxy={parsedProxy}
+            showPassword={showPassword}
+            onTogglePassword={onTogglePassword}
+          />
+        )}
 
-      <Form.Item
-        name="expires_at"
-        label="Expiration Date"
-        rules={[{ required: true, message: 'Please select expiration date' }]}
-      >
-        <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" />
-      </Form.Item>
-    </Form>
-  </Modal>
-);
+        <ProxyIpqsResults ipqsData={ipqsData} />
+
+        <Form.Item
+          name="expires_at"
+          label="Expiration Date"
+          rules={[{ required: true, message: 'Please select expiration date' }]}
+        >
+          <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" variant="filled" />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
