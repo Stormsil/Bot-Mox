@@ -111,6 +111,12 @@
   cursor: pointer;
 }
 
+.cellLink:focus-visible {
+  outline: 2px solid rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
 .cellLink:hover .secondary {
   color: var(--boxmox-color-text-primary);
 }

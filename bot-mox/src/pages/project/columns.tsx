@@ -11,6 +11,15 @@ import styles from './ProjectPage.module.css';
 
 const { Text } = Typography;
 
+function handleCellKeyDown(onActivate: () => void) {
+  return (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onActivate();
+    }
+  };
+}
+
 function renderStatusWithDays({
   label,
   color,
@@ -23,7 +32,13 @@ function renderStatusWithDays({
   onClick: () => void;
 }) {
   return (
-    <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={onClick}>
+    <div
+      className={`${styles.cellStack} ${styles.cellLink}`}
+      role="link"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={handleCellKeyDown(onClick)}
+    >
       <Tag color={color} className={styles.statusTag}>
         {label}
       </Tag>
@@ -51,7 +66,13 @@ export function createProjectColumns({
       width: 90,
       sorter: (a: BotRow, b: BotRow) => a.idShort.localeCompare(b.idShort),
       render: (_: string, record: BotRow) => (
-        <div className={styles.cellLink} onClick={() => goToBot(record.id, 'summary')}>
+        <div
+          className={styles.cellLink}
+          role="link"
+          tabIndex={0}
+          onClick={() => goToBot(record.id, 'summary')}
+          onKeyDown={handleCellKeyDown(() => goToBot(record.id, 'summary'))}
+        >
           <Tooltip title={record.id}>
             <Text className={styles.id}>{record.idShort}</Text>
           </Tooltip>
@@ -65,7 +86,13 @@ export function createProjectColumns({
       width: 130,
       sorter: (a: BotRow, b: BotRow) => BOT_STATUS_ORDER[a.botStatus] - BOT_STATUS_ORDER[b.botStatus],
       render: (status: BotStatus, record: BotRow) => (
-        <div className={styles.cellLink} onClick={() => goToBot(record.id, 'summary')}>
+        <div
+          className={styles.cellLink}
+          role="link"
+          tabIndex={0}
+          onClick={() => goToBot(record.id, 'summary')}
+          onKeyDown={handleCellKeyDown(() => goToBot(record.id, 'summary'))}
+        >
           <StatusBadge status={status} size="small" />
         </div>
       ),
@@ -77,7 +104,13 @@ export function createProjectColumns({
       width: 120,
       sorter: (a: BotRow, b: BotRow) => (a.vmName || '').localeCompare(b.vmName || ''),
       render: (value: string, record: BotRow) => (
-        <div className={styles.cellLink} onClick={() => goToBot(record.id, 'vmInfo')}>
+        <div
+          className={styles.cellLink}
+          role="link"
+          tabIndex={0}
+          onClick={() => goToBot(record.id, 'vmInfo')}
+          onKeyDown={handleCellKeyDown(() => goToBot(record.id, 'vmInfo'))}
+        >
           <Text>{value || '-'}</Text>
         </div>
       ),
@@ -88,7 +121,13 @@ export function createProjectColumns({
       width: 220,
       sorter: (a: BotRow, b: BotRow) => (a.email || '').localeCompare(b.email || ''),
       render: (_: unknown, record: BotRow) => (
-        <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={() => goToBot(record.id, 'account')}>
+        <div
+          className={`${styles.cellStack} ${styles.cellLink}`}
+          role="link"
+          tabIndex={0}
+          onClick={() => goToBot(record.id, 'account')}
+          onKeyDown={handleCellKeyDown(() => goToBot(record.id, 'account'))}
+        >
           <Text>{record.email || '-'}</Text>
           <Text type="secondary" className={styles.secondary}>
             {record.password || '-'}
@@ -111,7 +150,13 @@ export function createProjectColumns({
           : serverLabel;
 
         return (
-          <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={() => goToBot(record.id, 'character')}>
+          <div
+            className={`${styles.cellStack} ${styles.cellLink}`}
+            role="link"
+            tabIndex={0}
+            onClick={() => goToBot(record.id, 'character')}
+            onKeyDown={handleCellKeyDown(() => goToBot(record.id, 'character'))}
+          >
             <Text strong>
               {record.characterName}
               {typeof record.level === 'number' ? ` (${record.level})` : ''}

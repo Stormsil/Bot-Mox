@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T14:24:38Z**
+Last updated (UTC): **2026-02-17T14:28:14Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -386,6 +386,8 @@ Evidence:
 8. `bot-mox/src/components/bot/BotFinance.module.css` (removed comment-only marker class)
 9. `bot-mox/src/components/bot/BotFinance.tsx` (removed unused CSS module class hook)
 10. `docs/frontend/STYLING.md` (styling conventions and page checklist)
+11. `bot-mox/src/pages/project/columns.tsx` (keyboard-accessible table cell navigation)
+12. `bot-mox/src/pages/project/ProjectPage.module.css` (focus-visible ring for cell links)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)
