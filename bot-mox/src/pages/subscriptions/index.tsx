@@ -159,10 +159,17 @@ export const SubscriptionsPage: React.FC = () => {
     }
   };
 
-  const columns = buildSubscriptionColumns({
+
+  const rawColumns = buildSubscriptionColumns({
     onEdit: openEditModal,
     onDelete: handleDelete,
   });
+
+  const columns = rawColumns.map((column) => ({
+    ...column,
+    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+    onCell: () => ({ className: styles.tableCell }),
+  }));
 
   const expiringSoon = getExpiringSoon().sort((a, b) => a.expires_at - b.expires_at);
 
@@ -171,10 +178,12 @@ export const SubscriptionsPage: React.FC = () => {
       <Card className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.headerTitle}>
-            <Title level={4}>
+            <Title level={4} className={styles.headerMainTitle}>
               <CreditCardOutlined /> Subscriptions
             </Title>
-            <Text type="secondary">Manage bot subscriptions</Text>
+            <Text type="secondary" className={styles.headerSubtitle}>
+              Manage bot subscriptions
+            </Text>
           </div>
           <Space>
             <Button
@@ -228,6 +237,7 @@ export const SubscriptionsPage: React.FC = () => {
           columns={columns}
           rowKey="id"
           loading={loading}
+          rowClassName={() => styles.tableRow}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
