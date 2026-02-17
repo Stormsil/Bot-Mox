@@ -9,10 +9,10 @@ const GLOBAL_STYLES = [
   path.join(FRONTEND_SRC, 'App.css'),
 ];
 
-const MAX_IMPORTANT_COUNT = 55;
+const MAX_IMPORTANT_COUNT = 49;
 // Phase-0 guardrail: cap legacy Ant internal selector overrides in CSS Modules.
 // We allow existing usage during migration, but prevent adding more debt.
-const MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES = 200;
+const MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES = 184;
 const ANT_GLOBAL_PATTERN = /\.(ant-[\w-]+)/;
 const ANT_SELECTOR_PATTERN = /\.ant-[\w-]+/g;
 const IMPORTANT_PATTERN = /!important/g;

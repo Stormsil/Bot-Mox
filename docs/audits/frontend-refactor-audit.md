@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T07:30:53Z**
+Last updated (UTC): **2026-02-17T07:47:40Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -42,13 +42,13 @@ Date: 2026-02-16
 
 Date: 2026-02-17
 
-1. `!important` count in frontend: **55**
+1. `!important` count in frontend: **49**
 2. Global `.ant-*` selectors in `bot-mox/src/styles/global.css`: **NO**
 3. Theme runtime provider introduced and wired into app shell: **YES**
 4. Theme visual background API + UI + shell layers: **YES**
 5. Theme typography + shape (radius) persisted + applied: **YES**
 6. VM domain components migrated to CSS Modules: **20** (`VMQueuePanel`, `VMOperationLog`, `VMSettingsForm`, `ProxmoxTab`, `ProjectResourcesSection`, `UnattendTab`, `PlaybookTab`, `ProxmoxSection`, `SshSection`, `ServiceUrlsSection`, `SecretField`, `SettingsActions`, `VMList`, `VMStatusBar`, `VMConfigPreview`, `VMServicesPanel`, `VMCommandPanel`, `VMListPage`, `VMsPage`, `VMServicePage`)
-7. Remaining `.ant-*` selectors in CSS Modules: **200** (across **27** files)
+7. Remaining `.ant-*` selectors in CSS Modules: **184** (across **27** files)
 
 ## Target KPIs
 
