@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T20:49:17Z**
+Last updated (UTC): **2026-02-17T20:55:50Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -408,6 +408,12 @@ Evidence:
 30. `bot-mox/src/components/schedule/TimelineVisualizer.module.css` (dead CSS: removed unused selector)
 31. `bot-mox/src/components/bot/account/account.module.css` (dead CSS: removed unused selector)
 32. `bot-mox/src/components/bot/BotSummary.module.css` (dead CSS: removed unused selector)
+33. `bot-mox/src/components/schedule/SessionList.module.css` (dead CSS: removed unused selectors)
+34. `bot-mox/src/components/bot/character/character.module.css` (dead CSS: removed unused selectors)
+35. `bot-mox/src/components/bot/proxy/proxy.module.css` (dead CSS: removed unused selectors)
+36. `bot-mox/src/components/bot/subscription/subscription.module.css` (dead CSS: removed unused selectors)
+37. `bot-mox/src/pages/datacenter/DatacenterPage.module.css` (dead CSS: removed unused selectors)
+38. `.gitignore` (ignore local audit scratch report)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)

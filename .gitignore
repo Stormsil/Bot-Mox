@@ -42,6 +42,7 @@ Winsible/
 
 # Local scratch files (do not commit)
 tmp_unattend_page.html
+.tmp-unused-css-report.txt
 
 # Supabase / runtime artifacts
 supabase/.temp/
