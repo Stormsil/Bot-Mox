@@ -293,10 +293,16 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({
           placement="top"
           onConfirm={() => void handleClear()}
         >
-          <button disabled={isClearing}>Clear</button>
+          <button type="button" disabled={isClearing}>Clear</button>
         </Popconfirm>
-        <button onClick={() => setExpanded(e => !e)}>{expanded ? 'Minimize' : 'Fullscreen'}</button>
-        <button onClick={handleCopy}>Copy</button>
+        <button
+          type="button"
+          aria-pressed={expanded}
+          onClick={() => setExpanded(e => !e)}
+        >
+          {expanded ? 'Minimize' : 'Fullscreen'}
+        </button>
+        <button type="button" onClick={handleCopy}>Copy</button>
       </div>
 
       <div className={cx('vm-operation-log-content-shell')}>
