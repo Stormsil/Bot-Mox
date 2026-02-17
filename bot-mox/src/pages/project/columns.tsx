@@ -24,7 +24,9 @@ function renderStatusWithDays({
 }) {
   return (
     <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={onClick}>
-      <Tag color={color}>{label}</Tag>
+      <Tag color={color} className={styles.statusTag}>
+        {label}
+      </Tag>
       <Text type="secondary" className={styles.secondary}>
         {formatDaysRemaining(daysRemaining)}
       </Text>

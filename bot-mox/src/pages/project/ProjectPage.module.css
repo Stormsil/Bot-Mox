@@ -81,11 +81,7 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.tableCard :global(.ant-table) {
-  background: transparent;
-}
-
-.tableCard :global(.ant-table-thead > tr > th) {
+.tableHeaderCell {
   background: var(--boxmox-color-surface-muted);
   color: var(--boxmox-color-text-secondary);
   border-bottom: 1px solid var(--boxmox-color-border-default);
@@ -95,13 +91,13 @@
   white-space: nowrap;
 }
 
-.tableCard :global(.ant-table-tbody > tr > td) {
+.tableCell {
   border-bottom: 1px solid var(--boxmox-color-border-default);
   color: var(--boxmox-color-text-primary);
   vertical-align: middle;
 }
 
-.tableCard :global(.ant-table-tbody > tr:hover > td) {
+.tableRow:hover .tableCell {
   background: var(--boxmox-color-surface-hover);
 }
 
@@ -138,42 +134,33 @@
   font-size: 12px;
 }
 
-.root :global(.ant-input),
-.root :global(.ant-select-selector) {
-  background: var(--boxmox-color-surface-muted) !important;
-  border-color: var(--boxmox-color-border-default) !important;
-  color: var(--boxmox-color-text-primary) !important;
+.filtersSpace {
+  width: 100%;
 }
 
-.root :global(.ant-input)::placeholder {
+.filterSearch {
+  width: 320px;
+}
+
+.filterStatus {
+  width: 160px;
+}
+
+.filterSearch input::placeholder {
   color: var(--boxmox-color-text-muted);
 }
 
-.root :global(.ant-tag) {
+.statusTag {
   border-radius: 2px;
   font-size: 10px;
   text-transform: uppercase;
   font-weight: 500;
 }
 
-.root :global(.ant-btn-primary) {
-  background: var(--boxmox-color-brand-primary);
-  border-color: var(--boxmox-color-brand-primary);
-}
-
-.root :global(.ant-btn-primary:hover) {
-  background: var(--boxmox-color-brand-primary-hover);
-  border-color: var(--boxmox-color-brand-primary-hover);
-}
-
 @media (max-width: 900px) {
-  .filters :global(.ant-space) {
+  .filterSearch,
+  .filterStatus {
     width: 100%;
-  }
-
-  .filters :global(.ant-input),
-  .filters :global(.ant-select) {
-    width: 100% !important;
   }
 }
 
