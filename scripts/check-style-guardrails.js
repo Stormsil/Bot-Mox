@@ -10,7 +10,11 @@ const GLOBAL_STYLES = [
 ];
 
 const MAX_IMPORTANT_COUNT = 223;
+// Phase-0 guardrail: cap legacy Ant internal selector overrides in CSS Modules.
+// We allow existing usage during migration, but prevent adding more debt.
+const MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES = 298;
 const ANT_GLOBAL_PATTERN = /\.(ant-[\w-]+)/;
+const ANT_SELECTOR_PATTERN = /\.ant-[\w-]+/g;
 const IMPORTANT_PATTERN = /!important/g;
 
 function collectFiles(dir, matcher, bucket = []) {
@@ -54,6 +58,17 @@ for (const file of GLOBAL_STYLES) {
   }
 }
 
+const moduleCssFiles = cssFiles.filter((file) => file.toLowerCase().endsWith('.module.css'));
+let antSelectorOccurrencesInModules = 0;
+const antSelectorFilesInModules = new Set();
+for (const file of moduleCssFiles) {
+  const text = fs.readFileSync(file, 'utf8');
+  const matches = text.match(ANT_SELECTOR_PATTERN);
+  if (!matches) continue;
+  antSelectorOccurrencesInModules += matches.length;
+  antSelectorFilesInModules.add(file);
+}
+
 const errors = [];
 if (importantCount > MAX_IMPORTANT_COUNT) {
   errors.push(`!important count exceeded: ${importantCount} > ${MAX_IMPORTANT_COUNT}`);
@@ -61,6 +76,14 @@ if (importantCount > MAX_IMPORTANT_COUNT) {
 if (antViolations.length > 0) {
   errors.push('Global .ant-* selectors are forbidden in shared styles:');
   errors.push(...antViolations);
+}
+if (antSelectorOccurrencesInModules > MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES) {
+  errors.push(
+    `.ant-* selector occurrences in CSS Modules exceeded: ${antSelectorOccurrencesInModules} > ${MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES}`
+  );
+  errors.push(
+    `Files with .ant-* selectors in CSS Modules: ${antSelectorFilesInModules.size} (run rg \"\\\\.ant-\" bot-mox/src --glob \"*.module.css\" for details)`
+  );
 }
 
 if (errors.length > 0) {
@@ -71,4 +94,6 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-console.log(`Style guardrails passed (!important=${importantCount}, max=${MAX_IMPORTANT_COUNT})`);
+console.log(
+  `Style guardrails passed (!important=${importantCount}, max=${MAX_IMPORTANT_COUNT}; antSelectorsInModules=${antSelectorOccurrencesInModules}, max=${MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES})`
+);
