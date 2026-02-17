@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T14:37:48Z**
+Last updated (UTC): **2026-02-17T14:40:59Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -391,6 +391,7 @@ Evidence:
 13. `bot-mox/src/components/vm/VMOperationLog.tsx` (dialog ARIA + Escape close + keyboard-accessible task rows)
 14. `bot-mox/src/components/vm/VMOperationLog.module.css` (focus-visible ring for task rows)
 15. `docs/DEV-WORKFLOW.md` (link to styling conventions)
+16. `bot-mox/src/components/bot/lifeStages/lifeStages.module.css` (prefers-reduced-motion support)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)

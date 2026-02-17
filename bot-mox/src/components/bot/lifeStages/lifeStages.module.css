@@ -104,6 +104,12 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .stage-content {
+    animation: none;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
