@@ -201,12 +201,6 @@
   font-size: 10px;
 }
 
-.vm-operation-log-empty {
-  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
-  text-align: center;
-  padding: 14px;
-}
-
 .vm-log-modal-overlay {
   position: fixed;
   inset: 0;

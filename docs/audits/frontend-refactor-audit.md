@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T21:12:21Z**
+Last updated (UTC): **2026-02-17T21:20:07Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -415,6 +415,10 @@ Evidence:
 37. `bot-mox/src/pages/datacenter/DatacenterPage.module.css` (dead CSS: removed unused selectors)
 38. `.gitignore` (ignore local audit scratch report)
 39. `bot-mox/src/pages/bot/BotPage.module.css` (dead CSS: removed unused selector group)
+40. `scripts/report-unused-css-module-classes.js` (dead CSS: improved report to ignore :global selectors and template-string modifier usage)
+41. `bot-mox/src/components/notes/NotesComponents.module.css` (dead CSS: removed unused markdown preview/splitview styles)
+42. `bot-mox/src/components/vm/VMOperationLog.module.css` (dead CSS: removed unused selector)
+43. `bot-mox/src/pages/vms/VMsPage.module.css` (dead CSS: removed unused selector)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)

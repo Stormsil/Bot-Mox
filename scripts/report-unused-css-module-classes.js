@@ -56,6 +56,15 @@ for (const file of codeFiles) {
   }
 }
 
+// Detect patterns like `foo--${bar}` in template strings. If present, any CSS module
+// class starting with `foo--` is treated as potentially used.
+const dynamicModifierPrefixes = new Set();
+const dynamicModifierPattern = /([a-zA-Z0-9_-]+--)\$\{/g;
+let dynamicMatch;
+while ((dynamicMatch = dynamicModifierPattern.exec(codeBlob)) !== null) {
+  dynamicModifierPrefixes.add(dynamicMatch[1]);
+}
+
 const classNamePattern = /\.([_a-zA-Z][-_a-zA-Z0-9]*)/g;
 
 let totalCandidates = 0;
@@ -67,6 +76,15 @@ for (const cssFile of moduleCssFiles) {
   let match;
 
   while ((match = classNamePattern.exec(cssText)) !== null) {
+    const startIndex = match.index;
+
+    // Ignore global selector references like :global(.wmde-markdown) which are applied
+    // by third-party libs and won't be referenced by local TS/TSX code.
+    const lookbehind = cssText.slice(Math.max(0, startIndex - 24), startIndex);
+    if (/:global\(\s*$/.test(lookbehind) || /::global\(\s*$/.test(lookbehind)) {
+      continue;
+    }
+
     classNames.add(match[1]);
   }
 
@@ -75,7 +93,19 @@ for (const cssFile of moduleCssFiles) {
     // If the token appears anywhere in code, treat it as potentially used.
     // This is conservative: common names like "root" will never be flagged.
     const tokenRegex = buildTokenRegex(className);
-    if (!tokenRegex.test(codeBlob)) {
+    const isUsedByLiteral = tokenRegex.test(codeBlob);
+
+    let isUsedByDynamicModifier = false;
+    if (!isUsedByLiteral && className.includes('--') && dynamicModifierPrefixes.size > 0) {
+      for (const prefix of dynamicModifierPrefixes) {
+        if (className.startsWith(prefix)) {
+          isUsedByDynamicModifier = true;
+          break;
+        }
+      }
+    }
+
+    if (!isUsedByLiteral && !isUsedByDynamicModifier) {
       unused.push(className);
     }
   }
@@ -92,6 +122,9 @@ if (reports.length === 0) {
 }
 
 console.log('[unused-css] Candidates (manual review required):');
+if (dynamicModifierPrefixes.size > 0) {
+  console.log(`[unused-css] Dynamic modifier prefixes detected: ${dynamicModifierPrefixes.size}`);
+}
 for (const report of reports) {
   console.log(`- ${report.file}`);
   for (const className of report.unused) {
@@ -99,4 +132,3 @@ for (const report of reports) {
   }
 }
 console.log(`[unused-css] Total candidates: ${totalCandidates}`);
-

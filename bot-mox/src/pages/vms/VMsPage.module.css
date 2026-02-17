@@ -83,17 +83,6 @@
   border-color: var(--vmx-border-strong);
 }
 
-.vm-generator-workspace--resizing .vm-generator-service-frame {
-  pointer-events: none;
-}
-
-.vm-generator-service-frame {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: var(--vmx-panel);
-}
-
 .vm-generator-main {
   height: 100%;
   min-height: 0;
