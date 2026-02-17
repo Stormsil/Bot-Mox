@@ -235,26 +235,38 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           {/* Переключатель режимов */}
           <div className={styles['editor-mode-switcher']}>
             <Button
-              type={editorMode === 'edit' ? 'primary' : 'text'}
+              type="text"
               icon={<EditOutlined />}
               onClick={() => setEditorMode('edit')}
               size="small"
+              className={cx(
+                styles['editor-mode-button'],
+                editorMode === 'edit' && styles['editor-mode-button-active']
+              )}
             >
               Edit
             </Button>
             <Button
-              type={editorMode === 'split' ? 'primary' : 'text'}
+              type="text"
               icon={<SplitCellsOutlined />}
               onClick={() => setEditorMode('split')}
               size="small"
+              className={cx(
+                styles['editor-mode-button'],
+                editorMode === 'split' && styles['editor-mode-button-active']
+              )}
             >
               Split
             </Button>
             <Button
-              type={editorMode === 'preview' ? 'primary' : 'text'}
+              type="text"
               icon={<EyeOutlined />}
               onClick={() => setEditorMode('preview')}
               size="small"
+              className={cx(
+                styles['editor-mode-button'],
+                editorMode === 'preview' && styles['editor-mode-button-active']
+              )}
             >
               Preview
             </Button>

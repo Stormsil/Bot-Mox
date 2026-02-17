@@ -12,7 +12,7 @@
 }
 
 .note-md-editor-root :global(.w-md-editor) {
-  background-color: var(--boxmox-color-surface-panel) !important;
+  background-color: var(--boxmox-color-surface-panel);
   border: 1px solid var(--boxmox-color-border-default);
   border-radius: var(--radius-md);
   box-shadow: none;
@@ -34,8 +34,8 @@
 }
 
 .note-md-editor-root :global(.w-md-editor-toolbar) {
-  background-color: var(--boxmox-color-surface-muted) !important;
-  border-bottom: 1px solid var(--boxmox-color-border-default) !important;
+  background-color: var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .note-md-editor-root :global(.w-md-editor-toolbar) li > button {
@@ -43,40 +43,40 @@
 }
 
 .note-md-editor-root :global(.w-md-editor-toolbar) li > button:hover {
-  background-color: var(--boxmox-color-surface-hover) !important;
+  background-color: var(--boxmox-color-surface-hover);
   color: var(--boxmox-color-text-primary);
 }
 
 .note-md-editor-root :global(.w-md-editor-content) {
-  background-color: var(--boxmox-color-surface-panel) !important;
+  background-color: var(--boxmox-color-surface-panel);
 }
 
 .note-md-editor-root :global(.w-md-editor-text) {
-  background-color: var(--boxmox-color-surface-panel) !important;
+  background-color: var(--boxmox-color-surface-panel);
   color: var(--boxmox-color-text-primary);
   padding: 14px 16px;
-  font-size: 14px !important;
-  line-height: 1.6 !important;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .note-md-editor-root :global(.w-md-editor-text-pre),
 .note-md-editor-root :global(.w-md-editor-text-input),
 .note-md-editor-root :global(.w-md-editor-text) {
-  font-family: var(--font-mono, 'Roboto Mono', 'Consolas', monospace) !important;
-  font-size: 14px !important;
-  line-height: 1.6 !important;
+  font-family: var(--font-mono, 'Roboto Mono', 'Consolas', monospace);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .note-md-editor-root :global(.w-md-editor-text-pre) > code {
-  font-family: var(--font-mono, 'Roboto Mono', 'Consolas', monospace) !important;
-  font-size: 14px !important;
-  line-height: 1.6 !important;
+  font-family: var(--font-mono, 'Roboto Mono', 'Consolas', monospace);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .note-md-editor-root :global(.w-md-editor-text-input) {
-  color: var(--boxmox-color-text-primary) !important;
-  background-color: transparent !important;
-  caret-color: var(--boxmox-color-text-primary) !important;
+  color: var(--boxmox-color-text-primary);
+  background-color: transparent;
+  caret-color: var(--boxmox-color-text-primary);
 }
 
 .note-md-editor-root :global(.w-md-editor-text-input)::selection {
@@ -84,19 +84,19 @@
 }
 
 .note-md-editor-root :global(.w-md-editor-preview) {
-  box-shadow: none !important;
-  background-color: var(--boxmox-color-surface-panel) !important;
+  box-shadow: none;
+  background-color: var(--boxmox-color-surface-panel);
 }
 
 .note-md-editor-root :global(.w-md-editor-preview) :global(.wmde-markdown) {
-  background-color: transparent !important;
-  color: var(--boxmox-color-text-secondary) !important;
+  background-color: transparent;
+  color: var(--boxmox-color-text-secondary);
 }
 
 .note-md-editor-root :global(.w-md-editor-preview) :global(.wmde-markdown) pre,
 .note-md-editor-root :global(.w-md-editor-preview) :global(.wmde-markdown) code {
-  background-color: var(--boxmox-color-surface-muted) !important;
-  color: var(--boxmox-color-text-primary) !important;
+  background-color: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-primary);
 }
 
 .notes-md-preview {
@@ -121,18 +121,18 @@
   border-radius: var(--radius-md);
 }
 
-.editor-mode-switcher :global(.ant-btn) {
+.editor-mode-button {
   border: none;
   background: transparent;
   color: var(--boxmox-color-text-muted);
 }
 
-.editor-mode-switcher :global(.ant-btn):hover {
+.editor-mode-button:hover {
   color: var(--boxmox-color-text-secondary);
   background-color: var(--boxmox-color-surface-hover);
 }
 
-.editor-mode-switcher :global(.ant-btn-primary) {
+.editor-mode-button-active {
   background-color: var(--boxmox-color-surface-panel);
   color: var(--boxmox-color-text-primary);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -378,11 +378,11 @@
    Interactive Checkbox Styles for Preview
    ============================================ */
 
-.markdown-checkbox-item {
+.markdown-preview li.markdown-checkbox-item {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  list-style: none !important;
+  list-style: none;
   margin-left: -24px;
   padding: 2px 0;
   pointer-events: auto;
@@ -538,7 +538,7 @@
 }
 
 :global(.monaco-editor)-wrapper :global(.monaco-editor) {
-  background-color: var(--boxmox-color-surface-panel) !important;
+  background-color: var(--boxmox-color-surface-panel);
 }
 
 :global(.monaco-editor)-wrapper :global(.monaco-editor) :global(.overflow-guard) {
@@ -913,21 +913,7 @@
   min-height: 200px;
 }
 
-.note-add-block {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--boxmox-color-border-default);
-}
 
-.note-add-block :global(.ant-btn) {
-  color: var(--boxmox-color-text-muted);
-  border-color: var(--boxmox-color-border-default);
-}
-
-.note-add-block :global(.ant-btn):hover {
-  color: var(--boxmox-color-text-secondary);
-  border-color: var(--boxmox-color-border-subtle);
-}
 
 .note-save-indicator {
   position: fixed;
@@ -977,19 +963,22 @@
   border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
-.note-sidebar-search :global(.ant-input) {
+.note-sidebar-search-affix {
   background-color: var(--boxmox-color-surface-muted);
   border-color: var(--boxmox-color-border-default);
+}
+
+.note-sidebar-search-affix:hover,
+.note-sidebar-search-affix:focus-within {
+  border-color: var(--boxmox-color-brand-primary);
+}
+
+.note-sidebar-search-input {
   color: var(--boxmox-color-text-primary);
 }
 
-.note-sidebar-search :global(.ant-input)::placeholder {
+.note-sidebar-search-input::placeholder {
   color: var(--boxmox-color-text-strong);
-}
-
-.note-sidebar-search :global(.ant-input):hover,
-.note-sidebar-search :global(.ant-input):focus {
-  border-color: var(--boxmox-color-brand-primary);
 }
 
 .note-sidebar-list {
@@ -999,14 +988,11 @@
   overflow-x: hidden;
 }
 
-.note-sidebar-list :global(.ant-list-items) {
+.note-sidebar-list-items {
   width: 100%;
 }
 
-.note-sidebar-list :global(.ant-list-item) {
-  padding: 0 !important;
-  border: none !important;
-  display: block;
+.note-sidebar-list-row {
   width: 100%;
 }
 
@@ -1023,7 +1009,7 @@
   padding: 48px 16px;
 }
 
-.note-sidebar-empty :global(.ant-empty-description) {
+.note-sidebar-empty-description {
   color: var(--boxmox-color-text-muted);
 }
 
@@ -1040,13 +1026,7 @@
   box-sizing: border-box;
 }
 
-.note-list-item :global(.ant-card-body) {
-  flex: 1;
-  padding: 12px 16px;
-  overflow: hidden;
-  width: 100%;
-  box-sizing: border-box;
-}
+
 
 .note-list-item:hover {
   border-color: var(--boxmox-color-border-default);
@@ -1251,12 +1231,7 @@
   border-radius: 4px;
 }
 
-.note-sidebar.collapsed .note-list-item :global(.ant-card-body) {
-  padding: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+.note-sidebar.collapsed 
 
 .note-list-item-collapsed {
   display: flex;
