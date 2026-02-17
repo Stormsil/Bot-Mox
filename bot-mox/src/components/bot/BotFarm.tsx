@@ -69,40 +69,54 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
     <div className={styles['bot-farm']}>
       <Row gutter={[16, 16]}>
         <Col span={8}>
-          <Card className={styles['farm-stat-card']}>
+          <Card className={styles['farm-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title="Total Gold"
+              title={<span className={styles.farmStatTitle}>Total Gold</span>}
               value={farmStats.total_gold.toLocaleString()}
               suffix="g"
               prefix={<DollarOutlined />}
-              valueStyle={{ color: '#ffd700' }}
+              valueStyle={{ color: '#ffd700', fontSize: 'var(--text-xl)', fontWeight: 600 }}
             />
           </Card>
         </Col>
         <Col span={8}>
-          <Card className={styles['farm-stat-card']}>
+          <Card className={styles['farm-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title="Gold per Hour"
+              title={<span className={styles.farmStatTitle}>Gold per Hour</span>}
               value={farmStats.gold_per_hour.toFixed(1)}
               suffix="g/h"
               prefix={<ThunderboltOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: '#52c41a', fontSize: 'var(--text-xl)', fontWeight: 600 }}
             />
           </Card>
         </Col>
         <Col span={8}>
-          <Card className={styles['farm-stat-card']}>
+          <Card className={styles['farm-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title="Session Time"
+              title={<span className={styles.farmStatTitle}>Session Time</span>}
               value={formatDuration(sessionDuration)}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: '#1890ff', fontSize: 'var(--text-xl)', fontWeight: 600 }}
             />
           </Card>
         </Col>
       </Row>
 
-      <Card className={styles['inventory-card']} title="Inventory">
+      <Card
+        className={styles['inventory-card']}
+        title="Inventory"
+        styles={{
+          header: {
+            background: 'var(--boxmox-color-surface-muted)',
+            borderColor: 'var(--boxmox-color-border-default)',
+          },
+          title: {
+            color: 'var(--boxmox-color-text-primary)',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 600,
+          },
+        }}
+      >
         <List
           dataSource={inventory}
           renderItem={(item) => (
