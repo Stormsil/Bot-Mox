@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T22:35:52Z**
+Last updated (UTC): **2026-02-17T22:39:18Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -429,6 +429,7 @@ Evidence:
 47. `bot-mox/src/components/bot/BotSummary.module.css` (a11y: focus-visible states for interactive summary cards)
 48. `docs/frontend/STYLING.md` (new-page skeleton + regression matrix for themed pages)
 49. `docs/DEV-WORKFLOW.md` (explicit frontend checklist reference for every page change)
+50. `bot-mox/src/components/notes/CheckboxBlock.tsx` (a11y: remove interactive wrapper click handler; handle checkbox click on native control)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)
