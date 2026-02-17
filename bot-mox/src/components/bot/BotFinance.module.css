@@ -11,11 +11,7 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.finance-stat-card :global(.ant-card-body) {
-  padding: 20px;
-}
-
-.finance-stat-card :global(.ant-statistic-title) {
+.statTitle {
   color: var(--boxmox-color-text-muted);
   font-size: var(--text-xs);
   text-transform: uppercase;
@@ -23,13 +19,7 @@
   margin-bottom: 8px;
 }
 
-.finance-stat-card :global(.ant-statistic-content) {
-  font-family: var(--font-condensed);
-  font-size: var(--text-2xl);
-  font-weight: 600;
-}
-
-.finance-stat-card :global(.ant-statistic-content-prefix) {
+.statPrefix {
   margin-right: 8px;
   font-size: var(--text-lg);
 }
@@ -53,12 +43,6 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.costs-card :global(.ant-card-head),
-.roi-card :global(.ant-card-head) {
-  background: var(--boxmox-color-surface-muted);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-}
-
 .cost-item,
 .roi-item {
   display: flex;
@@ -77,15 +61,26 @@
   border-bottom: none;
 }
 
-.cost-item :global(.ant-typography),
-.roi-item :global(.ant-typography) {
+.lineLabel {
   color: var(--boxmox-color-text-secondary);
   font-size: var(--text-sm);
 }
 
-.cost-item :global(.ant-typography-strong),
-.roi-item :global(.ant-typography-strong) {
+.lineValue {
   color: var(--boxmox-color-text-primary);
+  font-weight: 600;
+}
+
+.lineLabelStrong {
+  color: var(--boxmox-color-text-primary);
+  font-weight: 700;
+  font-size: var(--text-md);
+}
+
+.lineValueStrong {
+  color: var(--boxmox-color-text-primary);
+  font-weight: 700;
+  font-size: var(--text-md);
 }
 
 .cost-divider,
@@ -95,28 +90,18 @@
   margin: 8px 0;
 }
 
-.cost-item.total :global(.ant-typography),
-.roi-item.total :global(.ant-typography) {
-  font-size: var(--text-md);
-}
-
-.total-amount {
-  color: var(--boxmox-color-brand-primary) !important;
+.totalAmount {
+  color: var(--boxmox-color-brand-primary);
 }
 
 .positive {
-  color: var(--boxmox-color-status-success) !important;
+  color: var(--boxmox-color-status-success);
 }
 
 /* Transactions Table */
 .transactions-card {
   background: var(--boxmox-color-surface-panel);
   border: 1px solid var(--boxmox-color-border-default);
-}
-
-.transactions-card :global(.ant-card-head) {
-  background: var(--boxmox-color-surface-muted);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .transactions-header {
@@ -130,27 +115,24 @@
   background: transparent;
 }
 
-.transactions-table :global(.ant-table) {
-  background: transparent;
-}
-
-.transactions-table :global(.ant-table-thead) > tr > th {
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-primary);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+.tableHeader {
   font-weight: 600;
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.transactions-table :global(.ant-table-tbody) > tr > td {
+.tableCell {
   border-bottom: 1px solid var(--boxmox-color-surface-muted);
   color: var(--boxmox-color-text-secondary);
 }
 
-.transactions-table :global(.ant-table-tbody) > tr:hover > td {
+.tableRow:hover .tableCell {
   background: var(--boxmox-color-surface-hover);
+}
+
+.tablePagination {
+  margin-top: 16px;
 }
 
 .transaction-type-tag {
@@ -179,22 +161,4 @@
 .amount-expense {
   color: var(--boxmox-color-status-danger);
   font-weight: 500;
-}
-
-.transactions-table :global(.ant-pagination) {
-  margin-top: 16px;
-}
-
-.transactions-table :global(.ant-pagination-item) {
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-}
-
-.transactions-table :global(.ant-pagination-item-active) {
-  background: var(--boxmox-color-brand-primary);
-  border-color: var(--boxmox-color-brand-primary);
-}
-
-.transactions-table :global(.ant-pagination-item-active) a {
-  color: var(--boxmox-color-text-primary);
 }

@@ -102,6 +102,14 @@ function buildThemeConfig(
         colorBgContainer: palette['--boxmox-color-surface-panel'],
         headerBg: palette['--boxmox-color-surface-muted'],
       },
+      Pagination: {
+        itemBg: palette['--boxmox-color-surface-muted'],
+        itemActiveBg: palette['--boxmox-color-brand-primary'],
+        itemActiveColor: palette['--boxmox-color-brand-contrast'],
+        itemActiveColorHover: palette['--boxmox-color-brand-contrast'],
+        itemLinkBg: palette['--boxmox-color-surface-muted'],
+        itemInputBg: palette['--boxmox-color-surface-muted'],
+      },
       Input: {
         colorBgContainer: palette['--boxmox-color-surface-muted'],
         hoverBorderColor: palette['--boxmox-color-brand-primary'],
