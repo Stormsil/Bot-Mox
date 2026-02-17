@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T14:18:41Z**
+Last updated (UTC): **2026-02-17T14:24:38Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -373,7 +373,7 @@ Evidence:
 - [ ] `WIP` Remove dead CSS and obsolete variables.
 - [ ] `WIP` Final accessibility/contrast pass (focus-visible + keyboard navigation).
 - [ ] `TODO` Final performance pass for background mode.
-- [ ] `TODO` Update dev docs for adding new themed pages.
+- [ ] `WIP` Update dev docs for adding new themed pages.
 
 Evidence:
 1. `bot-mox/src/components/notes/NotesComponents.module.css` (focus-within ring for contenteditable blocks)
@@ -385,6 +385,7 @@ Evidence:
 7. `bot-mox/src/components/vm/settingsForm/UnattendTab.tsx` (removed unused CSS module class hook)
 8. `bot-mox/src/components/bot/BotFinance.module.css` (removed comment-only marker class)
 9. `bot-mox/src/components/bot/BotFinance.tsx` (removed unused CSS module class hook)
+10. `docs/frontend/STYLING.md` (styling conventions and page checklist)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)
