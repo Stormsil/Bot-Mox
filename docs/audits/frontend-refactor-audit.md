@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T22:24:47Z**
+Last updated (UTC): **2026-02-17T22:30:23Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -423,6 +423,8 @@ Evidence:
 41. `bot-mox/src/components/notes/NotesComponents.module.css` (dead CSS: removed unused markdown preview/splitview styles)
 42. `bot-mox/src/components/vm/VMOperationLog.module.css` (dead CSS: removed unused selector)
 43. `bot-mox/src/pages/vms/VMsPage.module.css` (dead CSS: removed unused selector)
+44. `bot-mox/src/components/layout/ResourceTree.tsx` (a11y: keyboard-accessible resizer + ARIA separator semantics)
+45. `bot-mox/src/components/layout/ResourceTree.module.css` (a11y: focus-visible and hover affordance for resizer handle)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)

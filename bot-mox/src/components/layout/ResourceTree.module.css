@@ -96,6 +96,20 @@
   height: 100%;
   cursor: col-resize;
   z-index: 5;
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.resource-tree-resizer:hover {
+  background: color-mix(in srgb, var(--boxmox-color-brand-primary) 35%, transparent);
+}
+
+.resource-tree-resizer:focus-visible {
+  background: color-mix(in srgb, var(--boxmox-color-brand-primary) 45%, transparent);
+  outline: 2px solid var(--boxmox-color-brand-primary);
+  outline-offset: 1px;
 }
 
 .resource-tree-container.resizing {
