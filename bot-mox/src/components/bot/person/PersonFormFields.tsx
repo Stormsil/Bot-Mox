@@ -103,7 +103,7 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
         <Select
           value={selectedCountry}
           onChange={onSelectedCountryChange}
-          className={styles['country-select']}
+
           style={{ width: 120 }}
           options={availableCountries.map((country) => ({ value: country, label: country }))}
           disabled={manualEditLocked}

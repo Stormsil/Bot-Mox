@@ -17,7 +17,7 @@ export const PersonCardTitle: React.FC<PersonCardTitleProps> = ({ hasIncompleteD
     <span>Person Information</span>
     {hasIncompleteData && (
       <Tooltip title="Some fields are empty. Please fill in all person data.">
-        <Badge dot color="orange" className={styles['incomplete-badge']}>
+        <Badge dot color="orange">
           <ExclamationCircleOutlined className={styles['warning-icon']} />
         </Badge>
       </Tooltip>
@@ -30,11 +30,15 @@ export const PersonStatusAlerts: React.FC<PersonStatusAlertsProps> = ({ hasIncom
     {hasIncompleteData && (
       <Alert
         className={styles['config-incomplete-alert']}
-        message="Incomplete Person Data"
-        description="Some fields are empty. Please fill in all person data or use the Generate button to create random data."
+        message={<span className={styles['alert-title']}>Incomplete Person Data</span>}
+        description={
+          <span className={styles['alert-description']}>
+            Some fields are empty. Please fill in all person data or use the Generate button to create random data.
+          </span>
+        }
         type="warning"
         showIcon
-        icon={<ExclamationCircleOutlined />}
+        icon={<ExclamationCircleOutlined className={styles['alert-icon']} />}
         style={{ marginBottom: '16px' }}
       />
     )}
@@ -52,7 +56,7 @@ export const PersonStatusAlerts: React.FC<PersonStatusAlertsProps> = ({ hasIncom
         }
         type="info"
         showIcon
-        style={{ marginBottom: '16px' }}
+        style={{ marginBottom: '10px', padding: '6px 10px' }}
       />
     )}
   </>
