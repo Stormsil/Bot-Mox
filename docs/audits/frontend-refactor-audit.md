@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T00:22:31Z**
+Last updated (UTC): **2026-02-17T01:15:51Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -42,13 +42,13 @@ Date: 2026-02-16
 
 Date: 2026-02-17
 
-1. `!important` count in frontend: **107**
+1. `!important` count in frontend: **98**
 2. Global `.ant-*` selectors in `bot-mox/src/styles/global.css`: **NO**
 3. Theme runtime provider introduced and wired into app shell: **YES**
 4. Theme visual background API + UI + shell layers: **YES**
 5. Theme typography + shape (radius) persisted + applied: **YES**
 6. VM domain components migrated to CSS Modules: **20** (`VMQueuePanel`, `VMOperationLog`, `VMSettingsForm`, `ProxmoxTab`, `ProjectResourcesSection`, `UnattendTab`, `PlaybookTab`, `ProxmoxSection`, `SshSection`, `ServiceUrlsSection`, `SecretField`, `SettingsActions`, `VMList`, `VMStatusBar`, `VMConfigPreview`, `VMServicesPanel`, `VMCommandPanel`, `VMListPage`, `VMsPage`, `VMServicePage`)
-7. Remaining `.ant-*` selectors in CSS Modules: **281** (across **32** files)
+7. Remaining `.ant-*` selectors in CSS Modules: **269** (across **30** files)
 
 ## Target KPIs
 
@@ -62,7 +62,7 @@ Date: 2026-02-17
 
 ## Phase 0 — Guardrails and Baseline
 
-- [x] `GREEN` Add style debt guard checks (new global `.ant-*`, new `!important`).
+- [x] `GREEN` Add style debt guard checks (new global `.ant-*`, new `!important`, cap `.ant-*` selectors in CSS Modules).
 - [ ] `TODO` Capture page-level visual baseline screenshots.
 - [x] `GREEN` Create roadmap and evergreen audit docs.
 

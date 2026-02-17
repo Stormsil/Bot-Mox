@@ -12,19 +12,6 @@
   margin-bottom: 16px;
 }
 
-.license-card :global(.ant-card-head) {
-  background: var(--boxmox-color-surface-muted);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-}
-
-.license-card :global(.ant-card-head-title) {
-  color: var(--boxmox-color-text-primary);
-}
-
-.license-card :global(.ant-card-extra) {
-  padding: 12px 0;
-}
-
 .license-content {
   display: flex;
   flex-direction: column;
@@ -75,96 +62,6 @@
   margin-top: 8px;
   padding-top: 16px;
   border-top: 1px solid var(--boxmox-color-border-default);
-}
-
-/* Empty state actions */
-.bot-license :global(.ant-empty) {
-  padding: 24px 0;
-}
-
-.bot-license :global(.ant-empty-description) {
-  margin-bottom: 16px;
-}
-
-/* Modal styles */
-.bot-license :global(.ant-modal-content) {
-  background: var(--boxmox-color-surface-panel);
-}
-
-.bot-license :global(.ant-modal-header) {
-  background: var(--boxmox-color-surface-muted);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-}
-
-.bot-license :global(.ant-modal-title) {
-  color: var(--boxmox-color-text-primary);
-}
-
-.bot-license :global(.ant-modal-footer) {
-  border-top: 1px solid var(--boxmox-color-border-default);
-}
-
-/* Form styles */
-.bot-license :global(.ant-form-item-label > label) {
-  color: var(--boxmox-color-text-secondary);
-}
-
-.bot-license :global(.ant-input),
-.bot-license :global(.ant-select-selector),
-.bot-license :global(.ant-picker) {
-  background: var(--boxmox-color-surface-muted) !important;
-  border-color: var(--boxmox-color-border-default) !important;
-  color: var(--boxmox-color-text-primary) !important;
-}
-
-.bot-license :global(.ant-input::placeholder),
-.bot-license :global(.ant-select-selection-placeholder) {
-  color: var(--boxmox-color-text-muted) !important;
-}
-
-/* AutoComplete dropdown */
-.bot-license :global(.ant-select-dropdown) {
-  background: var(--boxmox-color-surface-panel) !important;
-  border: 1px solid var(--boxmox-color-border-default);
-}
-
-.bot-license :global(.ant-select-item) {
-  color: var(--boxmox-color-text-primary) !important;
-}
-
-.bot-license :global(.ant-select-item-option-active) {
-  background: var(--boxmox-color-surface-muted) !important;
-}
-
-.bot-license :global(.ant-select-item-option-selected) {
-  background: var(--boxmox-color-brand-primary) !important;
-  color: white !important;
-}
-
-/* DatePicker dropdown */
-.bot-license :global(.ant-picker-dropdown) {
-  background: var(--boxmox-color-surface-panel);
-}
-
-.bot-license :global(.ant-picker-panel) {
-  background: var(--boxmox-color-surface-panel);
-  border-color: var(--boxmox-color-border-default);
-}
-
-.bot-license :global(.ant-picker-cell) {
-  color: var(--boxmox-color-text-primary);
-}
-
-.bot-license :global(.ant-picker-cell-in-view) {
-  color: var(--boxmox-color-text-primary);
-}
-
-.bot-license :global(.ant-picker-cell:hover:not(.ant-picker-cell-selected):not(.ant-picker-cell-disabled) .ant-picker-cell-inner) {
-  background: var(--boxmox-color-surface-muted);
-}
-
-.bot-license :global(.ant-picker-cell-selected .ant-picker-cell-inner) {
-  background: var(--boxmox-color-brand-primary);
 }
 
 /* Responsive */
