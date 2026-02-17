@@ -22,20 +22,16 @@
   gap: 12px;
 }
 
-.generator-row :global(.ant-form-item) {
+.formItem {
+  margin-bottom: 12px;
+}
+
+.rowItem {
   flex: 1;
   margin-bottom: 8px;
 }
 
-.schedule-generator-form :global(.ant-form-item) {
-  margin-bottom: 12px;
-}
-
-.schedule-generator-form :global(.ant-form-item-label) {
-  padding-bottom: 4px;
-}
-
-.schedule-generator-form :global(.ant-form-item-label) label {
+.formLabel {
   color: var(--boxmox-color-text-secondary);
   font-size: 11px;
 }
@@ -118,8 +114,19 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-.template-item :global(.ant-list-item-action) {
-  margin-left: 12px;
+.template-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.template-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .template-apply-btn {

@@ -38,10 +38,6 @@
   padding: 48px;
 }
 
-.empty :global(.ant-empty-description) {
-  color: var(--boxmox-color-text-muted);
-}
-
 .emptyContent {
   text-align: center;
 }

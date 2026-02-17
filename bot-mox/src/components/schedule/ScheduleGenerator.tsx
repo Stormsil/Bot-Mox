@@ -162,7 +162,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
         <Form layout="vertical" size="small">
           <div className={styles['generator-section-title']}>Time Window 1</div>
           <div className={styles['generator-row']}>
-            <Form.Item label="Start">
+            <Form.Item
+              className={[styles.formItem, styles.rowItem].join(' ')}
+              label={<span className={styles.formLabel}>Start</span>}
+            >
               <TimePicker
                 value={dayjs(params.startTime, 'HH:mm')}
                 onChange={(time) => updateParam('startTime', time?.format('HH:mm') || '09:00')}
@@ -171,7 +174,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
                 allowClear={false}
               />
             </Form.Item>
-            <Form.Item label="End">
+            <Form.Item
+              className={[styles.formItem, styles.rowItem].join(' ')}
+              label={<span className={styles.formLabel}>End</span>}
+            >
               <TimePicker
                 value={dayjs(params.endTime, 'HH:mm')}
                 onChange={(time) => updateParam('endTime', time?.format('HH:mm') || '23:30')}
@@ -193,7 +199,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
 
           {params.useSecondWindow && (
             <div className={styles['generator-row']}>
-              <Form.Item label="Start 2">
+              <Form.Item
+                className={[styles.formItem, styles.rowItem].join(' ')}
+                label={<span className={styles.formLabel}>Start 2</span>}
+              >
                 <TimePicker
                   value={dayjs(params.startTime2 || '00:00', 'HH:mm')}
                   onChange={(time) => updateParam('startTime2', time?.format('HH:mm') || '00:00')}
@@ -202,7 +211,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
                   allowClear={false}
                 />
               </Form.Item>
-              <Form.Item label="End 2">
+              <Form.Item
+                className={[styles.formItem, styles.rowItem].join(' ')}
+                label={<span className={styles.formLabel}>End 2</span>}
+              >
                 <TimePicker
                   value={dayjs(params.endTime2 || '02:00', 'HH:mm')}
                   onChange={(time) => updateParam('endTime2', time?.format('HH:mm') || '02:00')}
@@ -216,9 +228,14 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
 
           <Divider style={{ margin: '8px 0' }} />
 
-          <Form.Item 
-            className={styles['highlight-param']}
-            label={`Target Active Time: ${params.targetActiveMinutes} min (${Math.floor(params.targetActiveMinutes / 60)}h ${params.targetActiveMinutes % 60}m)`}
+          <Form.Item
+            className={[styles.formItem, styles['highlight-param']].join(' ')}
+            label={(
+              <span className={styles.formLabel}>
+                Target Active Time: {params.targetActiveMinutes} min ({Math.floor(params.targetActiveMinutes / 60)}h{' '}
+                {params.targetActiveMinutes % 60}m)
+              </span>
+            )}
           >
             <InputNumber
               min={CONSTRAINTS.targetActiveMinutes.min}
@@ -232,7 +249,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           </Form.Item>
 
           <div className={styles['generator-row']}>
-            <Form.Item label="Min Session">
+            <Form.Item
+              className={[styles.formItem, styles.rowItem].join(' ')}
+              label={<span className={styles.formLabel}>Min Session</span>}
+            >
               <InputNumber
                 min={CONSTRAINTS.minSessionMinutes.min}
                 max={CONSTRAINTS.minSessionMinutes.max}
@@ -242,7 +262,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
                 addonAfter="m"
               />
             </Form.Item>
-            <Form.Item label="Min Break">
+            <Form.Item
+              className={[styles.formItem, styles.rowItem].join(' ')}
+              label={<span className={styles.formLabel}>Min Break</span>}
+            >
               <InputNumber
                 min={CONSTRAINTS.minBreakMinutes.min}
                 max={CONSTRAINTS.minBreakMinutes.max}
@@ -254,11 +277,13 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
             </Form.Item>
           </div>
 
-          <Form.Item 
-            className={[styles['highlight-param'], styles['randomness-param']].join(' ')}
+          <Form.Item
+            className={[styles.formItem, styles['highlight-param'], styles['randomness-param']].join(' ')}
             label={
               <Space>
-                <span>Randomization Factor: ±{params.randomOffsetMinutes} min</span>
+                <span className={styles.formLabel}>
+                  Randomization Factor: ±{params.randomOffsetMinutes} min
+                </span>
                 <Tooltip title="Adds randomness to every session boundary (+/-) to ensure uniqueness.">
                   <SettingOutlined style={{ fontSize: '10px' }} />
                 </Tooltip>
@@ -322,36 +347,38 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
             renderItem={item => (
               <List.Item 
                 className={styles['template-item']}
-                actions={[
-                  <Button 
-                    type="primary"
-                    size="small"
-                    className={styles['template-apply-btn']}
-                    icon={<ThunderboltOutlined />}
-                    onClick={() => handleApplyTemplate(item)}
-                  >
-                    Apply
-                  </Button>,
-                  <Space size={0}>
-                    <TableActionButton
-                      icon={<FolderOpenOutlined />}
-                      onClick={() => handleLoadTemplate(item)}
-                      tooltip="Load parameters"
-                    />
-                    <TableActionButton
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={(e) => handleDeleteTemplate(e as React.MouseEvent, item.id)}
-                      tooltip="Delete template"
-                    />
-                  </Space>
-                ]}
               >
-                <div className={styles['template-info']}>
-                  <div className={styles['template-name']}>{item.name}</div>
-                  <div className={styles['template-details']}>
-                    {Math.floor(item.params.targetActiveMinutes / 60)}h {item.params.targetActiveMinutes % 60}m 
-                    {item.params.useSecondWindow ? ' | 2 Windows' : ''}
+                <div className={styles['template-row']}>
+                  <div className={styles['template-info']}>
+                    <div className={styles['template-name']}>{item.name}</div>
+                    <div className={styles['template-details']}>
+                      {Math.floor(item.params.targetActiveMinutes / 60)}h {item.params.targetActiveMinutes % 60}m 
+                      {item.params.useSecondWindow ? ' | 2 Windows' : ''}
+                    </div>
+                  </div>
+                  <div className={styles['template-actions']}>
+                    <Button 
+                      type="primary"
+                      size="small"
+                      className={styles['template-apply-btn']}
+                      icon={<ThunderboltOutlined />}
+                      onClick={() => handleApplyTemplate(item)}
+                    >
+                      Apply
+                    </Button>
+                    <Space size={0}>
+                      <TableActionButton
+                        icon={<FolderOpenOutlined />}
+                        onClick={() => handleLoadTemplate(item)}
+                        tooltip="Load parameters"
+                      />
+                      <TableActionButton
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={(e) => handleDeleteTemplate(e as React.MouseEvent, item.id)}
+                        tooltip="Delete template"
+                      />
+                    </Space>
                   </div>
                 </div>
               </List.Item>
