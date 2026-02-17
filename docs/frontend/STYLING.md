@@ -74,6 +74,50 @@ Example:
    - `npm run check:styles:guardrails`
    - `npm run check:all` before committing.
 
+## New Page Skeleton (Recommended)
+
+Use this baseline when adding a new page to avoid ad-hoc styling.
+
+```tsx
+import styles from './MyPage.module.css';
+
+export function MyPage() {
+  return (
+    <section className={styles.page}>
+      <header className={styles.header}>...</header>
+      <div className={styles.content}>...</div>
+    </section>
+  );
+}
+```
+
+```css
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  color: var(--boxmox-color-text-primary);
+}
+
+.header,
+.content {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: var(--radius-md);
+}
+```
+
+## Regression Matrix For New/Changed Pages
+
+Before merge, validate:
+1. Light theme + dark theme.
+2. Visual background off + on (with a busy image).
+3. Keyboard tab order: all primary controls reachable and visibly focused.
+4. Hover/active/selected states readable on panel and muted surfaces.
+5. Empty/loading/error states still use tokenized colors (no raw literals).
+6. Native buttons use explicit `type` (`button` or intentional `submit`).
+
 ## Background Mode Safety (Do Not Skip)
 
 When `settings/theme.visual.enabled` is on, the app shell renders an image layer + overlay under the content. Pages must be resilient to that.

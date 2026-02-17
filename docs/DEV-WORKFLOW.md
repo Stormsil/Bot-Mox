@@ -165,6 +165,12 @@ git push
 
 CI на GitHub автоматически прогонит `npm run check:all`.
 
+### Для новых/измененных frontend-страниц (обязательно)
+
+Перед коммитом пройди чеклист из `docs/frontend/STYLING.md`:
+1. `Adding A New Themed Page (Checklist)`
+2. `Regression Matrix For New/Changed Pages`
+
 ## Как работает аутентификация (dev)
 
 Dev auth bypass отключен. Локальная разработка использует тот же поток авторизации, что и прод:

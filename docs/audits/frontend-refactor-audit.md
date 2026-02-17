@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T22:33:48Z**
+Last updated (UTC): **2026-02-17T22:35:52Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -377,7 +377,7 @@ Evidence:
 - [ ] `WIP` Remove dead CSS and obsolete variables.
 - [ ] `WIP` Final accessibility/contrast pass (focus-visible + keyboard navigation).
 - [ ] `WIP` Final performance pass for background mode.
-- [ ] `WIP` Update dev docs for adding new themed pages.
+- [x] `GREEN` Update dev docs for adding new themed pages.
 
 Evidence:
 1. `bot-mox/src/components/notes/NotesComponents.module.css` (focus-within ring for contenteditable blocks)
@@ -427,6 +427,8 @@ Evidence:
 45. `bot-mox/src/components/layout/ResourceTree.module.css` (a11y: focus-visible and hover affordance for resizer handle)
 46. `bot-mox/src/components/bot/summary/sections-details.tsx` (a11y: status summary cards use native button semantics)
 47. `bot-mox/src/components/bot/BotSummary.module.css` (a11y: focus-visible states for interactive summary cards)
+48. `docs/frontend/STYLING.md` (new-page skeleton + regression matrix for themed pages)
+49. `docs/DEV-WORKFLOW.md` (explicit frontend checklist reference for every page change)
 
 Checks run (this batch):
 1. `npm run check:all` (pass)
