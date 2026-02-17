@@ -204,10 +204,12 @@ export const LicensesPage: React.FC = () => {
       <Card className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.headerTitle}>
-            <Title level={4}>
+            <Title level={4} className={styles.headerHeading}>
               <KeyOutlined /> Bot Licenses
             </Title>
-            <Text type="secondary">Manage bot software licenses</Text>
+            <Text type="secondary" className={styles.headerSubtitle}>
+              Manage bot software licenses
+            </Text>
           </div>
           <Space>
             <Button
@@ -227,21 +229,34 @@ export const LicensesPage: React.FC = () => {
       <LicensesStatsPanel stats={stats} collapsed={statsCollapsed} />
 
       <Card className={styles.filters}>
-        <Space wrap>
+        <Space wrap className={styles.filtersSpace}>
           <Input
             placeholder="Search by key or bot..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
-            style={{ width: 250 }}
+            className={styles.filterSearch}
+            variant="filled"
           />
-          <Select placeholder="Status" value={statusFilter} onChange={setStatusFilter} style={{ width: 120 }}>
+          <Select
+            placeholder="Status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            className={styles.filterSelect}
+            variant="filled"
+          >
             <Option value="all">All Statuses</Option>
             <Option value="active">Active</Option>
             <Option value="expired">Expired</Option>
             <Option value="revoked">Revoked</Option>
           </Select>
-          <Select placeholder="Type" value={typeFilter} onChange={setTypeFilter} style={{ width: 120 }}>
+          <Select
+            placeholder="Type"
+            value={typeFilter}
+            onChange={setTypeFilter}
+            className={styles.filterSelect}
+            variant="filled"
+          >
             <Option value="all">All Types</Option>
             <Option value="sin">SIN</Option>
             <Option value="other">Other</Option>
@@ -262,8 +277,13 @@ export const LicensesPage: React.FC = () => {
       <Card className={styles.tableCard}>
         <Table
           dataSource={filteredLicenses}
-          columns={columns}
+          columns={columns.map((column) => ({
+            ...column,
+            onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+            onCell: () => ({ className: styles.tableCell }),
+          }))}
           rowKey="id"
+          rowClassName={() => styles.tableRow}
           loading={loading}
           pagination={{
             pageSize: 10,

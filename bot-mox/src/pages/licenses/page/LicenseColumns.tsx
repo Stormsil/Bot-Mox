@@ -76,7 +76,11 @@ export const buildLicenseColumns = ({
         color = 'red';
       }
 
-      return <Tag color={color}>{isExpired(record.expires_at, currentTime) ? 'expired' : status}</Tag>;
+      return (
+        <Tag color={color} className={styles.statusTag}>
+          {isExpired(record.expires_at, currentTime) ? 'expired' : status}
+        </Tag>
+      );
     },
   },
   {

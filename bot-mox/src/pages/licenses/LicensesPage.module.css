@@ -16,12 +16,12 @@
   align-items: center;
 }
 
-.headerTitle :global(h4) {
+.headerHeading {
   margin: 0;
   color: var(--boxmox-color-text-primary);
 }
 
-.headerTitle :global(.ant-typography-secondary) {
+.headerSubtitle {
   color: var(--boxmox-color-text-secondary);
 }
 
@@ -74,23 +74,20 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.tableCard :global(.ant-table) {
-  background: transparent;
-}
-
-.tableCard :global(.ant-table-thead > tr > th) {
+.tableHeaderCell {
   background: var(--boxmox-color-surface-muted);
   color: var(--boxmox-color-text-secondary);
   border-bottom: 1px solid var(--boxmox-color-border-default);
   font-weight: 500;
 }
 
-.tableCard :global(.ant-table-tbody > tr > td) {
+.tableCell {
   border-bottom: 1px solid var(--boxmox-color-border-default);
   color: var(--boxmox-color-text-primary);
+  background: transparent;
 }
 
-.tableCard :global(.ant-table-tbody > tr:hover > td) {
+.tableRow:hover .tableCell {
   background: var(--boxmox-color-surface-hover);
 }
 
@@ -99,31 +96,33 @@
   font-size: 12px;
 }
 
-.tableCard :global(.ant-tag) {
+.statusTag {
   border-radius: 2px;
   font-size: 11px;
   text-transform: uppercase;
+  margin-inline-end: 0;
 }
 
-.root :global(.ant-input),
-.root :global(.ant-select-selector),
-.root :global(.ant-picker) {
-  background: var(--boxmox-color-surface-muted) !important;
-  border-color: var(--boxmox-color-border-default) !important;
-  color: var(--boxmox-color-text-primary) !important;
+.filtersSpace {
+  width: 100%;
 }
 
-.root :global(.ant-input)::placeholder {
+.filterSearch {
+  width: 250px;
+}
+
+.filterSelect {
+  width: 120px;
+}
+
+.filterSearch input::placeholder {
   color: var(--boxmox-color-text-muted);
 }
 
-.root :global(.ant-btn-primary) {
-  background: var(--boxmox-color-brand-primary);
-  border-color: var(--boxmox-color-brand-primary);
-}
-
-.root :global(.ant-btn-primary:hover) {
-  background: var(--boxmox-color-brand-primary-hover);
-  border-color: var(--boxmox-color-brand-primary-hover);
+@media (max-width: 900px) {
+  .filterSearch,
+  .filterSelect {
+    width: 100%;
+  }
 }
 
