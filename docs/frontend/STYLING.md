@@ -68,7 +68,9 @@ Example:
 6. Make sure the page stays readable with **visual backgrounds enabled**:
    - do not rely on raw text over the shell background layer,
    - ensure primary content sits on a surface (`var(--boxmox-color-surface-panel)` / antd `colorBgContainer`) with adequate contrast.
-7. Run:
+7. For all native `<button>` elements:
+   - set `type="button"` unless you intentionally need `type="submit"` inside a `<form>`.
+8. Run:
    - `npm run check:styles:guardrails`
    - `npm run check:all` before committing.
 
