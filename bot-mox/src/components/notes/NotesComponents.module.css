@@ -596,6 +596,13 @@
   background-color: var(--boxmox-color-surface-hover);
 }
 
+.block-editor:focus-within,
+.checkbox-block:focus-within,
+.list-block:focus-within {
+  background-color: var(--boxmox-color-surface-hover);
+  box-shadow: 0 0 0 2px rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.12);
+}
+
 .block-placeholder {
   position: absolute;
   top: 4px;
