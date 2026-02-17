@@ -38,6 +38,8 @@ const columns = [
     title: 'Name',
     dataIndex: 'character',
     key: 'name',
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
     render: (character: BotData['character'], record: BotData) => (
       <div>
         <div className={cx('bot-name')}>{character.name}</div>
@@ -49,12 +51,16 @@ const columns = [
     title: 'Status',
     dataIndex: 'status',
     key: 'status',
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
     render: (status: Bot['status']) => <StatusBadge status={status} size="small" />,
   },
   {
     title: 'Character',
     dataIndex: 'character',
     key: 'character',
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
     render: (character: BotData['character']) => (
       <div>
         <div className={cx('char-name')}>{character.name}</div>
@@ -66,17 +72,23 @@ const columns = [
     title: 'Server',
     dataIndex: ['character', 'server'],
     key: 'server',
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
   },
   {
     title: 'Project',
     dataIndex: 'project_id',
     key: 'project_id',
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
     render: (projectId: string) => projectId === 'wow_tbc' ? 'WoW TBC' : 'WoW Midnight',
   },
   {
     title: 'Last Seen',
     dataIndex: 'last_seen',
     key: 'last_seen',
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
     render: (timestamp: number) => {
       if (!timestamp) return 'Never';
       const date = new Date(timestamp);
@@ -140,7 +152,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className={cx('dashboard-page')}>
-      <Title level={2} className={cx('page-title')}>
+      <Title level={2} className={cx('page-title')} style={{ color: 'var(--boxmox-color-text-primary)', marginBottom: 24 }}>
         Dashboard
       </Title>
 
@@ -175,13 +187,30 @@ export const DashboardPage: React.FC = () => {
         </Col>
       </Row>
 
-      <Card title={`Bot List (${bots.length})`} className={cx('bot-list-card')}>
+      <Card
+        title={`Bot List (${bots.length})`}
+        className={cx('bot-list-card')}
+        style={{
+          background: 'var(--boxmox-color-surface-panel)',
+          border: '1px solid var(--boxmox-color-border-default)',
+          borderRadius: 'var(--radius-sm)',
+        }}
+        styles={{
+          header: {
+            background: 'var(--boxmox-color-surface-muted)',
+            borderBottom: '1px solid var(--boxmox-color-border-default)',
+            color: 'var(--boxmox-color-text-primary)',
+          },
+          body: { padding: 0 },
+        }}
+      >
         <Table
           dataSource={bots}
           columns={columns}
           rowKey="id"
           pagination={{ pageSize: 10 }}
           size="small"
+          rowClassName={() => cx('tableRow')}
         />
       </Card>
     </div>
