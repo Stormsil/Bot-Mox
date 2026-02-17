@@ -35,6 +35,12 @@ Thumbs.db
 # Local side-project (keep out of this repo)
 Winsible/
 
+# Local AI/agent workspace state (do not commit)
+.serena/
+
+# Local scratch files (do not commit)
+tmp_unattend_page.html
+
 # Supabase / runtime artifacts
 supabase/.temp/
 supabase/.branches/
