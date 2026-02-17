@@ -125,10 +125,19 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
         className={styles['subscription-card']}
         title={
           <Space>
-            <CreditCardOutlined />
-            <span>Subscription</span>
+            <CreditCardOutlined className={styles['card-title-icon']} />
+            <span className={styles['card-title']}>Subscription</span>
           </Space>
         }
+        styles={{
+          header: {
+            background: 'var(--boxmox-color-surface-muted)',
+            borderBottom: '1px solid var(--boxmox-color-border-default)',
+          },
+          body: {
+            padding: 0,
+          },
+        }}
         extra={
           <Button type="primary" size="small" icon={<PlusOutlined />} onClick={openCreateModal}>
             Add
@@ -146,6 +155,7 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
           />
         ) : (
           <List
+            className={styles['subscription-list']}
             dataSource={subscriptions}
             renderItem={(subscription) => (
               <SubscriptionListItem

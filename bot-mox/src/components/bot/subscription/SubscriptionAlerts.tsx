@@ -48,7 +48,11 @@ export const SubscriptionStatusAlert: React.FC<SubscriptionStatusAlertProps> = (
   return (
     <Alert
       className={styles['item-alert']}
-      message={subscription.isExpired ? 'Subscription expired' : 'Expiring soon'}
+      message={
+        <span className={styles['item-alert-message']}>
+          {subscription.isExpired ? 'Subscription expired' : 'Expiring soon'}
+        </span>
+      }
       type={subscription.isExpired ? 'error' : 'warning'}
       showIcon
       banner
