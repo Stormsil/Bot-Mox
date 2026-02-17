@@ -22,7 +22,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   color = 'var(--boxmox-color-brand-primary)',
 }) => {
   return (
-    <Card className={styles.metricCard} variant="borderless">
+    <Card
+      className={styles.metricCard}
+      variant="borderless"
+      styles={{ body: { padding: 16 } }}
+    >
       <div className={styles.header}>
         {icon && <div className={styles.icon} style={{ color }}>{icon}</div>}
         <Text className={styles.label}>{label}</Text>
@@ -36,7 +40,8 @@ export const MetricCard: React.FC<MetricCardProps> = ({
             percent={progress}
             size="small"
             strokeColor={color}
-            trailColor="var(--boxmox-color-border-subtle)"
+            trailColor="var(--boxmox-color-surface-muted)"
+            strokeLinecap="butt"
             showInfo={false}
           />
         </div>
