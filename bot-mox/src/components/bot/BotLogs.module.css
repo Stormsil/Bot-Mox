@@ -7,12 +7,7 @@
   border-color: var(--boxmox-color-border-default);
 }
 
-.logs-card :global(.ant-card-head) {
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-}
-
-.logs-card :global(.ant-card-head-title) {
+.logs-card-title {
   color: var(--boxmox-color-text-primary);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -53,4 +48,3 @@
   font-size: var(--text-sm);
   flex: 1;
 }
-

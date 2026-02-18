@@ -122,19 +122,10 @@
   flex-shrink: 0;
 }
 
-.session-actions :global(.ant-btn) {
+.session-action-button {
   color: var(--boxmox-color-text-secondary);
 }
 
-.session-actions :global(.ant-btn):hover {
+.session-action-button:hover {
   color: var(--boxmox-color-brand-primary);
 }
-
-.session-actions :global(.ant-switch) {
-  background-color: #8c8c8c;
-}
-
-.session-actions :global(.ant-switch-checked) {
-  background-color: #52c41a;
-}
-

@@ -14,14 +14,35 @@ import shellStyles from './AppShell.module.css';
 // Layout component в стиле Proxmox
 const ProxmoxLayout: React.FC = () => {
   const { themeMode, visualSettings } = useThemeRuntime();
+  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
+
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setPrefersReducedMotion(media.matches);
+    update();
+
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', update);
+      return () => media.removeEventListener('change', update);
+    }
+
+    media.addListener(update);
+    return () => media.removeListener(update);
+  }, []);
+
   const isVisualImage = visualSettings.enabled && visualSettings.mode === 'image' && Boolean(visualSettings.backgroundImageUrl);
   const overlayColor = themeMode === 'dark' ? visualSettings.overlayColorDark : visualSettings.overlayColorLight;
+  const effectiveBlur = prefersReducedMotion ? 0 : visualSettings.blurPx;
   const backgroundStyle: React.CSSProperties = isVisualImage ? {
     backgroundImage: `url(${visualSettings.backgroundImageUrl})`,
     backgroundPosition: visualSettings.backgroundPosition === 'top' ? 'top center' : 'center center',
     backgroundSize: visualSettings.backgroundSize,
-    filter: visualSettings.blurPx > 0 ? `blur(${visualSettings.blurPx}px)` : undefined,
-    transform: visualSettings.blurPx > 0 ? 'scale(1.02)' : undefined,
+    filter: effectiveBlur > 0 ? `blur(${effectiveBlur}px)` : undefined,
+    transform: effectiveBlur > 0 ? 'scale(1.02)' : undefined,
   } : {};
   const overlayStyle: React.CSSProperties = isVisualImage ? {
     backgroundColor: overlayColor,

@@ -24,7 +24,7 @@ function renderStatusWithDays({
 }) {
   return (
     <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={onClick}>
-      <Tag color={color}>{label}</Tag>
+      <Tag color={color} className={styles.statusTag}>{label}</Tag>
       <Text type="secondary" className={styles.secondary}>
         {formatDaysRemaining(daysRemaining)}
       </Text>
@@ -41,12 +41,17 @@ export function createProjectColumns({
   deletingBotIds: Record<string, boolean>;
   onDeleteAccount: (botId: string) => void | Promise<void>;
 }) {
+  const cellClassName = styles.tableCell;
+  const headerCellProps = { className: styles.tableHeaderCell };
+
   return [
     {
       title: 'ID',
       dataIndex: 'idShort',
       key: 'idShort',
       width: 90,
+      className: cellClassName,
+      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.idShort.localeCompare(b.idShort),
       render: (_: string, record: BotRow) => (
         <div className={styles.cellLink} onClick={() => goToBot(record.id, 'summary')}>
@@ -61,6 +66,8 @@ export function createProjectColumns({
       dataIndex: 'botStatus',
       key: 'botStatus',
       width: 130,
+      className: cellClassName,
+      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => BOT_STATUS_ORDER[a.botStatus] - BOT_STATUS_ORDER[b.botStatus],
       render: (status: BotStatus, record: BotRow) => (
         <div className={styles.cellLink} onClick={() => goToBot(record.id, 'summary')}>
@@ -73,6 +80,8 @@ export function createProjectColumns({
       dataIndex: 'vmName',
       key: 'vmName',
       width: 120,
+      className: cellClassName,
+      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => (a.vmName || '').localeCompare(b.vmName || ''),
       render: (value: string, record: BotRow) => (
         <div className={styles.cellLink} onClick={() => goToBot(record.id, 'vmInfo')}>
@@ -84,6 +93,8 @@ export function createProjectColumns({
       title: 'Account',
       key: 'account',
       width: 220,
+      className: cellClassName,
+      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => (a.email || '').localeCompare(b.email || ''),
       render: (_: unknown, record: BotRow) => (
         <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={() => goToBot(record.id, 'account')}>
@@ -98,6 +109,8 @@ export function createProjectColumns({
       title: 'Character',
       key: 'character',
       width: 200,
+      className: cellClassName,
+      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.characterName.localeCompare(b.characterName),
       render: (_: unknown, record: BotRow) => {
         const factionLabel = formatFaction(record.faction);
@@ -126,6 +139,8 @@ export function createProjectColumns({
       dataIndex: 'licenseStatusLabel',
       key: 'licenseStatus',
       width: 120,
+      className: cellClassName,
+      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.licenseSort - b.licenseSort,
       render: (_: string, record: BotRow) =>
         renderStatusWithDays({
@@ -140,6 +155,8 @@ export function createProjectColumns({
       dataIndex: 'proxyStatusLabel',
       key: 'proxyStatus',
       width: 120,
+      className: cellClassName,
+      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.proxySort - b.proxySort,
       render: (_: string, record: BotRow) =>
         renderStatusWithDays({
@@ -154,6 +171,8 @@ export function createProjectColumns({
       dataIndex: 'subscriptionStatusLabel',
       key: 'subscriptionStatus',
       width: 140,
+      className: cellClassName,
+      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.subscriptionSort - b.subscriptionSort,
       render: (_: string, record: BotRow) =>
         renderStatusWithDays({
@@ -168,6 +187,8 @@ export function createProjectColumns({
       key: 'action',
       width: 140,
       align: 'left' as const,
+      className: cellClassName,
+      onHeaderCell: () => headerCellProps,
       render: (_: unknown, record: BotRow) => {
         const isDeleting = Boolean(deletingBotIds[record.id]);
         return (

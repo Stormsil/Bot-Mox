@@ -4,13 +4,6 @@
   gap: 16px;
 }
 
-.metricsRow :global(.ant-card) {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-  border-radius: 0;
-  box-shadow: none;
-}
-
 .metricCard {
   position: relative;
   min-height: 96px;
@@ -130,21 +123,20 @@
   box-shadow: none;
 }
 
-.projectPerformanceCard :global(.ant-table) {
+.projectPerformanceTable {
   background: transparent;
 }
 
-.projectPerformanceCard :global(.ant-table-tbody > tr > td) {
+.projectPerformanceTable tbody td {
   border-bottom: 1px solid var(--boxmox-color-border-default);
   color: var(--boxmox-color-text-secondary);
 }
 
-.projectPerformanceCard :global(.ant-table-tbody > tr:hover > td) {
+.projectPerformanceTable tbody tr:hover td {
   background: var(--boxmox-color-surface-muted);
 }
 
-.projectPerformanceCard :global(.ant-table-thead > tr > th),
-.costAnalysisCard :global(.ant-table-thead > tr > th) {
+.projectPerformanceTable thead th {
   background: var(--boxmox-color-surface-muted);
   color: var(--boxmox-color-text-primary);
   font-weight: 600;
@@ -152,4 +144,3 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-

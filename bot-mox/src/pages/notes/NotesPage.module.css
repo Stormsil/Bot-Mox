@@ -38,12 +38,9 @@
   padding: 48px;
 }
 
-.empty :global(.ant-empty-description) {
-  color: var(--boxmox-color-text-muted);
-}
-
 .emptyContent {
   text-align: center;
+  color: var(--boxmox-color-text-muted);
 }
 
 .emptyContent p {
@@ -65,4 +62,3 @@
     border-top: 1px solid var(--boxmox-color-border-default);
   }
 }
-

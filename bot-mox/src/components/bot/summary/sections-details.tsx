@@ -49,7 +49,19 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
   goToConfigure,
   onActivate,
   formatDate,
-}) => (
+}) => {
+  const detailCardStyles = {
+    header: {
+      background: 'var(--boxmox-color-surface-muted)',
+      borderBottom: '1px solid var(--boxmox-color-border-default)',
+      padding: '12px 16px',
+      minHeight: 'auto',
+    },
+    body: { padding: 16 },
+  };
+  const summaryTagStyle: React.CSSProperties = { marginInlineEnd: 0 };
+
+  return (
   <section id="summary-configure" className={styles['bot-section']}>
     <Row gutter={[16, 16]} className={styles['details-row']}>
       <Col span={8}>
@@ -61,6 +73,7 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
             </div>
           }
           className={[styles['detail-card'], styles['link-card']].join(' ')}
+          styles={detailCardStyles}
           hoverable
           onClick={() => goToConfigure('account')}
           role="button"
@@ -68,7 +81,9 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
           onKeyDown={onActivate(() => goToConfigure('account'))}
         >
           <div className={styles['link-card-header']}>
-            <Tag color={accountComplete ? 'success' : 'warning'}>{accountComplete ? 'Complete' : 'Incomplete'}</Tag>
+            <Tag style={summaryTagStyle} color={accountComplete ? 'success' : 'warning'}>
+              {accountComplete ? 'Complete' : 'Incomplete'}
+            </Tag>
           </div>
           <div className={styles['summary-stats-list']}>
             <SummaryStatItem
@@ -115,6 +130,7 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
             </div>
           }
           className={[styles['detail-card'], styles['link-card']].join(' ')}
+          styles={detailCardStyles}
           hoverable
           onClick={() => goToConfigure('person')}
           role="button"
@@ -122,7 +138,9 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
           onKeyDown={onActivate(() => goToConfigure('person'))}
         >
           <div className={styles['link-card-header']}>
-            <Tag color={personComplete ? 'success' : 'warning'}>{personComplete ? 'Complete' : 'Incomplete'}</Tag>
+            <Tag style={summaryTagStyle} color={personComplete ? 'success' : 'warning'}>
+              {personComplete ? 'Complete' : 'Incomplete'}
+            </Tag>
           </div>
           <div className={styles['summary-stats-list']}>
             <SummaryStatItem
@@ -157,6 +175,7 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
             </div>
           }
           className={[styles['detail-card'], styles['link-card']].join(' ')}
+          styles={detailCardStyles}
           hoverable
           onClick={() => goToConfigure('schedule')}
           role="button"
@@ -164,7 +183,7 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
           onKeyDown={onActivate(() => goToConfigure('schedule'))}
         >
           <div className={styles['link-card-header']}>
-            <Tag color={scheduleStats.enabledSessions > 0 ? 'success' : undefined}>
+            <Tag style={summaryTagStyle} color={scheduleStats.enabledSessions > 0 ? 'success' : undefined}>
               {scheduleStats.enabledSessions > 0 ? 'Configured' : 'Not Set'}
             </Tag>
           </div>
@@ -180,7 +199,8 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
       </Col>
     </Row>
   </section>
-);
+  );
+};
 
 interface SummaryResourcesSectionProps {
   statusInfo: BotStatusInfo;
@@ -202,9 +222,18 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
   formatCompactKey,
   formatDate,
   formatDaysLeft,
-}) => (
+}) => {
+  const statusSummaryStyles = {
+    header: {
+      background: 'var(--boxmox-color-surface-muted)',
+      borderBottom: '1px solid var(--boxmox-color-border-default)',
+    },
+  };
+  const summaryTagStyle: React.CSSProperties = { marginInlineEnd: 0 };
+
+  return (
   <section id="summary-resources" className={styles['bot-section']}>
-    <Card className={styles['status-summary-card']} title="Status Summary">
+    <Card className={styles['status-summary-card']} title="Status Summary" styles={statusSummaryStyles}>
       <Row gutter={[16, 16]}>
         <Col span={8}>
           <div
@@ -219,13 +248,13 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
               <Text type="secondary">License</Text>
               <br />
               {!linkedResources.license ? (
-                <Tag>Not Assigned</Tag>
+                <Tag style={summaryTagStyle}>Not Assigned</Tag>
               ) : statusInfo.licenseExpired ? (
-                <Tag color="error">Expired</Tag>
+                <Tag style={summaryTagStyle} color="error">Expired</Tag>
               ) : statusInfo.licenseExpiringSoon ? (
-                <Tag color="warning">Expiring Soon</Tag>
+                <Tag style={summaryTagStyle} color="warning">Expiring Soon</Tag>
               ) : (
-                <Tag color="success">Active</Tag>
+                <Tag style={summaryTagStyle} color="success">Active</Tag>
               )}
               <div className={styles['status-meta']}>
                 <span>Key: {formatCompactKey(linkedResources.license?.key)}</span>
@@ -249,15 +278,15 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
               <Text type="secondary">Proxy</Text>
               <br />
               {!linkedResources.proxy?.ip ? (
-                <Tag>Not Assigned</Tag>
+                <Tag style={summaryTagStyle}>Not Assigned</Tag>
               ) : statusInfo.proxyExpired ? (
-                <Tag color="error">Expired</Tag>
+                <Tag style={summaryTagStyle} color="error">Expired</Tag>
               ) : statusInfo.proxyBanned ? (
-                <Tag color="error">Banned</Tag>
+                <Tag style={summaryTagStyle} color="error">Banned</Tag>
               ) : statusInfo.proxyExpiringSoon ? (
-                <Tag color="warning">Expiring Soon</Tag>
+                <Tag style={summaryTagStyle} color="warning">Expiring Soon</Tag>
               ) : (
-                <Tag color="success">Active</Tag>
+                <Tag style={summaryTagStyle} color="success">Active</Tag>
               )}
               <div className={styles['status-meta']}>
                 <span>
@@ -286,13 +315,13 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
               <Text type="secondary">Subscriptions</Text>
               <br />
               {subscriptionSummary.total === 0 ? (
-                <Tag>None</Tag>
+                <Tag style={summaryTagStyle}>None</Tag>
               ) : statusInfo.subscriptionsExpired > 0 ? (
-                <Tag color="error">{statusInfo.subscriptionsExpired} Expired</Tag>
+                <Tag style={summaryTagStyle} color="error">{statusInfo.subscriptionsExpired} Expired</Tag>
               ) : statusInfo.subscriptionsExpiringSoon > 0 ? (
-                <Tag color="warning">{statusInfo.subscriptionsExpiringSoon} Expiring</Tag>
+                <Tag style={summaryTagStyle} color="warning">{statusInfo.subscriptionsExpiringSoon} Expiring</Tag>
               ) : (
-                <Tag color="success">All Active</Tag>
+                <Tag style={summaryTagStyle} color="success">All Active</Tag>
               )}
               <div className={styles['status-meta']}>
                 <span>
@@ -313,4 +342,5 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
       </Row>
     </Card>
   </section>
-);
+  );
+};

@@ -1,0 +1,370 @@
+{
+  "generatedAt": "2026-02-17T23:03:23.192Z",
+  "baseUrl": "http://localhost",
+  "routes": [
+    {
+      "key": "overview",
+      "path": "/"
+    },
+    {
+      "key": "finance",
+      "path": "/finance"
+    },
+    {
+      "key": "settings",
+      "path": "/settings"
+    },
+    {
+      "key": "notes",
+      "path": "/notes"
+    },
+    {
+      "key": "calendar",
+      "path": "/workspace/calendar"
+    },
+    {
+      "key": "kanban",
+      "path": "/workspace/kanban"
+    },
+    {
+      "key": "licenses",
+      "path": "/licenses"
+    },
+    {
+      "key": "proxies",
+      "path": "/proxies"
+    },
+    {
+      "key": "subscriptions",
+      "path": "/subscriptions"
+    },
+    {
+      "key": "vms",
+      "path": "/vms"
+    }
+  ],
+  "light": [
+    {
+      "routeKey": "overview",
+      "routePath": "/",
+      "mode": "light",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\overview-light.png",
+      "vars": {
+        "theme": "light",
+        "canvas": "",
+        "panel": "#ffffff",
+        "text": "#26323b",
+        "bodyBackgroundColor": "rgb(242, 244, 247)",
+        "bodyColor": "rgb(38, 50, 59)",
+        "title": "bot-mox",
+        "url": "/"
+      }
+    },
+    {
+      "routeKey": "finance",
+      "routePath": "/finance",
+      "mode": "light",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\finance-light.png",
+      "vars": {
+        "theme": "light",
+        "canvas": "",
+        "panel": "#ffffff",
+        "text": "#26323b",
+        "bodyBackgroundColor": "rgb(242, 244, 247)",
+        "bodyColor": "rgb(38, 50, 59)",
+        "title": "bot-mox",
+        "url": "/finance"
+      }
+    },
+    {
+      "routeKey": "settings",
+      "routePath": "/settings",
+      "mode": "light",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\settings-light.png",
+      "vars": {
+        "theme": "light",
+        "canvas": "",
+        "panel": "#ffffff",
+        "text": "#26323b",
+        "bodyBackgroundColor": "rgb(242, 244, 247)",
+        "bodyColor": "rgb(38, 50, 59)",
+        "title": "bot-mox",
+        "url": "/settings"
+      }
+    },
+    {
+      "routeKey": "notes",
+      "routePath": "/notes",
+      "mode": "light",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\notes-light.png",
+      "vars": {
+        "theme": "light",
+        "canvas": "",
+        "panel": "#ffffff",
+        "text": "#26323b",
+        "bodyBackgroundColor": "rgb(242, 244, 247)",
+        "bodyColor": "rgb(38, 50, 59)",
+        "title": "bot-mox",
+        "url": "/notes"
+      }
+    },
+    {
+      "routeKey": "calendar",
+      "routePath": "/workspace/calendar",
+      "mode": "light",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\calendar-light.png",
+      "vars": {
+        "theme": "light",
+        "canvas": "",
+        "panel": "#ffffff",
+        "text": "#26323b",
+        "bodyBackgroundColor": "rgb(242, 244, 247)",
+        "bodyColor": "rgb(38, 50, 59)",
+        "title": "bot-mox",
+        "url": "/workspace/calendar"
+      }
+    },
+    {
+      "routeKey": "kanban",
+      "routePath": "/workspace/kanban",
+      "mode": "light",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\kanban-light.png",
+      "vars": {
+        "theme": "light",
+        "canvas": "",
+        "panel": "#ffffff",
+        "text": "#26323b",
+        "bodyBackgroundColor": "rgb(242, 244, 247)",
+        "bodyColor": "rgb(38, 50, 59)",
+        "title": "bot-mox",
+        "url": "/workspace/kanban"
+      }
+    },
+    {
+      "routeKey": "licenses",
+      "routePath": "/licenses",
+      "mode": "light",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\licenses-light.png",
+      "vars": {
+        "theme": "light",
+        "canvas": "",
+        "panel": "#ffffff",
+        "text": "#26323b",
+        "bodyBackgroundColor": "rgb(242, 244, 247)",
+        "bodyColor": "rgb(38, 50, 59)",
+        "title": "bot-mox",
+        "url": "/licenses"
+      }
+    },
+    {
+      "routeKey": "proxies",
+      "routePath": "/proxies",
+      "mode": "light",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\proxies-light.png",
+      "vars": {
+        "theme": "light",
+        "canvas": "",
+        "panel": "#ffffff",
+        "text": "#26323b",
+        "bodyBackgroundColor": "rgb(242, 244, 247)",
+        "bodyColor": "rgb(38, 50, 59)",
+        "title": "bot-mox",
+        "url": "/proxies"
+      }
+    },
+    {
+      "routeKey": "subscriptions",
+      "routePath": "/subscriptions",
+      "mode": "light",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\subscriptions-light.png",
+      "vars": {
+        "theme": "light",
+        "canvas": "",
+        "panel": "#ffffff",
+        "text": "#26323b",
+        "bodyBackgroundColor": "rgb(242, 244, 247)",
+        "bodyColor": "rgb(38, 50, 59)",
+        "title": "bot-mox",
+        "url": "/subscriptions"
+      }
+    },
+    {
+      "routeKey": "vms",
+      "routePath": "/vms",
+      "mode": "light",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\vms-light.png",
+      "vars": {
+        "theme": "light",
+        "canvas": "",
+        "panel": "#ffffff",
+        "text": "#26323b",
+        "bodyBackgroundColor": "rgb(242, 244, 247)",
+        "bodyColor": "rgb(38, 50, 59)",
+        "title": "bot-mox",
+        "url": "/vms"
+      }
+    }
+  ],
+  "dark": [
+    {
+      "routeKey": "overview",
+      "routePath": "/",
+      "mode": "dark",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\overview-dark.png",
+      "vars": {
+        "theme": "dark",
+        "canvas": "",
+        "panel": "#2a2f35",
+        "text": "#e6edf3",
+        "bodyBackgroundColor": "rgb(30, 31, 34)",
+        "bodyColor": "rgb(230, 237, 243)",
+        "title": "bot-mox",
+        "url": "/"
+      }
+    },
+    {
+      "routeKey": "finance",
+      "routePath": "/finance",
+      "mode": "dark",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\finance-dark.png",
+      "vars": {
+        "theme": "dark",
+        "canvas": "",
+        "panel": "#2a2f35",
+        "text": "#e6edf3",
+        "bodyBackgroundColor": "rgb(30, 31, 34)",
+        "bodyColor": "rgb(230, 237, 243)",
+        "title": "bot-mox",
+        "url": "/finance"
+      }
+    },
+    {
+      "routeKey": "settings",
+      "routePath": "/settings",
+      "mode": "dark",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\settings-dark.png",
+      "vars": {
+        "theme": "dark",
+        "canvas": "",
+        "panel": "#2a2f35",
+        "text": "#e6edf3",
+        "bodyBackgroundColor": "rgb(30, 31, 34)",
+        "bodyColor": "rgb(230, 237, 243)",
+        "title": "bot-mox",
+        "url": "/settings"
+      }
+    },
+    {
+      "routeKey": "notes",
+      "routePath": "/notes",
+      "mode": "dark",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\notes-dark.png",
+      "vars": {
+        "theme": "dark",
+        "canvas": "",
+        "panel": "#2a2f35",
+        "text": "#e6edf3",
+        "bodyBackgroundColor": "rgb(30, 31, 34)",
+        "bodyColor": "rgb(230, 237, 243)",
+        "title": "bot-mox",
+        "url": "/notes"
+      }
+    },
+    {
+      "routeKey": "calendar",
+      "routePath": "/workspace/calendar",
+      "mode": "dark",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\calendar-dark.png",
+      "vars": {
+        "theme": "dark",
+        "canvas": "",
+        "panel": "#2a2f35",
+        "text": "#e6edf3",
+        "bodyBackgroundColor": "rgb(30, 31, 34)",
+        "bodyColor": "rgb(230, 237, 243)",
+        "title": "bot-mox",
+        "url": "/workspace/calendar"
+      }
+    },
+    {
+      "routeKey": "kanban",
+      "routePath": "/workspace/kanban",
+      "mode": "dark",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\kanban-dark.png",
+      "vars": {
+        "theme": "dark",
+        "canvas": "",
+        "panel": "#2a2f35",
+        "text": "#e6edf3",
+        "bodyBackgroundColor": "rgb(30, 31, 34)",
+        "bodyColor": "rgb(230, 237, 243)",
+        "title": "bot-mox",
+        "url": "/workspace/kanban"
+      }
+    },
+    {
+      "routeKey": "licenses",
+      "routePath": "/licenses",
+      "mode": "dark",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\licenses-dark.png",
+      "vars": {
+        "theme": "dark",
+        "canvas": "",
+        "panel": "#2a2f35",
+        "text": "#e6edf3",
+        "bodyBackgroundColor": "rgb(30, 31, 34)",
+        "bodyColor": "rgb(230, 237, 243)",
+        "title": "bot-mox",
+        "url": "/licenses"
+      }
+    },
+    {
+      "routeKey": "proxies",
+      "routePath": "/proxies",
+      "mode": "dark",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\proxies-dark.png",
+      "vars": {
+        "theme": "dark",
+        "canvas": "",
+        "panel": "#2a2f35",
+        "text": "#e6edf3",
+        "bodyBackgroundColor": "rgb(30, 31, 34)",
+        "bodyColor": "rgb(230, 237, 243)",
+        "title": "bot-mox",
+        "url": "/proxies"
+      }
+    },
+    {
+      "routeKey": "subscriptions",
+      "routePath": "/subscriptions",
+      "mode": "dark",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\subscriptions-dark.png",
+      "vars": {
+        "theme": "dark",
+        "canvas": "",
+        "panel": "#2a2f35",
+        "text": "#e6edf3",
+        "bodyBackgroundColor": "rgb(30, 31, 34)",
+        "bodyColor": "rgb(230, 237, 243)",
+        "title": "bot-mox",
+        "url": "/subscriptions"
+      }
+    },
+    {
+      "routeKey": "vms",
+      "routePath": "/vms",
+      "mode": "dark",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\docs\\audits\\artifacts\\frontend-baseline-2026-02-17\\vms-dark.png",
+      "vars": {
+        "theme": "dark",
+        "canvas": "",
+        "panel": "#2a2f35",
+        "text": "#e6edf3",
+        "bodyBackgroundColor": "rgb(30, 31, 34)",
+        "bodyColor": "rgb(230, 237, 243)",
+        "title": "bot-mox",
+        "url": "/vms"
+      }
+    }
+  ]
+}

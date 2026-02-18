@@ -10,6 +10,7 @@ import type {
   GoldPriceHistoryEntry,
 } from '../types';
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut, ApiClientError, createPollingSubscription } from './apiClient';
+import { uiLogger } from '../observability/uiLogger'
 
 const FINANCE_API_PREFIX = '/api/v1/finance';
 const SETTINGS_API_PREFIX = '/api/v1/settings';
@@ -30,7 +31,7 @@ export interface ChartSeriesConfig {
 
 export function parseDateToTimestamp(dateString: string): number {
   if (!dateString || typeof dateString !== 'string') {
-    console.error('parseDateToTimestamp: invalid input', { dateString });
+    uiLogger.error('parseDateToTimestamp: invalid input', { dateString });
     return NaN;
   }
 
@@ -39,7 +40,7 @@ export function parseDateToTimestamp(dateString: string): number {
   const timestamp = date.getTime();
 
   if (isNaN(timestamp)) {
-    console.error('parseDateToTimestamp: failed to create valid date', { dateString });
+    uiLogger.error('parseDateToTimestamp: failed to create valid date', { dateString });
     return NaN;
   }
 
@@ -438,7 +439,7 @@ export async function getCurrentGoldPrice(projectId: 'wow_tbc' | 'wow_midnight')
     }
     return projectId === 'wow_tbc' ? 12.5 : 8.5;
   } catch (error) {
-    console.error('Error getting gold price:', error);
+    uiLogger.error('Error getting gold price:', error);
     return projectId === 'wow_tbc' ? 12.5 : 8.5;
   }
 }
@@ -452,7 +453,7 @@ export async function getChartConfig(): Promise<ChartSeriesConfig[] | null> {
     const response = await apiGet<unknown>(`${SETTINGS_API_PREFIX}/finance/chart_config`);
     return Array.isArray(response.data) ? (response.data as ChartSeriesConfig[]) : null;
   } catch (error) {
-    console.error('Error fetching chart config:', error);
+    uiLogger.error('Error fetching chart config:', error);
     return null;
   }
 }

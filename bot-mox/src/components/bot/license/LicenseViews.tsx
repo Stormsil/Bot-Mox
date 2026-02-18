@@ -17,6 +17,15 @@ import type { BotLicenseProps, LicenseInfo } from './types';
 import styles from './license.module.css';
 
 const { Text } = Typography;
+const cardStyles = {
+  header: {
+    background: 'var(--boxmox-color-surface-muted)',
+    borderBottom: '1px solid var(--boxmox-color-border-default)',
+  },
+  body: {
+    background: 'var(--boxmox-color-surface-panel)',
+  },
+};
 
 export const LicenseLoadingCard: React.FC = () => (
   <div className={styles['bot-license']}>
@@ -34,6 +43,7 @@ interface LicenseEmptyCardProps {
 export const LicenseEmptyCard: React.FC<LicenseEmptyCardProps> = ({ addMenuItems, onAddMenuClick }) => (
   <Card
     className={styles['license-card']}
+    styles={cardStyles}
     title={
       <Space>
         <KeyOutlined />
@@ -49,9 +59,10 @@ export const LicenseEmptyCard: React.FC<LicenseEmptyCardProps> = ({ addMenuItems
     }
   >
     <Empty
+      className={styles['license-empty']}
       image={Empty.PRESENTED_IMAGE_SIMPLE}
       description={
-        <span>
+        <span className={styles['empty-description']}>
           <Text type="secondary">No license assigned to this bot</Text>
         </span>
       }
@@ -92,6 +103,7 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
 
     <Card
       className={styles['license-card']}
+      styles={cardStyles}
       title={
         <Space>
           <KeyOutlined />

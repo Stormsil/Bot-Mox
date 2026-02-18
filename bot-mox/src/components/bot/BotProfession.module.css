@@ -16,13 +16,6 @@
   opacity: 0.7;
 }
 
-.profession-card :global(.ant-card-head) {
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-  padding: 12px 16px;
-  min-height: auto;
-}
-
 .profession-header {
   display: flex;
   align-items: center;
@@ -45,10 +38,6 @@
   font-size: var(--text-xs);
 }
 
-.profession-card :global(.ant-card-body) {
-  padding: 16px;
-}
-
 .profession-progress {
   padding: 4px 0;
 }
@@ -60,10 +49,6 @@
   margin-bottom: 8px;
 }
 
-.skill-info :global(.ant-typography) {
-  color: var(--boxmox-color-text-primary);
-}
-
 .skill-percent {
   text-align: center;
   margin-top: 8px;
@@ -72,3 +57,6 @@
   color: var(--boxmox-color-text-secondary);
 }
 
+.skill-text {
+  color: var(--boxmox-color-text-primary);
+}

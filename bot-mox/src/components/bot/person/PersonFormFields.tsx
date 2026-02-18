@@ -42,24 +42,31 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
   onSelectedCountryChange,
   onGenerateData,
   onUnlockGeneration,
-}) => (
-  <>
+}) => {
+  const controlStyle: React.CSSProperties = {
+    background: 'var(--boxmox-color-surface-muted)',
+    borderColor: 'var(--boxmox-color-border-default)',
+    color: 'var(--boxmox-color-text-primary)',
+  };
+
+  return (
+    <>
     <Row gutter={16}>
       <Col xs={24} sm={12} md={8}>
         <Form.Item label={<FieldLabel form={form} field="first_name" label="First Name" />} name="first_name">
-          <Input placeholder="Enter first name" autoComplete="off" disabled={manualEditLocked} />
+          <Input placeholder="Enter first name" autoComplete="off" disabled={manualEditLocked} style={controlStyle} />
         </Form.Item>
       </Col>
 
       <Col xs={24} sm={12} md={8}>
         <Form.Item label={<FieldLabel form={form} field="last_name" label="Last Name" />} name="last_name">
-          <Input placeholder="Enter last name" autoComplete="off" disabled={manualEditLocked} />
+          <Input placeholder="Enter last name" autoComplete="off" disabled={manualEditLocked} style={controlStyle} />
         </Form.Item>
       </Col>
 
       <Col xs={24} sm={12} md={8}>
         <Form.Item label={<FieldLabel form={form} field="birth_date" label="Birth Date" />} name="birth_date">
-          <Input placeholder="DD-MM-YYYY" autoComplete="off" disabled={manualEditLocked} />
+          <Input placeholder="DD-MM-YYYY" autoComplete="off" disabled={manualEditLocked} style={controlStyle} />
         </Form.Item>
       </Col>
     </Row>
@@ -72,19 +79,20 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
             onChange={onSelectedCountryChange}
             options={availableCountries.map((country) => ({ value: country, label: country }))}
             disabled={manualEditLocked}
+            style={controlStyle}
           />
         </Form.Item>
       </Col>
 
       <Col xs={24} sm={12} md={8}>
         <Form.Item label={<FieldLabel form={form} field="city" label="City" />} name="city">
-          <Input placeholder="Enter city" autoComplete="off" disabled={manualEditLocked} />
+          <Input placeholder="Enter city" autoComplete="off" disabled={manualEditLocked} style={controlStyle} />
         </Form.Item>
       </Col>
 
       <Col xs={24} sm={12} md={8}>
         <Form.Item label={<FieldLabel form={form} field="zip" label="ZIP Code" />} name="zip">
-          <Input placeholder="Enter ZIP code" autoComplete="off" disabled={manualEditLocked} />
+          <Input placeholder="Enter ZIP code" autoComplete="off" disabled={manualEditLocked} style={controlStyle} />
         </Form.Item>
       </Col>
     </Row>
@@ -92,7 +100,7 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
     <Row gutter={16}>
       <Col xs={24} md={16}>
         <Form.Item label={<FieldLabel form={form} field="address" label="Address" />} name="address">
-          <Input placeholder="Enter full address (street, house number)" autoComplete="off" disabled={manualEditLocked} />
+          <Input placeholder="Enter full address (street, house number)" autoComplete="off" disabled={manualEditLocked} style={controlStyle} />
         </Form.Item>
       </Col>
     </Row>
@@ -103,7 +111,6 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
         <Select
           value={selectedCountry}
           onChange={onSelectedCountryChange}
-          className={styles['country-select']}
           style={{ width: 120 }}
           options={availableCountries.map((country) => ({ value: country, label: country }))}
           disabled={manualEditLocked}
@@ -140,5 +147,6 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
         Save Changes
       </Button>
     </div>
-  </>
-);
+    </>
+  );
+};

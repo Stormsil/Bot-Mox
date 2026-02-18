@@ -42,33 +42,6 @@
   font-size: 12px;
 }
 
-.week-overview-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.week-overview-actions :global(.ant-btn) {
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
-}
-
-.week-overview-actions :global(.ant-btn):hover {
-  border-color: var(--boxmox-color-brand-primary);
-  color: var(--boxmox-color-brand-primary);
-}
-
-.week-overview-actions :global(.ant-btn-primary) {
-  background: var(--boxmox-color-brand-primary);
-  border-color: var(--boxmox-color-brand-primary);
-  color: #fff;
-}
-
-.week-overview-actions :global(.ant-btn-primary):hover {
-  background: var(--boxmox-color-brand-primary-hover);
-  border-color: var(--boxmox-color-brand-primary-hover);
-}
 
 /* Timeline rows container */
 .week-overview-timelines {
@@ -204,10 +177,6 @@
     align-items: flex-start;
   }
 
-  .week-overview-actions {
-    flex-wrap: wrap;
-  }
-
   .week-day-row {
     flex-direction: column;
     gap: 8px;
@@ -225,4 +194,3 @@
     gap: 12px;
   }
 }
-

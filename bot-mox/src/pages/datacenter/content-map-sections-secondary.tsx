@@ -24,6 +24,10 @@ function cx(classNames: string): string {
     .join(' ');
 }
 
+const mapCardStyles = {
+  body: { padding: '14px 16px' },
+};
+
 const { Text } = Typography;
 
 const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
@@ -93,7 +97,13 @@ export function FinanceNotesSection({
       </div>
       {!collapsedSections.finance_notes && (
         <div className={cx('content-map-grid content-map-grid--primary')}>
-          <Card className={cx('map-card map-card--clickable')} hoverable loading={loading.finance} {...navProps('/finance')}>
+          <Card
+            className={cx('map-card map-card--clickable')}
+            hoverable
+            loading={loading.finance}
+            styles={mapCardStyles}
+            {...navProps('/finance')}
+          >
             <div className={cx('map-card-head')}>
               <div className={cx('map-card-title')}>
                 <DollarOutlined /> Finance
@@ -135,7 +145,13 @@ export function FinanceNotesSection({
             </div>
           </Card>
 
-          <Card className={cx('map-card map-card--clickable')} hoverable loading={loading.notes} {...navProps('/notes')}>
+          <Card
+            className={cx('map-card map-card--clickable')}
+            hoverable
+            loading={loading.notes}
+            styles={mapCardStyles}
+            {...navProps('/notes')}
+          >
             <div className={cx('map-card-head')}>
               <div className={cx('map-card-title')}>
                 <FileTextOutlined /> Notes
@@ -198,7 +214,11 @@ export function ExpiringSection({
         />
       </div>
       {!collapsedSections.expiring && (
-        <Card className={cx('map-card')} loading={loading.licenses || loading.proxies || loading.subscriptions}>
+        <Card
+          className={cx('map-card')}
+          loading={loading.licenses || loading.proxies || loading.subscriptions}
+          styles={mapCardStyles}
+        >
           <div className={cx('map-card-head')}>
             <div className={cx('map-card-title')}>
               <WarningOutlined /> Alerts

@@ -20,6 +20,7 @@ import {
 } from './page';
 import type { AddBotFormValues, LicenseFormValues } from './page';
 import styles from './LicensesPage.module.css';
+import { uiLogger } from '../../observability/uiLogger'
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -62,7 +63,7 @@ export const LicensesPage: React.FC = () => {
         setLoading(false);
       },
       (error) => {
-        console.error('Error loading licenses:', error);
+        uiLogger.error('Error loading licenses:', error);
         message.error('Failed to load licenses');
         setLoading(false);
       }
@@ -73,7 +74,7 @@ export const LicensesPage: React.FC = () => {
         setBots(data || {});
       },
       (error) => {
-        console.error('Error loading bots:', error);
+        uiLogger.error('Error loading bots:', error);
       },
       { intervalMs: 5000 }
     );
@@ -101,7 +102,7 @@ export const LicensesPage: React.FC = () => {
       await deleteLicense(license.id);
       message.success('License deleted');
     } catch (error) {
-      console.error('Error deleting license:', error);
+      uiLogger.error('Error deleting license:', error);
       message.error('Failed to delete license');
     }
   };
@@ -126,7 +127,7 @@ export const LicensesPage: React.FC = () => {
       setEditingLicense(null);
       form.resetFields();
     } catch (error) {
-      console.error('Error saving license:', error);
+      uiLogger.error('Error saving license:', error);
       message.error('Failed to save license');
     }
   };
@@ -149,7 +150,7 @@ export const LicensesPage: React.FC = () => {
       setSelectedLicenseForBot(null);
       addBotForm.resetFields();
     } catch (error) {
-      console.error('Error adding bot:', error);
+      uiLogger.error('Error adding bot:', error);
       message.error('Failed to add bot');
     }
   };
@@ -166,7 +167,7 @@ export const LicensesPage: React.FC = () => {
 
       message.success('Bot removed from license');
     } catch (error) {
-      console.error('Error removing bot:', error);
+      uiLogger.error('Error removing bot:', error);
       message.error('Failed to remove bot');
     }
   };
@@ -204,10 +205,10 @@ export const LicensesPage: React.FC = () => {
       <Card className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.headerTitle}>
-            <Title level={4}>
+            <Title level={4} className={styles.headerHeading}>
               <KeyOutlined /> Bot Licenses
             </Title>
-            <Text type="secondary">Manage bot software licenses</Text>
+            <Text type="secondary" className={styles.headerSubtitle}>Manage bot software licenses</Text>
           </div>
           <Space>
             <Button
@@ -227,21 +228,21 @@ export const LicensesPage: React.FC = () => {
       <LicensesStatsPanel stats={stats} collapsed={statsCollapsed} />
 
       <Card className={styles.filters}>
-        <Space wrap>
+        <Space wrap className={styles.filtersRow}>
           <Input
             placeholder="Search by key or bot..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
-            style={{ width: 250 }}
+            className={styles.searchInput}
           />
-          <Select placeholder="Status" value={statusFilter} onChange={setStatusFilter} style={{ width: 120 }}>
+          <Select placeholder="Status" value={statusFilter} onChange={setStatusFilter} className={styles.statusSelect}>
             <Option value="all">All Statuses</Option>
             <Option value="active">Active</Option>
             <Option value="expired">Expired</Option>
             <Option value="revoked">Revoked</Option>
           </Select>
-          <Select placeholder="Type" value={typeFilter} onChange={setTypeFilter} style={{ width: 120 }}>
+          <Select placeholder="Type" value={typeFilter} onChange={setTypeFilter} className={styles.typeSelect}>
             <Option value="all">All Types</Option>
             <Option value="sin">SIN</Option>
             <Option value="other">Other</Option>
@@ -253,6 +254,7 @@ export const LicensesPage: React.FC = () => {
               setStatusFilter('all');
               setTypeFilter('all');
             }}
+            className={styles.resetButton}
           >
             Reset
           </Button>
@@ -265,6 +267,8 @@ export const LicensesPage: React.FC = () => {
           columns={columns}
           rowKey="id"
           loading={loading}
+          className={styles.table}
+          rowClassName={() => styles.tableRow}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,

@@ -4,6 +4,7 @@
  */
 
 import { apiDelete, apiGet, apiPatch, apiPost, ApiClientError, createPollingSubscription } from './apiClient';
+import { uiLogger } from '../observability/uiLogger'
 
 // ============================================
 // Type Definitions
@@ -212,7 +213,7 @@ export async function createNote(data: CreateNoteData, userId?: string): Promise
     const response = await apiPost<NoteDb>(NOTES_API_PATH, payload);
     return convertDbToNote(response.data);
   } catch (error) {
-    console.error('Error creating note:', error);
+    uiLogger.error('Error creating note:', error);
     throw normalizeApiErrorMessage(error, 'Failed to create note');
   }
 }
@@ -225,7 +226,7 @@ export async function getNote(id: string): Promise<Note | null> {
     if (error instanceof ApiClientError && error.status === 404) {
       return null;
     }
-    console.error(`Error getting note ${id}:`, error);
+    uiLogger.error(`Error getting note ${id}:`, error);
     throw normalizeApiErrorMessage(error, 'Failed to get note');
   }
 }
@@ -253,7 +254,7 @@ export async function updateNote(id: string, data: UpdateNoteData): Promise<void
     if (Object.keys(payload).length === 0) return;
     await apiPatch(`${NOTES_API_PATH}/${encodeURIComponent(id)}`, payload);
   } catch (error) {
-    console.error(`Error updating note ${id}:`, error);
+    uiLogger.error(`Error updating note ${id}:`, error);
     throw normalizeApiErrorMessage(error, 'Failed to update note');
   }
 }
@@ -262,7 +263,7 @@ export async function deleteNote(id: string): Promise<void> {
   try {
     await apiDelete(`${NOTES_API_PATH}/${encodeURIComponent(id)}`);
   } catch (error) {
-    console.error(`Error deleting note ${id}:`, error);
+    uiLogger.error(`Error deleting note ${id}:`, error);
     throw normalizeApiErrorMessage(error, 'Failed to delete note');
   }
 }
@@ -274,7 +275,7 @@ export async function getAllNotes(): Promise<Note[]> {
       .map(convertDbToNote)
       .sort((a, b) => b.updated_at - a.updated_at);
   } catch (error) {
-    console.error('Error getting all notes:', error);
+    uiLogger.error('Error getting all notes:', error);
     throw normalizeApiErrorMessage(error, 'Failed to get notes');
   }
 }
@@ -288,7 +289,7 @@ export async function getNotesByBot(botId: string): Promise<Note[]> {
     const notes = await getAllNotes();
     return notes.filter((note) => note.bot_id === botId);
   } catch (error) {
-    console.error(`Error getting notes by bot ${botId}:`, error);
+    uiLogger.error(`Error getting notes by bot ${botId}:`, error);
     throw normalizeApiErrorMessage(error, 'Failed to get notes by bot');
   }
 }
@@ -298,7 +299,7 @@ export async function getNotesByProject(projectId: string): Promise<Note[]> {
     const notes = await getAllNotes();
     return notes.filter((note) => note.project_id === projectId);
   } catch (error) {
-    console.error(`Error getting notes by project ${projectId}:`, error);
+    uiLogger.error(`Error getting notes by project ${projectId}:`, error);
     throw normalizeApiErrorMessage(error, 'Failed to get notes by project');
   }
 }
@@ -328,7 +329,7 @@ export async function searchNotes(query: string): Promise<Note[]> {
       return false;
     });
   } catch (error) {
-    console.error(`Error searching notes with query "${query}":`, error);
+    uiLogger.error(`Error searching notes with query "${query}":`, error);
     throw normalizeApiErrorMessage(error, 'Failed to search notes');
   }
 }
@@ -338,7 +339,7 @@ export async function getPinnedNotes(): Promise<Note[]> {
     const notes = await getAllNotes();
     return notes.filter((note) => note.is_pinned);
   } catch (error) {
-    console.error('Error getting pinned notes:', error);
+    uiLogger.error('Error getting pinned notes:', error);
     throw normalizeApiErrorMessage(error, 'Failed to get pinned notes');
   }
 }
@@ -407,7 +408,7 @@ export async function listNotes(
 
     return notes;
   } catch (error) {
-    console.error('Error listing notes:', error);
+    uiLogger.error('Error listing notes:', error);
     throw normalizeApiErrorMessage(error, 'Failed to list notes');
   }
 }
@@ -424,7 +425,7 @@ export function subscribeToNote(
     async () => getNote(id),
     callback,
     (error) => {
-      console.error(`Error subscribing to note ${id}:`, error);
+      uiLogger.error(`Error subscribing to note ${id}:`, error);
       callback(null);
     },
     { key: `notes:${id}`, intervalMs: 2000, immediate: true }
@@ -438,7 +439,7 @@ export function subscribeToAllNotes(
     async () => getAllNotes(),
     callback,
     (error) => {
-      console.error('Error subscribing to all notes:', error);
+      uiLogger.error('Error subscribing to all notes:', error);
       callback([]);
     },
     { key: 'notes:all', intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
@@ -453,7 +454,7 @@ export function subscribeToNotesByBot(
     async () => getNotesByBot(botId),
     callback,
     (error) => {
-      console.error(`Error subscribing to notes by bot ${botId}:`, error);
+      uiLogger.error(`Error subscribing to notes by bot ${botId}:`, error);
       callback([]);
     },
     { key: `notes:bot:${botId}`, intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
@@ -467,7 +468,7 @@ export function subscribeToNotesIndex(
     async () => listNotes(),
     callback,
     (error) => {
-      console.error('Error subscribing to notes index:', error);
+      uiLogger.error('Error subscribing to notes index:', error);
       callback([]);
     },
     { key: 'notes:index', intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }

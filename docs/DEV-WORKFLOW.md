@@ -165,6 +165,155 @@ git push
 
 CI на GitHub автоматически прогонит `npm run check:all`.
 
+## Добавление новой themed-страницы (обязательно)
+
+Чтобы новая страница не вносила техдолг по стилям:
+
+1. Используй только дизайн-токены (`--boxmox-color-*`, `--font-*`, `--radius-*`), без raw-цветов "по месту".
+2. Для Ant Design не добавляй `.ant-*` селекторы в CSS Modules.
+: Все визуальные правки вноси через `styles`/`className` props компонентов (`Card.styles`, `Modal.styles`, классы ячеек таблиц и т.д.).
+3. Не используй `!important` в frontend CSS.
+4. Перед коммитом прогоняй:
+```powershell
+npm run check:styles:guardrails
+npm run check:theme:contrast
+```
+5. Если страница добавляет новые цветовые пары текста/фона, обнови `scripts/check-theme-contrast.js` (список `checks`) и убедись, что проверка проходит для light/dark.
+6. Если используется visual background, учитывай `prefers-reduced-motion` (без принудительного blur-анимационного слоя).
+
+## AI-Native Observability & Testing
+
+Цель: чтобы человек и ИИ-агенты могли расследовать проблемы по артефактам, а не "наугад".
+
+### Что включено
+- Backend: JSON-логи (pino) + OpenTelemetry (trace_id/span_id в каждом логе) + `x-trace-id` в ответах.
+- Frontend: OpenTelemetry Web (user-interaction + fetch) и прокидывание W3C headers (`traceparent`, `tracestate`, `baggage`).
+- Frontend logging: единый `uiLogger` с intake в backend (`POST /api/v1/client-logs`) и структурой `scope=client_log`.
+- E2E: Playwright с `trace.zip` на падениях.
+- Local trace UI: Jaeger (`deploy/compose.observability.yml`).
+
+### Старт Jaeger (локально)
+```powershell
+npm run obs:up
+```
+UI: http://localhost:16686
+
+Остановить:
+```powershell
+npm run obs:down
+```
+
+### Запуск дев-стека с трейсингом
+```powershell
+npm run dev:trace
+```
+
+`dev:trace` автоматически выставляет переменные окружения для OTel и запускает `start-dev.js` (backend + Vite).
+Если порт `3001` занят:
+```powershell
+$env:BOTMOX_PROXY_PORT=3101; npm run dev:trace
+```
+
+### Конфигурация (где включать/выключать)
+Dev (без Docker):
+- Backend env: `proxy-server/.env` (см. `proxy-server/.env.example`)
+- Frontend env: `bot-mox/.env` (см. `bot-mox/.env.example`)
+- Быстро включить без правки файлов: `npm run dev:trace`
+
+Prod-like / Docker (Caddy на `http://localhost/`):
+- env-файл: `deploy/compose.prod-sim.env` (локальный, gitignored) или `deploy/compose.prod-sim.env.example`
+- сервисы поднимаются через `deploy/compose.stack.yml` (+ dev override для hot reload)
+
+### Быстрая проверка "все работает" (без сценариев)
+Команда `doctor` делает быстрые проверки доступности UI/API и наличия debug сигналов (health + trace headers).
+
+```powershell
+npm run doctor
+```
+
+Комбо-проверка (doctor + Playwright smoke против `http://localhost/`):
+```powershell
+npm run smoke:prodlike
+```
+
+Prod-like (Caddy на `http://localhost/`): `doctor` авто-детектит этот режим.
+Если стек только что поднялся и сервисы еще устанавливают зависимости/стартуют, можно увеличить ожидание:
+- `BOTMOX_DOCTOR_RETRIES` (по умолчанию 5)
+- `BOTMOX_DOCTOR_RETRY_DELAY_MS` (по умолчанию 2000)
+- или добавить единоразовую задержку: `BOTMOX_DOCTOR_DELAY_MS`
+
+Чтобы прод-like стек подхватил свежий код (новые роуты/логи/diag):
+```powershell
+npm run stack:prod-sim:down
+npm run stack:prod-sim:up
+```
+
+В Docker-режиме трейсинг включается через env vars (см. `deploy/compose.prod-sim.env.example`):
+- `BOTMOX_OTEL_ENABLED=1` (backend tracing)
+- `BOTMOX_OTEL_PROXY_ENABLED=1` (proxy для browser spans -> Jaeger)
+- `BOTMOX_DIAGNOSTICS_ENABLED=1` (включает `/api/v1/diag/*`)
+- `VITE_OTEL_ENABLED=1` (frontend propagation, runtime-config.js)
+
+### E2E тесты (Playwright)
+Запуск:
+```powershell
+npm run test:e2e
+```
+
+Если ты уже поднял prod-like стек на `http://localhost/` (Caddy) и не хочешь, чтобы Playwright сам запускал webServer:
+```powershell
+npm run test:e2e:prodlike
+```
+
+Если порт `3001` занят, E2E webServer по умолчанию использует `BOTMOX_PROXY_PORT=3101` (см. `bot-mox/playwright.config.ts`).
+
+Отчет:
+```powershell
+npm run test:e2e:report
+```
+
+Артефакты:
+- `bot-mox/test-results/` (включая `trace.zip` на падениях)
+- `bot-mox/playwright-report/`
+
+### Локальные quality-gates (чтобы быстро понять что сломалось)
+```powershell
+npm run check:all
+```
+
+Важный guardrail: `npm run check:backend:logging` валит сборку, если в `proxy-server/src` появился `console.*`
+(кроме короткого allowlist). Это защищает структурированное логирование.
+
+Дополнительно: `npm run check:frontend:logging` валит сборку, если `console.*` появился в критичных frontend-слоях:
+- `bot-mox/src/services/**`
+- `bot-mox/src/hooks/**`
+- `bot-mox/src/pages/**`
+- `bot-mox/src/observability/**`
+- `bot-mox/src/components/ui/ErrorBoundary.tsx`
+
+### Как расследовать баг/падение (для ИИ-агентов)
+1. Открой Playwright отчет и trace (`trace.zip`) и найди failing request.
+2. Возьми `x-trace-id` (или `traceparent`) из Network.
+3. Найди backend request-логи по `trace_id` и восстанови серверную цепочку.
+4. Найди frontend ingest-логи по `scope=client_log` и тому же `trace_id`/`correlation_id`.
+5. В Jaeger найди Trace ID и посмотри spans (HTTP inbound/outbound).
+
+### Правила логирования frontend (wave-1)
+- Не использовать `console.*` в guarded scope, только `uiLogger`.
+- Для ошибок использовать нормализованные `event` в snake_case (пример: `api.request_failed`, `settings.load_failed`).
+- Payload policy: `Whitelist + safe extras` (санитизация и редактирование секретов).
+
+Подробный runbook и конфиги: `docs/plans/ai-native-observability-testing.md`.
+
+### CI: где взять артефакты (trace.zip) для анализа
+В CI артефакты загружаются как `playwright-artifacts`.
+
+Скачать через GitHub CLI:
+```bash
+gh run list --workflow CI
+gh run download <run_id> -n playwright-artifacts
+```
+
 ## Как работает аутентификация (dev)
 
 Dev auth bypass отключен. Локальная разработка использует тот же поток авторизации, что и прод:

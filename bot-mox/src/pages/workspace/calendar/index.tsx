@@ -22,6 +22,7 @@ import {
 } from './page';
 import type { CalendarEventFormValues, CalendarViewMode, SidebarMode } from './page';
 import styles from './WorkspaceCalendarPage.module.css';
+import { uiLogger } from '../../../observability/uiLogger'
 
 const { Title } = Typography;
 
@@ -45,7 +46,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
         setLoading(false);
       },
       (error) => {
-        console.error('Failed to subscribe to calendar events:', error);
+        uiLogger.error('Failed to subscribe to calendar events:', error);
         message.error('Failed to load calendar events');
         setLoading(false);
       }
@@ -170,7 +171,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
       if (error && typeof error === 'object' && 'errorFields' in (error as object)) {
         return;
       }
-      console.error('Failed to save calendar event:', error);
+      uiLogger.error('Failed to save calendar event:', error);
       message.error('Failed to save event');
     } finally {
       setSaving(false);
@@ -182,7 +183,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
       await deleteCalendarEvent(eventId);
       message.success('Event deleted');
     } catch (error) {
-      console.error('Failed to delete calendar event:', error);
+      uiLogger.error('Failed to delete calendar event:', error);
       message.error('Failed to delete event');
     }
   };
@@ -201,7 +202,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
     <div className={styles.root}>
       <div className={styles.header}>
         <Title level={4} className={styles.title}>
-          <CalendarOutlined /> Workspace Calendar
+          <CalendarOutlined className={styles.titleIcon} /> Workspace Calendar
         </Title>
         <Space>
           <Segmented<CalendarViewMode>
@@ -234,7 +235,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
 
         <Card
           className={styles.sidebar}
-          title={sidebarTitle}
+          title={<span className={styles.sidebarTitle}>{sidebarTitle}</span>}
           extra={
             <Space>
               {isDayMode && (
@@ -248,6 +249,12 @@ export const WorkspaceCalendarPage: React.FC = () => {
             </Space>
           }
           loading={loading}
+          styles={{
+            body: {
+              maxHeight: '100%',
+              overflowY: 'auto',
+            },
+          }}
         >
           <CalendarEventList
             events={selectedDateEvents}

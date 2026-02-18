@@ -45,6 +45,8 @@ function startTracingIfEnabled() {
         getNodeAutoInstrumentations({
           // Keep noisy/low-signal instrumentations off by default.
           '@opentelemetry/instrumentation-fs': { enabled: false },
+          // We inject trace_id/span_id ourselves in pino logger to guarantee shape and avoid duplicate keys.
+          '@opentelemetry/instrumentation-pino': { enabled: false },
         }),
       ],
     });
@@ -76,4 +78,3 @@ function startTracingIfEnabled() {
 module.exports = {
   startTracingIfEnabled,
 };
-

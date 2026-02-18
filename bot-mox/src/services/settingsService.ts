@@ -1,5 +1,6 @@
 import type { SubscriptionSettings } from '../types';
 import { apiGet, apiPut } from './apiClient';
+import { uiLogger } from '../observability/uiLogger'
 
 const SETTINGS_PATH = '/api/v1/settings/alerts';
 
@@ -41,7 +42,7 @@ export async function getSubscriptionSettings(): Promise<SubscriptionSettings> {
     const response = await apiGet<unknown>(SETTINGS_PATH);
     return normalizeSubscriptionSettings(response.data);
   } catch (error) {
-    console.error('Error loading subscription settings:', error);
+    uiLogger.error('Error loading subscription settings:', error);
     return getDefaultSettings();
   }
 }
@@ -76,6 +77,6 @@ export async function initSubscriptionSettings(): Promise<void> {
       await updateSubscriptionSettings(getDefaultSettings());
     }
   } catch (error) {
-    console.error('Error initializing subscription settings:', error);
+    uiLogger.error('Error initializing subscription settings:', error);
   }
 }

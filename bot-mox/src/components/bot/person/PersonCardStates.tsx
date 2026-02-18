@@ -17,7 +17,7 @@ export const PersonCardTitle: React.FC<PersonCardTitleProps> = ({ hasIncompleteD
     <span>Person Information</span>
     {hasIncompleteData && (
       <Tooltip title="Some fields are empty. Please fill in all person data.">
-        <Badge dot color="orange" className={styles['incomplete-badge']}>
+        <Badge dot color="orange">
           <ExclamationCircleOutlined className={styles['warning-icon']} />
         </Badge>
       </Tooltip>

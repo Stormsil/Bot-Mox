@@ -24,6 +24,7 @@ import {
   MS_PER_DAY,
 } from './page-helpers';
 import styles from './DatacenterPage.module.css';
+import { uiLogger } from '../../observability/uiLogger'
 
 function cx(classNames: string): string {
   return classNames
@@ -60,7 +61,7 @@ export const DatacenterPage: React.FC = () => {
         try {
           return { ...DEFAULT_COLLAPSED_SECTIONS, ...JSON.parse(saved) };
         } catch (error) {
-          console.warn('Failed to parse content map collapse state:', error);
+          uiLogger.warn('Failed to parse content map collapse state:', error);
         }
       }
       return DEFAULT_COLLAPSED_SECTIONS;
@@ -76,7 +77,7 @@ export const DatacenterPage: React.FC = () => {
         setBotsLoading(false);
       },
       (error) => {
-        console.error('Error loading bots:', error);
+        uiLogger.error('Error loading bots:', error);
         setBotsLoading(false);
       },
       { intervalMs: 5000 }
@@ -91,7 +92,7 @@ export const DatacenterPage: React.FC = () => {
         setLicensesLoading(false);
       },
       (error) => {
-        console.error('Error loading licenses:', error);
+        uiLogger.error('Error loading licenses:', error);
         setLicensesLoading(false);
       },
       { intervalMs: 7000 }
@@ -106,7 +107,7 @@ export const DatacenterPage: React.FC = () => {
         setProxiesLoading(false);
       },
       (error) => {
-        console.error('Error loading proxies:', error);
+        uiLogger.error('Error loading proxies:', error);
         setProxiesLoading(false);
       },
       { intervalMs: 7000 }
@@ -121,7 +122,7 @@ export const DatacenterPage: React.FC = () => {
         setSubscriptionsLoading(false);
       },
       (error) => {
-        console.error('Error loading subscriptions:', error);
+        uiLogger.error('Error loading subscriptions:', error);
         setSubscriptionsLoading(false);
       },
       { intervalMs: 7000 }

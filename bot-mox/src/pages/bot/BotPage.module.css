@@ -31,58 +31,6 @@
   color: var(--boxmox-color-text-secondary);
 }
 
-.subtabsLayout {
-  display: grid;
-  grid-template-columns: 210px 1fr;
-  gap: 16px;
-  align-items: start;
-  min-height: 0;
-}
-
-.subtabsNav {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-  border-radius: var(--radius-sm);
-  padding: 6px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  position: sticky;
-  top: 12px;
-}
-
-.subtab {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border: none;
-  background: transparent;
-  color: var(--boxmox-color-text-secondary);
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 13px;
-}
-
-.subtab:hover {
-  background: var(--boxmox-color-surface-hover);
-  color: var(--boxmox-color-text-primary);
-}
-
-.subtabActive {
-  background: var(--boxmox-color-brand-soft);
-  color: var(--boxmox-color-brand-contrast);
-}
-
-.subtabIcon {
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .subtabsContent {
   min-width: 0;
 }
@@ -96,26 +44,6 @@
   margin-bottom: 0;
 }
 
-@media (max-width: 1000px) {
-  .subtabsLayout {
-    grid-template-columns: 1fr;
-  }
-
-  .subtabsNav {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 8px;
-    position: static;
-  }
-
-  .subtab {
-    width: auto;
-    border-radius: 4px;
-    padding: 6px 10px;
-  }
-}
-
 .configure {
   min-width: 0;
 }
@@ -124,20 +52,15 @@
   background: transparent;
 }
 
-.configureCollapse :global(.ant-collapse-item) {
+.configureCollapseItem {
   border: 1px solid var(--boxmox-color-border-default);
   border-radius: var(--radius-sm);
   margin-bottom: 12px;
   overflow: hidden;
 }
 
-.configureCollapse :global(.ant-collapse-item:last-child) {
+.configureCollapseItemLast {
   margin-bottom: 0;
-}
-
-.configureCollapse :global(.ant-collapse-header) {
-  background: var(--boxmox-color-surface-muted);
-  padding: 12px 16px;
 }
 
 .configurePanelHeader {
@@ -192,9 +115,3 @@
   background: #f59a23;
   font-size: 16px;
 }
-
-.configureCollapse :global(.ant-collapse-content) {
-  background: var(--boxmox-color-surface-panel);
-  border-top: 1px solid var(--boxmox-color-border-default);
-}
-

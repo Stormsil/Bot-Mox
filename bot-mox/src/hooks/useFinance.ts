@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { message } from 'antd';
+import { uiLogger } from '../observability/uiLogger'
 import type {
   FinanceOperation,
   FinanceOperationFormData,
@@ -71,7 +72,7 @@ export function useFinance(options: UseFinanceOptions = {}): UseFinanceReturn {
         setError(null);
       },
       (err) => {
-        console.error('Error loading finance operations:', err);
+        uiLogger.error('Error loading finance operations:', err);
         setError(err);
         setLoading(false);
         message.error('Failed to load finance data');
@@ -120,7 +121,7 @@ export function useFinance(options: UseFinanceOptions = {}): UseFinanceReturn {
       await createFinanceOperation(data);
       message.success('Transaction added successfully');
     } catch (err) {
-      console.error('Error adding operation:', err);
+      uiLogger.error('Error adding operation:', err);
       message.error('Failed to add transaction');
       throw err;
     }
@@ -135,7 +136,7 @@ export function useFinance(options: UseFinanceOptions = {}): UseFinanceReturn {
       await updateFinanceOperation(id, data);
       message.success('Transaction updated successfully');
     } catch (err) {
-      console.error('Error updating operation:', err);
+      uiLogger.error('Error updating operation:', err);
       message.error('Failed to update transaction');
       throw err;
     }
@@ -147,7 +148,7 @@ export function useFinance(options: UseFinanceOptions = {}): UseFinanceReturn {
       await deleteFinanceOperation(id);
       message.success('Transaction deleted successfully');
     } catch (err) {
-      console.error('Error deleting operation:', err);
+      uiLogger.error('Error deleting operation:', err);
       message.error('Failed to delete transaction');
       throw err;
     }

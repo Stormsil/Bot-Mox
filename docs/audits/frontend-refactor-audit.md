@@ -1,6 +1,6 @@
 # Frontend Refactor Audit (Evergreen)
 
-Last updated (UTC): **2026-02-17T00:22:31Z**
+Last updated (UTC): **2026-02-18T01:16:40Z**
 Owner: Frontend/Platform
 Source roadmap: `docs/plans/frontend-refactor-roadmap.md`
 
@@ -40,15 +40,15 @@ Date: 2026-02-16
 
 ## Current Snapshot (After This Batch)
 
-Date: 2026-02-17
+Date: 2026-02-18
 
-1. `!important` count in frontend: **107**
+1. `!important` count in frontend: **0**
 2. Global `.ant-*` selectors in `bot-mox/src/styles/global.css`: **NO**
 3. Theme runtime provider introduced and wired into app shell: **YES**
 4. Theme visual background API + UI + shell layers: **YES**
 5. Theme typography + shape (radius) persisted + applied: **YES**
 6. VM domain components migrated to CSS Modules: **20** (`VMQueuePanel`, `VMOperationLog`, `VMSettingsForm`, `ProxmoxTab`, `ProjectResourcesSection`, `UnattendTab`, `PlaybookTab`, `ProxmoxSection`, `SshSection`, `ServiceUrlsSection`, `SecretField`, `SettingsActions`, `VMList`, `VMStatusBar`, `VMConfigPreview`, `VMServicesPanel`, `VMCommandPanel`, `VMListPage`, `VMsPage`, `VMServicePage`)
-7. Remaining `.ant-*` selectors in CSS Modules: **281** (across **32** files)
+7. Remaining `.ant-*` selectors in CSS Modules: **0** (across **0** files)
 
 ## Target KPIs
 
@@ -63,7 +63,7 @@ Date: 2026-02-17
 ## Phase 0 — Guardrails and Baseline
 
 - [x] `GREEN` Add style debt guard checks (new global `.ant-*`, new `!important`).
-- [ ] `TODO` Capture page-level visual baseline screenshots.
+- [x] `GREEN` Capture page-level visual baseline screenshots.
 - [x] `GREEN` Create roadmap and evergreen audit docs.
 
 Evidence:
@@ -71,6 +71,8 @@ Evidence:
 2. `docs/audits/frontend-refactor-audit.md`
 3. `scripts/check-style-guardrails.js`
 4. `package.json` (`check:styles:guardrails`, `check:all`)
+5. `bot-mox/e2e/capture-baseline.mjs`
+6. `docs/audits/artifacts/frontend-baseline-2026-02-17/*.png` (light/dark for `/`, `/finance`, `/settings`, `/notes`, `/workspace/calendar`, `/workspace/kanban`, `/licenses`, `/proxies`, `/subscriptions`, `/vms`)
 
 ## Phase 1 — Theme Core Consolidation
 
@@ -78,7 +80,7 @@ Evidence:
 - [x] `GREEN` Centralize token mapping for `ConfigProvider`.
 - [x] `GREEN` Keep compatibility bridge for legacy CSS vars.
 - [x] `GREEN` Add typography + shape (radius) settings to theme runtime and settings persistence.
-- [ ] `WIP` Validate theme propagation on all pages.
+- [x] `GREEN` Validate theme propagation on all pages.
 
 Evidence:
 1. `bot-mox/src/theme/themeRuntime.tsx`
@@ -88,12 +90,13 @@ Evidence:
 5. `bot-mox/src/pages/settings/useThemeSettings.ts`
 6. `bot-mox/src/pages/settings/ThemeSettingsPanel.tsx`
 7. `proxy-server/src/contracts/schemas.js`
+8. `docs/audits/artifacts/frontend-baseline-2026-02-17/theme-propagation-report.json` (`panel` and `text` token values switch consistently between light/dark on all key routes)
 
 ## Phase 2 — De-globalize Ant Overrides
 
 - [x] `GREEN` Strip broad `.ant-*` component skinning from `global.css`.
 - [x] `GREEN` Move base visuals to antd `token/components` config.
-- [ ] `WIP` Re-scope unavoidable exceptions locally.
+- [x] `GREEN` Re-scope unavoidable exceptions locally.
 
 Evidence:
 1. `bot-mox/src/styles/global.css`
@@ -124,14 +127,48 @@ Evidence:
 26. `bot-mox/src/components/ui/TableActionButton.module.css` (no `.ant-*` overrides)
 27. `bot-mox/src/components/schedule/SessionEditor.tsx` (Modal visuals via tokens/props; no `.ant-*` CSS)
 28. `bot-mox/src/components/finance/TransactionForm.tsx` (Modal + form visuals via tokens/props; no `.ant-*` CSS)
+29. `bot-mox/src/components/ui/LoadingState.module.css` (removed local Skeleton `.ant-*` overrides; token-first defaults)
+30. `bot-mox/src/pages/dashboard/index.tsx` + `bot-mox/src/pages/dashboard/Dashboard.module.css` (Card/Table styles via component props + local classes; removed `.ant-*`/`!important`)
+31. `bot-mox/src/pages/subscriptions/index.tsx` + `bot-mox/src/pages/subscriptions/subscription-columns.tsx` + `bot-mox/src/pages/subscriptions/SubscriptionsPage.module.css` + `bot-mox/src/pages/subscriptions/ExpiringSubscriptionsAlert.tsx` + `bot-mox/src/pages/subscriptions/SubscriptionsStats.tsx` (removed page-level `.ant-*` overrides; table/alert/typography styling moved to props + local classes)
+32. `bot-mox/src/components/bot/license/license.module.css` + `bot-mox/src/components/bot/license/LicenseViews.tsx` + `bot-mox/src/components/bot/license/LicenseFormModal.tsx` + `bot-mox/src/components/bot/license/AssignLicenseModal.tsx` (removed all local `.ant-*` overrides from license domain; card/modal theming moved to component `styles`/local classes)
+33. `bot-mox/src/components/bot/BotFinance.module.css` + `bot-mox/src/components/bot/BotFinance.tsx` (removed all local `.ant-*` overrides from bot finance module; Statistic/Table/Card styling moved to component props + local classes)
+34. `bot-mox/src/components/notes/NotesComponents.module.css` + `bot-mox/src/components/notes/NoteEditor.tsx` + `bot-mox/src/components/notes/NoteSidebar.tsx` + `bot-mox/src/components/notes/CheckboxBlock.tsx` (removed all `.ant-*` selectors from notes styling; editor mode/sidebar/checkbox styling moved to local classes and component props)
+35. `bot-mox/src/components/bot/person/person.module.css` + `bot-mox/src/components/bot/BotPerson.tsx` + `bot-mox/src/components/bot/person/PersonCardStates.tsx` + `bot-mox/src/components/bot/person/PersonFormFields.tsx` (removed all `.ant-*` selectors from person module; card/alert/input/select styling moved to local classes + component props)
+36. `bot-mox/src/components/bot/BotSummary.module.css` + `bot-mox/src/components/bot/summary/sections-overview.tsx` + `bot-mox/src/components/bot/summary/sections-details.tsx` (removed all `.ant-*` selectors from bot summary module; Card/Tag styles moved to component props; dead unused summary CSS blocks removed)
+37. `bot-mox/src/pages/datacenter/DatacenterPage.module.css` + `bot-mox/src/pages/datacenter/content-map-sections.tsx` + `bot-mox/src/pages/datacenter/content-map-sections-secondary.tsx` (removed all `.ant-*` selectors from datacenter page styles; deleted unused legacy datacenter block; map-card body spacing moved to `Card.styles`)
+38. `bot-mox/src/components/bot/BotSchedule.module.css` + `bot-mox/src/components/bot/BotSchedule.tsx` (removed all `.ant-*` selectors from bot schedule module; card header/button/alert visuals moved to component `styles` + local classes)
+39. `bot-mox/src/components/bot/lifeStages/lifeStages.module.css` + `bot-mox/src/components/bot/BotLifeStages.tsx` + `bot-mox/src/components/bot/lifeStages/StagePanels.tsx` + `bot-mox/src/components/bot/lifeStages/StageTimeline.tsx` (removed all `.ant-*` selectors from life stages module; Card/Statistic/Timeline/button styling moved to component props + local classes; responsive width hack replaced by responsive `Col` props)
+40. `bot-mox/src/pages/project/ProjectPage.module.css` + `bot-mox/src/pages/project/index.tsx` + `bot-mox/src/pages/project/columns.tsx` (removed all `.ant-*` selectors from project page; table header/body styling moved to column/table classes, filter controls moved to local classes, status tags styled via explicit class)
+41. `bot-mox/src/pages/licenses/LicensesPage.module.css` + `bot-mox/src/pages/licenses/index.tsx` + `bot-mox/src/pages/licenses/page/LicenseColumns.tsx` (removed all `.ant-*` selectors from licenses page; table styles moved to column/table classes, filter/header/tag styles moved to local classes)
+42. `bot-mox/src/components/finance/FinanceTransactions.module.css` + `bot-mox/src/components/finance/FinanceTransactions.tsx` (removed all `.ant-*` selectors from finance transactions module; table header/body styling moved to column/table classes, card body spacing moved to `Card.styles`, filter controls moved to local classes)
+43. `bot-mox/src/components/bot/proxy/proxy.module.css` + `bot-mox/src/components/bot/proxy/ProxyDetailsCard.tsx` + `bot-mox/src/components/bot/proxy/ProxyEmptyCard.tsx` + `bot-mox/src/components/bot/proxy/ProxyEditorModal.tsx` (removed all `.ant-*` selectors from bot proxy module; Card/Modal header visuals moved to component `styles`, dead/unused proxy CSS overrides removed)
+44. `bot-mox/src/components/bot/subscription/subscription.module.css` + `bot-mox/src/components/bot/BotSubscription.tsx` + `bot-mox/src/components/bot/subscription/SubscriptionAlerts.tsx` (removed all `.ant-*` selectors from bot subscription module; Card body/header and list item visuals moved to `Card.styles` + local classes; dead subscription help CSS removed)
+45. `bot-mox/src/pages/workspace/calendar/WorkspaceCalendarPage.module.css` + `bot-mox/src/pages/workspace/calendar/index.tsx` + `bot-mox/src/pages/workspace/calendar/page/CalendarMainPanel.tsx` + `bot-mox/src/pages/workspace/calendar/page/CalendarEventList.tsx` (removed all `.ant-*` selectors from workspace calendar page; calendar month cells moved to local `fullCellRender`, Card/list/divider visuals moved to component props + local classes)
+46. `bot-mox/src/components/bot/BotLeveling.module.css` + `bot-mox/src/components/bot/BotLeveling.tsx` (removed all `.ant-*` selectors from bot leveling module; Statistic title/content and Card header/body visuals moved to local classes + component props)
+47. `bot-mox/src/components/finance/FinanceSummary.module.css` + `bot-mox/src/components/finance/FinanceSummary.tsx` + `bot-mox/src/components/finance/ProjectPerformanceTable.tsx` (removed all `.ant-*` selectors from finance summary module; metric/table visuals moved to local classes + component props)
+48. `bot-mox/src/components/bot/BotFarm.module.css` + `bot-mox/src/components/bot/BotFarm.tsx` (removed all `.ant-*` selectors from bot farm module; Statistic title/content and Inventory Card header/body visuals moved to local classes + component props)
+49. `bot-mox/src/components/schedule/ScheduleGenerator.module.css` + `bot-mox/src/components/schedule/ScheduleGenerator.tsx` (removed all `.ant-*` selectors from schedule generator module; Form/List/Button visuals moved to local classes + component props; removed local `!important` overrides)
+50. `bot-mox/src/components/schedule/SessionList.module.css` + `bot-mox/src/components/schedule/SessionList.tsx` (removed all `.ant-*` selectors from session list module; switch/button visuals moved to component props + local classes)
+51. `bot-mox/src/components/schedule/WeekOverview.module.css` (removed unused `week-overview-actions` block and all local `.ant-*` overrides)
+52. `bot-mox/src/components/finance/UniversalChart.module.css` + `bot-mox/src/components/finance/UniversalChart.tsx` (removed local `.ant-*` overrides from chart card extra button; moved to local class on the settings button)
+53. `bot-mox/src/pages/notes/NotesPage.module.css` (removed local `.ant-empty-description` override; empty-state color moved to local description wrapper class)
+54. `bot-mox/src/pages/bot/BotPage.module.css` + `bot-mox/src/pages/bot/page/sections.tsx` (removed all `.ant-collapse*` selectors from bot page styles; collapse panel visuals moved to item-level `styles` + local item classes)
+55. `bot-mox/src/components/bot/BotProfession.module.css` + `bot-mox/src/components/bot/BotProfession.tsx` (removed all `.ant-*` selectors from bot profession module; Card header/body and typography visuals moved to local classes + `Card.styles`)
+56. `bot-mox/src/components/ui/MetricCard.module.css` + `bot-mox/src/components/ui/MetricCard.tsx` (removed all `.ant-*` selectors and local `!important` overrides; Card/Progress visuals moved to component props)
+57. `bot-mox/src/pages/workspace/kanban/WorkspaceKanbanPage.module.css` + `bot-mox/src/pages/workspace/kanban/index.tsx` (removed all `.ant-*` selectors and local `!important` overrides; card body/title icon visuals moved to component props + local wrappers)
+58. `bot-mox/src/components/bot/BotLogs.module.css` + `bot-mox/src/components/bot/BotLogs.tsx` + `bot-mox/src/components/bot/BotVMInfo.module.css` + `bot-mox/src/components/bot/BotVMInfo.tsx` (removed all `.ant-*` selectors from bot logs/vm-info modules; Card header/title visuals moved to component props + local classes)
+59. `bot-mox/src/components/notes/NotesComponents.module.css` (removed remaining local `!important` overrides in notes module)
+60. `bot-mox/src/pages/datacenter/DatacenterPage.module.css` (removed local `!important` overrides in content map title/toggle styles)
+61. `bot-mox/src/components/finance/FinanceCommon.module.css` + `bot-mox/src/components/vm/VMOperationLog.module.css` + `bot-mox/src/components/vm/settingsForm/UnattendTab.module.css` + `bot-mox/src/pages/vms/VMsPage.module.css` (removed remaining local `!important` overrides in VM/Finance shared styles)
+62. `bot-mox/src/components/bot/BotFinance.tsx` + `bot-mox/src/components/bot/lifeStages/StagePanels.tsx` + `bot-mox/src/components/bot/person/PersonCardStates.tsx` + `bot-mox/src/pages/subscriptions/ExpiringSubscriptionsAlert.tsx` (fixed antd API compatibility after refactor: replaced unsupported `Statistic.titleStyle`/`Alert.styles` usage with supported props/markup)
 
 ## Phase 3 — CSS Modules Migration (Domain by Domain)
 
-- [ ] `WIP` Layout domain migration.
-- [ ] `WIP` VM domain migration.
-- [ ] `TODO` Resources domain migration.
-- [ ] `WIP` Workspace domain migration.
-- [ ] `WIP` Bot + Finance domain migration.
+- [x] `GREEN` Layout domain migration.
+- [x] `GREEN` VM domain migration.
+- [x] `GREEN` Resources domain migration.
+- [x] `GREEN` Workspace domain migration.
+- [x] `GREEN` Bot + Finance domain migration.
 
 Evidence (Layout):
 1. `bot-mox/src/components/layout/Header.tsx`
@@ -350,6 +387,90 @@ Checks run (this batch):
 2. `npm --prefix bot-mox run build` (pass)
 3. `npm run check:styles:guardrails` (pass)
 4. `npm run stack:dev:up` (pass)
+5. `npm run smoke:prodlike` (pass; includes `doctor` + Playwright smoke)
+6. `node bot-mox/e2e/capture-baseline.mjs` (pass; baseline screenshots + theme propagation report)
+7. `cd bot-mox; npx eslint src/pages/dashboard/index.tsx` (pass)
+8. `npm run check:styles:guardrails` (pass; `!important=99`)
+9. `cd bot-mox; npx eslint src/pages/subscriptions/index.tsx src/pages/subscriptions/subscription-columns.tsx src/pages/subscriptions/ExpiringSubscriptionsAlert.tsx src/pages/subscriptions/SubscriptionsStats.tsx` (pass)
+10. `npm run check:styles:guardrails` (pass; `!important=96`)
+11. `npm run smoke:prodlike` (pass)
+12. `cd bot-mox; npx eslint src/components/bot/BotLicense.tsx src/components/bot/license/LicenseViews.tsx src/components/bot/license/LicenseFormModal.tsx src/components/bot/license/AssignLicenseModal.tsx` (pass)
+13. `npm run check:styles:guardrails` (pass; `!important=87`)
+14. `npm run smoke:prodlike` (pass)
+15. `cd bot-mox; npx eslint src/components/bot/BotFinance.tsx` (pass)
+16. `npm run check:styles:guardrails` (pass; `!important=85`)
+17. `npm run smoke:prodlike` (pass)
+18. `cd bot-mox; npx eslint src/components/notes/NoteEditor.tsx src/components/notes/NoteSidebar.tsx src/components/notes/CheckboxBlock.tsx` (pass)
+19. `npm run check:styles:guardrails` (pass; `!important=83`)
+20. `npm run smoke:prodlike` (pass)
+21. `cd bot-mox; npx eslint src/components/bot/BotPerson.tsx src/components/bot/person/PersonCardStates.tsx src/components/bot/person/PersonFormFields.tsx` (pass)
+22. `npm run check:styles:guardrails` (pass; `!important=72`)
+23. `npm run smoke:prodlike` (pass)
+24. `cd bot-mox; npx eslint src/components/bot/BotSummary.tsx src/components/bot/summary/sections-overview.tsx src/components/bot/summary/sections-details.tsx` (pass)
+25. `npm run check:styles:guardrails` (pass; `!important=71`)
+26. `npm run smoke:prodlike` (pass)
+27. `cd bot-mox; npx eslint src/pages/datacenter/index.tsx src/pages/datacenter/content-map.tsx src/pages/datacenter/content-map-sections.tsx src/pages/datacenter/content-map-sections-secondary.tsx` (pass)
+28. `npm run check:styles:guardrails` (pass; `!important=69`)
+29. `npm run smoke:prodlike` (pass)
+30. `cd bot-mox; npx eslint src/components/bot/BotSchedule.tsx` (pass)
+31. `npm run check:styles:guardrails` (pass; `!important=69`)
+32. `npm run smoke:prodlike` (pass)
+33. `cd bot-mox; npx eslint src/components/bot/BotLifeStages.tsx src/components/bot/lifeStages/StagePanels.tsx src/components/bot/lifeStages/StageTimeline.tsx` (pass)
+34. `npm run check:styles:guardrails` (pass; `!important=65`)
+35. `npm run smoke:prodlike` (pass)
+36. `cd bot-mox; npx eslint src/pages/project/index.tsx src/pages/project/columns.tsx` (pass)
+37. `npm run check:styles:guardrails` (pass; `!important=61`)
+38. `npm run smoke:prodlike` (pass)
+39. `cd bot-mox; npx eslint src/pages/licenses/index.tsx src/pages/licenses/page/LicenseColumns.tsx` (pass)
+40. `npm run check:styles:guardrails` (pass; `!important=58`)
+41. `npm run smoke:prodlike` (pass)
+42. `cd bot-mox; npx eslint src/components/finance/FinanceTransactions.tsx` (pass)
+43. `npm run check:styles:guardrails` (pass; `!important=53`)
+44. `npm run smoke:prodlike` (pass)
+45. `cd bot-mox; npx eslint src/components/bot/proxy/ProxyDetailsCard.tsx src/components/bot/proxy/ProxyEmptyCard.tsx src/components/bot/proxy/ProxyEditorModal.tsx` (pass)
+46. `npm run check:styles:guardrails` (pass; `!important=53`)
+47. `npm run smoke:prodlike` (pass)
+48. `cd bot-mox; npx eslint src/components/bot/BotSubscription.tsx src/components/bot/subscription/SubscriptionAlerts.tsx src/components/bot/subscription/SubscriptionListItem.tsx` (pass)
+49. `npm run check:styles:guardrails` (pass; `!important=53`)
+50. `npm run smoke:prodlike` (pass)
+51. `cd bot-mox; npx eslint src/pages/workspace/calendar/index.tsx src/pages/workspace/calendar/page/CalendarMainPanel.tsx src/pages/workspace/calendar/page/CalendarEventList.tsx` (pass)
+52. `npm run check:styles:guardrails` (pass; `!important=48`)
+53. `npm run smoke:prodlike` (pass)
+54. `cd bot-mox; npx eslint src/components/bot/BotLeveling.tsx` (pass)
+55. `npm run check:styles:guardrails` (pass; `!important=48`)
+56. `npm run smoke:prodlike` (pass)
+57. `cd bot-mox; npx eslint src/components/finance/FinanceSummary.tsx src/components/finance/ProjectPerformanceTable.tsx src/components/finance/CostAnalysis.tsx` (pass)
+58. `npm run check:styles:guardrails` (pass; `!important=48`)
+59. `npm run smoke:prodlike` (pass)
+60. `cd bot-mox; npx eslint src/components/bot/BotFarm.tsx` (pass)
+61. `npm run check:styles:guardrails` (pass; `!important=48`)
+62. `npm run smoke:prodlike` (pass)
+63. `cd bot-mox; npx eslint src/components/schedule/ScheduleGenerator.tsx` (pass)
+64. `npm run check:styles:guardrails` (pass; `!important=41`)
+65. `npm run smoke:prodlike` (pass)
+66. `cd bot-mox; npx eslint src/components/schedule/SessionList.tsx` (pass)
+67. `npm run check:styles:guardrails` (pass; `!important=41`)
+68. `npm run smoke:prodlike` (pass)
+69. `npm run check:styles:guardrails` (pass; `!important=41`)
+70. `npm run smoke:prodlike` (pass)
+71. `cd bot-mox; npx eslint src/components/finance/UniversalChart.tsx` (pass)
+72. `npm run check:styles:guardrails` (pass; `!important=41`)
+73. `npm run smoke:prodlike` (pass)
+74. `npm run check:styles:guardrails` (pass; `!important=41`)
+75. `npm run smoke:prodlike` (pass)
+76. `cd bot-mox; npx eslint src/pages/bot/page/sections.tsx` (pass)
+77. `npm run check:styles:guardrails` (pass; `!important=41`)
+78. `npm run smoke:prodlike` (pass)
+79. `cd bot-mox; npx eslint src/components/bot/BotProfession.tsx src/components/ui/MetricCard.tsx src/pages/workspace/kanban/index.tsx src/components/bot/BotLogs.tsx src/components/bot/BotVMInfo.tsx` (pass)
+80. `npm run check:styles:guardrails` (pass; `!important=34`)
+81. `npm run smoke:prodlike` (pass)
+82. `npm run check:styles:guardrails` (pass; `!important=0`)
+83. `npm run smoke:prodlike` (pass)
+84. `npm run check:theme:contrast` (pass; report generated at `docs/audits/artifacts/theme-contrast/theme-contrast-report-2026-02-18.json`)
+85. `npm run check:styles:guardrails` (pass; `!important=0`)
+86. `npm run smoke:prodlike` (pass)
+87. `npm run check:types` (pass)
+88. `npm run check:all` (pass)
 
 ## Phase 4 — Visual Background Theme (Anime/Art)
 
@@ -373,13 +494,17 @@ Evidence:
 
 ## Phase 5 — Hardening and Cleanup
 
-- [ ] `TODO` Remove dead CSS and obsolete variables.
-- [ ] `TODO` Final accessibility/contrast pass.
-- [ ] `TODO` Final performance pass for background mode.
-- [ ] `TODO` Update dev docs for adding new themed pages.
+- [x] `GREEN` Remove dead CSS and obsolete variables.
+- [x] `GREEN` Final accessibility/contrast pass.
+- [x] `GREEN` Final performance pass for background mode.
+- [x] `GREEN` Update dev docs for adding new themed pages.
 
 Evidence:
-1. pending
+1. `bot-mox/src/pages/bot/BotPage.module.css` (removed obsolete legacy `subtab*` block no longer used by bot page runtime)
+2. `scripts/check-theme-contrast.js` + `docs/audits/artifacts/theme-contrast/theme-contrast-report-2026-02-18.json` (automated theme token contrast checks for light/dark palettes)
+3. `bot-mox/src/App.tsx` (visual background blur now respects `prefers-reduced-motion`, reducing motion/paint cost on constrained setups)
+4. `docs/DEV-WORKFLOW.md` (added mandatory checklist for adding new themed pages)
+5. `package.json` (`check:theme:contrast` script and inclusion in `check:all`)
 
 ## Risks and Watchlist
 

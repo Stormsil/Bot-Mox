@@ -7,8 +7,11 @@ const path = require('path');
 const rootDir = path.join(__dirname, '..');
 const startScript = path.join(rootDir, 'start-dev.js');
 
+const proxyPort = Number.parseInt(String(process.env.BOTMOX_PROXY_PORT || '3001'), 10) || 3001;
+
 const env = {
   ...process.env,
+  BOTMOX_PROXY_PORT: String(proxyPort),
 
   // Backend OTel
   BOTMOX_OTEL_ENABLED: process.env.BOTMOX_OTEL_ENABLED || '1',
@@ -17,15 +20,18 @@ const env = {
 
   // Optional: allow the backend to proxy OTLP traces from browser -> Jaeger (helps visualize "click -> DB").
   BOTMOX_OTEL_PROXY_ENABLED: process.env.BOTMOX_OTEL_PROXY_ENABLED || '1',
+  BOTMOX_DIAGNOSTICS_ENABLED: process.env.BOTMOX_DIAGNOSTICS_ENABLED || '1',
 
   // Frontend OTel (context propagation + user interaction spans)
   VITE_OTEL_ENABLED: process.env.VITE_OTEL_ENABLED || '1',
   VITE_OTEL_SERVICE_NAME: process.env.VITE_OTEL_SERVICE_NAME || 'bot-mox-frontend',
+  VITE_API_BASE_URL: process.env.VITE_API_BASE_URL || `http://localhost:${proxyPort}`,
+  VITE_WS_BASE_URL: process.env.VITE_WS_BASE_URL || `ws://localhost:${proxyPort}`,
 
   // Export frontend spans through the backend proxy (avoids Jaeger CORS issues).
   // This is safe to disable by setting it to empty string.
   VITE_OTEL_EXPORTER_OTLP_ENDPOINT:
-    process.env.VITE_OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:3001/api/v1/otel/v1/traces',
+    process.env.VITE_OTEL_EXPORTER_OTLP_ENDPOINT || `http://localhost:${proxyPort}/api/v1/otel/v1/traces`,
 };
 
 const child = spawn(process.execPath, [startScript], {
@@ -37,4 +43,3 @@ const child = spawn(process.execPath, [startScript], {
 child.on('exit', (code) => {
   process.exit(code ?? 0);
 });
-

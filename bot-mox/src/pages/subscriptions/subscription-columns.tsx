@@ -12,19 +12,28 @@ const { Text } = Typography;
 interface BuildSubscriptionColumnsParams {
   onEdit: (subscription: SubscriptionWithDetails) => void;
   onDelete: (subscription: SubscriptionWithDetails) => void;
+  cellClassName?: string;
+  headerClassName?: string;
 }
 
 export const buildSubscriptionColumns = ({
   onEdit,
   onDelete,
+  cellClassName,
+  headerClassName,
 }: BuildSubscriptionColumnsParams): TableColumnsType<SubscriptionWithDetails> => [
   {
     title: 'Status',
     dataIndex: 'computedStatus',
     key: 'computedStatus',
     width: 140,
+    ...(cellClassName ? { className: cellClassName } : {}),
+    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (status: SubscriptionWithDetails['computedStatus'], record) => (
-      <Tag color={getSubscriptionStatusColor(status)} style={{ fontSize: '11px' }}>
+      <Tag
+        color={getSubscriptionStatusColor(status)}
+        style={{ fontSize: '11px', borderRadius: 2, textTransform: 'uppercase' }}
+      >
         {getSubscriptionStatusText(status)}
         {status === 'expiring_soon' && ` (${record.daysRemaining} days)`}
       </Tag>
@@ -34,6 +43,8 @@ export const buildSubscriptionColumns = ({
     title: 'Bot',
     key: 'bot',
     width: 200,
+    ...(cellClassName ? { className: cellClassName } : {}),
+    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (_value: unknown, record) => (
       <Space direction="vertical" size={0}>
         <Text style={{ fontSize: '12px', fontWeight: 500 }}>
@@ -52,6 +63,8 @@ export const buildSubscriptionColumns = ({
     dataIndex: 'expires_at',
     key: 'expires_at',
     width: 130,
+    ...(cellClassName ? { className: cellClassName } : {}),
+    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (expiresAt: number, record) => (
       <Text
         style={{
@@ -68,12 +81,16 @@ export const buildSubscriptionColumns = ({
     dataIndex: 'created_at',
     key: 'created_at',
     width: 100,
+    ...(cellClassName ? { className: cellClassName } : {}),
+    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (createdAt: number) => <Text style={{ fontSize: '12px' }}>{dayjs(createdAt).format('DD.MM.YYYY')}</Text>,
   },
   {
     title: 'Days Left',
     key: 'days_left',
     width: 100,
+    ...(cellClassName ? { className: cellClassName } : {}),
+    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (_value: unknown, record) => {
       if (record.isExpired) {
         return (
@@ -107,6 +124,8 @@ export const buildSubscriptionColumns = ({
     title: 'Actions',
     key: 'actions',
     width: 100,
+    ...(cellClassName ? { className: cellClassName } : {}),
+    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (_value: unknown, record) => (
       <TableActionGroup>
         <TableActionButton icon={<EditOutlined />} onClick={() => onEdit(record)} tooltip="Edit" />

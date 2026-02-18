@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Table, Typography, Spin } from 'antd';
+import type { TableColumnsType } from 'antd';
 import {
   RobotOutlined,
   PlayCircleOutlined,
@@ -11,6 +12,7 @@ import { StatusBadge } from '../../components/ui/StatusBadge';
 import type { Bot } from '../../types';
 import { subscribeBotsList } from '../../services/botsApiService';
 import styles from './Dashboard.module.css';
+import { uiLogger } from '../../observability/uiLogger'
 
 function cx(classNames: string): string {
   return classNames
@@ -33,11 +35,15 @@ interface BotData extends Bot {
   };
 }
 
-const columns = [
+const tableCellClassName = cx('bot-table-cell');
+
+const columns: TableColumnsType<BotData> = [
   {
     title: 'Name',
     dataIndex: 'character',
     key: 'name',
+    className: tableCellClassName,
+    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
     render: (character: BotData['character'], record: BotData) => (
       <div>
         <div className={cx('bot-name')}>{character.name}</div>
@@ -49,12 +55,16 @@ const columns = [
     title: 'Status',
     dataIndex: 'status',
     key: 'status',
+    className: tableCellClassName,
+    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
     render: (status: Bot['status']) => <StatusBadge status={status} size="small" />,
   },
   {
     title: 'Character',
     dataIndex: 'character',
     key: 'character',
+    className: tableCellClassName,
+    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
     render: (character: BotData['character']) => (
       <div>
         <div className={cx('char-name')}>{character.name}</div>
@@ -66,17 +76,23 @@ const columns = [
     title: 'Server',
     dataIndex: ['character', 'server'],
     key: 'server',
+    className: tableCellClassName,
+    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
   },
   {
     title: 'Project',
     dataIndex: 'project_id',
     key: 'project_id',
+    className: tableCellClassName,
+    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
     render: (projectId: string) => projectId === 'wow_tbc' ? 'WoW TBC' : 'WoW Midnight',
   },
   {
     title: 'Last Seen',
     dataIndex: 'last_seen',
     key: 'last_seen',
+    className: tableCellClassName,
+    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
     render: (timestamp: number) => {
       if (!timestamp) return 'Never';
       const date = new Date(timestamp);
@@ -120,7 +136,7 @@ export const DashboardPage: React.FC = () => {
         setLoading(false);
       },
       (error) => {
-        console.error('Error loading bots:', error);
+        uiLogger.error('Error loading bots:', error);
         setLoading(false);
       },
       { intervalMs: 5000 }
@@ -175,13 +191,25 @@ export const DashboardPage: React.FC = () => {
         </Col>
       </Row>
 
-      <Card title={`Bot List (${bots.length})`} className={cx('bot-list-card')}>
+      <Card
+        title={<span className={cx('bot-list-title')}>{`Bot List (${bots.length})`}</span>}
+        className={cx('bot-list-card')}
+        styles={{
+          header: {
+            background: 'var(--boxmox-color-surface-muted)',
+            borderBottom: '1px solid var(--boxmox-color-border-default)',
+          },
+          body: { padding: 0 },
+        }}
+      >
         <Table
           dataSource={bots}
           columns={columns}
           rowKey="id"
           pagination={{ pageSize: 10 }}
           size="small"
+          className={cx('bot-table')}
+          rowClassName={() => cx('bot-table-row')}
         />
       </Card>
     </div>

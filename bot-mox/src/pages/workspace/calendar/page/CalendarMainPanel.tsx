@@ -29,7 +29,18 @@ export const CalendarMainPanel: React.FC<CalendarMainPanelProps> = ({
   onSelectDate,
   onShiftWeek,
 }) => (
-  <Card className={styles.main} loading={loading}>
+  <Card
+    className={styles.main}
+    loading={loading}
+    styles={{
+      body: {
+        padding: '10px 12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+      },
+    }}
+  >
     <div className={styles.legend}>
       <Space size={16}>
         <span className={styles.legendItem}>
@@ -45,22 +56,26 @@ export const CalendarMainPanel: React.FC<CalendarMainPanelProps> = ({
 
     {calendarView === 'month' ? (
       <Calendar
+        className={styles.calendar}
         value={selectedDate}
         onSelect={onSelectDate}
-        cellRender={(current, info) => {
+        fullCellRender={(current, info) => {
           if (info.type !== 'date') {
             return info.originNode;
           }
+
+          const isSelected = current.isSame(selectedDate, 'day');
           const count = eventsByDate.get(current.format('YYYY-MM-DD'))?.length ?? 0;
-          if (count === 0) {
-            return info.originNode;
-          }
 
           return (
-            <div className={styles.cell}>
-              {info.originNode}
-              <span className={styles.cellBadge}>{count}</span>
-            </div>
+            <button
+              type="button"
+              className={`${styles.cell} ${isSelected ? styles.cellSelected : ''}`}
+              onClick={() => onSelectDate(current)}
+            >
+              <span className={styles.cellDate}>{current.date()}</span>
+              {count > 0 && <span className={styles.cellBadge}>{count}</span>}
+            </button>
           );
         }}
       />

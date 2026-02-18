@@ -1,5 +1,6 @@
 import type { VMConfigProfile, VMGeneratorSettings, VMHardwareConfig } from '../types';
 import { apiGet, apiPatch, apiPut, createPollingSubscription } from './apiClient';
+import { uiLogger } from '../observability/uiLogger'
 
 const SETTINGS_PATH = 'vmgenerator';
 const VM_PROFILES_PATH = `${SETTINGS_PATH}/profiles`;
@@ -266,7 +267,7 @@ export async function getVMSettings(): Promise<VMGeneratorSettings> {
     const data = await readSettingsPath<Partial<VMGeneratorSettings>>(SETTINGS_PATH);
     return mergeSettings(data);
   } catch (error) {
-    console.error('Error loading VM settings:', error);
+    uiLogger.error('Error loading VM settings:', error);
     return DEFAULT_SETTINGS;
   }
 }
@@ -301,7 +302,7 @@ export async function getVMConfigProfiles(): Promise<VMConfigProfile[]> {
     const data = await readSettingsPath<unknown>(VM_PROFILES_PATH);
     return profilesMapToArray(data);
   } catch (error) {
-    console.error('Error loading VM config profiles:', error);
+    uiLogger.error('Error loading VM config profiles:', error);
     return [];
   }
 }
@@ -359,7 +360,7 @@ export function subscribeToVMSettings(
     async () => getVMSettings(),
     callback,
     (error) => {
-      console.error('Error subscribing to VM settings:', error);
+      uiLogger.error('Error subscribing to VM settings:', error);
       callback(DEFAULT_SETTINGS);
     },
     { key: 'settings:vmgenerator', intervalMs: 4000, immediate: true }

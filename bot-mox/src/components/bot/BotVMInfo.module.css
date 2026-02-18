@@ -8,12 +8,7 @@
   margin-bottom: 16px;
 }
 
-.vm-card :global(.ant-card-head) {
-  background: var(--boxmox-color-surface-muted);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-}
-
-.vm-card :global(.ant-card-head-title) {
+.vm-card-title {
   color: var(--boxmox-color-text-primary);
 }
 
@@ -42,4 +37,3 @@
   border-radius: 4px;
   display: inline-block;
 }
-

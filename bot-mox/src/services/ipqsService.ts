@@ -2,6 +2,7 @@ import type { IPQSResponse, Proxy } from '../types';
 import { API_BASE_URL as API_BASE_URL_FROM_ENV } from '../config/env';
 import { getApiKeys, getProxySettings } from './apiKeysService';
 import { apiGet, apiPost, ApiClientError } from './apiClient';
+import { uiLogger } from '../observability/uiLogger'
 
 const LOCAL_PROXY_URL = API_BASE_URL_FROM_ENV;
 const IPQS_API_PREFIX = '/api/v1/ipqs';
@@ -43,7 +44,7 @@ async function getStatusFromBackend(): Promise<BackendStatus | null> {
     const response = await apiGet<BackendStatusPayload>(`${IPQS_API_PREFIX}/status`);
     return normalizeBackendStatus(response.data || {});
   } catch (error) {
-    console.warn('Failed to fetch IPQS status from backend:', toErrorMessage(error));
+    uiLogger.warn('Failed to fetch IPQS status from backend:', toErrorMessage(error));
     return null;
   }
 }
@@ -74,7 +75,7 @@ async function checkIPQualityViaBackend(ip: string): Promise<IPQSResponse | null
     });
     return response.data;
   } catch (error) {
-    console.warn('IPQS backend check failed:', toErrorMessage(error));
+    uiLogger.warn('IPQS backend check failed:', toErrorMessage(error));
     return null;
   }
 }
@@ -87,7 +88,7 @@ async function checkIPQualityViaBackend(ip: string): Promise<IPQSResponse | null
 export async function checkIPQuality(ip: string): Promise<IPQSResponse | null> {
   const isBackendAvailable = await isLocalProxyAvailable();
   if (!isBackendAvailable) {
-    console.warn('IPQS backend is unavailable');
+    uiLogger.warn('IPQS backend is unavailable');
     return null;
   }
 
@@ -105,7 +106,7 @@ export async function isProxySuspicious(fraudScore: number): Promise<boolean> {
     const proxySettings = await getProxySettings();
     return fraudScore > proxySettings.fraud_score_threshold;
   } catch (error) {
-    console.error('Error checking proxy suspicion:', error);
+    uiLogger.error('Error checking proxy suspicion:', error);
     // По умолчанию считаем подозрительным если score > 75
     return fraudScore > 75;
   }
@@ -124,7 +125,7 @@ export async function isAutoCheckEnabled(): Promise<boolean> {
     // 2. В настройках прокси включена автопроверка при добавлении
     return apiKeys.ipqs.enabled && apiKeys.ipqs.api_key.length > 0 && proxySettings.auto_check_on_add;
   } catch (error) {
-    console.error('Error checking auto check status:', error);
+    uiLogger.error('Error checking auto check status:', error);
     return false;
   }
 }
@@ -144,7 +145,7 @@ export async function isIPQSCheckEnabled(): Promise<boolean> {
     const apiKeys = await getApiKeys();
     return apiKeys.ipqs.enabled && apiKeys.ipqs.api_key.length > 0;
   } catch (error) {
-    console.error('Error checking IPQS status:', error);
+    uiLogger.error('Error checking IPQS status:', error);
     return false;
   }
 }
@@ -172,7 +173,7 @@ export async function getIPQSStatus(): Promise<{ enabled: boolean; configured: b
       localProxyAvailable: false,
     };
   } catch (error) {
-    console.error('Error getting IPQS status:', error);
+    uiLogger.error('Error getting IPQS status:', error);
     return { enabled: false, configured: false, localProxyAvailable: false };
   }
 }
@@ -186,7 +187,7 @@ export async function getFraudScoreThreshold(): Promise<number> {
     const proxySettings = await getProxySettings();
     return proxySettings.fraud_score_threshold;
   } catch (error) {
-    console.error('Error getting fraud score threshold:', error);
+    uiLogger.error('Error getting fraud score threshold:', error);
     return 75;
   }
 }

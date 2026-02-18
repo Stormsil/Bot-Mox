@@ -16,26 +16,18 @@
   align-items: center;
 }
 
-.headerTitle :global(h4) {
+.headerHeading {
   margin: 0;
   color: var(--boxmox-color-text-primary);
 }
 
-.headerTitle :global(.ant-typography-secondary) {
+.headerSubtitle {
   color: var(--boxmox-color-text-secondary);
 }
 
 .stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
   margin-bottom: 16px;
   width: 100%;
-}
-
-.stats :global(.ant-col) {
-  flex: 1;
-  max-width: none;
 }
 
 .statCard {
@@ -78,19 +70,6 @@
   box-shadow: 0 0 0 1px rgba(250, 173, 20, 0.15);
 }
 
-.expiringAlert :global(.ant-alert-message) {
-  color: #faad14;
-  font-weight: 600;
-}
-
-.expiringAlert :global(.ant-alert-description) {
-  color: var(--boxmox-color-text-secondary);
-}
-
-.expiringAlert :global(.ant-alert-icon) {
-  color: #faad14;
-}
-
 .expiringList {
   margin: 8px 0 0 0;
   padding-left: 20px;
@@ -112,56 +91,22 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.tableCard :global(.ant-table) {
+.table {
   background: transparent;
 }
 
-.tableCard :global(.ant-table-thead > tr > th) {
+.tableHeaderCell {
   background: var(--boxmox-color-surface-muted);
   color: var(--boxmox-color-text-secondary);
   border-bottom: 1px solid var(--boxmox-color-border-default);
   font-weight: 500;
 }
 
-.tableCard :global(.ant-table-tbody > tr > td) {
+.tableCell {
   border-bottom: 1px solid var(--boxmox-color-border-default);
   color: var(--boxmox-color-text-primary);
 }
 
-.tableCard :global(.ant-table-tbody > tr:hover > td) {
+.tableRow:hover .tableCell {
   background: var(--boxmox-color-surface-hover);
 }
-
-.tableCard :global(.ant-tag) {
-  border-radius: 2px;
-  font-size: 11px;
-  text-transform: uppercase;
-}
-
-.root :global(.ant-input),
-.root :global(.ant-select-selector),
-.root :global(.ant-picker) {
-  background: var(--boxmox-color-surface-muted) !important;
-  border-color: var(--boxmox-color-border-default) !important;
-  color: var(--boxmox-color-text-primary) !important;
-}
-
-.root :global(.ant-input)::placeholder {
-  color: var(--boxmox-color-text-muted);
-}
-
-.root :global(.ant-btn-primary) {
-  background: var(--boxmox-color-brand-primary);
-  border-color: var(--boxmox-color-brand-primary);
-}
-
-.root :global(.ant-btn-primary:hover) {
-  background: var(--boxmox-color-brand-primary-hover);
-  border-color: var(--boxmox-color-brand-primary-hover);
-}
-
-.root :global(.ant-alert:not(.expiring-alert)) {
-  background: var(--boxmox-color-surface-muted);
-  border: 1px solid var(--boxmox-color-border-default);
-}
-

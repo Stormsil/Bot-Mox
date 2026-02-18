@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { message } from 'antd';
+import { uiLogger } from '../../observability/uiLogger'
 import {
   applyThemePreset,
   deleteThemePreset,
@@ -175,7 +176,7 @@ export function useThemeSettings({
       const data = await listThemeAssets();
       setThemeAssets(data.items.filter((item) => item.status === 'ready' || item.status === 'pending'));
     } catch (error) {
-      console.error('Error loading theme assets:', error);
+      uiLogger.error('Error loading theme assets:', error);
       message.error('Failed to load background images');
     } finally {
       setThemeAssetsLoading(false);
@@ -274,7 +275,7 @@ export function useThemeSettings({
       if (error instanceof Error && error.name === 'AbortError') {
         return;
       }
-      console.error('Eyedropper failed:', error);
+      uiLogger.error('Eyedropper failed:', error);
       message.error('Failed to pick color from screen');
     }
   }, [updateThemeColor]);
@@ -305,7 +306,7 @@ export function useThemeSettings({
       }, localVisualSettings, localTypographySettings, localShapeSettings);
       message.success('Theme colors saved');
     } catch (error) {
-      console.error('Error saving theme colors:', error);
+      uiLogger.error('Error saving theme colors:', error);
       message.error('Failed to save theme colors');
     } finally {
       setThemeSaving(false);
@@ -342,7 +343,7 @@ export function useThemeSettings({
       await updateThemeVisualSettings(localVisualSettings);
       message.success('Visual theme settings saved');
     } catch (error) {
-      console.error('Error saving visual theme settings:', error);
+      uiLogger.error('Error saving visual theme settings:', error);
       message.error('Failed to save visual theme settings');
     } finally {
       setThemeSaving(false);
@@ -367,7 +368,7 @@ export function useThemeSettings({
       });
       message.success('Background image uploaded');
     } catch (error) {
-      console.error('Error uploading theme asset:', error);
+      uiLogger.error('Error uploading theme asset:', error);
       message.error(error instanceof Error ? error.message : 'Failed to upload background image');
     } finally {
       setThemeAssetUploading(false);
@@ -410,7 +411,7 @@ export function useThemeSettings({
       });
       message.success('Background image deleted');
     } catch (error) {
-      console.error('Error deleting theme asset:', error);
+      uiLogger.error('Error deleting theme asset:', error);
       message.error('Failed to delete background image');
     }
   }, [onVisualSettingsChange]);
@@ -436,7 +437,7 @@ export function useThemeSettings({
       setNewThemePresetName('');
       message.success(`Theme "${preset.name}" saved`);
     } catch (error) {
-      console.error('Error saving theme preset:', error);
+      uiLogger.error('Error saving theme preset:', error);
       message.error('Failed to save theme preset');
     } finally {
       setThemePresetSaving(false);
@@ -470,7 +471,7 @@ export function useThemeSettings({
       onShapeSettingsChange?.(nextShape);
       message.success('Theme applied');
     } catch (error) {
-      console.error('Error applying theme preset:', error);
+      uiLogger.error('Error applying theme preset:', error);
       message.error('Failed to apply theme');
     } finally {
       setThemePresetApplying(false);
@@ -497,7 +498,7 @@ export function useThemeSettings({
       onShapeSettingsChange?.(nextShape);
       message.success('Theme preset deleted');
     } catch (error) {
-      console.error('Error deleting theme preset:', error);
+      uiLogger.error('Error deleting theme preset:', error);
       message.error('Failed to delete theme preset');
     } finally {
       setThemePresetDeleting(false);

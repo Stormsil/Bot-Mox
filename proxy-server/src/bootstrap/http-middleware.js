@@ -106,13 +106,20 @@ function createCorsOptions(env) {
 function mountCoreHttpMiddleware({ app, env, corsOptions }) {
   app.use(correlationIdMiddleware);
 
+  // Capture the request's trace identifiers early and keep them stable for the full lifecycle.
+  // We use these for both response headers and request completion logs (AI correlation).
+  app.use((req, _res, next) => {
+    req.traceIds = getTraceIds();
+    return next();
+  });
+
   // JSON request/response logs correlated by trace_id/span_id.
   app.use(
     pinoHttp({
       logger,
       quietReqLogger: true,
       customProps: (req) => {
-        const ids = getTraceIds();
+        const ids = req?.traceIds || getTraceIds();
         return {
           correlation_id: req?.correlationId || null,
           trace_id: ids.trace_id,
@@ -133,7 +140,7 @@ function mountCoreHttpMiddleware({ app, env, corsOptions }) {
 
   // Make trace identifiers easily discoverable by clients/Playwright.
   app.use((req, res, next) => {
-    const ids = getTraceIds();
+    const ids = req?.traceIds || getTraceIds();
     if (ids.trace_id) {
       res.setHeader('x-trace-id', ids.trace_id);
     }

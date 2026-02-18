@@ -23,6 +23,7 @@ import {
 } from './page';
 import type { ConfigureTab, ExtendedBot, MainTab } from './page';
 import styles from './BotPage.module.css';
+import { uiLogger } from '../../observability/uiLogger'
 
 export const BotPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -54,7 +55,7 @@ export const BotPage: React.FC = () => {
         setLoading(false);
       },
       (loadError) => {
-        console.error('Error loading bot:', loadError);
+        uiLogger.error('Error loading bot:', loadError);
         setError('Failed to load bot data');
         setLoading(false);
       },

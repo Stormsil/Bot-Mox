@@ -16,6 +16,7 @@ import {
   enrichSubscriptionsWithDetails,
 } from '../services/subscriptionService';
 import { fetchBotsList } from '../services/botsApiService';
+import { uiLogger } from '../observability/uiLogger'
 import {
   getSubscriptionSettings,
   updateSubscriptionSettings,
@@ -69,7 +70,7 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
       const loadedSettings = await getSubscriptionSettings();
       setSettings(loadedSettings);
     } catch (err) {
-      console.error('Error loading settings:', err);
+      uiLogger.error('Error loading settings:', err);
       // Используем дефолтные настройки при ошибке
       setSettings(getDefaultSettings());
     }
@@ -95,7 +96,7 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
 
       setBotsMap(nextBotsMap);
     } catch (err) {
-      console.error('Error loading bots data:', err);
+      uiLogger.error('Error loading bots data:', err);
     }
   }, []);
 
@@ -150,7 +151,7 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
   const addSubscription = useCallback(async (data: SubscriptionFormData) => {
     try {
       // Детальное логирование входных данных
-      console.log('Creating subscription with data:', {
+      uiLogger.info('Creating subscription with data:', {
         ...data,
         expires_at: data.expires_at,
         expires_at_type: typeof data.expires_at,
@@ -160,8 +161,8 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
       message.success('Подписка успешно создана');
     } catch (err) {
       // Детальное логирование ошибки
-      console.error('Error creating subscription:', err);
-      console.error('Error details:', {
+      uiLogger.error('Error creating subscription:', err);
+      uiLogger.error('Error details:', {
         name: (err as Error).name,
         message: (err as Error).message,
         stack: (err as Error).stack,
@@ -186,7 +187,7 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
       await updateSubscription(id, data);
       message.success('Подписка успешно обновлена');
     } catch (err) {
-      console.error('Error updating subscription:', err);
+      uiLogger.error('Error updating subscription:', err);
       message.error('Ошибка при обновлении подписки');
       throw err;
     }
@@ -200,7 +201,7 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
       await deleteSubscription(id);
       message.success('Подписка удалена');
     } catch (err) {
-      console.error('Error deleting subscription:', err);
+      uiLogger.error('Error deleting subscription:', err);
       message.error('Ошибка при удалении подписки');
       throw err;
     }
@@ -215,7 +216,7 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
       setSettings((prev) => ({ ...prev, ...newSettings, updated_at: Date.now() }));
       message.success('Настройки сохранены');
     } catch (err) {
-      console.error('Error updating settings:', err);
+      uiLogger.error('Error updating settings:', err);
       message.error('Ошибка при сохранении настроек');
       throw err;
     }

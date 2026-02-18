@@ -23,10 +23,16 @@ interface ProxyDetailsCardProps {
 export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({ proxy, onEdit, onUnassign }) => (
   <Card
     className={styles['proxy-card']}
+    styles={{
+      header: {
+        background: 'var(--boxmox-color-surface-muted)',
+        borderBottom: '1px solid var(--boxmox-color-border-default)',
+      },
+    }}
     title={
       <Space>
         <GlobalOutlined />
-        <span>Proxy Information</span>
+        <span className={styles['proxy-card-title']}>Proxy Information</span>
       </Space>
     }
     extra={

@@ -66,6 +66,17 @@ export const BotProfession: React.FC<BotProfessionProps> = () => {
                   styles['profession-card'],
                   isActive ? styles.active : styles.inactive,
                 ].join(' ')}
+                styles={{
+                  header: {
+                    background: 'var(--boxmox-color-surface-muted)',
+                    borderColor: 'var(--boxmox-color-border-default)',
+                    padding: '12px 16px',
+                    minHeight: 'auto',
+                  },
+                  body: {
+                    padding: 16,
+                  },
+                }}
                 title={
                   <div className={styles['profession-header']}>
                     <span className={styles['profession-icon']} style={{ color }}>
@@ -78,8 +89,8 @@ export const BotProfession: React.FC<BotProfessionProps> = () => {
               >
                 <div className={styles['profession-progress']}>
                   <div className={styles['skill-info']}>
-                    <Text strong>{profession.skill_points}</Text>
-                    <Text type="secondary">/ {profession.max_skill_points}</Text>
+                    <Text strong className={styles['skill-text']}>{profession.skill_points}</Text>
+                    <Text type="secondary" className={styles['skill-text']}>/ {profession.max_skill_points}</Text>
                   </div>
                   <Progress
                     percent={percent}

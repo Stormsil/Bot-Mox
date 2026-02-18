@@ -26,6 +26,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
   const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
   const [templateName, setTemplateName] = useState('');
   const [showTemplates, setShowTemplates] = useState(false);
+  const formLabel = (text: string) => <span className={styles['generator-form-label']}>{text}</span>;
 
   // Load templates and last params via API
   useEffect(() => {
@@ -162,7 +163,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
         <Form layout="vertical" size="small">
           <div className={styles['generator-section-title']}>Time Window 1</div>
           <div className={styles['generator-row']}>
-            <Form.Item label="Start">
+            <Form.Item className={styles['generator-row-item']} label={formLabel('Start')}>
               <TimePicker
                 value={dayjs(params.startTime, 'HH:mm')}
                 onChange={(time) => updateParam('startTime', time?.format('HH:mm') || '09:00')}
@@ -171,7 +172,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
                 allowClear={false}
               />
             </Form.Item>
-            <Form.Item label="End">
+            <Form.Item className={styles['generator-row-item']} label={formLabel('End')}>
               <TimePicker
                 value={dayjs(params.endTime, 'HH:mm')}
                 onChange={(time) => updateParam('endTime', time?.format('HH:mm') || '23:30')}
@@ -193,7 +194,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
 
           {params.useSecondWindow && (
             <div className={styles['generator-row']}>
-              <Form.Item label="Start 2">
+              <Form.Item className={styles['generator-row-item']} label={formLabel('Start 2')}>
                 <TimePicker
                   value={dayjs(params.startTime2 || '00:00', 'HH:mm')}
                   onChange={(time) => updateParam('startTime2', time?.format('HH:mm') || '00:00')}
@@ -202,7 +203,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
                   allowClear={false}
                 />
               </Form.Item>
-              <Form.Item label="End 2">
+              <Form.Item className={styles['generator-row-item']} label={formLabel('End 2')}>
                 <TimePicker
                   value={dayjs(params.endTime2 || '02:00', 'HH:mm')}
                   onChange={(time) => updateParam('endTime2', time?.format('HH:mm') || '02:00')}
@@ -217,8 +218,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           <Divider style={{ margin: '8px 0' }} />
 
           <Form.Item 
-            className={styles['highlight-param']}
-            label={`Target Active Time: ${params.targetActiveMinutes} min (${Math.floor(params.targetActiveMinutes / 60)}h ${params.targetActiveMinutes % 60}m)`}
+            className={[styles['generator-form-item'], styles['highlight-param']].join(' ')}
+            label={formLabel(
+              `Target Active Time: ${params.targetActiveMinutes} min (${Math.floor(params.targetActiveMinutes / 60)}h ${params.targetActiveMinutes % 60}m)`
+            )}
           >
             <InputNumber
               min={CONSTRAINTS.targetActiveMinutes.min}
@@ -232,7 +235,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           </Form.Item>
 
           <div className={styles['generator-row']}>
-            <Form.Item label="Min Session">
+            <Form.Item className={styles['generator-row-item']} label={formLabel('Min Session')}>
               <InputNumber
                 min={CONSTRAINTS.minSessionMinutes.min}
                 max={CONSTRAINTS.minSessionMinutes.max}
@@ -242,7 +245,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
                 addonAfter="m"
               />
             </Form.Item>
-            <Form.Item label="Min Break">
+            <Form.Item className={styles['generator-row-item']} label={formLabel('Min Break')}>
               <InputNumber
                 min={CONSTRAINTS.minBreakMinutes.min}
                 max={CONSTRAINTS.minBreakMinutes.max}
@@ -255,10 +258,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           </div>
 
           <Form.Item 
-            className={[styles['highlight-param'], styles['randomness-param']].join(' ')}
+            className={[styles['generator-form-item'], styles['highlight-param'], styles['randomness-param']].join(' ')}
             label={
               <Space>
-                <span>Randomization Factor: ±{params.randomOffsetMinutes} min</span>
+                <span className={styles['generator-form-label']}>Randomization Factor: ±{params.randomOffsetMinutes} min</span>
                 <Tooltip title="Adds randomness to every session boundary (+/-) to ensure uniqueness.">
                   <SettingOutlined style={{ fontSize: '10px' }} />
                 </Tooltip>
@@ -328,6 +331,11 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
                     size="small"
                     className={styles['template-apply-btn']}
                     icon={<ThunderboltOutlined />}
+                    style={{
+                      backgroundColor: 'var(--boxmox-color-brand-primary)',
+                      borderColor: 'var(--boxmox-color-brand-primary)',
+                      color: '#fff',
+                    }}
                     onClick={() => handleApplyTemplate(item)}
                   >
                     Apply

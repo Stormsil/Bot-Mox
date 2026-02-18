@@ -77,6 +77,9 @@ const MetricBlock: React.FC<MetricBlockProps> = ({ label, value, unit, hint, ton
     ].join(' ')}
     loading={loading}
     variant="borderless"
+    styles={{
+      body: { padding: '4px 2px' },
+    }}
   >
     <div className={styles.metricHeader}>
       <Text className={styles.metricTitle}>{label}</Text>
@@ -199,7 +202,7 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
   return (
     <div className={styles.container}>
       {/* Основные метрики */}
-      <Row gutter={[16, 16]} className={styles.metricsRow}>
+      <Row gutter={[16, 16]}>
         <Col span={6}>
           <MetricBlock
             label="Total Income"

@@ -30,6 +30,7 @@ import { buildSubscriptionColumns } from './subscription-columns';
 import { ExpiringSubscriptionsAlert } from './ExpiringSubscriptionsAlert';
 import { SubscriptionsStats } from './SubscriptionsStats';
 import styles from './SubscriptionsPage.module.css';
+import { uiLogger } from '../../observability/uiLogger'
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -89,7 +90,7 @@ export const SubscriptionsPage: React.FC = () => {
         }));
         setBots(botsList);
       } catch (error) {
-        console.error('Error loading bots:', error);
+        uiLogger.error('Error loading bots:', error);
       }
     };
 
@@ -126,7 +127,7 @@ export const SubscriptionsPage: React.FC = () => {
           await deleteSubscription(sub.id);
           message.success('Subscription deleted');
         } catch (error) {
-          console.error('Error deleting subscription:', error);
+          uiLogger.error('Error deleting subscription:', error);
           message.error('Error deleting subscription');
         }
       },
@@ -153,7 +154,7 @@ export const SubscriptionsPage: React.FC = () => {
       setIsModalOpen(false);
       setEditingSubscription(null);
     } catch (error) {
-      console.error('Error saving subscription:', error);
+      uiLogger.error('Error saving subscription:', error);
     } finally {
       setSaving(false);
     }
@@ -162,6 +163,8 @@ export const SubscriptionsPage: React.FC = () => {
   const columns = buildSubscriptionColumns({
     onEdit: openEditModal,
     onDelete: handleDelete,
+    cellClassName: styles.tableCell,
+    headerClassName: styles.tableHeaderCell,
   });
 
   const expiringSoon = getExpiringSoon().sort((a, b) => a.expires_at - b.expires_at);
@@ -171,10 +174,10 @@ export const SubscriptionsPage: React.FC = () => {
       <Card className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.headerTitle}>
-            <Title level={4}>
+            <Title level={4} className={styles.headerHeading}>
               <CreditCardOutlined /> Subscriptions
             </Title>
-            <Text type="secondary">Manage bot subscriptions</Text>
+            <Text type="secondary" className={styles.headerSubtitle}>Manage bot subscriptions</Text>
           </div>
           <Space>
             <Button
@@ -228,6 +231,8 @@ export const SubscriptionsPage: React.FC = () => {
           columns={columns}
           rowKey="id"
           loading={loading}
+          className={styles.table}
+          rowClassName={() => styles.tableRow}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,

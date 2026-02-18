@@ -1,5 +1,6 @@
 import type { StoragePolicy } from '../types';
 import { apiGet, apiPut } from './apiClient';
+import { uiLogger } from '../observability/uiLogger'
 
 const STORAGE_POLICY_PATH = '/api/v1/settings/storage_policy';
 
@@ -47,7 +48,7 @@ export async function getStoragePolicy(): Promise<StoragePolicy> {
     const response = await apiGet<unknown>(STORAGE_POLICY_PATH);
     return normalizeStoragePolicy(response.data);
   } catch (error) {
-    console.error('Error loading storage policy:', error);
+    uiLogger.error('Error loading storage policy:', error);
     return getDefaultStoragePolicy();
   }
 }

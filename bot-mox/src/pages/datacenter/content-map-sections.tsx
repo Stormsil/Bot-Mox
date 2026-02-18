@@ -26,6 +26,10 @@ function cx(classNames: string): string {
     .join(' ');
 }
 
+const mapCardStyles = {
+  body: { padding: '14px 16px' },
+};
+
 function SectionToggle({
   section,
   collapsedSections,
@@ -70,7 +74,13 @@ export function ProjectsSection({
       </div>
       {!collapsedSections.projects && (
         <div className={cx('content-map-grid content-map-grid--projects')}>
-          <Card className={cx('map-card map-card--clickable')} hoverable loading={loading.bots} {...navProps('/project/wow_tbc')}>
+          <Card
+            className={cx('map-card map-card--clickable')}
+            hoverable
+            loading={loading.bots}
+            styles={mapCardStyles}
+            {...navProps('/project/wow_tbc')}
+          >
             <div className={cx('map-card-head')}>
               <div className={cx('map-card-title')}>
                 <DesktopOutlined /> WoW TBC
@@ -101,7 +111,13 @@ export function ProjectsSection({
             </div>
           </Card>
 
-          <Card className={cx('map-card map-card--clickable')} hoverable loading={loading.bots} {...navProps('/project/wow_midnight')}>
+          <Card
+            className={cx('map-card map-card--clickable')}
+            hoverable
+            loading={loading.bots}
+            styles={mapCardStyles}
+            {...navProps('/project/wow_midnight')}
+          >
             <div className={cx('map-card-head')}>
               <div className={cx('map-card-title')}>
                 <DesktopOutlined /> WoW Midnight
@@ -157,7 +173,13 @@ function ResourceCard({
   hasUnassigned?: boolean;
 }) {
   return (
-    <Card className={cx('map-card map-card--clickable')} hoverable loading={loading} {...navPropsValue}>
+    <Card
+      className={cx('map-card map-card--clickable')}
+      hoverable
+      loading={loading}
+      styles={mapCardStyles}
+      {...navPropsValue}
+    >
       <div className={cx('map-card-head')}>
         <div className={cx('map-card-title')}>
           {icon} {title}

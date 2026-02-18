@@ -281,12 +281,24 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
       <Card
         title="Schedule"
         className={styles['schedule-card']}
+        styles={{
+          header: {
+            background: 'var(--boxmox-color-surface-muted)',
+            borderColor: 'var(--boxmox-color-border-default)',
+          },
+          title: {
+            color: 'var(--boxmox-color-text-primary)',
+            fontSize: 14,
+            fontWeight: 600,
+          },
+        }}
         extra={
           <div className={styles['schedule-actions']}>
             <Button
               icon={<CalendarOutlined />}
               size="small"
               onClick={() => setViewMode(viewMode === 'day' ? 'week' : 'day')}
+              className={styles['schedule-action-btn']}
             >
               {viewMode === 'day' ? 'Week Overview' : 'Day View'}
             </Button>
@@ -300,7 +312,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
                 icon={<UnlockOutlined />}
                 size="small"
                 onClick={handleUnlockGeneration}
-                className={styles['schedule-unlock-btn']}
+                className={[styles['schedule-action-btn'], styles['schedule-unlock-btn']].join(' ')}
               >
                 Unlock
               </Button>
@@ -310,6 +322,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
               size="small"
               onClick={handleReset}
               disabled={!hasChanges}
+              className={styles['schedule-action-btn']}
             >
               Reset
             </Button>
@@ -319,6 +332,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
               size="small"
               onClick={handleSave}
               disabled={!hasChanges}
+              className={[styles['schedule-action-btn'], styles['schedule-action-btn-primary']].join(' ')}
             >
               Save
             </Button>

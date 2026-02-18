@@ -31,9 +31,9 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 currentStage === 'prepare' ? styles.active : '',
               ].filter(Boolean).join(' ')}
             >
-              <Text strong>Preparation</Text>
+              <Text strong style={currentStage === 'prepare' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Preparation</Text>
               <br />
-              <Text type="secondary">Initial setup</Text>
+              <Text type="secondary" style={currentStage === 'prepare' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Initial setup</Text>
             </div>
           ),
         },
@@ -47,9 +47,9 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 currentStage === 'leveling' ? styles.active : '',
               ].filter(Boolean).join(' ')}
             >
-              <Text strong>Leveling</Text>
+              <Text strong style={currentStage === 'leveling' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Leveling</Text>
               <br />
-              <Text type="secondary">Level 1-70</Text>
+              <Text type="secondary" style={currentStage === 'leveling' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Level 1-70</Text>
             </div>
           ),
         },
@@ -63,9 +63,9 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 currentStage === 'professions' ? styles.active : '',
               ].filter(Boolean).join(' ')}
             >
-              <Text strong>Professions</Text>
+              <Text strong style={currentStage === 'professions' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Professions</Text>
               <br />
-              <Text type="secondary">Skill development</Text>
+              <Text type="secondary" style={currentStage === 'professions' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Skill development</Text>
             </div>
           ),
         },
@@ -79,9 +79,9 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 currentStage === 'farm' ? styles.active : '',
               ].filter(Boolean).join(' ')}
             >
-              <Text strong>Farm</Text>
+              <Text strong style={currentStage === 'farm' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Farm</Text>
               <br />
-              <Text type="secondary">Gold earning</Text>
+              <Text type="secondary" style={currentStage === 'farm' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Gold earning</Text>
             </div>
           ),
         },
@@ -98,7 +98,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
             >
               <Text strong style={{ color: currentStage === 'banned' ? '#ff4d4f' : undefined }}>Banned</Text>
               <br />
-              <Text type="secondary">Archived</Text>
+              <Text type="secondary" style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}>Archived</Text>
             </div>
           ),
         },

@@ -12,12 +12,7 @@
   margin-bottom: 16px;
 }
 
-.proxy-card :global(.ant-card-head) {
-  background: var(--boxmox-color-surface-muted);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-}
-
-.proxy-card :global(.ant-card-head-title) {
+.proxy-card-title {
   color: var(--boxmox-color-text-primary);
 }
 
@@ -87,11 +82,6 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.proxy-help-card :global(.ant-card-head) {
-  background: var(--boxmox-color-surface-muted);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-}
-
 .help-content {
   display: flex;
   flex-direction: column;
@@ -108,7 +98,7 @@
   margin-bottom: 4px;
 }
 
-.help-list :global(.ant-tag) {
+.help-tag {
   font-size: 10px;
   margin-right: 8px;
 }
@@ -176,37 +166,6 @@
   border-top: 1px dashed var(--boxmox-color-border-default);
 }
 
-/* Modal styles for proxy */
-.proxy-modal :global(.ant-modal-content) {
-  background: var(--boxmox-color-surface-panel);
-}
-
-.proxy-modal :global(.ant-modal-header) {
-  background: var(--boxmox-color-surface-muted);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-}
-
-.proxy-modal :global(.ant-modal-title) {
+.proxy-modal-title {
   color: var(--boxmox-color-text-primary);
 }
-
-/* Unassign button styles */
-.unassign-btn {
-  background: #ff4d4f;
-  border-color: #ff4d4f;
-}
-
-.unassign-btn:hover {
-  background: #ff7875;
-  border-color: #ff7875;
-}
-
-/* Empty state styles */
-.proxy-empty :global(.ant-empty-description) {
-  color: var(--boxmox-color-text-secondary);
-}
-
-.proxy-empty :global(.ant-btn) {
-  margin-top: 16px;
-}
-

@@ -89,14 +89,17 @@ export const SessionList: React.FC<SessionListProps> = ({
                   <Switch
                     size="small"
                     checked={session.enabled}
+                    style={{ backgroundColor: session.enabled ? '#52c41a' : '#8c8c8c' }}
                     onChange={(checked) => onToggle(session.id, checked)}
                   />
                   <TableActionButton
+                    className={styles['session-action-button']}
                     icon={<EditOutlined />}
                     onClick={() => onEdit(session)}
                     tooltip="Edit session"
                   />
                   <TableActionButton
+                    className={styles['session-action-button']}
                     danger
                     icon={<DeleteOutlined />}
                     onClick={() => onDelete(session.id)}

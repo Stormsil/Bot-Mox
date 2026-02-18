@@ -224,6 +224,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
       {!collapsed && (
         <div className={styles['note-sidebar-search']}>
           <Input
+            className={styles['note-sidebar-search-input']}
             placeholder="Search notes..."
             prefix={<SearchOutlined />}
             value={searchQuery}
@@ -246,7 +247,9 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={
-                searchQuery ? 'No notes found' : 'No notes yet'
+                <span className={styles['note-sidebar-empty-description']}>
+                  {searchQuery ? 'No notes found' : 'No notes yet'}
+                </span>
               }
               className={styles['note-sidebar-empty']}
             >
@@ -275,7 +278,17 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                     collapsed && styles.collapsed
                   )}
                   onClick={() => onSelectNote(note.id)}
-                  styles={{ body: { padding: collapsed ? '8px' : '12px 16px' } }}
+                  styles={{
+                    body: {
+                      padding: collapsed ? '8px' : '12px 16px',
+                      display: 'flex',
+                      overflow: 'hidden',
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      justifyContent: collapsed ? 'center' : undefined,
+                      alignItems: collapsed ? 'center' : undefined,
+                    },
+                  }}
                   style={{ borderRadius: collapsed ? 4 : 8, width: '100%' }}
                 >
                   {collapsed ? (

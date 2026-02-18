@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { Result, Button } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
+import { uiLogger } from '../../observability/uiLogger'
 
 interface Props {
   children: ReactNode;
@@ -26,7 +27,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+    uiLogger.error('Uncaught error:', error, errorInfo);
     this.setState({ error, errorInfo });
   }
 

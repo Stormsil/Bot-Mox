@@ -49,7 +49,15 @@ export const BotVMInfo: React.FC<BotVMInfoProps> = ({ bot }) => {
   if (!vm) {
     return (
       <div className={styles['bot-vm-info']}>
-        <Card className={styles['vm-card']}>
+        <Card
+          className={styles['vm-card']}
+          styles={{
+            header: {
+              background: 'var(--boxmox-color-surface-muted)',
+              borderBottom: '1px solid var(--boxmox-color-border-default)',
+            },
+          }}
+        >
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
@@ -67,10 +75,16 @@ export const BotVMInfo: React.FC<BotVMInfoProps> = ({ bot }) => {
     <div className={styles['bot-vm-info']}>
       <Card
         className={styles['vm-card']}
+        styles={{
+          header: {
+            background: 'var(--boxmox-color-surface-muted)',
+            borderBottom: '1px solid var(--boxmox-color-border-default)',
+          },
+        }}
         title={
           <Space>
             <DesktopOutlined />
-            <span>VM Information</span>
+            <span className={styles['vm-card-title']}>VM Information</span>
           </Space>
         }
       >

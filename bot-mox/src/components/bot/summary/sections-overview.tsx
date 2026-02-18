@@ -142,11 +142,22 @@ export const SummaryBotInfoSection: React.FC<SummaryBotInfoSectionProps> = ({
   bot,
   statusInfo,
   formatProjectName,
-}) => (
+}) => {
+  const detailCardStyles = {
+    header: {
+      background: 'var(--boxmox-color-surface-muted)',
+      borderBottom: '1px solid var(--boxmox-color-border-default)',
+      padding: '12px 16px',
+      minHeight: 'auto',
+    },
+    body: { padding: 16 },
+  };
+
+  return (
   <section id="summary-bot" className={styles['bot-section']}>
     <Row gutter={[16, 16]} className={styles['details-row']}>
       <Col span={24}>
-        <Card title="Bot Info" className={styles['detail-card']}>
+        <Card title="Bot Info" className={styles['detail-card']} styles={detailCardStyles}>
           <div className={styles['summary-stats-grid']}>
             <SummaryStatItem
               label="Bot ID"
@@ -188,4 +199,5 @@ export const SummaryBotInfoSection: React.FC<SummaryBotInfoSectionProps> = ({
       </Col>
     </Row>
   </section>
-);
+  );
+};

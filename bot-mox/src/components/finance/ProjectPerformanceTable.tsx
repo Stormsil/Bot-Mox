@@ -150,11 +150,11 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       loading={loading}
     >
       <Table 
+        className={styles.projectPerformanceTable}
         dataSource={data} 
         columns={columns} 
         pagination={false} 
         size="small"
-        rowClassName="performance-row"
       />
     </Card>
   );

@@ -13,6 +13,7 @@ import { buildBotRows, buildProjectStats, buildResourcesByBotMaps, filterBotRows
 import type { BotRecord, StatusFilter } from './types';
 import { formatProjectTitle, parseStatusFilterFromParams } from './utils';
 import styles from './ProjectPage.module.css';
+import { uiLogger } from '../../observability/uiLogger'
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -137,7 +138,7 @@ export const ProjectPage: React.FC = () => {
         setProjectsMeta(mapped);
       },
       (error) => {
-        console.error('Error loading project settings:', error);
+        uiLogger.error('Error loading project settings:', error);
       }
     );
 
@@ -278,19 +279,19 @@ export const ProjectPage: React.FC = () => {
         </div>
 
         <Card className={styles.filters}>
-          <Space wrap>
+          <Space wrap className={styles.filtersRow}>
             <Input
               placeholder="Search by ID, character, email, server..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
-              style={{ width: 320 }}
+              className={styles.searchInput}
             />
             <Select
               placeholder="Bot Status"
               value={statusFilter}
               onChange={(value) => updateStatusFilter(value as StatusFilter)}
-              style={{ width: 160 }}
+              className={styles.statusSelect}
             >
               <Option value="all">All Statuses</Option>
               <Option value="offline">Offline</Option>
@@ -306,6 +307,7 @@ export const ProjectPage: React.FC = () => {
                 setSearchText('');
                 updateStatusFilter('all');
               }}
+              className={styles.resetButton}
             >
               Reset
             </Button>
@@ -318,6 +320,8 @@ export const ProjectPage: React.FC = () => {
             columns={columns}
             rowKey="id"
             loading={loading}
+            className={styles.table}
+            rowClassName={() => styles.tableRow}
             pagination={{
               pageSize: 15,
               showSizeChanger: true,

@@ -31,7 +31,7 @@ export const ExpiringSubscriptionsAlert: React.FC<ExpiringSubscriptionsAlertProp
       }
       type="warning"
       showIcon
-      icon={<WarningOutlined />}
+      icon={<WarningOutlined style={{ color: '#faad14' }} />}
     />
   );
 };

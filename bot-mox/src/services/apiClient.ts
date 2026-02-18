@@ -1,5 +1,6 @@
 import { buildApiUrl } from '../config/env';
 import { authFetch } from './authFetch';
+import { uiLogger } from '../observability/uiLogger'
 
 export interface ApiSuccessEnvelope<T> {
   success: true;
@@ -282,11 +283,27 @@ async function performRequest<T>(path: string, init: RequestInit): Promise<ApiSu
   });
 
   const envelope = await parseEnvelope<T>(response);
+  const traceId = response.headers.get('x-trace-id');
+  const spanId = response.headers.get('x-span-id');
+  const correlationId = response.headers.get('x-correlation-id');
 
   if (!response.ok || !envelope.success) {
     const message = envelope.success ? `HTTP ${response.status}` : String(envelope.error?.message || `HTTP ${response.status}`);
     const code = envelope.success ? 'HTTP_ERROR' : String(envelope.error?.code || 'API_ERROR');
-    const details = envelope.success ? undefined : envelope.error?.details;
+    const baseDetails = envelope.success ? undefined : envelope.error?.details;
+    const debug = {
+      trace_id: traceId || null,
+      span_id: spanId || null,
+      correlation_id: correlationId || null,
+      status: response.status,
+      path,
+      method: String(init.method || 'GET').toUpperCase(),
+    };
+    const details = envelope.success
+      ? undefined
+      : typeof baseDetails === 'object' && baseDetails !== null && !Array.isArray(baseDetails)
+        ? { ...baseDetails, debug }
+        : { details: baseDetails, debug };
     throw new ApiClientError(message, {
       status: response.status,
       code,
@@ -589,7 +606,7 @@ async function runPollingChannel(channel: PollingChannel<unknown>): Promise<void
       try {
         subscriber.onData(payload);
       } catch (callbackError) {
-        console.error('Polling subscriber onData failed:', callbackError);
+        uiLogger.error('Polling subscriber onData failed:', callbackError);
       }
     }
   } catch (error) {
@@ -600,7 +617,7 @@ async function runPollingChannel(channel: PollingChannel<unknown>): Promise<void
       try {
         subscriber.onError?.(normalizedError);
       } catch (callbackError) {
-        console.error('Polling subscriber onError failed:', callbackError);
+        uiLogger.error('Polling subscriber onError failed:', callbackError);
       }
     }
   } finally {
@@ -683,7 +700,7 @@ export function createPollingSubscription<T>(
     try {
       onData(channel.latestData as T);
     } catch (callbackError) {
-      console.error('Polling subscriber immediate onData failed:', callbackError);
+      uiLogger.error('Polling subscriber immediate onData failed:', callbackError);
     }
     schedulePollingRun(channel as PollingChannel<unknown>);
   } else if (immediate) {

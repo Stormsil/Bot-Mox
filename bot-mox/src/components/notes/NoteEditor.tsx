@@ -239,6 +239,10 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               icon={<EditOutlined />}
               onClick={() => setEditorMode('edit')}
               size="small"
+              className={cx(
+                styles['editor-mode-button'],
+                editorMode === 'edit' && styles['editor-mode-button-active']
+              )}
             >
               Edit
             </Button>
@@ -247,6 +251,10 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               icon={<SplitCellsOutlined />}
               onClick={() => setEditorMode('split')}
               size="small"
+              className={cx(
+                styles['editor-mode-button'],
+                editorMode === 'split' && styles['editor-mode-button-active']
+              )}
             >
               Split
             </Button>
@@ -255,6 +263,10 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               icon={<EyeOutlined />}
               onClick={() => setEditorMode('preview')}
               size="small"
+              className={cx(
+                styles['editor-mode-button'],
+                editorMode === 'preview' && styles['editor-mode-button-active']
+              )}
             >
               Preview
             </Button>

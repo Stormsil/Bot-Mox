@@ -4,7 +4,6 @@
  */
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
-import { Checkbox } from 'antd';
 import type { CheckboxBlock } from '../../services/notesService';
 import styles from './NotesComponents.module.css';
 
@@ -122,9 +121,10 @@ export const CheckboxBlockComponent: React.FC<CheckboxBlockProps> = ({
       data-block-type="checkbox"
     >
       <div className={styles['checkbox-wrapper']} onClick={handleCheckboxClick}>
-        <Checkbox
+        <input
+          type="checkbox"
           checked={block.checked}
-          onChange={handleCheckboxChange}
+          onChange={(event) => handleCheckboxChange({ target: { checked: event.target.checked } })}
           className={styles['checkbox-input']}
         />
       </div>

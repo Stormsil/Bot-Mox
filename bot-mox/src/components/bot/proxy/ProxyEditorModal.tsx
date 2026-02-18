@@ -45,14 +45,20 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
   onTogglePassword,
 }) => (
   <Modal
-    className={styles['proxy-modal']}
-    title={editing ? 'Edit Proxy' : 'Add Proxy'}
+    title={<span className={styles['proxy-modal-title']}>{editing ? 'Edit Proxy' : 'Add Proxy'}</span>}
     open={open}
     onOk={onSubmit}
     onCancel={onCancel}
     okText={editing ? 'Update' : 'Add'}
     width={600}
     okButtonProps={{ disabled: !parsedProxy }}
+    styles={{
+      content: { background: 'var(--boxmox-color-surface-panel)' },
+      header: {
+        background: 'var(--boxmox-color-surface-muted)',
+        borderBottom: '1px solid var(--boxmox-color-border-default)',
+      },
+    }}
   >
     <Form form={form} layout="vertical" onFinish={onFinish}>
       <Form.Item

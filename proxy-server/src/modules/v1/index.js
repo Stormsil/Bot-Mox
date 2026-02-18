@@ -20,6 +20,9 @@ const { createVmOpsRoutes } = require('./vm-ops.routes');
 const { createThemeAssetsRoutes } = require('./theme-assets.routes');
 const { createProvisioningRoutes } = require('./provisioning.routes');
 const { createPlaybookRoutes } = require('./playbooks.routes');
+const { createOtelProxyRoutes } = require('./otel.routes');
+const { createDiagnosticsRoutes } = require('./diagnostics.routes');
+const { createClientLogsRoutes } = require('./client-logs.routes');
 const { createVmRegistryService } = require('../vm-registry/service');
 const { createLicenseService } = require('../license/service');
 const { createArtifactsService } = require('../artifacts/service');
@@ -106,6 +109,13 @@ function createApiV1Router({
       res.json(success(buildHealthPayload({ env: runtimeEnv, checks })));
     })
   );
+
+  // Optional OTLP proxy for browser traces (enabled via BOTMOX_OTEL_PROXY_ENABLED=1).
+  router.use('/otel', createOtelProxyRoutes());
+  // Dev-only diagnostics helpers (enabled via BOTMOX_DIAGNOSTICS_ENABLED=1).
+  router.use('/diag', createDiagnosticsRoutes({ env: runtimeEnv }));
+  // Optional frontend log intake for AI incident correlation.
+  router.use('/client-logs', createClientLogsRoutes({ authMiddleware }));
 
   router.use('/auth', createAuthRoutes({ authenticate }));
   router.use(asyncHandler(async (req, res, next) => {

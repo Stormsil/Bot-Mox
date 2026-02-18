@@ -18,6 +18,10 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.888.0",
     "@aws-sdk/s3-request-presigner": "^3.888.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.69.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.212.0",
+    "@opentelemetry/sdk-node": "^0.212.0",
     "@supabase/supabase-js": "^2.95.3",
     "axios": "^1.6.2",
     "cheerio": "^1.2.0",
@@ -27,6 +31,8 @@
     "helmet": "^8.1.0",
     "http-proxy": "^1.18.1",
     "js-yaml": "^4.1.1",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
     "ssh2": "^1.15.0",
     "ws": "^8.16.0",
     "zod": "^3.24.2"

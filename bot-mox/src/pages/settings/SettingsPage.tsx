@@ -41,6 +41,7 @@ import type {
 } from './types';
 import { useThemeSettings } from './useThemeSettings';
 import styles from './SettingsPage.module.css';
+import { uiLogger } from '../../observability/uiLogger'
 
 function cx(classNames: string): string {
   return classNames
@@ -129,7 +130,7 @@ export const SettingsPage: React.FC = () => {
         sync_enabled: Boolean(storagePolicySettings.sync?.enabled),
       });
     } catch (error) {
-      console.error('Error loading settings:', error);
+      uiLogger.error('Error loading settings:', error);
       message.error('Failed to load settings');
     } finally {
       setLoading(false);
@@ -167,7 +168,7 @@ export const SettingsPage: React.FC = () => {
       await updateApiKeys(newApiKeys);
       message.success('API keys saved');
     } catch (error) {
-      console.error('Error saving API keys:', error);
+      uiLogger.error('Error saving API keys:', error);
       message.error('Failed to save API keys');
     } finally {
       setSaving(false);
@@ -187,7 +188,7 @@ export const SettingsPage: React.FC = () => {
       await updateProxySettings(newProxySettings);
       message.success('Proxy settings saved');
     } catch (error) {
-      console.error('Error saving proxy settings:', error);
+      uiLogger.error('Error saving proxy settings:', error);
       message.error('Failed to save proxy settings');
     } finally {
       setSaving(false);
@@ -211,7 +212,7 @@ export const SettingsPage: React.FC = () => {
       await updateNotificationEvents(newEvents);
       message.success('Notification settings saved');
     } catch (error) {
-      console.error('Error saving notification settings:', error);
+      uiLogger.error('Error saving notification settings:', error);
       message.error('Failed to save notification settings');
     } finally {
       setSaving(false);
@@ -230,7 +231,7 @@ export const SettingsPage: React.FC = () => {
       setGlobalAlerts(nextAlerts);
       message.success('Global alert settings saved');
     } catch (error) {
-      console.error('Error saving global alert settings:', error);
+      uiLogger.error('Error saving global alert settings:', error);
       message.error('Failed to save global alert settings');
     } finally {
       setSaving(false);
@@ -249,7 +250,7 @@ export const SettingsPage: React.FC = () => {
       });
       message.success('Storage policy saved');
     } catch (error) {
-      console.error('Error saving storage policy:', error);
+      uiLogger.error('Error saving storage policy:', error);
       message.error('Failed to save storage policy');
     } finally {
       setSaving(false);

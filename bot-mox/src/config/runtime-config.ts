@@ -3,6 +3,9 @@ export type BotMoxRuntimeConfig = {
   wsBaseUrl?: string;
   supabaseUrl?: string;
   supabaseAnonKey?: string;
+  otelEnabled?: string;
+  otelServiceName?: string;
+  otelExporterOtlpEndpoint?: string;
 };
 
 declare global {
@@ -23,4 +26,3 @@ export function getRuntimeConfig(): BotMoxRuntimeConfig {
 export function readRuntimeString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
-

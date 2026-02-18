@@ -1,4 +1,5 @@
 import { apiGet, apiPatch, apiPut, createPollingSubscription } from './apiClient';
+import { uiLogger } from '../observability/uiLogger'
 
 export const PROJECT_SETTINGS_PATH = 'settings/projects';
 
@@ -80,7 +81,7 @@ export const getProjectSettings = async (): Promise<Record<string, ProjectSettin
     const response = await apiGet<unknown>('/api/v1/settings/projects');
     return normalizeProjects(response.data);
   } catch (error) {
-    console.error('Error loading project settings:', error);
+    uiLogger.error('Error loading project settings:', error);
     return DEFAULT_PROJECTS;
   }
 };

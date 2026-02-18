@@ -1,4 +1,5 @@
 import { apiGet, apiPut } from './apiClient';
+import { uiLogger } from '../observability/uiLogger'
 import {
   DEFAULT_THEME_VISUAL_SETTINGS,
   DEFAULT_THEME_SHAPE_SETTINGS,
@@ -122,7 +123,7 @@ export const getThemeSettings = async (): Promise<ThemeSettings> => {
       updated_by: typeof value.updated_by === 'string' ? value.updated_by : undefined,
     };
   } catch (error) {
-    console.error('Error loading theme settings:', error);
+    uiLogger.error('Error loading theme settings:', error);
     return getDefaultThemeSettings();
   }
 };

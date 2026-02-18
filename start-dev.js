@@ -63,6 +63,11 @@ function parseDotEnvFile(raw) {
 }
 
 function resolveProxyPort() {
+  const override = Number.parseInt(String(process.env.BOTMOX_PROXY_PORT || '').trim(), 10);
+  if (Number.isFinite(override) && override > 0) {
+    return override;
+  }
+
   const proxyPath = path.join(__dirname, 'proxy-server');
   const envPath = path.join(proxyPath, '.env');
   const envExamplePath = path.join(proxyPath, '.env.example');

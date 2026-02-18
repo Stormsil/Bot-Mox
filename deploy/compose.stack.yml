@@ -34,6 +34,11 @@ services:
       VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost}
       VITE_SUPABASE_URL: ${SUPABASE_PUBLIC_URL:-http://localhost}
       VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+      # Observability (runtime-config.js injected by nginx entrypoint)
+      VITE_OTEL_ENABLED: ${VITE_OTEL_ENABLED:-0}
+      VITE_OTEL_SERVICE_NAME: ${VITE_OTEL_SERVICE_NAME:-bot-mox-frontend}
+      # In prod-like mode, prefer exporting via backend proxy (avoids Jaeger CORS issues).
+      VITE_OTEL_EXPORTER_OTLP_ENDPOINT: ${VITE_OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost/api/v1/otel/v1/traces}
     networks:
       - app
 
@@ -44,6 +49,13 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${BACKEND_PORT:-3001}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      # Observability
+      BOTMOX_OTEL_ENABLED: ${BOTMOX_OTEL_ENABLED:-0}
+      BOTMOX_OTEL_PROXY_ENABLED: ${BOTMOX_OTEL_PROXY_ENABLED:-0}
+      BOTMOX_DIAGNOSTICS_ENABLED: ${BOTMOX_DIAGNOSTICS_ENABLED:-0}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-bot-mox-backend}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-}
       DATA_BACKEND: ${DATA_BACKEND:-supabase}
       SUPABASE_URL: ${SUPABASE_URL:-http://supabase-kong:8000}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}

@@ -47,6 +47,15 @@ interface StagePanelsProps {
 }
 
 export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTimestamp, formatDuration }) => {
+  const stageCardStyles = {
+    header: {
+      background: 'var(--boxmox-color-surface-panel)',
+      borderBottom: '1px solid var(--boxmox-color-border-default)',
+    },
+    title: { color: 'var(--boxmox-color-text-primary)' },
+  };
+  const statValueStyle = { color: 'var(--boxmox-color-text-primary)' };
+
   const renderPrepareContent = () => (
     <div className={[styles['stage-content'], styles['prepare-content']].join(' ')}>
       {currentStage === 'banned' ? (
@@ -88,7 +97,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 title="Current Level"
                 value={leveling.current_level}
                 prefix={<RiseOutlined />}
-                valueStyle={{ color: '#722ed1' }}
+                valueStyle={{ ...statValueStyle, color: '#722ed1' }}
               />
             </Card>
           </Col>
@@ -98,7 +107,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 title="XP per Hour"
                 value={leveling.xp_per_hour.toLocaleString()}
                 suffix="XP"
-                valueStyle={{ color: '#52c41a' }}
+                valueStyle={{ ...statValueStyle, color: '#52c41a' }}
               />
             </Card>
           </Col>
@@ -109,13 +118,13 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 value={leveling.estimated_time_to_level}
                 suffix="h"
                 prefix={<ClockCircleOutlined />}
-                valueStyle={{ color: '#1890ff' }}
+                valueStyle={{ ...statValueStyle, color: '#1890ff' }}
               />
             </Card>
           </Col>
         </Row>
 
-        <Card className={styles['stage-detail-card']} title="Experience Progress">
+        <Card className={styles['stage-detail-card']} title="Experience Progress" styles={stageCardStyles}>
           <div className={styles['xp-progress-section']}>
             <div className={styles['xp-info']}>
               <Text strong>Level {leveling.current_level}</Text>
@@ -133,7 +142,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </div>
         </Card>
 
-        <Card className={styles['stage-detail-card']} title="Current Location">
+        <Card className={styles['stage-detail-card']} title="Current Location" styles={stageCardStyles}>
           <div className={styles['location-info']}>
             <AimOutlined className={styles['location-icon']} />
             <div className={styles['location-details']}>
@@ -143,7 +152,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </div>
         </Card>
 
-        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Leveling Analytics">
+        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Leveling Analytics" styles={stageCardStyles}>
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic
@@ -151,6 +160,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 value={analytics.totalTime}
                 suffix="h"
                 prefix={<ClockCircleOutlined />}
+                valueStyle={statValueStyle}
               />
             </Col>
             <Col span={8}>
@@ -158,6 +168,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 title="Levels Gained"
                 value={analytics.levelsGained}
                 prefix={<RiseOutlined />}
+                valueStyle={statValueStyle}
               />
             </Col>
             <Col span={8}>
@@ -165,6 +176,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 title="Avg XP/h"
                 value={analytics.avgXpPerHour.toLocaleString()}
                 prefix={<LineChartOutlined />}
+                valueStyle={statValueStyle}
               />
             </Col>
           </Row>
@@ -237,6 +249,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 value={analytics.totalTime}
                 suffix="h"
                 prefix={<ClockCircleOutlined />}
+                valueStyle={statValueStyle}
               />
             </Col>
             <Col span={8}>
@@ -244,6 +257,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 title="Skill Points"
                 value={analytics.skillsGained}
                 prefix={<ToolOutlined />}
+                valueStyle={statValueStyle}
               />
             </Col>
             <Col span={8}>
@@ -251,6 +265,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 title="Avg Gain/h"
                 value={analytics.avgSkillPerHour}
                 prefix={<LineChartOutlined />}
+                valueStyle={statValueStyle}
               />
             </Col>
           </Row>
@@ -281,7 +296,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 value={farmStats.total_gold.toLocaleString()}
                 suffix="g"
                 prefix={<DollarOutlined />}
-                valueStyle={{ color: '#ffd700' }}
+                valueStyle={{ ...statValueStyle, color: '#ffd700' }}
               />
             </Card>
           </Col>
@@ -292,7 +307,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 value={farmStats.gold_per_hour.toFixed(1)}
                 suffix="g/h"
                 prefix={<ThunderboltOutlined />}
-                valueStyle={{ color: '#52c41a' }}
+                valueStyle={{ ...statValueStyle, color: '#52c41a' }}
               />
             </Card>
           </Col>
@@ -302,13 +317,13 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 title="Session Time"
                 value={formatDuration(sessionDuration)}
                 prefix={<ClockCircleOutlined />}
-                valueStyle={{ color: '#1890ff' }}
+                valueStyle={{ ...statValueStyle, color: '#1890ff' }}
               />
             </Card>
           </Col>
         </Row>
 
-        <Card className={styles['stage-detail-card']} title="Inventory">
+        <Card className={styles['stage-detail-card']} title="Inventory" styles={stageCardStyles}>
           <List
             dataSource={inventory}
             renderItem={(item) => (
@@ -330,7 +345,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           />
         </Card>
 
-        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Farm Analytics">
+        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Farm Analytics" styles={stageCardStyles}>
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic
@@ -338,6 +353,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 value={analytics.totalTime}
                 suffix="h"
                 prefix={<ClockCircleOutlined />}
+                valueStyle={statValueStyle}
               />
             </Col>
             <Col span={8}>
@@ -346,6 +362,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 value={analytics.totalGold.toLocaleString()}
                 suffix="g"
                 prefix={<DollarOutlined />}
+                valueStyle={statValueStyle}
               />
             </Col>
             <Col span={8}>
@@ -354,6 +371,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                 value={analytics.avgGoldPerHour.toFixed(1)}
                 suffix="g/h"
                 prefix={<BarChartOutlined />}
+                valueStyle={statValueStyle}
               />
             </Col>
           </Row>
@@ -381,3 +399,4 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
       return renderPrepareContent();
   }
 };
+

@@ -60,6 +60,52 @@ npm run check:all
 
 CI workflow: `.github/workflows/ci.yml`
 
+## AI Debugging & Testing
+
+Stack:
+- Observability: OpenTelemetry (frontend + backend) + JSON logs (pino) + Jaeger (OTLP)
+- E2E: Playwright with `trace.zip` artifacts on failures
+- Frontend incident ingest: `uiLogger` -> `POST /api/v1/client-logs` -> backend pino stream (`scope=client_log`)
+
+Quick start (local):
+
+```bash
+# 1) Start Jaeger UI (OTLP receiver + trace viewer)
+npm run obs:up
+
+# 2) Start app with tracing enabled (backend + frontend propagation)
+npm run dev:trace
+
+# 3) Fast sanity check (no scenarios)
+npm run doctor
+
+# 4) Run E2E smoke
+npm run test:e2e
+
+# If you already run the prod-like stack on http://localhost (Caddy) and don't want Playwright to start webServer:
+npm run test:e2e:prodlike
+
+# Combined quick check (doctor + Playwright smoke against http://localhost):
+npm run smoke:prodlike
+```
+
+Where to find debugging artifacts:
+- Playwright results: `bot-mox/test-results/`
+- Playwright HTML report: `bot-mox/playwright-report/`
+- AI-native debug runbook + env vars: `docs/plans/ai-native-observability-testing.md`
+- Frontend incident logs: backend JSON stream (`scope=client_log`, `source=frontend`)
+
+How to analyze failures (AI agent flow):
+1. Open Playwright report and trace (`trace.zip`) for the failing test.
+2. Read `x-trace-id` (or request `traceparent`) for the failing network request.
+3. Find backend JSON request logs by `trace_id` to reconstruct the server-side flow.
+4. Find frontend ingest logs by `scope=client_log` + same `trace_id` (or `correlation_id`) to connect UI errors with backend flow.
+5. (If enabled) Open Jaeger UI and inspect spans for that Trace ID.
+
+Guardrails:
+- `npm run check:frontend:logging` blocks new `console.*` in critical frontend layers (`services/hooks/pages/observability/ErrorBoundary`).
+- `npm run check:backend:logging` blocks new `console.*` in backend (allowlist-based).
+
 ## API Contract and Architecture
 
 1. API contract: `docs/api/openapi.yaml`

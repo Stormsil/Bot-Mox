@@ -6,6 +6,7 @@ import type {
   SubscriptionWithDetails,
 } from '../types';
 import { ApiClientError, apiGet } from './apiClient';
+import { uiLogger } from '../observability/uiLogger'
 import {
   createResource,
   deleteResource,
@@ -20,20 +21,20 @@ import {
  */
 export function parseDateToTimestamp(dateString: string): number {
   if (!dateString || typeof dateString !== 'string') {
-    console.error('parseDateToTimestamp: invalid input', { dateString, type: typeof dateString });
+    uiLogger.error('parseDateToTimestamp: invalid input', { dateString, type: typeof dateString });
     return Number.NaN;
   }
 
   const parts = dateString.split('.');
   if (parts.length !== 3) {
-    console.error('parseDateToTimestamp: invalid format, expected DD.MM.YYYY', { dateString });
+    uiLogger.error('parseDateToTimestamp: invalid format, expected DD.MM.YYYY', { dateString });
     return Number.NaN;
   }
 
   const [day, month, year] = parts.map(Number);
 
   if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) {
-    console.error('parseDateToTimestamp: invalid numbers', { day, month, year, dateString });
+    uiLogger.error('parseDateToTimestamp: invalid numbers', { day, month, year, dateString });
     return Number.NaN;
   }
 
@@ -42,7 +43,7 @@ export function parseDateToTimestamp(dateString: string): number {
   const timestamp = date.getTime();
 
   if (!Number.isFinite(timestamp)) {
-    console.error('parseDateToTimestamp: failed to create valid date', { day, month, year, dateString });
+    uiLogger.error('parseDateToTimestamp: failed to create valid date', { day, month, year, dateString });
     return Number.NaN;
   }
 

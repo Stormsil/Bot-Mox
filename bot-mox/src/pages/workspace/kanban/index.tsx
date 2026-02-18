@@ -32,6 +32,7 @@ import {
 } from '../../../services/workspaceService';
 import { TableActionButton } from '../../../components/ui/TableActionButton';
 import styles from './WorkspaceKanbanPage.module.css';
+import { uiLogger } from '../../../observability/uiLogger'
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -64,7 +65,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
         setLoading(false);
       },
       (error) => {
-        console.error('Failed to subscribe to kanban tasks:', error);
+        uiLogger.error('Failed to subscribe to kanban tasks:', error);
         message.error('Failed to load kanban tasks');
         setLoading(false);
       }
@@ -147,7 +148,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
       if (error && typeof error === 'object' && 'errorFields' in (error as object)) {
         return;
       }
-      console.error('Failed to save task:', error);
+      uiLogger.error('Failed to save task:', error);
       message.error('Failed to save task');
     } finally {
       setSaving(false);
@@ -159,7 +160,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
       await deleteKanbanTask(taskId);
       message.success('Task deleted');
     } catch (error) {
-      console.error('Failed to delete task:', error);
+      uiLogger.error('Failed to delete task:', error);
       message.error('Failed to delete task');
     }
   };
@@ -176,7 +177,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
         order: getNextOrder(nextStatus),
       });
     } catch (error) {
-      console.error('Failed to move task:', error);
+      uiLogger.error('Failed to move task:', error);
       message.error('Failed to move task');
     }
   };
@@ -185,7 +186,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
     <div className={styles.root}>
       <div className={styles.header}>
         <Title level={4} className={styles.title}>
-          <CheckCircleOutlined /> Workspace Kanban
+          <CheckCircleOutlined className={styles.titleIcon} /> Workspace Kanban
         </Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal('todo')}>
           Add task
@@ -215,61 +216,64 @@ export const WorkspaceKanbanPage: React.FC = () => {
                 </Button>
               }
               loading={loading}
+              styles={{ body: { paddingTop: 12, paddingBottom: 12 } }}
             >
-              {columnTasks.length === 0 ? (
-                <Empty
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description={<Text type="secondary">No tasks</Text>}
-                />
-              ) : (
-                <div className={styles.tasks}>
-                  {columnTasks.map((task) => (
-                    <Card key={task.id} className={styles.task} size="small">
-                      <div className={styles.taskHeader}>
-                        <Text strong>{task.title}</Text>
-                        <Space size={2}>
-                          {task.status !== 'done' && (
+              <div className={styles.columnBody}>
+                {columnTasks.length === 0 ? (
+                  <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description={<Text type="secondary">No tasks</Text>}
+                  />
+                ) : (
+                  <div className={styles.tasks}>
+                    {columnTasks.map((task) => (
+                      <Card key={task.id} className={styles.task} size="small" styles={{ body: { padding: '10px 12px' } }}>
+                        <div className={styles.taskHeader}>
+                          <Text strong>{task.title}</Text>
+                          <Space size={2}>
+                            {task.status !== 'done' && (
+                              <TableActionButton
+                                icon={<RightOutlined />}
+                                onClick={() => moveTask(task)}
+                                tooltip="Move to next column"
+                              />
+                            )}
                             <TableActionButton
-                              icon={<RightOutlined />}
-                              onClick={() => moveTask(task)}
-                              tooltip="Move to next column"
+                              icon={<EditOutlined />}
+                              onClick={() => openEditModal(task)}
+                              tooltip="Edit task"
                             />
-                          )}
-                          <TableActionButton
-                            icon={<EditOutlined />}
-                            onClick={() => openEditModal(task)}
-                            tooltip="Edit task"
-                          />
-                          <Popconfirm
-                            title="Delete task?"
-                            okText="Delete"
-                            cancelText="Cancel"
-                            onConfirm={() => handleDelete(task.id)}
-                          >
-                            <TableActionButton danger icon={<DeleteOutlined />} tooltip="Delete task" />
-                          </Popconfirm>
-                        </Space>
-                      </div>
-                      {task.description ? (
-                        <Text className={styles.taskDescription}>{task.description}</Text>
-                      ) : (
-                        <Text type="secondary" className={styles.taskDescription}>
-                          No description
-                        </Text>
-                      )}
-                      <div className={styles.taskFooter}>
-                        {task.due_date ? (
-                          <Tag color={dayjs(task.due_date).isBefore(dayjs(), 'day') ? 'error' : 'blue'}>
-                            Due {dayjs(task.due_date).format('DD MMM')}
-                          </Tag>
+                            <Popconfirm
+                              title="Delete task?"
+                              okText="Delete"
+                              cancelText="Cancel"
+                              onConfirm={() => handleDelete(task.id)}
+                            >
+                              <TableActionButton danger icon={<DeleteOutlined />} tooltip="Delete task" />
+                            </Popconfirm>
+                          </Space>
+                        </div>
+                        {task.description ? (
+                          <Text className={styles.taskDescription}>{task.description}</Text>
                         ) : (
-                          <Tag>Without due date</Tag>
+                          <Text type="secondary" className={styles.taskDescription}>
+                            No description
+                          </Text>
                         )}
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                        <div className={styles.taskFooter}>
+                          {task.due_date ? (
+                            <Tag color={dayjs(task.due_date).isBefore(dayjs(), 'day') ? 'error' : 'blue'}>
+                              Due {dayjs(task.due_date).format('DD MMM')}
+                            </Tag>
+                          ) : (
+                            <Tag>Without due date</Tag>
+                          )}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </Card>
           );
         })}

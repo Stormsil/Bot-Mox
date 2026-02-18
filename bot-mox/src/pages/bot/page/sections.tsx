@@ -113,6 +113,22 @@ export const renderTabContent = ({
           }}
           items={configureSections.map((section, index) => ({
             key: `configure-${section.key}`,
+            className: [
+              styles.configureCollapseItem,
+              index === configureSections.length - 1 ? styles.configureCollapseItemLast : '',
+            ]
+              .filter(Boolean)
+              .join(' '),
+            styles: {
+              header: {
+                background: 'var(--boxmox-color-surface-muted)',
+                padding: '12px 16px',
+              },
+              body: {
+                background: 'var(--boxmox-color-surface-panel)',
+                borderTop: '1px solid var(--boxmox-color-border-default)',
+              },
+            },
             label: (
               <div className={styles.configurePanelHeader}>
                 <div className={styles.configurePanelTitle}>

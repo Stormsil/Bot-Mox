@@ -9,6 +9,7 @@ import type {
   VMTaskStatus,
 } from '../types';
 import { apiGet, apiPut, createPollingSubscription } from '../services/apiClient';
+import { uiLogger } from '../observability/uiLogger'
 
 let logIdCounter = 0;
 let taskIdCounter = 0;
@@ -137,7 +138,7 @@ export function useVMLog() {
           lastPersistedHashRef.current = serialized;
         })
         .catch((error) => {
-          console.error('Failed to persist VM tasks:', error);
+          uiLogger.error('Failed to persist VM tasks:', error);
         })
         .finally(() => {
           persistTimerRef.current = null;
@@ -174,7 +175,7 @@ export function useVMLog() {
       async () => loadPersistedTasks(),
       applyHydratedTasks,
       (error) => {
-        console.error('Failed to load VM task history:', error);
+        uiLogger.error('Failed to load VM task history:', error);
         hydratedRef.current = true;
       },
       { key: 'settings:vmgenerator:task_logs', intervalMs: 4000, immediate: true }

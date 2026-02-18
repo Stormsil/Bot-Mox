@@ -1,5 +1,6 @@
 import { apiGet, apiPut } from './apiClient';
 import type { ApiKeys, ProxySettings, NotificationEvents } from '../types';
+import { uiLogger } from '../observability/uiLogger'
 
 const SETTINGS_API_PREFIX = '/api/v1/settings';
 
@@ -100,7 +101,7 @@ export async function getApiKeys(): Promise<ApiKeys> {
     const response = await apiGet<unknown>(`${SETTINGS_API_PREFIX}/api_keys`);
     return normalizeApiKeys(response.data);
   } catch (error) {
-    console.error('Error loading API keys:', error);
+    uiLogger.error('Error loading API keys:', error);
     return getDefaultApiKeys();
   }
 }
@@ -133,7 +134,7 @@ export async function getProxySettings(): Promise<ProxySettings> {
     const response = await apiGet<unknown>(`${SETTINGS_API_PREFIX}/proxy`);
     return normalizeProxySettings(response.data);
   } catch (error) {
-    console.error('Error loading proxy settings:', error);
+    uiLogger.error('Error loading proxy settings:', error);
     return getDefaultProxySettings();
   }
 }
@@ -160,7 +161,7 @@ export async function getNotificationEvents(): Promise<NotificationEvents> {
     const response = await apiGet<unknown>(`${SETTINGS_API_PREFIX}/notifications/events`);
     return normalizeNotificationEvents(response.data);
   } catch (error) {
-    console.error('Error loading notification events:', error);
+    uiLogger.error('Error loading notification events:', error);
     return getDefaultNotificationEvents();
   }
 }
@@ -251,6 +252,6 @@ export async function initApiSettings(): Promise<void> {
       await apiPut(`${SETTINGS_API_PREFIX}/notifications/events`, getDefaultNotificationEvents());
     }
   } catch (error) {
-    console.error('Error initializing API settings:', error);
+    uiLogger.error('Error initializing API settings:', error);
   }
 }

@@ -1,0 +1,114 @@
+{
+  "generatedAtUtc": "2026-02-18T01:02:55.025Z",
+  "failedTotal": 0,
+  "light": {
+    "mode": "light",
+    "failedCount": 0,
+    "results": [
+      {
+        "fg": "#26323b",
+        "bg": "#f2f4f7",
+        "min": 4.5,
+        "ratio": 11.9,
+        "pass": true
+      },
+      {
+        "fg": "#26323b",
+        "bg": "#ffffff",
+        "min": 4.5,
+        "ratio": 13.11,
+        "pass": true
+      },
+      {
+        "fg": "#4b5a66",
+        "bg": "#ffffff",
+        "min": 3,
+        "ratio": 7.11,
+        "pass": true
+      },
+      {
+        "fg": "#7b8793",
+        "bg": "#ffffff",
+        "min": 3,
+        "ratio": 3.67,
+        "pass": true
+      },
+      {
+        "fg": "#1f4f6f",
+        "bg": "#d6e6f7",
+        "min": 4.5,
+        "ratio": 6.87,
+        "pass": true
+      },
+      {
+        "fg": "#e6edf3",
+        "bg": "#2c3e50",
+        "min": 4.5,
+        "ratio": 9.3,
+        "pass": true
+      },
+      {
+        "fg": "#a9b6c3",
+        "bg": "#2c3e50",
+        "min": 3,
+        "ratio": 5.32,
+        "pass": true
+      }
+    ]
+  },
+  "dark": {
+    "mode": "dark",
+    "failedCount": 0,
+    "results": [
+      {
+        "fg": "#e6edf3",
+        "bg": "#1e1f22",
+        "min": 4.5,
+        "ratio": 13.95,
+        "pass": true
+      },
+      {
+        "fg": "#e6edf3",
+        "bg": "#2a2f35",
+        "min": 4.5,
+        "ratio": 11.42,
+        "pass": true
+      },
+      {
+        "fg": "#b9c3cd",
+        "bg": "#2a2f35",
+        "min": 3,
+        "ratio": 7.55,
+        "pass": true
+      },
+      {
+        "fg": "#8e9aa6",
+        "bg": "#2a2f35",
+        "min": 3,
+        "ratio": 4.7,
+        "pass": true
+      },
+      {
+        "fg": "#cfe2f4",
+        "bg": "#233a4f",
+        "min": 4.5,
+        "ratio": 8.85,
+        "pass": true
+      },
+      {
+        "fg": "#e6edf3",
+        "bg": "#1f2a33",
+        "min": 4.5,
+        "ratio": 12.37,
+        "pass": true
+      },
+      {
+        "fg": "#97a6b4",
+        "bg": "#1f2a33",
+        "min": 3,
+        "ratio": 5.86,
+        "pass": true
+      }
+    ]
+  }
+}

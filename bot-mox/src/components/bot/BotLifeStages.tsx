@@ -156,6 +156,10 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
               onChange={handleStageChange}
               className={styles['stage-select']}
               disabled={currentStage === 'banned'}
+              style={{
+                background: 'var(--boxmox-color-surface-base)',
+                color: 'var(--boxmox-color-text-primary)',
+              }}
             >
               <Option value="prepare">
                 <span className={styles['stage-option']}>
@@ -196,37 +200,49 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
       </Card>
 
       <Row gutter={[16, 16]} className={styles['stages-content-row']}>
-        <Col span={18}>
+        <Col xs={24} xl={18}>
           <StagePanels
             currentStage={currentStage}
             renderTimestamp={renderTimestamp}
             formatDuration={formatDuration}
           />
         </Col>
-        <Col span={6}>
-          <Card className={styles['timeline-card']} title="Life Cycle">
+        <Col xs={24} xl={6}>
+          <Card
+            className={styles['timeline-card']}
+            title="Life Cycle"
+            styles={{
+              header: {
+                background: 'var(--boxmox-color-surface-panel)',
+                borderBottom: '1px solid var(--boxmox-color-border-default)',
+              },
+              title: { color: 'var(--boxmox-color-text-primary)' },
+            }}
+          >
             <StageTimeline currentStage={currentStage} />
             <Divider />
-            {currentStage !== 'banned' ? (
-              <Button
-                type="primary"
-                danger
-                icon={<StopOutlined />}
-                onClick={() => setIsBanModalVisible(true)}
-                block
-              >
-                Подтвердить блокировку
-              </Button>
-            ) : (
-              <Button
-                type="default"
-                icon={<CheckCircleOutlined />}
-                onClick={handleUnban}
-                block
-              >
-                Подтвердить снятие бана
-              </Button>
-            )}
+            <div className={styles['timeline-action']}>
+              {currentStage !== 'banned' ? (
+                <Button
+                  type="primary"
+                  danger
+                  icon={<StopOutlined />}
+                  onClick={() => setIsBanModalVisible(true)}
+                  block
+                >
+                  Подтвердить блокировку
+                </Button>
+              ) : (
+                <Button
+                  type="default"
+                  icon={<CheckCircleOutlined />}
+                  onClick={handleUnban}
+                  block
+                >
+                  Подтвердить снятие бана
+                </Button>
+              )}
+            </div>
           </Card>
         </Col>
       </Row>

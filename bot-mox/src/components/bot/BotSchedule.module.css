@@ -14,46 +14,36 @@
   border-color: var(--boxmox-color-border-default);
 }
 
-.schedule-card :global(.ant-card-head) {
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-}
-
-.schedule-card :global(.ant-card-head-title) {
-  color: var(--boxmox-color-text-primary);
-  font-size: 14px;
-  font-weight: 600;
-}
-
 .schedule-actions {
   display: flex;
   gap: 8px;
 }
 
-.schedule-actions :global(.ant-btn) {
+.schedule-action-btn {
   background: var(--boxmox-color-surface-muted);
   border-color: var(--boxmox-color-border-default);
   color: var(--boxmox-color-text-primary);
 }
 
-.schedule-actions :global(.ant-btn):hover {
+.schedule-action-btn:hover {
   border-color: var(--boxmox-color-brand-primary);
   color: var(--boxmox-color-brand-primary);
 }
 
-.schedule-actions :global(.ant-btn-primary) {
+.schedule-action-btn-primary {
   background: var(--boxmox-color-brand-primary);
   border-color: var(--boxmox-color-brand-primary);
   color: #fff;
 }
 
-.schedule-actions :global(.ant-btn-primary):hover {
+.schedule-action-btn-primary:hover {
   background: var(--boxmox-color-brand-primary-hover);
   border-color: var(--boxmox-color-brand-primary-hover);
+  color: #fff;
 }
 
-.schedule-actions :global(.ant-btn-primary):disabled,
-.schedule-actions :global(.ant-btn):disabled {
+.schedule-action-btn-primary:disabled,
+.schedule-action-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -70,23 +60,8 @@
 
 .unsaved-alert {
   margin-bottom: 16px;
-}
-
-.unsaved-alert:global(.ant-alert-warning) {
   background: #fff4e3;
   border-color: var(--boxmox-color-brand-warning);
-}
-
-.unsaved-alert :global(.ant-alert-message) {
-  color: #b36200;
-}
-
-.unsaved-alert:global(.ant-alert-warning) :global(.ant-alert-icon) {
-  color: var(--boxmox-color-brand-warning);
-}
-
-.unsaved-alert:global(.ant-alert-warning) :global(.ant-alert-description) {
-  color: var(--boxmox-color-text-secondary);
 }
 
 /* Main layout wrapper */
