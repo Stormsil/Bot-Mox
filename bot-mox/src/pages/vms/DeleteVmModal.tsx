@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button, Checkbox, Modal, Popover, Tag } from 'antd';
 import { DownOutlined, FilterOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Modal, Popover, Tag } from 'antd';
+import type React from 'react';
 import type { DeleteVmCandidateRow, DeleteVmFilters } from './deleteVmRules';
 import styles from './VMsPage.module.css';
 
@@ -133,14 +133,14 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
 
   return (
     <Modal
-      title={(
+      title={
         <div className={cx('vm-delete-vm-modal-title-wrap')}>
           <span className={cx('vm-delete-vm-modal-title-main')}>Delete Existing VMs</span>
           <span className={cx('vm-delete-vm-modal-title-sub')}>
             Select VMs marked as ALLOWED and add them to delete queue tasks.
           </span>
         </div>
-      )}
+      }
       open={open}
       onCancel={onClose}
       onOk={onConfirm}
@@ -215,9 +215,15 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
               overlayClassName={cx('vm-delete-vm-filter-popover-overlay')}
               overlayInnerStyle={popoverInnerStyle}
             >
-              <Button size="small" className={cx('vm-delete-vm-filter-trigger')} icon={<FilterOutlined />}>
+              <Button
+                size="small"
+                className={cx('vm-delete-vm-filter-trigger')}
+                icon={<FilterOutlined />}
+              >
                 Delete rules
-                <span className={cx('vm-delete-vm-filter-trigger-count')}>{policyEnabledCount}/3</span>
+                <span className={cx('vm-delete-vm-filter-trigger-count')}>
+                  {policyEnabledCount}/3
+                </span>
                 <DownOutlined />
               </Button>
             </Popover>
@@ -228,9 +234,15 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
               overlayClassName={cx('vm-delete-vm-filter-popover-overlay')}
               overlayInnerStyle={popoverInnerStyle}
             >
-              <Button size="small" className={cx('vm-delete-vm-filter-trigger')} icon={<FilterOutlined />}>
+              <Button
+                size="small"
+                className={cx('vm-delete-vm-filter-trigger')}
+                icon={<FilterOutlined />}
+              >
                 View
-                <span className={cx('vm-delete-vm-filter-trigger-count')}>{viewEnabledCount}/4</span>
+                <span className={cx('vm-delete-vm-filter-trigger-count')}>
+                  {viewEnabledCount}/4
+                </span>
                 <DownOutlined />
               </Button>
             </Popover>
@@ -258,7 +270,9 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
         <div className={cx('vm-delete-vm-list-shell')}>
           <div className={cx('vm-delete-vm-list-shell-title-row')}>
             <div className={cx('vm-delete-vm-list-shell-title')}>VM candidates</div>
-            <div className={cx('vm-delete-vm-list-shell-note')}>Only rows marked <strong>ALLOWED</strong> can be queued</div>
+            <div className={cx('vm-delete-vm-list-shell-note')}>
+              Only rows marked <strong>ALLOWED</strong> can be queued
+            </div>
           </div>
           <div className={cx('vm-delete-vm-modal-list')}>
             {loading ? (
@@ -287,20 +301,20 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
                   const primaryBotId = primary?.bot.id ? primary.bot.id.slice(0, 8) : '';
                   const missingResources = primary
                     ? [
-                      !primary.hasEmail ? 'email' : null,
-                      !primary.hasPassword ? 'password' : null,
-                      !primary.hasProxy ? 'proxy' : null,
-                      !primary.hasSubscription ? 'subscription' : null,
-                      !primary.hasLicense ? 'license' : null,
-                    ].filter((value): value is string => Boolean(value))
+                        !primary.hasEmail ? 'email' : null,
+                        !primary.hasPassword ? 'password' : null,
+                        !primary.hasProxy ? 'proxy' : null,
+                        !primary.hasSubscription ? 'subscription' : null,
+                        !primary.hasLicense ? 'license' : null,
+                      ].filter((value): value is string => Boolean(value))
                     : [];
                   const accountLine = primary
                     ? `Account ${primaryBotId} • ${String(primary.bot.status || 'unknown').toUpperCase()}${primary.isBanned ? ' • BANNED' : ''}${primary.isPrepareSeed ? ' • PREPARE' : ''}`
                     : 'Account: not linked';
                   const resourcesLine = primary
-                    ? (missingResources.length === 0
+                    ? missingResources.length === 0
                       ? 'Resources: complete profile'
-                      : `Missing resources: ${missingResources.join(', ')}`)
+                      : `Missing resources: ${missingResources.join(', ')}`
                     : 'Resources: unavailable (no linked account)';
                   const decisionLine = queuedAlready
                     ? 'Already queued for deletion'
@@ -321,10 +335,18 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
                           <span className={cx('vm-delete-vm-modal-item-main')}>
                             VM {vm.vmid} - {vm.name || `VM ${vm.vmid}`}
                           </span>
-                          <span className={cx('vm-delete-vm-modal-item-sub vm-delete-vm-modal-item-sub--account')}>
+                          <span
+                            className={cx(
+                              'vm-delete-vm-modal-item-sub vm-delete-vm-modal-item-sub--account',
+                            )}
+                          >
                             {accountLine}
                           </span>
-                          <span className={cx('vm-delete-vm-modal-item-sub vm-delete-vm-modal-item-sub--resources')}>
+                          <span
+                            className={cx(
+                              'vm-delete-vm-modal-item-sub vm-delete-vm-modal-item-sub--resources',
+                            )}
+                          >
                             {resourcesLine}
                           </span>
                           {linkedBots.length > 1 && (
@@ -332,14 +354,22 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
                               Linked accounts: {linkedBots.length}
                             </span>
                           )}
-                          <span className={`vm-delete-vm-modal-item-sub vm-delete-vm-modal-item-sub--decision vm-delete-vm-modal-item-sub--${decisionClass}`}>
+                          <span
+                            className={`vm-delete-vm-modal-item-sub vm-delete-vm-modal-item-sub--decision vm-delete-vm-modal-item-sub--${decisionClass}`}
+                          >
                             Rule: {decisionLine}
                           </span>
                         </div>
                       </Checkbox>
                       <div className={cx('vm-delete-vm-modal-item-right')}>
-                        <Tag className={cx(`vm-delete-vm-status ${statusClass}`)}>{vmStatus.toUpperCase()}</Tag>
-                        <Tag className={cx(`vm-delete-vm-status ${disabled ? 'is-blocked' : 'is-allowed'}`)}>
+                        <Tag className={cx(`vm-delete-vm-status ${statusClass}`)}>
+                          {vmStatus.toUpperCase()}
+                        </Tag>
+                        <Tag
+                          className={cx(
+                            `vm-delete-vm-status ${disabled ? 'is-blocked' : 'is-allowed'}`,
+                          )}
+                        >
                           {disabled ? 'LOCKED' : 'ALLOWED'}
                         </Tag>
                         {queuedAlready && (

@@ -1,17 +1,3 @@
-import React from 'react';
-import {
-  Alert,
-  Card,
-  Col,
-  Divider,
-  Empty,
-  List,
-  Progress,
-  Row,
-  Statistic,
-  Tag,
-  Typography,
-} from 'antd';
 import {
   AimOutlined,
   BarChartOutlined,
@@ -25,6 +11,21 @@ import {
   ToolOutlined,
 } from '@ant-design/icons';
 import {
+  Alert,
+  Card,
+  Col,
+  Divider,
+  Empty,
+  List,
+  Progress,
+  Row,
+  Statistic,
+  Tag,
+  Typography,
+} from 'antd';
+import type React from 'react';
+import type { LifeStage } from './config';
+import {
   getProfessionColor,
   getProfessionIcon,
   getQualityColor,
@@ -34,9 +35,8 @@ import {
   mockLeveling,
   mockProfessions,
 } from './config';
-import type { LifeStage } from './config';
-import { SimpleBarChart } from './SimpleBarChart';
 import styles from './lifeStages.module.css';
+import { SimpleBarChart } from './SimpleBarChart';
 
 const { Text, Title } = Typography;
 
@@ -46,7 +46,11 @@ interface StagePanelsProps {
   formatDuration: (ms: number) => string;
 }
 
-export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTimestamp, formatDuration }) => {
+export const StagePanels: React.FC<StagePanelsProps> = ({
+  currentStage,
+  renderTimestamp,
+  formatDuration,
+}) => {
   const stageCardStyles = {
     header: {
       background: 'var(--boxmox-color-surface-panel)',
@@ -73,8 +77,8 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
             <div className={styles['prepare-message']}>
               <Title level={4}>Bot is preparing</Title>
               <Text type="secondary">
-                At this stage, the bot is undergoing initial setup before launch.
-                Data will be available after transitioning to an active stage.
+                At this stage, the bot is undergoing initial setup before launch. Data will be
+                available after transitioning to an active stage.
               </Text>
             </div>
           }
@@ -89,7 +93,9 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
     const analytics = mockAnalytics.leveling;
 
     return (
-      <div className={[styles['stage-content'], styles['leveling-content']].filter(Boolean).join(' ')}>
+      <div
+        className={[styles['stage-content'], styles['leveling-content']].filter(Boolean).join(' ')}
+      >
         <Row gutter={[16, 16]}>
           <Col span={8}>
             <Card className={styles['stage-stat-card']}>
@@ -124,7 +130,11 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </Col>
         </Row>
 
-        <Card className={styles['stage-detail-card']} title="Experience Progress" styles={stageCardStyles}>
+        <Card
+          className={styles['stage-detail-card']}
+          title="Experience Progress"
+          styles={stageCardStyles}
+        >
           <div className={styles['xp-progress-section']}>
             <div className={styles['xp-info']}>
               <Text strong>Level {leveling.current_level}</Text>
@@ -142,7 +152,11 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </div>
         </Card>
 
-        <Card className={styles['stage-detail-card']} title="Current Location" styles={stageCardStyles}>
+        <Card
+          className={styles['stage-detail-card']}
+          title="Current Location"
+          styles={stageCardStyles}
+        >
           <div className={styles['location-info']}>
             <AimOutlined className={styles['location-icon']} />
             <div className={styles['location-details']}>
@@ -152,7 +166,11 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           </div>
         </Card>
 
-        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Leveling Analytics" styles={stageCardStyles}>
+        <Card
+          className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')}
+          title="Leveling Analytics"
+          styles={stageCardStyles}
+        >
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic
@@ -196,12 +214,17 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
     const analytics = mockAnalytics.professions;
 
     return (
-      <div className={[styles['stage-content'], styles['professions-content']].filter(Boolean).join(' ')}>
+      <div
+        className={[styles['stage-content'], styles['professions-content']]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <Row gutter={[16, 16]}>
           {professions.map((profession) => {
-            const percent = profession.max_skill_points > 0
-              ? Math.round((profession.skill_points / profession.max_skill_points) * 100)
-              : 0;
+            const percent =
+              profession.max_skill_points > 0
+                ? Math.round((profession.skill_points / profession.max_skill_points) * 100)
+                : 0;
             const color = getProfessionColor(profession.name);
             const isActive = profession.skill_points > 0;
 
@@ -218,7 +241,11 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                         {getProfessionIcon(profession.name)}
                       </span>
                       <span className={styles['profession-name']}>{profession.name}</span>
-                      {isActive && <Tag color="success" className={styles['profession-status']}>Active</Tag>}
+                      {isActive && (
+                        <Tag color="success" className={styles['profession-status']}>
+                          Active
+                        </Tag>
+                      )}
                     </div>
                   }
                 >
@@ -241,7 +268,10 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           })}
         </Row>
 
-        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Professions Analytics">
+        <Card
+          className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')}
+          title="Professions Analytics"
+        >
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic
@@ -270,11 +300,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
             </Col>
           </Row>
           <Divider />
-          <SimpleBarChart
-            data={analytics.trend}
-            color="#13c2c2"
-            label="Skill points trend"
-          />
+          <SimpleBarChart data={analytics.trend} color="#13c2c2" label="Skill points trend" />
         </Card>
       </div>
     );
@@ -334,7 +360,10 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
                     <Text strong style={{ color: getQualityColor(item.quality) }}>
                       {item.name}
                     </Text>
-                    <Tag className={styles['quality-tag']} style={{ backgroundColor: getQualityColor(item.quality) }}>
+                    <Tag
+                      className={styles['quality-tag']}
+                      style={{ backgroundColor: getQualityColor(item.quality) }}
+                    >
                       {item.quality}
                     </Tag>
                   </div>
@@ -345,7 +374,11 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
           />
         </Card>
 
-        <Card className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')} title="Farm Analytics" styles={stageCardStyles}>
+        <Card
+          className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')}
+          title="Farm Analytics"
+          styles={stageCardStyles}
+        >
           <Row gutter={[16, 16]}>
             <Col span={8}>
               <Statistic
@@ -376,11 +409,7 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
             </Col>
           </Row>
           <Divider />
-          <SimpleBarChart
-            data={analytics.trend}
-            color="#faad14"
-            label="Gold/hour trend"
-          />
+          <SimpleBarChart data={analytics.trend} color="#faad14" label="Gold/hour trend" />
         </Card>
       </div>
     );
@@ -399,4 +428,3 @@ export const StagePanels: React.FC<StagePanelsProps> = ({ currentStage, renderTi
       return renderPrepareContent();
   }
 };
-

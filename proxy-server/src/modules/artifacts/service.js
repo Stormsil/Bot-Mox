@@ -1,5 +1,8 @@
 const { createSupabaseServiceClient } = require('../../repositories/supabase/client');
-const { createS3StorageProvider, S3StorageProviderError } = require('../../repositories/s3/storage-provider');
+const {
+  createS3StorageProvider,
+  S3StorageProviderError,
+} = require('../../repositories/s3/storage-provider');
 const { LicenseServiceError } = require('../license/service');
 
 const RELEASE_STATUS_ACTIVE = 'active';
@@ -18,7 +21,10 @@ class ArtifactsServiceError extends Error {
   }
 }
 
-function normalizeString(value, { field, required = true, maxLength = 200, lowercase = false } = {}) {
+function normalizeString(
+  value,
+  { field, required = true, maxLength = 200, lowercase = false } = {},
+) {
   const raw = String(value || '').trim();
   if (!raw) {
     if (!required) return '';
@@ -34,7 +40,11 @@ function normalizeScope({ module, platform, channel }) {
   return {
     module: normalizeString(module, { field: 'module', maxLength: 200 }),
     platform: normalizeString(platform, { field: 'platform', maxLength: 100, lowercase: true }),
-    channel: normalizeString(channel || 'stable', { field: 'channel', maxLength: 100, lowercase: true }),
+    channel: normalizeString(channel || 'stable', {
+      field: 'channel',
+      maxLength: 100,
+      lowercase: true,
+    }),
   };
 }
 
@@ -90,17 +100,28 @@ function normalizeReleaseStatus(value) {
   });
   const allowed = ['draft', 'active', 'disabled', 'archived'];
   if (!allowed.includes(normalized)) {
-    throw new ArtifactsServiceError(400, 'BAD_REQUEST', 'status must be one of draft|active|disabled|archived');
+    throw new ArtifactsServiceError(
+      400,
+      'BAD_REQUEST',
+      'status must be one of draft|active|disabled|archived',
+    );
   }
   return normalized;
 }
 
 function mapSupabaseError(error, fallbackMessage, code = 'SUPABASE_QUERY_FAILED') {
-  return new ArtifactsServiceError(502, code, fallbackMessage, error?.message || String(error || 'unknown-error'));
+  return new ArtifactsServiceError(
+    502,
+    code,
+    fallbackMessage,
+    error?.message || String(error || 'unknown-error'),
+  );
 }
 
 function normalizeAuditReason(value, fallback = 'resolve-denied') {
-  const raw = String(value || fallback).trim().toLowerCase();
+  const raw = String(value || fallback)
+    .trim()
+    .toLowerCase();
   const normalized = raw.replace(/[^a-z0-9:_-]+/g, '-').slice(0, 120);
   return normalized || fallback;
 }
@@ -120,7 +141,7 @@ function mapResolveError(error) {
     500,
     'ARTIFACT_RESOLVE_FAILED',
     'Failed to resolve artifact download',
-    error instanceof Error ? error.message : String(error || 'unknown-error')
+    error instanceof Error ? error.message : String(error || 'unknown-error'),
   );
 }
 
@@ -156,7 +177,11 @@ function createArtifactsService({ env, licenseService }) {
   async function recordAudit(event) {
     const { error } = await supabase.from(auditTable).insert(event);
     if (error) {
-      throw mapSupabaseError(error, 'Failed to write artifact download audit', 'ARTIFACT_AUDIT_WRITE_FAILED');
+      throw mapSupabaseError(
+        error,
+        'Failed to write artifact download audit',
+        'ARTIFACT_AUDIT_WRITE_FAILED',
+      );
     }
   }
 
@@ -177,11 +202,7 @@ function createArtifactsService({ env, licenseService }) {
       updated_by: normalizeUserId(actorId, { required: false }) || null,
     };
 
-    const { data, error } = await supabase
-      .from(releasesTable)
-      .insert(row)
-      .select('*')
-      .single();
+    const { data, error } = await supabase.from(releasesTable).insert(row).select('*').single();
 
     if (error) {
       throw mapSupabaseError(error, 'Failed to create artifact release');
@@ -226,7 +247,7 @@ function createArtifactsService({ env, licenseService }) {
       throw new ArtifactsServiceError(
         409,
         'ARTIFACT_SCOPE_MISMATCH',
-        'release scope does not match assignment scope'
+        'release scope does not match assignment scope',
       );
     }
 
@@ -261,11 +282,7 @@ function createArtifactsService({ env, licenseService }) {
       updated_by: normalizedActorId,
     };
 
-    const { data, error } = await supabase
-      .from(assignmentsTable)
-      .insert(row)
-      .select('*')
-      .single();
+    const { data, error } = await supabase.from(assignmentsTable).insert(row).select('*').single();
 
     if (error) {
       throw mapSupabaseError(error, 'Failed to create artifact assignment');
@@ -273,13 +290,7 @@ function createArtifactsService({ env, licenseService }) {
     return data;
   }
 
-  async function getEffectiveAssignment({
-    tenantId,
-    userId,
-    module,
-    platform,
-    channel,
-  }) {
+  async function getEffectiveAssignment({ tenantId, userId, module, platform, channel }) {
     const normalizedTenantId = normalizeTenantId(tenantId);
     const scope = normalizeScope({ module, platform, channel });
     const normalizedUserId = normalizeUserId(userId, { required: false }) || null;
@@ -337,7 +348,8 @@ function createArtifactsService({ env, licenseService }) {
     const scope = normalizeScope({ module, platform, channel });
     const normalizedVmUuid = normalizeVmUuid(vmUuid);
     const normalizedActorId = normalizeUserId(actorId, { required: false }) || null;
-    const normalizedRequestIp = normalizeString(requestIp, { field: 'request_ip', required: false, maxLength: 120 }) || null;
+    const normalizedRequestIp =
+      normalizeString(requestIp, { field: 'request_ip', required: false, maxLength: 120 }) || null;
 
     const auditEvent = {
       tenant_id: normalizedTenantId,
@@ -368,7 +380,8 @@ function createArtifactsService({ env, licenseService }) {
       });
 
       const lease = leaseResolution.lease || {};
-      const leaseUserId = normalizeUserId(lease.user_id, { required: false }) || normalizedActorId || null;
+      const leaseUserId =
+        normalizeUserId(lease.user_id, { required: false }) || normalizedActorId || null;
       const leaseId = String(leaseResolution.lease_id || '').trim() || null;
       const leaseJti = String(leaseResolution?.token_payload?.jti || '').trim() || null;
 
@@ -385,7 +398,11 @@ function createArtifactsService({ env, licenseService }) {
       });
 
       if (!assignment.effective_assignment) {
-        throw new ArtifactsServiceError(404, 'ARTIFACT_ASSIGNMENT_NOT_FOUND', 'Artifact assignment not found');
+        throw new ArtifactsServiceError(
+          404,
+          'ARTIFACT_ASSIGNMENT_NOT_FOUND',
+          'Artifact assignment not found',
+        );
       }
 
       const releaseId = toPositiveInt(assignment.effective_assignment.release_id, 'release_id');
@@ -396,18 +413,30 @@ function createArtifactsService({ env, licenseService }) {
 
       auditEvent.release_id = releaseId;
       if (!release) {
-        throw new ArtifactsServiceError(404, 'ARTIFACT_RELEASE_NOT_FOUND', 'Assigned artifact release not found');
+        throw new ArtifactsServiceError(
+          404,
+          'ARTIFACT_RELEASE_NOT_FOUND',
+          'Assigned artifact release not found',
+        );
       }
 
       if (String(release.status || '').toLowerCase() !== RELEASE_STATUS_ACTIVE) {
-        throw new ArtifactsServiceError(409, 'ARTIFACT_RELEASE_NOT_ACTIVE', 'Assigned artifact release is not active');
+        throw new ArtifactsServiceError(
+          409,
+          'ARTIFACT_RELEASE_NOT_ACTIVE',
+          'Assigned artifact release is not active',
+        );
       }
 
       const objectMetadata = await storageProvider.headObject({
         objectKey: release.object_key,
       });
       if (!objectMetadata.exists) {
-        throw new ArtifactsServiceError(404, 'ARTIFACT_OBJECT_NOT_FOUND', 'Artifact object not found in S3');
+        throw new ArtifactsServiceError(
+          404,
+          'ARTIFACT_OBJECT_NOT_FOUND',
+          'Artifact object not found in S3',
+        );
       }
 
       const presigned = await storageProvider.createPresignedDownloadUrl({

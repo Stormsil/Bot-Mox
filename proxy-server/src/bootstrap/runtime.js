@@ -63,23 +63,19 @@ function startServerRuntime({
   logger = console,
 }) {
   const server = app.listen(port, () => {
-    logInfo(
-      logger,
-      'server_started',
-      {
-        port,
-        cors: {
-          origin: corsOptions?.origin ?? null,
-        },
-      }
-    );
+    logInfo(logger, 'server_started', {
+      port,
+      cors: {
+        origin: corsOptions?.origin ?? null,
+      },
+    });
     // Keep the human-readable banner in dev consoles only (it is still a single JSON log entry if logger is pino).
     logInfo(
       logger,
       createStartupBanner({
         port,
         corsOptions,
-      })
+      }),
     );
   });
 

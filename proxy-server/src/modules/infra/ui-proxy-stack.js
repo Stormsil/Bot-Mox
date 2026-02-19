@@ -4,9 +4,15 @@ const { logger } = require('../../observability/logger');
 function createUnavailableHtml(title, errorMessage, hint) {
   return (
     '<html><body style="font-family:sans-serif;color:#666;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f5f5f5">' +
-    '<div style="text-align:center"><h2>' + title + '</h2>' +
-    '<p>' + errorMessage + '</p>' +
-    '<p style="color:#999">' + hint + '</p></div></body></html>'
+    '<div style="text-align:center"><h2>' +
+    title +
+    '</h2>' +
+    '<p>' +
+    errorMessage +
+    '</p>' +
+    '<p style="color:#999">' +
+    hint +
+    '</p></div></body></html>'
   );
 }
 
@@ -67,42 +73,42 @@ function createUiProxyStack({
 
   proxmoxUIProxy.on('error', (err, _req, res) => {
     logger.error({ err }, 'Proxmox UI proxy error');
-    if (res && res.writeHead) {
+    if (res?.writeHead) {
       res.writeHead(502, { 'Content-Type': 'text/html' });
       res.end(
         createUnavailableHtml(
           'Proxmox Unavailable',
           err.message,
-          'Check that the Proxmox server is running and reachable.'
-        )
+          'Check that the Proxmox server is running and reachable.',
+        ),
       );
     }
   });
 
   tinyFMUIProxy.on('error', (err, _req, res) => {
     logger.error({ err }, 'TinyFM UI proxy error');
-    if (res && res.writeHead) {
+    if (res?.writeHead) {
       res.writeHead(502, { 'Content-Type': 'text/html' });
       res.end(
         createUnavailableHtml(
           'TinyFM Unavailable',
           err.message,
-          'Check TinyFM URL and credentials in VM settings.'
-        )
+          'Check TinyFM URL and credentials in VM settings.',
+        ),
       );
     }
   });
 
   syncThingUIProxy.on('error', (err, _req, res) => {
     logger.error({ err }, 'SyncThing UI proxy error');
-    if (res && res.writeHead) {
+    if (res?.writeHead) {
       res.writeHead(502, { 'Content-Type': 'text/html' });
       res.end(
         createUnavailableHtml(
           'SyncThing Unavailable',
           err.message,
-          'Check SyncThing URL and credentials in VM settings.'
-        )
+          'Check SyncThing URL and credentials in VM settings.',
+        ),
       );
     }
   });
@@ -147,15 +153,15 @@ function createUiProxyStack({
   }
 
   function normalizeProxmoxCapShape(cap) {
-    const base = (cap && typeof cap === 'object') ? cap : {};
+    const base = cap && typeof cap === 'object' ? cap : {};
     return {
-      vms: (base.vms && typeof base.vms === 'object') ? base.vms : {},
-      storage: (base.storage && typeof base.storage === 'object') ? base.storage : {},
-      access: (base.access && typeof base.access === 'object') ? base.access : {},
-      nodes: (base.nodes && typeof base.nodes === 'object') ? base.nodes : {},
-      dc: (base.dc && typeof base.dc === 'object') ? base.dc : {},
-      sdn: (base.sdn && typeof base.sdn === 'object') ? base.sdn : {},
-      mapping: (base.mapping && typeof base.mapping === 'object') ? base.mapping : {},
+      vms: base.vms && typeof base.vms === 'object' ? base.vms : {},
+      storage: base.storage && typeof base.storage === 'object' ? base.storage : {},
+      access: base.access && typeof base.access === 'object' ? base.access : {},
+      nodes: base.nodes && typeof base.nodes === 'object' ? base.nodes : {},
+      dc: base.dc && typeof base.dc === 'object' ? base.dc : {},
+      sdn: base.sdn && typeof base.sdn === 'object' ? base.sdn : {},
+      mapping: base.mapping && typeof base.mapping === 'object' ? base.mapping : {},
     };
   }
 

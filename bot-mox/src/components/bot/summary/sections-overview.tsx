@@ -1,5 +1,3 @@
-import React from 'react';
-import { Alert, Card, Col, Row, Space, Tag, Tooltip } from 'antd';
 import {
   ClockCircleOutlined,
   CreditCardOutlined,
@@ -10,18 +8,23 @@ import {
   KeyOutlined,
   PoweroffOutlined,
 } from '@ant-design/icons';
+import { Alert, Card, Col, Row, Space, Tag, Tooltip } from 'antd';
+import type React from 'react';
 import { StatusBadge } from '../../ui/StatusBadge';
 import { BotCharacter } from '../BotCharacter';
+import styles from '../BotSummary.module.css';
 import { SummaryStatItem } from './stat-item';
 import type { BotStatusInfo, BotSummaryBot, HealthStatus } from './types';
-import styles from '../BotSummary.module.css';
 
 interface SummaryOverviewSectionProps {
   health: HealthStatus;
   statusInfo: BotStatusInfo | null;
 }
 
-export const SummaryOverviewSection: React.FC<SummaryOverviewSectionProps> = ({ health, statusInfo }) => (
+export const SummaryOverviewSection: React.FC<SummaryOverviewSectionProps> = ({
+  health,
+  statusInfo,
+}) => (
   <section id="summary-overview" className={styles['bot-section']}>
     <Alert
       className={styles['health-alert']}
@@ -154,50 +157,58 @@ export const SummaryBotInfoSection: React.FC<SummaryBotInfoSectionProps> = ({
   };
 
   return (
-  <section id="summary-bot" className={styles['bot-section']}>
-    <Row gutter={[16, 16]} className={styles['details-row']}>
-      <Col span={24}>
-        <Card title="Bot Info" className={styles['detail-card']} styles={detailCardStyles}>
-          <div className={styles['summary-stats-grid']}>
-            <SummaryStatItem
-              label="Bot ID"
-              value={bot.id}
-              icon={<IdcardOutlined />}
-              valueClassName={styles['summary-stat-mono']}
-            />
-            <SummaryStatItem
-              label="Project"
-              value={<Tag className={styles['project-tag']}>{formatProjectName(bot.project_id)}</Tag>}
-              icon={<FlagOutlined />}
-            />
-            <SummaryStatItem label="Status" value={<StatusBadge status={bot.status} size="small" />} icon={<PoweroffOutlined />} />
-            {(bot.vm?.name || bot.vm?.ip) && (
+    <section id="summary-bot" className={styles['bot-section']}>
+      <Row gutter={[16, 16]} className={styles['details-row']}>
+        <Col span={24}>
+          <Card title="Bot Info" className={styles['detail-card']} styles={detailCardStyles}>
+            <div className={styles['summary-stats-grid']}>
               <SummaryStatItem
-                label="VM"
-                value={
-                  <span>
-                    {bot.vm?.name || 'VM'}
-                    {bot.vm?.ip ? ` • ${bot.vm.ip}` : ''}
-                  </span>
-                }
-                icon={<DesktopOutlined />}
+                label="Bot ID"
+                value={bot.id}
+                icon={<IdcardOutlined />}
+                valueClassName={styles['summary-stat-mono']}
               />
-            )}
-            <SummaryStatItem
-              label="Last Seen"
-              value={
-                <Tooltip title={new Date(bot.last_seen).toLocaleString()}>
-                  <span className={statusInfo?.isOffline ? styles['offline-text'] : ''}>
-                    {statusInfo?.isOffline ? `${statusInfo.lastSeenMinutes} min ago` : new Date(bot.last_seen).toLocaleTimeString()}
-                  </span>
-                </Tooltip>
-              }
-              icon={<ClockCircleOutlined />}
-            />
-          </div>
-        </Card>
-      </Col>
-    </Row>
-  </section>
+              <SummaryStatItem
+                label="Project"
+                value={
+                  <Tag className={styles['project-tag']}>{formatProjectName(bot.project_id)}</Tag>
+                }
+                icon={<FlagOutlined />}
+              />
+              <SummaryStatItem
+                label="Status"
+                value={<StatusBadge status={bot.status} size="small" />}
+                icon={<PoweroffOutlined />}
+              />
+              {(bot.vm?.name || bot.vm?.ip) && (
+                <SummaryStatItem
+                  label="VM"
+                  value={
+                    <span>
+                      {bot.vm?.name || 'VM'}
+                      {bot.vm?.ip ? ` • ${bot.vm.ip}` : ''}
+                    </span>
+                  }
+                  icon={<DesktopOutlined />}
+                />
+              )}
+              <SummaryStatItem
+                label="Last Seen"
+                value={
+                  <Tooltip title={new Date(bot.last_seen).toLocaleString()}>
+                    <span className={statusInfo?.isOffline ? styles['offline-text'] : ''}>
+                      {statusInfo?.isOffline
+                        ? `${statusInfo.lastSeenMinutes} min ago`
+                        : new Date(bot.last_seen).toLocaleTimeString()}
+                    </span>
+                  </Tooltip>
+                }
+                icon={<ClockCircleOutlined />}
+              />
+            </div>
+          </Card>
+        </Col>
+      </Row>
+    </section>
   );
 };

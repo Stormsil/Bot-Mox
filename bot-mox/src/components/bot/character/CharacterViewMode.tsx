@@ -1,8 +1,15 @@
-import React from 'react';
-import { CrownOutlined, DatabaseOutlined, FlagOutlined, TeamOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  CrownOutlined,
+  DatabaseOutlined,
+  FlagOutlined,
+  TeamOutlined,
+  TrophyOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { Typography } from 'antd';
-import type { CharacterFormData, ReferenceData } from './types';
+import type React from 'react';
 import styles from './character.module.css';
+import type { CharacterFormData, ReferenceData } from './types';
 
 const { Text } = Typography;
 
@@ -12,7 +19,11 @@ interface CharacterViewModeProps {
   raceIconUrl: string | null;
 }
 
-export const CharacterViewMode: React.FC<CharacterViewModeProps> = ({ formData, referenceData, raceIconUrl }) => (
+export const CharacterViewMode: React.FC<CharacterViewModeProps> = ({
+  formData,
+  referenceData,
+  raceIconUrl,
+}) => (
   <div className={styles['character-view-mode']}>
     <div className={styles['character-header-section']}>
       <div className={styles['character-avatar-section']}>
@@ -42,7 +53,9 @@ export const CharacterViewMode: React.FC<CharacterViewModeProps> = ({ formData, 
         <DatabaseOutlined className={styles['stat-icon']} />
         <div className={styles['stat-content']}>
           <Text className={styles['stat-label']}>Server</Text>
-          <Text className={styles['stat-value']}>{formData.server && referenceData.servers[formData.server]?.name}</Text>
+          <Text className={styles['stat-value']}>
+            {formData.server && referenceData.servers[formData.server]?.name}
+          </Text>
         </div>
       </div>
 
@@ -50,7 +63,9 @@ export const CharacterViewMode: React.FC<CharacterViewModeProps> = ({ formData, 
         <FlagOutlined className={styles['stat-icon']} />
         <div className={styles['stat-content']}>
           <Text className={styles['stat-label']}>Faction</Text>
-          <Text className={[styles['stat-value'], styles.capitalize].join(' ')}>{formData.faction && referenceData.factions[formData.faction]?.name}</Text>
+          <Text className={[styles['stat-value'], styles.capitalize].join(' ')}>
+            {formData.faction && referenceData.factions[formData.faction]?.name}
+          </Text>
         </div>
       </div>
 
@@ -58,7 +73,9 @@ export const CharacterViewMode: React.FC<CharacterViewModeProps> = ({ formData, 
         <TeamOutlined className={styles['stat-icon']} />
         <div className={styles['stat-content']}>
           <Text className={styles['stat-label']}>Race</Text>
-          <Text className={styles['stat-value']}>{formData.race && referenceData.races[formData.race]?.name}</Text>
+          <Text className={styles['stat-value']}>
+            {formData.race && referenceData.races[formData.race]?.name}
+          </Text>
         </div>
       </div>
 
@@ -66,7 +83,9 @@ export const CharacterViewMode: React.FC<CharacterViewModeProps> = ({ formData, 
         <CrownOutlined className={styles['stat-icon']} />
         <div className={styles['stat-content']}>
           <Text className={styles['stat-label']}>Class</Text>
-          <Text className={styles['stat-value']}>{formData.class && referenceData.classes[formData.class]?.name}</Text>
+          <Text className={styles['stat-value']}>
+            {formData.class && referenceData.classes[formData.class]?.name}
+          </Text>
         </div>
       </div>
 

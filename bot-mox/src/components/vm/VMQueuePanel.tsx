@@ -1,18 +1,26 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Button, InputNumber, Modal, Progress, Select, Space, Typography, Upload, message } from 'antd';
 import { FileTextOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
-import type { VMQueueItem, VMQueueItemStatus, VMStorageOption } from '../../types';
 import {
+  Button,
+  InputNumber,
+  Modal,
+  message,
+  Progress,
+  Select,
+  Space,
+  Typography,
+  Upload,
+} from 'antd';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { listPlaybooks, type Playbook } from '../../entities/vm/api/playbookFacade';
+import {
+  DEFAULT_PROFILE_CONFIG,
   listUnattendProfiles,
   migrateProfileConfig,
-  DEFAULT_PROFILE_CONFIG,
   type UnattendProfile,
-} from '../../services/unattendProfileService';
-import {
-  listPlaybooks,
-  type Playbook,
-} from '../../services/playbookService';
+} from '../../entities/vm/api/unattendProfileFacade';
+import type { VMQueueItem, VMQueueItemStatus, VMStorageOption } from '../../types';
 import {
   buildFinalUnattendXml,
   DEFAULT_UNATTEND_XML_TEMPLATE,
@@ -106,7 +114,10 @@ function buildStorageUsage(opt: VMStorageOption): null | { percent: number; labe
   };
 }
 
-function getStatusDisplay(status: VMQueueItemStatus): { text: string; tone: 'idle' | 'running' | 'ok' | 'error' } {
+function getStatusDisplay(status: VMQueueItemStatus): {
+  text: string;
+  tone: 'idle' | 'running' | 'ok' | 'error';
+} {
   switch (status) {
     case 'done':
       return { text: 'Done', tone: 'ok' };
@@ -185,7 +196,7 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
 
   const projectOptionById = useMemo(
     () => new Map(projectOptions.map((option) => [option.value, option] as const)),
-    [projectOptions]
+    [projectOptions],
   );
 
   const unattendProfileById = useMemo(
@@ -213,9 +224,10 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
     };
 
     const currentMemoryMb = toMemoryMb(item.memory) ?? preset.memoryMb;
-    const currentDiskGiB = Number.isFinite(Number(item.diskGiB)) && Number(item.diskGiB) > 0
-      ? Math.max(1, Math.trunc(Number(item.diskGiB)))
-      : preset.diskGiB;
+    const currentDiskGiB =
+      Number.isFinite(Number(item.diskGiB)) && Number(item.diskGiB) > 0
+        ? Math.max(1, Math.trunc(Number(item.diskGiB)))
+        : preset.diskGiB;
 
     setCustomEditor({
       itemId: item.id,
@@ -264,9 +276,10 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
       : defaultUnattendProfile;
     const profileConfig = migrateProfileConfig(profile?.config || DEFAULT_PROFILE_CONFIG);
 
-    const templateXml = String(unattendEditor.xmlOverride || '').trim()
-      || String(profileConfig.xmlTemplate || DEFAULT_UNATTEND_XML_TEMPLATE).trim()
-      || DEFAULT_UNATTEND_XML_TEMPLATE;
+    const templateXml =
+      String(unattendEditor.xmlOverride || '').trim() ||
+      String(profileConfig.xmlTemplate || DEFAULT_UNATTEND_XML_TEMPLATE).trim() ||
+      DEFAULT_UNATTEND_XML_TEMPLATE;
 
     const finalXml = buildFinalUnattendXml(templateXml, profileConfig);
 
@@ -332,15 +345,22 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
         </div>
         <div className={cx('vm-queue-panel-header-actions')}>
           <button
+            type="button"
             className={cx('vm-queue-panel-start-all')}
             onClick={onStartAll}
             disabled={isProcessing || isStartActionRunning || !canStartAll || !onStartAll}
           >
             {isStartActionRunning ? 'Starting...' : 'Start all'}
           </button>
-          <button onClick={onAddDelete} disabled={isProcessing || !onAddDelete}>Delete VM</button>
-          <button onClick={onAdd} disabled={isProcessing}>+ VM</button>
-          <button onClick={onClear} disabled={isProcessing || isStartActionRunning}>Clear</button>
+          <button type="button" onClick={onAddDelete} disabled={isProcessing || !onAddDelete}>
+            Delete VM
+          </button>
+          <button type="button" onClick={onAdd} disabled={isProcessing}>
+            + VM
+          </button>
+          <button type="button" onClick={onClear} disabled={isProcessing || isStartActionRunning}>
+            Clear
+          </button>
         </div>
       </div>
 
@@ -367,18 +387,22 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
               const isDeleteAction = action === 'delete';
               const status = getStatusDisplay(item.status);
               const deleteTargetVmId = Number(item.targetVmId ?? item.vmId);
-              const hasDeleteTargetVmId = Number.isInteger(deleteTargetVmId) && deleteTargetVmId > 0;
-              const editableCreate = !isDeleteAction && (!isProcessing || item.status === 'pending');
+              const hasDeleteTargetVmId =
+                Number.isInteger(deleteTargetVmId) && deleteTargetVmId > 0;
+              const editableCreate =
+                !isDeleteAction && (!isProcessing || item.status === 'pending');
               const canRemove = !isProcessing && !isStartActionRunning;
-              const canStartItem = !isDeleteAction
-                && item.status === 'done'
-                && Number.isInteger(Number(item.vmId))
-                && Number(item.vmId) > 0
-                && typeof onStartOne === 'function';
+              const canStartItem =
+                !isDeleteAction &&
+                item.status === 'done' &&
+                Number.isInteger(Number(item.vmId)) &&
+                Number(item.vmId) > 0 &&
+                typeof onStartOne === 'function';
               const isItemStarting = isStartActionRunning && startingItemId === item.id;
-              const vmInputValue = isDeleteAction && hasDeleteTargetVmId
-                ? `${item.name} [ID ${deleteTargetVmId}]`
-                : item.name;
+              const vmInputValue =
+                isDeleteAction && hasDeleteTargetVmId
+                  ? `${item.name} [ID ${deleteTargetVmId}]`
+                  : item.name;
 
               const projectId = item.projectId as VMProjectId;
               const preset = resourcePresets[projectId] || {
@@ -388,13 +412,15 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                 diskGiB: 128,
               };
 
-              const effectiveCores = Number.isFinite(Number(item.cores)) && Number(item.cores) > 0
-                ? Math.trunc(Number(item.cores))
-                : preset.cores;
+              const effectiveCores =
+                Number.isFinite(Number(item.cores)) && Number(item.cores) > 0
+                  ? Math.trunc(Number(item.cores))
+                  : preset.cores;
               const effectiveMemoryMb = toMemoryMb(item.memory) ?? preset.memoryMb;
-              const effectiveDiskGiB = Number.isFinite(Number(item.diskGiB)) && Number(item.diskGiB) > 0
-                ? Math.max(1, Math.trunc(Number(item.diskGiB)))
-                : preset.diskGiB;
+              const effectiveDiskGiB =
+                Number.isFinite(Number(item.diskGiB)) && Number(item.diskGiB) > 0
+                  ? Math.max(1, Math.trunc(Number(item.diskGiB)))
+                  : preset.diskGiB;
 
               const projectSelectValue = item.resourceMode === 'custom' ? 'custom' : projectId;
 
@@ -427,7 +453,9 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                         className={cx('vm-queue-storage-select')}
                         size="small"
                         value={item.storage}
-                        onChange={(value) => onUpdate(item.id, { storage: value, storageMode: 'manual' })}
+                        onChange={(value) =>
+                          onUpdate(item.id, { storage: value, storageMode: 'manual' })
+                        }
                         disabled={!editableCreate}
                         optionLabelProp="label"
                         popupMatchSelectWidth={false}
@@ -445,16 +473,15 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                           const vmCount = typeof opt.vmCount === 'number' ? opt.vmCount : null;
 
                           return (
-                            <Select.Option
-                              key={opt.value}
-                              value={opt.value}
-                              label={opt.label}
-                            >
+                            <Select.Option key={opt.value} value={opt.value} label={opt.label}>
                               <div className={cx('vm-queue-dropdown-option')}>
                                 <div className={cx('vm-queue-dropdown-option-head')}>
                                   <Text strong>{opt.label}</Text>
                                   {vmCount !== null ? (
-                                    <Text type="secondary" className={cx('vm-queue-dropdown-option-meta')}>
+                                    <Text
+                                      type="secondary"
+                                      className={cx('vm-queue-dropdown-option-meta')}
+                                    >
                                       {vmCount} VMs
                                     </Text>
                                   ) : null}
@@ -462,13 +489,25 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
 
                                 {usage ? (
                                   <div className={cx('vm-queue-dropdown-option-usage')}>
-                                    <Progress percent={usage.percent} showInfo={false} size="small" strokeColor="var(--boxmox-color-brand-primary)" trailColor="var(--boxmox-color-surface-hover)" />
-                                    <Text type="secondary" className={cx('vm-queue-dropdown-option-usage-text')}>
+                                    <Progress
+                                      percent={usage.percent}
+                                      showInfo={false}
+                                      size="small"
+                                      strokeColor="var(--boxmox-color-brand-primary)"
+                                      trailColor="var(--boxmox-color-surface-hover)"
+                                    />
+                                    <Text
+                                      type="secondary"
+                                      className={cx('vm-queue-dropdown-option-usage-text')}
+                                    >
                                       {usage.label}
                                     </Text>
                                   </div>
                                 ) : opt.details ? (
-                                  <Text type="secondary" className={cx('vm-queue-dropdown-option-usage-text')}>
+                                  <Text
+                                    type="secondary"
+                                    className={cx('vm-queue-dropdown-option-usage-text')}
+                                  >
                                     {opt.details}
                                   </Text>
                                 ) : null}
@@ -517,15 +556,20 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                       >
                         {projectOptions.map((opt) => {
                           const p = resourcePresets[opt.value];
-                          const meta = p ? `${p.cores} CPU · ${formatMemoryGiB(p.memoryMb)} · ${p.diskGiB} GB` : '';
-                          
+                          const meta = p
+                            ? `${p.cores} CPU · ${formatMemoryGiB(p.memoryMb)} · ${p.diskGiB} GB`
+                            : '';
+
                           return (
                             <Select.Option key={opt.value} value={opt.value} label={opt.label}>
                               <div className={cx('vm-queue-dropdown-option')}>
                                 <div className={cx('vm-queue-dropdown-option-head')}>
                                   <Text strong>{opt.label}</Text>
                                 </div>
-                                <Text type="secondary" className={cx('vm-queue-dropdown-option-usage-text')}>
+                                <Text
+                                  type="secondary"
+                                  className={cx('vm-queue-dropdown-option-usage-text')}
+                                >
                                   {meta}
                                 </Text>
                               </div>
@@ -534,12 +578,15 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                         })}
                         <Select.Option value="custom" label="Custom">
                           <div className={cx('vm-queue-dropdown-option')}>
-                             <div className={cx('vm-queue-dropdown-option-head')}>
-                                <Text strong>Custom Configuration</Text>
-                             </div>
-                             <Text type="secondary" className={cx('vm-queue-dropdown-option-usage-text')}>
-                               Manually configure CPU, RAM, and Disk
-                             </Text>
+                            <div className={cx('vm-queue-dropdown-option-head')}>
+                              <Text strong>Custom Configuration</Text>
+                            </div>
+                            <Text
+                              type="secondary"
+                              className={cx('vm-queue-dropdown-option-usage-text')}
+                            >
+                              Manually configure CPU, RAM, and Disk
+                            </Text>
                           </div>
                         </Select.Option>
                       </Select>
@@ -552,7 +599,8 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                     ) : (
                       <div className={cx('vm-queue-item-resources-compact')}>
                         <div className={cx('vm-queue-item-resources-text')}>
-                           {effectiveCores} CPU · {formatMemoryGiB(effectiveMemoryMb)} · {effectiveDiskGiB} GB
+                          {effectiveCores} CPU · {formatMemoryGiB(effectiveMemoryMb)} ·{' '}
+                          {effectiveDiskGiB} GB
                         </div>
                         {item.resourceMode === 'custom' && (
                           <Button
@@ -587,7 +635,12 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                           >
                             {attachedProfile?.name || 'Default'}
                           </Text>
-                          {hasXmlOverride && <div className={cx('vm-queue-dot-indicator')} title="XML Override Active" />}
+                          {hasXmlOverride && (
+                            <div
+                              className={cx('vm-queue-dot-indicator')}
+                              title="XML Override Active"
+                            />
+                          )}
                         </div>
                         <Button
                           type="text"
@@ -610,7 +663,9 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                       <Select
                         className={cx('vm-queue-playbook-select')}
                         value={item.playbookId || (defaultPlaybook?.id ?? 'none')}
-                        onChange={(value) => onUpdate(item.id, { playbookId: value === 'none' ? undefined : value })}
+                        onChange={(value) =>
+                          onUpdate(item.id, { playbookId: value === 'none' ? undefined : value })
+                        }
                         disabled={!editableCreate}
                         popupMatchSelectWidth={false}
                         size="small"
@@ -633,6 +688,7 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
 
                   {canStartItem ? (
                     <button
+                      type="button"
                       className={cx('vm-queue-item-start')}
                       onClick={() => onStartOne?.(item.id)}
                       disabled={isProcessing || isStartActionRunning}
@@ -641,12 +697,15 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
                       {isItemStarting ? 'STARTING' : 'START'}
                     </button>
                   ) : (
-                    <span className={cx('vm-queue-item-status', `vm-queue-item-status--${status.tone}`)}>
+                    <span
+                      className={cx('vm-queue-item-status', `vm-queue-item-status--${status.tone}`)}
+                    >
                       {status.text.toUpperCase()}
                     </span>
                   )}
 
                   <button
+                    type="button"
                     className={cx('vm-queue-item-remove')}
                     onClick={() => onRemove(item.id)}
                     disabled={!canRemove}
@@ -672,53 +731,71 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
         {customEditor ? (
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
             <div className={cx('vm-queue-modal-field')}>
-              <label>VM</label>
+              <div className={cx('vm-queue-modal-label')}>VM</div>
               <Text>{customEditor.vmName}</Text>
             </div>
 
             <div className={cx('vm-queue-modal-field')}>
-              <label>Base Project</label>
+              <label htmlFor="vm-queue-custom-base-project">Base Project</label>
               <Select
+                id="vm-queue-custom-base-project"
                 value={customEditor.baseProject}
                 options={projectOptions}
-                onChange={(value) => setCustomEditor((prev) => (prev ? { ...prev, baseProject: value } : prev))}
+                onChange={(value) =>
+                  setCustomEditor((prev) => (prev ? { ...prev, baseProject: value } : prev))
+                }
               />
             </div>
 
             <div className={cx('vm-queue-modal-grid')}>
               <div className={cx('vm-queue-modal-field')}>
-                <label>CPU Cores</label>
+                <label htmlFor="vm-queue-custom-cpu-cores">CPU Cores</label>
                 <InputNumber
+                  id="vm-queue-custom-cpu-cores"
                   value={customEditor.cores}
                   min={1}
                   max={64}
                   step={1}
                   style={{ width: '100%' }}
-                  onChange={(value) => setCustomEditor((prev) => (prev ? { ...prev, cores: Number(value) || 1 } : prev))}
+                  onChange={(value) =>
+                    setCustomEditor((prev) =>
+                      prev ? { ...prev, cores: Number(value) || 1 } : prev,
+                    )
+                  }
                 />
               </div>
 
               <div className={cx('vm-queue-modal-field')}>
-                <label>RAM (GiB)</label>
+                <label htmlFor="vm-queue-custom-ram-gib">RAM (GiB)</label>
                 <InputNumber
+                  id="vm-queue-custom-ram-gib"
                   value={customEditor.memoryGiB}
                   min={1}
                   max={512}
                   step={1}
                   style={{ width: '100%' }}
-                  onChange={(value) => setCustomEditor((prev) => (prev ? { ...prev, memoryGiB: Number(value) || 1 } : prev))}
+                  onChange={(value) =>
+                    setCustomEditor((prev) =>
+                      prev ? { ...prev, memoryGiB: Number(value) || 1 } : prev,
+                    )
+                  }
                 />
               </div>
 
               <div className={cx('vm-queue-modal-field')}>
-                <label>Disk (GiB)</label>
+                <label htmlFor="vm-queue-custom-disk-gib">Disk (GiB)</label>
                 <InputNumber
+                  id="vm-queue-custom-disk-gib"
                   value={customEditor.diskGiB}
                   min={32}
                   max={4096}
                   step={1}
                   style={{ width: '100%' }}
-                  onChange={(value) => setCustomEditor((prev) => (prev ? { ...prev, diskGiB: Number(value) || 32 } : prev))}
+                  onChange={(value) =>
+                    setCustomEditor((prev) =>
+                      prev ? { ...prev, diskGiB: Number(value) || 32 } : prev,
+                    )
+                  }
                 />
               </div>
             </div>
@@ -741,11 +818,14 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
         {unattendEditor ? (
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
             <div className={cx('vm-queue-modal-field')}>
-              <label>Profile</label>
+              <label htmlFor="vm-queue-unattend-profile">Profile</label>
               <Select
+                id="vm-queue-unattend-profile"
                 placeholder="Select profile"
                 value={unattendEditor.profileId}
-                onChange={(value) => setUnattendEditor((prev) => (prev ? { ...prev, profileId: value } : prev))}
+                onChange={(value) =>
+                  setUnattendEditor((prev) => (prev ? { ...prev, profileId: value } : prev))
+                }
                 options={unattendProfiles.map((profile) => ({
                   value: profile.id,
                   label: profile.is_default ? `${profile.name} (default)` : profile.name,
@@ -756,12 +836,18 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
             </div>
 
             <Space wrap>
-              <Upload beforeUpload={handleQueueXmlImport} showUploadList={false} accept=".xml,text/xml,application/xml">
+              <Upload
+                beforeUpload={handleQueueXmlImport}
+                showUploadList={false}
+                accept=".xml,text/xml,application/xml"
+              >
                 <Button size="small">Import VM XML Override</Button>
               </Upload>
               <Button
                 size="small"
-                onClick={() => setUnattendEditor((prev) => (prev ? { ...prev, xmlOverride: '' } : prev))}
+                onClick={() =>
+                  setUnattendEditor((prev) => (prev ? { ...prev, xmlOverride: '' } : prev))
+                }
               >
                 Use Profile Template
               </Button>
@@ -778,7 +864,7 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
             ) : null}
 
             <div className={cx('vm-queue-modal-field')}>
-              <label>Current Source</label>
+              <div className={cx('vm-queue-modal-label')}>Current Source</div>
               <Text type="secondary">
                 {String(unattendEditor.xmlOverride || '').trim()
                   ? 'Per-VM XML override'
@@ -787,8 +873,9 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
             </div>
 
             <div className={cx('vm-queue-modal-field')}>
-              <label>Final XML Preview</label>
+              <label htmlFor="vm-queue-final-xml-preview">Final XML Preview</label>
               <textarea
+                id="vm-queue-final-xml-preview"
                 className={cx('vm-queue-unattend-preview')}
                 value={activeUnattendPreview?.finalXml || ''}
                 readOnly
@@ -800,4 +887,3 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
     </div>
   );
 };
-

@@ -1,5 +1,3 @@
-'use strict';
-
 function createProvisioningS3Service({ env }) {
   let s3Client = null;
 
@@ -60,9 +58,7 @@ function createProvisioningS3Service({ env }) {
   }
 
   async function getSoftwareUrl(module, version) {
-    const key = version
-      ? `software/${module}/${version}`
-      : `software/${module}`;
+    const key = version ? `software/${module}/${version}` : `software/${module}`;
     const url = await getPresignedUrl(key);
     return { url };
   }

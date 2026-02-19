@@ -1,6 +1,9 @@
-const { randomUUID } = require('crypto');
+const { randomUUID } = require('node:crypto');
 const { createSupabaseServiceClient } = require('../../repositories/supabase/client');
-const { createS3StorageProvider, S3StorageProviderError } = require('../../repositories/s3/storage-provider');
+const {
+  createS3StorageProvider,
+  S3StorageProviderError,
+} = require('../../repositories/s3/storage-provider');
 
 const TABLE = 'theme_background_assets';
 const STATUS_PENDING = 'pending';
@@ -31,13 +34,23 @@ function normalizeUserId(value) {
 }
 
 function sanitizeFileName(value) {
-  const normalized = String(value || '').trim().toLowerCase();
-  const compact = normalized.replace(/[^a-z0-9._-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+  const compact = normalized
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
   return compact || 'background';
 }
 
 function mapSupabaseError(error, fallbackMessage, code = 'SUPABASE_QUERY_FAILED') {
-  return new ThemeAssetsServiceError(502, code, fallbackMessage, error?.message || String(error || 'unknown-error'));
+  return new ThemeAssetsServiceError(
+    502,
+    code,
+    fallbackMessage,
+    error?.message || String(error || 'unknown-error'),
+  );
 }
 
 function createThemeAssetsService({ env }) {
@@ -97,7 +110,11 @@ function createThemeAssetsService({ env }) {
 
       const { error } = await supabase.from(TABLE).insert(row);
       if (error) {
-        throw mapSupabaseError(error, 'Failed to create pending theme asset record', 'THEME_ASSET_CREATE_FAILED');
+        throw mapSupabaseError(
+          error,
+          'Failed to create pending theme asset record',
+          'THEME_ASSET_CREATE_FAILED',
+        );
       }
 
       return {
@@ -118,7 +135,7 @@ function createThemeAssetsService({ env }) {
         500,
         'THEME_ASSET_PRESIGN_FAILED',
         'Failed to prepare theme asset upload',
-        error instanceof Error ? error.message : String(error || 'unknown-error')
+        error instanceof Error ? error.message : String(error || 'unknown-error'),
       );
     }
   }
@@ -159,7 +176,11 @@ function createThemeAssetsService({ env }) {
     }
 
     if (!metadata.exists) {
-      throw new ThemeAssetsServiceError(409, 'ASSET_NOT_UPLOADED', 'Theme asset object was not uploaded');
+      throw new ThemeAssetsServiceError(
+        409,
+        'ASSET_NOT_UPLOADED',
+        'Theme asset object was not uploaded',
+      );
     }
 
     const payload = {
@@ -175,11 +196,17 @@ function createThemeAssetsService({ env }) {
       .update(payload)
       .eq('tenant_id', normalizedTenantId)
       .eq('id', asset.id)
-      .select('id, object_key, mime_type, size_bytes, width, height, status, created_at, updated_at')
+      .select(
+        'id, object_key, mime_type, size_bytes, width, height, status, created_at, updated_at',
+      )
       .single();
 
     if (error) {
-      throw mapSupabaseError(error, 'Failed to mark theme asset as ready', 'THEME_ASSET_COMPLETE_FAILED');
+      throw mapSupabaseError(
+        error,
+        'Failed to mark theme asset as ready',
+        'THEME_ASSET_COMPLETE_FAILED',
+      );
     }
 
     const download = await storageProvider.createPresignedDownloadUrl({
@@ -208,7 +235,9 @@ function createThemeAssetsService({ env }) {
 
     const { data, error } = await supabase
       .from(TABLE)
-      .select('id, object_key, mime_type, size_bytes, width, height, status, created_at, updated_at')
+      .select(
+        'id, object_key, mime_type, size_bytes, width, height, status, created_at, updated_at',
+      )
       .eq('tenant_id', normalizedTenantId)
       .in('status', [STATUS_PENDING, STATUS_READY])
       .order('created_at', { ascending: false });
@@ -220,8 +249,30 @@ function createThemeAssetsService({ env }) {
     const rows = Array.isArray(data) ? data : [];
     const nowMs = Date.now();
 
-    const items = await Promise.all(rows.map(async (item) => {
-      if (item.status !== STATUS_READY) {
+    const items = await Promise.all(
+      rows.map(async (item) => {
+        if (item.status !== STATUS_READY) {
+          return {
+            id: item.id,
+            object_key: item.object_key,
+            mime_type: item.mime_type,
+            size_bytes: item.size_bytes,
+            width: item.width,
+            height: item.height,
+            status: item.status,
+            image_url: null,
+            image_url_expires_at_ms: null,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+          };
+        }
+
+        const signed = await storageProvider.createPresignedDownloadUrl({
+          objectKey: item.object_key,
+          bucket,
+          expiresInSeconds: 300,
+        });
+
         return {
           id: item.id,
           object_key: item.object_key,
@@ -230,33 +281,13 @@ function createThemeAssetsService({ env }) {
           width: item.width,
           height: item.height,
           status: item.status,
-          image_url: null,
-          image_url_expires_at_ms: null,
+          image_url: signed.url,
+          image_url_expires_at_ms: signed.expiresAtMs,
           created_at: item.created_at,
           updated_at: item.updated_at,
         };
-      }
-
-      const signed = await storageProvider.createPresignedDownloadUrl({
-        objectKey: item.object_key,
-        bucket,
-        expiresInSeconds: 300,
-      });
-
-      return {
-        id: item.id,
-        object_key: item.object_key,
-        mime_type: item.mime_type,
-        size_bytes: item.size_bytes,
-        width: item.width,
-        height: item.height,
-        status: item.status,
-        image_url: signed.url,
-        image_url_expires_at_ms: signed.expiresAtMs,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-      };
-    }));
+      }),
+    );
 
     return {
       generated_at_ms: nowMs,

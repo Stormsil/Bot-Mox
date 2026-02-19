@@ -1,4 +1,4 @@
-const INVALID_PATH_SEGMENT_PATTERN = /[.#$\[\]\/]/;
+const INVALID_PATH_SEGMENT_PATTERN = /[.#$[\]/]/;
 
 function sanitizePathSegment(input, fallback = 'default') {
   const candidate = String(input || '').trim();

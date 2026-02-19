@@ -2,7 +2,10 @@ const { createSupabaseServiceClient } = require('../../repositories/supabase/cli
 const { createS3StorageProvider } = require('../../repositories/s3/storage-provider');
 
 function isSupabaseRequired(env) {
-  return String(env?.dataBackend || '').toLowerCase() === 'supabase' || Boolean(env?.requireSupabaseReady);
+  return (
+    String(env?.dataBackend || '').toLowerCase() === 'supabase' ||
+    Boolean(env?.requireSupabaseReady)
+  );
 }
 
 function isS3Required(env) {

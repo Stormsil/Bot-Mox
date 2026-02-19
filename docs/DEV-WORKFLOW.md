@@ -4,7 +4,7 @@
 
 - **Node.js 20+** — https://nodejs.org
 - **Docker Desktop** — https://docker.com (для Supabase и MinIO)
-- **Supabase CLI** — `npm install -g supabase` (управление локальной БД)
+- **Supabase CLI** — `pnpm add -g supabase` (управление локальной БД)
 - **Git** — для версионирования
 
 ## Структура проекта
@@ -28,15 +28,15 @@ MinIO (S3) не нужен если не работаешь с артефакт�
 
 ```powershell
 # Терминал 1 — БД (Supabase: Postgres + Auth + REST API + Studio)
-npx supabase start
+corepack pnpm exec supabase start
 
 # Терминал 2 — Бэкенд (Express, порт 3001)
 cd proxy-server
-npm run dev
+pnpm run dev
 
 # Терминал 3 — Фронтенд (Vite, порт 5173)
 cd bot-mox
-npm run dev
+pnpm run dev
 ```
 
 Открыть:
@@ -51,7 +51,7 @@ npm run dev
 
 ```powershell
 # Windows (рекомендуемая команда)
-npm run deploy:local:up
+pnpm run deploy:local:up
 
 # Или Linux/Mac
 ./scripts/stack-prod-sim-up.sh
@@ -64,7 +64,7 @@ npm run deploy:local:up
 
 Остановить:
 ```powershell
-npm run deploy:local:down
+pnpm run deploy:local:down
 ```
 
 ### Prod-sim env (локально, без коммита в git)
@@ -76,14 +76,14 @@ npm run deploy:local:down
 
 Есть два источника Supabase:
 
-- Supabase CLI (`npx supabase start`) поднимает контейнеры вида `supabase_*_bot-mox-local`
+- Supabase CLI (`corepack pnpm exec supabase start`) поднимает контейнеры вида `supabase_*_bot-mox-local`
 - Docker Compose стек приложения (`deploy/compose.stack.yml`) поднимает `botmox-stack-*`
 
 Одновременно держать оба стека часто приводит к путанице (пользователи/таблицы/ключи в разных БД).
 Если работаешь в Docker-стеке (prod-sim/dev stack), останови Supabase CLI:
 
 ```powershell
-npx supabase stop
+corepack pnpm exec supabase stop
 ```
 
 ### URLs и порты (чтобы не путаться)
@@ -101,14 +101,14 @@ npx supabase stop
 
 ```powershell
 # Поднять prod-like стек с hot-reload (Caddy + Supabase + MinIO + Vite + nodemon)
-npm run dev:prodlike:up
+pnpm run dev:prodlike:up
 
 # Логи/статус
-npm run dev:prodlike:ps
-npm run dev:prodlike:logs
+pnpm run dev:prodlike:ps
+pnpm run dev:prodlike:logs
 
 # Остановить
-npm run dev:prodlike:down
+pnpm run dev:prodlike:down
 ```
 
 Открывать в браузере: `http://localhost` (одна точка входа, как будет на VPS).
@@ -121,28 +121,28 @@ npm run dev:prodlike:down
 
 ```powershell
 # Полная проверка (линт + типы + сборка + бюджеты + секреты + бэкенд)
-npm run check:all
+pnpm run check:all
 
 # Или по частям:
-npm run lint              # ESLint фронтенда
-npm run check:types       # TypeScript проверка
-npm run build             # Сборка фронтенда
-npm run check:backend:syntax  # Синтаксис бэкенда
-npm run check:backend:smoke   # Все модули грузятся без ошибок
-npm run check:secrets     # Нет утечек секретов в коде
+pnpm run lint              # ESLint фронтенда
+pnpm run check:types       # TypeScript проверка
+pnpm run build             # Сборка фронтенда
+pnpm run check:backend:syntax  # Синтаксис бэкенда
+pnpm run check:backend:smoke   # Все модули грузятся без ошибок
+pnpm run check:secrets     # Нет утечек секретов в коде
 ```
 
 ### Изменил схему БД — создай миграцию
 
 ```powershell
 # 1. Создай файл миграции
-npx supabase migration new имя_миграции
+corepack pnpm exec supabase migration new имя_миграции
 # Создаст файл: supabase/migrations/2026XXXXXXXXXX_имя_миграции.sql
 
 # 2. Напиши SQL в этот файл (CREATE TABLE, ALTER TABLE и т.д.)
 
 # 3. Применить все миграции (сбросит локальную БД и применит заново)
-npx supabase db reset
+corepack pnpm exec supabase db reset
 
 # 4. Проверь в Studio что таблицы создались: http://localhost:54323
 ```
@@ -150,7 +150,7 @@ npx supabase db reset
 ### Firebase decommission audit (living report)
 
 ```powershell
-npm run audit:firebase:decommission
+pnpm run audit:firebase:decommission
 ```
 
 Отчет обновляется в `docs/audits/firebase-decommission-audit.md`.
@@ -163,7 +163,7 @@ git commit -m "feat(domain): описание что сделал"
 git push
 ```
 
-CI на GitHub автоматически прогонит `npm run check:all`.
+CI на GitHub автоматически прогонит `pnpm run check:all`.
 
 ## Добавление новой themed-страницы (обязательно)
 
@@ -175,8 +175,8 @@ CI на GitHub автоматически прогонит `npm run check:all`.
 3. Не используй `!important` в frontend CSS.
 4. Перед коммитом прогоняй:
 ```powershell
-npm run check:styles:guardrails
-npm run check:theme:contrast
+pnpm run check:styles:guardrails
+pnpm run check:theme:contrast
 ```
 5. Если страница добавляет новые цветовые пары текста/фона, обнови `scripts/check-theme-contrast.js` (список `checks`) и убедись, что проверка проходит для light/dark.
 6. Если используется visual background, учитывай `prefers-reduced-motion` (без принудительного blur-анимационного слоя).
@@ -194,31 +194,31 @@ npm run check:theme:contrast
 
 ### Старт Jaeger (локально)
 ```powershell
-npm run obs:up
+pnpm run obs:up
 ```
 UI: http://localhost:16686
 
 Остановить:
 ```powershell
-npm run obs:down
+pnpm run obs:down
 ```
 
 ### Запуск дев-стека с трейсингом
 ```powershell
-npm run dev:trace
+pnpm run dev:trace
 ```
 
 `dev:trace` автоматически выставляет переменные окружения для OTel и запускает `start-dev.js` (backend + Vite).
 Если порт `3001` занят:
 ```powershell
-$env:BOTMOX_PROXY_PORT=3101; npm run dev:trace
+$env:BOTMOX_PROXY_PORT=3101; pnpm run dev:trace
 ```
 
 ### Конфигурация (где включать/выключать)
 Dev (без Docker):
 - Backend env: `proxy-server/.env` (см. `proxy-server/.env.example`)
 - Frontend env: `bot-mox/.env` (см. `bot-mox/.env.example`)
-- Быстро включить без правки файлов: `npm run dev:trace`
+- Быстро включить без правки файлов: `pnpm run dev:trace`
 
 Prod-like / Docker (Caddy на `http://localhost/`):
 - env-файл: `deploy/compose.prod-sim.env` (локальный, gitignored) или `deploy/compose.prod-sim.env.example`
@@ -228,12 +228,12 @@ Prod-like / Docker (Caddy на `http://localhost/`):
 Команда `doctor` делает быстрые проверки доступности UI/API и наличия debug сигналов (health + trace headers).
 
 ```powershell
-npm run doctor
+pnpm run doctor
 ```
 
 Комбо-проверка (doctor + Playwright smoke против `http://localhost/`):
 ```powershell
-npm run smoke:prodlike
+pnpm run smoke:prodlike
 ```
 
 Prod-like (Caddy на `http://localhost/`): `doctor` авто-детектит этот режим.
@@ -244,8 +244,8 @@ Prod-like (Caddy на `http://localhost/`): `doctor` авто-детектит �
 
 Чтобы прод-like стек подхватил свежий код (новые роуты/логи/diag):
 ```powershell
-npm run stack:prod-sim:down
-npm run stack:prod-sim:up
+pnpm run stack:prod-sim:down
+pnpm run stack:prod-sim:up
 ```
 
 В Docker-режиме трейсинг включается через env vars (см. `deploy/compose.prod-sim.env.example`):
@@ -257,19 +257,19 @@ npm run stack:prod-sim:up
 ### E2E тесты (Playwright)
 Запуск:
 ```powershell
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 Если ты уже поднял prod-like стек на `http://localhost/` (Caddy) и не хочешь, чтобы Playwright сам запускал webServer:
 ```powershell
-npm run test:e2e:prodlike
+pnpm run test:e2e:prodlike
 ```
 
 Если порт `3001` занят, E2E webServer по умолчанию использует `BOTMOX_PROXY_PORT=3101` (см. `bot-mox/playwright.config.ts`).
 
 Отчет:
 ```powershell
-npm run test:e2e:report
+pnpm run test:e2e:report
 ```
 
 Артефакты:
@@ -278,13 +278,13 @@ npm run test:e2e:report
 
 ### Локальные quality-gates (чтобы быстро понять что сломалось)
 ```powershell
-npm run check:all
+pnpm run check:all
 ```
 
-Важный guardrail: `npm run check:backend:logging` валит сборку, если в `proxy-server/src` появился `console.*`
+Важный guardrail: `pnpm run check:backend:logging` валит сборку, если в `proxy-server/src` появился `console.*`
 (кроме короткого allowlist). Это защищает структурированное логирование.
 
-Дополнительно: `npm run check:frontend:logging` валит сборку, если `console.*` появился в критичных frontend-слоях:
+Дополнительно: `pnpm run check:frontend:logging` валит сборку, если `console.*` появился в критичных frontend-слоях:
 - `bot-mox/src/services/**`
 - `bot-mox/src/hooks/**`
 - `bot-mox/src/pages/**`
@@ -317,7 +317,7 @@ gh run download <run_id> -n playwright-artifacts
 ## Как работает аутентификация (dev)
 
 Dev auth bypass отключен. Локальная разработка использует тот же поток авторизации, что и прод:
-1. Создай пользователя: `npm run supabase:create-user -- --email you@test.com --password test1234 --tenant default`
+1. Создай пользователя: `pnpm run supabase:create-user -- --email you@test.com --password test1234 --tenant default`
 2. Открой UI и выполни обычный вход email/password
 3. Проверка токена идет через `GET /api/v1/auth/verify` (Bearer Supabase JWT)
 
@@ -355,7 +355,7 @@ Backend мапит роли `admin`/`infra` для операторов чере
 Локальный запуск агента:
 
 ```powershell
-npm run agent:dev
+pnpm run agent:dev
 ```
 
 ### Pairing агента (актуально для текущего UI)
@@ -414,7 +414,7 @@ Legacy заметка:
 |------------|-----------|-----------------|
 | `DATA_BACKEND` | Какую БД использовать | `supabase` |
 | `SUPABASE_URL` | Адрес Supabase | `http://127.0.0.1:54321` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Admin-ключ Supabase | (демо-ключ из `npx supabase status`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Admin-ключ Supabase | (демо-ключ из `corepack pnpm exec supabase status`) |
 | `LICENSE_LEASE_SECRET` | Подпись JWT лицензий | минимум 32 символа |
 | `AGENT_PAIRING_PUBLIC_URL` | Публичный URL API для генерации pairing-link | `http://localhost:3001` |
 | `S3_ENDPOINT` | MinIO/S3 адрес | `http://127.0.0.1:9000` |
@@ -433,15 +433,15 @@ Legacy заметка:
 
 | Команда | Описание |
 |---------|----------|
-| `npx supabase start` | Запуск локальной Supabase |
-| `npx supabase stop` | Остановка Supabase |
-| `npx supabase db reset` | Сброс БД + применение миграций |
-| `npx supabase status` | Показать URL-ы и ключи |
-| `npx supabase migration new <name>` | Создать новую миграцию |
-| `npm run check:all` | Полная проверка качества |
-| `npm run check:styles:guardrails` | Guardrails по стилям (глобальные `.ant-*`, порог `!important`) |
-| `npm run stack:dev:up` | Docker стек с hot-reload |
-| `npm run stack:prod-sim:up` | Docker стек как в продакшене |
+| `corepack pnpm exec supabase start` | Запуск локальной Supabase |
+| `corepack pnpm exec supabase stop` | Остановка Supabase |
+| `corepack pnpm exec supabase db reset` | Сброс БД + применение миграций |
+| `corepack pnpm exec supabase status` | Показать URL-ы и ключи |
+| `corepack pnpm exec supabase migration new <name>` | Создать новую миграцию |
+| `pnpm run check:all` | Полная проверка качества |
+| `pnpm run check:styles:guardrails` | Guardrails по стилям (глобальные `.ant-*`, порог `!important`) |
+| `pnpm run stack:dev:up` | Docker стек с hot-reload |
+| `pnpm run stack:prod-sim:up` | Docker стек как в продакшене |
 
 ## Деплой на VPS (когда будет готово)
 
@@ -450,3 +450,4 @@ Legacy заметка:
 3. Откат: запуск `rollback-prod.yml` с предыдущим тегом
 
 Подробности: `docs/runbooks/vps-operations.md`
+

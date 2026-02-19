@@ -1,6 +1,6 @@
-import React from 'react';
-import { Alert, Space, Typography } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
+import { Alert, Space, Typography } from 'antd';
+import type React from 'react';
 import type { ParsedProxy } from '../../../utils/proxyUtils';
 import { TableActionButton } from '../../ui/TableActionButton';
 
@@ -12,7 +12,11 @@ interface ProxyParsedAlertProps {
   onTogglePassword: () => void;
 }
 
-export const ProxyParsedAlert: React.FC<ProxyParsedAlertProps> = ({ parsedProxy, showPassword, onTogglePassword }) => (
+export const ProxyParsedAlert: React.FC<ProxyParsedAlertProps> = ({
+  parsedProxy,
+  showPassword,
+  onTogglePassword,
+}) => (
   <Alert
     message="Proxy Parsed Successfully"
     description={
@@ -27,7 +31,8 @@ export const ProxyParsedAlert: React.FC<ProxyParsedAlertProps> = ({ parsedProxy,
           <strong>Login:</strong> {parsedProxy.login}
         </Text>
         <Text>
-          <strong>Password:</strong> {showPassword ? parsedProxy.password : '•'.repeat(parsedProxy.password.length)}
+          <strong>Password:</strong>{' '}
+          {showPassword ? parsedProxy.password : '•'.repeat(parsedProxy.password.length)}
         </Text>
         <Text>
           <strong>Type:</strong> {parsedProxy.type.toUpperCase()}
@@ -38,6 +43,10 @@ export const ProxyParsedAlert: React.FC<ProxyParsedAlertProps> = ({ parsedProxy,
     showIcon
     icon={<CheckCircleFilled />}
     style={{ marginBottom: 16 }}
-    action={<TableActionButton onClick={onTogglePassword}>{showPassword ? 'Hide' : 'Show'}</TableActionButton>}
+    action={
+      <TableActionButton onClick={onTogglePassword}>
+        {showPassword ? 'Hide' : 'Show'}
+      </TableActionButton>
+    }
   />
 );

@@ -1,6 +1,6 @@
-import { Client as SSHClient, ConnectConfig } from 'ssh2';
-import { ProxmoxConfig } from '../core/config-store';
-import { Logger } from '../core/logger';
+import { type ConnectConfig, Client as SSHClient } from 'ssh2';
+import type { ProxmoxConfig } from '../core/config-store';
+import type { Logger } from '../core/logger';
 
 const SSH_DEFAULT_PORT = 22;
 const SSH_DEFAULT_TIMEOUT_MS = 20_000;
@@ -9,7 +9,7 @@ const SSH_TIMEOUT_MAX_MS = 180_000;
 
 const SSH_COMMAND_ALLOWLIST = [
   /^qm\s+(status|start|stop|shutdown|reset|suspend|resume)\s+\d+$/i,
-  /^qm\s+sendkey\s+\d+\s+[A-Za-z0-9_+\-]+$/i,
+  /^qm\s+sendkey\s+\d+\s+[A-Za-z0-9_+-]+$/i,
   /^cat\s+\/etc\/pve\/qemu-server\/\d+\.conf$/i,
   /^pvesh\s+get\s+\/nodes\/[^\s]+\/qemu\/?$/i,
   /^pvesh\s+get\s+\/cluster\/resources\/?$/i,
@@ -81,14 +81,25 @@ function mapSshConnectionError(error: unknown): Error {
   const message = String(raw || '').trim();
 
   if (/SSH_TIMEOUT:/i.test(message)) {
-    return makeTaggedError('SSH_UNREACHABLE', 'SSH connection timed out. Check host, port, and network reachability.');
+    return makeTaggedError(
+      'SSH_UNREACHABLE',
+      'SSH connection timed out. Check host, port, and network reachability.',
+    );
   }
 
-  if (/all configured authentication methods failed|permission denied|authentication failure|unable to authenticate/i.test(message)) {
+  if (
+    /all configured authentication methods failed|permission denied|authentication failure|unable to authenticate/i.test(
+      message,
+    )
+  ) {
     return makeTaggedError('SSH_AUTH_FAILED', 'Possible wrong SSH username/password or key.');
   }
 
-  if (/timed out|etimedout|econnrefused|ehostunreach|enetunreach|enotfound|no route to host|handshake/i.test(message)) {
+  if (
+    /timed out|etimedout|econnrefused|ehostunreach|enetunreach|enotfound|no route to host|handshake/i.test(
+      message,
+    )
+  ) {
     return makeTaggedError('SSH_UNREACHABLE', `SSH host is unreachable: ${message}`);
   }
 
@@ -199,7 +210,10 @@ export function isSshCommandAllowed(command: string): boolean {
   return SSH_COMMAND_ALLOWLIST.some((rule) => rule.test(normalized));
 }
 
-export function resolveSshConfig(payload: Record<string, unknown>, proxmoxConfig: ProxmoxConfig): ResolvedSshConfig {
+export function resolveSshConfig(
+  payload: Record<string, unknown>,
+  proxmoxConfig: ProxmoxConfig,
+): ResolvedSshConfig {
   const payloadHost = String(payload.sshHost || '').trim();
   const host = payloadHost || parseHostFromProxmoxUrl(proxmoxConfig.url);
 
@@ -209,15 +223,12 @@ export function resolveSshConfig(payload: Record<string, unknown>, proxmoxConfig
   const payloadUsername = String(payload.sshUsername || '').trim();
   const username = payloadUsername || normalizeSshUsername(proxmoxConfig.username);
 
-  const payloadPassword = typeof payload.sshPassword === 'string'
-    ? payload.sshPassword
-    : undefined;
-  const password = payloadPassword !== undefined
-    ? String(payloadPassword)
-    : String(proxmoxConfig.password || '');
+  const payloadPassword = typeof payload.sshPassword === 'string' ? payload.sshPassword : undefined;
+  const password =
+    payloadPassword !== undefined ? String(payloadPassword) : String(proxmoxConfig.password || '');
 
   const privateKey = String(payload.sshPrivateKey || '').trim();
-  const authMode = privateKey ? 'key' : (password ? 'password' : null);
+  const authMode = privateKey ? 'key' : password ? 'password' : null;
 
   return {
     host,
@@ -257,7 +268,9 @@ export async function executeSshCommand(params: {
   const timeoutMs = normalizeTimeoutMs(params.timeoutMs);
 
   try {
-    params.logger.info(`SSH exec on ${sshConfig.username}@${sshConfig.host}:${sshConfig.port} (${command.slice(0, 120)})`);
+    params.logger.info(
+      `SSH exec on ${sshConfig.username}@${sshConfig.host}:${sshConfig.port} (${command.slice(0, 120)})`,
+    );
     const result = await runSshExec(sshConfig, command, timeoutMs);
     return {
       ...result,

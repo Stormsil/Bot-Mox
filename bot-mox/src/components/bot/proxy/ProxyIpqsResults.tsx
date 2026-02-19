@@ -1,7 +1,7 @@
-import React from 'react';
-import { Progress, Alert, Space, Tag, Typography } from 'antd';
 import { SafetyCertificateOutlined } from '@ant-design/icons';
-import { getFraudScoreColor, getFraudScoreLabel } from '../../../services/ipqsService';
+import { Alert, Progress, Space, Tag, Typography } from 'antd';
+import type React from 'react';
+import { getFraudScoreColor, getFraudScoreLabel } from '../../../entities/resources/api/ipqsFacade';
 import type { IPQSResponse } from '../../../types';
 import styles from './proxy.module.css';
 

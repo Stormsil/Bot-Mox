@@ -3,13 +3,13 @@
  * Поддерживает добавление/удаление элементов списка
  */
 
-import React, { useRef, useEffect, useCallback, useState } from 'react';
-import type { ListBlock, ListItem } from '../../services/notesService';
-import { generateListItemId } from '../../services/notesService';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { generateListItemId } from '../../entities/notes/lib/ids';
+import type { ListBlock, ListItem } from '../../entities/notes/model/types';
 import styles from './NotesComponents.module.css';
 
-const cx = (...parts: Array<string | false | null | undefined>) =>
-  parts.filter(Boolean).join(' ');
+const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 
 interface ListBlockProps {
   block: ListBlock;
@@ -31,6 +31,7 @@ interface ListItemEditorProps {
   onChange: (id: string, content: string) => void;
   onAddItem: (afterIndex: number) => void;
   onRemoveItem: (id: string) => void;
+  onFocus: () => void;
   autoFocus?: boolean;
 }
 
@@ -41,6 +42,7 @@ const ListItemEditor: React.FC<ListItemEditorProps> = ({
   onChange,
   onAddItem,
   onRemoveItem,
+  onFocus,
   autoFocus = false,
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -97,7 +99,7 @@ const ListItemEditor: React.FC<ListItemEditorProps> = ({
         }
       }
     },
-    [index, item.id, onAddItem, onRemoveItem]
+    [index, item.id, onAddItem, onRemoveItem],
   );
 
   // Обработка вставки (убираем форматирование)
@@ -113,9 +115,8 @@ const ListItemEditor: React.FC<ListItemEditorProps> = ({
     <div className={styles['list-item']} data-item-id={item.id}>
       <span className={styles['list-marker']}>{marker}</span>
       <div className={styles['list-item-content-wrapper']}>
-        {showPlaceholder && (
-          <div className={styles['block-placeholder']}>List item</div>
-        )}
+        {showPlaceholder && <div className={styles['block-placeholder']}>List item</div>}
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: contentEditable div is the rich-text editor surface */}
         <div
           ref={contentRef}
           className={styles['list-item-content']}
@@ -123,6 +124,7 @@ const ListItemEditor: React.FC<ListItemEditorProps> = ({
           suppressContentEditableWarning
           onInput={handleInput}
           onKeyDown={handleKeyDown}
+          onFocus={onFocus}
           onPaste={handlePaste}
           spellCheck={false}
         />
@@ -146,12 +148,10 @@ export const ListBlockComponent: React.FC<ListBlockProps> = ({
   // Обработка изменения содержимого элемента
   const handleItemChange = useCallback(
     (id: string, content: string) => {
-      const newItems = block.items.map(item =>
-        item.id === id ? { ...item, content } : item
-      );
+      const newItems = block.items.map((item) => (item.id === id ? { ...item, content } : item));
       onChange(newItems);
     },
-    [block.items, onChange]
+    [block.items, onChange],
   );
 
   // Добавление нового элемента списка
@@ -165,7 +165,7 @@ export const ListBlockComponent: React.FC<ListBlockProps> = ({
       newItems.splice(afterIndex + 1, 0, newItem);
       onChange(newItems);
     },
-    [block.items, onChange]
+    [block.items, onChange],
   );
 
   // Удаление элемента списка
@@ -177,7 +177,7 @@ export const ListBlockComponent: React.FC<ListBlockProps> = ({
         return;
       }
 
-      const newItems = block.items.filter(item => item.id !== id);
+      const newItems = block.items.filter((item) => item.id !== id);
       onChange(newItems);
 
       // Если удалили последний элемент - создаем новый пустой
@@ -189,13 +189,8 @@ export const ListBlockComponent: React.FC<ListBlockProps> = ({
         onChange([emptyItem]);
       }
     },
-    [block.items, onChange, onBackspace]
+    [block.items, onChange, onBackspace],
   );
-
-  // Обработка фокуса на блоке
-  const handleContainerFocus = useCallback(() => {
-    onFocus();
-  }, [onFocus]);
 
   // Если список пустой - добавляем один пустой элемент
   useEffect(() => {
@@ -214,12 +209,7 @@ export const ListBlockComponent: React.FC<ListBlockProps> = ({
       : cx(styles['list-block'], styles['bullet-list']);
 
   return (
-    <div
-      className={className}
-      data-block-id={block.id}
-      data-block-type={block.type}
-      onFocus={handleContainerFocus}
-    >
+    <div className={className} data-block-id={block.id} data-block-type={block.type}>
       {block.items.map((item, index) => (
         <ListItemEditor
           key={item.id}
@@ -229,6 +219,7 @@ export const ListBlockComponent: React.FC<ListBlockProps> = ({
           onChange={handleItemChange}
           onAddItem={handleAddItem}
           onRemoveItem={handleRemoveItem}
+          onFocus={onFocus}
           autoFocus={autoFocus && index === block.items.length - 1}
         />
       ))}

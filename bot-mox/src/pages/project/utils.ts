@@ -1,15 +1,23 @@
 import type { BotLicense, BotStatus, Subscription } from '../../types';
-import { OFFLINE_THRESHOLD_MS, STATUS_FILTER_VALUES, type BotRecord, type ProxyLike, type StatusFilter } from './types';
+import {
+  type BotRecord,
+  OFFLINE_THRESHOLD_MS,
+  type ProxyLike,
+  STATUS_FILTER_VALUES,
+  type StatusFilter,
+} from './types';
 
 export const formatProjectTitle = (projectId: string) =>
-  projectId
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  projectId.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 export const computeBotStatus = (bot: BotRecord): BotStatus => {
   if (bot.status === 'banned') return 'banned';
   const lastSeen = bot.last_seen;
-  if (typeof lastSeen === 'number' && lastSeen > 0 && Date.now() - lastSeen > OFFLINE_THRESHOLD_MS) {
+  if (
+    typeof lastSeen === 'number' &&
+    lastSeen > 0 &&
+    Date.now() - lastSeen > OFFLINE_THRESHOLD_MS
+  ) {
     return 'offline';
   }
   return bot.status || 'offline';
@@ -199,9 +207,7 @@ export const formatFaction = (faction?: 'alliance' | 'horde') => {
 
 export const parseStatusFilterFromParams = (params: URLSearchParams): StatusFilter => {
   const value = params.get('status');
-  return value && STATUS_FILTER_VALUES.includes(value as BotStatus)
-    ? (value as BotStatus)
-    : 'all';
+  return value && STATUS_FILTER_VALUES.includes(value as BotStatus) ? (value as BotStatus) : 'all';
 };
 
 export const formatDaysRemaining = (daysRemaining: number | undefined) => {

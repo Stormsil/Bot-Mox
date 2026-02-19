@@ -1,25 +1,25 @@
-import type { TreeDataNode } from 'antd';
 import {
   AppstoreOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  CloudServerOutlined,
+  CreditCardOutlined,
   DatabaseOutlined,
   DesktopOutlined,
-  HomeOutlined,
-  CalendarOutlined,
-  UserOutlined,
   DollarOutlined,
+  FileTextOutlined,
   FolderOutlined,
-  SettingOutlined,
+  GlobalOutlined,
+  HomeOutlined,
   PlayCircleOutlined,
-  StopOutlined,
-  ClockCircleOutlined,
-  ToolOutlined,
   PoweroffOutlined,
   RobotOutlined,
-  GlobalOutlined,
-  CreditCardOutlined,
-  FileTextOutlined,
-  CloudServerOutlined,
+  SettingOutlined,
+  StopOutlined,
+  ToolOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
+import type { TreeDataNode } from 'antd';
 import type { BotItem, BotStatus, StatusGroup, TreeItem } from './types';
 import { isBotStatus, statusConfig } from './types';
 
@@ -69,69 +69,116 @@ export const getBotIcon = (status?: BotStatus) => {
   }
 };
 
-export const getIcon = (type: TreeItem['type'], status?: BotStatus, sectionKind?: TreeItem['sectionKind']) => {
+export const getIcon = (
+  type: TreeItem['type'],
+  status?: BotStatus,
+  sectionKind?: TreeItem['sectionKind'],
+) => {
   const iconStyle = { fontSize: 14 };
 
   switch (type) {
     case 'section': {
       switch (sectionKind) {
         case 'projects':
-          return <DatabaseOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+          return (
+            <DatabaseOutlined
+              style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }}
+            />
+          );
         case 'resources':
-          return <AppstoreOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+          return (
+            <AppstoreOutlined
+              style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }}
+            />
+          );
         case 'workspace':
-          return <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+          return (
+            <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+          );
         default:
-          return <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+          return (
+            <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+          );
       }
     }
     case 'folder':
-      return <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'datacenter':
       return <HomeOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
     case 'project':
-      return <DesktopOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <DesktopOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'bot':
       return getBotIcon(status);
     case 'status_group':
       return getBotIcon(status);
     case 'finance':
-      return <DollarOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <DollarOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'archive':
-      return <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'settings':
-      return <SettingOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <SettingOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'licenses':
-      return <RobotOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <RobotOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'proxies':
-      return <GlobalOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <GlobalOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'subscriptions':
-      return <CreditCardOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <CreditCardOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'notes':
-      return <FileTextOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <FileTextOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'workspace_calendar':
-      return <CalendarOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <CalendarOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'workspace_kanban':
-      return <AppstoreOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <AppstoreOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'vms':
     case 'vms_list':
     case 'vms_sites':
     case 'vms_site_proxmox':
     case 'vms_site_tinyfm':
     case 'vms_site_syncthing':
-      return <CloudServerOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return (
+        <CloudServerOutlined
+          style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }}
+        />
+      );
     default:
       return <DesktopOutlined style={iconStyle} />;
   }
 };
 
-export const convertToTreeData = (items: TreeItem[], cx: (classNames: string) => string): TreeDataNode[] =>
+export const convertToTreeData = (
+  items: TreeItem[],
+  cx: (classNames: string) => string,
+): TreeDataNode[] =>
   items.map((item) => ({
     key: item.key,
     selectable: item.selectable ?? true,
     title: (
       <span className={cx('resource-tree-node')}>
-        <span className={cx('resource-tree-icon')}>{getIcon(item.type, item.status, item.sectionKind)}</span>
+        <span className={cx('resource-tree-icon')}>
+          {getIcon(item.type, item.status, item.sectionKind)}
+        </span>
         <span className={cx('resource-tree-title')}>{item.title}</span>
       </span>
     ),
@@ -141,7 +188,7 @@ export const convertToTreeData = (items: TreeItem[], cx: (classNames: string) =>
 export const findNodePath = (
   items: TreeItem[],
   targetKey: string,
-  path: string[] = []
+  path: string[] = [],
 ): { path: string[]; node: TreeItem } | null => {
   for (const item of items) {
     const nextPath = [...path, item.key];
@@ -172,11 +219,11 @@ export const isProjectsBranchKey = (key: string) =>
   key === 'projects' || key.startsWith('project_') || key.startsWith('status_');
 
 export const formatProjectLabel = (projectId: string): string =>
-  projectId
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  projectId.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-export const parseStatusGroupKey = (key: string): { projectId: string; status: BotStatus } | null => {
+export const parseStatusGroupKey = (
+  key: string,
+): { projectId: string; status: BotStatus } | null => {
   const match = /^status_(.+)_(offline|prepare|leveling|profession|farming|banned)$/.exec(key);
   if (!match) {
     return null;
@@ -204,7 +251,8 @@ export const getSelectedKeysForLocation = (pathname: string, search: string): st
   if (pathname === '/finance') return ['finance'];
   if (pathname === '/settings') return ['settings'];
   if (pathname === '/notes') return ['notes'];
-  if (pathname === '/workspace/calendar' || pathname === '/notes/reminders') return ['workspace_calendar'];
+  if (pathname === '/workspace/calendar' || pathname === '/notes/reminders')
+    return ['workspace_calendar'];
   if (pathname === '/workspace/kanban') return ['workspace_kanban'];
   if (pathname === '/licenses') return ['licenses'];
   if (pathname === '/proxies') return ['proxies'];
@@ -214,6 +262,7 @@ export const getSelectedKeysForLocation = (pathname: string, search: string): st
   if (pathname === '/vms/unattend-profiles') return ['vms'];
   if (pathname === '/vms/sites/proxmox' || pathname === '/vms/proxmox') return ['vms_site_proxmox'];
   if (pathname === '/vms/sites/tinyfm' || pathname === '/vms/tinyfm') return ['vms_site_tinyfm'];
-  if (pathname === '/vms/sites/syncthing' || pathname === '/vms/syncthing') return ['vms_site_syncthing'];
+  if (pathname === '/vms/sites/syncthing' || pathname === '/vms/syncthing')
+    return ['vms_site_syncthing'];
   return [];
 };

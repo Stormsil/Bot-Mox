@@ -1,5 +1,5 @@
-import React from 'react';
 import { Card, Col, Row } from 'antd';
+import type React from 'react';
 import styles from './SubscriptionsPage.module.css';
 
 interface SubscriptionsStatsData {

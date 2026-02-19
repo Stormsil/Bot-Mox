@@ -27,7 +27,9 @@ function createDiagnosticsRoutes({ env }) {
 
   if (!enabled) {
     // Hide the surface when disabled.
-    router.use((_req, res) => res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Not found' } }));
+    router.use((_req, res) =>
+      res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Not found' } }),
+    );
     return router;
   }
 
@@ -50,7 +52,7 @@ function createDiagnosticsRoutes({ env }) {
           x_span_id: res.getHeader('x-span-id') || null,
           x_correlation_id: res.getHeader('x-correlation-id') || null,
         },
-      })
+      }),
     );
   });
 
@@ -60,4 +62,3 @@ function createDiagnosticsRoutes({ env }) {
 module.exports = {
   createDiagnosticsRoutes,
 };
-

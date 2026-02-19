@@ -3,10 +3,10 @@
  * Запускает proxy-server и Vite dev server параллельно
  */
 
-const { spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const net = require('net');
+const { spawn } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const net = require('node:net');
 
 // Colors for console output
 const colors = {
@@ -18,7 +18,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   magenta: '\x1b[35m',
-  cyan: '\x1b[36m'
+  cyan: '\x1b[36m',
 };
 
 function log(message, color = 'reset') {
@@ -116,8 +116,8 @@ function isPortAvailable(port) {
  */
 function spawnProcess(name, command, args, options = {}) {
   const colorMap = {
-    'PROXY': 'cyan',
-    'VITE': 'green'
+    PROXY: 'cyan',
+    VITE: 'green',
   };
   const color = colorMap[name] || 'reset';
 
@@ -134,14 +134,14 @@ function spawnProcess(name, command, args, options = {}) {
   const proc = spawn(launchCommand, launchArgs, {
     stdio: 'pipe',
     shell: false,
-    ...options
+    ...options,
   });
 
   processes.push({ name, proc });
 
   proc.stdout.on('data', (data) => {
     const lines = data.toString().trim().split('\n');
-    lines.forEach(line => {
+    lines.forEach((line) => {
       if (line.trim()) {
         logPrefix(name, line, color);
       }
@@ -150,7 +150,7 @@ function spawnProcess(name, command, args, options = {}) {
 
   proc.stderr.on('data', (data) => {
     const lines = data.toString().trim().split('\n');
-    lines.forEach(line => {
+    lines.forEach((line) => {
       if (line.trim()) {
         logPrefix(name, line, 'yellow');
       }
@@ -160,7 +160,7 @@ function spawnProcess(name, command, args, options = {}) {
   proc.on('close', (code) => {
     logPrefix(name, `Process exited with code ${code}`, code === 0 ? 'green' : 'red');
     // Remove from processes array
-    const index = processes.findIndex(p => p.proc === proc);
+    const index = processes.findIndex((p) => p.proc === proc);
     if (index > -1) {
       processes.splice(index, 1);
     }
@@ -198,7 +198,7 @@ function shutdown(exitCode = 0) {
       } else {
         proc.kill('SIGTERM');
       }
-    } catch (e) {
+    } catch (_e) {
       // Ignore errors during shutdown
     }
   });
@@ -226,16 +226,19 @@ async function main() {
   if (!proxyPortAvailable) {
     log(
       `❌ Port ${proxyPort} is already in use. Stop the running process or change PORT in proxy-server/.env.`,
-      'red'
+      'red',
     );
-    log(`   Tip: check owner with \`Get-NetTCPConnection -LocalPort ${proxyPort} -State Listen\``, 'yellow');
+    log(
+      `   Tip: check owner with \`Get-NetTCPConnection -LocalPort ${proxyPort} -State Listen\``,
+      'yellow',
+    );
     process.exit(1);
     return;
   }
 
   // Start proxy server first
   const proxyPath = path.join(__dirname, 'proxy-server');
-  spawnProcess('PROXY', 'npm', ['start'], {
+  spawnProcess('PROXY', 'corepack', ['pnpm', 'start'], {
     cwd: proxyPath,
     env: {
       ...process.env,
@@ -246,15 +249,15 @@ async function main() {
   // Wait a bit for proxy server to initialize
   log('');
   log('⏳ Waiting for proxy server to initialize...', 'dim');
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
   if (isShuttingDown) {
     return;
   }
 
   // Start Vite dev server
   const botMoxPath = path.join(__dirname, 'bot-mox');
-  spawnProcess('VITE', 'npm', ['run', 'dev'], {
-    cwd: botMoxPath
+  spawnProcess('VITE', 'corepack', ['pnpm', 'run', 'dev'], {
+    cwd: botMoxPath,
   });
 
   log('');
@@ -268,7 +271,7 @@ async function main() {
   log('');
 }
 
-main().catch(err => {
+main().catch((err) => {
   log(`❌ Error: ${err.message}`, 'red');
   shutdown(1);
 });

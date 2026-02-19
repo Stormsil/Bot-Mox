@@ -127,7 +127,7 @@ export interface SubscriptionWithDetails extends Subscription {
   daysRemaining: number;
   isExpired: boolean;
   isExpiringSoon: boolean;
-  
+
   // Данные бота
   botName?: string;
   botCharacter?: string;
@@ -157,18 +157,23 @@ export interface SubscriptionFormData {
 export interface SubscriptionSummary {
   total_active: number;
   total_expired: number;
-  by_type: Record<string, {
-    active_count: number;
-    expired_count: number;
-    total_count: number;
-  }>;
-  expiring_soon: Record<string, {
-    id: string;
-    bot_id: string;
-    type: string;
-    expires_at: number;
-    days_remaining: number;
-  }>;
+  by_type: Record<
+    string,
+    {
+      active_count: number;
+      expired_count: number;
+      total_count: number;
+    }
+  >;
+  expiring_soon: Record<
+    string,
+    {
+      id: string;
+      bot_id: string;
+      type: string;
+      expires_at: number;
+      days_remaining: number;
+    }
+  >;
   last_updated: number;
 }
-

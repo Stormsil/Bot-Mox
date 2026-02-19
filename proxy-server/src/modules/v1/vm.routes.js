@@ -56,7 +56,9 @@ function createVmRoutes({ vmRegistryService }) {
     withVmRegistryErrors(async (req, res) => {
       const parsedBody = vmRegisterSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -72,7 +74,7 @@ function createVmRoutes({ vmRegistryService }) {
       });
 
       return res.status(201).json(success(payload));
-    })
+    }),
   );
 
   router.get(
@@ -80,7 +82,9 @@ function createVmRoutes({ vmRegistryService }) {
     withVmRegistryErrors(async (req, res) => {
       const parsedParams = vmResolveParamSchema.safeParse(req.params);
       if (!parsedParams.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid VM UUID', parsedParams.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid VM UUID', parsedParams.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -94,7 +98,7 @@ function createVmRoutes({ vmRegistryService }) {
       }
 
       return res.json(success(vm));
-    })
+    }),
   );
 
   return router;

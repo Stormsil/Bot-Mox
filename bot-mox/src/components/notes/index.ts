@@ -5,6 +5,6 @@
 export { BlockEditor } from './BlockEditor';
 export { CheckboxBlockComponent } from './CheckboxBlock';
 export { ListBlockComponent } from './ListBlock';
-export { SlashCommandMenu } from './SlashCommandMenu';
 export { NoteEditor } from './NoteEditor';
 export { NoteSidebar } from './NoteSidebar';
+export { SlashCommandMenu } from './SlashCommandMenu';

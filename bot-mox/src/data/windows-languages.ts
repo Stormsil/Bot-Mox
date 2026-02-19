@@ -8,7 +8,11 @@ export interface WindowsLanguage {
 export const WINDOWS_LANGUAGES: WindowsLanguage[] = [
   { tag: 'af-ZA', name: 'Afrikaans', nativeName: 'Afrikaans' },
   { tag: 'ar-SA', name: 'Arabic', nativeName: '\u0627\u0644\u0639\u0631\u0628\u064A\u0629' },
-  { tag: 'bg-BG', name: 'Bulgarian', nativeName: '\u0411\u044A\u043B\u0433\u0430\u0440\u0441\u043A\u0438' },
+  {
+    tag: 'bg-BG',
+    name: 'Bulgarian',
+    nativeName: '\u0411\u044A\u043B\u0433\u0430\u0440\u0441\u043A\u0438',
+  },
   { tag: 'ca-ES', name: 'Catalan', nativeName: 'Catal\u00E0' },
   { tag: 'cs-CZ', name: 'Czech', nativeName: '\u010Ce\u0161tina' },
   { tag: 'da-DK', name: 'Danish', nativeName: 'Dansk' },
@@ -45,7 +49,11 @@ export const WINDOWS_LANGUAGES: WindowsLanguage[] = [
   { tag: 'sv-SE', name: 'Swedish', nativeName: 'Svenska' },
   { tag: 'th-TH', name: 'Thai', nativeName: '\u0E44\u0E17\u0E22' },
   { tag: 'tr-TR', name: 'Turkish', nativeName: 'T\u00FCrk\u00E7e' },
-  { tag: 'uk-UA', name: 'Ukrainian', nativeName: '\u0423\u043A\u0440\u0430\u0457\u043D\u0441\u044C\u043A\u0430' },
+  {
+    tag: 'uk-UA',
+    name: 'Ukrainian',
+    nativeName: '\u0423\u043A\u0440\u0430\u0457\u043D\u0441\u044C\u043A\u0430',
+  },
   { tag: 'vi-VN', name: 'Vietnamese', nativeName: 'Ti\u1EBFng Vi\u1EC7t' },
   { tag: 'zh-CN', name: 'Chinese (Simplified)', nativeName: '\u4E2D\u6587(\u7B80\u4F53)' },
   { tag: 'zh-TW', name: 'Chinese (Traditional)', nativeName: '\u4E2D\u6587(\u7E41\u9AD4)' },

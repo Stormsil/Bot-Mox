@@ -1,8 +1,8 @@
-import React from 'react';
 import { Input, Switch } from 'antd';
-import type { SettingsSectionProps } from './types';
+import type React from 'react';
 import { SecretField } from './SecretField';
 import layout from './SettingsSectionLayout.module.css';
+import type { SettingsSectionProps } from './types';
 
 export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
   settings,
@@ -14,7 +14,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
     <h4>Service URLs</h4>
     <div className={`${layout.row} ${layout.rowSingle}`}>
       <div className={layout.field}>
-        <label>Proxmox UI URL</label>
+        <div className={layout.fieldLabel}>Proxmox UI URL</div>
         <Input
           value={settings.services.proxmoxUrl}
           onChange={(event) => onFieldChange('services.proxmoxUrl', event.target.value)}
@@ -24,7 +24,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
     </div>
     <div className={`${layout.row} ${layout.rowSingle}`}>
       <div className={layout.field}>
-        <label>Proxmox Auto Login</label>
+        <div className={layout.fieldLabel}>Proxmox Auto Login</div>
         <div>
           <Switch
             checked={settings.services.proxmoxAutoLogin}
@@ -36,7 +36,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
     </div>
     <div className={layout.row}>
       <div className={layout.field}>
-        <label>TinyFileManager URL</label>
+        <div className={layout.fieldLabel}>TinyFileManager URL</div>
         <Input
           value={settings.services.tinyFmUrl}
           onChange={(event) => onFieldChange('services.tinyFmUrl', event.target.value)}
@@ -44,7 +44,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
         />
       </div>
       <div className={layout.field}>
-        <label>SyncThing URL</label>
+        <div className={layout.fieldLabel}>SyncThing URL</div>
         <Input
           value={settings.services.syncThingUrl}
           onChange={(event) => onFieldChange('services.syncThingUrl', event.target.value)}
@@ -54,7 +54,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
     </div>
     <div className={layout.row}>
       <div className={layout.field}>
-        <label>TinyFM Username</label>
+        <div className={layout.fieldLabel}>TinyFM Username</div>
         <Input
           value={settings.services.tinyFmUsername}
           onChange={(event) => onFieldChange('services.tinyFmUsername', event.target.value)}
@@ -70,7 +70,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
         />
       ) : (
         <div className={layout.field}>
-          <label>TinyFM Password</label>
+          <div className={layout.fieldLabel}>TinyFM Password</div>
           <Input.Password
             value={settings.services.tinyFmPassword ?? ''}
             onChange={(event) => onFieldChange('services.tinyFmPassword', event.target.value)}
@@ -81,7 +81,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
     </div>
     <div className={layout.row}>
       <div className={layout.field}>
-        <label>TinyFM Auto Login</label>
+        <div className={layout.fieldLabel}>TinyFM Auto Login</div>
         <div>
           <Switch
             checked={settings.services.tinyFmAutoLogin}
@@ -91,7 +91,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
         </div>
       </div>
       <div className={layout.field}>
-        <label>SyncThing Auto Login</label>
+        <div className={layout.fieldLabel}>SyncThing Auto Login</div>
         <div>
           <Switch
             checked={settings.services.syncThingAutoLogin}
@@ -103,7 +103,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
     </div>
     <div className={layout.row}>
       <div className={layout.field}>
-        <label>SyncThing Username</label>
+        <div className={layout.fieldLabel}>SyncThing Username</div>
         <Input
           value={settings.services.syncThingUsername}
           onChange={(event) => onFieldChange('services.syncThingUsername', event.target.value)}
@@ -119,7 +119,7 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
         />
       ) : (
         <div className={layout.field}>
-          <label>SyncThing Password</label>
+          <div className={layout.fieldLabel}>SyncThing Password</div>
           <Input.Password
             value={settings.services.syncThingPassword ?? ''}
             onChange={(event) => onFieldChange('services.syncThingPassword', event.target.value)}

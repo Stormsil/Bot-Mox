@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { CopyOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Button, Space } from 'antd';
-import { ThunderboltOutlined, CopyOutlined } from '@ant-design/icons';
-import { generateSmbios, generateMac, generateSsdSerial } from '../../utils/vm';
+import type React from 'react';
+import { useState } from 'react';
 import type { SmbiosResult } from '../../utils/vm';
+import { generateMac, generateSmbios, generateSsdSerial } from '../../utils/vm';
 import styles from './VMConfigPreview.module.css';
 
 export const VMConfigPreview: React.FC = () => {
@@ -23,11 +24,7 @@ export const VMConfigPreview: React.FC = () => {
   return (
     <div className={styles.root}>
       <Space>
-        <Button
-          type="primary"
-          icon={<ThunderboltOutlined />}
-          onClick={handleGenerate}
-        >
+        <Button type="primary" icon={<ThunderboltOutlined />} onClick={handleGenerate}>
           Generate Preview
         </Button>
       </Space>
@@ -37,7 +34,9 @@ export const VMConfigPreview: React.FC = () => {
           <div className={styles.details}>
             <div className={styles.detail}>
               <div className={styles.detailLabel}>Brand / Board</div>
-              <div className={styles.detailValue}>{smbiosResult.brand} / {smbiosResult.product}</div>
+              <div className={styles.detailValue}>
+                {smbiosResult.brand} / {smbiosResult.product}
+              </div>
             </div>
             <div className={styles.detail}>
               <div className={styles.detailLabel}>CPU</div>
@@ -63,9 +62,7 @@ export const VMConfigPreview: React.FC = () => {
             </Button>
           </div>
 
-          <div className={styles.output}>
-            {smbiosResult.args}
-          </div>
+          <div className={styles.output}>{smbiosResult.args}</div>
         </>
       )}
     </div>

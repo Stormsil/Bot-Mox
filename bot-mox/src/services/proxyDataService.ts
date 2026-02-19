@@ -1,5 +1,5 @@
-import type { Proxy } from '../types';
-import { subscribeBotsMap, type BotRecord } from './botsApiService';
+import type { Proxy as ProxyResource } from '../types';
+import { type BotRecord, subscribeBotsMap } from './botsApiService';
 import {
   createResource,
   deleteResource,
@@ -30,14 +30,21 @@ function toBotMap(bots: Record<string, BotRecord>): ProxiesBotMap {
     const vm = toRecord(source.vm);
 
     normalized[botId] = {
-      character: Object.keys(character).length > 0 ? { name: typeof character.name === 'string' ? character.name : undefined } : undefined,
-      person: Object.keys(person).length > 0
-        ? {
-            name: typeof person.name === 'string' ? person.name : undefined,
-            vm_name: typeof person.vm_name === 'string' ? person.vm_name : undefined,
-          }
-        : undefined,
-      vm: Object.keys(vm).length > 0 ? { name: typeof vm.name === 'string' ? vm.name : undefined } : undefined,
+      character:
+        Object.keys(character).length > 0
+          ? { name: typeof character.name === 'string' ? character.name : undefined }
+          : undefined,
+      person:
+        Object.keys(person).length > 0
+          ? {
+              name: typeof person.name === 'string' ? person.name : undefined,
+              vm_name: typeof person.vm_name === 'string' ? person.vm_name : undefined,
+            }
+          : undefined,
+      vm:
+        Object.keys(vm).length > 0
+          ? { name: typeof vm.name === 'string' ? vm.name : undefined }
+          : undefined,
       name: typeof source.name === 'string' ? source.name : undefined,
     };
   });
@@ -46,17 +53,17 @@ function toBotMap(bots: Record<string, BotRecord>): ProxiesBotMap {
 }
 
 export function subscribeProxies(
-  onData: (list: Proxy[]) => void,
-  onError?: (error: Error) => void
+  onData: (list: ProxyResource[]) => void,
+  onError?: (error: Error) => void,
 ): () => void {
-  return subscribeResources<Proxy>('proxies', onData, onError, {
+  return subscribeResources<ProxyResource>('proxies', onData, onError, {
     intervalMs: 6000,
   });
 }
 
 export function subscribeBots(
   onData: (bots: ProxiesBotMap) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): () => void {
   return subscribeBotsMap(
     (bots) => {
@@ -65,7 +72,7 @@ export function subscribeBots(
     onError,
     {
       intervalMs: 6000,
-    }
+    },
   );
 }
 
@@ -73,11 +80,17 @@ export async function deleteProxyById(proxyId: string): Promise<void> {
   await deleteResource('proxies', proxyId);
 }
 
-export async function updateProxyById(proxyId: string, proxyData: Partial<Proxy>): Promise<void> {
-  await updateResource<Proxy>('proxies', proxyId, proxyData as Record<string, unknown>);
+export async function updateProxyById(
+  proxyId: string,
+  proxyData: Partial<ProxyResource>,
+): Promise<void> {
+  await updateResource<ProxyResource>('proxies', proxyId, proxyData as Record<string, unknown>);
 }
 
-export async function createProxy(proxyData: Omit<Proxy, 'id'>): Promise<string> {
-  const created = await createResource<Proxy>('proxies', proxyData as Record<string, unknown>);
+export async function createProxy(proxyData: Omit<ProxyResource, 'id'>): Promise<string> {
+  const created = await createResource<ProxyResource>(
+    'proxies',
+    proxyData as Record<string, unknown>,
+  );
   return created.id;
 }

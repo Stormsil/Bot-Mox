@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const zlib = require('zlib');
+const fs = require('node:fs');
+const path = require('node:path');
+const zlib = require('node:zlib');
 
 const distAssetsDir = path.resolve(__dirname, '..', 'bot-mox', 'dist', 'assets');
 
@@ -22,7 +22,7 @@ function fail(message) {
 }
 
 if (!fs.existsSync(distAssetsDir)) {
-  fail(`Missing build output at ${distAssetsDir}. Run "npm run build" first.`);
+  fail(`Missing build output at ${distAssetsDir}. Run "pnpm run build" first.`);
 }
 
 const files = fs
@@ -48,24 +48,24 @@ const results = files.map((file) => {
 });
 
 const offenders = results.filter(
-  (entry) => entry.rawBytes > maxRawBytes || entry.gzipBytes > maxGzipBytes
+  (entry) => entry.rawBytes > maxRawBytes || entry.gzipBytes > maxGzipBytes,
 );
 
 const sortedByRaw = [...results].sort((a, b) => b.rawBytes - a.rawBytes);
 const top = sortedByRaw[0];
 
 console.log(
-  `[bundle-budget] Largest JS asset: ${top.file} (raw ${formatBytes(top.rawBytes)}, gzip ${formatBytes(top.gzipBytes)})`
+  `[bundle-budget] Largest JS asset: ${top.file} (raw ${formatBytes(top.rawBytes)}, gzip ${formatBytes(top.gzipBytes)})`,
 );
 console.log(
-  `[bundle-budget] Limits: raw <= ${formatBytes(maxRawBytes)}, gzip <= ${formatBytes(maxGzipBytes)}`
+  `[bundle-budget] Limits: raw <= ${formatBytes(maxRawBytes)}, gzip <= ${formatBytes(maxGzipBytes)}`,
 );
 
 if (offenders.length > 0) {
   console.error('[bundle-budget] Budget exceeded for:');
   for (const entry of offenders) {
     console.error(
-      `  - ${entry.file}: raw ${formatBytes(entry.rawBytes)}, gzip ${formatBytes(entry.gzipBytes)}`
+      `  - ${entry.file}: raw ${formatBytes(entry.rawBytes)}, gzip ${formatBytes(entry.gzipBytes)}`,
     );
   }
   process.exit(1);

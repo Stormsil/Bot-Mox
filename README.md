@@ -20,34 +20,34 @@ Current stack:
 
 Prerequisites:
 1. Node.js 20+
-2. npm 10+
+2. pnpm 10+ (`corepack enable`)
 3. Docker Desktop
 
 Install:
 
 ```bash
-npm ci
-cd bot-mox && npm ci
-cd ../proxy-server && npm ci
+pnpm install --frozen-lockfile
+cd bot-mox && pnpm install --frozen-lockfile
+cd ../proxy-server && pnpm install --frozen-lockfile
 cd ..
 ```
 
 Run local app (non-container):
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Run Docker dev stack (hot reload):
 
 ```bash
-npm run stack:dev:up
+pnpm run stack:dev:up
 ```
 
 Run production-like local stack:
 
 ```bash
-npm run stack:prod-sim:up
+pnpm run stack:prod-sim:up
 ```
 
 ## Quality Gates
@@ -55,7 +55,15 @@ npm run stack:prod-sim:up
 Run full local checks:
 
 ```bash
-npm run check:all
+pnpm run check:all
+```
+
+Enterprise migration checks (pnpm/turbo):
+
+```bash
+pnpm run db:types:check
+pnpm run contract:check
+pnpm run check:all:mono
 ```
 
 CI workflow: `.github/workflows/ci.yml`
@@ -71,22 +79,22 @@ Quick start (local):
 
 ```bash
 # 1) Start Jaeger UI (OTLP receiver + trace viewer)
-npm run obs:up
+pnpm run obs:up
 
 # 2) Start app with tracing enabled (backend + frontend propagation)
-npm run dev:trace
+pnpm run dev:trace
 
 # 3) Fast sanity check (no scenarios)
-npm run doctor
+pnpm run doctor
 
 # 4) Run E2E smoke
-npm run test:e2e
+pnpm run test:e2e
 
 # If you already run the prod-like stack on http://localhost (Caddy) and don't want Playwright to start webServer:
-npm run test:e2e:prodlike
+pnpm run test:e2e:prodlike
 
 # Combined quick check (doctor + Playwright smoke against http://localhost):
-npm run smoke:prodlike
+pnpm run smoke:prodlike
 ```
 
 Where to find debugging artifacts:
@@ -103,8 +111,8 @@ How to analyze failures (AI agent flow):
 5. (If enabled) Open Jaeger UI and inspect spans for that Trace ID.
 
 Guardrails:
-- `npm run check:frontend:logging` blocks new `console.*` in critical frontend layers (`services/hooks/pages/observability/ErrorBoundary`).
-- `npm run check:backend:logging` blocks new `console.*` in backend (allowlist-based).
+- `pnpm run check:frontend:logging` blocks new `console.*` in critical frontend layers (`services/hooks/pages/observability/ErrorBoundary`).
+- `pnpm run check:backend:logging` blocks new `console.*` in backend (allowlist-based).
 
 ## API Contract and Architecture
 
@@ -112,6 +120,9 @@ Guardrails:
 2. Architecture baseline: `docs/ARCHITECTURE.md`
 3. Execution roadmap: `docs/plans/green-implementation-roadmap.md`
 4. Tracker-ready backlog: `docs/plans/green-issue-backlog.md`
+5. Enterprise migration roadmap: `docs/plans/enterprise-migration-2026-roadmap.md`
+6. Enterprise migration audit: `docs/audits/enterprise-migration-2026-audit.md`
+7. Dev workflow (prod-like localhost): `docs/runbooks/dev-workflow.md`
 
 ## Deployment
 

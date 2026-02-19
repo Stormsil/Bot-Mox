@@ -3,7 +3,14 @@ import { apiGet, apiPut } from './apiClient';
 
 const RESOURCE_TREE_SETTINGS_PATH = '/api/v1/settings/ui/resource_tree';
 
-const ALLOWED_STATUSES: BotStatus[] = ['offline', 'prepare', 'leveling', 'profession', 'farming', 'banned'];
+const ALLOWED_STATUSES: BotStatus[] = [
+  'offline',
+  'prepare',
+  'leveling',
+  'profession',
+  'farming',
+  'banned',
+];
 
 export interface ResourceTreeSettingsPayload {
   expandedKeys: string[];
@@ -21,14 +28,14 @@ interface ResourceTreeSettingsResponse {
 
 function normalizeVisibleStatuses(input: unknown): BotStatus[] {
   if (!Array.isArray(input)) return [];
-  return input.filter((status): status is BotStatus => ALLOWED_STATUSES.includes(status as BotStatus));
+  return input.filter((status): status is BotStatus =>
+    ALLOWED_STATUSES.includes(status as BotStatus),
+  );
 }
 
 function normalizeExpandedKeys(input: unknown): string[] {
   if (!Array.isArray(input)) return [];
-  return input
-    .map((item) => String(item || '').trim())
-    .filter(Boolean);
+  return input.map((item) => String(item || '').trim()).filter(Boolean);
 }
 
 export async function fetchResourceTreeSettings(): Promise<ResourceTreeSettingsPayload | null> {
@@ -52,6 +59,8 @@ export async function fetchResourceTreeSettings(): Promise<ResourceTreeSettingsP
   return normalized;
 }
 
-export async function saveResourceTreeSettings(payload: ResourceTreeSettingsPayload): Promise<void> {
+export async function saveResourceTreeSettings(
+  payload: ResourceTreeSettingsPayload,
+): Promise<void> {
   await apiPut(RESOURCE_TREE_SETTINGS_PATH, payload);
 }

@@ -1,11 +1,16 @@
 FROM node:20-bookworm AS build
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable
+
+COPY package.json ./
+RUN pnpm install --no-frozen-lockfile
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 FROM nginx:1.27-alpine AS runtime
 WORKDIR /usr/share/nginx/html

@@ -1,5 +1,3 @@
-import React from 'react';
-import { Button, Card, Tag } from 'antd';
 import {
   CreditCardOutlined,
   DesktopOutlined,
@@ -8,6 +6,8 @@ import {
   KeyOutlined,
   RightOutlined,
 } from '@ant-design/icons';
+import { Button, Card, Tag } from 'antd';
+import type React from 'react';
 import type {
   ContentMapSection,
   DatacenterLicenseProxyStats,
@@ -70,7 +70,11 @@ export function ProjectsSection({
     <div className={cx('content-map-section')}>
       <div className={cx('content-map-section-head')}>
         <div className={cx('content-map-section-title')}>Projects</div>
-        <SectionToggle section="projects" collapsedSections={collapsedSections} onToggle={toggleSection} />
+        <SectionToggle
+          section="projects"
+          collapsedSections={collapsedSections}
+          onToggle={toggleSection}
+        />
       </div>
       {!collapsedSections.projects && (
         <div className={cx('content-map-grid content-map-grid--projects')}>
@@ -235,7 +239,11 @@ export function ResourcesSection({
     <div className={cx('content-map-section')}>
       <div className={cx('content-map-section-head')}>
         <div className={cx('content-map-section-title')}>Resources</div>
-        <SectionToggle section="resources" collapsedSections={collapsedSections} onToggle={toggleSection} />
+        <SectionToggle
+          section="resources"
+          collapsedSections={collapsedSections}
+          onToggle={toggleSection}
+        />
       </div>
       {!collapsedSections.resources && (
         <div className={cx('content-map-grid content-map-grid--resources')}>

@@ -1,6 +1,6 @@
+import { uiLogger } from '../observability/uiLogger';
 import type { StoragePolicy } from '../types';
 import { apiGet, apiPut } from './apiClient';
-import { uiLogger } from '../observability/uiLogger'
 
 const STORAGE_POLICY_PATH = '/api/v1/settings/storage_policy';
 
@@ -21,10 +21,11 @@ function normalizeStoragePolicy(raw: unknown): StoragePolicy {
   }
 
   const source = raw as Record<string, unknown>;
-  const operationalRaw = String(source.operational || '').trim().toLowerCase();
-  const syncRaw = source.sync && typeof source.sync === 'object'
-    ? (source.sync as Record<string, unknown>)
-    : {};
+  const operationalRaw = String(source.operational || '')
+    .trim()
+    .toLowerCase();
+  const syncRaw =
+    source.sync && typeof source.sync === 'object' ? (source.sync as Record<string, unknown>) : {};
 
   return {
     secrets: 'local-only',

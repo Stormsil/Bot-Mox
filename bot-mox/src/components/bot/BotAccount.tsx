@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Card, Form, message } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Card, Form, message } from 'antd';
 import dayjs from 'dayjs';
-import { apiPatch } from '../../services/apiClient';
+import type React from 'react';
+import { useState } from 'react';
+import { useUpdateBotMutation } from '../../entities/bot/api/useBotMutations';
 import {
   generateEmail,
   generatePassword,
@@ -10,12 +11,13 @@ import {
   loadBackup,
   saveBackup,
 } from '../../utils/accountGenerators';
+import styles from './account/account.module.css';
 import {
-  ActionButtonsSection,
   AccountCardTitle,
   AccountLoadingState,
   AccountUnavailableState,
   AccountWorkflowAlert,
+  ActionButtonsSection,
   ConfirmGenerationModal,
   EmailSection,
   GeneratorPresetsCard,
@@ -24,23 +26,26 @@ import {
   PasswordSection,
   RegistrationDateSection,
 } from './account/sections';
-import { useAccountGeneratorState } from './account/use-account-generator-state';
-import { useBotAccountSubscription } from './account/use-bot-account-subscription';
 import type {
   AccountFormValues,
   AccountGenerationLocks,
   BotAccountProps,
   PendingGenerationState,
 } from './account/types';
-import styles from './account/account.module.css';
+import { useAccountGeneratorState } from './account/use-account-generator-state';
+import { useBotAccountSubscription } from './account/use-bot-account-subscription';
 
 export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
   const [form] = Form.useForm<AccountFormValues>();
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [pendingLocks, setPendingLocks] = useState<AccountGenerationLocks>({ email: false, password: false });
+  const [pendingLocks, setPendingLocks] = useState<AccountGenerationLocks>({
+    email: false,
+    password: false,
+  });
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [pendingGeneration, setPendingGeneration] = useState<PendingGenerationState | null>(null);
+  const updateBotMutation = useUpdateBotMutation();
 
   const {
     loading,
@@ -79,7 +84,7 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
 
   const handleValuesChange = (
     _changedValues: Partial<AccountFormValues>,
-    allValues: Partial<AccountFormValues>
+    allValues: Partial<AccountFormValues>,
   ) => {
     setFormValues({
       email: allValues.email || '',
@@ -89,7 +94,11 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
   };
 
   const handleSave = async (values: Partial<AccountFormValues>) => {
-    if ((generationLocks.email || generationLocks.password) && !pendingLocks.email && !pendingLocks.password) {
+    if (
+      (generationLocks.email || generationLocks.password) &&
+      !pendingLocks.email &&
+      !pendingLocks.password
+    ) {
       message.warning('Account data is locked. Click Unlock to edit.');
       return;
     }
@@ -112,10 +121,13 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
         account_password: Boolean(String(values.password || '').trim()),
       };
 
-      await apiPatch(`/api/v1/bots/${encodeURIComponent(bot.id)}`, {
-        account: accountData,
-        'generation_locks/account_email': lockUpdates.account_email,
-        'generation_locks/account_password': lockUpdates.account_password,
+      await updateBotMutation.mutateAsync({
+        botId: bot.id,
+        payload: {
+          account: accountData,
+          'generation_locks/account_email': lockUpdates.account_email,
+          'generation_locks/account_password': lockUpdates.account_password,
+        },
       });
 
       setGenerationLocks({
@@ -128,7 +140,7 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
       console.error('Error saving account data:', error);
       message.error(
         'Failed to save account data: ' +
-          (error instanceof Error ? error.message : 'Unknown error')
+          (error instanceof Error ? error.message : 'Unknown error'),
       );
     } finally {
       setSaving(false);
@@ -186,11 +198,18 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
         message.error('Please select or enter a domain');
         return;
       }
+      const person = bot.person;
+      if (!person?.first_name || !person?.last_name || !person?.birth_date) {
+        message.error('Person data must be filled first (First Name, Last Name, Birth Date)');
+        setShowGenerateModal(false);
+        setPendingGeneration(null);
+        return;
+      }
 
       const newEmail = generateEmail({
-        firstName: bot.person!.first_name!,
-        lastName: bot.person!.last_name!,
-        birthDate: bot.person!.birth_date!,
+        firstName: person.first_name,
+        lastName: person.last_name,
+        birthDate: person.birth_date,
         domain,
       });
       form.setFieldValue('email', newEmail);
@@ -220,13 +239,16 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
     }
 
     try {
-      await apiPatch(`/api/v1/bots/${encodeURIComponent(bot.id)}`, {
-        ...(updates.account_email !== undefined
-          ? { 'generation_locks/account_email': updates.account_email }
-          : {}),
-        ...(updates.account_password !== undefined
-          ? { 'generation_locks/account_password': updates.account_password }
-          : {}),
+      await updateBotMutation.mutateAsync({
+        botId: bot.id,
+        payload: {
+          ...(updates.account_email !== undefined
+            ? { 'generation_locks/account_email': updates.account_email }
+            : {}),
+          ...(updates.account_password !== undefined
+            ? { 'generation_locks/account_password': updates.account_password }
+            : {}),
+        },
       });
       setPendingLocks({ email: false, password: false });
       setGenerationLocks({ email: false, password: false });

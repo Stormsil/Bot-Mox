@@ -99,7 +99,7 @@ function createApiV1Router({
       const payload = buildReadinessPayload({ checks });
       const statusCode = payload.ready ? 200 : 503;
       res.status(statusCode).json(success(payload));
-    })
+    }),
   );
 
   router.get(
@@ -107,7 +107,7 @@ function createApiV1Router({
     asyncHandler(async (_req, res) => {
       const checks = await getHealthChecks({ env: runtimeEnv });
       res.json(success(buildHealthPayload({ env: runtimeEnv, checks })));
-    })
+    }),
   );
 
   // Optional OTLP proxy for browser traces (enabled via BOTMOX_OTEL_PROXY_ENABLED=1).
@@ -118,22 +118,26 @@ function createApiV1Router({
   router.use('/client-logs', createClientLogsRoutes({ authMiddleware }));
 
   router.use('/auth', createAuthRoutes({ authenticate }));
-  router.use(asyncHandler(async (req, res, next) => {
-    if (isPublicAgentBootstrap(req)) {
-      const optionalAuth = await authMiddleware.authenticateRequest(req, { allowQueryToken: false });
-      if (optionalAuth?.ok) {
-        req.auth = optionalAuth.auth;
+  router.use(
+    asyncHandler(async (req, res, next) => {
+      if (isPublicAgentBootstrap(req)) {
+        const optionalAuth = await authMiddleware.authenticateRequest(req, {
+          allowQueryToken: false,
+        });
+        if (optionalAuth?.ok) {
+          req.auth = optionalAuth.auth;
+        }
+        return next();
       }
-      return next();
-    }
 
-    // VM provisioning endpoints use their own token auth (in request body)
-    if (isPublicProvisioningEndpoint(req)) {
-      return next();
-    }
+      // VM provisioning endpoints use their own token auth (in request body)
+      if (isPublicProvisioningEndpoint(req)) {
+        return next();
+      }
 
-    return authenticate(req, res, next);
-  }));
+      return authenticate(req, res, next);
+    }),
+  );
 
   router.use('/resources', createResourcesRoutes({ repositories: repos.resources }));
   router.use('/workspace', createWorkspaceRoutes({ repositories: repos.workspace }));
@@ -147,7 +151,15 @@ function createApiV1Router({
   router.use('/secrets', createSecretsRoutes({ secretsService, authMiddleware }));
   router.use('/vm-ops', createVmOpsRoutes({ vmOpsService, authMiddleware }));
   router.use('/theme-assets', createThemeAssetsRoutes({ themeAssetsService }));
-  router.use('/', createProvisioningRoutes({ provisioningService, playbookService, s3Service: provisioningS3Service, env: runtimeEnv }));
+  router.use(
+    '/',
+    createProvisioningRoutes({
+      provisioningService,
+      playbookService,
+      s3Service: provisioningS3Service,
+      env: runtimeEnv,
+    }),
+  );
   router.use('/playbooks', createPlaybookRoutes({ playbookService }));
   if (ipqsService) {
     router.use('/ipqs', createIpqsRoutes({ ipqsService }));
@@ -162,11 +174,13 @@ function createApiV1Router({
       scope: 'api.v1.infra',
       methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
     }),
-    createInfraRoutes({ proxmoxLogin, proxmoxRequest, sshExec, env: runtimeEnv })
+    createInfraRoutes({ proxmoxLogin, proxmoxRequest, sshExec, env: runtimeEnv }),
   );
 
   router.use((req, res) => {
-    res.status(404).json(failure('NOT_FOUND', `Unknown API v1 endpoint: ${req.method} ${req.originalUrl}`));
+    res
+      .status(404)
+      .json(failure('NOT_FOUND', `Unknown API v1 endpoint: ${req.method} ${req.originalUrl}`));
   });
 
   return router;

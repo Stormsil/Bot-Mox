@@ -1,4 +1,3 @@
-import { Button, Spin } from 'antd';
 import {
   DownOutlined,
   LeftOutlined,
@@ -6,11 +5,12 @@ import {
   PlusSquareOutlined,
   RightOutlined,
 } from '@ant-design/icons';
+import { Button, Spin } from 'antd';
 import type { CSSProperties } from 'react';
+import styles from '../ResourceTree.module.css';
+import { getIcon } from './tree-utils';
 import type { BotStatus, TreeItem } from './types';
 import { statusConfig } from './types';
-import { getIcon } from './tree-utils';
-import styles from '../ResourceTree.module.css';
 
 function cx(classNames: string): string {
   return classNames
@@ -46,7 +46,11 @@ export function ResourceTreeToolbar({
         title={isCollapsed ? 'Show sidebar' : 'Hide sidebar'}
         aria-label={isCollapsed ? 'Show sidebar' : 'Hide sidebar'}
       >
-        {isCollapsed ? <RightOutlined className={cx('resource-tree-icon-16')} /> : <LeftOutlined className={cx('resource-tree-icon-16')} />}
+        {isCollapsed ? (
+          <RightOutlined className={cx('resource-tree-icon-16')} />
+        ) : (
+          <LeftOutlined className={cx('resource-tree-icon-16')} />
+        )}
       </button>
       <div className={cx('resource-tree-toolbar-right')}>
         {loading && (
@@ -63,7 +67,11 @@ export function ResourceTreeToolbar({
             aria-label={isAllExpanded ? 'Collapse all' : 'Expand all'}
             disabled={!hasExpandableKeys}
           >
-            {isAllExpanded ? <MinusSquareOutlined className={cx('resource-tree-icon-14')} /> : <PlusSquareOutlined className={cx('resource-tree-icon-14')} />}
+            {isAllExpanded ? (
+              <MinusSquareOutlined className={cx('resource-tree-icon-14')} />
+            ) : (
+              <PlusSquareOutlined className={cx('resource-tree-icon-14')} />
+            )}
           </button>
         </div>
       </div>
@@ -92,7 +100,13 @@ export function ResourceTreeFilters({
           size="small"
           className={cx('filters-toggle-btn')}
           onClick={onToggleShowFilters}
-          icon={showFilters ? <DownOutlined className={cx('resource-tree-icon-14')} /> : <RightOutlined className={cx('resource-tree-icon-14')} />}
+          icon={
+            showFilters ? (
+              <DownOutlined className={cx('resource-tree-icon-14')} />
+            ) : (
+              <RightOutlined className={cx('resource-tree-icon-14')} />
+            )
+          }
         >
           Bot filters
         </Button>
@@ -103,6 +117,7 @@ export function ResourceTreeFilters({
           {(Object.keys(statusConfig) as BotStatus[]).map((status) => (
             <button
               key={status}
+              type="button"
               className={cx(`filter-chip ${visibleStatuses.includes(status) ? 'active' : ''}`)}
               onClick={() => onToggleStatus(status)}
               style={{ '--status-color': statusConfig[status].color } as CSSProperties}
@@ -134,7 +149,9 @@ export function ResourceTreeCollapsedNav({
         <button
           key={item.key}
           type="button"
-          className={cx(`resource-tree-collapsed-item ${selectedRootKey === item.key ? 'active' : ''}`)}
+          className={cx(
+            `resource-tree-collapsed-item ${selectedRootKey === item.key ? 'active' : ''}`,
+          )}
           onClick={() => onRootClick(item)}
           title={item.title}
           aria-label={item.title}

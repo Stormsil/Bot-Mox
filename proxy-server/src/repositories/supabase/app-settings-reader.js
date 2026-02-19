@@ -6,7 +6,10 @@ function normalizeTenantId(input, fallback = 'default') {
 }
 
 function normalizePath(pathValue) {
-  const normalized = String(pathValue || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
+  const normalized = String(pathValue || '')
+    .trim()
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
   if (!normalized) return '';
   const segments = normalized.split('/').filter(Boolean);
   if (segments[0] === 'settings') {

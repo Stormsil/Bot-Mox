@@ -1,17 +1,17 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Layout, Space, Avatar, Dropdown, Typography, Switch, Tooltip } from 'antd';
 import {
-  UserOutlined,
-  DownOutlined,
-  SettingOutlined,
-  LogoutOutlined,
-  BulbOutlined,
-  MoonOutlined,
   ArrowLeftOutlined,
+  BulbOutlined,
+  DownOutlined,
+  LogoutOutlined,
+  MoonOutlined,
+  SettingOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { useGetIdentity, useLogout } from '@refinedev/core';
+import { Avatar, Dropdown, Layout, Space, Switch, Tooltip, Typography } from 'antd';
+import React, { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { subscribeBotById } from '../../services/botsApiService';
+import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
 import { useThemeRuntime } from '../../theme/themeRuntime';
 import styles from './Header.module.css';
 
@@ -108,7 +108,11 @@ export const Header: React.FC = () => {
   const isDark = themeMode === 'dark';
   const location = useLocation();
   const navigate = useNavigate();
-  const [botContext, setBotContext] = useState<BotBreadcrumbContext | null>(null);
+  const activeBotId = useMemo(() => {
+    const path = location.pathname;
+    return path.startsWith('/bot/') ? path.replace('/bot/', '') : '';
+  }, [location.pathname]);
+  const botBreadcrumbQuery = useBotByIdQuery(activeBotId);
 
   const menuItems = [
     {
@@ -125,62 +129,54 @@ export const Header: React.FC = () => {
   ];
 
   useEffect(() => {
-    const path = location.pathname;
-    if (!path.startsWith('/bot/')) {
-      const frameId = window.requestAnimationFrame(() => {
-        setBotContext(null);
-      });
-      return () => {
-        window.cancelAnimationFrame(frameId);
-      };
+    if (botBreadcrumbQuery.error) {
+      console.error('Error loading bot breadcrumb:', botBreadcrumbQuery.error);
     }
-    const botId = path.replace('/bot/', '');
-    const unsubscribe = subscribeBotById(
-      botId,
-      (bot) => {
-        if (!bot) {
-          setBotContext({
-            botId,
-            label: `Bot ${botId.slice(0, 8)}`,
-          });
-          return;
-        }
+  }, [botBreadcrumbQuery.error]);
 
-        const projectId = bot.project_id;
-        const projectLabel = projectId ? (projectLabelMap[projectId] || projectId) : undefined;
-        const status = computeBotStatus(bot);
-        const statusLabel = formatStatusLabel(status);
-        const displayName = bot.character?.name || bot.name || bot.vm?.name || 'Bot';
-        const vmName = bot.vm?.name || 'VM';
-        const label = `${displayName} (${vmName})_${botId.slice(0, 8)}`;
-        setBotContext({
-          botId,
-          projectId,
-          projectLabel,
-          statusLabel,
-          label,
-        });
-      },
-      (error) => {
-        console.error('Error loading bot breadcrumb:', error);
-        setBotContext({
-          botId,
-          label: `Bot ${botId.slice(0, 8)}`,
-        });
-      },
-      { intervalMs: 5000 }
-    );
+  const botContext = useMemo<BotBreadcrumbContext | null>(() => {
+    if (!activeBotId) {
+      return null;
+    }
 
-    return unsubscribe;
-  }, [location.pathname]);
+    const fallback: BotBreadcrumbContext = {
+      botId: activeBotId,
+      label: `Bot ${activeBotId.slice(0, 8)}`,
+    };
+
+    if (botBreadcrumbQuery.error) {
+      return fallback;
+    }
+
+    const bot = botBreadcrumbQuery.data;
+    if (!bot) {
+      return fallback;
+    }
+
+    const projectId = bot.project_id;
+    const projectLabel = projectId ? projectLabelMap[projectId] || projectId : undefined;
+    const status = computeBotStatus(bot);
+    const statusLabel = formatStatusLabel(status);
+    const displayName = bot.character?.name || bot.name || bot.vm?.name || 'Bot';
+    const vmName = bot.vm?.name || 'VM';
+    const label = `${displayName} (${vmName})_${activeBotId.slice(0, 8)}`;
+
+    return {
+      botId: activeBotId,
+      projectId,
+      projectLabel,
+      statusLabel,
+      label,
+    };
+  }, [activeBotId, botBreadcrumbQuery.data, botBreadcrumbQuery.error]);
 
   const breadcrumbs = useMemo<BreadcrumbItem[]>(() => {
     const path = location.pathname;
     const searchParams = new URLSearchParams(location.search);
     const tabKey = searchParams.get('tab') || undefined;
     const subTabKey = searchParams.get('subtab') || undefined;
-    let tabLabel = tabKey ? (tabLabelMap[tabKey] || undefined) : undefined;
-    let subTabLabel = subTabKey ? (subTabLabelMap[subTabKey] || subTabKey) : undefined;
+    let tabLabel = tabKey ? tabLabelMap[tabKey] || undefined : undefined;
+    let subTabLabel = subTabKey ? subTabLabelMap[subTabKey] || subTabKey : undefined;
 
     if (!tabLabel && tabKey && subTabLabelMap[tabKey]) {
       subTabLabel = subTabLabelMap[tabKey];
@@ -210,7 +206,10 @@ export const Header: React.FC = () => {
       const botId = path.replace('/bot/', '');
       const botLabel = botContext?.label || `Bot ${botId.slice(0, 8)}`;
       const projectCrumb = botContext?.projectId
-        ? { label: botContext.projectLabel || botContext.projectId, to: `/project/${botContext.projectId}` }
+        ? {
+            label: botContext.projectLabel || botContext.projectId,
+            to: `/project/${botContext.projectId}`,
+          }
         : null;
       const statusCrumb = botContext?.statusLabel ? { label: botContext.statusLabel } : null;
       return [
@@ -235,13 +234,28 @@ export const Header: React.FC = () => {
       return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'VM List' }];
     }
     if (path.startsWith('/vms/sites/proxmox') || path.startsWith('/vms/proxmox')) {
-      return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'Sites' }, { label: 'Proxmox' }];
+      return [
+        { label: 'Resources' },
+        { label: 'Virtual Machines' },
+        { label: 'Sites' },
+        { label: 'Proxmox' },
+      ];
     }
     if (path.startsWith('/vms/sites/tinyfm') || path.startsWith('/vms/tinyfm')) {
-      return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'Sites' }, { label: 'TinyFileManager' }];
+      return [
+        { label: 'Resources' },
+        { label: 'Virtual Machines' },
+        { label: 'Sites' },
+        { label: 'TinyFileManager' },
+      ];
     }
     if (path.startsWith('/vms/sites/syncthing') || path.startsWith('/vms/syncthing')) {
-      return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'Sites' }, { label: 'SyncThing' }];
+      return [
+        { label: 'Resources' },
+        { label: 'Virtual Machines' },
+        { label: 'Sites' },
+        { label: 'SyncThing' },
+      ];
     }
     if (path.startsWith('/vms/sites')) {
       return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'Sites' }];
@@ -294,12 +308,18 @@ export const Header: React.FC = () => {
                     <button
                       type="button"
                       className={cx('path-crumb')}
-                      onClick={() => navigate(crumb.to!)}
+                      onClick={() => {
+                        if (crumb.to) {
+                          navigate(crumb.to);
+                        }
+                      }}
                     >
                       {crumb.label}
                     </button>
                   ) : (
-                    <span className={cx(`path-crumb ${isLast ? 'current' : 'muted'}`)}>{crumb.label}</span>
+                    <span className={cx(`path-crumb ${isLast ? 'current' : 'muted'}`)}>
+                      {crumb.label}
+                    </span>
                   )}
                   {!isLast && <span className={cx('path-sep')}>/</span>}
                 </React.Fragment>
@@ -331,9 +351,7 @@ export const Header: React.FC = () => {
                 icon={<UserOutlined />}
                 style={{ backgroundColor: 'var(--boxmox-color-brand-primary)' }}
               />
-              <Text className={cx('user-email')}>
-                {user?.email || 'admin@botmox.local'}
-              </Text>
+              <Text className={cx('user-email')}>{user?.email || 'admin@botmox.local'}</Text>
               <DownOutlined className={cx('dropdown-icon')} />
             </Space>
           </Dropdown>

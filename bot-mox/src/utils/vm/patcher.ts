@@ -1,8 +1,8 @@
 // VM Config Patcher — TypeScript port of Patcher.cs
 // Patches QEMU VM config with spoofed hardware (SMBIOS, MAC, serial)
 
-import { generateSmbios } from './generateSmbios';
 import { generateMac } from './generateMac';
+import { generateSmbios } from './generateSmbios';
 import { generateSsdSerial } from './generateSsdSerial';
 
 export interface PatchChange {
@@ -34,7 +34,7 @@ export function extractVmNumber(name: string): number {
   const match = (name || '').match(/(\d+)$/);
   if (match) {
     const n = parseInt(match[1], 10);
-    if (!isNaN(n)) return n;
+    if (!Number.isNaN(n)) return n;
   }
   return 0;
 }
@@ -111,20 +111,20 @@ export function patchConfig(cfg: string, vmName: string, vmSeedId?: number): Pat
   const lines = cfg.replace(/\r\n/g, '\n').split('\n');
 
   // Extract old values for change tracking
-  const oldArgsLine = lines.find(l => l.trimStart().startsWith('args:')) || '';
+  const oldArgsLine = lines.find((l) => l.trimStart().startsWith('args:')) || '';
   const oldMac = extractFirst(lines, RX_MAC, 2);
   const oldVmbr = extractFirst(lines, RX_BRIDGE, 1);
-  const sata0Lines = lines.filter(l => l.trimStart().startsWith('sata0:'));
+  const sata0Lines = lines.filter((l) => l.trimStart().startsWith('sata0:'));
   const oldSn = extractFirst(sata0Lines, RX_SERIAL, 2);
   const oldPort = extractPort(oldArgsLine);
   const oldSmbiosIp = extractFirst([oldArgsLine], /type=11,value=([0-9.]+)/i, 1);
 
   // Remove old args line
-  const iArgs = lines.findIndex(l => l.trimStart().startsWith('args:'));
+  const iArgs = lines.findIndex((l) => l.trimStart().startsWith('args:'));
   if (iArgs >= 0) lines.splice(iArgs, 1);
 
   // Insert new args before balloon: line
-  let iBalloon = lines.findIndex(l => l.trimStart().startsWith('balloon:'));
+  let iBalloon = lines.findIndex((l) => l.trimStart().startsWith('balloon:'));
   if (iBalloon < 0) iBalloon = 0;
   lines.splice(iBalloon, 0, argsBlock);
 

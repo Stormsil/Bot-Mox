@@ -1,5 +1,5 @@
-import { AgentConfig, ProxmoxConfig, ProxmoxTargetConfig } from '../core/config-store';
-import { Logger } from '../core/logger';
+import type { AgentConfig, ProxmoxConfig, ProxmoxTargetConfig } from '../core/config-store';
+import type { Logger } from '../core/logger';
 import { executeProxmox } from './proxmox';
 import { resolveSshConfig } from './ssh';
 
@@ -8,9 +8,8 @@ import { resolveSshConfig } from './ssh';
 // ---------------------------------------------------------------------------
 
 function getProxmoxTargets(config: AgentConfig): Record<string, ProxmoxTargetConfig> {
-  const fromConfig = config.proxmoxTargets && typeof config.proxmoxTargets === 'object'
-    ? config.proxmoxTargets
-    : {};
+  const fromConfig =
+    config.proxmoxTargets && typeof config.proxmoxTargets === 'object' ? config.proxmoxTargets : {};
   return fromConfig;
 }
 
@@ -89,15 +88,17 @@ function listProxmoxTargets(config: AgentConfig): Array<{
     return [];
   }
 
-  return [{
-    id: 'legacy',
-    label: String(config.proxmox.url || '').replace(/^https?:\/\//, '') || 'legacy',
-    url: config.proxmox.url,
-    username: config.proxmox.username,
-    node: config.proxmox.node,
-    isActive: true,
-    sshConfigured: resolveSshConfig({}, config.proxmox).configured,
-  }];
+  return [
+    {
+      id: 'legacy',
+      label: String(config.proxmox.url || '').replace(/^https?:\/\//, '') || 'legacy',
+      url: config.proxmox.url,
+      username: config.proxmox.username,
+      node: config.proxmox.node,
+      isActive: true,
+      sshConfigured: resolveSshConfig({}, config.proxmox).configured,
+    },
+  ];
 }
 
 export async function executeCommand(

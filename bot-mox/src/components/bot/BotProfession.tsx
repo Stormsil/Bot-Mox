@@ -1,6 +1,6 @@
-import React from 'react';
-import { Card, Progress, Row, Col, Typography, Tag } from 'antd';
-import { ToolOutlined, FireOutlined, ExperimentOutlined, BuildOutlined } from '@ant-design/icons';
+import { BuildOutlined, ExperimentOutlined, FireOutlined, ToolOutlined } from '@ant-design/icons';
+import { Card, Col, Progress, Row, Tag, Typography } from 'antd';
+import type React from 'react';
 import type { Bot, ProfessionProgress } from '../../types';
 import styles from './BotProfession.module.css';
 
@@ -53,9 +53,10 @@ export const BotProfession: React.FC<BotProfessionProps> = () => {
     <div className={styles['bot-profession']}>
       <Row gutter={[16, 16]}>
         {professions.map((profession) => {
-          const percent = profession.max_skill_points > 0
-            ? Math.round((profession.skill_points / profession.max_skill_points) * 100)
-            : 0;
+          const percent =
+            profession.max_skill_points > 0
+              ? Math.round((profession.skill_points / profession.max_skill_points) * 100)
+              : 0;
           const color = getProfessionColor(profession.name);
           const isActive = profession.skill_points > 0;
 
@@ -83,14 +84,22 @@ export const BotProfession: React.FC<BotProfessionProps> = () => {
                       {getProfessionIcon(profession.name)}
                     </span>
                     <span className={styles['profession-name']}>{profession.name}</span>
-                    {isActive && <Tag color="success" className={styles['profession-status']}>Active</Tag>}
+                    {isActive && (
+                      <Tag color="success" className={styles['profession-status']}>
+                        Active
+                      </Tag>
+                    )}
                   </div>
                 }
               >
                 <div className={styles['profession-progress']}>
                   <div className={styles['skill-info']}>
-                    <Text strong className={styles['skill-text']}>{profession.skill_points}</Text>
-                    <Text type="secondary" className={styles['skill-text']}>/ {profession.max_skill_points}</Text>
+                    <Text strong className={styles['skill-text']}>
+                      {profession.skill_points}
+                    </Text>
+                    <Text type="secondary" className={styles['skill-text']}>
+                      / {profession.max_skill_points}
+                    </Text>
                   </div>
                   <Progress
                     percent={percent}

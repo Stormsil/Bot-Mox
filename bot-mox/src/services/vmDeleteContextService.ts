@@ -36,7 +36,9 @@ function toRecord(value: unknown): Record<string, unknown> {
 }
 
 function normalizeToken(value: unknown): string {
-  return String(value ?? '').trim().toLowerCase();
+  return String(value ?? '')
+    .trim()
+    .toLowerCase();
 }
 
 export async function fetchDeleteVmContext(): Promise<DeleteVmContext> {
@@ -81,7 +83,7 @@ export async function fetchDeleteVmContext(): Promise<DeleteVmContext> {
   const licenses: DeleteVmLicenseRecord[] = [];
   for (const license of licensesList) {
     const botIds = Array.isArray(license.bot_ids)
-      ? license.bot_ids.map(value => String(value || '').trim()).filter(Boolean)
+      ? license.bot_ids.map((value) => String(value || '').trim()).filter(Boolean)
       : [];
     if (botIds.length === 0) continue;
     licenses.push({ id: license.id, botIds });

@@ -1,4 +1,4 @@
-import { apiGet, buildQueryString } from './apiClient';
+import { getWowNamesViaContract } from '../providers/wow-names-contract-client';
 
 interface WowNamesPayload {
   names?: unknown;
@@ -16,7 +16,9 @@ export interface WowNamesResult {
 
 function normalizeWowNamesPayload(payload: WowNamesPayload): WowNamesResult {
   const names = Array.isArray(payload.names)
-    ? payload.names.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    ? payload.names.filter(
+        (item): item is string => typeof item === 'string' && item.trim().length > 0,
+      )
     : [];
 
   return {
@@ -27,12 +29,12 @@ function normalizeWowNamesPayload(payload: WowNamesPayload): WowNamesResult {
   };
 }
 
-export async function getWowNames(options: { batches?: number; count?: number } = {}): Promise<WowNamesResult> {
-  const query = buildQueryString({
+export async function getWowNames(
+  options: { batches?: number; count?: number } = {},
+): Promise<WowNamesResult> {
+  const response = await getWowNamesViaContract({
     batches: options.batches,
     count: options.count,
   });
-
-  const response = await apiGet<WowNamesPayload>(`/api/v1/wow-names${query}`);
   return normalizeWowNamesPayload(response.data || {});
 }

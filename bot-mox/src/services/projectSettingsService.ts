@@ -1,5 +1,5 @@
+import { uiLogger } from '../observability/uiLogger';
 import { apiGet, apiPatch, apiPut, createPollingSubscription } from './apiClient';
-import { uiLogger } from '../observability/uiLogger'
 
 export const PROJECT_SETTINGS_PATH = 'settings/projects';
 
@@ -88,7 +88,7 @@ export const getProjectSettings = async (): Promise<Record<string, ProjectSettin
 
 export const subscribeToProjectSettings = (
   callback: (projects: Record<string, ProjectSettings>) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): (() => void) => {
   return createPollingSubscription(getProjectSettings, callback, onError, {
     key: 'settings:projects',
@@ -99,7 +99,7 @@ export const subscribeToProjectSettings = (
 
 export const upsertProjectSettings = async (
   projectId: string,
-  payload: Partial<ProjectSettings>
+  payload: Partial<ProjectSettings>,
 ): Promise<void> => {
   const id = projectId.trim();
   if (!id) {

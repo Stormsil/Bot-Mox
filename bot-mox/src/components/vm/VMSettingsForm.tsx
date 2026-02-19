@@ -1,9 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
 import { message, Tabs } from 'antd';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { getVMConfig } from '../../entities/vm/api/vmReadFacade';
+import { getSelectedProxmoxTargetNode } from '../../entities/vm/api/vmSelectionFacade';
+import {
+  getVMSettings,
+  stripPasswords,
+  updateVMSettings,
+} from '../../entities/vm/api/vmSettingsFacade';
 import type { VMGeneratorSettings, VMStorageOption } from '../../types';
-import { getVMSettings, updateVMSettings, stripPasswords } from '../../services/vmSettingsService';
-import { getVMConfig } from '../../services/vmService';
-import { getSelectedProxmoxTargetNode } from '../../services/vmOpsService';
+import type { TemplateSyncState, TemplateVmSummary } from './settingsForm';
 import {
   normalizeTemplateCores,
   normalizeTemplateMemoryMb,
@@ -11,10 +17,9 @@ import {
   SettingsActions,
   updateSettingsByPath,
 } from './settingsForm';
-import type { TemplateSyncState, TemplateVmSummary } from './settingsForm';
+import { PlaybookTab } from './settingsForm/PlaybookTab';
 import { ProxmoxTab } from './settingsForm/ProxmoxTab';
 import { UnattendTab } from './settingsForm/UnattendTab';
-import { PlaybookTab } from './settingsForm/PlaybookTab';
 import styles from './VMSettingsForm.module.css';
 
 const TEMPLATE_VOLUME_KEY = /^(?:ide|sata|scsi|virtio)\d+$/i;
@@ -63,7 +68,7 @@ const buildTemplateSummary = (params: {
   const diskBytes = diskSizes.length > 0 ? Math.max(...diskSizes) : null;
 
   let display: string | null = null;
-  const vga = params.config['vga'];
+  const vga = params.config.vga;
   if (typeof vga === 'string' && vga.trim()) {
     display = vga.trim();
   }
@@ -82,9 +87,7 @@ interface VMSettingsFormProps {
   storageOptions?: VMStorageOption[];
 }
 
-export const VMSettingsForm: React.FC<VMSettingsFormProps> = ({
-  storageOptions = [],
-}) => {
+export const VMSettingsForm: React.FC<VMSettingsFormProps> = ({ storageOptions = [] }) => {
   const [settings, setSettings] = useState<VMGeneratorSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

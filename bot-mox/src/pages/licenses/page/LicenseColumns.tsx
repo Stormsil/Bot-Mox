@@ -1,19 +1,18 @@
-import React from 'react';
 import {
-  PlusCircleOutlined,
-  RobotOutlined,
-  EditOutlined,
   CopyOutlined,
   DeleteOutlined,
+  EditOutlined,
+  PlusCircleOutlined,
+  RobotOutlined,
 } from '@ant-design/icons';
-import { Button, Popconfirm, Popover, Space, Tag, Typography } from 'antd';
 import type { TableColumnsType } from 'antd';
+import { Button, Popconfirm, Popover, Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { TableActionButton, TableActionGroup } from '../../../components/ui/TableActionButton';
 import type { LicenseWithBots } from '../../../types';
-import { ONE_DAY_MS, isExpired, isExpiringSoon } from './helpers';
-import type { LicenseColumnsHandlers } from './types';
 import styles from '../LicensesPage.module.css';
+import { isExpired, isExpiringSoon, ONE_DAY_MS } from './helpers';
+import type { LicenseColumnsHandlers } from './types';
 
 const { Text } = Typography;
 
@@ -24,12 +23,15 @@ interface BuildLicenseColumnsOptions {
 
 const renderBotsPopover = (
   record: LicenseWithBots,
-  onRemoveBot: LicenseColumnsHandlers['onRemoveBot']
+  onRemoveBot: LicenseColumnsHandlers['onRemoveBot'],
 ) => (
   <div style={{ maxWidth: 300, maxHeight: 400, overflow: 'auto' }}>
     <Space direction="vertical" size="small" style={{ width: '100%' }}>
       {record.botDetails?.map((bot, index) => (
-        <div key={bot.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
+        <div
+          key={bot.id}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}
+        >
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <RobotOutlined style={{ color: 'var(--boxmox-color-brand-primary)' }} />
@@ -79,7 +81,11 @@ export const buildLicenseColumns = ({
         color = 'red';
       }
 
-      return <Tag color={color} className={styles.statusTag}>{isExpired(record.expires_at, currentTime) ? 'expired' : status}</Tag>;
+      return (
+        <Tag color={color} className={styles.statusTag}>
+          {isExpired(record.expires_at, currentTime) ? 'expired' : status}
+        </Tag>
+      );
     },
   },
   {
@@ -90,7 +96,11 @@ export const buildLicenseColumns = ({
     onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (key: string, record) => (
       <Space direction="vertical" size={0}>
-        <Text copyable={{ text: key, icon: <CopyOutlined /> }} className={styles.licenseKey} style={{ fontSize: '12px' }}>
+        <Text
+          copyable={{ text: key, icon: <CopyOutlined /> }}
+          className={styles.licenseKey}
+          style={{ fontSize: '12px' }}
+        >
           {key}
         </Text>
         {record.type && (
@@ -112,19 +122,29 @@ export const buildLicenseColumns = ({
 
       if (botCount === 0) {
         return (
-          <Button size="small" type="dashed" icon={<PlusCircleOutlined />} onClick={() => handlers.onAddBot(record)}>
+          <Button
+            size="small"
+            type="dashed"
+            icon={<PlusCircleOutlined />}
+            onClick={() => handlers.onAddBot(record)}
+          >
             Add Bot
           </Button>
         );
       }
 
       if (botCount === 1) {
-        const bot = record.botDetails![0];
+        const bot = record.botDetails?.[0];
+        if (!bot) {
+          return null;
+        }
         return (
           <Space align="start">
             <Space direction="vertical" size={0}>
               <Text style={{ fontSize: '12px', fontWeight: 500 }}>
-                <RobotOutlined style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }} />
+                <RobotOutlined
+                  style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }}
+                />
                 {bot.id}
               </Text>
               <Text type="secondary" style={{ fontSize: '11px' }}>
@@ -133,16 +153,28 @@ export const buildLicenseColumns = ({
               </Text>
             </Space>
             <Space>
-              <TableActionButton danger onClick={() => void handlers.onRemoveBot(record, 0)} tooltip="Remove bot">
+              <TableActionButton
+                danger
+                onClick={() => void handlers.onRemoveBot(record, 0)}
+                tooltip="Remove bot"
+              >
                 ×
               </TableActionButton>
-              <Button size="small" type="dashed" icon={<PlusCircleOutlined />} onClick={() => handlers.onAddBot(record)} />
+              <Button
+                size="small"
+                type="dashed"
+                icon={<PlusCircleOutlined />}
+                onClick={() => handlers.onAddBot(record)}
+              />
             </Space>
           </Space>
         );
       }
 
-      const firstBot = record.botDetails![0];
+      const firstBot = record.botDetails?.[0];
+      if (!firstBot) {
+        return null;
+      }
       return (
         <Space direction="vertical" size={0}>
           <Space>
@@ -156,7 +188,12 @@ export const buildLicenseColumns = ({
                 {botCount} bots
               </Button>
             </Popover>
-            <Button size="small" type="dashed" icon={<PlusCircleOutlined />} onClick={() => handlers.onAddBot(record)} />
+            <Button
+              size="small"
+              type="dashed"
+              icon={<PlusCircleOutlined />}
+              onClick={() => handlers.onAddBot(record)}
+            />
           </Space>
           <Text type="secondary" style={{ fontSize: '11px' }}>
             {firstBot.characterName || firstBot.name}
@@ -203,11 +240,7 @@ export const buildLicenseColumns = ({
       const daysLeft = Math.ceil((record.expires_at - currentTime) / ONE_DAY_MS);
 
       if (expired) {
-        return (
-          <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>
-            0
-          </Text>
-        );
+        return <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>0</Text>;
       }
 
       let color = '#52c41a';
@@ -217,11 +250,7 @@ export const buildLicenseColumns = ({
         color = '#faad14';
       }
 
-      return (
-        <Text style={{ color, fontSize: '14px', fontWeight: 600 }}>
-          {daysLeft}
-        </Text>
-      );
+      return <Text style={{ color, fontSize: '14px', fontWeight: 600 }}>{daysLeft}</Text>;
     },
   },
   {
@@ -232,8 +261,16 @@ export const buildLicenseColumns = ({
     onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (_value, record) => (
       <TableActionGroup>
-        <TableActionButton icon={<EditOutlined />} onClick={() => handlers.onEdit(record)} tooltip="Edit" />
-        <TableActionButton icon={<CopyOutlined />} onClick={() => handlers.onCopyKey(record.key)} tooltip="Copy Key" />
+        <TableActionButton
+          icon={<EditOutlined />}
+          onClick={() => handlers.onEdit(record)}
+          tooltip="Edit"
+        />
+        <TableActionButton
+          icon={<CopyOutlined />}
+          onClick={() => handlers.onCopyKey(record.key)}
+          tooltip="Copy Key"
+        />
         <Popconfirm
           title="Delete License?"
           description="Are you sure you want to delete this license?"

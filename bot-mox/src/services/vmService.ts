@@ -1,13 +1,13 @@
 import type {
-  ProxmoxVM,
-  ProxmoxClusterResource,
   CloneParams,
+  ProxmoxClusterResource,
   ProxmoxTaskStatus,
-  SSHResult,
+  ProxmoxVM,
   ProxmoxVMConfig,
+  SSHResult,
   VMConfigUpdateParams,
 } from '../types';
-import { apiPost, ApiClientError } from './apiClient';
+import { ApiClientError, apiPost } from './apiClient';
 import { executeVmOps } from './vmOpsService';
 
 export interface ProxmoxTargetInfo {
@@ -51,7 +51,7 @@ let cachedSshStatus: { expiresAtMs: number; value: SshConnectionStatus } | null 
 // ---------------------------------------------------------------------------
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function isRunningStatus(status: unknown): boolean {
@@ -125,7 +125,10 @@ export async function getProxmoxConnectionSnapshot(): Promise<ProxmoxConnectionS
       proxmoxConnected: Boolean(result?.connected),
     };
   } catch (error) {
-    if (error instanceof ApiClientError && AGENT_CONNECTIVITY_ERROR_CODES.has(String(error.code || '').trim())) {
+    if (
+      error instanceof ApiClientError &&
+      AGENT_CONNECTIVITY_ERROR_CODES.has(String(error.code || '').trim())
+    ) {
       return {
         agentOnline: false,
         proxmoxConnected: false,
@@ -167,7 +170,7 @@ export async function listVMs(node = 'h1'): Promise<ProxmoxVM[]> {
 }
 
 export async function getClusterResources(
-  resourceType: string = 'storage'
+  resourceType: string = 'storage',
 ): Promise<ProxmoxClusterResource[]> {
   const result = await executeVmOps<ProxmoxClusterResource[]>({
     type: 'proxmox',
@@ -235,7 +238,7 @@ export async function pollTaskStatus(upid: unknown, node = 'h1'): Promise<Proxmo
 export async function waitForTask(
   upid: unknown,
   node = 'h1',
-  options: { timeoutMs?: number; intervalMs?: number } = {}
+  options: { timeoutMs?: number; intervalMs?: number } = {},
 ): Promise<ProxmoxTaskStatus> {
   const normalizedUpid = extractUpid(upid);
   if (!normalizedUpid) {
@@ -279,7 +282,7 @@ export interface DeleteVMOptions {
 export async function deleteVM(
   vmid: number,
   node = 'h1',
-  options: DeleteVMOptions = {}
+  options: DeleteVMOptions = {},
 ): Promise<{ upid: string | null }> {
   const result = await executeVmOps<{ upid?: string }>({
     type: 'proxmox',
@@ -308,7 +311,7 @@ export async function waitForVmStatus(
   vmid: number,
   node = 'h1',
   desiredStatus = 'running',
-  options: { timeoutMs?: number; intervalMs?: number } = {}
+  options: { timeoutMs?: number; intervalMs?: number } = {},
 ): Promise<ProxmoxVM> {
   const timeoutMs = Math.max(1_000, Math.trunc(options.timeoutMs ?? 120_000));
   const intervalMs = Math.max(250, Math.trunc(options.intervalMs ?? 1_000));
@@ -324,7 +327,7 @@ export async function waitForVmPresence(
   vmid: number,
   node = 'h1',
   exists = true,
-  options: { timeoutMs?: number; intervalMs?: number } = {}
+  options: { timeoutMs?: number; intervalMs?: number } = {},
 ): Promise<{ vmid: number; exists: boolean }> {
   const timeoutMs = Math.max(1_000, Math.trunc(options.timeoutMs ?? 45_000));
   const intervalMs = Math.max(250, Math.trunc(options.intervalMs ?? 1_000));
@@ -380,14 +383,16 @@ async function waitUntilVmRunning(
   vmid: number,
   node: string,
   timeoutMs: number,
-  pollIntervalMs: number
+  pollIntervalMs: number,
 ): Promise<void> {
   const status = await waitForVmStatus(vmid, node, 'running', {
     timeoutMs,
     intervalMs: pollIntervalMs,
   });
   if (!isRunningStatus(status.status)) {
-    throw new Error(`VM ${vmid} did not reach running state within ${Math.ceil(timeoutMs / 1000)}s`);
+    throw new Error(
+      `VM ${vmid} did not reach running state within ${Math.ceil(timeoutMs / 1000)}s`,
+    );
   }
 }
 
@@ -396,7 +401,7 @@ async function waitForTaskCompletion(
   node: string,
   timeoutMs: number,
   pollIntervalMs: number,
-  taskLabel: string
+  taskLabel: string,
 ): Promise<void> {
   const status = await waitForTask(upid, node, {
     timeoutMs,
@@ -410,9 +415,10 @@ async function waitForTaskCompletion(
 
 async function runSendKeySpam(
   vmid: number,
-  options: Required<Pick<StartAndSendKeyOptions,
-  'node' | 'key' | 'repeatCount' | 'intervalMs' | 'startupDelayMs'>>,
-  signal: { cancelled: boolean }
+  options: Required<
+    Pick<StartAndSendKeyOptions, 'node' | 'key' | 'repeatCount' | 'intervalMs' | 'startupDelayMs'>
+  >,
+  signal: { cancelled: boolean },
 ): Promise<SendKeySpamResult> {
   if (options.startupDelayMs > 0) {
     await sleep(options.startupDelayMs);
@@ -445,8 +451,18 @@ async function runSendKeySpam(
 
 async function runStartAndSendKeyForVm(
   vmid: number,
-  options: Required<Pick<StartAndSendKeyOptions,
-  'node' | 'key' | 'repeatCount' | 'intervalMs' | 'startupDelayMs' | 'waitTimeoutMs' | 'pollIntervalMs'>>
+  options: Required<
+    Pick<
+      StartAndSendKeyOptions,
+      | 'node'
+      | 'key'
+      | 'repeatCount'
+      | 'intervalMs'
+      | 'startupDelayMs'
+      | 'waitTimeoutMs'
+      | 'pollIntervalMs'
+    >
+  >,
 ): Promise<void> {
   let isAlreadyRunning = false;
   try {
@@ -479,7 +495,7 @@ async function runStartAndSendKeyForVm(
           options.node,
           Math.max(options.waitTimeoutMs, 180000),
           options.pollIntervalMs,
-          `VM ${vmid} start task`
+          `VM ${vmid} start task`,
         );
       }
     }
@@ -490,7 +506,7 @@ async function runStartAndSendKeyForVm(
     if (spamResult.sent === 0) {
       const lastErrorSuffix = spamResult.lastError ? ` Last error: ${spamResult.lastError}` : '';
       throw new Error(
-        `VM ${vmid} did not accept key "${options.key}" during ${spamResult.attempts} attempts.${lastErrorSuffix}`
+        `VM ${vmid} did not accept key "${options.key}" during ${spamResult.attempts} attempts.${lastErrorSuffix}`,
       );
     }
   } catch (error) {
@@ -502,13 +518,11 @@ async function runStartAndSendKeyForVm(
 
 export async function startAndSendKeyBatch(
   vmIds: number[],
-  options: StartAndSendKeyOptions = {}
+  options: StartAndSendKeyOptions = {},
 ): Promise<StartAndSendKeyBatchResult> {
-  const normalizedVmIds = Array.from(new Set(
-    (vmIds || [])
-      .map(id => Number(id))
-      .filter(id => Number.isInteger(id) && id > 0)
-  ));
+  const normalizedVmIds = Array.from(
+    new Set((vmIds || []).map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0)),
+  );
 
   if (normalizedVmIds.length === 0) {
     throw new Error('No VM IDs provided');
@@ -533,10 +547,10 @@ export async function startAndSendKeyBatch(
         const message = error instanceof Error ? error.message : String(error);
         return { vmid, success: false, error: message };
       }
-    })
+    }),
   );
 
-  const ok = results.filter(item => item.success).length;
+  const ok = results.filter((item) => item.success).length;
   return {
     total: results.length,
     ok,
@@ -554,7 +568,9 @@ export async function getVMConfig(vmid: number, node = 'h1'): Promise<ProxmoxVMC
   });
 }
 
-export async function updateVMConfig(params: VMConfigUpdateParams): Promise<{ upid: string | null }> {
+export async function updateVMConfig(
+  params: VMConfigUpdateParams,
+): Promise<{ upid: string | null }> {
   const result = await executeVmOps<{ upid?: string }>({
     type: 'proxmox',
     action: 'update-config',
@@ -585,7 +601,9 @@ export async function testSSHConnection(): Promise<boolean> {
   return status.connected;
 }
 
-export async function getSshConnectionStatus(options: { forceRefresh?: boolean } = {}): Promise<SshConnectionStatus> {
+export async function getSshConnectionStatus(
+  options: { forceRefresh?: boolean } = {},
+): Promise<SshConnectionStatus> {
   const forceRefresh = options.forceRefresh === true;
   if (!forceRefresh && cachedSshStatus && cachedSshStatus.expiresAtMs > Date.now()) {
     return cachedSshStatus.value;
@@ -701,9 +719,11 @@ export interface VmResourceRegistrationPayload {
 }
 
 export async function registerVmResource(
-  payload: VmResourceRegistrationPayload
+  payload: VmResourceRegistrationPayload,
 ): Promise<{ vm_uuid: string; user_id: string; status: string }> {
-  const vmUuid = String(payload.vmUuid || '').trim().toLowerCase();
+  const vmUuid = String(payload.vmUuid || '')
+    .trim()
+    .toLowerCase();
   if (!vmUuid) {
     throw new Error('vmUuid is required for VM resource registration');
   }
@@ -711,13 +731,17 @@ export async function registerVmResource(
   const vmName = String(payload.vmName || '').trim();
   const projectId = String(payload.projectId || '').trim();
 
-  const response = await apiPost<{ vm_uuid: string; user_id: string; status: string }>('/api/v1/vm/register', {
-    vm_uuid: vmUuid,
-    vm_name: vmName || undefined,
-    project_id: projectId || undefined,
-    status: 'active',
-    metadata: payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : undefined,
-  });
+  const response = await apiPost<{ vm_uuid: string; user_id: string; status: string }>(
+    '/api/v1/vm/register',
+    {
+      vm_uuid: vmUuid,
+      vm_name: vmName || undefined,
+      project_id: projectId || undefined,
+      status: 'active',
+      metadata:
+        payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : undefined,
+    },
+  );
 
   return response.data;
 }

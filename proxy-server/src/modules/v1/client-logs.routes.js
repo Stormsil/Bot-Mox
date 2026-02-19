@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const express = require('express');
 const { z } = require('zod');
 const { success, failure } = require('../../contracts/envelope');
@@ -57,13 +57,17 @@ function trimTo(value, max) {
 }
 
 function normalizeTraceId(value) {
-  const normalized = String(value || '').trim().toLowerCase();
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
   if (!/^[a-f0-9]{32}$/.test(normalized)) return null;
   return normalized;
 }
 
 function normalizeSpanId(value) {
-  const normalized = String(value || '').trim().toLowerCase();
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
   if (!/^[a-f0-9]{16}$/.test(normalized)) return null;
   return normalized;
 }
@@ -71,7 +75,9 @@ function normalizeSpanId(value) {
 function normalizeCorrelationId(value) {
   const normalized = String(value || '').trim();
   if (!normalized) return null;
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) {
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)
+  ) {
     return null;
   }
   return normalized.toLowerCase();
@@ -190,7 +196,7 @@ function createClientLogsRoutes({ authMiddleware }) {
         const hash = crypto.createHash('sha256').update(ip).digest('hex').slice(0, 16);
         return `ip:${hash}`;
       },
-    })
+    }),
   );
 
   router.post('/', (req, res) => {
@@ -226,7 +232,7 @@ function createClientLogsRoutes({ authMiddleware }) {
           error: event.error,
           extra: event.extra,
         },
-        event.message
+        event.message,
       );
       accepted += 1;
     }
@@ -240,4 +246,3 @@ function createClientLogsRoutes({ authMiddleware }) {
 module.exports = {
   createClientLogsRoutes,
 };
-

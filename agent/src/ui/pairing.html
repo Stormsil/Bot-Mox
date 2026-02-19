@@ -556,7 +556,7 @@
       state.targetsById = {};
       const normalizedTargets = Array.isArray(targets) ? targets : [];
       normalizedTargets.forEach((target) => {
-        const id = normalizeTargetId(target && target.id);
+        const id = normalizeTargetId(target?.id);
         if (!id) return;
         state.targetsById[id] = {
           id,
@@ -664,7 +664,7 @@
       };
     }
 
-    function parsePairingInput(rawInput, fallbackServerUrl) {
+    function _parsePairingInput(rawInput, fallbackServerUrl) {
       const raw = String(rawInput || '').trim();
       const normalizedFallbackServer = normalizeUrl(fallbackServerUrl || '');
 
@@ -737,7 +737,7 @@
       return { pairingCode: raw, serverUrl: normalizedFallbackServer, proxmox: null };
     }
 
-    function pickFieldValue(currentValue, hintValue, defaultValue) {
+    function _pickFieldValue(currentValue, hintValue, defaultValue) {
       const current = String(currentValue || '').trim();
       const hint = String(hintValue || '').trim();
       const fallback = String(defaultValue || '').trim();
@@ -782,7 +782,7 @@
       const selectedTarget = selectedTargetId ? state.targetsById[selectedTargetId] : null;
       hint.textContent = hasTypedPassword
         ? 'Password is visible here and will be stored encrypted locally.'
-        : selectedTarget && selectedTarget.hasPassword
+        : selectedTarget?.hasPassword
           ? 'Saved password exists for this computer. It can be loaded and edited here.'
           : 'Password is stored encrypted on this device.';
       hint.className = 'hint';
@@ -847,13 +847,13 @@
           proxmoxNode: String($('proxmoxNode').value || '').trim(),
         });
 
-        if (result && result.success) {
+        if (result?.success) {
           setMessage('Proxmox connection OK.', 'success');
           refreshPasswordHint();
           return;
         }
 
-        setMessage(toFriendlyErrorMessage((result && result.error) || 'Proxmox connection failed'), 'error');
+        setMessage(toFriendlyErrorMessage((result?.error) || 'Proxmox connection failed'), 'error');
       } catch (err) {
         setMessage(toFriendlyErrorMessage(String(err)), 'error');
       } finally {
@@ -877,7 +877,7 @@
           proxmoxNode: String($('proxmoxNode').value || '').trim(),
         });
 
-        if (result && result.success) {
+        if (result?.success) {
           const cfg = await window.agentApi.getConfig();
           setTargets(cfg.proxmoxTargets || [], cfg.activeTargetId || '');
           if (result.targetId && state.targetsById[result.targetId]) {
@@ -894,7 +894,7 @@
           return;
         }
 
-        setMessage(toFriendlyErrorMessage((result && result.error) || 'Failed to save computer'), 'error');
+        setMessage(toFriendlyErrorMessage((result?.error) || 'Failed to save computer'), 'error');
       } catch (err) {
         setMessage(toFriendlyErrorMessage(String(err)), 'error');
       } finally {
@@ -939,12 +939,12 @@
           proxmoxPassword: data.proxmoxPassword,
           proxmoxNode: data.proxmoxNode,
         });
-        if (result && result.success) {
+        if (result?.success) {
           setMessage('Paired successfully. Agent is starting...', 'success');
           return;
         }
 
-        setMessage(toFriendlyErrorMessage((result && result.error) || 'Pairing failed'), 'error');
+        setMessage(toFriendlyErrorMessage((result?.error) || 'Pairing failed'), 'error');
       } catch (err) {
         setMessage(toFriendlyErrorMessage(String(err)), 'error');
       } finally {

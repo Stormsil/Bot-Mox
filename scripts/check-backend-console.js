@@ -1,8 +1,8 @@
 // Fail the build if proxy-server/src contains console.* usage (enforce structured logging).
 // Allow a small, explicit allowlist for bootstrap fallbacks.
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const repoRoot = path.join(__dirname, '..');
 const backendRoot = path.join(repoRoot, 'proxy-server', 'src');
@@ -43,7 +43,10 @@ function main() {
 
   if (offenders.length > 0) {
     // eslint-disable-next-line no-console
-    console.error('[check-backend-console] console.* usage found. Use observability/logger instead:\n' + offenders.join('\n'));
+    console.error(
+      '[check-backend-console] console.* usage found. Use observability/logger instead:\n' +
+        offenders.join('\n'),
+    );
     process.exit(1);
   }
 
@@ -52,4 +55,3 @@ function main() {
 }
 
 main();
-

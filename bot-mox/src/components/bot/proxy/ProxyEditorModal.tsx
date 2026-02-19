@@ -1,12 +1,12 @@
-import React from 'react';
-import { DatePicker, Form, Input, Modal, Spin, Typography } from 'antd';
 import type { FormInstance } from 'antd';
+import { DatePicker, Form, Input, Modal, Spin, Typography } from 'antd';
+import type React from 'react';
 import type { IPQSResponse } from '../../../types';
 import type { ParsedProxy } from '../../../utils/proxyUtils';
 import { ProxyIpqsResults } from './ProxyIpqsResults';
 import { ProxyParsedAlert } from './ProxyParsedAlert';
-import type { ProxyModalFormValues } from './types';
 import styles from './proxy.module.css';
+import type { ProxyModalFormValues } from './types';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -45,7 +45,9 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
   onTogglePassword,
 }) => (
   <Modal
-    title={<span className={styles['proxy-modal-title']}>{editing ? 'Edit Proxy' : 'Add Proxy'}</span>}
+    title={
+      <span className={styles['proxy-modal-title']}>{editing ? 'Edit Proxy' : 'Add Proxy'}</span>
+    }
     open={open}
     onOk={onSubmit}
     onCancel={onCancel}
@@ -65,7 +67,10 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
         label="Proxy String"
         required
         validateStatus={parseError ? 'error' : parsedProxy ? 'success' : ''}
-        help={parseError || (parsedProxy ? 'Valid proxy format detected' : 'Format: ip:port:login:password')}
+        help={
+          parseError ||
+          (parsedProxy ? 'Valid proxy format detected' : 'Format: ip:port:login:password')
+        }
       >
         <TextArea
           placeholder="Enter proxy string (ip:port:login:password)"
@@ -83,7 +88,13 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
         </div>
       )}
 
-      {parsedProxy && <ProxyParsedAlert parsedProxy={parsedProxy} showPassword={showPassword} onTogglePassword={onTogglePassword} />}
+      {parsedProxy && (
+        <ProxyParsedAlert
+          parsedProxy={parsedProxy}
+          showPassword={showPassword}
+          onTogglePassword={onTogglePassword}
+        />
+      )}
 
       <ProxyIpqsResults ipqsData={ipqsData} />
 

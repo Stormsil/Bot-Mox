@@ -1,14 +1,14 @@
-import React from 'react';
-import { Segmented } from 'antd';
 import {
-  InfoCircleOutlined,
   AppstoreOutlined,
-  EyeOutlined,
-  SettingOutlined,
-  ExclamationCircleOutlined,
-  UnorderedListOutlined,
   DesktopOutlined,
+  ExclamationCircleOutlined,
+  EyeOutlined,
+  InfoCircleOutlined,
+  SettingOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons';
+import { Segmented } from 'antd';
+import type React from 'react';
 import styles from './ContentPanel.module.css';
 
 function cx(classNames: string): string {
@@ -19,7 +19,14 @@ function cx(classNames: string): string {
     .join(' ');
 }
 
-export type TabType = 'summary' | 'monitoring' | 'configure' | 'resources' | 'vmInfo' | 'transactions' | 'gold_price';
+export type TabType =
+  | 'summary'
+  | 'monitoring'
+  | 'configure'
+  | 'resources'
+  | 'vmInfo'
+  | 'transactions'
+  | 'gold_price';
 
 interface ContentPanelProps {
   activeTab?: TabType;
@@ -35,10 +42,26 @@ type TabOption = { value: TabType; label: React.ReactNode };
 
 // Табы для бота (новая структура)
 const botTabMeta: Array<{ key: TabType; icon: React.ReactNode; label: string }> = [
-  { key: 'summary', icon: <InfoCircleOutlined className={cx('tab-label-icon')} />, label: 'Summary' },
-  { key: 'monitoring', icon: <EyeOutlined className={cx('tab-label-icon')} />, label: 'Monitoring' },
-  { key: 'configure', icon: <SettingOutlined className={cx('tab-label-icon')} />, label: 'Configure' },
-  { key: 'resources', icon: <AppstoreOutlined className={cx('tab-label-icon')} />, label: 'Resources' },
+  {
+    key: 'summary',
+    icon: <InfoCircleOutlined className={cx('tab-label-icon')} />,
+    label: 'Summary',
+  },
+  {
+    key: 'monitoring',
+    icon: <EyeOutlined className={cx('tab-label-icon')} />,
+    label: 'Monitoring',
+  },
+  {
+    key: 'configure',
+    icon: <SettingOutlined className={cx('tab-label-icon')} />,
+    label: 'Configure',
+  },
+  {
+    key: 'resources',
+    icon: <AppstoreOutlined className={cx('tab-label-icon')} />,
+    label: 'Resources',
+  },
   { key: 'vmInfo', icon: <DesktopOutlined className={cx('tab-label-icon')} />, label: 'VM Info' },
 ];
 
@@ -148,9 +171,10 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   hideTabs = false,
 }) => {
   const baseTabs = tabsMap[type] || datacenterTabs;
-  const tabs = type === 'bot' && incompleteTabs.length > 0
-    ? createBotTabsWithWarnings(incompleteTabs)
-    : baseTabs;
+  const tabs =
+    type === 'bot' && incompleteTabs.length > 0
+      ? createBotTabsWithWarnings(incompleteTabs)
+      : baseTabs;
 
   const handleTabChange = (key: string) => {
     onTabChange?.(key as TabType);

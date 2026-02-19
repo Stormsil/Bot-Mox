@@ -1,6 +1,10 @@
 const express = require('express');
 const { success, failure } = require('../../contracts/envelope');
-const { idParamSchema, themeAssetCompleteSchema, themeAssetPresignUploadSchema } = require('../../contracts/schemas');
+const {
+  idParamSchema,
+  themeAssetCompleteSchema,
+  themeAssetPresignUploadSchema,
+} = require('../../contracts/schemas');
 const { asyncHandler } = require('./helpers');
 const { ThemeAssetsServiceError } = require('../theme-assets/service');
 
@@ -36,7 +40,7 @@ function createThemeAssetsRoutes({ themeAssetsService }) {
         tenantId: auth.tenant_id,
       });
       return res.json(success(data));
-    })
+    }),
   );
 
   router.post(
@@ -44,7 +48,9 @@ function createThemeAssetsRoutes({ themeAssetsService }) {
     withThemeAssetErrors(async (req, res) => {
       const parsedBody = themeAssetPresignUploadSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -57,7 +63,7 @@ function createThemeAssetsRoutes({ themeAssetsService }) {
       });
 
       return res.status(201).json(success(data));
-    })
+    }),
   );
 
   router.post(
@@ -65,7 +71,9 @@ function createThemeAssetsRoutes({ themeAssetsService }) {
     withThemeAssetErrors(async (req, res) => {
       const parsedBody = themeAssetCompleteSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -77,25 +85,27 @@ function createThemeAssetsRoutes({ themeAssetsService }) {
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   router.delete(
     '/:id',
     withThemeAssetErrors(async (req, res) => {
-      const parsedId = idParamSchema.safeParse(req.params?.id);
+      const parsedId = idParamSchema.safeParse(req.params || {});
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid id parameter', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid id parameter', parsedId.error.flatten()));
       }
 
       const auth = req.auth || {};
       const data = await themeAssetsService.deleteAsset({
         tenantId: auth.tenant_id,
-        assetId: parsedId.data,
+        assetId: parsedId.data.id,
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   return router;

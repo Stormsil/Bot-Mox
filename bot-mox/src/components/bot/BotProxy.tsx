@@ -1,15 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Form, Modal, Spin, message } from 'antd';
 import { WarningOutlined } from '@ant-design/icons';
+import { Card, Form, Modal, message, Spin } from 'antd';
 import dayjs from 'dayjs';
-import type { IPQSResponse, Proxy } from '../../types';
-import { parseProxyString } from '../../utils/proxyUtils';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   checkIPQuality,
   isAutoCheckEnabled,
   updateProxyWithIPQSData,
-} from '../../services/ipqsService';
-import { createResource, subscribeResources, updateResource } from '../../services/resourcesApiService';
+} from '../../entities/resources/api/ipqsFacade';
+import {
+  useCreateProxyMutation,
+  useUpdateProxyMutation,
+} from '../../entities/resources/api/useProxyMutations';
+import { useProxiesQuery } from '../../entities/resources/api/useResourcesQueries';
+import type { IPQSResponse, Proxy as ProxyResource } from '../../types';
+import { parseProxyString } from '../../utils/proxyUtils';
+import type { BotProxyProps, ProxyInfo, ProxyModalFormValues } from './proxy';
 import {
   ProxyDetailsCard,
   ProxyEditorModal,
@@ -17,14 +23,11 @@ import {
   ProxyStatusAlert,
   withProxyComputedState,
 } from './proxy';
-import type { BotProxyProps, ProxyInfo, ProxyModalFormValues } from './proxy';
 import styles from './proxy/proxy.module.css';
 
 const { confirm } = Modal;
 
 export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
-  const [proxy, setProxy] = useState<ProxyInfo | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm<ProxyModalFormValues>();
@@ -34,31 +37,27 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [checkingIPQS, setCheckingIPQS] = useState(false);
   const [ipqsData, setIpqsData] = useState<IPQSResponse | null>(null);
+  const createProxyMutation = useCreateProxyMutation();
+  const updateProxyMutation = useUpdateProxyMutation();
+  const {
+    data: proxies = [],
+    isLoading: isProxiesLoading,
+    error: proxiesError,
+  } = useProxiesQuery();
+
+  const proxy = useMemo<ProxyInfo | null>(() => {
+    const foundProxy = proxies.find((item) => item.bot_id === bot.id);
+    return foundProxy ? withProxyComputedState(foundProxy) : null;
+  }, [proxies, bot.id]);
 
   useEffect(() => {
-    const unsubscribeProxies = subscribeResources<Proxy>(
-      'proxies',
-      (proxiesList) => {
-        const foundProxy = proxiesList.find((item) => item.bot_id === bot.id);
-        if (!foundProxy) {
-          setProxy(null);
-          setLoading(false);
-          return;
-        }
+    if (!proxiesError) {
+      return;
+    }
 
-        setProxy(withProxyComputedState(foundProxy));
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Error loading proxy:', error);
-        message.error('Failed to load proxy data');
-        setLoading(false);
-      },
-      { intervalMs: 6000 }
-    );
-
-    return () => unsubscribeProxies();
-  }, [bot.id]);
+    console.error('Error loading proxy:', proxiesError);
+    message.error({ content: 'Failed to load proxy data', key: 'bot-proxy-load-error' });
+  }, [proxiesError]);
 
   const resetModalState = () => {
     setProxyInput('');
@@ -139,7 +138,7 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
     if (!proxy) return;
 
     confirm({
-      title: 'Unassign Proxy?',
+      title: '',
       icon: <WarningOutlined style={{ color: '#faad14' }} />,
       content: (
         <div>
@@ -157,11 +156,14 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await updateResource<Proxy>('proxies', proxy.id, {
-            bot_id: null,
-            updated_at: Date.now(),
-          } as Record<string, unknown>);
-          message.success('Proxy unassigned successfully');
+          await updateProxyMutation.mutateAsync({
+            id: proxy.id,
+            payload: {
+              bot_id: null,
+              updated_at: Date.now(),
+            },
+          });
+          message.success('');
         } catch (error) {
           console.error('Error unassigning proxy:', error);
           message.error('Failed to unassign proxy');
@@ -181,7 +183,7 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
         ? values.expires_at.valueOf()
         : Date.now() + 30 * 24 * 60 * 60 * 1000;
 
-      let proxyData: Partial<Proxy> = {
+      let proxyData: Partial<ProxyResource> = {
         ip: parsedProxy.ip,
         port: parsedProxy.port,
         login: parsedProxy.login,
@@ -200,12 +202,12 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
       }
 
       if (isEditing && proxy) {
-        await updateResource<Proxy>('proxies', proxy.id, proxyData as Record<string, unknown>);
-        message.success('Proxy updated successfully');
+        await updateProxyMutation.mutateAsync({ id: proxy.id, payload: proxyData });
+        message.success('');
       } else {
         proxyData.created_at = Date.now();
-        await createResource<Proxy>('proxies', proxyData as Record<string, unknown>);
-        message.success('Proxy added successfully');
+        await createProxyMutation.mutateAsync(proxyData as Omit<ProxyResource, 'id'>);
+        message.success('');
       }
 
       closeModal();
@@ -215,7 +217,7 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
     }
   };
 
-  if (loading) {
+  if (isProxiesLoading) {
     return (
       <div className={styles['bot-proxy']}>
         <Card className={styles['proxy-card']}>

@@ -6,19 +6,19 @@ Use the local production-like Docker stack as a direct substitute for VPS deploy
 
 ```bash
 # Start local production-like stack
-npm run deploy:local:up
+pnpm run deploy:local:up
 
 # Check status
-npm run deploy:local:ps
+pnpm run deploy:local:ps
 
 # View logs
-npm run deploy:local:logs
+pnpm run deploy:local:logs
 
 # Restart (simulates redeploy)
-npm run deploy:local:restart
+pnpm run deploy:local:restart
 
 # Stop
-npm run deploy:local:down
+pnpm run deploy:local:down
 ```
 
 This mode uses:

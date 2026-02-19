@@ -1,5 +1,5 @@
-import React from 'react';
 import { Alert, Button, Card, Spin, Typography } from 'antd';
+import type React from 'react';
 import styles from './character.module.css';
 
 const { Text } = Typography;
@@ -42,7 +42,8 @@ export const CharacterErrorCard: React.FC<CharacterErrorCardProps> = ({ error })
         type="error"
         showIcon
         style={{
-          background: 'color-mix(in srgb, var(--boxmox-color-status-danger) 10%, var(--boxmox-color-surface-muted))',
+          background:
+            'color-mix(in srgb, var(--boxmox-color-status-danger) 10%, var(--boxmox-color-surface-muted))',
           borderColor: 'var(--boxmox-color-status-danger)',
         }}
         action={

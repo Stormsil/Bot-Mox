@@ -32,7 +32,7 @@
 Запуск:
 
 ```bash
-npm run supabase:generate-keys -- --jwt-secret "<32+ char secret>" --issuer "supabase"
+pnpm run supabase:generate-keys -- --jwt-secret "<32+ char secret>" --issuer "supabase"
 ```
 
 ### `supabase-create-user.js`
@@ -43,7 +43,7 @@ npm run supabase:generate-keys -- --jwt-secret "<32+ char secret>" --issuer "sup
 Запуск:
 
 ```bash
-npm run supabase:create-user -- --email "admin@example.com" --password "ChangeMeNow!" --tenant "default"
+pnpm run supabase:create-user -- --email "admin@example.com" --password "ChangeMeNow!" --tenant "default"
 ```
 
 ## Deployment and rollback
@@ -109,7 +109,7 @@ node scripts/check-style-guardrails.js
 Запуск:
 
 ```bash
-npm run audit:firebase:decommission
+pnpm run audit:firebase:decommission
 ```
 
 ## `artifacts-e2e-smoke.js`
@@ -147,7 +147,7 @@ E2E_USER_ID=<user-id>
 Запуск:
 
 ```bash
-npm run smoke:artifacts:e2e
+pnpm run smoke:artifacts:e2e
 ```
 
 ## Runner Request Sequence and Retry Behavior

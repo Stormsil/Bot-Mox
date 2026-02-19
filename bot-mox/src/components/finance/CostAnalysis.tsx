@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
 import { Card, List, Progress, Typography } from 'antd';
-import type { CategoryBreakdown } from '../../types';
+import type React from 'react';
+import { useMemo } from 'react';
+import type { CategoryBreakdown } from '../../entities/finance/model/types';
 import styles from './FinanceSummary.module.css';
 
 const { Text } = Typography;
@@ -12,20 +13,20 @@ interface CostAnalysisProps {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  'subscription_bot': 'Bot Licenses (Software)',
-  'subscription_game': 'Game Subscriptions (WoW)',
-  'proxy': 'Proxies & VPN',
-  'license': 'Other Licenses',
-  'other': 'Miscellaneous',
-  'server': 'Server/Hosting',
+  subscription_bot: 'Bot Licenses (Software)',
+  subscription_game: 'Game Subscriptions (WoW)',
+  proxy: 'Proxies & VPN',
+  license: 'Other Licenses',
+  other: 'Miscellaneous',
+  server: 'Server/Hosting',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'subscription_bot': 'var(--boxmox-color-border-subtle)',
-  'subscription_game': 'var(--boxmox-color-border-subtle)',
-  'proxy': 'var(--boxmox-color-border-subtle)',
-  'license': 'var(--boxmox-color-border-subtle)',
-  'other': 'var(--boxmox-color-border-subtle)',
+  subscription_bot: 'var(--boxmox-color-border-subtle)',
+  subscription_game: 'var(--boxmox-color-border-subtle)',
+  proxy: 'var(--boxmox-color-border-subtle)',
+  license: 'var(--boxmox-color-border-subtle)',
+  other: 'var(--boxmox-color-border-subtle)',
 };
 
 export const CostAnalysis: React.FC<CostAnalysisProps> = ({
@@ -39,9 +40,9 @@ export const CostAnalysis: React.FC<CostAnalysisProps> = ({
   }, [expenseBreakdown]);
 
   return (
-    <Card 
-      title="Cost Structure Analysis" 
-      variant="borderless" 
+    <Card
+      title="Cost Structure Analysis"
+      variant="borderless"
       className={styles.costAnalysisCard}
       loading={loading}
     >
@@ -58,15 +59,21 @@ export const CostAnalysis: React.FC<CostAnalysisProps> = ({
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <Text strong>{label}</Text>
                 <Text>
-                  ${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  <Text type="secondary" style={{ marginLeft: 8 }}>({percentage.toFixed(1)}%)</Text>
+                  $
+                  {item.amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                  <Text type="secondary" style={{ marginLeft: 8 }}>
+                    ({percentage.toFixed(1)}%)
+                  </Text>
                 </Text>
               </div>
-              <Progress 
-                percent={percentage} 
-                strokeColor={color} 
+              <Progress
+                percent={percentage}
+                strokeColor={color}
                 trailColor="var(--boxmox-color-surface-muted)"
-                showInfo={false} 
+                showInfo={false}
                 size="small"
               />
             </div>

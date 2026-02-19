@@ -1,5 +1,3 @@
-import React from 'react';
-import { Timeline, Typography } from 'antd';
 import {
   CheckCircleOutlined,
   GoldOutlined,
@@ -8,6 +6,8 @@ import {
   StopOutlined,
   ToolOutlined,
 } from '@ant-design/icons';
+import { Timeline, Typography } from 'antd';
+import type React from 'react';
 import type { LifeStage } from './config';
 import styles from './lifeStages.module.css';
 
@@ -26,62 +26,158 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
           color: currentStage === 'prepare' ? 'blue' : 'green',
           children: (
             <div
-              className={[
-                styles['timeline-item'],
-                currentStage === 'prepare' ? styles.active : '',
-              ].filter(Boolean).join(' ')}
+              className={[styles['timeline-item'], currentStage === 'prepare' ? styles.active : '']
+                .filter(Boolean)
+                .join(' ')}
             >
-              <Text strong style={currentStage === 'prepare' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Preparation</Text>
+              <Text
+                strong
+                style={
+                  currentStage === 'prepare'
+                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    : undefined
+                }
+              >
+                Preparation
+              </Text>
               <br />
-              <Text type="secondary" style={currentStage === 'prepare' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Initial setup</Text>
+              <Text
+                type="secondary"
+                style={
+                  currentStage === 'prepare'
+                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    : undefined
+                }
+              >
+                Initial setup
+              </Text>
             </div>
           ),
         },
         {
-          dot: currentStage === 'leveling' ? <RiseOutlined /> : (['professions', 'farm', 'banned'].includes(currentStage) ? <CheckCircleOutlined /> : null),
-          color: currentStage === 'leveling' ? 'purple' : (['professions', 'farm', 'banned'].includes(currentStage) ? 'green' : 'gray'),
+          dot:
+            currentStage === 'leveling' ? (
+              <RiseOutlined />
+            ) : ['professions', 'farm', 'banned'].includes(currentStage) ? (
+              <CheckCircleOutlined />
+            ) : null,
+          color:
+            currentStage === 'leveling'
+              ? 'purple'
+              : ['professions', 'farm', 'banned'].includes(currentStage)
+                ? 'green'
+                : 'gray',
           children: (
             <div
-              className={[
-                styles['timeline-item'],
-                currentStage === 'leveling' ? styles.active : '',
-              ].filter(Boolean).join(' ')}
+              className={[styles['timeline-item'], currentStage === 'leveling' ? styles.active : '']
+                .filter(Boolean)
+                .join(' ')}
             >
-              <Text strong style={currentStage === 'leveling' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Leveling</Text>
+              <Text
+                strong
+                style={
+                  currentStage === 'leveling'
+                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    : undefined
+                }
+              >
+                Leveling
+              </Text>
               <br />
-              <Text type="secondary" style={currentStage === 'leveling' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Level 1-70</Text>
+              <Text
+                type="secondary"
+                style={
+                  currentStage === 'leveling'
+                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    : undefined
+                }
+              >
+                Level 1-70
+              </Text>
             </div>
           ),
         },
         {
-          dot: currentStage === 'professions' ? <ToolOutlined /> : (['farm', 'banned'].includes(currentStage) ? <CheckCircleOutlined /> : null),
-          color: currentStage === 'professions' ? 'cyan' : (['farm', 'banned'].includes(currentStage) ? 'green' : 'gray'),
+          dot:
+            currentStage === 'professions' ? (
+              <ToolOutlined />
+            ) : ['farm', 'banned'].includes(currentStage) ? (
+              <CheckCircleOutlined />
+            ) : null,
+          color:
+            currentStage === 'professions'
+              ? 'cyan'
+              : ['farm', 'banned'].includes(currentStage)
+                ? 'green'
+                : 'gray',
           children: (
             <div
               className={[
                 styles['timeline-item'],
                 currentStage === 'professions' ? styles.active : '',
-              ].filter(Boolean).join(' ')}
+              ]
+                .filter(Boolean)
+                .join(' ')}
             >
-              <Text strong style={currentStage === 'professions' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Professions</Text>
+              <Text
+                strong
+                style={
+                  currentStage === 'professions'
+                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    : undefined
+                }
+              >
+                Professions
+              </Text>
               <br />
-              <Text type="secondary" style={currentStage === 'professions' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Skill development</Text>
+              <Text
+                type="secondary"
+                style={
+                  currentStage === 'professions'
+                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    : undefined
+                }
+              >
+                Skill development
+              </Text>
             </div>
           ),
         },
         {
-          dot: currentStage === 'farm' ? <GoldOutlined /> : (currentStage === 'banned' ? <CheckCircleOutlined /> : null),
-          color: currentStage === 'farm' ? 'orange' : (currentStage === 'banned' ? 'green' : 'gray'),
+          dot:
+            currentStage === 'farm' ? (
+              <GoldOutlined />
+            ) : currentStage === 'banned' ? (
+              <CheckCircleOutlined />
+            ) : null,
+          color: currentStage === 'farm' ? 'orange' : currentStage === 'banned' ? 'green' : 'gray',
           children: (
             <div
-              className={[
-                styles['timeline-item'],
-                currentStage === 'farm' ? styles.active : '',
-              ].filter(Boolean).join(' ')}
+              className={[styles['timeline-item'], currentStage === 'farm' ? styles.active : '']
+                .filter(Boolean)
+                .join(' ')}
             >
-              <Text strong style={currentStage === 'farm' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Farm</Text>
+              <Text
+                strong
+                style={
+                  currentStage === 'farm'
+                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    : undefined
+                }
+              >
+                Farm
+              </Text>
               <br />
-              <Text type="secondary" style={currentStage === 'farm' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>Gold earning</Text>
+              <Text
+                type="secondary"
+                style={
+                  currentStage === 'farm'
+                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    : undefined
+                }
+              >
+                Gold earning
+              </Text>
             </div>
           ),
         },
@@ -94,11 +190,20 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 styles['timeline-item'],
                 currentStage === 'banned' ? styles.active : '',
                 currentStage === 'banned' ? styles.banned : '',
-              ].filter(Boolean).join(' ')}
+              ]
+                .filter(Boolean)
+                .join(' ')}
             >
-              <Text strong style={{ color: currentStage === 'banned' ? '#ff4d4f' : undefined }}>Banned</Text>
+              <Text strong style={{ color: currentStage === 'banned' ? '#ff4d4f' : undefined }}>
+                Banned
+              </Text>
               <br />
-              <Text type="secondary" style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}>Archived</Text>
+              <Text
+                type="secondary"
+                style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}
+              >
+                Archived
+              </Text>
             </div>
           ),
         },

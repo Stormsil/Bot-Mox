@@ -1,5 +1,5 @@
-import React from 'react';
 import { Alert, Spin } from 'antd';
+import type React from 'react';
 import styles from '../BotPage.module.css';
 
 export const BotPageLoading: React.FC = () => (

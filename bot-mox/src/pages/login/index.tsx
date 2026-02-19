@@ -1,7 +1,7 @@
-import React from 'react';
-import { Button, Card, Form, Input, Typography, message } from 'antd';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useLogin } from '@refinedev/core';
+import { Button, Card, Form, Input, message, Typography } from 'antd';
+import type React from 'react';
 import styles from './LoginPage.module.css';
 
 interface LoginFormValues {
@@ -23,7 +23,10 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className={styles.root}>
-      <Card className={styles.card} title={<Typography.Title level={4}>Bot-Mox Login</Typography.Title>}>
+      <Card
+        className={styles.card}
+        title={<Typography.Title level={4}>Bot-Mox Login</Typography.Title>}
+      >
         <Form<LoginFormValues>
           layout="vertical"
           requiredMark={false}

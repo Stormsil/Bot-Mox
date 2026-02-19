@@ -45,7 +45,7 @@ function createUiServiceFallbackMiddleware({
         const settings = await getVMServiceSettings();
         const targetUrl = normalizeBaseUrl(
           settings.tinyFmUrl,
-          String(process.env.TINYFM_URL || 'http://127.0.0.1:8080/index.php?p=')
+          String(process.env.TINYFM_URL || 'http://127.0.0.1:8080/index.php?p='),
         );
         setTinyFmTarget(new URL(targetUrl).origin);
         await ensureTinyFMLogin(settings);
@@ -76,11 +76,7 @@ function createUiServiceFallbackMiddleware({
   };
 }
 
-function createProxmoxUiCatchAllMiddleware({
-  authorizeRequest,
-  proxmoxUIProxy,
-  getProxmoxTarget,
-}) {
+function createProxmoxUiCatchAllMiddleware({ authorizeRequest, proxmoxUIProxy, getProxmoxTarget }) {
   return async function proxmoxUiCatchAllMiddleware(req, res, next) {
     if (req.path.startsWith('/api/')) {
       return next();

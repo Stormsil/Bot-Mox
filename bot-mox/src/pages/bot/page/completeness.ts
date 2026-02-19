@@ -56,7 +56,8 @@ export const isScheduleComplete = (enabledSessions: number) => enabledSessions >
 
 export const isPersonDataIncomplete = (bot: ExtendedBot | null): boolean => !isPersonComplete(bot);
 
-export const isAccountDataIncomplete = (bot: ExtendedBot | null): boolean => !isAccountComplete(bot);
+export const isAccountDataIncomplete = (bot: ExtendedBot | null): boolean =>
+  !isAccountComplete(bot);
 
 export const getIncompleteTabs = (bot: ExtendedBot | null): TabType[] => {
   if (isPersonDataIncomplete(bot) || isAccountDataIncomplete(bot)) {

@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { startAndSendKeyBatch } from '../../../services/vmService';
+import { useStartAndSendKeyBatchMutation } from '../../../entities/vm/api/useVmActionMutations';
 import type { VMGeneratorSettings, VMQueueItem, VMResourceMode } from '../../../types';
 
 type VMProjectId = 'wow_tbc' | 'wow_midnight';
@@ -25,7 +25,10 @@ interface UseVmStartAndQueueActionsParams {
   settings: VMGeneratorSettings | null;
   proxmoxNode: string;
   refreshVms: () => Promise<void> | void;
-  getResourcePreset: (projectId: VMProjectId, mode: VMResourceMode) => { cores: number; memory: number; diskGiB?: number };
+  getResourcePreset: (
+    projectId: VMProjectId,
+    mode: VMResourceMode,
+  ) => { cores: number; memory: number; diskGiB?: number };
   syncTemplateHardwareFromApi: () => Promise<{ cores: number; memory: number } | null>;
   onReset: () => void;
   onAddVM: () => void;
@@ -61,6 +64,7 @@ export const useVmStartAndQueueActions = ({
   onAddVM,
   onCopyLog,
 }: UseVmStartAndQueueActionsParams): UseVmStartAndQueueActionsResult => {
+  const startAndSendKeyBatchMutation = useStartAndSendKeyBatchMutation();
   const startActionLockRef = useRef(false);
   const [isStartActionRunning, setIsStartActionRunning] = useState(false);
   const [startingQueueItemId, setStartingQueueItemId] = useState<string | null>(null);
@@ -86,10 +90,14 @@ export const useVmStartAndQueueActions = ({
             : currentItem.resourceMode || 'project'
       ) as VMResourceMode;
 
-      const hasManualResourceValues = updates.cores !== undefined || updates.memory !== undefined || updates.diskGiB !== undefined;
-      const shouldApplyPreset = nextMode !== 'custom' && !hasManualResourceValues && (
-        updates.projectId !== undefined || updates.resourceMode !== undefined
-      );
+      const hasManualResourceValues =
+        updates.cores !== undefined ||
+        updates.memory !== undefined ||
+        updates.diskGiB !== undefined;
+      const shouldApplyPreset =
+        nextMode !== 'custom' &&
+        !hasManualResourceValues &&
+        (updates.projectId !== undefined || updates.resourceMode !== undefined);
 
       if (shouldApplyPreset) {
         if (nextMode === 'original') {
@@ -126,19 +134,19 @@ export const useVmStartAndQueueActions = ({
         resourceMode: nextMode,
       });
     },
-    [getResourcePreset, queue, syncTemplateHardwareFromApi]
+    [getResourcePreset, queue, syncTemplateHardwareFromApi],
   );
 
   const startableQueueItems = useMemo(
     () =>
       queue.queue.filter(
         (item) =>
-          (item.action || 'create') === 'create'
-          && item.status === 'done'
-          && Number.isInteger(Number(item.vmId))
-          && Number(item.vmId) > 0
+          (item.action || 'create') === 'create' &&
+          item.status === 'done' &&
+          Number.isInteger(Number(item.vmId)) &&
+          Number(item.vmId) > 0,
       ),
-    [queue.queue]
+    [queue.queue],
   );
 
   const runVmStartAction = useCallback(
@@ -152,12 +160,15 @@ export const useVmStartAndQueueActions = ({
 
       try {
         const targetNode = settings?.proxmox?.node || proxmoxNode || 'h1';
-        const result = await startAndSendKeyBatch(vmIds, {
-          node: targetNode,
-          key: 'a',
-          repeatCount: 20,
-          intervalMs: 1000,
-          startupDelayMs: 0,
+        const result = await startAndSendKeyBatchMutation.mutateAsync({
+          vmIds,
+          options: {
+            node: targetNode,
+            key: 'a',
+            repeatCount: 20,
+            intervalMs: 1000,
+            startupDelayMs: 0,
+          },
         });
 
         if (result.failed === 0) {
@@ -181,7 +192,7 @@ export const useVmStartAndQueueActions = ({
         startActionLockRef.current = false;
       }
     },
-    [proxmoxNode, refreshVms, settings?.proxmox?.node]
+    [proxmoxNode, refreshVms, settings?.proxmox?.node, startAndSendKeyBatchMutation],
   );
 
   const handleStartAllReady = useCallback(() => {
@@ -204,7 +215,11 @@ export const useVmStartAndQueueActions = ({
       }
 
       const queueItem = queue.queue.find((item) => item.id === queueItemId);
-      if (!queueItem || (queueItem.action || 'create') !== 'create' || queueItem.status !== 'done') {
+      if (
+        !queueItem ||
+        (queueItem.action || 'create') !== 'create' ||
+        queueItem.status !== 'done'
+      ) {
         return;
       }
 
@@ -216,7 +231,7 @@ export const useVmStartAndQueueActions = ({
       setStartingQueueItemId(queueItem.id);
       void runVmStartAction([vmid], `VM ${vmid} start completed`);
     },
-    [isStartActionRunning, queue.queue, runVmStartAction]
+    [isStartActionRunning, queue.queue, runVmStartAction],
   );
 
   const hasPending = queue.queue.some((item) => item.status === 'pending');
@@ -225,10 +240,10 @@ export const useVmStartAndQueueActions = ({
     const pending = queue.queue.filter((item) => item.status === 'pending').length;
     const active = queue.queue.filter(
       (item) =>
-        item.status === 'cloning'
-        || item.status === 'configuring'
-        || item.status === 'provisioning'
-        || item.status === 'deleting'
+        item.status === 'cloning' ||
+        item.status === 'configuring' ||
+        item.status === 'provisioning' ||
+        item.status === 'deleting',
     ).length;
     const done = queue.queue.filter((item) => item.status === 'done').length;
     const error = queue.queue.filter((item) => item.status === 'error').length;
@@ -243,7 +258,7 @@ export const useVmStartAndQueueActions = ({
       onAddVM,
       onCopyLog,
     }),
-    [onAddVM, onCopyLog, onReset, queue.cancelProcessing, queue.processQueue]
+    [onAddVM, onCopyLog, onReset, queue.cancelProcessing, queue.processQueue],
   );
 
   return {

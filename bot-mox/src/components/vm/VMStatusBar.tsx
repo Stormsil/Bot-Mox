@@ -1,5 +1,5 @@
-import React from 'react';
 import { PlayCircleOutlined, StopOutlined } from '@ant-design/icons';
+import type React from 'react';
 import type { VMUiState } from '../../types';
 import styles from './VMStatusBar.module.css';
 
@@ -59,6 +59,7 @@ export const VMStatusBar: React.FC<VMStatusBarProps> = ({
     <div className={styles.root}>
       <div className={styles.controls}>
         <button
+          type="button"
           className={cx(styles.btn, styles.btnStart)}
           onClick={onStart}
           disabled={isProcessing || !hasPending}
@@ -68,6 +69,7 @@ export const VMStatusBar: React.FC<VMStatusBarProps> = ({
           <span>Start processing</span>
         </button>
         <button
+          type="button"
           className={cx(styles.btn, styles.btnStop)}
           onClick={onStop}
           disabled={!isProcessing}
@@ -81,6 +83,7 @@ export const VMStatusBar: React.FC<VMStatusBarProps> = ({
 
         {onOpenSettings && (
           <button
+            type="button"
             className={cx(
               styles.btn,
               styles.btnService,
@@ -98,7 +101,9 @@ export const VMStatusBar: React.FC<VMStatusBarProps> = ({
         <span className={styles.chip}>Pending {pendingCount}</span>
         <span className={styles.chip}>Active {activeCount}</span>
         <span className={styles.chip}>Done {doneCount}</span>
-        {errorCount > 0 && <span className={cx(styles.chip, styles.chipError)}>Errors {errorCount}</span>}
+        {errorCount > 0 && (
+          <span className={cx(styles.chip, styles.chipError)}>Errors {errorCount}</span>
+        )}
       </div>
 
       <span className={cx(styles.badge, badgeStateClass)}>

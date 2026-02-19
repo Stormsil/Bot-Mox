@@ -17,7 +17,15 @@ export interface ProxmoxVM {
   template?: boolean;
 }
 
-export type VMQueueItemStatus = 'pending' | 'cloning' | 'cloned' | 'configuring' | 'provisioning' | 'deleting' | 'done' | 'error';
+export type VMQueueItemStatus =
+  | 'pending'
+  | 'cloning'
+  | 'cloned'
+  | 'configuring'
+  | 'provisioning'
+  | 'deleting'
+  | 'done'
+  | 'error';
 export type VMQueueItemAction = 'create' | 'delete';
 export type VMResourceMode = 'original' | 'project' | 'custom';
 
@@ -196,7 +204,6 @@ export interface VMTaskEntry {
 }
 
 export type VMUiState = 'ready' | 'working' | 'success' | 'error';
-
 
 export interface VMGeneratorSettings {
   proxmox: {

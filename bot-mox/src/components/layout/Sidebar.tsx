@@ -1,14 +1,14 @@
-import React from 'react';
-import { Layout, Menu } from 'antd';
 import {
-  DashboardOutlined,
-  RobotOutlined,
-  FolderOutlined,
-  DollarOutlined,
   ContainerOutlined,
+  DashboardOutlined,
+  DollarOutlined,
   FileTextOutlined,
+  FolderOutlined,
+  RobotOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
+import { Layout, Menu } from 'antd';
+import type React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './Sidebar.module.css';
 
@@ -55,7 +55,11 @@ export const Sidebar: React.FC = () => {
     },
     {
       key: '/projects',
-      label: menuLabel('Проекты', <FolderOutlined style={iconStyle} />, selectedKey === '/projects'),
+      label: menuLabel(
+        'Проекты',
+        <FolderOutlined style={iconStyle} />,
+        selectedKey === '/projects',
+      ),
     },
     {
       key: '/finance',
@@ -63,7 +67,11 @@ export const Sidebar: React.FC = () => {
     },
     {
       key: '/archive',
-      label: menuLabel('Архив', <ContainerOutlined style={iconStyle} />, selectedKey === '/archive'),
+      label: menuLabel(
+        'Архив',
+        <ContainerOutlined style={iconStyle} />,
+        selectedKey === '/archive',
+      ),
     },
     {
       key: '/logs',
@@ -71,16 +79,16 @@ export const Sidebar: React.FC = () => {
     },
     {
       key: '/settings',
-      label: menuLabel('Настройки', <SettingOutlined style={iconStyle} />, selectedKey === '/settings'),
+      label: menuLabel(
+        'Настройки',
+        <SettingOutlined style={iconStyle} />,
+        selectedKey === '/settings',
+      ),
     },
   ];
 
   return (
-    <Sider
-      className={cx('proxmox-sidebar')}
-      width={260}
-      collapsed={false}
-    >
+    <Sider className={cx('proxmox-sidebar')} width={260} collapsed={false}>
       <Menu
         mode="inline"
         selectedKeys={[selectedKey]}

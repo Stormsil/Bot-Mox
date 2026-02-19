@@ -1,13 +1,14 @@
-import React, { Suspense, lazy, useEffect } from 'react';
-import { Authenticated, Refine } from '@refinedev/core';
 import { useNotificationProvider } from '@refinedev/antd';
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { Authenticated, Refine } from '@refinedev/core';
 import { App as AntdApp, ConfigProvider, Spin } from 'antd';
-import { dataProvider } from './providers/data-provider';
-import { authProvider } from './providers/auth-provider';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { QueryProvider } from './app/providers/QueryProvider';
 import { Header } from './components/layout/Header';
 import { ResourceTree } from './components/layout/ResourceTree';
-import { useThemeRuntime, ThemeRuntimeProvider } from './theme/themeRuntime';
+import { authProvider } from './providers/auth-provider';
+import { dataProvider } from './providers/data-provider';
+import { ThemeRuntimeProvider, useThemeRuntime } from './theme/themeRuntime';
 import './styles/global.css';
 import shellStyles from './AppShell.module.css';
 
@@ -34,20 +35,32 @@ const ProxmoxLayout: React.FC = () => {
     return () => media.removeListener(update);
   }, []);
 
-  const isVisualImage = visualSettings.enabled && visualSettings.mode === 'image' && Boolean(visualSettings.backgroundImageUrl);
-  const overlayColor = themeMode === 'dark' ? visualSettings.overlayColorDark : visualSettings.overlayColorLight;
+  const isVisualImage =
+    visualSettings.enabled &&
+    visualSettings.mode === 'image' &&
+    Boolean(visualSettings.backgroundImageUrl);
+  const overlayColor =
+    themeMode === 'dark' ? visualSettings.overlayColorDark : visualSettings.overlayColorLight;
   const effectiveBlur = prefersReducedMotion ? 0 : visualSettings.blurPx;
-  const backgroundStyle: React.CSSProperties = isVisualImage ? {
-    backgroundImage: `url(${visualSettings.backgroundImageUrl})`,
-    backgroundPosition: visualSettings.backgroundPosition === 'top' ? 'top center' : 'center center',
-    backgroundSize: visualSettings.backgroundSize,
-    filter: effectiveBlur > 0 ? `blur(${effectiveBlur}px)` : undefined,
-    transform: effectiveBlur > 0 ? 'scale(1.02)' : undefined,
-  } : {};
-  const overlayStyle: React.CSSProperties = isVisualImage ? {
-    backgroundColor: overlayColor,
-    opacity: Math.max(0, Math.min(1, visualSettings.overlayOpacity + visualSettings.dimStrength)),
-  } : {};
+  const backgroundStyle: React.CSSProperties = isVisualImage
+    ? {
+        backgroundImage: `url(${visualSettings.backgroundImageUrl})`,
+        backgroundPosition:
+          visualSettings.backgroundPosition === 'top' ? 'top center' : 'center center',
+        backgroundSize: visualSettings.backgroundSize,
+        filter: effectiveBlur > 0 ? `blur(${effectiveBlur}px)` : undefined,
+        transform: effectiveBlur > 0 ? 'scale(1.02)' : undefined,
+      }
+    : {};
+  const overlayStyle: React.CSSProperties = isVisualImage
+    ? {
+        backgroundColor: overlayColor,
+        opacity: Math.max(
+          0,
+          Math.min(1, visualSettings.overlayOpacity + visualSettings.dimStrength),
+        ),
+      }
+    : {};
 
   return (
     <div className={shellStyles['proxmox-layout']}>
@@ -74,19 +87,33 @@ const ArchivePage: React.FC = () => (
   </div>
 );
 
-const DatacenterPage = lazy(async () => ({ default: (await import('./pages/datacenter')).DatacenterPage }));
+const DatacenterPage = lazy(async () => ({
+  default: (await import('./pages/datacenter')).DatacenterPage,
+}));
 const ProjectPage = lazy(async () => ({ default: (await import('./pages/project')).ProjectPage }));
 const BotPage = lazy(async () => ({ default: (await import('./pages/bot')).BotPage }));
 const FinancePage = lazy(async () => ({ default: (await import('./pages/finance')).FinancePage }));
 const NotesPage = lazy(async () => ({ default: (await import('./pages/notes')).NotesPage }));
-const LicensesPage = lazy(async () => ({ default: (await import('./pages/licenses')).LicensesPage }));
+const LicensesPage = lazy(async () => ({
+  default: (await import('./pages/licenses')).LicensesPage,
+}));
 const ProxiesPage = lazy(async () => ({ default: (await import('./pages/proxies')).ProxiesPage }));
-const SubscriptionsPage = lazy(async () => ({ default: (await import('./pages/subscriptions')).SubscriptionsPage }));
+const SubscriptionsPage = lazy(async () => ({
+  default: (await import('./pages/subscriptions')).SubscriptionsPage,
+}));
 const VMsPage = lazy(async () => ({ default: (await import('./pages/vms')).VMsPage }));
-const VMProxmoxPage = lazy(async () => ({ default: (await import('./pages/vms/sites')).VMProxmoxPage }));
-const VMTinyFMPage = lazy(async () => ({ default: (await import('./pages/vms/sites')).VMTinyFMPage }));
-const VMSyncThingPage = lazy(async () => ({ default: (await import('./pages/vms/sites')).VMSyncThingPage }));
-const SettingsPage = lazy(async () => ({ default: (await import('./pages/settings')).SettingsPage }));
+const VMProxmoxPage = lazy(async () => ({
+  default: (await import('./pages/vms/sites')).VMProxmoxPage,
+}));
+const VMTinyFMPage = lazy(async () => ({
+  default: (await import('./pages/vms/sites')).VMTinyFMPage,
+}));
+const VMSyncThingPage = lazy(async () => ({
+  default: (await import('./pages/vms/sites')).VMSyncThingPage,
+}));
+const SettingsPage = lazy(async () => ({
+  default: (await import('./pages/settings')).SettingsPage,
+}));
 // UnattendProfilesPage removed — profiles are now managed inside VM Settings modal
 const WorkspaceCalendarPage = lazy(async () => ({
   default: (await import('./pages/workspace/calendar')).WorkspaceCalendarPage,
@@ -105,7 +132,9 @@ const RouteFallback: React.FC = () => (
 function App() {
   return (
     <ThemeRuntimeProvider>
-      <AppWithTheme />
+      <QueryProvider>
+        <AppWithTheme />
+      </QueryProvider>
     </ThemeRuntimeProvider>
   );
 }
@@ -147,7 +176,10 @@ function AppWithTheme() {
               <Routes>
                 <Route
                   element={
-                    <Authenticated key="protected-routes" fallback={<Navigate to="/login" replace />}>
+                    <Authenticated
+                      key="protected-routes"
+                      fallback={<Navigate to="/login" replace />}
+                    >
                       <ProxmoxLayout />
                     </Authenticated>
                   }
@@ -168,14 +200,14 @@ function AppWithTheme() {
                   <Route path="/archive/banned" element={<ArchivePage />} />
 
                   {/* System */}
-                  <Route
-                    path="/settings"
-                    element={<SettingsPage />}
-                  />
+                  <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/notes" element={<NotesPage />} />
                   <Route path="/workspace/calendar" element={<WorkspaceCalendarPage />} />
                   <Route path="/workspace/kanban" element={<WorkspaceKanbanPage />} />
-                  <Route path="/notes/reminders" element={<Navigate to="/workspace/calendar" replace />} />
+                  <Route
+                    path="/notes/reminders"
+                    element={<Navigate to="/workspace/calendar" replace />}
+                  />
 
                   {/* Licenses, Proxies, Subscriptions, VMs */}
                   <Route path="/licenses" element={<LicensesPage />} />
@@ -187,9 +219,15 @@ function AppWithTheme() {
                   <Route path="/vms/sites/proxmox" element={<VMProxmoxPage />} />
                   <Route path="/vms/sites/tinyfm" element={<VMTinyFMPage />} />
                   <Route path="/vms/sites/syncthing" element={<VMSyncThingPage />} />
-                  <Route path="/vms/proxmox" element={<Navigate to="/vms/sites/proxmox" replace />} />
+                  <Route
+                    path="/vms/proxmox"
+                    element={<Navigate to="/vms/sites/proxmox" replace />}
+                  />
                   <Route path="/vms/tinyfm" element={<Navigate to="/vms/sites/tinyfm" replace />} />
-                  <Route path="/vms/syncthing" element={<Navigate to="/vms/sites/syncthing" replace />} />
+                  <Route
+                    path="/vms/syncthing"
+                    element={<Navigate to="/vms/sites/syncthing" replace />}
+                  />
                 </Route>
 
                 <Route

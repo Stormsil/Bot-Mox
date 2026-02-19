@@ -1,19 +1,19 @@
 import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useUpdateVmSettingsMutation } from '../../../entities/vm/api/useVmActionMutations';
 import {
-  fetchDeleteVmContext,
   type DeleteVmBotRecord,
   type DeleteVmLicenseRecord,
   type DeleteVmProxyRecord,
   type DeleteVmSubscriptionRecord,
-} from '../../../services/vmDeleteContextService';
-import { updateVMSettings } from '../../../services/vmSettingsService';
+  fetchDeleteVmContext,
+} from '../../../entities/vm/api/vmDeleteContextFacade';
 import {
+  type DeleteVmCandidateRow,
+  type DeleteVmFilters,
   evaluateDeleteBot,
   normalizeDeleteVmFilters,
   normalizeToken,
-  type DeleteVmCandidateRow,
-  type DeleteVmFilters,
 } from '../deleteVmRules';
 import type {
   UseDeleteVmWorkflowParams,
@@ -28,18 +28,21 @@ export const useDeleteVmWorkflow = ({
   settings,
   setSettings,
 }: UseDeleteVmWorkflowParams): UseDeleteVmWorkflowResult => {
+  const updateVmSettingsMutation = useUpdateVmSettingsMutation();
   const [deleteVmModalOpen, setDeleteVmModalOpen] = useState(false);
   const [deleteVmSelection, setDeleteVmSelection] = useState<number[]>([]);
   const [deleteVmContextLoading, setDeleteVmContextLoading] = useState(false);
   const [deleteVmBots, setDeleteVmBots] = useState<Record<string, DeleteVmBotRecord>>({});
   const [deleteVmProxies, setDeleteVmProxies] = useState<DeleteVmProxyRecord[]>([]);
-  const [deleteVmSubscriptions, setDeleteVmSubscriptions] = useState<DeleteVmSubscriptionRecord[]>([]);
+  const [deleteVmSubscriptions, setDeleteVmSubscriptions] = useState<DeleteVmSubscriptionRecord[]>(
+    [],
+  );
   const [deleteVmLicenses, setDeleteVmLicenses] = useState<DeleteVmLicenseRecord[]>([]);
   const [deleteVmFiltersSaving, setDeleteVmFiltersSaving] = useState(false);
 
   const deleteVmFilters = useMemo(
     () => normalizeDeleteVmFilters(settings?.deleteVmFilters),
-    [settings?.deleteVmFilters]
+    [settings?.deleteVmFilters],
   );
 
   const queuedDeleteVmIds = useMemo(() => {
@@ -76,14 +79,14 @@ export const useDeleteVmWorkflow = ({
 
       setDeleteVmFiltersSaving(true);
       try {
-        await updateVMSettings({ deleteVmFilters: next });
+        await updateVmSettingsMutation.mutateAsync({ deleteVmFilters: next });
       } catch {
         message.error('Failed to save delete filters');
       } finally {
         setDeleteVmFiltersSaving(false);
       }
     },
-    [settings?.deleteVmFilters, setSettings]
+    [settings?.deleteVmFilters, setSettings, updateVmSettingsMutation],
   );
 
   const handleDeletePolicyToggle = useCallback(
@@ -96,7 +99,7 @@ export const useDeleteVmWorkflow = ({
         },
       }));
     },
-    [updateDeleteVmFilters]
+    [updateDeleteVmFilters],
   );
 
   const handleDeleteViewToggle = useCallback(
@@ -109,7 +112,7 @@ export const useDeleteVmWorkflow = ({
         },
       }));
     },
-    [updateDeleteVmFilters]
+    [updateDeleteVmFilters],
   );
 
   const loadDeleteVmContext = useCallback(async () => {
@@ -180,8 +183,8 @@ export const useDeleteVmWorkflow = ({
               hasSubscription: (subscriptionsByBotId.get(bot.id) || 0) > 0,
               hasLicense: (licensesByBotId.get(bot.id) || 0) > 0,
             },
-            deleteVmFilters.policy
-          )
+            deleteVmFilters.policy,
+          ),
         );
 
         let canDelete = false;
@@ -224,9 +227,9 @@ export const useDeleteVmWorkflow = ({
     return deleteVmCandidatesRaw.filter((candidate) => {
       const vmStatus = normalizeToken(candidate.vm.status);
       const statusAllowed =
-        (vmStatus === 'running' && deleteVmFilters.view.showRunning)
-        || (vmStatus === 'stopped' && deleteVmFilters.view.showStopped)
-        || (vmStatus !== 'running' && vmStatus !== 'stopped');
+        (vmStatus === 'running' && deleteVmFilters.view.showRunning) ||
+        (vmStatus === 'stopped' && deleteVmFilters.view.showStopped) ||
+        (vmStatus !== 'running' && vmStatus !== 'stopped');
 
       if (!statusAllowed) {
         return false;
@@ -260,23 +263,24 @@ export const useDeleteVmWorkflow = ({
   }, [deleteVmCandidates, queuedDeleteVmIds]);
 
   const deleteVmSelectableCount = useMemo(
-    () => deleteVmCandidates.filter((candidate) => selectableDeleteVmIds.has(candidate.vm.vmid)).length,
-    [deleteVmCandidates, selectableDeleteVmIds]
+    () =>
+      deleteVmCandidates.filter((candidate) => selectableDeleteVmIds.has(candidate.vm.vmid)).length,
+    [deleteVmCandidates, selectableDeleteVmIds],
   );
 
   const deleteVmAllowedCount = useMemo(
     () => deleteVmCandidates.filter((candidate) => candidate.canDelete).length,
-    [deleteVmCandidates]
+    [deleteVmCandidates],
   );
 
   const deleteVmPolicyEnabledCount = useMemo(
     () => Object.values(deleteVmFilters.policy).filter(Boolean).length,
-    [deleteVmFilters.policy]
+    [deleteVmFilters.policy],
   );
 
   const deleteVmViewEnabledCount = useMemo(
     () => Object.values(deleteVmFilters.view).filter(Boolean).length,
-    [deleteVmFilters.view]
+    [deleteVmFilters.view],
   );
 
   useEffect(() => {
@@ -312,7 +316,7 @@ export const useDeleteVmWorkflow = ({
         return prev.filter((id) => id !== vmid);
       });
     },
-    [selectableDeleteVmIds]
+    [selectableDeleteVmIds],
   );
 
   const handleSelectAllDeleteVm = useCallback(() => {
@@ -326,9 +330,9 @@ export const useDeleteVmWorkflow = ({
   const handleConfirmDeleteVmTasks = useCallback(() => {
     const selected = deleteVmCandidates.filter(
       (candidate) =>
-        deleteVmSelection.includes(candidate.vm.vmid)
-        && candidate.canDelete
-        && !queuedDeleteVmIds.has(candidate.vm.vmid)
+        deleteVmSelection.includes(candidate.vm.vmid) &&
+        candidate.canDelete &&
+        !queuedDeleteVmIds.has(candidate.vm.vmid),
     );
 
     if (selected.length === 0) {

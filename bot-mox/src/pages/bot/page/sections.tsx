@@ -1,4 +1,3 @@
-import React from 'react';
 import { CheckOutlined, ExclamationOutlined } from '@ant-design/icons';
 import { Collapse } from 'antd';
 import {
@@ -14,8 +13,14 @@ import {
   BotVMInfo,
 } from '../../../components/bot';
 import type { Bot } from '../../../types';
-import type { ConfigureSection, ConfigureTab, ExtendedBot, MainTab, ResourceSection } from './types';
 import styles from '../BotPage.module.css';
+import type {
+  ConfigureSection,
+  ConfigureTab,
+  ExtendedBot,
+  MainTab,
+  ResourceSection,
+} from './types';
 
 interface BuildConfigureSectionsOptions {
   bot: ExtendedBot;
@@ -133,11 +138,15 @@ export const renderTabContent = ({
               <div className={styles.configurePanelHeader}>
                 <div className={styles.configurePanelTitle}>
                   {section.complete ? (
-                    <span className={`${styles.configurePanelIcon} ${styles.configurePanelIconComplete}`}>
+                    <span
+                      className={`${styles.configurePanelIcon} ${styles.configurePanelIconComplete}`}
+                    >
                       <CheckOutlined />
                     </span>
                   ) : (
-                    <span className={`${styles.configurePanelIcon} ${styles.configurePanelIconWarning}`}>
+                    <span
+                      className={`${styles.configurePanelIcon} ${styles.configurePanelIconWarning}`}
+                    >
                       <ExclamationOutlined />
                     </span>
                   )}

@@ -1,6 +1,4 @@
-'use strict';
-
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -17,12 +15,40 @@ function escapeXml(text) {
 
 function randomWindowsUsername() {
   const adjectives = [
-    'Quick', 'Silent', 'Brave', 'Clever', 'Sharp', 'Bold', 'Keen', 'Swift',
-    'Lucky', 'Noble', 'Calm', 'Warm', 'Cool', 'Grand', 'Prime', 'Fair',
+    'Quick',
+    'Silent',
+    'Brave',
+    'Clever',
+    'Sharp',
+    'Bold',
+    'Keen',
+    'Swift',
+    'Lucky',
+    'Noble',
+    'Calm',
+    'Warm',
+    'Cool',
+    'Grand',
+    'Prime',
+    'Fair',
   ];
   const nouns = [
-    'Fox', 'Hawk', 'Wolf', 'Bear', 'Lynx', 'Deer', 'Sage', 'Oak',
-    'Elm', 'Pine', 'Star', 'Moon', 'Dawn', 'Ash', 'Jay', 'Wren',
+    'Fox',
+    'Hawk',
+    'Wolf',
+    'Bear',
+    'Lynx',
+    'Deer',
+    'Sage',
+    'Oak',
+    'Elm',
+    'Pine',
+    'Star',
+    'Moon',
+    'Dawn',
+    'Ash',
+    'Jay',
+    'Wren',
   ];
   const adj = adjectives[crypto.randomInt(adjectives.length)];
   const noun = nouns[crypto.randomInt(nouns.length)];
@@ -68,7 +94,8 @@ function resolveUsername(userConfig) {
 
 function resolveComputerName(computerNameConfig) {
   const mode = String(computerNameConfig?.mode || 'random');
-  if (mode === 'custom' && computerNameConfig?.customName) return String(computerNameConfig.customName).trim();
+  if (mode === 'custom' && computerNameConfig?.customName)
+    return String(computerNameConfig.customName).trim();
   if (mode === 'fixed') return 'WIN-PC';
   return randomComputerName();
 }
@@ -84,7 +111,9 @@ function resolveSoftwareList(removalConfig) {
   const mode = String(removalConfig?.mode || 'fixed');
   const fixed = Array.isArray(removalConfig?.fixedPackages) ? removalConfig.fixedPackages : [];
   const pool = Array.isArray(removalConfig?.randomPool) ? removalConfig.randomPool : [];
-  const neverRemove = new Set(Array.isArray(removalConfig?.neverRemove) ? removalConfig.neverRemove : []);
+  const neverRemove = new Set(
+    Array.isArray(removalConfig?.neverRemove) ? removalConfig.neverRemove : [],
+  );
   const min = removalConfig?.randomCount?.min ?? 5;
   const max = removalConfig?.randomCount?.max ?? 15;
 
@@ -95,22 +124,37 @@ function resolveSoftwareList(removalConfig) {
     result = pickRandomSubset(pool, min, max);
   } else {
     // mixed / fixed_random: fixed + random extras
-    const randomPart = pickRandomSubset(pool.filter(p => !fixed.includes(p)), min, max);
+    const randomPart = pickRandomSubset(
+      pool.filter((p) => !fixed.includes(p)),
+      min,
+      max,
+    );
     result = [...new Set([...fixed, ...randomPart])];
   }
 
   // filter out neverRemove
-  return result.filter(pkg => !neverRemove.has(pkg));
+  return result.filter((pkg) => !neverRemove.has(pkg));
 }
 
 function resolveCapabilityList(removalConfig) {
   const mode = String(removalConfig?.mode || 'fixed');
-  const fixed = Array.isArray(removalConfig?.fixedCapabilities) ? removalConfig.fixedCapabilities : [];
+  const fixed = Array.isArray(removalConfig?.fixedCapabilities)
+    ? removalConfig.fixedCapabilities
+    : [];
   const pool = Array.isArray(removalConfig?.randomPool) ? removalConfig.randomPool : [];
 
   if (mode === 'fixed') return [...fixed];
   if (mode === 'random') return pickRandomSubset(pool, 3, 10);
-  return [...new Set([...fixed, ...pickRandomSubset(pool.filter(c => !fixed.includes(c)), 3, 10)])];
+  return [
+    ...new Set([
+      ...fixed,
+      ...pickRandomSubset(
+        pool.filter((c) => !fixed.includes(c)),
+        3,
+        10,
+      ),
+    ]),
+  ];
 }
 
 /**
@@ -119,9 +163,7 @@ function resolveCapabilityList(removalConfig) {
 function resolveInputLocales(locale) {
   // new format: keyboardLayouts array of {language, layout}
   if (Array.isArray(locale?.keyboardLayouts) && locale.keyboardLayouts.length > 0) {
-    return locale.keyboardLayouts
-      .map(kl => `${kl.language}:${kl.layout}`)
-      .join(';');
+    return locale.keyboardLayouts.map((kl) => `${kl.language}:${kl.layout}`).join(';');
   }
   // legacy format: inputLocales string array
   if (Array.isArray(locale?.inputLocales) && locale.inputLocales.length > 0) {
@@ -135,24 +177,150 @@ function resolveInputLocales(locale) {
 // ---------------------------------------------------------------------------
 
 const VISUAL_EFFECTS_REGISTRY = [
-  { key: 'animateControls', path: 'HKCU\\Control Panel\\Desktop\\WindowMetrics', value: 'MinAnimate', type: 'REG_SZ', on: '1', off: '0' },
-  { key: 'animateMinMax', path: 'HKCU\\Control Panel\\Desktop\\WindowMetrics', value: 'MinAnimate', type: 'REG_SZ', on: '1', off: '0' },
-  { key: 'animateTaskbar', path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced', value: 'TaskbarAnimations', type: 'REG_DWORD', on: 1, off: 0 },
-  { key: 'aeropeek', path: 'HKCU\\Software\\Microsoft\\Windows\\DWM', value: 'EnableAeroPeek', type: 'REG_DWORD', on: 1, off: 0 },
-  { key: 'fontSmoothing', path: 'HKCU\\Control Panel\\Desktop', value: 'FontSmoothing', type: 'REG_SZ', on: '2', off: '0' },
-  { key: 'dragFullWindows', path: 'HKCU\\Control Panel\\Desktop', value: 'DragFullWindows', type: 'REG_SZ', on: '1', off: '0' },
-  { key: 'listBoxSmoothScrolling', path: 'HKCU\\Control Panel\\Desktop', value: 'SmoothScroll', type: 'REG_DWORD', on: 1, off: 0 },
-  { key: 'cursorShadow', path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced', value: 'ListviewShadow', type: 'REG_DWORD', on: 1, off: 0 },
-  { key: 'thumbnailPreviews', path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced', value: 'IconsOnly', type: 'REG_DWORD', on: 0, off: 1 },
-  { key: 'translucent', path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced', value: 'ListviewAlphaSelect', type: 'REG_DWORD', on: 1, off: 0 },
-  { key: 'iconShadow', path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced', value: 'ListviewShadow', type: 'REG_DWORD', on: 1, off: 0 },
-  { key: 'saveThumbnails', path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced', value: 'DisableThumbnailCache', type: 'REG_DWORD', on: 0, off: 1 },
-  { key: 'peekDesktop', path: 'HKCU\\Software\\Microsoft\\Windows\\DWM', value: 'EnableAeroPeek', type: 'REG_DWORD', on: 1, off: 0 },
-  { key: 'windowShadow', path: 'HKCU\\Software\\Microsoft\\Windows\\DWM', value: 'Composition', type: 'REG_DWORD', on: 1, off: 0 },
-  { key: 'fadeMenuItems', path: 'HKCU\\Control Panel\\Desktop', value: 'MenuShowDelay', type: 'REG_SZ', on: '400', off: '0' },
-  { key: 'fadeTooltips', path: 'HKCU\\Control Panel\\Desktop', value: 'MenuShowDelay', type: 'REG_SZ', on: '400', off: '0' },
-  { key: 'fadeAfterClick', path: 'HKCU\\Control Panel\\Desktop', value: 'MenuShowDelay', type: 'REG_SZ', on: '400', off: '0' },
-  { key: 'comboBoxSlide', path: 'HKCU\\Control Panel\\Desktop', value: 'MenuShowDelay', type: 'REG_SZ', on: '400', off: '0' },
+  {
+    key: 'animateControls',
+    path: 'HKCU\\Control Panel\\Desktop\\WindowMetrics',
+    value: 'MinAnimate',
+    type: 'REG_SZ',
+    on: '1',
+    off: '0',
+  },
+  {
+    key: 'animateMinMax',
+    path: 'HKCU\\Control Panel\\Desktop\\WindowMetrics',
+    value: 'MinAnimate',
+    type: 'REG_SZ',
+    on: '1',
+    off: '0',
+  },
+  {
+    key: 'animateTaskbar',
+    path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced',
+    value: 'TaskbarAnimations',
+    type: 'REG_DWORD',
+    on: 1,
+    off: 0,
+  },
+  {
+    key: 'aeropeek',
+    path: 'HKCU\\Software\\Microsoft\\Windows\\DWM',
+    value: 'EnableAeroPeek',
+    type: 'REG_DWORD',
+    on: 1,
+    off: 0,
+  },
+  {
+    key: 'fontSmoothing',
+    path: 'HKCU\\Control Panel\\Desktop',
+    value: 'FontSmoothing',
+    type: 'REG_SZ',
+    on: '2',
+    off: '0',
+  },
+  {
+    key: 'dragFullWindows',
+    path: 'HKCU\\Control Panel\\Desktop',
+    value: 'DragFullWindows',
+    type: 'REG_SZ',
+    on: '1',
+    off: '0',
+  },
+  {
+    key: 'listBoxSmoothScrolling',
+    path: 'HKCU\\Control Panel\\Desktop',
+    value: 'SmoothScroll',
+    type: 'REG_DWORD',
+    on: 1,
+    off: 0,
+  },
+  {
+    key: 'cursorShadow',
+    path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced',
+    value: 'ListviewShadow',
+    type: 'REG_DWORD',
+    on: 1,
+    off: 0,
+  },
+  {
+    key: 'thumbnailPreviews',
+    path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced',
+    value: 'IconsOnly',
+    type: 'REG_DWORD',
+    on: 0,
+    off: 1,
+  },
+  {
+    key: 'translucent',
+    path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced',
+    value: 'ListviewAlphaSelect',
+    type: 'REG_DWORD',
+    on: 1,
+    off: 0,
+  },
+  {
+    key: 'iconShadow',
+    path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced',
+    value: 'ListviewShadow',
+    type: 'REG_DWORD',
+    on: 1,
+    off: 0,
+  },
+  {
+    key: 'saveThumbnails',
+    path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced',
+    value: 'DisableThumbnailCache',
+    type: 'REG_DWORD',
+    on: 0,
+    off: 1,
+  },
+  {
+    key: 'peekDesktop',
+    path: 'HKCU\\Software\\Microsoft\\Windows\\DWM',
+    value: 'EnableAeroPeek',
+    type: 'REG_DWORD',
+    on: 1,
+    off: 0,
+  },
+  {
+    key: 'windowShadow',
+    path: 'HKCU\\Software\\Microsoft\\Windows\\DWM',
+    value: 'Composition',
+    type: 'REG_DWORD',
+    on: 1,
+    off: 0,
+  },
+  {
+    key: 'fadeMenuItems',
+    path: 'HKCU\\Control Panel\\Desktop',
+    value: 'MenuShowDelay',
+    type: 'REG_SZ',
+    on: '400',
+    off: '0',
+  },
+  {
+    key: 'fadeTooltips',
+    path: 'HKCU\\Control Panel\\Desktop',
+    value: 'MenuShowDelay',
+    type: 'REG_SZ',
+    on: '400',
+    off: '0',
+  },
+  {
+    key: 'fadeAfterClick',
+    path: 'HKCU\\Control Panel\\Desktop',
+    value: 'MenuShowDelay',
+    type: 'REG_SZ',
+    on: '400',
+    off: '0',
+  },
+  {
+    key: 'comboBoxSlide',
+    path: 'HKCU\\Control Panel\\Desktop',
+    value: 'MenuShowDelay',
+    type: 'REG_SZ',
+    on: '400',
+    off: '0',
+  },
 ];
 
 function buildVisualEffectsRegistryPs1(visualEffectsConfig) {
@@ -163,7 +331,9 @@ function buildVisualEffectsRegistryPs1(visualEffectsConfig) {
   const lines = [];
 
   // Set VisualFXSetting to custom (3)
-  lines.push('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" /v VisualFXSetting /t REG_DWORD /d 3 /f');
+  lines.push(
+    'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" /v VisualFXSetting /t REG_DWORD /d 3 /f',
+  );
 
   const seen = new Set();
   for (const entry of VISUAL_EFFECTS_REGISTRY) {
@@ -221,7 +391,9 @@ function buildDesktopIconsRegistryPs1(desktopIconsConfig) {
       show = icons[key] !== undefined ? !!icons[key] : crypto.randomInt(2) === 1;
     }
     const regValue = show ? 0 : 1;
-    lines.push(`reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel" /v "${clsid}" /t REG_DWORD /d ${regValue} /f`);
+    lines.push(
+      `reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel" /v "${clsid}" /t REG_DWORD /d ${regValue} /f`,
+    );
   }
 
   // Start folders (Settings > Personalization > Start)
@@ -240,14 +412,20 @@ function buildDesktopIconsRegistryPs1(desktopIconsConfig) {
   for (const [key, regName] of Object.entries(START_FOLDER_KEYS)) {
     if (startFolders[key] !== undefined) {
       const val = startFolders[key] ? 1 : 0;
-      lines.push(`reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Start" /v "${regName}" /t REG_DWORD /d ${val} /f`);
+      lines.push(
+        `reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Start" /v "${regName}" /t REG_DWORD /d ${val} /f`,
+      );
     }
   }
 
   // Delete Edge shortcut
   if (desktopIconsConfig?.deleteEdgeShortcut) {
-    lines.push('Remove-Item -Path "$env:PUBLIC\\Desktop\\Microsoft Edge.lnk" -Force -ErrorAction SilentlyContinue');
-    lines.push('Remove-Item -Path "$env:USERPROFILE\\Desktop\\Microsoft Edge.lnk" -Force -ErrorAction SilentlyContinue');
+    lines.push(
+      'Remove-Item -Path "$env:PUBLIC\\Desktop\\Microsoft Edge.lnk" -Force -ErrorAction SilentlyContinue',
+    );
+    lines.push(
+      'Remove-Item -Path "$env:USERPROFILE\\Desktop\\Microsoft Edge.lnk" -Force -ErrorAction SilentlyContinue',
+    );
   }
 
   return lines.join('\n');
@@ -259,16 +437,18 @@ function buildDesktopIconsRegistryPs1(desktopIconsConfig) {
 
 function buildRemovePackagesPs1(packages) {
   if (!packages.length) return '';
-  const lines = packages.map(pkg =>
-    `Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -like '*${pkg}*' } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue`
+  const lines = packages.map(
+    (pkg) =>
+      `Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -like '*${pkg}*' } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue`,
   );
   return lines.join('\n');
 }
 
 function buildRemoveCapabilitiesPs1(capabilities) {
   if (!capabilities.length) return '';
-  const lines = capabilities.map(cap =>
-    `Get-WindowsCapability -Online | Where-Object { $_.Name -like '*${cap}*' -and $_.State -eq 'Installed' } | Remove-WindowsCapability -Online -ErrorAction SilentlyContinue`
+  const lines = capabilities.map(
+    (cap) =>
+      `Get-WindowsCapability -Online | Where-Object { $_.Name -like '*${cap}*' -and $_.State -eq 'Installed' } | Remove-WindowsCapability -Online -ErrorAction SilentlyContinue`,
   );
   return lines.join('\n');
 }
@@ -278,40 +458,60 @@ function buildWindowsSettingsPs1(settings) {
 
   if (settings.disableDefender) {
     lines.push('Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction SilentlyContinue');
-    lines.push('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v DisableAntiSpyware /t REG_DWORD /d 1 /f');
+    lines.push(
+      'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender" /v DisableAntiSpyware /t REG_DWORD /d 1 /f',
+    );
   }
   if (settings.disableWindowsUpdate) {
-    lines.push('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU" /v NoAutoUpdate /t REG_DWORD /d 1 /f');
+    lines.push(
+      'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU" /v NoAutoUpdate /t REG_DWORD /d 1 /f',
+    );
   }
   if (settings.disableUac) {
-    lines.push('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v EnableLUA /t REG_DWORD /d 0 /f');
+    lines.push(
+      'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v EnableLUA /t REG_DWORD /d 0 /f',
+    );
   }
   if (settings.disableSmartScreen) {
-    lines.push('reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer" /v SmartScreenEnabled /t REG_SZ /d Off /f');
+    lines.push(
+      'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer" /v SmartScreenEnabled /t REG_SZ /d Off /f',
+    );
   }
   if (settings.disableSystemRestore) {
     lines.push('Disable-ComputerRestore -Drive "C:\\" -ErrorAction SilentlyContinue');
   }
   if (settings.enableLongPaths) {
-    lines.push('reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f');
+    lines.push(
+      'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f',
+    );
   }
   if (settings.allowPowerShellScripts) {
     lines.push('Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope LocalMachine -Force');
   }
   if (settings.disableWidgets) {
-    lines.push('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh" /v AllowNewsAndInterests /t REG_DWORD /d 0 /f');
+    lines.push(
+      'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh" /v AllowNewsAndInterests /t REG_DWORD /d 0 /f',
+    );
   }
   if (settings.disableEdgeStartup) {
-    lines.push('reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge" /v HideFirstRunExperience /t REG_DWORD /d 1 /f');
+    lines.push(
+      'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge" /v HideFirstRunExperience /t REG_DWORD /d 1 /f',
+    );
   }
   if (settings.preventDeviceEncryption) {
-    lines.push('reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\BitLocker" /v PreventDeviceEncryption /t REG_DWORD /d 1 /f');
+    lines.push(
+      'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\BitLocker" /v PreventDeviceEncryption /t REG_DWORD /d 1 /f',
+    );
   }
   if (settings.disableStickyKeys) {
-    lines.push('reg add "HKCU\\Control Panel\\Accessibility\\StickyKeys" /v Flags /t REG_SZ /d 506 /f');
+    lines.push(
+      'reg add "HKCU\\Control Panel\\Accessibility\\StickyKeys" /v Flags /t REG_SZ /d 506 /f',
+    );
   }
   if (settings.enableRemoteDesktop) {
-    lines.push('reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f');
+    lines.push(
+      'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f',
+    );
     lines.push('netsh advfirewall firewall set rule group="Remote Desktop" new enable=Yes');
   }
 
@@ -323,7 +523,7 @@ function buildGeoLocationPs1(geoLocation) {
   return `Set-WinHomeLocation -GeoId ${geoLocation}`;
 }
 
-function buildStartPs1(provisionConfig) {
+function buildStartPs1(_provisionConfig) {
   return `# Bot-Mox VM Bootstrap Script
 $ErrorActionPreference = 'SilentlyContinue'
 
@@ -450,15 +650,19 @@ function buildUnattendXml({ profileConfig, provisionConfig }) {
     desktopIconsScript,
   ].filter(Boolean);
 
-  const provisionJson = JSON.stringify({
-    version: 1,
-    vm_uuid: provisionConfig.vmUuid || '',
-    ip: provisionConfig.ip || {},
-    token: provisionConfig.token || '',
-    s3_endpoint: provisionConfig.s3Endpoint || '',
-    api_endpoint: provisionConfig.apiEndpoint || '',
-    bootstrap_url: '/provisioning/validate-token',
-  }, null, 2);
+  const provisionJson = JSON.stringify(
+    {
+      version: 1,
+      vm_uuid: provisionConfig.vmUuid || '',
+      ip: provisionConfig.ip || {},
+      token: provisionConfig.token || '',
+      s3_endpoint: provisionConfig.s3Endpoint || '',
+      api_endpoint: provisionConfig.apiEndpoint || '',
+      bootstrap_url: '/provisioning/validate-token',
+    },
+    null,
+    2,
+  );
 
   const passwordBase64 = Buffer.from(`${password}Password`).toString('base64');
 

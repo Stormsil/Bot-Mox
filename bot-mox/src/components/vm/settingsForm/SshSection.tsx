@@ -1,8 +1,8 @@
-import React from 'react';
 import { Input, InputNumber, Switch } from 'antd';
-import type { SettingsSectionProps } from './types';
+import type React from 'react';
 import { SecretField } from './SecretField';
 import layout from './SettingsSectionLayout.module.css';
+import type { SettingsSectionProps } from './types';
 
 export const SshSection: React.FC<SettingsSectionProps> = ({
   settings,
@@ -14,7 +14,7 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
     <h4>SSH Connection</h4>
     <div className={layout.row}>
       <div className={layout.field}>
-        <label>Host</label>
+        <div className={layout.fieldLabel}>Host</div>
         <Input
           value={settings.ssh.host}
           onChange={(event) => onFieldChange('ssh.host', event.target.value)}
@@ -22,7 +22,7 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
         />
       </div>
       <div className={layout.field}>
-        <label>Port</label>
+        <div className={layout.fieldLabel}>Port</div>
         <InputNumber
           value={settings.ssh.port}
           onChange={(value) => onFieldChange('ssh.port', value || 22)}
@@ -35,7 +35,7 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
     </div>
     <div className={layout.row}>
       <div className={layout.field}>
-        <label>Username</label>
+        <div className={layout.fieldLabel}>Username</div>
         <Input
           value={settings.ssh.username}
           onChange={(event) => onFieldChange('ssh.username', event.target.value)}
@@ -43,7 +43,7 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
         />
       </div>
       <div className={layout.field}>
-        <label>Use Key Auth</label>
+        <div className={layout.fieldLabel}>Use Key Auth</div>
         <div>
           <Switch
             checked={settings.ssh.useKeyAuth}
@@ -64,7 +64,7 @@ export const SshSection: React.FC<SettingsSectionProps> = ({
           />
         ) : (
           <div className={layout.field}>
-            <label>Password</label>
+            <div className={layout.fieldLabel}>Password</div>
             <Input.Password
               value={settings.ssh.password || ''}
               onChange={(event) => onFieldChange('ssh.password', event.target.value)}

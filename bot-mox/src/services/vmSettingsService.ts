@@ -1,6 +1,6 @@
+import { uiLogger } from '../observability/uiLogger';
 import type { VMConfigProfile, VMGeneratorSettings, VMHardwareConfig } from '../types';
 import { apiGet, apiPatch, apiPut, createPollingSubscription } from './apiClient';
-import { uiLogger } from '../observability/uiLogger'
 
 const SETTINGS_PATH = 'vmgenerator';
 const VM_PROFILES_PATH = `${SETTINGS_PATH}/profiles`;
@@ -100,7 +100,9 @@ function normalizeTinyFmUrl(input?: string): string {
   }
 }
 
-function normalizeStorageSettings(input: VMGeneratorSettings['storage']): VMGeneratorSettings['storage'] {
+function normalizeStorageSettings(
+  input: VMGeneratorSettings['storage'],
+): VMGeneratorSettings['storage'] {
   const normalizeList = (value: unknown): string[] => {
     if (!Array.isArray(value)) {
       return [];
@@ -130,9 +132,8 @@ function normalizeStorageSettings(input: VMGeneratorSettings['storage']): VMGene
   const optionsRaw = normalizeList(input.options);
   const enabledRaw = normalizeList(input.enabledDisks);
   const defaultRaw = String(input.default ?? '').trim();
-  const defaultCandidate = defaultRaw && defaultRaw.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER
-    ? defaultRaw
-    : '';
+  const defaultCandidate =
+    defaultRaw && defaultRaw.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER ? defaultRaw : '';
 
   const options: string[] = [...optionsRaw];
   for (const entry of enabledRaw) {
@@ -148,16 +149,16 @@ function normalizeStorageSettings(input: VMGeneratorSettings['storage']): VMGene
     options.push(...FALLBACK_STORAGE_VALUES);
   }
 
-  let enabled = enabledRaw.length > 0
-    ? enabledRaw.filter((entry) => options.includes(entry))
-    : [...options];
+  let enabled =
+    enabledRaw.length > 0 ? enabledRaw.filter((entry) => options.includes(entry)) : [...options];
   if (enabled.length === 0) {
     enabled = [...options];
   }
 
-  const defaultValue = defaultCandidate && enabled.includes(defaultCandidate)
-    ? defaultCandidate
-    : (enabled[0] || options[0] || FALLBACK_STORAGE_VALUES[0]);
+  const defaultValue =
+    defaultCandidate && enabled.includes(defaultCandidate)
+      ? defaultCandidate
+      : enabled[0] || options[0] || FALLBACK_STORAGE_VALUES[0];
 
   return {
     ...input,
@@ -168,17 +169,25 @@ function normalizeStorageSettings(input: VMGeneratorSettings['storage']): VMGene
 }
 
 function mergeSettings(data: Partial<VMGeneratorSettings> | undefined | null): VMGeneratorSettings {
-  const legacyTiny = (data as Record<string, unknown> | null | undefined)?.tinyFM as Record<string, unknown> | undefined;
-  const legacySyncThing = (data as Record<string, unknown> | null | undefined)?.syncThing as Record<string, unknown> | undefined;
+  const legacyTiny = (data as Record<string, unknown> | null | undefined)?.tinyFM as
+    | Record<string, unknown>
+    | undefined;
+  const legacySyncThing = (data as Record<string, unknown> | null | undefined)?.syncThing as
+    | Record<string, unknown>
+    | undefined;
 
   const servicesFromLegacy: Partial<VMGeneratorSettings['services']> = {};
   if (typeof legacyTiny?.url === 'string') servicesFromLegacy.tinyFmUrl = legacyTiny.url;
-  if (typeof legacyTiny?.username === 'string') servicesFromLegacy.tinyFmUsername = legacyTiny.username;
-  if (typeof legacyTiny?.password === 'string') servicesFromLegacy.tinyFmPassword = legacyTiny.password;
-  if (typeof legacySyncThing?.url === 'string') servicesFromLegacy.syncThingUrl = legacySyncThing.url;
-  if (typeof legacySyncThing?.username === 'string') servicesFromLegacy.syncThingUsername = legacySyncThing.username;
-  if (typeof legacySyncThing?.password === 'string') servicesFromLegacy.syncThingPassword = legacySyncThing.password;
-
+  if (typeof legacyTiny?.username === 'string')
+    servicesFromLegacy.tinyFmUsername = legacyTiny.username;
+  if (typeof legacyTiny?.password === 'string')
+    servicesFromLegacy.tinyFmPassword = legacyTiny.password;
+  if (typeof legacySyncThing?.url === 'string')
+    servicesFromLegacy.syncThingUrl = legacySyncThing.url;
+  if (typeof legacySyncThing?.username === 'string')
+    servicesFromLegacy.syncThingUsername = legacySyncThing.username;
+  if (typeof legacySyncThing?.password === 'string')
+    servicesFromLegacy.syncThingPassword = legacySyncThing.password;
 
   const mergedStorage = normalizeStorageSettings({
     ...DEFAULT_SETTINGS.storage,
@@ -210,9 +219,9 @@ function mergeSettings(data: Partial<VMGeneratorSettings> | undefined | null): V
       ...servicesFromLegacy,
       ...(data?.services || {}),
       tinyFmUrl: normalizeTinyFmUrl(
-        (data?.services?.tinyFmUrl as string | undefined)
-        ?? servicesFromLegacy.tinyFmUrl
-        ?? DEFAULT_SETTINGS.services.tinyFmUrl
+        (data?.services?.tinyFmUrl as string | undefined) ??
+          servicesFromLegacy.tinyFmUrl ??
+          DEFAULT_SETTINGS.services.tinyFmUrl,
       ),
     },
     deleteVmFilters: {
@@ -229,7 +238,10 @@ function mergeSettings(data: Partial<VMGeneratorSettings> | undefined | null): V
 }
 
 function normalizeApiPath(path: string): string {
-  const normalized = String(path || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
+  const normalized = String(path || '')
+    .trim()
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
   if (!normalized) {
     return SETTINGS_API_PREFIX;
   }
@@ -276,7 +288,9 @@ export async function getVMSettings(): Promise<VMGeneratorSettings> {
  * Strip deprecated plaintext password fields before persisting to the backend.
  * Passwords are managed through the secrets vault (secret bindings) instead.
  */
-export function stripPasswords(settings: Partial<VMGeneratorSettings>): Partial<VMGeneratorSettings> {
+export function stripPasswords(
+  settings: Partial<VMGeneratorSettings>,
+): Partial<VMGeneratorSettings> {
   const cleaned = structuredClone(settings);
 
   if (cleaned.proxmox) {
@@ -310,7 +324,7 @@ export async function getVMConfigProfiles(): Promise<VMConfigProfile[]> {
 export async function saveVMConfigProfile(
   name: string,
   hardware: VMHardwareConfig,
-  profileId?: string
+  profileId?: string,
 ): Promise<string> {
   const trimmedName = name.trim();
   if (!trimmedName) throw new Error('Profile name is required');
@@ -354,7 +368,7 @@ export async function deleteVMConfigProfile(profileId: string): Promise<void> {
 }
 
 export function subscribeToVMSettings(
-  callback: (settings: VMGeneratorSettings) => void
+  callback: (settings: VMGeneratorSettings) => void,
 ): () => void {
   return createPollingSubscription(
     async () => getVMSettings(),
@@ -363,7 +377,7 @@ export function subscribeToVMSettings(
       uiLogger.error('Error subscribing to VM settings:', error);
       callback(DEFAULT_SETTINGS);
     },
-    { key: 'settings:vmgenerator', intervalMs: 4000, immediate: true }
+    { key: 'settings:vmgenerator', intervalMs: 4000, immediate: true },
   );
 }
 

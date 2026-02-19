@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const { createSupabaseServiceClient } = require('../../repositories/supabase/client');
 const { signAgentToken } = require('../../utils/agent-token');
 
@@ -53,12 +53,14 @@ function createAgentService({ env }) {
     const { createClient } = require('@supabase/supabase-js');
 
     const supabaseUrl = String(env?.supabaseUrl || '').trim();
-    const supabaseAuthKey = String(env?.supabaseAnonKey || env?.supabaseServiceRoleKey || '').trim();
+    const supabaseAuthKey = String(
+      env?.supabaseAnonKey || env?.supabaseServiceRoleKey || '',
+    ).trim();
     if (!supabaseUrl || !supabaseAuthKey) {
       throw new AgentServiceError(
         503,
         'SERVICE_UNAVAILABLE',
-        'Supabase auth is not configured (SUPABASE_URL + SUPABASE_ANON_KEY/SERVICE_ROLE_KEY)'
+        'Supabase auth is not configured (SUPABASE_URL + SUPABASE_ANON_KEY/SERVICE_ROLE_KEY)',
       );
     }
 
@@ -128,7 +130,9 @@ function createAgentService({ env }) {
         pairing_code: pairingCode,
         pairing_expires_at: expiresAt,
       })
-      .select('id, tenant_id, owner_user_id, name, status, pairing_code, pairing_expires_at, created_at')
+      .select(
+        'id, tenant_id, owner_user_id, name, status, pairing_code, pairing_expires_at, created_at',
+      )
       .single();
 
     if (error) {
@@ -145,9 +149,14 @@ function createAgentService({ env }) {
 
       if (!settingsError && settingsRow?.data && typeof settingsRow.data === 'object') {
         const tree = settingsRow.data;
-        const vmgenerator = tree.vmgenerator && typeof tree.vmgenerator === 'object' ? tree.vmgenerator : {};
-        const proxmox = vmgenerator.proxmox && typeof vmgenerator.proxmox === 'object' ? vmgenerator.proxmox : {};
-        const services = vmgenerator.services && typeof vmgenerator.services === 'object' ? vmgenerator.services : {};
+        const vmgenerator =
+          tree.vmgenerator && typeof tree.vmgenerator === 'object' ? tree.vmgenerator : {};
+        const proxmox =
+          vmgenerator.proxmox && typeof vmgenerator.proxmox === 'object' ? vmgenerator.proxmox : {};
+        const services =
+          vmgenerator.services && typeof vmgenerator.services === 'object'
+            ? vmgenerator.services
+            : {};
         proxmoxDefaults = sanitizePairingProxmoxDefaults({
           url: proxmox.url || services.proxmoxUrl || '',
           username: proxmox.username || '',
@@ -164,7 +173,14 @@ function createAgentService({ env }) {
     };
   }
 
-  async function registerAgent({ pairingCode, machineName, version, platform, capabilities, pairedBy }) {
+  async function registerAgent({
+    pairingCode,
+    machineName,
+    version,
+    platform,
+    capabilities,
+    pairedBy,
+  }) {
     const client = getClient();
     const normalizedCode = String(pairingCode || '').trim();
     const normalizedMachineName = String(machineName || '').trim();
@@ -180,7 +196,11 @@ function createAgentService({ env }) {
       .single();
 
     if (lookupError || !agent) {
-      throw new AgentServiceError(404, 'PAIRING_NOT_FOUND', 'Pairing code not found or already used');
+      throw new AgentServiceError(
+        404,
+        'PAIRING_NOT_FOUND',
+        'Pairing code not found or already used',
+      );
     }
 
     const expiresAt = agent.pairing_expires_at ? new Date(agent.pairing_expires_at).getTime() : 0;
@@ -195,9 +215,10 @@ function createAgentService({ env }) {
       resolvedName = hasDefaultName ? normalizedMachineName : currentName;
     }
 
-    const currentMetadata = agent.metadata && typeof agent.metadata === 'object' && !Array.isArray(agent.metadata)
-      ? agent.metadata
-      : {};
+    const currentMetadata =
+      agent.metadata && typeof agent.metadata === 'object' && !Array.isArray(agent.metadata)
+        ? agent.metadata
+        : {};
     const nextMetadata = normalizedMachineName
       ? { ...currentMetadata, machine_name: normalizedMachineName }
       : currentMetadata;
@@ -219,11 +240,17 @@ function createAgentService({ env }) {
         last_seen_at: now,
       })
       .eq('id', agent.id)
-      .select('id, tenant_id, owner_user_id, name, status, version, platform, capabilities, paired_at, last_seen_at, created_at, updated_at')
+      .select(
+        'id, tenant_id, owner_user_id, name, status, version, platform, capabilities, paired_at, last_seen_at, created_at, updated_at',
+      )
       .single();
 
     if (updateError) {
-      throw new AgentServiceError(500, 'DB_ERROR', `Failed to register agent: ${updateError.message}`);
+      throw new AgentServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to register agent: ${updateError.message}`,
+      );
     }
 
     let tokenPayload;
@@ -234,8 +261,12 @@ function createAgentService({ env }) {
         tenantId: updated.tenant_id,
         expiresInSeconds: env?.agentTokenTtlSeconds,
       });
-    } catch (error) {
-      throw new AgentServiceError(503, 'AGENT_AUTH_NOT_CONFIGURED', 'Agent auth secret is not configured');
+    } catch (_error) {
+      throw new AgentServiceError(
+        503,
+        'AGENT_AUTH_NOT_CONFIGURED',
+        'Agent auth secret is not configured',
+      );
     }
 
     return {
@@ -311,7 +342,11 @@ function createAgentService({ env }) {
       .single();
 
     if (updateError) {
-      throw new AgentServiceError(500, 'DB_ERROR', `Failed to update heartbeat: ${updateError.message}`);
+      throw new AgentServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to update heartbeat: ${updateError.message}`,
+      );
     }
 
     return updated;
@@ -324,7 +359,9 @@ function createAgentService({ env }) {
 
     let query = client
       .from('agents')
-      .select('id, tenant_id, owner_user_id, name, status, version, platform, capabilities, last_seen_at, paired_at, revoked_at, created_at, updated_at')
+      .select(
+        'id, tenant_id, owner_user_id, name, status, version, platform, capabilities, last_seen_at, paired_at, revoked_at, created_at, updated_at',
+      )
       .eq('tenant_id', normalizedTenantId)
       .order('created_at', { ascending: false });
 
@@ -359,7 +396,9 @@ function createAgentService({ env }) {
 
     const { data, error } = await client
       .from('agents')
-      .select('id, tenant_id, owner_user_id, name, status, version, platform, capabilities, last_seen_at, paired_at, revoked_at, revoke_reason, metadata, created_at, updated_at')
+      .select(
+        'id, tenant_id, owner_user_id, name, status, version, platform, capabilities, last_seen_at, paired_at, revoked_at, revoke_reason, metadata, created_at, updated_at',
+      )
       .eq('id', normalizedAgentId)
       .eq('tenant_id', normalizedTenantId)
       .single();
@@ -416,7 +455,11 @@ function createAgentService({ env }) {
       .single();
 
     if (updateError) {
-      throw new AgentServiceError(500, 'DB_ERROR', `Failed to revoke agent: ${updateError.message}`);
+      throw new AgentServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to revoke agent: ${updateError.message}`,
+      );
     }
 
     return updated;
@@ -438,7 +481,7 @@ function createAgentService({ env }) {
     if (data.status !== 'active') return false;
 
     const lastSeen = data.last_seen_at ? new Date(data.last_seen_at).getTime() : 0;
-    return lastSeen > 0 && (Date.now() - lastSeen) < staleThresholdMs;
+    return lastSeen > 0 && Date.now() - lastSeen < staleThresholdMs;
   }
 
   return {

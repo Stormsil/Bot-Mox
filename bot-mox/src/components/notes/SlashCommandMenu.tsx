@@ -3,18 +3,17 @@
  * Появляется при вводе "/" и позволяет выбрать тип блока
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  FontSizeOutlined,
   CheckSquareOutlined,
-  UnorderedListOutlined,
+  FontSizeOutlined,
   OrderedListOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons';
-import type { NoteBlockType } from '../../services/notesService';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import type { NoteBlockType } from '../../entities/notes/model/types';
 import styles from './NotesComponents.module.css';
 
-const cx = (...parts: Array<string | false | null | undefined>) =>
-  parts.filter(Boolean).join(' ');
+const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 
 /**
  * Опция меню команд
@@ -102,15 +101,17 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
   const filteredCommands = React.useMemo(() => {
     const filterLower = filter.toLowerCase();
     return COMMANDS.filter(
-      cmd =>
+      (cmd) =>
         cmd.label.toLowerCase().includes(filterLower) ||
         cmd.description.toLowerCase().includes(filterLower) ||
-        cmd.shortcut.toLowerCase().includes(filterLower)
+        cmd.shortcut.toLowerCase().includes(filterLower),
     );
   }, [filter]);
 
   // Сброс выбранного индекса при изменении фильтра или списка команд
   useEffect(() => {
+    void filter;
+    void filteredCommands.length;
     const frameId = window.requestAnimationFrame(() => {
       setSelectedIndex(0);
     });
@@ -128,13 +129,11 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedIndex(prev =>
-            prev < filteredCommands.length - 1 ? prev + 1 : prev
-          );
+          setSelectedIndex((prev) => (prev < filteredCommands.length - 1 ? prev + 1 : prev));
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setSelectedIndex(prev => (prev > 0 ? prev - 1 : 0));
+          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
           break;
         case 'Enter':
           e.preventDefault();
@@ -148,7 +147,7 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
           break;
       }
     },
-    [filteredCommands, selectedIndex, onSelect, onClose, position]
+    [filteredCommands, selectedIndex, onSelect, onClose, position],
   );
 
   // Обработка клика вне меню
@@ -158,7 +157,7 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   // Подписка на события
@@ -177,9 +176,7 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
   // Прокрутка к выбранному элементу
   useEffect(() => {
     if (menuRef.current && position) {
-      const selectedElement = menuRef.current.children[
-        selectedIndex
-      ] as HTMLElement;
+      const selectedElement = menuRef.current.children[selectedIndex] as HTMLElement;
       if (selectedElement) {
         selectedElement.scrollIntoView({ block: 'nearest' });
       }
@@ -191,7 +188,7 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
     (type: NoteBlockType) => {
       onSelect(type);
     },
-    [onSelect]
+    [onSelect],
   );
 
   // Обработка наведения мыши
@@ -230,24 +227,20 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
       }}
     >
       {filteredCommands.map((command, index) => (
-        <div
+        <button
+          type="button"
           key={command.type}
-          className={cx(
-            styles['slash-command-item'],
-            index === selectedIndex && styles.selected
-          )}
+          className={cx(styles['slash-command-item'], index === selectedIndex && styles.selected)}
           onClick={() => handleSelect(command.type)}
           onMouseEnter={() => handleMouseEnter(index)}
         >
           <div className={styles['slash-command-icon']}>{command.icon}</div>
           <div className={styles['slash-command-content']}>
             <div className={styles['slash-command-label']}>{command.label}</div>
-            <div className={styles['slash-command-description']}>
-              {command.description}
-            </div>
+            <div className={styles['slash-command-description']}>{command.description}</div>
           </div>
           <div className={styles['slash-command-shortcut']}>{command.shortcut}</div>
-        </div>
+        </button>
       ))}
     </div>
   );

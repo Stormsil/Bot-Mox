@@ -18,5 +18,8 @@ export interface SettingsSectionProps {
   settings: VMGeneratorSettings;
   onFieldChange: SettingsFieldUpdater;
   secretBindings?: SecretBindingsMap;
-  onSecretBindingChange?: (fieldName: string, binding: import('../../../types/secrets').SecretBinding) => void;
+  onSecretBindingChange?: (
+    fieldName: string,
+    binding: import('../../../types/secrets').SecretBinding,
+  ) => void;
 }

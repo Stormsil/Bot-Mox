@@ -4,7 +4,7 @@ function rewriteServiceUrl(req, targetUrl, rootFallbackToTarget) {
   if (suffix === '/' || suffix === '') {
     req.url = rootFallbackToTarget
       ? `${target.pathname}${target.search || ''}`
-      : (target.pathname || '/');
+      : target.pathname || '/';
   } else {
     req.url = suffix;
   }
@@ -70,27 +70,31 @@ function mountUiProxyRoutes({
       if (!authorized) return;
 
       const reqPath = String(req.originalUrl || req.url || '');
-      const isAccessTicketRequest = prefix === '/api2'
-        && req.method === 'POST'
-        && /^\/api2\/(?:json|extjs)\/access\/ticket(?:\?|$)/.test(reqPath);
+      const isAccessTicketRequest =
+        prefix === '/api2' &&
+        req.method === 'POST' &&
+        /^\/api2\/(?:json|extjs)\/access\/ticket(?:\?|$)/.test(reqPath);
 
       if (isAccessTicketRequest) {
         try {
           const session = await proxmoxLogin(true);
           res.setHeader('Set-Cookie', `PVEAuthCookie=${session.ticket}; Path=/; SameSite=Lax`);
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          const payloadData = session.loginData && typeof session.loginData === 'object'
-            ? session.loginData
-            : {
-              username: session.username || '',
-              ticket: session.ticket,
-              CSRFPreventionToken: session.csrfToken || '',
-            };
+          const payloadData =
+            session.loginData && typeof session.loginData === 'object'
+              ? session.loginData
+              : {
+                  username: session.username || '',
+                  ticket: session.ticket,
+                  CSRFPreventionToken: session.csrfToken || '',
+                };
           payloadData.cap = normalizeProxmoxCapShape(payloadData.cap);
-          return res.status(200).send(JSON.stringify({
-            success: 1,
-            data: payloadData,
-          }));
+          return res.status(200).send(
+            JSON.stringify({
+              success: 1,
+              data: payloadData,
+            }),
+          );
         } catch (error) {
           return res.status(401).json({
             success: 0,
@@ -100,15 +104,15 @@ function mountUiProxyRoutes({
         }
       }
 
-      const isCriticalClusterPoll = prefix === '/api2' && (
-        reqPath.startsWith('/api2/json/cluster/resources')
-        || reqPath.startsWith('/api2/json/cluster/tasks')
-      );
+      const isCriticalClusterPoll =
+        prefix === '/api2' &&
+        (reqPath.startsWith('/api2/json/cluster/resources') ||
+          reqPath.startsWith('/api2/json/cluster/tasks'));
 
       try {
         const forceRefresh = prefix === '/proxmox-ui' || isCriticalClusterPoll;
         await proxmoxLogin(forceRefresh);
-      } catch (error) {
+      } catch (_error) {
         // Continue unauthenticated; Proxmox UI can show login page.
       }
 
@@ -117,7 +121,7 @@ function mountUiProxyRoutes({
         req.headers.csrfpreventiontoken = proxmoxSession.csrfToken || '';
       }
 
-      req.url = req.originalUrl || (prefix + req.url);
+      req.url = req.originalUrl || prefix + req.url;
       if (prefix === '/proxmox-ui') {
         req.url = req.url.replace('/proxmox-ui', '') || '/';
       }
@@ -135,7 +139,7 @@ function mountUiProxyRoutes({
     const settings = await getVMServiceSettings();
     const targetUrl = normalizeBaseUrl(
       settings.tinyFmUrl,
-      String(process.env.TINYFM_URL || 'http://127.0.0.1:8080/index.php?p=')
+      String(process.env.TINYFM_URL || 'http://127.0.0.1:8080/index.php?p='),
     );
     setTinyFmTarget(new URL(targetUrl).origin);
     await ensureTinyFMLogin(settings);

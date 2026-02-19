@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import type { ErrorInfo, ReactNode } from 'react';
-import { Result, Button } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
-import { uiLogger } from '../../observability/uiLogger'
+import { Button, Result } from 'antd';
+import type { ErrorInfo, ReactNode } from 'react';
+import { Component } from 'react';
+import { uiLogger } from '../../observability/uiLogger';
 
 interface Props {
   children: ReactNode;

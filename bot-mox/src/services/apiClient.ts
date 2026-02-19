@@ -1,6 +1,6 @@
 import { buildApiUrl } from '../config/env';
+import { uiLogger } from '../observability/uiLogger';
 import { authFetch } from './authFetch';
-import { uiLogger } from '../observability/uiLogger'
 
 export interface ApiSuccessEnvelope<T> {
   success: true;
@@ -112,9 +112,21 @@ const REQUEST_MAX_CONCURRENCY = 6;
 const REQUEST_MAX_QUEUE_SIZE = 400;
 const REQUEST_QOS_RULES: RequestQosRule[] = [
   { pattern: /^\/api\/v1\/bots(?:\/|\?|$)/, getMinSpacingMs: 140, mutationMinSpacingMs: 45 },
-  { pattern: /^\/api\/v1\/workspace\/notes(?:\/|\?|$)/, getMinSpacingMs: 150, mutationMinSpacingMs: 45 },
-  { pattern: /^\/api\/v1\/settings\/projects(?:\/|\?|$)/, getMinSpacingMs: 135, mutationMinSpacingMs: 40 },
-  { pattern: /^\/api\/v1\/settings\/vmgenerator(?:\/|\?|$)/, getMinSpacingMs: 130, mutationMinSpacingMs: 35 },
+  {
+    pattern: /^\/api\/v1\/workspace\/notes(?:\/|\?|$)/,
+    getMinSpacingMs: 150,
+    mutationMinSpacingMs: 45,
+  },
+  {
+    pattern: /^\/api\/v1\/settings\/projects(?:\/|\?|$)/,
+    getMinSpacingMs: 135,
+    mutationMinSpacingMs: 40,
+  },
+  {
+    pattern: /^\/api\/v1\/settings\/vmgenerator(?:\/|\?|$)/,
+    getMinSpacingMs: 130,
+    mutationMinSpacingMs: 35,
+  },
 ];
 
 const REQUEST_QUEUE: QueuedRequest<unknown>[] = [];
@@ -164,10 +176,13 @@ function resolveRequestQos(path: string, method: string): RequestQos {
 
 function scheduleQueueDrain(delayMs = 0): void {
   if (requestQueueTimer) return;
-  requestQueueTimer = setTimeout(() => {
-    requestQueueTimer = null;
-    drainRequestQueue();
-  }, Math.max(0, delayMs));
+  requestQueueTimer = setTimeout(
+    () => {
+      requestQueueTimer = null;
+      drainRequestQueue();
+    },
+    Math.max(0, delayMs),
+  );
 }
 
 function dequeueNextRequest(): QueuedRequest<unknown> | null {
@@ -189,7 +204,8 @@ function dispatchQueuedRequest(item: QueuedRequest<unknown>): void {
   activeRequestCount += 1;
   lastRequestDispatchAt = Date.now();
 
-  item.run()
+  item
+    .run()
     .then((value) => {
       item.resolve(value);
     })
@@ -233,7 +249,7 @@ function enqueueRequest<T>(run: () => Promise<T>, qos: RequestQos): Promise<T> {
       new ApiClientError('Request queue overloaded. Please retry shortly.', {
         status: 429,
         code: 'CLIENT_QUEUE_OVERLOAD',
-      })
+      }),
     );
   }
 
@@ -288,7 +304,9 @@ async function performRequest<T>(path: string, init: RequestInit): Promise<ApiSu
   const correlationId = response.headers.get('x-correlation-id');
 
   if (!response.ok || !envelope.success) {
-    const message = envelope.success ? `HTTP ${response.status}` : String(envelope.error?.message || `HTTP ${response.status}`);
+    const message = envelope.success
+      ? `HTTP ${response.status}`
+      : String(envelope.error?.message || `HTTP ${response.status}`);
     const code = envelope.success ? 'HTTP_ERROR' : String(envelope.error?.code || 'API_ERROR');
     const baseDetails = envelope.success ? undefined : envelope.error?.details;
     const debug = {
@@ -314,15 +332,17 @@ async function performRequest<T>(path: string, init: RequestInit): Promise<ApiSu
   return envelope;
 }
 
-export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<ApiSuccessEnvelope<T>> {
-  const method = String(init.method || 'GET').trim().toUpperCase();
+export async function apiRequest<T>(
+  path: string,
+  init: RequestInit = {},
+): Promise<ApiSuccessEnvelope<T>> {
+  const method = String(init.method || 'GET')
+    .trim()
+    .toUpperCase();
   const qos = resolveRequestQos(path, method);
 
   if (method !== 'GET') {
-    const result = await enqueueRequest(
-      () => performRequest<T>(path, init),
-      qos
-    );
+    const result = await enqueueRequest(() => performRequest<T>(path, init), qos);
     clearGetCache();
     return result;
   }
@@ -345,7 +365,7 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
         ...init,
         method: 'GET',
       }),
-    qos
+    qos,
   )
     .then((result) => {
       const ttlMs = getGetCacheTtlMs(path);
@@ -364,7 +384,7 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
 }
 
 export function buildQueryString(
-  params: Record<string, string | number | boolean | null | undefined>
+  params: Record<string, string | number | boolean | null | undefined>,
 ): string {
   const search = new URLSearchParams();
 
@@ -525,7 +545,9 @@ function getAdaptiveIntervalCap(channel: PollingChannel<unknown>): number {
     return DEFAULT_MAX_ADAPTIVE_INTERVAL_MS;
   }
   return Math.min(
-    ...Array.from(channel.subscribers.values()).map((subscriber) => subscriber.maxAdaptiveIntervalMs)
+    ...Array.from(channel.subscribers.values()).map(
+      (subscriber) => subscriber.maxAdaptiveIntervalMs,
+    ),
   );
 }
 
@@ -557,12 +579,13 @@ function getEffectiveDelayMs(channel: PollingChannel<unknown>): number {
   const baseInterval = getActivePollingInterval(channel);
   const adaptiveBaseInterval = getAdaptiveBaseIntervalMs(channel, baseInterval);
   const maxErrorBackoffMs = Math.min(
-    ...Array.from(channel.subscribers.values()).map((subscriber) => subscriber.maxErrorBackoffMs)
+    ...Array.from(channel.subscribers.values()).map((subscriber) => subscriber.maxErrorBackoffMs),
   );
   const expFactor = Math.min(channel.consecutiveErrors, 6);
-  const backoffBase = channel.consecutiveErrors > 0
-    ? Math.min(adaptiveBaseInterval * (2 ** expFactor), maxErrorBackoffMs)
-    : adaptiveBaseInterval;
+  const backoffBase =
+    channel.consecutiveErrors > 0
+      ? Math.min(adaptiveBaseInterval * 2 ** expFactor, maxErrorBackoffMs)
+      : adaptiveBaseInterval;
   const jitter = Math.trunc(backoffBase * POLL_JITTER_RATIO * Math.random());
   return backoffBase + jitter;
 }
@@ -643,22 +666,22 @@ export function createPollingSubscription<T>(
   loader: () => Promise<T>,
   onData: (data: T) => void,
   onError?: (error: Error) => void,
-  options: PollingOptions = {}
+  options: PollingOptions = {},
 ): () => void {
   ensureVisibilityListener();
 
   const intervalMs = clampPollingInterval(options.intervalMs, DEFAULT_POLL_INTERVAL_MS);
   const hiddenIntervalMs = clampPollingInterval(
     options.hiddenIntervalMs,
-    intervalMs * DEFAULT_HIDDEN_MULTIPLIER
+    intervalMs * DEFAULT_HIDDEN_MULTIPLIER,
   );
   const maxErrorBackoffMs = clampPollingInterval(
     options.maxErrorBackoffMs,
-    DEFAULT_MAX_ERROR_BACKOFF_MS
+    DEFAULT_MAX_ERROR_BACKOFF_MS,
   );
   const maxAdaptiveIntervalMs = clampPollingInterval(
     options.maxAdaptiveIntervalMs,
-    DEFAULT_MAX_ADAPTIVE_INTERVAL_MS
+    DEFAULT_MAX_ADAPTIVE_INTERVAL_MS,
   );
   const immediate = options.immediate !== false;
   const adaptive = options.adaptive !== false;

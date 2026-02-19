@@ -1,15 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Form,
-  Select,
-  DatePicker,
-  Button,
-  Alert,
-} from 'antd';
-import { PlusOutlined, EditOutlined } from '@ant-design/icons';
-import type { SubscriptionFormData, SubscriptionWithDetails } from '../../types';
-import dayjs from 'dayjs';
+import { EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { Alert, Button, DatePicker, Form, Select } from 'antd';
 import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { SubscriptionFormData, SubscriptionWithDetails } from '../../types';
 import styles from './SubscriptionForm.module.css';
 
 const { Option } = Select;
@@ -116,12 +111,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
   };
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleSubmit}
-      className={styles.root}
-    >
+    <Form form={form} layout="vertical" onFinish={handleSubmit} className={styles.root}>
       {dateError && (
         <Alert
           message={dateError}
@@ -140,12 +130,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
           label="Bot"
           rules={[{ required: true, message: 'Please select a bot' }]}
         >
-          <Select
-            placeholder="Select bot"
-            showSearch
-            optionFilterProp="label"
-            disabled={loading}
-          >
+          <Select placeholder="Select bot" showSearch optionFilterProp="label" disabled={loading}>
             {availableBots.map((bot) => {
               const vmName = bot.vmName || bot.name || 'Unknown';
               const characterName = bot.character || 'Unknown';

@@ -1,0 +1,22 @@
+{
+  "name": "@botmox/database-schema",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "db:types:meta": "node ./scripts/update-generated-types-meta.mjs",
+    "db:types": "node ./scripts/generate-supabase-types.mjs",
+    "db:types:check": "node ./scripts/check-generated-types.mjs",
+    "check": "pnpm run db:types:check && pnpm run typecheck"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  }
+}

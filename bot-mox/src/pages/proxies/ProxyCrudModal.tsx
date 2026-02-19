@@ -1,4 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import {
+  CheckCircleOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  SafetyOutlined,
+} from '@ant-design/icons';
 import {
   Alert,
   Button,
@@ -6,35 +11,27 @@ import {
   Form,
   Input,
   Modal,
+  message,
   Select,
   Space,
   Spin,
   Tag,
   Typography,
-  message,
 } from 'antd';
-import {
-  CheckCircleOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined,
-  SafetyOutlined,
-} from '@ant-design/icons';
 import dayjs from 'dayjs';
-import type { IPQSResponse, Proxy } from '../../types';
-import {
-  createProxy,
-  updateProxyById,
-  type ProxiesBotMap,
-} from '../../services/proxyDataService';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import {
   checkIPQuality,
   isAutoCheckEnabled,
   isProxySuspicious,
-} from '../../services/ipqsService';
+} from '../../entities/resources/api/ipqsFacade';
 import {
-  getCountryFlag,
-  parseProxyString,
-} from '../../utils/proxyUtils';
+  useCreateProxyMutation,
+  useUpdateProxyMutation,
+} from '../../entities/resources/api/useProxyMutations';
+import type { IPQSResponse, Proxy as ProxyResource } from '../../types';
+import { getCountryFlag, parseProxyString } from '../../utils/proxyUtils';
 import type { ProxyWithBot } from './proxyColumns';
 
 const { Option } = Select;
@@ -50,6 +47,16 @@ interface ProxyCrudModalProps {
   onClose: () => void;
   onSaved: () => void;
 }
+
+type ProxiesBotMap = Record<
+  string,
+  {
+    character?: { name?: string };
+    person?: { name?: string; vm_name?: string };
+    vm?: { name?: string };
+    name?: string;
+  }
+>;
 
 const getProviderValue = (providerValue: string | string[] | undefined | null): string => {
   if (Array.isArray(providerValue)) {
@@ -86,6 +93,8 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
   onClose,
   onSaved,
 }) => {
+  const createProxyMutation = useCreateProxyMutation();
+  const updateProxyMutation = useUpdateProxyMutation();
   const [form] = Form.useForm();
   const [proxyInput, setProxyInput] = useState('');
   const [parsedProxy, setParsedProxy] = useState<ReturnType<typeof parseProxyString>>(null);
@@ -187,7 +196,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
       }
 
       if (editingProxy) {
-        const proxyData: Partial<Proxy> = {
+        const proxyData: Partial<ProxyResource> = {
           ip: parsedProxy.ip,
           port: parsedProxy.port,
           login: parsedProxy.login,
@@ -198,8 +207,8 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           updated_at: Date.now(),
         };
 
-        await updateProxyById(editingProxy.id, proxyData);
-        message.success('Proxy updated');
+        await updateProxyMutation.mutateAsync({ id: editingProxy.id, payload: proxyData });
+        message.success('');
       } else {
         const hasIPQSData = Boolean(ipqsData && ipqsData.fraud_score !== undefined);
         let proxyStatus: 'active' | 'banned' = 'active';
@@ -211,7 +220,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           }
         }
 
-        const proxyData: Omit<Proxy, 'id'> = {
+        const proxyData: Omit<ProxyResource, 'id'> = {
           ip: parsedProxy.ip,
           port: parsedProxy.port,
           login: parsedProxy.login,
@@ -242,11 +251,13 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
         };
 
         if (proxyStatus === 'banned') {
-          message.warning(`Warning: High fraud score detected (${ipqsData?.fraud_score}). Proxy marked as banned.`);
+          message.warning(
+            `Warning: High fraud score detected (${ipqsData?.fraud_score}). Proxy marked as banned.`,
+          );
         }
 
-        await createProxy(proxyData);
-        message.success('Proxy created successfully');
+        await createProxyMutation.mutateAsync(proxyData);
+        message.success('');
       }
 
       onSaved();
@@ -258,7 +269,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
 
   return (
     <Modal
-      title={editingProxy ? 'Edit Proxy' : 'Add Proxy'}
+      title={editingProxy ? '' : ''}
       open={open}
       onOk={form.submit}
       onCancel={onClose}
@@ -271,7 +282,10 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           label="Proxy String"
           required
           validateStatus={parseError ? 'error' : parsedProxy ? 'success' : ''}
-          help={parseError || (parsedProxy ? 'Valid proxy format detected' : 'Format: ip:port:login:password')}
+          help={
+            parseError ||
+            (parsedProxy ? 'Valid proxy format detected' : 'Format: ip:port:login:password')
+          }
         >
           <TextArea
             placeholder="Enter proxy string (ip:port:login:password)"
@@ -287,11 +301,22 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
             message="Proxy Parsed Successfully"
             description={
               <Space direction="vertical" size={4}>
-                <Text><strong>IP:</strong> {parsedProxy.ip}</Text>
-                <Text><strong>Port:</strong> {parsedProxy.port}</Text>
-                <Text><strong>Login:</strong> {parsedProxy.login}</Text>
-                <Text><strong>Password:</strong> {showPassword ? parsedProxy.password : '•'.repeat(parsedProxy.password.length)}</Text>
-                <Text><strong>Type:</strong> {parsedProxy.type.toUpperCase()}</Text>
+                <Text>
+                  <strong>IP:</strong> {parsedProxy.ip}
+                </Text>
+                <Text>
+                  <strong>Port:</strong> {parsedProxy.port}
+                </Text>
+                <Text>
+                  <strong>Login:</strong> {parsedProxy.login}
+                </Text>
+                <Text>
+                  <strong>Password:</strong>{' '}
+                  {showPassword ? parsedProxy.password : '•'.repeat(parsedProxy.password.length)}
+                </Text>
+                <Text>
+                  <strong>Type:</strong> {parsedProxy.type.toUpperCase()}
+                </Text>
               </Space>
             }
             type="success"
@@ -327,9 +352,13 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
               <Space direction="vertical" size={4}>
                 <Space>
                   <span style={{ fontSize: '20px' }}>{getCountryFlag(ipqsData.country_code)}</span>
-                  <Text><strong>Country:</strong> {ipqsData.country_code}</Text>
+                  <Text>
+                    <strong>Country:</strong> {ipqsData.country_code}
+                  </Text>
                 </Space>
-                <Text><strong>City:</strong> {ipqsData.city}, {ipqsData.region}</Text>
+                <Text>
+                  <strong>City:</strong> {ipqsData.city}, {ipqsData.region}
+                </Text>
                 <Space size={8}>
                   {ipqsData.vpn && <Tag color="orange">VPN</Tag>}
                   {ipqsData.proxy && <Tag color="blue">Proxy</Tag>}

@@ -1,18 +1,3 @@
-import React from 'react';
-import {
-  Button,
-  Card,
-  Col,
-  Form,
-  Input,
-  InputNumber,
-  Radio,
-  Row,
-  Space,
-  Switch,
-  Tag,
-  Typography,
-} from 'antd';
 import {
   BellOutlined,
   CloudOutlined,
@@ -27,14 +12,29 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import type { ProjectSettings } from '../../services/projectSettingsService';
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  InputNumber,
+  Radio,
+  Row,
+  Space,
+  Switch,
+  Tag,
+  Typography,
+} from 'antd';
+import type React from 'react';
+import type { ProjectSettings } from '../../entities/settings/model/projectSettings';
+import styles from './SettingsPage.module.css';
 import type {
   ApiKeysFormValues,
   NotificationEventsFormValues,
   ProxySettingsFormValues,
   StoragePolicyFormValues,
 } from './types';
-import styles from './SettingsPage.module.css';
 
 function cx(classNames: string): string {
   return classNames
@@ -75,55 +75,38 @@ export const ApiKeysCard: React.FC<ApiKeysCardProps> = ({ form, loading, saving,
   return (
     <Col span={24}>
       <Card
-        title={(
+        title={
           <Space>
             <KeyOutlined />
             <span>API Keys</span>
           </Space>
-        )}
+        }
         className={cx('settings-card')}
       >
         <Row gutter={[32, 16]}>
           <Col xs={24} lg={12}>
             <Card
               type="inner"
-              title={(
+              title={
                 <Space>
                   <SafetyOutlined />
                   <span>IPQualityScore</span>
                 </Space>
-              )}
+              }
               style={INNER_SETTINGS_CARD_STYLE}
               styles={INNER_SETTINGS_CARD_STYLES}
             >
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={onSave}
-                disabled={loading}
-              >
-                <Form.Item
-                  name="ipqs_enabled"
-                  valuePropName="checked"
-                  label="Enable IPQS Check"
-                >
+              <Form form={form} layout="vertical" onFinish={onSave} disabled={loading}>
+                <Form.Item name="ipqs_enabled" valuePropName="checked" label="Enable IPQS Check">
                   <Switch />
                 </Form.Item>
 
-                <Form.Item
-                  label="API Key"
-                  name="ipqs_api_key"
-                >
+                <Form.Item label="API Key" name="ipqs_api_key">
                   <Input.Password placeholder="Enter IPQS API key" />
                 </Form.Item>
 
                 <Form.Item>
-                  <Button
-                    type="primary"
-                    icon={<SaveOutlined />}
-                    htmlType="submit"
-                    loading={saving}
-                  >
+                  <Button type="primary" icon={<SaveOutlined />} htmlType="submit" loading={saving}>
                     Save IPQS
                   </Button>
                 </Form.Item>
@@ -134,21 +117,16 @@ export const ApiKeysCard: React.FC<ApiKeysCardProps> = ({ form, loading, saving,
           <Col xs={24} lg={12}>
             <Card
               type="inner"
-              title={(
+              title={
                 <Space>
                   <SendOutlined />
                   <span>Telegram Bot</span>
                 </Space>
-              )}
+              }
               style={INNER_SETTINGS_CARD_STYLE}
               styles={INNER_SETTINGS_CARD_STYLES}
             >
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={onSave}
-                disabled={loading}
-              >
+              <Form form={form} layout="vertical" onFinish={onSave} disabled={loading}>
                 <Form.Item
                   name="telegram_enabled"
                   valuePropName="checked"
@@ -157,27 +135,16 @@ export const ApiKeysCard: React.FC<ApiKeysCardProps> = ({ form, loading, saving,
                   <Switch />
                 </Form.Item>
 
-                <Form.Item
-                  label="Bot Token"
-                  name="telegram_bot_token"
-                >
+                <Form.Item label="Bot Token" name="telegram_bot_token">
                   <Input.Password placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz" />
                 </Form.Item>
 
-                <Form.Item
-                  label="Chat ID"
-                  name="telegram_chat_id"
-                >
+                <Form.Item label="Chat ID" name="telegram_chat_id">
                   <Input placeholder="123456789 or @channelname" />
                 </Form.Item>
 
                 <Form.Item>
-                  <Button
-                    type="primary"
-                    icon={<SaveOutlined />}
-                    htmlType="submit"
-                    loading={saving}
-                  >
+                  <Button type="primary" icon={<SaveOutlined />} htmlType="submit" loading={saving}>
                     Save Telegram
                   </Button>
                 </Form.Item>
@@ -211,12 +178,12 @@ export const ProxyAndAlertsCards: React.FC<ProxyAndAlertsCardsProps> = ({
     <Col xs={24} lg={12}>
       <div className={cx('settings-column-stack')}>
         <Card
-          title={(
+          title={
             <Space>
               <GlobalOutlined />
               <span>Proxy Settings</span>
             </Space>
-          )}
+          }
           className={cx('settings-card')}
         >
           <Form
@@ -225,11 +192,7 @@ export const ProxyAndAlertsCards: React.FC<ProxyAndAlertsCardsProps> = ({
             onFinish={onSaveProxySettings}
             disabled={loading}
           >
-            <Form.Item
-              name="auto_check_on_add"
-              valuePropName="checked"
-              label="Auto-check on Add"
-            >
+            <Form.Item name="auto_check_on_add" valuePropName="checked" label="Auto-check on Add">
               <Switch />
             </Form.Item>
 
@@ -252,12 +215,7 @@ export const ProxyAndAlertsCards: React.FC<ProxyAndAlertsCardsProps> = ({
             </Form.Item>
 
             <Form.Item>
-              <Button
-                type="primary"
-                icon={<SaveOutlined />}
-                htmlType="submit"
-                loading={saving}
-              >
+              <Button type="primary" icon={<SaveOutlined />} htmlType="submit" loading={saving}>
                 Save Proxy Settings
               </Button>
             </Form.Item>
@@ -265,12 +223,12 @@ export const ProxyAndAlertsCards: React.FC<ProxyAndAlertsCardsProps> = ({
         </Card>
 
         <Card
-          title={(
+          title={
             <Space>
               <WarningOutlined />
               <span>Global Alerts</span>
             </Space>
-          )}
+          }
           className={cx('settings-card')}
         >
           <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
@@ -295,12 +253,7 @@ export const ProxyAndAlertsCards: React.FC<ProxyAndAlertsCardsProps> = ({
             </Form.Item>
 
             <Form.Item>
-              <Button
-                type="primary"
-                icon={<SaveOutlined />}
-                htmlType="submit"
-                loading={saving}
-              >
+              <Button type="primary" icon={<SaveOutlined />} htmlType="submit" loading={saving}>
                 Save Global Alerts
               </Button>
             </Form.Item>
@@ -318,45 +271,68 @@ interface NotificationsCardProps {
   onSave: (values: NotificationEventsFormValues) => void;
 }
 
-export const NotificationsCard: React.FC<NotificationsCardProps> = ({ form, loading, saving, onSave }) => {
+export const NotificationsCard: React.FC<NotificationsCardProps> = ({
+  form,
+  loading,
+  saving,
+  onSave,
+}) => {
   return (
     <Col xs={24} lg={12} className={cx('settings-notifications-col')}>
       <Card
-        title={(
+        title={
           <Space>
             <BellOutlined />
             <span>Notifications</span>
           </Space>
-        )}
+        }
         className={cx('settings-card settings-notifications-card')}
       >
         <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
           Select events to notify via Telegram
         </Text>
 
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onSave}
-          disabled={loading}
-        >
+        <Form form={form} layout="vertical" onFinish={onSave} disabled={loading}>
           <Row gutter={[16, 8]}>
-            <Col span={12}><Form.Item name="bot_banned" valuePropName="checked" label="Bot Banned"><Switch /></Form.Item></Col>
-            <Col span={12}><Form.Item name="bot_offline" valuePropName="checked" label="Bot Offline"><Switch /></Form.Item></Col>
-            <Col span={12}><Form.Item name="bot_online" valuePropName="checked" label="Bot Online"><Switch /></Form.Item></Col>
-            <Col span={12}><Form.Item name="level_up" valuePropName="checked" label="Level Up"><Switch /></Form.Item></Col>
-            <Col span={12}><Form.Item name="profession_maxed" valuePropName="checked" label="Profession Maxed"><Switch /></Form.Item></Col>
-            <Col span={12}><Form.Item name="low_fraud_score" valuePropName="checked" label="Low Fraud Score"><Switch /></Form.Item></Col>
-            <Col span={12}><Form.Item name="daily_report" valuePropName="checked" label="Daily Report"><Switch /></Form.Item></Col>
+            <Col span={12}>
+              <Form.Item name="bot_banned" valuePropName="checked" label="Bot Banned">
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="bot_offline" valuePropName="checked" label="Bot Offline">
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="bot_online" valuePropName="checked" label="Bot Online">
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="level_up" valuePropName="checked" label="Level Up">
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="profession_maxed" valuePropName="checked" label="Profession Maxed">
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="low_fraud_score" valuePropName="checked" label="Low Fraud Score">
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="daily_report" valuePropName="checked" label="Daily Report">
+                <Switch />
+              </Form.Item>
+            </Col>
           </Row>
 
           <Form.Item style={{ marginTop: 16 }}>
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-              htmlType="submit"
-              loading={saving}
-            >
+            <Button type="primary" icon={<SaveOutlined />} htmlType="submit" loading={saving}>
               Save Notifications
             </Button>
           </Form.Item>
@@ -382,27 +358,24 @@ export const StoragePolicyCard: React.FC<StoragePolicyCardProps> = ({
   return (
     <Col xs={24} lg={12}>
       <Card
-        title={(
+        title={
           <Space>
             <DatabaseOutlined />
             <span>Storage Policy</span>
           </Space>
-        )}
+        }
         className={cx('settings-card')}
       >
         <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
           Configure where operational data is stored. Secrets remain local-only on agent.
         </Text>
 
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onSave}
-          disabled={loading}
-        >
+        <Form form={form} layout="vertical" onFinish={onSave} disabled={loading}>
           <Form.Item label="Secrets" style={{ marginBottom: 12 }}>
             <Space>
-              <Tag color="green" icon={<LockOutlined />}>Local-only</Tag>
+              <Tag color="green" icon={<LockOutlined />}>
+                Local-only
+              </Tag>
               <Text type="secondary">Fixed security policy</Text>
             </Space>
           </Form.Item>
@@ -433,12 +406,7 @@ export const StoragePolicyCard: React.FC<StoragePolicyCardProps> = ({
           </Form.Item>
 
           <Form.Item>
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-              htmlType="submit"
-              loading={saving}
-            >
+            <Button type="primary" icon={<SaveOutlined />} htmlType="submit" loading={saving}>
               Save Storage Policy
             </Button>
           </Form.Item>
@@ -454,21 +422,21 @@ interface ProjectsCardProps {
   onToggleVisibility: () => void;
 }
 
-export const ProjectsCard: React.FC<ProjectsCardProps> = ({ projectsVisible, projectEntries, onToggleVisibility }) => {
+export const ProjectsCard: React.FC<ProjectsCardProps> = ({
+  projectsVisible,
+  projectEntries,
+  onToggleVisibility,
+}) => {
   return (
     <Col span={24}>
       <Card
-        title={(
+        title={
           <Space>
             <DesktopOutlined />
             <span>Projects</span>
           </Space>
-        )}
-        extra={(
-          <Button onClick={onToggleVisibility}>
-            {projectsVisible ? 'Hide' : 'Show'}
-          </Button>
-        )}
+        }
+        extra={<Button onClick={onToggleVisibility}>{projectsVisible ? 'Hide' : 'Show'}</Button>}
         className={cx('settings-card')}
       >
         <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
@@ -499,7 +467,8 @@ export const ProjectsCard: React.FC<ProjectsCardProps> = ({ projectsVisible, pro
                     Currency: {project.currency || '-'} {project.currency_symbol || ''}
                   </Text>
                   <Text type="secondary">
-                    Professions: {Array.isArray(project.professions) && project.professions.length > 0
+                    Professions:{' '}
+                    {Array.isArray(project.professions) && project.professions.length > 0
                       ? project.professions.join(', ')
                       : '-'}
                   </Text>

@@ -31,7 +31,11 @@
 
 .config-incomplete-alert {
   border-color: var(--boxmox-color-brand-warning);
-  background: color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted));
+  background: color-mix(
+    in srgb,
+    var(--boxmox-color-brand-warning) 10%,
+    var(--boxmox-color-surface-muted)
+  );
 }
 
 .person-workflow-message {

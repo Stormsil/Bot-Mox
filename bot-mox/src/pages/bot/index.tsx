@@ -1,29 +1,30 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { subscribeBotById } from '../../services/botsApiService';
-import { ContentPanel } from '../../components/layout/ContentPanel';
 import type { TabType } from '../../components/layout/ContentPanel';
+import { ContentPanel } from '../../components/layout/ContentPanel';
+import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
+import { uiLogger } from '../../observability/uiLogger';
 import type { Bot } from '../../types';
+import styles from './BotPage.module.css';
+import type { ConfigureTab, ExtendedBot, MainTab } from './page';
 import {
   BotPageAlertState,
   BotPageLoading,
-  DEFAULT_CONFIGURE_TAB,
-  DEFAULT_RESOURCES_TAB,
-  MAIN_TABS,
   buildConfigureSections,
   buildResourcesSections,
+  DEFAULT_CONFIGURE_TAB,
+  DEFAULT_RESOURCES_TAB,
   getIncompleteTabs,
   getScheduleStats,
   isAccountComplete,
   isCharacterComplete,
   isPersonComplete,
   isScheduleComplete,
+  MAIN_TABS,
   normalizeTabParams,
   renderTabContent,
 } from './page';
-import type { ConfigureTab, ExtendedBot, MainTab } from './page';
-import styles from './BotPage.module.css';
-import { uiLogger } from '../../observability/uiLogger'
 
 export const BotPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,37 +34,16 @@ export const BotPage: React.FC = () => {
   const configureTab = tabsFromQuery.configure || DEFAULT_CONFIGURE_TAB;
   const resourcesTab = tabsFromQuery.resources || DEFAULT_RESOURCES_TAB;
 
-  const [bot, setBot] = useState<ExtendedBot | null>(null);
-  const [loading, setLoading] = useState(() => Boolean(id));
-  const [error, setError] = useState<string | null>(null);
+  const botQuery = useBotByIdQuery(id);
+  const bot = (botQuery.data || null) as ExtendedBot | null;
   const openConfigureKey = activeTab === 'configure' ? `configure-${configureTab}` : undefined;
 
   useEffect(() => {
-    if (!id) {
+    if (!botQuery.error) {
       return;
     }
-
-    const unsubscribe = subscribeBotById(
-      id,
-      (data) => {
-        if (data) {
-          setBot(data as ExtendedBot);
-        } else {
-          setBot(null);
-        }
-        setError(null);
-        setLoading(false);
-      },
-      (loadError) => {
-        uiLogger.error('Error loading bot:', loadError);
-        setError('Failed to load bot data');
-        setLoading(false);
-      },
-      { intervalMs: 5000 }
-    );
-
-    return () => unsubscribe();
-  }, [id]);
+    uiLogger.error('Error loading bot:', botQuery.error);
+  }, [botQuery.error]);
 
   const setParamsForTab = (main: MainTab, subtab?: string) => {
     const nextParams = new URLSearchParams(searchParams);
@@ -98,24 +78,24 @@ export const BotPage: React.FC = () => {
     setParamsForTab('configure', tab);
   };
 
-  const scrollToSection = (sectionId: string) => {
+  const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'configure') {
       requestAnimationFrame(() => scrollToSection(`configure-${configureTab}`));
     }
-  }, [activeTab, configureTab]);
+  }, [activeTab, configureTab, scrollToSection]);
 
   useEffect(() => {
     if (activeTab === 'resources') {
       requestAnimationFrame(() => scrollToSection(`resources-${resourcesTab}`));
     }
-  }, [activeTab, resourcesTab]);
+  }, [activeTab, resourcesTab, scrollToSection]);
 
   const scheduleStats = useMemo(() => getScheduleStats(bot), [bot]);
   const accountComplete = useMemo(() => isAccountComplete(bot), [bot]);
@@ -123,23 +103,33 @@ export const BotPage: React.FC = () => {
   const characterComplete = useMemo(() => isCharacterComplete(bot), [bot]);
   const scheduleComplete = useMemo(
     () => isScheduleComplete(scheduleStats.enabledSessions),
-    [scheduleStats.enabledSessions]
+    [scheduleStats.enabledSessions],
   );
 
-  if (loading) {
+  if (botQuery.isLoading) {
     return <BotPageLoading />;
   }
 
-  if (error) {
-    return <BotPageAlertState message="Error" description={error} />;
+  if (botQuery.error) {
+    return <BotPageAlertState message="Error" description="Failed to load bot data" />;
   }
 
   if (!id) {
-    return <BotPageAlertState message="Bot ID Missing" description={'Route parameter "id" is required.'} />;
+    return (
+      <BotPageAlertState
+        message="Bot ID Missing"
+        description={'Route parameter "id" is required.'}
+      />
+    );
   }
 
   if (!bot) {
-    return <BotPageAlertState message="Bot Not Found" description={`Bot with ID "${id}" was not found.`} />;
+    return (
+      <BotPageAlertState
+        message="Bot Not Found"
+        description={`Bot with ID "${id}" was not found.`}
+      />
+    );
   }
 
   const baseBot: Bot = {

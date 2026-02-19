@@ -1,7 +1,7 @@
-import React from 'react';
-import { Button, Card, Progress, Space, Tag, Typography } from 'antd';
 import { EditOutlined, GlobalOutlined, LinkOutlined } from '@ant-design/icons';
+import { Button, Card, Progress, Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
+import type React from 'react';
 import {
   getLocalFraudScoreColor,
   getLocalFraudScoreStatus,
@@ -9,8 +9,8 @@ import {
   getProxyStatusIcon,
   getProxyStatusText,
 } from './helpers';
-import type { ProxyInfo } from './types';
 import styles from './proxy.module.css';
+import type { ProxyInfo } from './types';
 
 const { Text } = Typography;
 
@@ -20,7 +20,11 @@ interface ProxyDetailsCardProps {
   onUnassign: () => void;
 }
 
-export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({ proxy, onEdit, onUnassign }) => (
+export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
+  proxy,
+  onEdit,
+  onUnassign,
+}) => (
   <Card
     className={styles['proxy-card']}
     styles={{
@@ -64,7 +68,10 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({ proxy, onEdi
             Type
           </Text>
           <div>
-            <Tag color={proxy.type === 'socks5' ? 'blue' : 'cyan'} style={{ textTransform: 'uppercase' }}>
+            <Tag
+              color={proxy.type === 'socks5' ? 'blue' : 'cyan'}
+              style={{ textTransform: 'uppercase' }}
+            >
               {proxy.type}
             </Tag>
           </div>

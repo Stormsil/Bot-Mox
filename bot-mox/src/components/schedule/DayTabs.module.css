@@ -39,7 +39,7 @@
 }
 
 .day-tab.today::before {
-  content: 'TODAY';
+  content: "TODAY";
   position: absolute;
   top: -18px;
   left: 50%;
@@ -122,4 +122,3 @@
 .day-tab.selected.empty {
   border-left: 1px solid var(--boxmox-color-brand-primary);
 }
-

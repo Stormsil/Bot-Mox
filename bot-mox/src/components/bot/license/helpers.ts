@@ -49,7 +49,7 @@ export const buildAddMenuItems = (availableCount: number): MenuProps['items'] =>
 export const buildLicensePayload = (
   values: LicenseFormValues,
   botIds: string[],
-  now = Date.now()
+  now = Date.now(),
 ) => {
   const expiresAt = values.expires_at.valueOf();
   const status: BotLicense['status'] = now > expiresAt ? 'expired' : 'active';

@@ -3,7 +3,7 @@ import type { VMGeneratorSettings } from '../../../types';
 export const updateSettingsByPath = (
   settings: VMGeneratorSettings,
   path: string,
-  value: unknown
+  value: unknown,
 ): VMGeneratorSettings => {
   const parts = path.split('.');
   const updated = { ...settings } as Record<string, unknown>;

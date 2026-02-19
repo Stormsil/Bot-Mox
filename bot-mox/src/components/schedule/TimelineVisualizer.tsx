@@ -1,10 +1,10 @@
-import React, { useRef, useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { ScheduleSession } from '../../types';
-import { timeToMinutes, minutesToTime } from '../../utils/scheduleUtils';
+import { minutesToTime, timeToMinutes } from '../../utils/scheduleUtils';
+import styles from './TimelineVisualizer.module.css';
+import { getRestrictedSegments, getSessionSegments, HOURS } from './timeline/helpers';
 import { TimelineHeader } from './timeline/TimelineHeader';
 import { TimelineScale } from './timeline/TimelineScale';
-import { HOURS, getRestrictedSegments, getSessionSegments } from './timeline/helpers';
-import styles from './TimelineVisualizer.module.css';
 
 interface TimelineVisualizerProps {
   sessions: ScheduleSession[];
@@ -35,7 +35,7 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
     dragType: null,
     startX: 0,
     originalStartMinutes: 0,
-    originalEndMinutes: 0
+    originalEndMinutes: 0,
   });
   const [previewState, setPreviewState] = useState<{
     sessionId: string | null;
@@ -48,111 +48,119 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
       [...(Array.isArray(sessions) ? sessions : [])]
         .filter((session) => session.enabled)
         .sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start)),
-    [sessions]
+    [sessions],
   );
 
   const sessionSegments = useMemo(
     () => getSessionSegments(sortedSessions, allowedWindows),
-    [sortedSessions, allowedWindows]
+    [sortedSessions, allowedWindows],
   );
 
-  const restrictedSegments = useMemo(
-    () => getRestrictedSegments(allowedWindows),
-    [allowedWindows]
+  const restrictedSegments = useMemo(() => getRestrictedSegments(allowedWindows), [allowedWindows]);
+
+  const roundToMinute = useCallback((minutes: number): number => Math.round(minutes), []);
+
+  const getMinutesFromX = useCallback(
+    (clientX: number): number => {
+      if (!timelineRef.current) return 0;
+      const rect = timelineRef.current.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const percentage = Math.max(0, Math.min(1, x / rect.width));
+      return roundToMinute(percentage * 1440);
+    },
+    [roundToMinute],
   );
 
-  const roundToMinute = (minutes: number): number => {
-    return Math.round(minutes);
-  };
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent, session: ScheduleSession, type: 'start' | 'end' | 'move') => {
+      e.preventDefault();
+      e.stopPropagation();
 
-  const getMinutesFromX = useCallback((clientX: number): number => {
-    if (!timelineRef.current) return 0;
-    const rect = timelineRef.current.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const percentage = Math.max(0, Math.min(1, x / rect.width));
-    return roundToMinute(percentage * 1440);
-  }, []);
+      if (!onSessionChange) return;
 
-  const handleMouseDown = useCallback((
-    e: React.MouseEvent,
-    session: ScheduleSession,
-    type: 'start' | 'end' | 'move'
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
+      const startMinutes = timeToMinutes(session.start);
+      const endMinutes = timeToMinutes(session.end);
 
-    if (!onSessionChange) return;
+      setDragState({
+        isDragging: true,
+        sessionId: session.id,
+        dragType: type,
+        startX: e.clientX,
+        originalStartMinutes: startMinutes,
+        originalEndMinutes: endMinutes,
+      });
+    },
+    [onSessionChange],
+  );
 
-    const startMinutes = timeToMinutes(session.start);
-    const endMinutes = timeToMinutes(session.end);
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!dragState.isDragging || !dragState.sessionId || !dragState.dragType) return;
 
-    setDragState({
-      isDragging: true,
-      sessionId: session.id,
-      dragType: type,
-      startX: e.clientX,
-      originalStartMinutes: startMinutes,
-      originalEndMinutes: endMinutes
-    });
-  }, [onSessionChange]);
+      const currentMinutes = getMinutesFromX(e.clientX);
+      const segment = sessionSegments.find((s) => s.session.id === dragState.sessionId);
+      if (!segment) return;
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!dragState.isDragging || !dragState.sessionId || !dragState.dragType) return;
+      let newStartMinutes = segment.startMinutes;
+      let newEndMinutes = segment.endMinutes;
 
-    const currentMinutes = getMinutesFromX(e.clientX);
-    const segment = sessionSegments.find(s => s.session.id === dragState.sessionId);
-    if (!segment) return;
-
-    let newStartMinutes = segment.startMinutes;
-    let newEndMinutes = segment.endMinutes;
-
-    switch (dragState.dragType) {
-      case 'start':
-        if (currentMinutes < segment.endMinutes - 15) {
-          newStartMinutes = currentMinutes;
+      switch (dragState.dragType) {
+        case 'start':
+          if (currentMinutes < segment.endMinutes - 15) {
+            newStartMinutes = currentMinutes;
+          }
+          break;
+        case 'end':
+          if (currentMinutes > segment.startMinutes + 15) {
+            newEndMinutes = currentMinutes;
+          }
+          break;
+        case 'move': {
+          const duration = segment.duration;
+          const maxStart = 1440 - duration;
+          newStartMinutes = Math.max(
+            0,
+            Math.min(maxStart, currentMinutes - Math.floor(duration / 2)),
+          );
+          newEndMinutes = newStartMinutes + duration;
+          break;
         }
-        break;
-      case 'end':
-        if (currentMinutes > segment.startMinutes + 15) {
-          newEndMinutes = currentMinutes;
-        }
-        break;
-      case 'move': {
-        const duration = segment.duration;
-        const maxStart = 1440 - duration;
-        newStartMinutes = Math.max(0, Math.min(maxStart, currentMinutes - Math.floor(duration / 2)));
-        newEndMinutes = newStartMinutes + duration;
-        break;
       }
-    }
 
-    setPreviewState({
-      sessionId: dragState.sessionId,
-      newStart: minutesToTime(newStartMinutes),
-      newEnd: minutesToTime(newEndMinutes % 1440)
-    });
-  }, [dragState, getMinutesFromX, sessionSegments]);
+      setPreviewState({
+        sessionId: dragState.sessionId,
+        newStart: minutesToTime(newStartMinutes),
+        newEnd: minutesToTime(newEndMinutes % 1440),
+      });
+    },
+    [dragState, getMinutesFromX, sessionSegments],
+  );
 
   const handleMouseUp = useCallback(() => {
-    if (!dragState.isDragging || !dragState.sessionId || !previewState.newStart || !previewState.newEnd) {
+    if (
+      !dragState.isDragging ||
+      !dragState.sessionId ||
+      !previewState.newStart ||
+      !previewState.newEnd
+    ) {
       setDragState({
         isDragging: false,
         sessionId: null,
         dragType: null,
         startX: 0,
         originalStartMinutes: 0,
-        originalEndMinutes: 0
+        originalEndMinutes: 0,
       });
       setPreviewState({ sessionId: null, newStart: null, newEnd: null });
       return;
     }
 
-    const segment = sessionSegments.find(s => s.session.id === dragState.sessionId);
+    const segment = sessionSegments.find((s) => s.session.id === dragState.sessionId);
     if (segment && onSessionChange) {
       onSessionChange({
         ...segment.session,
         start: previewState.newStart,
-        end: previewState.newEnd
+        end: previewState.newEnd,
       });
     }
 
@@ -162,7 +170,7 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
       dragType: null,
       startX: 0,
       originalStartMinutes: 0,
-      originalEndMinutes: 0
+      originalEndMinutes: 0,
     });
     setPreviewState({ sessionId: null, newStart: null, newEnd: null });
   }, [dragState, previewState, sessionSegments, onSessionChange]);
@@ -178,7 +186,9 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
     }
   }, [dragState.isDragging, handleMouseMove, handleMouseUp]);
 
-  const getPreviewPosition = (sessionId: string): { left: number; width: number; newStart: string; newEnd: string } | null => {
+  const getPreviewPosition = (
+    sessionId: string,
+  ): { left: number; width: number; newStart: string; newEnd: string } | null => {
     if (previewState.sessionId !== sessionId || !previewState.newStart || !previewState.newEnd) {
       return null;
     }
@@ -190,17 +200,14 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
       left: (startMinutes / 1440) * 100,
       width: (duration / 1440) * 100,
       newStart: previewState.newStart,
-      newEnd: previewState.newEnd
+      newEnd: previewState.newEnd,
     };
   };
 
   if (sortedSessions.length === 0) {
     return (
       <div
-        className={[
-          styles['timeline-visualizer'],
-          variant === 'compact' ? styles.compact : '',
-        ]
+        className={[styles['timeline-visualizer'], variant === 'compact' ? styles.compact : '']
           .filter(Boolean)
           .join(' ')}
       >
@@ -220,10 +227,7 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
 
   return (
     <div
-      className={[
-        styles['timeline-visualizer'],
-        variant === 'compact' ? styles.compact : '',
-      ]
+      className={[styles['timeline-visualizer'], variant === 'compact' ? styles.compact : '']
         .filter(Boolean)
         .join(' ')}
     >
@@ -243,9 +247,9 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
           <div className={styles['timeline-base-line']} />
 
           {/* Отрисовка запрещенных зон (красный поверх серого) */}
-          {restrictedSegments.map((seg, i) => (
-            <div 
-              key={i} 
+          {restrictedSegments.map((seg) => (
+            <div
+              key={`${seg.left}-${seg.width}`}
               className={styles['restricted-zone-overlay']}
               style={{ left: `${seg.left}%`, width: `${seg.width}%` }}
             />
@@ -259,7 +263,8 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
             return (
               <div key={segment.session.id}>
                 {/* Основной бар сессии */}
-                <div
+                <button
+                  type="button"
                   className={[
                     styles['timeline-session-bar'],
                     isDraggingThis ? styles.dragging : '',
@@ -274,18 +279,22 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
                     .join(' ')}
                   style={{
                     left: `${segment.left}%`,
-                    width: `${segment.width}%`
+                    width: `${segment.width}%`,
                   }}
                   title={`${segment.session.start} - ${segment.session.end}${segment.session.profile ? ` (${segment.session.profile})` : ''}${segment.isRestricted ? ' [RESTRICTED]' : segment.isOverlapping ? ' [OVERLAP]' : ''}`}
-                  onMouseDown={(e) => handleMouseDown(e, segment.session, 'move')}
+                  onMouseDown={
+                    onSessionChange ? (e) => handleMouseDown(e, segment.session, 'move') : undefined
+                  }
                 >
                   {/* Подпись длительности сессии - только длительность по центру */}
                   {segment.width > 2 && (
                     <span className={styles['session-duration-label']}>
-                      {preview ? `${preview.newStart} - ${preview.newEnd}` : `${segment.session.start} - ${segment.session.end}`}
+                      {preview
+                        ? `${preview.newStart} - ${preview.newEnd}`
+                        : `${segment.session.start} - ${segment.session.end}`}
                     </span>
                   )}
-                </div>
+                </button>
 
                 {/* Превью позиции при перетаскивании */}
                 {preview && (
@@ -293,7 +302,7 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
                     className={[styles['timeline-session-bar'], styles.preview].join(' ')}
                     style={{
                       left: `${preview.left}%`,
-                      width: `${preview.width}%`
+                      width: `${preview.width}%`,
                     }}
                   />
                 )}
@@ -318,7 +327,8 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
 
             return (
               <React.Fragment key={`${segment.session.id}-markers`}>
-                <div
+                <button
+                  type="button"
                   className={[
                     styles['timeline-marker'],
                     styles.start,
@@ -329,9 +339,14 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
                     .join(' ')}
                   style={{ left: `${startLeft}%` }}
                   data-time={preview?.newStart || segment.session.start}
-                  onMouseDown={(e) => handleMouseDown(e, segment.session, 'start')}
+                  onMouseDown={
+                    onSessionChange
+                      ? (e) => handleMouseDown(e, segment.session, 'start')
+                      : undefined
+                  }
                 />
-                <div
+                <button
+                  type="button"
                   className={[
                     styles['timeline-marker'],
                     styles.end,
@@ -342,7 +357,9 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
                     .join(' ')}
                   style={{ left: `${endLeft}%` }}
                   data-time={preview?.newEnd || segment.session.end}
-                  onMouseDown={(e) => handleMouseDown(e, segment.session, 'end')}
+                  onMouseDown={
+                    onSessionChange ? (e) => handleMouseDown(e, segment.session, 'end') : undefined
+                  }
                 />
               </React.Fragment>
             );

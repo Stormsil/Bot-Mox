@@ -1,5 +1,5 @@
-import type { UnattendProfileConfig } from '../services/unattendProfileService';
 import defaultUnattendTemplateRaw from '../data/default-unattend-template.xml?raw';
+import type { UnattendProfileConfig } from '../services/unattendProfileService';
 
 export const DEFAULT_UNATTEND_XML_TEMPLATE = defaultUnattendTemplateRaw.trim();
 
@@ -55,7 +55,9 @@ function resolveComputerName(config: UnattendProfileConfig): string {
 }
 
 function resolveInputLocale(config: UnattendProfileConfig): string {
-  const layouts = Array.isArray(config.locale?.keyboardLayouts) ? config.locale.keyboardLayouts : [];
+  const layouts = Array.isArray(config.locale?.keyboardLayouts)
+    ? config.locale.keyboardLayouts
+    : [];
   if (layouts.length === 0) return '0409:00000409';
   return layouts
     .map((entry) => `${String(entry.language || '').trim()}:${String(entry.layout || '').trim()}`)
@@ -71,7 +73,9 @@ function resolveCustomScriptExecutable(config: UnattendProfileConfig): string {
   return parts[parts.length - 1] || 'START.ps1';
 }
 
-export function validateUnattendXml(xml: string): { valid: true } | { valid: false; error: string } {
+export function validateUnattendXml(
+  xml: string,
+): { valid: true } | { valid: false; error: string } {
   const text = String(xml || '').trim();
   if (!text) {
     return { valid: false, error: 'XML is empty.' };
@@ -100,7 +104,8 @@ export function buildFinalUnattendXml(
 
   const uiLanguage = String(config.locale?.uiLanguage || 'en-US').trim() || 'en-US';
   const inputLocale = resolveInputLocale(config);
-  const timeZone = String(config.locale?.timeZone || 'Turkey Standard Time').trim() || 'Turkey Standard Time';
+  const timeZone =
+    String(config.locale?.timeZone || 'Turkey Standard Time').trim() || 'Turkey Standard Time';
   const geoLocation = Number(config.locale?.geoLocation || 235);
   const password = String(config.user?.password || '1204');
   const group = String(config.user?.group || 'Administrators');
@@ -118,7 +123,11 @@ export function buildFinalUnattendXml(
   xml = replaceTagValues(xml, 'TimeZone', timeZone);
   xml = replaceTagValues(xml, 'ComputerName', computerName);
   xml = replaceTagValues(xml, 'Group', group);
-  xml = replaceTagValues(xml, 'LogonCount', String(Math.max(0, Number.isFinite(autoLogonCount) ? autoLogonCount : 9999999)));
+  xml = replaceTagValues(
+    xml,
+    'LogonCount',
+    String(Math.max(0, Number.isFinite(autoLogonCount) ? autoLogonCount : 9999999)),
+  );
 
   if (displayName) {
     xml = replaceTagValues(xml, 'DisplayName', displayName);
@@ -156,7 +165,10 @@ export function buildFinalUnattendXml(
     xml = xml.replace(/(timeout\s+\/t\s+)\d+/gi, `$1${Math.trunc(delaySeconds)}`);
   }
 
-  xml = xml.replace(/(C:\\WindowsSetup\\)([A-Za-z0-9_.-]+)(?=(?:"|<|\s))/gi, `$1${escapeXml(executable)}`);
+  xml = xml.replace(
+    /(C:\\WindowsSetup\\)([A-Za-z0-9_.-]+)(?=(?:"|<|\s))/gi,
+    `$1${escapeXml(executable)}`,
+  );
 
   return xml;
 }

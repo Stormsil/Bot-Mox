@@ -1,5 +1,5 @@
 import type { Dayjs } from 'dayjs';
-import type { WorkspaceCalendarEvent } from '../../../../services/workspaceService';
+import type { WorkspaceCalendarEvent } from '../../../../entities/workspace/model/types';
 
 export interface CalendarEventFormValues {
   title: string;

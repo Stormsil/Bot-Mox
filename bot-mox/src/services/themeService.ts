@@ -1,10 +1,9 @@
-import { apiGet, apiPut } from './apiClient';
-import { uiLogger } from '../observability/uiLogger'
+import { uiLogger } from '../observability/uiLogger';
 import {
-  DEFAULT_THEME_VISUAL_SETTINGS,
+  createDefaultThemePalettes,
   DEFAULT_THEME_SHAPE_SETTINGS,
   DEFAULT_THEME_TYPOGRAPHY_SETTINGS,
-  createDefaultThemePalettes,
+  DEFAULT_THEME_VISUAL_SETTINGS,
   sanitizeThemePalettes,
   sanitizeThemeShapeSettings,
   sanitizeThemeTypographySettings,
@@ -16,6 +15,7 @@ import {
   type ThemeTypographySettings,
   type ThemeVisualSettings,
 } from '../theme/themePalette';
+import { apiGet, apiPut } from './apiClient';
 
 const THEME_SETTINGS_PATH = '/api/v1/settings/theme';
 
@@ -135,7 +135,7 @@ export const updateThemeSettings = async (
   options?: { syncActivePreset?: boolean },
   visualSettings?: ThemeVisualSettings,
   typographySettings?: ThemeTypographySettings,
-  shapeSettings?: ThemeShapeSettings
+  shapeSettings?: ThemeShapeSettings,
 ): Promise<void> => {
   const current = await getThemeSettings();
 
@@ -177,7 +177,7 @@ export const updateThemeSettings = async (
 export const updateThemePalette = async (
   mode: ThemeMode,
   palette: ThemePalette,
-  userId?: string
+  userId?: string,
 ): Promise<void> => {
   const current = await getThemeSettings();
   await updateThemeSettings(
@@ -190,13 +190,13 @@ export const updateThemePalette = async (
     undefined,
     current.visual,
     current.typography,
-    current.shape
+    current.shape,
   );
 };
 
 export const updateThemeVisualSettings = async (
   visual: ThemeVisualSettings,
-  userId?: string
+  userId?: string,
 ): Promise<void> => {
   const current = await getThemeSettings();
   await updateThemeSettings(
@@ -206,14 +206,14 @@ export const updateThemeVisualSettings = async (
     undefined,
     visual,
     current.typography,
-    current.shape
+    current.shape,
   );
 };
 
 export const saveThemePreset = async (
   name: string,
   palettes: ThemePalettes,
-  userId?: string
+  userId?: string,
 ): Promise<ThemePreset> => {
   const normalizedName = name.trim();
   if (!normalizedName) {
@@ -255,7 +255,7 @@ export const saveThemePreset = async (
 
 export const applyThemePreset = async (
   presetId: string,
-  userId?: string
+  userId?: string,
 ): Promise<ThemeSettings> => {
   const current = await getThemeSettings();
   const preset = current.presets[presetId];
@@ -284,7 +284,7 @@ export const applyThemePreset = async (
 
 export const deleteThemePreset = async (
   presetId: string,
-  userId?: string
+  userId?: string,
 ): Promise<ThemeSettings> => {
   const current = await getThemeSettings();
 

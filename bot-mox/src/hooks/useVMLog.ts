@@ -1,15 +1,15 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { uiLogger } from '../observability/uiLogger';
+import { apiGet, apiPut, createPollingSubscription } from '../services/apiClient';
 import type {
-  VMOperationLog,
-  VMLogTable,
   VMLogDiff,
   VMLogEntry,
+  VMLogTable,
+  VMOperationLog,
   VMTaskDetailLevel,
   VMTaskEntry,
   VMTaskStatus,
 } from '../types';
-import { apiGet, apiPut, createPollingSubscription } from '../services/apiClient';
-import { uiLogger } from '../observability/uiLogger'
 
 let logIdCounter = 0;
 let taskIdCounter = 0;
@@ -61,7 +61,9 @@ function normalizeTaskDetailLevel(level: unknown): VMTaskDetailLevel {
 function parsePersistedTasks(data: unknown): VMTaskEntry[] {
   const list = Array.isArray(data)
     ? data
-    : (data && typeof data === 'object' ? Object.values(data as Record<string, unknown>) : []);
+    : data && typeof data === 'object'
+      ? Object.values(data as Record<string, unknown>)
+      : [];
 
   return list
     .map((item, index): VMTaskEntry | null => {
@@ -71,16 +73,19 @@ function parsePersistedTasks(data: unknown): VMTaskEntry[] {
       const key = String(raw.key || '').trim() || id;
       const description = String(raw.description || '').trim() || 'VM Task';
       const startedAtValue = Number(raw.startedAt);
-      const startedAt = Number.isFinite(startedAtValue) && startedAtValue > 0 ? startedAtValue : Date.now();
+      const startedAt =
+        Number.isFinite(startedAtValue) && startedAtValue > 0 ? startedAtValue : Date.now();
       const finishedAtValue = Number(raw.finishedAt);
-      const finishedAt = Number.isFinite(finishedAtValue) && finishedAtValue > 0 ? finishedAtValue : undefined;
+      const finishedAt =
+        Number.isFinite(finishedAtValue) && finishedAtValue > 0 ? finishedAtValue : undefined;
       const detailsRaw = Array.isArray(raw.details) ? raw.details : [];
       const details = detailsRaw
         .map((detail, detailIndex): VMTaskEntry['details'][number] | null => {
           if (!detail || typeof detail !== 'object') return null;
           const rawDetail = detail as Record<string, unknown>;
           const timestampValue = Number(rawDetail.timestamp);
-          const timestamp = Number.isFinite(timestampValue) && timestampValue > 0 ? timestampValue : startedAt;
+          const timestamp =
+            Number.isFinite(timestampValue) && timestampValue > 0 ? timestampValue : startedAt;
           return {
             id: String(rawDetail.id || '').trim() || `persisted_log_${id}_${detailIndex}`,
             timestamp,
@@ -111,7 +116,7 @@ function parsePersistedTasks(data: unknown): VMTaskEntry[] {
 function hasTaskTimedOut(task: VMTaskEntry, now: number): boolean {
   if (task.status !== 'running') return false;
   if (!Number.isFinite(task.startedAt) || task.startedAt <= 0) return false;
-  return (now - task.startedAt) >= RUNNING_TASK_TIMEOUT_MS;
+  return now - task.startedAt >= RUNNING_TASK_TIMEOUT_MS;
 }
 
 export function useVMLog() {
@@ -178,7 +183,7 @@ export function useVMLog() {
         uiLogger.error('Failed to load VM task history:', error);
         hydratedRef.current = true;
       },
-      { key: 'settings:vmgenerator:task_logs', intervalMs: 4000, immediate: true }
+      { key: 'settings:vmgenerator:task_logs', intervalMs: 4000, immediate: true },
     );
 
     return () => {
@@ -195,148 +200,154 @@ export function useVMLog() {
     setEntries(entriesRef.current);
   }, []);
 
-  const updateTask = useCallback((taskKey: string, updater: (task: VMTaskEntry) => VMTaskEntry) => {
-    const idx = tasksRef.current.findIndex((task) => task.key === taskKey);
-    if (idx < 0) return;
-    const current = tasksRef.current[idx];
-    const next = updater(current);
-    const cloned = [...tasksRef.current];
-    cloned[idx] = next;
-    tasksRef.current = cloned;
-    setTasks(cloned);
-    persistTasks(cloned);
-  }, [persistTasks]);
+  const updateTask = useCallback(
+    (taskKey: string, updater: (task: VMTaskEntry) => VMTaskEntry) => {
+      const idx = tasksRef.current.findIndex((task) => task.key === taskKey);
+      if (idx < 0) return;
+      const current = tasksRef.current[idx];
+      const next = updater(current);
+      const cloned = [...tasksRef.current];
+      cloned[idx] = next;
+      tasksRef.current = cloned;
+      setTasks(cloned);
+      persistTasks(cloned);
+    },
+    [persistTasks],
+  );
 
-  const closeRunningTaskById = useCallback((
-    taskId: string,
-    status: VMTaskStatus,
-    summary: string,
-    level: VMTaskDetailLevel
-  ): boolean => {
-    const idx = tasksRef.current.findIndex((task) => task.id === taskId);
-    if (idx < 0) return false;
-    const current = tasksRef.current[idx];
-    if (current.status !== 'running') return false;
+  const closeRunningTaskById = useCallback(
+    (taskId: string, status: VMTaskStatus, summary: string, level: VMTaskDetailLevel): boolean => {
+      const idx = tasksRef.current.findIndex((task) => task.id === taskId);
+      if (idx < 0) return false;
+      const current = tasksRef.current[idx];
+      if (current.status !== 'running') return false;
 
-    const now = Date.now();
-    const updated: VMTaskEntry = {
-      ...current,
-      status,
-      finishedAt: now,
-      details: [
-        ...current.details,
-        {
-          id: nextLogId(),
-          timestamp: now,
-          level,
-          message: summary,
-        },
-      ],
-    };
-
-    const cloned = [...tasksRef.current];
-    cloned[idx] = updated;
-    tasksRef.current = cloned;
-    setTasks(cloned);
-    persistTasks(cloned);
-    return true;
-  }, [persistTasks]);
-
-  const startTask = useCallback((taskKey: string, description: string, meta?: StartTaskMeta) => {
-    const now = Date.now();
-    const idx = tasksRef.current.findIndex((task) => task.key === taskKey);
-
-    if (idx >= 0) {
-      const existing = tasksRef.current[idx];
+      const now = Date.now();
       const updated: VMTaskEntry = {
-        ...existing,
-        description,
-        node: meta?.node || existing.node || '-',
-        userName: meta?.userName || existing.userName || '-',
-        vmName: meta?.vmName || existing.vmName,
-        startedAt: now,
-        finishedAt: undefined,
-        status: 'running',
-        details: [],
+        ...current,
+        status,
+        finishedAt: now,
+        details: [
+          ...current.details,
+          {
+            id: nextLogId(),
+            timestamp: now,
+            level,
+            message: summary,
+          },
+        ],
       };
+
       const cloned = [...tasksRef.current];
       cloned[idx] = updated;
       tasksRef.current = cloned;
       setTasks(cloned);
       persistTasks(cloned);
-      return;
-    }
+      return true;
+    },
+    [persistTasks],
+  );
 
-    const created: VMTaskEntry = {
-      id: nextTaskId(),
-      key: taskKey,
-      description,
-      node: meta?.node || '-',
-      userName: meta?.userName || '-',
-      vmName: meta?.vmName,
-      startedAt: now,
-      status: 'running',
-      details: [],
-    };
-    tasksRef.current = [...tasksRef.current, created];
-    setTasks(tasksRef.current);
-    persistTasks(tasksRef.current);
-  }, [persistTasks]);
+  const startTask = useCallback(
+    (taskKey: string, description: string, meta?: StartTaskMeta) => {
+      const now = Date.now();
+      const idx = tasksRef.current.findIndex((task) => task.key === taskKey);
 
-  const taskLog = useCallback((
-    taskKey: string,
-    message: string,
-    level: VMTaskDetailLevel = 'info'
-  ) => {
-    const idx = tasksRef.current.findIndex((task) => task.key === taskKey);
-    if (idx < 0) return;
+      if (idx >= 0) {
+        const existing = tasksRef.current[idx];
+        const updated: VMTaskEntry = {
+          ...existing,
+          description,
+          node: meta?.node || existing.node || '-',
+          userName: meta?.userName || existing.userName || '-',
+          vmName: meta?.vmName || existing.vmName,
+          startedAt: now,
+          finishedAt: undefined,
+          status: 'running',
+          details: [],
+        };
+        const cloned = [...tasksRef.current];
+        cloned[idx] = updated;
+        tasksRef.current = cloned;
+        setTasks(cloned);
+        persistTasks(cloned);
+        return;
+      }
 
-    updateTask(taskKey, (task) => ({
-      ...task,
-      details: [
-        ...task.details,
-        {
-          id: nextLogId(),
-          timestamp: Date.now(),
-          level,
-          message,
-        },
-      ],
-    }));
-  }, [updateTask]);
+      const created: VMTaskEntry = {
+        id: nextTaskId(),
+        key: taskKey,
+        description,
+        node: meta?.node || '-',
+        userName: meta?.userName || '-',
+        vmName: meta?.vmName,
+        startedAt: now,
+        status: 'running',
+        details: [],
+      };
+      tasksRef.current = [...tasksRef.current, created];
+      setTasks(tasksRef.current);
+      persistTasks(tasksRef.current);
+    },
+    [persistTasks],
+  );
 
-  const finishTask = useCallback((
-    taskKey: string,
-    status: VMTaskStatus,
-    summary?: string
-  ) => {
-    const now = Date.now();
-    updateTask(taskKey, (task) => ({
-      ...(task.status !== 'running'
-        ? task
-        : {
-            ...task,
-            status,
-            finishedAt: now,
-            details: summary
-              ? [
-                  ...task.details,
-                  {
-                    id: nextLogId(),
-                    timestamp: now,
-                    level: taskLevelFromStatus(status),
-                    message: summary,
-                  },
-                ]
-              : task.details,
-          }),
-    }));
-  }, [updateTask]);
+  const taskLog = useCallback(
+    (taskKey: string, message: string, level: VMTaskDetailLevel = 'info') => {
+      const idx = tasksRef.current.findIndex((task) => task.key === taskKey);
+      if (idx < 0) return;
 
-  const cancelTask = useCallback((taskId: string, reason?: string): boolean => {
-    const summary = String(reason || '').trim() || 'Task cancelled by user from Operation Console';
-    return closeRunningTaskById(taskId, 'cancelled', summary, 'warn');
-  }, [closeRunningTaskById]);
+      updateTask(taskKey, (task) => ({
+        ...task,
+        details: [
+          ...task.details,
+          {
+            id: nextLogId(),
+            timestamp: Date.now(),
+            level,
+            message,
+          },
+        ],
+      }));
+    },
+    [updateTask],
+  );
+
+  const finishTask = useCallback(
+    (taskKey: string, status: VMTaskStatus, summary?: string) => {
+      const now = Date.now();
+      updateTask(taskKey, (task) => ({
+        ...(task.status !== 'running'
+          ? task
+          : {
+              ...task,
+              status,
+              finishedAt: now,
+              details: summary
+                ? [
+                    ...task.details,
+                    {
+                      id: nextLogId(),
+                      timestamp: now,
+                      level: taskLevelFromStatus(status),
+                      message: summary,
+                    },
+                  ]
+                : task.details,
+            }),
+      }));
+    },
+    [updateTask],
+  );
+
+  const cancelTask = useCallback(
+    (taskId: string, reason?: string): boolean => {
+      const summary =
+        String(reason || '').trim() || 'Task cancelled by user from Operation Console';
+      return closeRunningTaskById(taskId, 'cancelled', summary, 'warn');
+    },
+    [closeRunningTaskById],
+  );
 
   const timeoutStaleRunningTasks = useCallback(() => {
     const now = Date.now();
@@ -373,77 +384,102 @@ export function useVMLog() {
     persistTasks(nextTasks);
   }, [persistTasks]);
 
-  const info = useCallback((message: string, vmName?: string) => {
-    push({
-      id: nextLogId(),
-      timestamp: Date.now(),
-      level: 'info',
-      message,
-      vmName,
-    } as VMOperationLog);
-  }, [push]);
+  const info = useCallback(
+    (message: string, vmName?: string) => {
+      push({
+        id: nextLogId(),
+        timestamp: Date.now(),
+        level: 'info',
+        message,
+        vmName,
+      } as VMOperationLog);
+    },
+    [push],
+  );
 
-  const warn = useCallback((message: string, vmName?: string) => {
-    push({
-      id: nextLogId(),
-      timestamp: Date.now(),
-      level: 'warn',
-      message,
-      vmName,
-    } as VMOperationLog);
-  }, [push]);
+  const warn = useCallback(
+    (message: string, vmName?: string) => {
+      push({
+        id: nextLogId(),
+        timestamp: Date.now(),
+        level: 'warn',
+        message,
+        vmName,
+      } as VMOperationLog);
+    },
+    [push],
+  );
 
-  const error = useCallback((message: string, vmName?: string) => {
-    push({
-      id: nextLogId(),
-      timestamp: Date.now(),
-      level: 'error',
-      message,
-      vmName,
-    } as VMOperationLog);
-  }, [push]);
+  const error = useCallback(
+    (message: string, vmName?: string) => {
+      push({
+        id: nextLogId(),
+        timestamp: Date.now(),
+        level: 'error',
+        message,
+        vmName,
+      } as VMOperationLog);
+    },
+    [push],
+  );
 
-  const debug = useCallback((message: string, vmName?: string) => {
-    push({
-      id: nextLogId(),
-      timestamp: Date.now(),
-      level: 'debug',
-      message,
-      vmName,
-    } as VMOperationLog);
-  }, [push]);
+  const debug = useCallback(
+    (message: string, vmName?: string) => {
+      push({
+        id: nextLogId(),
+        timestamp: Date.now(),
+        level: 'debug',
+        message,
+        vmName,
+      } as VMOperationLog);
+    },
+    [push],
+  );
 
-  const step = useCallback((message: string, vmName?: string) => {
-    push({
-      id: nextLogId(),
-      timestamp: Date.now(),
-      level: 'step',
-      message,
-      vmName,
-    } as VMOperationLog);
-  }, [push]);
+  const step = useCallback(
+    (message: string, vmName?: string) => {
+      push({
+        id: nextLogId(),
+        timestamp: Date.now(),
+        level: 'step',
+        message,
+        vmName,
+      } as VMOperationLog);
+    },
+    [push],
+  );
 
-  const table = useCallback((title: string, rows: Array<{ field: string; value: string }>, vmName?: string) => {
-    push({
-      id: nextLogId(),
-      timestamp: Date.now(),
-      level: 'table',
-      title,
-      rows,
-      vmName,
-    } as VMLogTable);
-  }, [push]);
+  const table = useCallback(
+    (title: string, rows: Array<{ field: string; value: string }>, vmName?: string) => {
+      push({
+        id: nextLogId(),
+        timestamp: Date.now(),
+        level: 'table',
+        title,
+        rows,
+        vmName,
+      } as VMLogTable);
+    },
+    [push],
+  );
 
-  const diffTable = useCallback((title: string, changes: Array<{ field: string; oldValue: string; newValue: string }>, vmName?: string) => {
-    push({
-      id: nextLogId(),
-      timestamp: Date.now(),
-      level: 'diff',
-      title,
-      changes,
-      vmName,
-    } as VMLogDiff);
-  }, [push]);
+  const diffTable = useCallback(
+    (
+      title: string,
+      changes: Array<{ field: string; oldValue: string; newValue: string }>,
+      vmName?: string,
+    ) => {
+      push({
+        id: nextLogId(),
+        timestamp: Date.now(),
+        level: 'diff',
+        title,
+        changes,
+        vmName,
+      } as VMLogDiff);
+    },
+    [push],
+  );
 
   const clear = useCallback(async () => {
     entriesRef.current = [];
@@ -465,25 +501,29 @@ export function useVMLog() {
   }, [timeoutStaleRunningTasks]);
 
   const getFullLog = useCallback((): string => {
-    return entriesRef.current.map(entry => {
-      const time = new Date(entry.timestamp).toLocaleTimeString();
-      const vm = entry.vmName ? `[${entry.vmName}] ` : '';
+    return entriesRef.current
+      .map((entry) => {
+        const time = new Date(entry.timestamp).toLocaleTimeString();
+        const vm = entry.vmName ? `[${entry.vmName}] ` : '';
 
-      if (entry.level === 'table') {
-        const t = entry as VMLogTable;
-        const rowLines = t.rows.map(r => `  ${r.field}: ${r.value}`).join('\n');
-        return `[${time}] ${vm}${t.title}\n${rowLines}`;
-      }
-      if (entry.level === 'diff') {
-        const d = entry as VMLogDiff;
-        const changeLines = d.changes.map(c => `  ${c.field}: ${c.oldValue} -> ${c.newValue}`).join('\n');
-        return `[${time}] ${vm}${d.title}\n${changeLines}`;
-      }
-      if (entry.level === 'step') {
-        return `[${time}] ${vm}> ${(entry as VMOperationLog).message}`;
-      }
-      return `[${time}] ${vm}[${entry.level.toUpperCase()}] ${(entry as VMOperationLog).message}`;
-    }).join('\n');
+        if (entry.level === 'table') {
+          const t = entry as VMLogTable;
+          const rowLines = t.rows.map((r) => `  ${r.field}: ${r.value}`).join('\n');
+          return `[${time}] ${vm}${t.title}\n${rowLines}`;
+        }
+        if (entry.level === 'diff') {
+          const d = entry as VMLogDiff;
+          const changeLines = d.changes
+            .map((c) => `  ${c.field}: ${c.oldValue} -> ${c.newValue}`)
+            .join('\n');
+          return `[${time}] ${vm}${d.title}\n${changeLines}`;
+        }
+        if (entry.level === 'step') {
+          return `[${time}] ${vm}> ${(entry as VMOperationLog).message}`;
+        }
+        return `[${time}] ${vm}[${entry.level.toUpperCase()}] ${(entry as VMOperationLog).message}`;
+      })
+      .join('\n');
   }, []);
 
   return {

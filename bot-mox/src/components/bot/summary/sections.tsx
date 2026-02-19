@@ -1,10 +1,9 @@
 export {
-  SummaryOverviewSection,
-  SummaryCharacterSection,
-  SummaryBotInfoSection,
-} from './sections-overview';
-
-export {
   SummaryConfigureSection,
   SummaryResourcesSection,
 } from './sections-details';
+export {
+  SummaryBotInfoSection,
+  SummaryCharacterSection,
+  SummaryOverviewSection,
+} from './sections-overview';

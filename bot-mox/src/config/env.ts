@@ -43,16 +43,16 @@ export const API_BASE_URL = trimTrailingSlash(
     readRuntimeString(getRuntimeConfig().apiBaseUrl) ||
       import.meta.env.VITE_API_BASE_URL ||
       import.meta.env.VITE_PROXY_BASE_URL ||
-      resolveDefaultApiBaseUrl()
-  ).trim()
+      resolveDefaultApiBaseUrl(),
+  ).trim(),
 );
 
 export const WS_BASE_URL = trimTrailingSlash(
   String(
     readRuntimeString(getRuntimeConfig().wsBaseUrl) ||
       import.meta.env.VITE_WS_BASE_URL ||
-      resolveDefaultWsBaseUrl(API_BASE_URL)
-  ).trim()
+      resolveDefaultWsBaseUrl(API_BASE_URL),
+  ).trim(),
 );
 
 export function buildApiUrl(path: string): string {

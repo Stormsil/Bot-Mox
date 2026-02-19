@@ -9,7 +9,7 @@
   border: 1px solid var(--boxmox-color-border-default);
   border-radius: 2px;
   padding: 12px;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
   font-size: 12px;
   max-height: 400px;
   overflow-y: auto;
@@ -40,7 +40,7 @@
 }
 
 .detailValue {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
   font-size: 13px;
   color: var(--boxmox-color-text-primary);
   word-break: break-all;
@@ -50,4 +50,3 @@
   display: flex;
   justify-content: flex-end;
 }
-

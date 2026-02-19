@@ -1,21 +1,24 @@
-import React, { useEffect, useMemo, useState } from 'react';
 import { Spin } from 'antd';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentPanel } from '../../components/layout/ContentPanel';
-import type { BotLicense, Proxy, Subscription } from '../../types';
-import { useFinance } from '../../hooks/useFinance';
-import { calculateFinanceSummary } from '../../services/financeService';
-import { getSubscriptionSettings } from '../../services/settingsService';
-import { subscribeToNotesIndex } from '../../services/notesService';
-import type { NoteIndex } from '../../services/notesService';
-import { subscribeBotsMap } from '../../services/botsApiService';
-import type { BotRecord } from '../../services/botsApiService';
-import { subscribeResources } from '../../services/resourcesApiService';
+import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
+import type { BotRecord } from '../../entities/bot/model/types';
+import { calculateFinanceSummary } from '../../entities/finance/lib/analytics';
+import { useNotesIndexQuery } from '../../entities/notes/api/useNotesIndexQuery';
+import type { NoteIndex } from '../../entities/notes/model/types';
 import {
-  type ContentMapSection,
-  type ExpiringItem,
-  DatacenterContentMap,
-} from './content-map';
+  useLicensesQuery,
+  useProxiesQuery,
+  useSubscriptionsQuery,
+} from '../../entities/resources/api/useResourcesQueries';
+import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
+import { useFinanceOperations } from '../../features/finance/model/useFinanceOperations';
+import { uiLogger } from '../../observability/uiLogger';
+import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../types';
+import { type ContentMapSection, DatacenterContentMap, type ExpiringItem } from './content-map';
+import styles from './DatacenterPage.module.css';
 import {
   buildProjectStats,
   CONTENT_MAP_COLLAPSE_KEY,
@@ -23,8 +26,6 @@ import {
   FINANCE_WINDOW_DAYS,
   MS_PER_DAY,
 } from './page-helpers';
-import styles from './DatacenterPage.module.css';
-import { uiLogger } from '../../observability/uiLogger'
 
 function cx(classNames: string): string {
   return classNames
@@ -37,23 +38,13 @@ function cx(classNames: string): string {
 export const DatacenterPage: React.FC = () => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const botsMapQuery = useBotsMapQuery();
+  const licensesQuery = useLicensesQuery();
+  const proxiesQuery = useProxiesQuery();
+  const subscriptionsQuery = useSubscriptionsQuery();
+  const notesIndexQuery = useNotesIndexQuery();
+  const subscriptionSettingsQuery = useSubscriptionSettingsQuery();
 
-  const [bots, setBots] = useState<Record<string, BotRecord>>({});
-  const [botsLoading, setBotsLoading] = useState(true);
-
-  const [licenses, setLicenses] = useState<BotLicense[]>([]);
-  const [licensesLoading, setLicensesLoading] = useState(true);
-
-  const [proxies, setProxies] = useState<Proxy[]>([]);
-  const [proxiesLoading, setProxiesLoading] = useState(true);
-
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [subscriptionsLoading, setSubscriptionsLoading] = useState(true);
-
-  const [notesIndex, setNotesIndex] = useState<NoteIndex[]>([]);
-  const [notesLoading, setNotesLoading] = useState(true);
-
-  const [warningDays, setWarningDays] = useState(7);
   const [collapsedSections, setCollapsedSections] = useState<Record<ContentMapSection, boolean>>(
     () => {
       const saved = localStorage.getItem(CONTENT_MAP_COLLAPSE_KEY);
@@ -65,86 +56,54 @@ export const DatacenterPage: React.FC = () => {
         }
       }
       return DEFAULT_COLLAPSED_SECTIONS;
-    }
+    },
   );
 
-  const { operations, loading: financeLoading } = useFinance({ days: 365 });
+  const { operations, loading: financeLoading } = useFinanceOperations();
+  const bots = useMemo<Record<string, BotRecord>>(
+    () => (botsMapQuery.data || {}) as Record<string, BotRecord>,
+    [botsMapQuery.data],
+  );
+  const botsLoading = botsMapQuery.isLoading;
+  const licenses = useMemo<BotLicense[]>(() => licensesQuery.data || [], [licensesQuery.data]);
+  const licensesLoading = licensesQuery.isLoading;
+  const proxies = useMemo<ProxyResource[]>(() => proxiesQuery.data || [], [proxiesQuery.data]);
+  const proxiesLoading = proxiesQuery.isLoading;
+  const subscriptions = useMemo<Subscription[]>(
+    () => subscriptionsQuery.data || [],
+    [subscriptionsQuery.data],
+  );
+  const subscriptionsLoading = subscriptionsQuery.isLoading;
+  const notesIndex = useMemo<NoteIndex[]>(() => notesIndexQuery.data || [], [notesIndexQuery.data]);
+  const notesLoading = notesIndexQuery.isLoading;
+  const warningDays = subscriptionSettingsQuery.data?.warning_days || 7;
 
   useEffect(() => {
-    return subscribeBotsMap(
-      (data) => {
-        setBots(data || {});
-        setBotsLoading(false);
-      },
-      (error) => {
-        uiLogger.error('Error loading bots:', error);
-        setBotsLoading(false);
-      },
-      { intervalMs: 5000 }
-    );
-  }, []);
-
+    if (!botsMapQuery.error) {
+      return;
+    }
+    uiLogger.error('Error loading bots:', botsMapQuery.error);
+  }, [botsMapQuery.error]);
   useEffect(() => {
-    return subscribeResources<BotLicense>(
-      'licenses',
-      (list) => {
-        setLicenses(list || []);
-        setLicensesLoading(false);
-      },
-      (error) => {
-        uiLogger.error('Error loading licenses:', error);
-        setLicensesLoading(false);
-      },
-      { intervalMs: 7000 }
-    );
-  }, []);
-
+    if (!licensesQuery.error) return;
+    uiLogger.error('Error loading licenses:', licensesQuery.error);
+  }, [licensesQuery.error]);
   useEffect(() => {
-    return subscribeResources<Proxy>(
-      'proxies',
-      (list) => {
-        setProxies(list || []);
-        setProxiesLoading(false);
-      },
-      (error) => {
-        uiLogger.error('Error loading proxies:', error);
-        setProxiesLoading(false);
-      },
-      { intervalMs: 7000 }
-    );
-  }, []);
-
+    if (!proxiesQuery.error) return;
+    uiLogger.error('Error loading proxies:', proxiesQuery.error);
+  }, [proxiesQuery.error]);
   useEffect(() => {
-    return subscribeResources<Subscription>(
-      'subscriptions',
-      (list) => {
-        setSubscriptions(list || []);
-        setSubscriptionsLoading(false);
-      },
-      (error) => {
-        uiLogger.error('Error loading subscriptions:', error);
-        setSubscriptionsLoading(false);
-      },
-      { intervalMs: 7000 }
-    );
-  }, []);
-
+    if (!subscriptionsQuery.error) return;
+    uiLogger.error('Error loading subscriptions:', subscriptionsQuery.error);
+  }, [subscriptionsQuery.error]);
   useEffect(() => {
-    const unsubscribe = subscribeToNotesIndex((notes) => {
-      setNotesIndex(notes || []);
-      setNotesLoading(false);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
+    if (!notesIndexQuery.error) return;
+    uiLogger.error('Error loading notes index:', notesIndexQuery.error);
+  }, [notesIndexQuery.error]);
   useEffect(() => {
-    getSubscriptionSettings()
-      .then((settings) => setWarningDays(settings.warning_days || 7))
-      .catch(() => setWarningDays(7));
-  }, []);
+    if (!subscriptionSettingsQuery.error) return;
+    uiLogger.error('Error loading subscription settings:', subscriptionSettingsQuery.error);
+  }, [subscriptionSettingsQuery.error]);
 
   useEffect(() => {
     localStorage.setItem(CONTENT_MAP_COLLAPSE_KEY, JSON.stringify(collapsedSections));
@@ -224,10 +183,11 @@ export const DatacenterPage: React.FC = () => {
 
     const expired = licenses.filter((license) => license.expires_at <= currentTime).length;
     const active = licenses.filter(
-      (license) => license.status === 'active' && license.expires_at > currentTime
+      (license) => license.status === 'active' && license.expires_at > currentTime,
     ).length;
-    const unassigned = licenses.filter((license) => !license.bot_ids || license.bot_ids.length === 0)
-      .length;
+    const unassigned = licenses.filter(
+      (license) => !license.bot_ids || license.bot_ids.length === 0,
+    ).length;
 
     return {
       total: licenses.length,
@@ -246,10 +206,10 @@ export const DatacenterPage: React.FC = () => {
     }).length;
 
     const expired = proxies.filter(
-      (proxy) => proxy.expires_at <= currentTime || proxy.status === 'expired'
+      (proxy) => proxy.expires_at <= currentTime || proxy.status === 'expired',
     ).length;
     const active = proxies.filter(
-      (proxy) => proxy.status === 'active' && proxy.expires_at > currentTime
+      (proxy) => proxy.status === 'active' && proxy.expires_at > currentTime,
     ).length;
     const unassigned = proxies.filter((proxy) => !proxy.bot_id).length;
 
@@ -342,12 +302,12 @@ export const DatacenterPage: React.FC = () => {
   }, [licenses, proxies, subscriptions, bots, warningDays, currentTime]);
 
   const initialLoading =
-    botsLoading
-    && licensesLoading
-    && proxiesLoading
-    && subscriptionsLoading
-    && financeLoading
-    && notesLoading;
+    botsLoading &&
+    licensesLoading &&
+    proxiesLoading &&
+    subscriptionsLoading &&
+    financeLoading &&
+    notesLoading;
 
   const navProps = (path: string) => ({
     role: 'button' as const,

@@ -1,20 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Divider,
-  Form,
-  Input,
-  message,
-  Modal,
-  Row,
-  Select,
-  Spin,
-  Tag,
-  Typography,
-} from 'antd';
 import {
   CheckCircleOutlined,
   GoldOutlined,
@@ -23,14 +6,35 @@ import {
   StopOutlined,
   ToolOutlined,
 } from '@ant-design/icons';
-import { banBot, unbanBot } from '../../services/botLifecycleService';
-import { subscribeBotById } from '../../services/botsApiService';
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Divider,
+  Form,
+  Input,
+  Modal,
+  message,
+  Row,
+  Select,
+  Spin,
+  Tag,
+  Typography,
+} from 'antd';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import {
+  useBanBotMutation,
+  useUnbanBotMutation,
+} from '../../entities/bot/api/useBotLifecycleMutations';
+import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
 import type { BanDetails, Bot } from '../../types';
-import { formatDate, getStageColor, getStageIcon, getStageLabel } from './lifeStages/config';
 import type { LifeStage } from './lifeStages/config';
+import { formatDate, getStageColor, getStageIcon, getStageLabel } from './lifeStages/config';
+import styles from './lifeStages/lifeStages.module.css';
 import { StagePanels } from './lifeStages/StagePanels';
 import { StageTimeline } from './lifeStages/StageTimeline';
-import styles from './lifeStages/lifeStages.module.css';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -53,6 +57,8 @@ const STATUS_TO_STAGE_MAP: Record<string, LifeStage | 'banned'> = {
 export type { LifeStage };
 
 export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
+  const banBotMutation = useBanBotMutation();
+  const unbanBotMutation = useUnbanBotMutation();
   const [currentStage, setCurrentStage] = useState<LifeStage>('prepare');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,35 +69,35 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
     ban_reason: '',
     ban_mechanism: 'battlenet_account_closure',
   });
+  const botQuery = useBotByIdQuery(botId);
 
   useEffect(() => {
-    const unsubscribe = subscribeBotById(
-      botId,
-      (payload) => {
-        const status = typeof payload?.status === 'string' ? payload.status : '';
-        if (!status) {
-          setLoading(false);
-          return;
-        }
+    if (botQuery.isLoading && !botQuery.data) {
+      return;
+    }
+    const frameId = window.requestAnimationFrame(() => {
+      if (botQuery.error) {
+        console.error('Error loading bot status:', botQuery.error);
+        setError('Failed to load bot status');
+        setLoading(false);
+        return;
+      }
 
+      const status = typeof botQuery.data?.status === 'string' ? botQuery.data.status : '';
+      if (status) {
         const mappedStage = STATUS_TO_STAGE_MAP[status];
         if (mappedStage) {
           setCurrentStage(mappedStage);
         }
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Error loading bot status:', err);
-        setError('Failed to load bot status');
-        setLoading(false);
-      },
-      { intervalMs: 5000 }
-    );
+      }
 
+      setError(null);
+      setLoading(false);
+    });
     return () => {
-      unsubscribe();
+      window.cancelAnimationFrame(frameId);
     };
-  }, [botId]);
+  }, [botQuery.data, botQuery.error, botQuery.isLoading]);
 
   const handleStageChange = (value: LifeStage) => {
     setCurrentStage(value);
@@ -109,7 +115,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
       return;
     }
     try {
-      await banBot(botId, banFormData);
+      await banBotMutation.mutateAsync({ botId, details: banFormData });
       message.success('Бот заблокирован и перемещён в архив');
       setIsBanModalVisible(false);
     } catch (err) {
@@ -120,7 +126,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
 
   const handleUnban = async () => {
     try {
-      await unbanBot(botId);
+      await unbanBotMutation.mutateAsync(botId);
       message.success('Бан снят, бот восстановлен');
     } catch (err) {
       message.error('Ошибка при снятии бана');
@@ -228,6 +234,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
                   danger
                   icon={<StopOutlined />}
                   onClick={() => setIsBanModalVisible(true)}
+                  loading={banBotMutation.isPending}
                   block
                 >
                   Подтвердить блокировку
@@ -237,6 +244,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
                   type="default"
                   icon={<CheckCircleOutlined />}
                   onClick={handleUnban}
+                  loading={unbanBotMutation.isPending}
                   block
                 >
                   Подтвердить снятие бана
@@ -254,6 +262,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
         onCancel={() => setIsBanModalVisible(false)}
         okText="Заблокировать"
         cancelText="Отмена"
+        confirmLoading={banBotMutation.isPending}
         okButtonProps={{ danger: true }}
       >
         <Form layout="vertical">
@@ -278,24 +287,14 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
               value={banFormData.ban_mechanism}
               onChange={(value) => setBanFormData({ ...banFormData, ban_mechanism: value })}
             >
-              <Option value="battlenet_account_closure">
-                Закрытие учетной записи BattleNet
-              </Option>
+              <Option value="battlenet_account_closure">Закрытие учетной записи BattleNet</Option>
               <Option value="battlenet_account_suspension">
                 Приостановка учетной записи BattleNet
               </Option>
-              <Option value="game_suspension">
-                Блокировка в игре
-              </Option>
-              <Option value="hardware_ban">
-                Блокировка железа (HWID)
-              </Option>
-              <Option value="ip_ban">
-                Блокировка IP-адреса
-              </Option>
-              <Option value="other">
-                Другое
-              </Option>
+              <Option value="game_suspension">Блокировка в игре</Option>
+              <Option value="hardware_ban">Блокировка железа (HWID)</Option>
+              <Option value="ip_ban">Блокировка IP-адреса</Option>
+              <Option value="other">Другое</Option>
             </Select>
           </Form.Item>
         </Form>

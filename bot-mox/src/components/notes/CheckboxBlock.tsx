@@ -3,12 +3,12 @@
  * Поддерживает переключение состояния и редактирование текста
  */
 
-import React, { useRef, useEffect, useCallback, useState } from 'react';
-import type { CheckboxBlock } from '../../services/notesService';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { CheckboxBlock } from '../../entities/notes/model/types';
 import styles from './NotesComponents.module.css';
 
-const cx = (...parts: Array<string | false | null | undefined>) =>
-  parts.filter(Boolean).join(' ');
+const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 
 interface CheckboxBlockProps {
   block: CheckboxBlock;
@@ -86,7 +86,7 @@ export const CheckboxBlockComponent: React.FC<CheckboxBlockProps> = ({
         }
       }
     },
-    [onEnter, onBackspace]
+    [onEnter, onBackspace],
   );
 
   // Обработка изменения состояния чекбокса
@@ -94,13 +94,8 @@ export const CheckboxBlockComponent: React.FC<CheckboxBlockProps> = ({
     (e: { target: { checked: boolean } }) => {
       onCheckedChange(e.target.checked);
     },
-    [onCheckedChange]
+    [onCheckedChange],
   );
-
-  // Обработка клика по чекбоксу (чтобы не терять фокус на тексте)
-  const handleCheckboxClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-  }, []);
 
   // Обработка фокуса
   const handleFocus = useCallback(() => {
@@ -120,18 +115,18 @@ export const CheckboxBlockComponent: React.FC<CheckboxBlockProps> = ({
       data-block-id={block.id}
       data-block-type="checkbox"
     >
-      <div className={styles['checkbox-wrapper']} onClick={handleCheckboxClick}>
+      <div className={styles['checkbox-wrapper']}>
         <input
           type="checkbox"
           checked={block.checked}
           onChange={(event) => handleCheckboxChange({ target: { checked: event.target.checked } })}
+          onClick={(event) => event.stopPropagation()}
           className={styles['checkbox-input']}
         />
       </div>
       <div className={styles['checkbox-content-wrapper']}>
-        {showPlaceholder && (
-          <div className={styles['block-placeholder']}>To-do</div>
-        )}
+        {showPlaceholder && <div className={styles['block-placeholder']}>To-do</div>}
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: contentEditable div is the rich-text editor surface */}
         <div
           ref={contentRef}
           className={styles['checkbox-content']}

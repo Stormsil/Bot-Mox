@@ -1,11 +1,14 @@
 import {
-  apiDelete,
-  apiGet,
-  apiPatch,
-  apiPost,
-  buildQueryString,
-  createPollingSubscription,
-} from './apiClient';
+  createWorkspaceCalendarViaContract,
+  createWorkspaceKanbanViaContract,
+  deleteWorkspaceCalendarViaContract,
+  deleteWorkspaceKanbanViaContract,
+  listWorkspaceCalendarViaContract,
+  listWorkspaceKanbanViaContract,
+  patchWorkspaceCalendarViaContract,
+  patchWorkspaceKanbanViaContract,
+} from '../providers/workspace-contract-client';
+import { createPollingSubscription } from './apiClient';
 
 const PAGE_LIMIT = 200;
 const MAX_PAGE_COUNT = 50;
@@ -132,15 +135,21 @@ const normalizeKanbanTask = (raw: KanbanTaskDb): KanbanTask | null => {
   };
 };
 
-async function fetchWorkspacePage(kind: WorkspaceKind, page: number): Promise<{ items: unknown[]; total: number }> {
-  const query = buildQueryString({
+async function fetchWorkspacePage(
+  kind: WorkspaceKind,
+  page: number,
+): Promise<{ items: unknown[]; total: number }> {
+  const query = {
     page,
     limit: PAGE_LIMIT,
     sort: 'updated_at',
     order: 'desc',
-  });
+  } as const;
 
-  const response = await apiGet<unknown[]>(`/api/v1/workspace/${kind}${query}`);
+  const response =
+    kind === 'calendar'
+      ? await listWorkspaceCalendarViaContract(query)
+      : await listWorkspaceKanbanViaContract(query);
   const items = Array.isArray(response.data) ? response.data : [];
 
   const meta = asRecord(response.meta);
@@ -183,15 +192,18 @@ export async function createCalendarEvent(data: CreateCalendarEventData): Promis
     updated_at: now,
   };
 
-  const response = await apiPost<WorkspaceCalendarEventDb>('/api/v1/workspace/calendar', payload);
-  const created = normalizeCalendarEvent(response.data || {});
+  const response = await createWorkspaceCalendarViaContract(payload);
+  const created = normalizeCalendarEvent((response.data || {}) as WorkspaceCalendarEventDb);
   if (!created) {
     throw new Error('Failed to create calendar event');
   }
   return created.id;
 }
 
-export async function updateCalendarEvent(id: string, data: UpdateCalendarEventData): Promise<void> {
+export async function updateCalendarEvent(
+  id: string,
+  data: UpdateCalendarEventData,
+): Promise<void> {
   const updates: WorkspaceCalendarEventDb = {
     updated_at: Date.now(),
   };
@@ -207,36 +219,33 @@ export async function updateCalendarEvent(id: string, data: UpdateCalendarEventD
     updates.linked_note_id = data.linked_note_id;
   }
 
-  await apiPatch(`/api/v1/workspace/calendar/${encodeURIComponent(id)}`, updates);
+  await patchWorkspaceCalendarViaContract(String(id), { ...updates });
 }
 
 export async function deleteCalendarEvent(id: string): Promise<void> {
-  await apiDelete(`/api/v1/workspace/calendar/${encodeURIComponent(id)}`);
+  await deleteWorkspaceCalendarViaContract(String(id));
+}
+
+export async function fetchCalendarEvents(): Promise<WorkspaceCalendarEvent[]> {
+  const rawItems = await fetchWorkspaceItems('calendar');
+  return rawItems
+    .map((item) => normalizeCalendarEvent(item as WorkspaceCalendarEventDb))
+    .filter((item): item is WorkspaceCalendarEvent => Boolean(item))
+    .sort((a, b) => {
+      if (a.date === b.date) return b.updated_at - a.updated_at;
+      return a.date.localeCompare(b.date);
+    });
 }
 
 export function subscribeToCalendarEvents(
   callback: (events: WorkspaceCalendarEvent[]) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): () => void {
-  return createPollingSubscription(
-    async () => {
-      const rawItems = await fetchWorkspaceItems('calendar');
-      return rawItems
-        .map((item) => normalizeCalendarEvent(item as WorkspaceCalendarEventDb))
-        .filter((item): item is WorkspaceCalendarEvent => Boolean(item))
-        .sort((a, b) => {
-          if (a.date === b.date) return b.updated_at - a.updated_at;
-          return a.date.localeCompare(b.date);
-        });
-    },
-    callback,
-    onError,
-    {
-      key: 'workspace:calendar',
-      intervalMs: 6000,
-      immediate: true,
-    }
-  );
+  return createPollingSubscription(fetchCalendarEvents, callback, onError, {
+    key: 'workspace:calendar',
+    intervalMs: 6000,
+    immediate: true,
+  });
 }
 
 export async function createKanbanTask(data: CreateKanbanTaskData): Promise<string> {
@@ -258,8 +267,8 @@ export async function createKanbanTask(data: CreateKanbanTaskData): Promise<stri
     updated_at: now,
   };
 
-  const response = await apiPost<KanbanTaskDb>('/api/v1/workspace/kanban', payload);
-  const created = normalizeKanbanTask(response.data || {});
+  const response = await createWorkspaceKanbanViaContract(payload);
+  const created = normalizeKanbanTask((response.data || {}) as KanbanTaskDb);
   if (!created) {
     throw new Error('Failed to create kanban task');
   }
@@ -281,34 +290,31 @@ export async function updateKanbanTask(id: string, data: UpdateKanbanTaskData): 
   }
   if (typeof data.order === 'number') updates.order = data.order;
 
-  await apiPatch(`/api/v1/workspace/kanban/${encodeURIComponent(id)}`, updates);
+  await patchWorkspaceKanbanViaContract(String(id), { ...updates });
 }
 
 export async function deleteKanbanTask(id: string): Promise<void> {
-  await apiDelete(`/api/v1/workspace/kanban/${encodeURIComponent(id)}`);
+  await deleteWorkspaceKanbanViaContract(String(id));
+}
+
+export async function fetchKanbanTasks(): Promise<KanbanTask[]> {
+  const rawItems = await fetchWorkspaceItems('kanban');
+  return rawItems
+    .map((item) => normalizeKanbanTask(item as KanbanTaskDb))
+    .filter((item): item is KanbanTask => Boolean(item))
+    .sort((a, b) => {
+      if (a.status === b.status) return a.order - b.order || b.updated_at - a.updated_at;
+      return a.status.localeCompare(b.status);
+    });
 }
 
 export function subscribeToKanbanTasks(
   callback: (tasks: KanbanTask[]) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): () => void {
-  return createPollingSubscription(
-    async () => {
-      const rawItems = await fetchWorkspaceItems('kanban');
-      return rawItems
-        .map((item) => normalizeKanbanTask(item as KanbanTaskDb))
-        .filter((item): item is KanbanTask => Boolean(item))
-        .sort((a, b) => {
-          if (a.status === b.status) return a.order - b.order || b.updated_at - a.updated_at;
-          return a.status.localeCompare(b.status);
-        });
-    },
-    callback,
-    onError,
-    {
-      key: 'workspace:kanban',
-      intervalMs: 6000,
-      immediate: true,
-    }
-  );
+  return createPollingSubscription(fetchKanbanTasks, callback, onError, {
+    key: 'workspace:kanban',
+    intervalMs: 6000,
+    immediate: true,
+  });
 }

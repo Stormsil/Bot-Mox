@@ -17,10 +17,7 @@ export const DEFAULT_VISIBLE_STATUSES: BotStatus[] = [
   'banned',
 ];
 
-export const ROOT_SECTION_KEYS = [
-  'resources',
-  'workspace',
-] as const;
+export const ROOT_SECTION_KEYS = ['resources', 'workspace'] as const;
 
 export interface BotItem {
   id: string;
@@ -79,7 +76,7 @@ export const statusConfig: Record<BotStatus, { title: string; color: string }> =
 };
 
 export function isBotStatus(value: unknown): value is BotStatus {
-  return typeof value === 'string' && Object.prototype.hasOwnProperty.call(statusConfig, value);
+  return typeof value === 'string' && Object.hasOwn(statusConfig, value);
 }
 
 export function sanitizeBotStatuses(value: unknown): BotStatus[] {

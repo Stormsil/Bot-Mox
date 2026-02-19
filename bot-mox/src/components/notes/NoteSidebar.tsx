@@ -3,24 +3,24 @@
  * Отображает список заметок, поиск и кнопку создания новой заметки
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Input, Button, List, Tag, Empty, Spin, Tooltip, Popconfirm, message, Card } from 'antd';
 import {
-  SearchOutlined,
-  PlusOutlined,
-  PushpinFilled,
-  PushpinOutlined,
   DeleteOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  PlusOutlined,
+  PushpinFilled,
+  PushpinOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
-import type { NoteIndex } from '../../services/notesService';
+import { Button, Card, Empty, Input, List, message, Popconfirm, Spin, Tag, Tooltip } from 'antd';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  createNote,
-  subscribeToNotesIndex,
-  deleteNote,
-  updateNote,
-} from '../../services/notesService';
+  useCreateNoteMutation,
+  useDeleteNoteMutation,
+  useUpdateNoteMutation,
+} from '../../entities/notes/api/useNoteMutations';
+import { useNotesIndexQuery } from '../../entities/notes/api/useNotesIndexQuery';
+import type { NoteIndex } from '../../entities/notes/model/types';
 import { TableActionButton } from '../ui/TableActionButton';
 import styles from './NotesComponents.module.css';
 
@@ -61,16 +61,7 @@ const formatDate = (timestamp: number): string => {
 };
 
 // Цвета для тегов
-const TAG_COLORS = [
-  'blue',
-  'green',
-  'orange',
-  'purple',
-  'cyan',
-  'magenta',
-  'geekblue',
-  'lime',
-];
+const TAG_COLORS = ['blue', 'green', 'orange', 'purple', 'cyan', 'magenta', 'geekblue', 'lime'];
 
 /**
  * Генерирует цвет тега на основе его названия
@@ -91,39 +82,35 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
   collapsed = false,
   onToggle,
 }) => {
+  const createNoteMutation = useCreateNoteMutation();
+  const deleteNoteMutation = useDeleteNoteMutation();
+  const updateNoteMutation = useUpdateNoteMutation();
   const cx = (...parts: Array<string | false | null | undefined>) =>
     parts.filter(Boolean).join(' ');
 
-  const [notes, setNotes] = useState<NoteIndex[]>([]);
-  const [loading, setLoading] = useState(true);
+  const notesIndexQuery = useNotesIndexQuery();
+  const notes = useMemo(() => (notesIndexQuery.data || []) as NoteIndex[], [notesIndexQuery.data]);
+  const loading = notesIndexQuery.isLoading;
   const [searchQuery, setSearchQuery] = useState('');
   const [creating, setCreating] = useState(false);
 
-  // Загрузка списка заметок
   useEffect(() => {
-    setLoading(true);
-
-    // Подписываемся на realtime обновления индекса
-    const unsubscribe = subscribeToNotesIndex(fetchedNotes => {
-      setNotes(fetchedNotes);
-      setLoading(false);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+    if (!notesIndexQuery.error) {
+      return;
+    }
+    message.error('Failed to load notes');
+  }, [notesIndexQuery.error]);
 
   // Фильтрация и сортировка заметок - мемоизировано
   const sortedNotes = React.useMemo(() => {
     // Фильтрация
-    const filtered = (notes || []).filter(note => {
+    const filtered = (notes || []).filter((note) => {
       if (!searchQuery.trim()) return true;
       const query = searchQuery.toLowerCase();
       return (
         note.title?.toLowerCase().includes(query) ||
         note.preview?.toLowerCase().includes(query) ||
-        note.tags?.some(tag => tag.toLowerCase().includes(query)) ||
+        note.tags?.some((tag) => tag.toLowerCase().includes(query)) ||
         false
       );
     });
@@ -140,7 +127,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
   const handleCreateNote = useCallback(async () => {
     try {
       setCreating(true);
-      await createNote({
+      await createNoteMutation.mutateAsync({
         title: 'New Note',
         bot_id: null,
         project_id: null,
@@ -153,15 +140,12 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
     } finally {
       setCreating(false);
     }
-  }, [onCreateNote]);
+  }, [createNoteMutation, onCreateNote]);
 
   // Обработка изменения поискового запроса
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery(e.target.value);
-    },
-    []
-  );
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
 
   // Очистка поиска
   const handleClearSearch = useCallback(() => {
@@ -169,29 +153,38 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
   }, []);
 
   // Удаление заметки
-  const handleDeleteNote = useCallback(async (noteId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      await deleteNote(noteId);
-      onNoteDelete?.(noteId);
-      message.success('Note deleted');
-    } catch (error) {
-      console.error('Error deleting note:', error);
-      message.error('Failed to delete note');
-    }
-  }, [onNoteDelete]);
+  const handleDeleteNote = useCallback(
+    async (noteId: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      try {
+        await deleteNoteMutation.mutateAsync(noteId);
+        onNoteDelete?.(noteId);
+        message.success('Note deleted');
+      } catch (error) {
+        console.error('Error deleting note:', error);
+        message.error('Failed to delete note');
+      }
+    },
+    [deleteNoteMutation, onNoteDelete],
+  );
 
   // Закрепление/открепление заметки
-  const handleTogglePin = useCallback(async (note: NoteIndex, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      await updateNote(note.id, { is_pinned: !note.is_pinned });
-      message.success(note.is_pinned ? 'Note unpinned' : 'Note pinned');
-    } catch (error) {
-      console.error('Error toggling pin:', error);
-      message.error('Failed to update note');
-    }
-  }, []);
+  const handleTogglePin = useCallback(
+    async (note: NoteIndex, e: React.MouseEvent) => {
+      e.stopPropagation();
+      try {
+        await updateNoteMutation.mutateAsync({
+          noteId: note.id,
+          payload: { is_pinned: !note.is_pinned },
+        });
+        message.success(note.is_pinned ? 'Note unpinned' : 'Note pinned');
+      } catch (error) {
+        console.error('Error toggling pin:', error);
+        message.error('Failed to update note');
+      }
+    },
+    [updateNoteMutation],
+  );
 
   return (
     <div className={cx(styles['note-sidebar'], collapsed && styles.collapsed)}>
@@ -254,11 +247,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
               className={styles['note-sidebar-empty']}
             >
               {!searchQuery && (
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={handleCreateNote}
-                >
+                <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateNote}>
                   Create Note
                 </Button>
               )}
@@ -267,7 +256,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
         ) : (
           <List
             dataSource={sortedNotes}
-            renderItem={note => (
+            renderItem={(note) => (
               <List.Item style={{ padding: 0, border: 'none', marginBottom: collapsed ? 4 : 8 }}>
                 <Card
                   key={note.id}
@@ -275,7 +264,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                     styles['note-list-item'],
                     selectedNoteId === note.id && styles.selected,
                     note.is_pinned && styles.pinned,
-                    collapsed && styles.collapsed
+                    collapsed && styles.collapsed,
                   )}
                   onClick={() => onSelectNote(note.id)}
                   styles={{
@@ -300,7 +289,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                         <div
                           className={cx(
                             styles['note-list-item-indicator'],
-                            selectedNoteId === note.id && styles.selected
+                            selectedNoteId === note.id && styles.selected,
                           )}
                         />
                       )}
@@ -319,15 +308,13 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                         </div>
 
                         {note.preview && (
-                          <div className={styles['note-list-item-preview']}>
-                            {note.preview}
-                          </div>
+                          <div className={styles['note-list-item-preview']}>{note.preview}</div>
                         )}
 
                         <div className={styles['note-list-item-footer']}>
                           {note.tags?.length > 0 && (
                             <div className={styles['note-list-item-tags']}>
-                              {note.tags.slice(0, 3).map(tag => (
+                              {note.tags.slice(0, 3).map((tag) => (
                                 <Tag
                                   key={tag}
                                   color={getTagColor(tag)}
@@ -355,7 +342,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                           icon={note.is_pinned ? <PushpinFilled /> : <PushpinOutlined />}
                           className={cx(
                             styles['note-list-item-action'],
-                            note.is_pinned && styles.pinned
+                            note.is_pinned && styles.pinned,
                           )}
                           onClick={(e) => handleTogglePin(note, e as React.MouseEvent)}
                           tooltip={note.is_pinned ? 'Unpin' : 'Pin'}
@@ -363,7 +350,9 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                         <Popconfirm
                           title="Delete note?"
                           description="This action cannot be undone."
-                          onConfirm={(e) => handleDeleteNote(note.id, e as unknown as React.MouseEvent)}
+                          onConfirm={(e) =>
+                            handleDeleteNote(note.id, e as unknown as React.MouseEvent)
+                          }
                           onCancel={(e) => e?.stopPropagation()}
                           okText="Delete"
                           okType="danger"
@@ -393,10 +382,8 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
           <span>
             {notes?.length || 0} {(notes?.length || 0) === 1 ? 'note' : 'notes'}
           </span>
-          {(notes?.filter(n => n.is_pinned).length || 0) > 0 && (
-            <span>
-              {notes.filter(n => n.is_pinned).length} pinned
-            </span>
+          {(notes?.filter((n) => n.is_pinned).length || 0) > 0 && (
+            <span>{notes.filter((n) => n.is_pinned).length} pinned</span>
           )}
         </div>
       )}

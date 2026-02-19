@@ -1,12 +1,12 @@
 import type { Dayjs } from 'dayjs';
-import type { Bot, IPQSResponse, Proxy } from '../../../types';
+import type { Bot, IPQSResponse, Proxy as ProxyResource } from '../../../types';
 import type { ParsedProxy } from '../../../utils/proxyUtils';
 
 export interface BotProxyProps {
   bot: Bot;
 }
 
-export interface ProxyInfo extends Proxy {
+export interface ProxyInfo extends ProxyResource {
   daysRemaining?: number;
   isExpired?: boolean;
   isExpiringSoon?: boolean;

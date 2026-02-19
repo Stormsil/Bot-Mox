@@ -1,17 +1,24 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Card, Checkbox, Input, Space, Spin, Typography, message } from 'antd';
-import { PlusOutlined, DeleteOutlined, SaveOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
-import Editor from '@monaco-editor/react';
 import {
-  listPlaybooks,
+  DeleteOutlined,
+  DownloadOutlined,
+  PlusOutlined,
+  SaveOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
+import Editor from '@monaco-editor/react';
+import { Button, Card, Checkbox, Input, message, Space, Spin, Typography } from 'antd';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { DEFAULT_PLAYBOOK_CONTENT } from '../../../data/default-playbook';
+import {
   createPlaybook,
-  updatePlaybook,
   deletePlaybook,
-  validatePlaybook,
+  listPlaybooks,
   type Playbook,
   type PlaybookValidationResult,
-} from '../../../services/playbookService';
-import { DEFAULT_PLAYBOOK_CONTENT } from '../../../data/default-playbook';
+  updatePlaybook,
+  validatePlaybook,
+} from '../../../entities/vm/api/playbookFacade';
 import styles from './PlaybookTab.module.css';
 
 const { Text } = Typography;
@@ -104,9 +111,7 @@ export const PlaybookTab: React.FC = () => {
           is_default: isDefault,
           content,
         });
-        setPlaybooks((prev) =>
-          prev.map((p) => (p.id === selectedId ? envelope.data : p)),
-        );
+        setPlaybooks((prev) => prev.map((p) => (p.id === selectedId ? envelope.data : p)));
         message.success('Playbook updated');
       } else {
         const envelope = await createPlaybook({
@@ -201,29 +206,25 @@ export const PlaybookTab: React.FC = () => {
         size="small"
         className={styles.sidebarCard}
         title={<Text strong>Playbooks</Text>}
-        extra={
-          <Button
-            type="link"
-            size="small"
-            icon={<PlusOutlined />}
-            onClick={handleNew}
-          />
-        }
+        extra={<Button type="link" size="small" icon={<PlusOutlined />} onClick={handleNew} />}
       >
         <div className={styles.sidebarList}>
           {playbooks.map((p) => (
-            <div
+            <button
+              type="button"
               key={p.id}
               onClick={() => handleSelect(p.id)}
               className={[
                 styles.sidebarItem,
                 p.id === selectedId ? styles.sidebarItemActive : '',
                 p.is_default ? styles.sidebarItemDefault : '',
-              ].filter(Boolean).join(' ')}
+              ]
+                .filter(Boolean)
+                .join(' ')}
             >
               {p.is_default && <span style={{ marginRight: 4 }}>*</span>}
               {p.name}
-            </div>
+            </button>
           ))}
           {playbooks.length === 0 && (
             <Text type="secondary" className={styles.sidebarEmpty}>
@@ -243,27 +244,14 @@ export const PlaybookTab: React.FC = () => {
               onChange={(e) => setPlaybookName(e.target.value)}
               className={styles.nameInput}
             />
-            <Checkbox
-              checked={isDefault}
-              onChange={(e) => setIsDefault(e.target.checked)}
-            >
+            <Checkbox checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)}>
               Default
             </Checkbox>
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-              loading={saving}
-              onClick={handleSave}
-            >
+            <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
               Save
             </Button>
             {selectedId && (
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                loading={saving}
-                onClick={handleDelete}
-              >
+              <Button danger icon={<DeleteOutlined />} loading={saving} onClick={handleDelete}>
                 Delete
               </Button>
             )}
@@ -298,17 +286,18 @@ export const PlaybookTab: React.FC = () => {
                     : `${validation.errors.length} error${validation.errors.length === 1 ? '' : 's'}`}
                 </Text>
               )}
-              {validation?.warnings.map((w, i) => (
-                <div key={i}>
+              {validation?.warnings.map((w) => (
+                <div key={w.message}>
                   <Text type="warning" className={styles.validationLine}>
                     {w.message}
                   </Text>
                 </div>
               ))}
-              {validation?.errors.map((e, i) => (
-                <div key={i}>
+              {validation?.errors.map((e) => (
+                <div key={`${e.path || 'root'}:${e.message}`}>
                   <Text type="danger" className={styles.validationLine}>
-                    {e.path ? `${e.path}: ` : ''}{e.message}
+                    {e.path ? `${e.path}: ` : ''}
+                    {e.message}
                   </Text>
                 </div>
               ))}

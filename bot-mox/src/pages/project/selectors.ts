@@ -1,11 +1,11 @@
-import type { BotLicense, Proxy, Subscription } from '../../types';
-import {
-  type BotRecord,
-  type BotRow,
-  type ProjectStats,
-  type ProxyLike,
-  type ResourcesByBotMaps,
-  type StatusFilter,
+import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../types';
+import type {
+  BotRecord,
+  BotRow,
+  ProjectStats,
+  ProxyLike,
+  ResourcesByBotMaps,
+  StatusFilter,
 } from './types';
 import {
   computeBotStatus,
@@ -19,7 +19,7 @@ export function buildResourcesByBotMaps({
   subscriptions,
   licenses,
 }: {
-  proxies: Proxy[];
+  proxies: ProxyResource[];
   subscriptions: Subscription[];
   licenses: BotLicense[];
 }): ResourcesByBotMaps {
@@ -111,7 +111,11 @@ export function buildBotRows({
     });
 }
 
-export function filterBotRows(rows: BotRow[], searchText: string, statusFilter: StatusFilter): BotRow[] {
+export function filterBotRows(
+  rows: BotRow[],
+  searchText: string,
+  statusFilter: StatusFilter,
+): BotRow[] {
   const normalizedSearch = searchText.trim().toLowerCase();
 
   return rows.filter((row) => {
@@ -132,7 +136,7 @@ export function filterBotRows(rows: BotRow[], searchText: string, statusFilter: 
     ];
 
     const matchesSearch = searchTargets.some((value) =>
-      value ? value.toLowerCase().includes(normalizedSearch) : false
+      value ? value.toLowerCase().includes(normalizedSearch) : false,
     );
 
     return matchesSearch && matchesStatus;
@@ -146,9 +150,7 @@ export function buildProjectStats(rows: BotRow[]): ProjectStats {
   const offline = rows.filter((row) => row.botStatus === 'offline').length;
   const active = rows.filter(
     (row) =>
-      row.botStatus === 'leveling'
-      || row.botStatus === 'profession'
-      || row.botStatus === 'farming'
+      row.botStatus === 'leveling' || row.botStatus === 'profession' || row.botStatus === 'farming',
   ).length;
 
   return { total, active, prepare, offline, banned };

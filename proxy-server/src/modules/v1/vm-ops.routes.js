@@ -1,7 +1,12 @@
 const express = require('express');
 const { success, failure } = require('../../contracts/envelope');
 const {
+  vmOpsActionPathSchema,
+  vmOpsCommandListQuerySchema,
   vmOpsCommandSchema,
+  vmOpsEventsQuerySchema,
+  vmOpsCommandNextQuerySchema,
+  vmOpsCommandIdPathSchema,
   agentCommandCreateSchema,
   agentCommandUpdateSchema,
 } = require('../../contracts/schemas');
@@ -37,18 +42,6 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
 
   function isPrivileged(auth) {
     return hasRole(auth, 'admin') || hasRole(auth, 'infra');
-  }
-
-  function normalizeQueryString(value) {
-    return String(value || '').trim();
-  }
-
-  function normalizeLastEventId(value) {
-    const parsed = Number.parseInt(String(value || '').trim(), 10);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-      return null;
-    }
-    return parsed;
   }
 
   function canReceiveVmOpsEvent({
@@ -104,14 +97,19 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
         return res.status(403).json(failure('FORBIDDEN', 'Agent token cannot dispatch commands'));
       }
 
-      const action = String(req.params.action || '').trim();
-      if (!action) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Action is required'));
+      const parsedAction = vmOpsActionPathSchema.safeParse(req.params || {});
+      if (!parsedAction.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid action parameter', parsedAction.error.flatten()));
       }
+      const action = parsedAction.data.action;
 
       const parsed = vmOpsCommandSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -127,7 +125,7 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
       });
 
       return res.status(202).json(success(data));
-    })
+    }),
   );
 
   // POST /api/v1/vm-ops/syncthing/:action — dispatch syncthing command through agent
@@ -138,14 +136,19 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
         return res.status(403).json(failure('FORBIDDEN', 'Agent token cannot dispatch commands'));
       }
 
-      const action = String(req.params.action || '').trim();
-      if (!action) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Action is required'));
+      const parsedAction = vmOpsActionPathSchema.safeParse(req.params || {});
+      if (!parsedAction.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid action parameter', parsedAction.error.flatten()));
       }
+      const action = parsedAction.data.action;
 
       const parsed = vmOpsCommandSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -161,7 +164,7 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
       });
 
       return res.status(202).json(success(data));
-    })
+    }),
   );
 
   // POST /api/v1/vm-ops/commands — dispatch arbitrary command (admin/infra only)
@@ -171,7 +174,9 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
     withVmOpsErrors(async (req, res) => {
       const parsed = agentCommandCreateSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -188,7 +193,7 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
       });
 
       return res.status(202).json(success(data));
-    })
+    }),
   );
 
   // GET /api/v1/vm-ops/commands/next — long-poll next queued command (agent only)
@@ -196,22 +201,31 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
     '/commands/next',
     withVmOpsErrors(async (req, res) => {
       if (!isAgentAuth(req)) {
-        return res.status(403).json(failure('FORBIDDEN', 'Only agent token can request next command'));
+        return res
+          .status(403)
+          .json(failure('FORBIDDEN', 'Only agent token can request next command'));
+      }
+
+      const parsedQuery = vmOpsCommandNextQuerySchema.safeParse(req.query || {});
+      if (!parsedQuery.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid query parameters', parsedQuery.error.flatten()));
       }
 
       const auth = req.auth || {};
-      const requestedAgentId = String(req.query.agent_id || '').trim() || String(auth.agent_id || '').trim();
+      const requestedAgentId =
+        String(parsedQuery.data.agent_id || '').trim() || String(auth.agent_id || '').trim();
       if (!requestedAgentId) {
         return res.status(400).json(failure('BAD_REQUEST', 'agent_id is required'));
       }
       if (requestedAgentId !== String(auth.agent_id || '').trim()) {
-        return res.status(403).json(failure('FORBIDDEN', 'Agent token can only access its own command queue'));
+        return res
+          .status(403)
+          .json(failure('FORBIDDEN', 'Agent token can only access its own command queue'));
       }
 
-      const requestedTimeoutMs = Number.parseInt(String(req.query.timeout_ms || '').trim(), 10);
-      const timeoutMs = Number.isFinite(requestedTimeoutMs)
-        ? Math.max(1_000, Math.min(60_000, requestedTimeoutMs))
-        : 25_000;
+      const timeoutMs = parsedQuery.data.timeout_ms ?? 25_000;
 
       const data = await vmOpsService.waitForNextAgentCommand({
         tenantId: auth.tenant_id,
@@ -224,17 +238,20 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   // GET /api/v1/vm-ops/commands/:id — get command status
   router.get(
     '/commands/:id',
     withVmOpsErrors(async (req, res) => {
-      const commandId = String(req.params.id || '').trim();
-      if (!commandId) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Command ID is required'));
+      const parsedPath = vmOpsCommandIdPathSchema.safeParse(req.params || {});
+      if (!parsedPath.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid command id', parsedPath.error.flatten()));
       }
+      const commandId = parsedPath.data.id;
 
       const auth = req.auth || {};
       const privileged = isPrivileged(auth);
@@ -248,21 +265,26 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   // PATCH /api/v1/vm-ops/commands/:id — update command status (from agent)
   router.patch(
     '/commands/:id',
     withVmOpsErrors(async (req, res) => {
-      const commandId = String(req.params.id || '').trim();
-      if (!commandId) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Command ID is required'));
+      const parsedPath = vmOpsCommandIdPathSchema.safeParse(req.params || {});
+      if (!parsedPath.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid command id', parsedPath.error.flatten()));
       }
+      const commandId = parsedPath.data.id;
 
       const parsed = agentCommandUpdateSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -276,46 +298,72 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   // GET /api/v1/vm-ops/commands — list commands
   router.get(
     '/commands',
     withVmOpsErrors(async (req, res) => {
+      const parsedQuery = vmOpsCommandListQuerySchema.safeParse(req.query || {});
+      if (!parsedQuery.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid query parameters', parsedQuery.error.flatten()));
+      }
+
       const auth = req.auth || {};
-      const requestedAgentId = req.query.agent_id;
-      if (isAgentAuth(req) && requestedAgentId && String(requestedAgentId).trim() !== String(auth.agent_id || '').trim()) {
-        return res.status(403).json(failure('FORBIDDEN', 'Agent token can only access its own command queue'));
+      const requestedAgentId = parsedQuery.data.agent_id;
+      if (
+        isAgentAuth(req) &&
+        requestedAgentId &&
+        String(requestedAgentId).trim() !== String(auth.agent_id || '').trim()
+      ) {
+        return res
+          .status(403)
+          .json(failure('FORBIDDEN', 'Agent token can only access its own command queue'));
       }
       const effectiveAgentId = isAgentAuth(req) ? auth.agent_id : requestedAgentId;
 
       const data = await vmOpsService.listAgentCommands({
         tenantId: auth.tenant_id,
         agentId: effectiveAgentId,
-        status: req.query.status,
+        status: parsedQuery.data.status,
         requesterUserId: auth.uid,
         isPrivileged: isPrivileged(auth),
         requestSource: auth.source,
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   // GET /api/v1/vm-ops/events — SSE stream for VM command status updates
   router.get(
     '/events',
     withVmOpsErrors(async (req, res) => {
+      const parsedQuery = vmOpsEventsQuerySchema.safeParse(req.query || {});
+      if (!parsedQuery.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid query parameters', parsedQuery.error.flatten()));
+      }
+
       const auth = req.auth || {};
       const privileged = isPrivileged(auth);
-      const requestedAgentId = normalizeQueryString(req.query.agent_id);
-      const requestedCommandId = normalizeQueryString(req.query.command_id);
-      const lastEventId = normalizeLastEventId(req.query.last_event_id);
+      const requestedAgentId = parsedQuery.data.agent_id || '';
+      const requestedCommandId = parsedQuery.data.command_id || '';
+      const lastEventId = parsedQuery.data.last_event_id ?? null;
       const requestSource = String(auth.source || 'user').trim() || 'user';
 
-      if (isAgentAuth(req) && requestedAgentId && requestedAgentId !== String(auth.agent_id || '').trim()) {
-        return res.status(403).json(failure('FORBIDDEN', 'Agent token can only access its own command queue'));
+      if (
+        isAgentAuth(req) &&
+        requestedAgentId &&
+        requestedAgentId !== String(auth.agent_id || '').trim()
+      ) {
+        return res
+          .status(403)
+          .json(failure('FORBIDDEN', 'Agent token can only access its own command queue'));
       }
 
       if (requestedAgentId) {
@@ -361,14 +409,16 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
       if (lastEventId) {
         const replay = listVmOpsCommandEventsSince(lastEventId);
         for (const event of replay) {
-          if (!canReceiveVmOpsEvent({
-            event,
-            auth,
-            privileged,
-            requestSource,
-            requestedAgentId,
-            requestedCommandId,
-          })) {
+          if (
+            !canReceiveVmOpsEvent({
+              event,
+              auth,
+              privileged,
+              requestSource,
+              requestedAgentId,
+              requestedCommandId,
+            })
+          ) {
             continue;
           }
           writeSseEvent(event);
@@ -376,14 +426,16 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
       }
 
       const unsubscribe = subscribeVmOpsCommandEvents((event) => {
-        if (!canReceiveVmOpsEvent({
-          event,
-          auth,
-          privileged,
-          requestSource,
-          requestedAgentId,
-          requestedCommandId,
-        })) {
+        if (
+          !canReceiveVmOpsEvent({
+            event,
+            auth,
+            privileged,
+            requestSource,
+            requestedAgentId,
+            requestedCommandId,
+          })
+        ) {
           return;
         }
         writeSseEvent(event);
@@ -402,7 +454,7 @@ function createVmOpsRoutes({ vmOpsService, authMiddleware }) {
       req.on('aborted', cleanup);
       res.on('close', cleanup);
       res.on('finish', cleanup);
-    })
+    }),
   );
 
   return router;

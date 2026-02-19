@@ -1,11 +1,11 @@
+import * as http from 'node:http';
+import * as https from 'node:https';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import { BrowserWindow, ipcMain } from 'electron';
-import * as path from 'path';
-import * as os from 'os';
-import * as http from 'http';
-import * as https from 'https';
 import { ApiClient, ApiError } from '../core/api-client';
-import { AgentConfig, ConfigStore, ProxmoxTargetConfig } from '../core/config-store';
-import { Logger } from '../core/logger';
+import type { AgentConfig, ConfigStore, ProxmoxTargetConfig } from '../core/config-store';
+import type { Logger } from '../core/logger';
 import { executeProxmox } from '../executors/proxmox';
 
 // ---------------------------------------------------------------------------
@@ -55,7 +55,9 @@ interface AgentRegistrationResult {
 // ---------------------------------------------------------------------------
 
 function normalizeUrl(value: unknown): string {
-  return String(value || '').trim().replace(/\/+$/, '');
+  return String(value || '')
+    .trim()
+    .replace(/\/+$/, '');
 }
 
 function probeBotMoxHealth(baseUrl: string): Promise<boolean> {
@@ -75,9 +77,7 @@ function probeBotMoxHealth(baseUrl: string): Promise<boolean> {
     }
 
     const lib = url.protocol === 'https:' ? https : http;
-    const port = url.port
-      ? Number(url.port)
-      : (url.protocol === 'https:' ? 443 : 80);
+    const port = url.port ? Number(url.port) : url.protocol === 'https:' ? 443 : 80;
 
     const req = lib.request(
       {
@@ -105,10 +105,7 @@ function probeBotMoxHealth(baseUrl: string): Promise<boolean> {
   });
 }
 
-async function resolveServerUrl(
-  candidates: string[],
-  logger: Logger,
-): Promise<string> {
+async function resolveServerUrl(candidates: string[], logger: Logger): Promise<string> {
   const attempted: string[] = [];
 
   for (const candidate of candidates) {
@@ -128,7 +125,7 @@ async function resolveServerUrl(
 
   throw new Error(
     `Cannot reach Bot-Mox server. Tried: ${attempted.join(', ') || '(no candidates)'}.\n` +
-    `Start the stack and retry (prod-sim: http://localhost, dev: http://localhost:3001).`
+      `Start the stack and retry (prod-sim: http://localhost, dev: http://localhost:3001).`,
   );
 }
 
@@ -192,11 +189,9 @@ export class PairingWindow {
       const targets = this.getProxmoxTargetsFromConfig(cfg);
       const activeTargetId = this.resolveActiveTargetId(cfg, targets);
       const activeTarget = activeTargetId ? targets[activeTargetId] : null;
-      const serverUrl = String(
-        cfg.serverUrl
-          || process.env.BOTMOX_SERVER_URL
-          || 'http://localhost'
-      ).trim().replace(/\/+$/, '');
+      const serverUrl = String(cfg.serverUrl || process.env.BOTMOX_SERVER_URL || 'http://localhost')
+        .trim()
+        .replace(/\/+$/, '');
 
       return {
         serverUrl,
@@ -220,7 +215,10 @@ export class PairingWindow {
   }
 
   private buildDefaultAgentName() {
-    const hostname = String(os.hostname() || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    const hostname = String(os.hostname() || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-');
     const base = hostname || 'agent';
     const suffix = Math.random().toString(36).slice(2, 7);
     return `${base}-${suffix}`;
@@ -233,22 +231,33 @@ export class PairingWindow {
 
   private buildProxmoxTargetId(url: string, username: string, node: string): string {
     const normalizedUrl = String(url || '').trim();
-    const normalizedUsername = String(username || '').trim().toLowerCase();
-    const normalizedNode = String(node || '').trim().toLowerCase();
+    const normalizedUsername = String(username || '')
+      .trim()
+      .toLowerCase();
+    const normalizedNode = String(node || '')
+      .trim()
+      .toLowerCase();
 
     let host = normalizedUrl;
     try {
       const parsed = new URL(normalizedUrl);
-      host = String(parsed.host || parsed.hostname || normalizedUrl).trim().toLowerCase();
+      host = String(parsed.host || parsed.hostname || normalizedUrl)
+        .trim()
+        .toLowerCase();
     } catch {
-      host = normalizedUrl.toLowerCase().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+      host = normalizedUrl
+        .toLowerCase()
+        .replace(/^https?:\/\//, '')
+        .replace(/\/+$/, '');
     }
 
     const raw = `${host}|${normalizedUsername}|${normalizedNode || 'h1'}`;
     return raw.replace(/[^a-z0-9|._:-]/g, '').replace(/\|+/g, '|');
   }
 
-  private buildProxmoxTargetLabel(target: Pick<ProxmoxTargetConfig, 'url' | 'username' | 'node'>): string {
+  private buildProxmoxTargetLabel(
+    target: Pick<ProxmoxTargetConfig, 'url' | 'username' | 'node'>,
+  ): string {
     const normalizedUrl = String(target.url || '').trim();
     const normalizedUsername = String(target.username || '').trim();
     const normalizedNode = String(target.node || '').trim() || 'h1';
@@ -267,15 +276,17 @@ export class PairingWindow {
     const username = String(target.username || '').trim();
     const password = String(target.password || '');
     const node = String(target.node || '').trim() || 'h1';
-    const label = String(target.label || '').trim() || this.buildProxmoxTargetLabel({ url, username, node });
+    const label =
+      String(target.label || '').trim() || this.buildProxmoxTargetLabel({ url, username, node });
     return { url, username, password, node, label };
   }
 
-  private getProxmoxTargetsFromConfig(cfg: Partial<AgentConfig>): Record<string, ProxmoxTargetConfig> {
+  private getProxmoxTargetsFromConfig(
+    cfg: Partial<AgentConfig>,
+  ): Record<string, ProxmoxTargetConfig> {
     const targets: Record<string, ProxmoxTargetConfig> = {};
-    const existing = cfg.proxmoxTargets && typeof cfg.proxmoxTargets === 'object'
-      ? cfg.proxmoxTargets
-      : {};
+    const existing =
+      cfg.proxmoxTargets && typeof cfg.proxmoxTargets === 'object' ? cfg.proxmoxTargets : {};
 
     Object.entries(existing).forEach(([id, value]) => {
       if (!value || typeof value !== 'object') return;
@@ -297,7 +308,10 @@ export class PairingWindow {
     return targets;
   }
 
-  private resolveActiveTargetId(cfg: Partial<AgentConfig>, targets: Record<string, ProxmoxTargetConfig>): string | null {
+  private resolveActiveTargetId(
+    cfg: Partial<AgentConfig>,
+    targets: Record<string, ProxmoxTargetConfig>,
+  ): string | null {
     const configured = String(cfg.activeProxmoxTargetId || '').trim();
     if (configured && targets[configured]) {
       return configured;
@@ -306,7 +320,10 @@ export class PairingWindow {
     return first || null;
   }
 
-  private toTargetSummaries(targets: Record<string, ProxmoxTargetConfig>, activeTargetId: string | null): ProxmoxTargetSummary[] {
+  private toTargetSummaries(
+    targets: Record<string, ProxmoxTargetConfig>,
+    activeTargetId: string | null,
+  ): ProxmoxTargetSummary[] {
     const entries = Object.entries(targets).map(([id, target]) => ({
       summary: {
         id,
@@ -358,7 +375,9 @@ export class PairingWindow {
     };
   }
 
-  private async handleQuickPair(data: QuickPairData): Promise<{ success: boolean; error?: string }> {
+  private async handleQuickPair(
+    data: QuickPairData,
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const current = this.configStore.get();
       const resolvedServerUrl = await resolveServerUrl(
@@ -387,7 +406,9 @@ export class PairingWindow {
         throw new Error('Bot-Mox login and password are required');
       }
       if (!proxmoxPassword) {
-        throw new Error('Proxmox password is required (or leave empty only if one is already saved)');
+        throw new Error(
+          'Proxmox password is required (or leave empty only if one is already saved)',
+        );
       }
 
       this.logger.info(`Quick pairing to ${resolvedServerUrl} using Bot-Mox account credentials`);
@@ -423,15 +444,20 @@ export class PairingWindow {
 
       return { success: true };
     } catch (err) {
-      const message = err instanceof ApiError
-        ? `${err.code}: ${err.message}`
-        : err instanceof Error ? err.message : String(err);
+      const message =
+        err instanceof ApiError
+          ? `${err.code}: ${err.message}`
+          : err instanceof Error
+            ? err.message
+            : String(err);
       this.logger.error(`Quick-pair failed: ${message}`);
       return { success: false, error: message };
     }
   }
 
-  private async handleTestProxmox(data: ProxmoxProbeData): Promise<{ success: boolean; error?: string }> {
+  private async handleTestProxmox(
+    data: ProxmoxProbeData,
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const current = this.configStore.get();
       const selectedTargetId = String(data.targetId || '').trim();
@@ -485,9 +511,10 @@ export class PairingWindow {
         password: proxmoxPassword,
         node: proxmoxNode,
       });
-      const nextTargetId = selectedTargetId && targets[selectedTargetId]
-        ? selectedTargetId
-        : this.buildProxmoxTargetId(testedTarget.url, testedTarget.username, testedTarget.node);
+      const nextTargetId =
+        selectedTargetId && targets[selectedTargetId]
+          ? selectedTargetId
+          : this.buildProxmoxTargetId(testedTarget.url, testedTarget.username, testedTarget.node);
       const mergedTargets = {
         ...targets,
         [nextTargetId]: testedTarget,
@@ -506,7 +533,9 @@ export class PairingWindow {
     }
   }
 
-  private async handleSaveProxmoxTarget(data: ProxmoxProbeData): Promise<{ success: boolean; error?: string; targetId?: string }> {
+  private async handleSaveProxmoxTarget(
+    data: ProxmoxProbeData,
+  ): Promise<{ success: boolean; error?: string; targetId?: string }> {
     try {
       const current = this.configStore.get();
       const selectedTargetId = String(data.targetId || '').trim();
@@ -533,9 +562,10 @@ export class PairingWindow {
         password: proxmoxPassword,
         node: proxmoxNode,
       });
-      const nextTargetId = selectedTargetId && targets[selectedTargetId]
-        ? selectedTargetId
-        : this.buildProxmoxTargetId(targetConfig.url, targetConfig.username, targetConfig.node);
+      const nextTargetId =
+        selectedTargetId && targets[selectedTargetId]
+          ? selectedTargetId
+          : this.buildProxmoxTargetId(targetConfig.url, targetConfig.username, targetConfig.node);
       const mergedTargets = {
         ...targets,
         [nextTargetId]: targetConfig,

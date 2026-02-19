@@ -1,16 +1,4 @@
 import {
-  Button,
-  Card,
-  Checkbox,
-  Col,
-  Form,
-  Input,
-  InputNumber,
-  Row,
-  Select,
-  Tooltip,
-} from 'antd';
-import {
   CheckOutlined,
   DeleteOutlined,
   DownOutlined,
@@ -22,11 +10,23 @@ import {
   UndoOutlined,
   UnlockOutlined,
 } from '@ant-design/icons';
-import { DatePicker } from 'antd';
+import {
+  Button,
+  Card,
+  Checkbox,
+  Col,
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  Row,
+  Select,
+  Tooltip,
+} from 'antd';
 import type { PasswordOptions } from '../../../utils/accountGenerators';
-import type { AccountGenerationLocks, AccountGeneratorTemplate } from './types';
 import { TableActionButton } from '../../ui/TableActionButton';
 import styles from './account.module.css';
+import type { AccountGenerationLocks, AccountGeneratorTemplate } from './types';
 
 const { Option } = Select;
 
@@ -43,7 +43,11 @@ export function PasswordGeneratorOptionsCard({
 }: PasswordGeneratorOptionsCardProps) {
   return (
     <Card
-      title={<span style={{ fontSize: 'var(--text-xs)', fontWeight: 500 }}>Password Generator Options</span>}
+      title={
+        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 500 }}>
+          Password Generator Options
+        </span>
+      }
       size="small"
       className={styles['generator-options-card']}
       style={{
@@ -181,7 +185,7 @@ export function GeneratorPresetsCard({
         minHeight: 40,
       }}
       bodyStyle={{ padding: '12px 16px' }}
-      extra={(
+      extra={
         <Button
           type="text"
           size="small"
@@ -191,7 +195,7 @@ export function GeneratorPresetsCard({
         >
           {presetsCollapsed ? 'Show' : 'Hide'}
         </Button>
-      )}
+      }
     >
       {!presetsCollapsed && (
         <>
@@ -204,7 +208,8 @@ export function GeneratorPresetsCard({
               <Option value="last">Last Used</Option>
               {templates.map((template) => (
                 <Option key={template.id} value={template.id}>
-                  {template.name}{template.id === defaultTemplateId ? ' (Default)' : ''}
+                  {template.name}
+                  {template.id === defaultTemplateId ? ' (Default)' : ''}
                 </Option>
               ))}
             </Select>
@@ -234,11 +239,7 @@ export function GeneratorPresetsCard({
               onChange={(event) => setTemplateName(event.target.value)}
               className={styles['generator-template-name']}
             />
-            <Button
-              type="default"
-              icon={<SaveOutlined />}
-              onClick={handleSaveTemplate}
-            >
+            <Button type="default" icon={<SaveOutlined />} onClick={handleSaveTemplate}>
               Save Template
             </Button>
           </div>
@@ -261,19 +262,16 @@ export function RegistrationDateSection({
 }: RegistrationDateSectionProps) {
   return (
     <Form.Item
-      label={(
+      label={
         <span className={styles['field-label']}>
           Registration Date
           {registrationDateWarning}
         </span>
-      )}
+      }
     >
       <Row gutter={16} align="middle">
         <Col xs={24} md={16}>
-          <Form.Item
-            name="registration_date"
-            style={{ marginBottom: 0 }}
-          >
+          <Form.Item name="registration_date" style={{ marginBottom: 0 }}>
             <DatePicker
               showTime
               format="YYYY-MM-DD HH:mm"
@@ -284,7 +282,12 @@ export function RegistrationDateSection({
           </Form.Item>
         </Col>
         <Col xs={24} md={8}>
-          <Button onClick={setCurrentDateTime} type="default" style={{ width: '100%' }} disabled={accountLocked}>
+          <Button
+            onClick={setCurrentDateTime}
+            type="default"
+            style={{ width: '100%' }}
+            disabled={accountLocked}
+          >
             Set Current Date/Time
           </Button>
         </Col>

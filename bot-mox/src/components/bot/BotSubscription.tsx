@@ -1,8 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Button, Card, Empty, List, Modal, Space, Spin, Typography, message } from 'antd';
 import { CreditCardOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Card, Empty, List, Modal, message, Space, Spin, Typography } from 'antd';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
 import { useSubscriptions } from '../../hooks/useSubscriptions';
-import { fetchBotById } from '../../services/botsApiService';
+import type {
+  BotSubscriptionProps,
+  SubscriptionFormData,
+  SubscriptionWithDetails,
+} from './subscription';
 import {
   buildBotOption,
   isProblemSubscription,
@@ -10,47 +16,35 @@ import {
   SubscriptionListItem,
   SubscriptionModal,
 } from './subscription';
-import type { BotSubscriptionProps, SubscriptionFormData, SubscriptionWithDetails } from './subscription';
 import styles from './subscription/subscription.module.css';
 
 const { Text } = Typography;
 const { confirm } = Modal;
 
 export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
-  const {
-    subscriptions,
-    loading,
-    addSubscription,
-    updateSubscription,
-    deleteSubscription,
-  } = useSubscriptions({ botId: bot.id });
+  const { subscriptions, loading, addSubscription, updateSubscription, deleteSubscription } =
+    useSubscriptions({ botId: bot.id });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithDetails | null>(null);
+  const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithDetails | null>(
+    null,
+  );
   const [saving, setSaving] = useState(false);
   const [botAccountEmail, setBotAccountEmail] = useState<string | null>(null);
+  const botQuery = useBotByIdQuery(bot.id);
 
   useEffect(() => {
-    const loadBotData = async () => {
-      try {
-        const botData = await fetchBotById(bot.id);
-        if (botData?.account && typeof botData.account === 'object' && 'email' in botData.account) {
-          const email = String((botData.account as { email?: unknown }).email || '').trim();
-          if (email) {
-            setBotAccountEmail(email);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading bot data:', error);
-      }
-    };
-
-    loadBotData();
-  }, [bot.id]);
+    if (!botQuery.data?.account || typeof botQuery.data.account !== 'object') {
+      setBotAccountEmail(null);
+      return;
+    }
+    const email = String((botQuery.data.account as { email?: unknown }).email || '').trim();
+    setBotAccountEmail(email || null);
+  }, [botQuery.data]);
 
   const problemSubscriptions = useMemo(
     () => subscriptions.filter(isProblemSubscription),
-    [subscriptions]
+    [subscriptions],
   );
 
   const botOption = useMemo(() => buildBotOption(bot, botAccountEmail), [bot, botAccountEmail]);

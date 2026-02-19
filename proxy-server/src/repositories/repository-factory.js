@@ -2,7 +2,7 @@
  * Repository factory — creates Supabase-backed domain repositories.
  */
 
-const { randomUUID } = require('crypto');
+const { randomUUID } = require('node:crypto');
 const { SupabaseCollectionRepository } = require('./supabase/supabase-collection-repository');
 const { createSupabaseServiceClient } = require('./supabase/client');
 
@@ -50,40 +50,36 @@ function createSupabaseBotsRepository(client, tenantId) {
     async writeLifecycleLog(botId, type, message, details) {
       const id = randomUUID();
       const timestampMs = Date.now();
-      const { error } = await client
-        .from('bot_lifecycle_log')
-        .insert({
-          tenant_id: tenantId,
-          id,
-          bot_id: String(botId),
-          type: String(type),
-          message: String(message),
-          details: details || null,
-          timestamp_ms: timestampMs,
-        });
+      const { error } = await client.from('bot_lifecycle_log').insert({
+        tenant_id: tenantId,
+        id,
+        bot_id: String(botId),
+        type: String(type),
+        message: String(message),
+        details: details || null,
+        timestamp_ms: timestampMs,
+      });
       if (error) throw new Error(`Supabase writeLifecycleLog error: ${error.message}`);
     },
 
     async writeArchiveEntry(botId, botSnapshot, banDetails) {
       const id = randomUUID();
-      const { error } = await client
-        .from('bot_archive')
-        .insert({
-          tenant_id: tenantId,
-          id,
-          bot_id: String(botId),
-          reason: 'banned',
-          archived_at_ms: Date.now(),
-          ban_details: banDetails,
-          snapshot: {
-            project_id: botSnapshot?.project_id || '',
-            character: botSnapshot?.character || null,
-            final_level: Number(botSnapshot?.character?.level || 0),
-            total_farmed: Number(botSnapshot?.farm?.all_farmed_gold || 0),
-            total_earned_gold: Number(botSnapshot?.farm?.all_earned_gold || 0),
-            total_runtime_hours: Number(botSnapshot?.monitor?.total_runtime_hours || 0),
-          },
-        });
+      const { error } = await client.from('bot_archive').insert({
+        tenant_id: tenantId,
+        id,
+        bot_id: String(botId),
+        reason: 'banned',
+        archived_at_ms: Date.now(),
+        ban_details: banDetails,
+        snapshot: {
+          project_id: botSnapshot?.project_id || '',
+          character: botSnapshot?.character || null,
+          final_level: Number(botSnapshot?.character?.level || 0),
+          total_farmed: Number(botSnapshot?.farm?.all_farmed_gold || 0),
+          total_earned_gold: Number(botSnapshot?.farm?.all_earned_gold || 0),
+          total_runtime_hours: Number(botSnapshot?.monitor?.total_runtime_hours || 0),
+        },
+      });
       if (error) throw new Error(`Supabase writeArchiveEntry error: ${error.message}`);
     },
   };
@@ -136,7 +132,9 @@ function createSupabaseSettingsRepository(client, tenantId) {
       if (error) throw new Error(`Supabase settings read error: ${error.message}`);
 
       const tree = data?.data || {};
-      const normalizedPath = String(path || '').replace(/^\/+/, '').replace(/\/+$/, '');
+      const normalizedPath = String(path || '')
+        .replace(/^\/+/, '')
+        .replace(/\/+$/, '');
 
       if (!normalizedPath || normalizedPath === SETTINGS_ROOT) {
         return tree;
@@ -160,13 +158,16 @@ function createSupabaseSettingsRepository(client, tenantId) {
         .maybeSingle();
 
       const tree = existing?.data || {};
-      const normalizedPath = String(path || '').replace(/^\/+/, '').replace(/\/+$/, '');
+      const normalizedPath = String(path || '')
+        .replace(/^\/+/, '')
+        .replace(/\/+$/, '');
 
       let updatedTree;
       if (!normalizedPath || normalizedPath === SETTINGS_ROOT) {
-        updatedTree = (options?.merge && isPlainObject(tree) && isPlainObject(payload))
-          ? { ...tree, ...payload }
-          : payload;
+        updatedTree =
+          options?.merge && isPlainObject(tree) && isPlainObject(payload)
+            ? { ...tree, ...payload }
+            : payload;
       } else {
         const segments = normalizedPath.split('/').filter(Boolean);
         const startIdx = segments[0] === SETTINGS_ROOT ? 1 : 0;
@@ -190,16 +191,14 @@ function createSupabaseSettingsRepository(client, tenantId) {
         }
       }
 
-      const { error } = await client
-        .from('app_settings')
-        .upsert(
-          {
-            tenant_id: tenantId,
-            data: updatedTree,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'tenant_id' }
-        );
+      const { error } = await client.from('app_settings').upsert(
+        {
+          tenant_id: tenantId,
+          data: updatedTree,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'tenant_id' },
+      );
       if (error) throw new Error(`Supabase settings write error: ${error.message}`);
       return updatedTree;
     },

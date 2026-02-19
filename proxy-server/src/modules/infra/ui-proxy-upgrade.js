@@ -35,7 +35,7 @@ function attachUiProxyUpgradeHandler({
       }
     }
 
-    if (req.url && req.url.startsWith('/proxmox-ui')) {
+    if (req.url?.startsWith('/proxmox-ui')) {
       if (proxmoxSession.ticket) {
         upsertCookieHeader(req, 'PVEAuthCookie', proxmoxSession.ticket);
         req.headers.csrfpreventiontoken = proxmoxSession.csrfToken || '';
@@ -44,13 +44,13 @@ function attachUiProxyUpgradeHandler({
       return;
     }
 
-    if (req.url && req.url.startsWith('/tinyfm-ui')) {
+    if (req.url?.startsWith('/tinyfm-ui')) {
       appendCookieHeader(req, tinyFMSession.cookieHeader);
       tinyFMUIProxy.ws(req, socket, head, { target: getTinyFmTarget() });
       return;
     }
 
-    if (req.url && req.url.startsWith('/syncthing-ui')) {
+    if (req.url?.startsWith('/syncthing-ui')) {
       appendCookieHeader(req, syncThingSession.cookieHeader);
       syncThingUIProxy.ws(req, socket, head, { target: getSyncThingTarget() });
       return;

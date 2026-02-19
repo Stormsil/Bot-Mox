@@ -21,7 +21,16 @@ function createSecretsService({ env }) {
     return result.client;
   }
 
-  async function createSecret({ tenantId, label, ciphertext, alg, keyId, nonce, aadMeta, createdBy }) {
+  async function createSecret({
+    tenantId,
+    label,
+    ciphertext,
+    alg,
+    keyId,
+    nonce,
+    aadMeta,
+    createdBy,
+  }) {
     const client = getClient();
     const normalizedTenantId = String(tenantId || '').trim() || 'default';
 
@@ -137,7 +146,7 @@ function createSecretsService({ env }) {
           secret_ref: String(secretRef || '').trim(),
           field_name: String(fieldName || '').trim(),
         },
-        { onConflict: 'tenant_id,scope_type,scope_id,field_name' }
+        { onConflict: 'tenant_id,scope_type,scope_id,field_name' },
       )
       .select('id, tenant_id, scope_type, scope_id, secret_ref, field_name, created_at, updated_at')
       .single();

@@ -1,14 +1,3 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Button,
-  Card,
-  Input,
-  Modal,
-  Select,
-  Table,
-  Typography,
-  message,
-} from 'antd';
 import {
   DownOutlined,
   GlobalOutlined,
@@ -17,23 +6,25 @@ import {
   RightOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import type { Proxy } from '../../types';
-import {
-  deleteProxyById,
-  subscribeBots,
-  subscribeProxies,
-  updateProxyById,
-  type ProxiesBotMap,
-} from '../../services/proxyDataService';
-import { buildProxyColumns, type ProxyWithBot } from './proxyColumns';
+import { Button, Card, Input, Modal, message, Select, Table, Typography } from 'antd';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
 import {
   checkIPQuality,
   isIPQSCheckEnabled,
   isProxySuspicious,
   updateProxyWithIPQSData,
-} from '../../services/ipqsService';
-import { ProxyCrudModal } from './ProxyCrudModal';
+} from '../../entities/resources/api/ipqsFacade';
+import {
+  useDeleteProxyMutation,
+  useUpdateProxyMutation,
+} from '../../entities/resources/api/useProxyMutations';
+import { useProxiesQuery } from '../../entities/resources/api/useResourcesQueries';
+import type { Proxy as ProxyResource } from '../../types';
 import styles from './ProxiesPage.module.css';
+import { ProxyCrudModal } from './ProxyCrudModal';
+import { buildProxyColumns, type ProxyWithBot } from './proxyColumns';
 
 const DEFAULT_PROVIDERS = ['IPRoyal', 'Smartproxy', 'Luminati', 'Oxylabs'];
 const STATS_COLLAPSED_KEY = 'proxiesStatsCollapsed';
@@ -42,10 +33,21 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { confirm } = Modal;
 
+type ProxiesBotMap = Record<
+  string,
+  {
+    character?: { name?: string };
+    person?: { name?: string; vm_name?: string };
+    vm?: { name?: string };
+    name?: string;
+  }
+>;
+
 export const ProxiesPage: React.FC = () => {
-  const [proxies, setProxies] = useState<ProxyWithBot[]>([]);
-  const [bots, setBots] = useState<ProxiesBotMap>({});
-  const [loading, setLoading] = useState(true);
+  const botsMapQuery = useBotsMapQuery();
+  const proxiesQuery = useProxiesQuery();
+  const updateProxyMutation = useUpdateProxyMutation();
+  const deleteProxyMutation = useDeleteProxyMutation();
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -59,27 +61,43 @@ export const ProxiesPage: React.FC = () => {
     return saved ? Boolean(JSON.parse(saved)) : false;
   });
 
+  const bots = useMemo<ProxiesBotMap>(() => {
+    const source = botsMapQuery.data || {};
+    return source as unknown as ProxiesBotMap;
+  }, [botsMapQuery.data]);
+
+  const proxies = useMemo<ProxyWithBot[]>(
+    () =>
+      (proxiesQuery.data || []).map((proxy) => {
+        const bot = proxy.bot_id ? bots[proxy.bot_id] : undefined;
+        const characterName = bot?.character?.name;
+        const vmName = bot?.vm?.name;
+
+        return {
+          ...proxy,
+          botName: characterName || bot?.name,
+          botCharacter: characterName,
+          botVMName: vmName,
+        } as ProxyWithBot;
+      }),
+    [bots, proxiesQuery.data],
+  );
+
+  const loading = proxiesQuery.isLoading || botsMapQuery.isLoading;
+
   useEffect(() => {
-    const unsubscribeProxies = subscribeProxies(
-      (proxiesList) => {
-        setProxies(proxiesList as ProxyWithBot[]);
-        setLoading(false);
-      },
-      () => {
-        message.error('Failed to load proxies');
-        setLoading(false);
-      }
-    );
+    if (!proxiesQuery.error) {
+      return;
+    }
+    message.error('Failed to load proxies');
+  }, [proxiesQuery.error]);
 
-    const unsubscribeBots = subscribeBots((data) => {
-      setBots(data);
-    });
-
-    return () => {
-      unsubscribeProxies();
-      unsubscribeBots();
-    };
-  }, []);
+  useEffect(() => {
+    if (!botsMapQuery.error) {
+      return;
+    }
+    message.error('Failed to load bots');
+  }, [botsMapQuery.error]);
 
   useEffect(() => {
     const existingProviders = [...new Set(proxies.map((proxy) => proxy.provider).filter(Boolean))];
@@ -95,45 +113,6 @@ export const ProxiesPage: React.FC = () => {
     localStorage.setItem(STATS_COLLAPSED_KEY, JSON.stringify(statsCollapsed));
   }, [statsCollapsed]);
 
-  useEffect(() => {
-    if (Object.keys(bots).length === 0 || proxies.length === 0) {
-      return;
-    }
-
-    const needsUpdate = proxies.some((proxy) => {
-      if (!proxy.bot_id) {
-        return false;
-      }
-
-      const bot = bots[proxy.bot_id];
-      const hasEnrichedData = Boolean(proxy.botCharacter || proxy.botVMName);
-      const botHasData = Boolean(bot?.character?.name || bot?.vm?.name);
-      return Boolean(bot && !hasEnrichedData && botHasData);
-    });
-
-    if (!needsUpdate) {
-      return;
-    }
-
-    setProxies((prev) =>
-      prev.map((proxy) => {
-        if (proxy.bot_id && bots[proxy.bot_id]) {
-          const bot = bots[proxy.bot_id];
-          const characterName = bot.character?.name;
-          const vmName = bot.vm?.name;
-          return {
-            ...proxy,
-            botName: characterName,
-            botCharacter: characterName,
-            botVMName: vmName,
-          };
-        }
-
-        return proxy;
-      })
-    );
-  }, [bots, proxies]);
-
   const isExpired = useCallback((expiresAt: number) => Date.now() > expiresAt, []);
 
   const isExpiringSoon = useCallback((expiresAt: number) => {
@@ -141,23 +120,26 @@ export const ProxiesPage: React.FC = () => {
     return daysUntilExpiry <= 7 && daysUntilExpiry > 0;
   }, []);
 
-  const handleDelete = useCallback((proxy: ProxyWithBot) => {
-    confirm({
-      title: 'Delete Proxy?',
-      content: `Are you sure you want to delete proxy ${proxy.ip}:${proxy.port}?`,
-      okText: 'Delete',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          await deleteProxyById(proxy.id);
-          message.success('Proxy deleted');
-        } catch {
-          message.error('Failed to delete proxy');
-        }
-      },
-    });
-  }, []);
+  const handleDelete = useCallback(
+    (proxy: ProxyWithBot) => {
+      confirm({
+        title: '',
+        content: `Are you sure you want to delete proxy ${proxy.ip}:${proxy.port}?`,
+        okText: 'Delete',
+        okType: 'danger',
+        cancelText: 'Cancel',
+        onOk: async () => {
+          try {
+            await deleteProxyMutation.mutateAsync(proxy.id);
+            message.success('');
+          } catch {
+            message.error('Failed to delete proxy');
+          }
+        },
+      });
+    },
+    [deleteProxyMutation],
+  );
 
   const handleProviderCreated = useCallback((providerName: string) => {
     if (!providerName) {
@@ -167,47 +149,52 @@ export const ProxiesPage: React.FC = () => {
     setProviders((prev) => (prev.includes(providerName) ? prev : [...prev, providerName]));
   }, []);
 
-  const copyProxyString = useCallback((proxy: Proxy, event?: React.MouseEvent) => {
+  const copyProxyString = useCallback((proxy: ProxyResource, event?: React.MouseEvent) => {
     if (event) {
       event.stopPropagation();
     }
 
     const proxyString = `${proxy.ip}:${proxy.port}:${proxy.login}:${proxy.password}`;
     navigator.clipboard.writeText(proxyString);
-    message.success('Proxy string copied to clipboard');
+    message.success('');
   }, []);
 
-  const handleRecheckIPQS = useCallback(async (proxy: ProxyWithBot) => {
-    setCheckingProxyId(proxy.id);
+  const handleRecheckIPQS = useCallback(
+    async (proxy: ProxyWithBot) => {
+      setCheckingProxyId(proxy.id);
 
-    try {
-      const isEnabled = await isIPQSCheckEnabled();
-      if (!isEnabled) {
-        message.warning('IPQS check is disabled or API key not configured. Please check settings.');
-        return;
+      try {
+        const isEnabled = await isIPQSCheckEnabled();
+        if (!isEnabled) {
+          message.warning(
+            'IPQS check is disabled or API key not configured. Please check settings.',
+          );
+          return;
+        }
+
+        const data = await checkIPQuality(proxy.ip);
+        if (!data) {
+          message.error('Failed to check proxy with IPQS');
+          return;
+        }
+
+        const suspicious = await isProxySuspicious(data.fraud_score);
+        const updates = updateProxyWithIPQSData(proxy, data);
+        if (suspicious) {
+          updates.status = 'banned';
+        }
+
+        await updateProxyMutation.mutateAsync({ id: proxy.id, payload: updates });
+        const statusMessage = suspicious ? '' : '';
+        message.success(`Proxy checked! Fraud Score: ${data.fraud_score}${statusMessage}`);
+      } catch {
+        message.error('Failed to recheck proxy');
+      } finally {
+        setCheckingProxyId(null);
       }
-
-      const data = await checkIPQuality(proxy.ip);
-      if (!data) {
-        message.error('Failed to check proxy with IPQS');
-        return;
-      }
-
-      const suspicious = await isProxySuspicious(data.fraud_score);
-      const updates = updateProxyWithIPQSData(proxy, data);
-      if (suspicious) {
-        updates.status = 'banned';
-      }
-
-      await updateProxyById(proxy.id, updates);
-      const statusMessage = suspicious ? ' - WARNING: High fraud score! Proxy marked as banned.' : '';
-      message.success(`Proxy checked! Fraud Score: ${data.fraud_score}${statusMessage}`);
-    } catch {
-      message.error('Failed to recheck proxy');
-    } finally {
-      setCheckingProxyId(null);
-    }
-  }, []);
+    },
+    [updateProxyMutation],
+  );
 
   const openEditModal = useCallback((proxy?: ProxyWithBot) => {
     setEditingProxy(proxy || null);
@@ -230,7 +217,15 @@ export const ProxiesPage: React.FC = () => {
         openEditModal,
         handleDelete,
       }),
-    [checkingProxyId, copyProxyString, handleDelete, handleRecheckIPQS, isExpired, isExpiringSoon, openEditModal]
+    [
+      checkingProxyId,
+      copyProxyString,
+      handleDelete,
+      handleRecheckIPQS,
+      isExpired,
+      isExpiringSoon,
+      openEditModal,
+    ],
   );
 
   const filteredProxies = useMemo(
@@ -238,11 +233,11 @@ export const ProxiesPage: React.FC = () => {
       proxies.filter((proxy) => {
         const normalizedSearch = searchText.toLowerCase();
         const matchesSearch =
-          proxy.ip.toLowerCase().includes(normalizedSearch)
-          || proxy.provider.toLowerCase().includes(normalizedSearch)
-          || (proxy.botName?.toLowerCase().includes(normalizedSearch) ?? false)
-          || proxy.country.toLowerCase().includes(normalizedSearch)
-          || (proxy.isp?.toLowerCase().includes(normalizedSearch) ?? false);
+          proxy.ip.toLowerCase().includes(normalizedSearch) ||
+          proxy.provider.toLowerCase().includes(normalizedSearch) ||
+          (proxy.botName?.toLowerCase().includes(normalizedSearch) ?? false) ||
+          proxy.country.toLowerCase().includes(normalizedSearch) ||
+          (proxy.isp?.toLowerCase().includes(normalizedSearch) ?? false);
 
         const matchesStatus = statusFilter === 'all' || proxy.status === statusFilter;
         const matchesType = typeFilter === 'all' || proxy.type === typeFilter;
@@ -250,23 +245,24 @@ export const ProxiesPage: React.FC = () => {
 
         return matchesSearch && matchesStatus && matchesType && matchesCountry;
       }),
-    [countryFilter, proxies, searchText, statusFilter, typeFilter]
+    [countryFilter, proxies, searchText, statusFilter, typeFilter],
   );
 
   const stats = useMemo(
     () => ({
       total: proxies.length,
-      active: proxies.filter((proxy) => proxy.status === 'active' && !isExpired(proxy.expires_at)).length,
+      active: proxies.filter((proxy) => proxy.status === 'active' && !isExpired(proxy.expires_at))
+        .length,
       expired: proxies.filter((proxy) => isExpired(proxy.expires_at)).length,
       expiringSoon: proxies.filter((proxy) => isExpiringSoon(proxy.expires_at)).length,
       unassigned: proxies.filter((proxy) => !proxy.bot_id).length,
     }),
-    [isExpired, isExpiringSoon, proxies]
+    [isExpired, isExpiringSoon, proxies],
   );
 
   const countries = useMemo(
     () => [...new Set(proxies.map((proxy) => proxy.country).filter(Boolean))],
-    [proxies]
+    [proxies],
   );
 
   return (
@@ -277,7 +273,9 @@ export const ProxiesPage: React.FC = () => {
             <Title level={4} className={styles.pageTitle}>
               <GlobalOutlined /> Proxies
             </Title>
-            <Text type="secondary" className={styles.headerSubtitle}>Manage proxy servers for bots</Text>
+            <Text type="secondary" className={styles.headerSubtitle}>
+              Manage proxy servers for bots
+            </Text>
           </div>
           <div className={styles.headerActions}>
             <Button
@@ -296,11 +294,26 @@ export const ProxiesPage: React.FC = () => {
 
       {!statsCollapsed && (
         <div className={styles.stats}>
-          <Card className={styles.statCard}><div className={styles.statValue}>{stats.total}</div><div className={styles.statLabel}>Total</div></Card>
-          <Card className={`${styles.statCard} ${styles.statCardActive}`}><div className={styles.statValue}>{stats.active}</div><div className={styles.statLabel}>Active</div></Card>
-          <Card className={`${styles.statCard} ${styles.statCardWarning}`}><div className={styles.statValue}>{stats.expiringSoon}</div><div className={styles.statLabel}>Expiring Soon</div></Card>
-          <Card className={`${styles.statCard} ${styles.statCardExpired}`}><div className={styles.statValue}>{stats.expired}</div><div className={styles.statLabel}>Expired</div></Card>
-          <Card className={styles.statCard}><div className={styles.statValue}>{stats.unassigned}</div><div className={styles.statLabel}>Unassigned</div></Card>
+          <Card className={styles.statCard}>
+            <div className={styles.statValue}>{stats.total}</div>
+            <div className={styles.statLabel}>Total</div>
+          </Card>
+          <Card className={`${styles.statCard} ${styles.statCardActive}`}>
+            <div className={styles.statValue}>{stats.active}</div>
+            <div className={styles.statLabel}>Active</div>
+          </Card>
+          <Card className={`${styles.statCard} ${styles.statCardWarning}`}>
+            <div className={styles.statValue}>{stats.expiringSoon}</div>
+            <div className={styles.statLabel}>Expiring Soon</div>
+          </Card>
+          <Card className={`${styles.statCard} ${styles.statCardExpired}`}>
+            <div className={styles.statValue}>{stats.expired}</div>
+            <div className={styles.statLabel}>Expired</div>
+          </Card>
+          <Card className={styles.statCard}>
+            <div className={styles.statValue}>{stats.unassigned}</div>
+            <div className={styles.statLabel}>Unassigned</div>
+          </Card>
         </div>
       )}
 
@@ -342,7 +355,9 @@ export const ProxiesPage: React.FC = () => {
           >
             <Option value="all">All Countries</Option>
             {countries.map((country) => (
-              <Option key={country} value={country}>{country}</Option>
+              <Option key={country} value={country}>
+                {country}
+              </Option>
             ))}
           </Select>
           <Button

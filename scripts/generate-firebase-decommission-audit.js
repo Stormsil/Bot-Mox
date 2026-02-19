@@ -1,8 +1,6 @@
 #!/usr/bin/env node
-'use strict';
-
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const OUTPUT_PATH = path.join(REPO_ROOT, 'docs', 'audits', 'firebase-decommission-audit.md');
@@ -242,11 +240,15 @@ function main() {
   ];
 
   const docsRiskHits = activeDocHits.filter((hit) =>
-    DOC_RISK_PATTERNS.some((pattern) => pattern.test(hit.text))
+    DOC_RISK_PATTERNS.some((pattern) => pattern.test(hit.text)),
   );
 
-  const legacyFilesPresent = LEGACY_FILE_PATHS.filter((rel) => fs.existsSync(path.join(REPO_ROOT, rel)));
-  const firebaseConfigFilesPresent = FIREBASE_CONFIG_PATHS.filter((rel) => fs.existsSync(path.join(REPO_ROOT, rel)));
+  const legacyFilesPresent = LEGACY_FILE_PATHS.filter((rel) =>
+    fs.existsSync(path.join(REPO_ROOT, rel)),
+  );
+  const firebaseConfigFilesPresent = FIREBASE_CONFIG_PATHS.filter((rel) =>
+    fs.existsSync(path.join(REPO_ROOT, rel)),
+  );
 
   const depsByPackage = PACKAGE_PATHS.map((pkgPath) => ({
     pkgPath,
@@ -319,7 +321,9 @@ function main() {
   lines.push('');
   lines.push('## Snapshot');
   lines.push('');
-  lines.push(`- Runtime refs (proxy-server/src + bot-mox/src + agent/src): **${runtimeHits.length}**`);
+  lines.push(
+    `- Runtime refs (proxy-server/src + bot-mox/src + agent/src): **${runtimeHits.length}**`,
+  );
   lines.push(`- Legacy files still present: **${legacyFilesPresent.length}**`);
   lines.push(`- Package manifests with firebase deps: **${packagesWithFirebaseDeps.length}**`);
   lines.push(`- Firebase root config files present: **${firebaseConfigFilesPresent.length}**`);
@@ -332,7 +336,9 @@ function main() {
   lines.push('| ID | Status | Area | Item | Next action |');
   lines.push('| --- | --- | --- | --- | --- |');
   for (const blocker of blockers) {
-    lines.push(`| ${blocker.id} | ${formatStatus(blocker.open)} | ${blocker.area} | ${blocker.item} | ${blocker.action} |`);
+    lines.push(
+      `| ${blocker.id} | ${formatStatus(blocker.open)} | ${blocker.area} | ${blocker.item} | ${blocker.action} |`,
+    );
   }
   lines.push('');
   lines.push('## Evidence: Runtime Refs');
@@ -360,7 +366,7 @@ function main() {
   lines.push('Run after every architecture or dependency change:');
   lines.push('');
   lines.push('```bash');
-  lines.push('npm run audit:firebase:decommission');
+  lines.push('pnpm run audit:firebase:decommission');
   lines.push('```');
   lines.push('');
 

@@ -2,10 +2,10 @@
 // Purpose: quickly verify that the stack is reachable and that debugging signals exist
 // (health endpoints, trace headers, Jaeger UI) without running full scenario tests.
 
-const fs = require('fs');
-const path = require('path');
-const http = require('http');
-const https = require('https');
+const fs = require('node:fs');
+const path = require('node:path');
+const http = require('node:http');
+const https = require('node:https');
 
 function nowIso() {
   return new Date().toISOString();
@@ -42,7 +42,7 @@ function requestWithTimeout(url, options = {}, timeoutMs = 8000) {
             body,
           });
         });
-      }
+      },
     );
 
     req.on('error', (err) => reject(err));
@@ -70,8 +70,8 @@ function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
 }
 
-function pickFirstOk(results) {
-  return results.find((r) => r && r.ok) || null;
+function _pickFirstOk(results) {
+  return results.find((r) => r?.ok) || null;
 }
 
 async function probeBaseUrl(baseUrl) {
@@ -121,7 +121,9 @@ async function checkUi(baseUrl) {
   // In dev, UI is usually on :5173; we still treat API health as primary.
   const uiUrl = process.env.BOTMOX_UI_URL
     ? toText(process.env.BOTMOX_UI_URL).trim()
-    : (baseUrl === 'http://localhost' ? 'http://localhost' : 'http://localhost:5173');
+    : baseUrl === 'http://localhost'
+      ? 'http://localhost'
+      : 'http://localhost:5173';
 
   try {
     const res = await requestWithTimeout(uiUrl, {}, 8000);
@@ -177,7 +179,7 @@ async function checkDiagTrace(baseUrl) {
           traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
         },
       },
-      8000
+      8000,
     );
     const json = (() => {
       try {
@@ -226,7 +228,9 @@ function summarize(report) {
   lines.push(`health=${report.health.ok ? 'OK' : 'FAIL'} (${report.health.url})`);
 
   const h = report.health?.headers || {};
-  lines.push(`headers: x-correlation-id=${h.x_correlation_id || '-'} x-trace-id=${h.x_trace_id || '-'} x-span-id=${h.x_span_id || '-'}`);
+  lines.push(
+    `headers: x-correlation-id=${h.x_correlation_id || '-'} x-trace-id=${h.x_trace_id || '-'} x-span-id=${h.x_span_id || '-'}`,
+  );
 
   if (report.health?.body?.success && report.health.body?.data) {
     const data = report.health.body.data;
@@ -234,9 +238,11 @@ function summarize(report) {
     if (data.s3_ready === false) lines.push('deps: s3_ready=FALSE');
   }
 
-  if (report.diag && report.diag.skipped) {
+  if (report.diag?.skipped) {
     if (report.diag.note === 'route-missing-or-protected') {
-      lines.push('diag: skipped (backend build likely stale; rebuild prod-like stack to get /diag)');
+      lines.push(
+        'diag: skipped (backend build likely stale; rebuild prod-like stack to get /diag)',
+      );
     } else {
       lines.push('diag: skipped (enable BOTMOX_DIAGNOSTICS_ENABLED=1)');
     }
@@ -244,8 +250,8 @@ function summarize(report) {
     lines.push(`diag=${report.diag.ok ? 'OK' : 'FAIL'} (${report.diag.url})`);
   }
 
-  if (report.jaeger && report.jaeger.skipped) {
-    lines.push('jaeger: skipped (start with npm run obs:up)');
+  if (report.jaeger?.skipped) {
+    lines.push('jaeger: skipped (start with pnpm run obs:up)');
   } else if (report.jaeger) {
     lines.push(`jaeger=${report.jaeger.ok ? 'OK' : 'FAIL'} (${report.jaeger.url})`);
   }
@@ -281,7 +287,9 @@ async function main() {
   console.log(`report=${outPath}`);
 
   const healthData = report.health?.body?.data || null;
-  const depsOk = healthData ? Boolean(healthData.supabase_ready !== false && healthData.s3_ready !== false) : true;
+  const depsOk = healthData
+    ? Boolean(healthData.supabase_ready !== false && healthData.s3_ready !== false)
+    : true;
   const ok = report.ui.ok && report.health.ok && report.diag.ok && depsOk;
   process.exit(ok ? 0 : 1);
 }

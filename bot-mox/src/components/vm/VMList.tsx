@@ -1,5 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Input, Modal, Table, Tag, message } from 'antd';
 import {
   EditOutlined,
   PlayCircleOutlined,
@@ -7,16 +5,22 @@ import {
   RedoOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
-import type { ProxmoxVM } from '../../types';
-import { startVM, stopVM, updateVMConfig, waitForTask } from '../../services/vmService';
+import { Button, Input, Modal, message, Table, Tag } from 'antd';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import {
+  useStartVmMutation,
+  useStopVmMutation,
+  useUpdateVmConfigMutation,
+  useWaitForVmTaskMutation,
+} from '../../entities/vm/api/useVmActionMutations';
 import { useProxmox } from '../../hooks/useProxmox';
+import type { ProxmoxVM } from '../../types';
 import { TableActionButton, TableActionGroup } from '../ui/TableActionButton';
 import styles from './VMList.module.css';
 
 const headerTitle = (text: string) => (
-  <span style={{ textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: 11 }}>
-    {text}
-  </span>
+  <span style={{ textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: 11 }}>{text}</span>
 );
 
 function formatUptime(seconds: number): string {
@@ -60,9 +64,13 @@ export const VMListView: React.FC<VMListViewProps> = ({
   refreshVMs,
   onRecreate,
 }) => {
-  const [tableHeight, setTableHeight] = useState(() => (
-    typeof window === 'undefined' ? 520 : Math.max(260, window.innerHeight - 300)
-  ));
+  const startVmMutation = useStartVmMutation();
+  const stopVmMutation = useStopVmMutation();
+  const updateVmConfigMutation = useUpdateVmConfigMutation();
+  const waitForVmTaskMutation = useWaitForVmTaskMutation();
+  const [tableHeight, setTableHeight] = useState(() =>
+    typeof window === 'undefined' ? 520 : Math.max(260, window.innerHeight - 300),
+  );
   const [renameTarget, setRenameTarget] = useState<ProxmoxVM | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const [renameSaving, setRenameSaving] = useState(false);
@@ -79,7 +87,7 @@ export const VMListView: React.FC<VMListViewProps> = ({
 
   const handleStart = async (vmid: number) => {
     try {
-      await startVM(vmid, node);
+      await startVmMutation.mutateAsync({ vmid, node });
       message.success(`VM ${vmid} start requested`);
       void refreshVMs();
     } catch (err) {
@@ -89,7 +97,7 @@ export const VMListView: React.FC<VMListViewProps> = ({
 
   const handleStop = async (vmid: number) => {
     try {
-      await stopVM(vmid, node);
+      await stopVmMutation.mutateAsync({ vmid, node });
       message.success(`VM ${vmid} stop requested`);
       void refreshVMs();
     } catch (err) {
@@ -115,14 +123,18 @@ export const VMListView: React.FC<VMListViewProps> = ({
 
     setRenameSaving(true);
     try {
-      const result = await updateVMConfig({
+      const result = await updateVmConfigMutation.mutateAsync({
         vmid: renameTarget.vmid,
         node,
         config: { name: nextName },
       });
 
       if (result.upid) {
-        const status = await waitForTask(result.upid, node, { timeoutMs: 90_000, intervalMs: 1_000 });
+        const status = await waitForVmTaskMutation.mutateAsync({
+          upid: result.upid,
+          node,
+          options: { timeoutMs: 90_000, intervalMs: 1_000 },
+        });
         if (status.exitstatus && status.exitstatus !== 'OK') {
           throw new Error(status.exitstatus);
         }
@@ -234,16 +246,9 @@ export const VMListView: React.FC<VMListViewProps> = ({
             {stoppedCount} stopped
           </span>
           <span>Total: {vms.length}</span>
-          {!connected && (
-            <Tag color="error">Disconnected</Tag>
-          )}
+          {!connected && <Tag color="error">Disconnected</Tag>}
         </div>
-        <Button
-          size="small"
-          icon={<ReloadOutlined />}
-          onClick={refreshVMs}
-          loading={loading}
-        >
+        <Button size="small" icon={<ReloadOutlined />} onClick={refreshVMs} loading={loading}>
           Refresh
         </Button>
       </div>

@@ -1,8 +1,7 @@
 function createSimpleRateLimiter(options = {}) {
   const windowMs = Number(options.windowMs) || 15 * 60 * 1000;
   const max = Number(options.max) || 100;
-  const skip =
-    typeof options.skip === 'function' ? options.skip : () => false;
+  const skip = typeof options.skip === 'function' ? options.skip : () => false;
   const keyGenerator =
     typeof options.keyGenerator === 'function'
       ? options.keyGenerator
@@ -10,14 +9,17 @@ function createSimpleRateLimiter(options = {}) {
 
   const store = new Map();
 
-  const cleanupTimer = setInterval(() => {
-    const now = Date.now();
-    for (const [key, bucket] of store.entries()) {
-      if (!bucket || bucket.expiresAt <= now) {
-        store.delete(key);
+  const cleanupTimer = setInterval(
+    () => {
+      const now = Date.now();
+      for (const [key, bucket] of store.entries()) {
+        if (!bucket || bucket.expiresAt <= now) {
+          store.delete(key);
+        }
       }
-    }
-  }, Math.max(10_000, Math.floor(windowMs / 2)));
+    },
+    Math.max(10_000, Math.floor(windowMs / 2)),
+  );
 
   if (typeof cleanupTimer.unref === 'function') {
     cleanupTimer.unref();

@@ -1,5 +1,5 @@
-import React from 'react';
 import { Card, Progress, Typography } from 'antd';
+import type React from 'react';
 import styles from './MetricCard.module.css';
 
 const { Text } = Typography;
@@ -22,13 +22,13 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   color = 'var(--boxmox-color-brand-primary)',
 }) => {
   return (
-    <Card
-      className={styles.metricCard}
-      variant="borderless"
-      styles={{ body: { padding: 16 } }}
-    >
+    <Card className={styles.metricCard} variant="borderless" styles={{ body: { padding: 16 } }}>
       <div className={styles.header}>
-        {icon && <div className={styles.icon} style={{ color }}>{icon}</div>}
+        {icon && (
+          <div className={styles.icon} style={{ color }}>
+            {icon}
+          </div>
+        )}
         <Text className={styles.label}>{label}</Text>
       </div>
       <div className={styles.value} style={{ color }}>
@@ -46,9 +46,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           />
         </div>
       )}
-      {subtext && (
-        <Text className={styles.subtext}>{subtext}</Text>
-      )}
+      {subtext && <Text className={styles.subtext}>{subtext}</Text>}
     </Card>
   );
 };

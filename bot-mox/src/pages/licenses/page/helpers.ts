@@ -25,7 +25,11 @@ export const withBotDetails = (licenses: LicenseWithBots[], bots: BotsMap): Lice
         name: characterName || botName,
         characterName,
         vmName,
-        fullDisplay: characterName ? (vmName ? `${characterName} (${vmName})` : characterName) : botName,
+        fullDisplay: characterName
+          ? vmName
+            ? `${characterName} (${vmName})`
+            : characterName
+          : botName,
       };
     });
 
@@ -36,7 +40,7 @@ export const filterLicenses = (
   licenses: LicenseWithBots[],
   searchText: string,
   statusFilter: string,
-  typeFilter: string
+  typeFilter: string,
 ) =>
   licenses.filter((license) => {
     const search = searchText.toLowerCase();
@@ -51,21 +55,21 @@ export const filterLicenses = (
     return matchesSearch && matchesStatus && matchesType;
   });
 
-export const computeStats = (
-  licenses: LicenseWithBots[],
-  currentTime: number
-): LicensesStats => ({
+export const computeStats = (licenses: LicenseWithBots[], currentTime: number): LicensesStats => ({
   total: licenses.length,
-  active: licenses.filter((license) => license.status === 'active' && !isExpired(license.expires_at, currentTime)).length,
+  active: licenses.filter(
+    (license) => license.status === 'active' && !isExpired(license.expires_at, currentTime),
+  ).length,
   expired: licenses.filter((license) => isExpired(license.expires_at, currentTime)).length,
-  expiringSoon: licenses.filter((license) => isExpiringSoon(license.expires_at, currentTime)).length,
+  expiringSoon: licenses.filter((license) => isExpiringSoon(license.expires_at, currentTime))
+    .length,
   unassigned: licenses.filter((license) => !license.bot_ids || license.bot_ids.length === 0).length,
 });
 
 export const buildLicensePayload = (
   values: { key: string; type: string; expires_at: { valueOf: () => number } },
   now: number,
-  botIds: string[]
+  botIds: string[],
 ) => {
   const expiresAt = values.expires_at.valueOf();
   const status: BotLicense['status'] = now > expiresAt ? 'expired' : 'active';

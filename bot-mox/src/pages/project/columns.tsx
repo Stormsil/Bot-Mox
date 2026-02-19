@@ -1,13 +1,12 @@
-import React from 'react';
-import { Popconfirm, Tag, Tooltip, Typography } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
+import { Popconfirm, Tag, Tooltip, Typography } from 'antd';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { TableActionButton } from '../../components/ui/TableActionButton';
 import type { BotStatus } from '../../types';
+import styles from './ProjectPage.module.css';
 import type { BotRow } from './types';
 import { BOT_STATUS_ORDER } from './types';
 import { formatDaysRemaining, formatFaction, formatServerName } from './utils';
-import styles from './ProjectPage.module.css';
 
 const { Text } = Typography;
 
@@ -23,12 +22,18 @@ function renderStatusWithDays({
   onClick: () => void;
 }) {
   return (
-    <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={onClick}>
-      <Tag color={color} className={styles.statusTag}>{label}</Tag>
+    <button
+      type="button"
+      className={`${styles.cellStack} ${styles.cellLink} ${styles.cellLinkButton}`}
+      onClick={onClick}
+    >
+      <Tag color={color} className={styles.statusTag}>
+        {label}
+      </Tag>
       <Text type="secondary" className={styles.secondary}>
         {formatDaysRemaining(daysRemaining)}
       </Text>
-    </div>
+    </button>
   );
 }
 
@@ -54,11 +59,15 @@ export function createProjectColumns({
       onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.idShort.localeCompare(b.idShort),
       render: (_: string, record: BotRow) => (
-        <div className={styles.cellLink} onClick={() => goToBot(record.id, 'summary')}>
+        <button
+          type="button"
+          className={`${styles.cellLink} ${styles.cellLinkButton}`}
+          onClick={() => goToBot(record.id, 'summary')}
+        >
           <Tooltip title={record.id}>
             <Text className={styles.id}>{record.idShort}</Text>
           </Tooltip>
-        </div>
+        </button>
       ),
     },
     {
@@ -68,11 +77,16 @@ export function createProjectColumns({
       width: 130,
       className: cellClassName,
       onHeaderCell: () => headerCellProps,
-      sorter: (a: BotRow, b: BotRow) => BOT_STATUS_ORDER[a.botStatus] - BOT_STATUS_ORDER[b.botStatus],
+      sorter: (a: BotRow, b: BotRow) =>
+        BOT_STATUS_ORDER[a.botStatus] - BOT_STATUS_ORDER[b.botStatus],
       render: (status: BotStatus, record: BotRow) => (
-        <div className={styles.cellLink} onClick={() => goToBot(record.id, 'summary')}>
+        <button
+          type="button"
+          className={`${styles.cellLink} ${styles.cellLinkButton}`}
+          onClick={() => goToBot(record.id, 'summary')}
+        >
           <StatusBadge status={status} size="small" />
-        </div>
+        </button>
       ),
     },
     {
@@ -84,9 +98,13 @@ export function createProjectColumns({
       onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => (a.vmName || '').localeCompare(b.vmName || ''),
       render: (value: string, record: BotRow) => (
-        <div className={styles.cellLink} onClick={() => goToBot(record.id, 'vmInfo')}>
+        <button
+          type="button"
+          className={`${styles.cellLink} ${styles.cellLinkButton}`}
+          onClick={() => goToBot(record.id, 'vmInfo')}
+        >
           <Text>{value || '-'}</Text>
-        </div>
+        </button>
       ),
     },
     {
@@ -97,12 +115,16 @@ export function createProjectColumns({
       onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => (a.email || '').localeCompare(b.email || ''),
       render: (_: unknown, record: BotRow) => (
-        <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={() => goToBot(record.id, 'account')}>
+        <button
+          type="button"
+          className={`${styles.cellStack} ${styles.cellLink}`}
+          onClick={() => goToBot(record.id, 'account')}
+        >
           <Text>{record.email || '-'}</Text>
           <Text type="secondary" className={styles.secondary}>
             {record.password || '-'}
           </Text>
-        </div>
+        </button>
       ),
     },
     {
@@ -122,7 +144,11 @@ export function createProjectColumns({
           : serverLabel;
 
         return (
-          <div className={`${styles.cellStack} ${styles.cellLink}`} onClick={() => goToBot(record.id, 'character')}>
+          <button
+            type="button"
+            className={`${styles.cellStack} ${styles.cellLink}`}
+            onClick={() => goToBot(record.id, 'character')}
+          >
             <Text strong>
               {record.characterName}
               {typeof record.level === 'number' ? ` (${record.level})` : ''}
@@ -130,7 +156,7 @@ export function createProjectColumns({
             <Text type="secondary" className={styles.secondary}>
               {secondary}
             </Text>
-          </div>
+          </button>
         );
       },
     },

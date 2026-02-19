@@ -127,7 +127,7 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--boxmox-color-text-primary);
-  font-family: 'Monaco', 'Consolas', monospace;
+  font-family: "Monaco", "Consolas", monospace;
 }
 
 .week-stat-label {
@@ -158,4 +158,3 @@
     height: 6px;
   }
 }
-

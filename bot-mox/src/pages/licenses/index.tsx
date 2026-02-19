@@ -1,34 +1,54 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { DownOutlined, KeyOutlined, PlusOutlined, ReloadOutlined, RightOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Card, Form, Input, Select, Space, Table, Typography, message } from 'antd';
-import { subscribeBotsMap } from '../../services/botsApiService';
-import type { BotRecord } from '../../services/botsApiService';
-import { createLicense, deleteLicense, subscribeLicenses, updateLicense } from '../../services/licensesApiService';
+import {
+  DownOutlined,
+  KeyOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  RightOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
+import { Button, Card, Form, Input, message, Select, Space, Table, Typography } from 'antd';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
+import {
+  useCreateLicenseMutation,
+  useDeleteLicenseMutation,
+  useUpdateLicenseMutation,
+} from '../../entities/resources/api/useLicenseMutations';
+import { useLicensesQuery } from '../../entities/resources/api/useResourcesQueries';
+import { uiLogger } from '../../observability/uiLogger';
 import type { LicenseWithBots } from '../../types';
+import styles from './LicensesPage.module.css';
+import type { AddBotFormValues, LicenseFormValues } from './page';
 import {
   AddBotModal,
-  LicenseEditorModal,
-  LicensesStatsPanel,
-  STATS_COLLAPSED_KEY,
   buildLicenseColumns,
   buildLicensePayload,
   computeStats,
   filterLicenses,
   getCurrentTimestamp,
+  LicenseEditorModal,
+  LicensesStatsPanel,
+  STATS_COLLAPSED_KEY,
   setLicenseEditorDefaults,
   withBotDetails,
 } from './page';
-import type { AddBotFormValues, LicenseFormValues } from './page';
-import styles from './LicensesPage.module.css';
-import { uiLogger } from '../../observability/uiLogger'
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 export const LicensesPage: React.FC = () => {
-  const [licenses, setLicenses] = useState<LicenseWithBots[]>([]);
-  const [bots, setBots] = useState<Record<string, BotRecord>>({});
-  const [loading, setLoading] = useState(true);
+  const licensesQuery = useLicensesQuery();
+  const createLicenseMutation = useCreateLicenseMutation();
+  const updateLicenseMutation = useUpdateLicenseMutation();
+  const deleteLicenseMutation = useDeleteLicenseMutation();
+  const botsMapQuery = useBotsMapQuery();
+  const licenses = useMemo(
+    () => (licensesQuery.data || []) as LicenseWithBots[],
+    [licensesQuery.data],
+  );
+  const bots = useMemo(() => botsMapQuery.data || {}, [botsMapQuery.data]);
+  const loading = licensesQuery.isLoading || botsMapQuery.isLoading;
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -57,40 +77,25 @@ export const LicensesPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribeLicenses = subscribeLicenses(
-      (licensesList) => {
-        setLicenses(licensesList as LicenseWithBots[]);
-        setLoading(false);
-      },
-      (error) => {
-        uiLogger.error('Error loading licenses:', error);
-        message.error('Failed to load licenses');
-        setLoading(false);
-      }
-    );
+    if (!licensesQuery.error) return;
+    uiLogger.error('Error loading licenses:', licensesQuery.error);
+    message.error('Failed to load licenses');
+  }, [licensesQuery.error]);
 
-    const unsubscribeBots = subscribeBotsMap(
-      (data) => {
-        setBots(data || {});
-      },
-      (error) => {
-        uiLogger.error('Error loading bots:', error);
-      },
-      { intervalMs: 5000 }
-    );
-
-    return () => {
-      unsubscribeLicenses();
-      unsubscribeBots();
-    };
-  }, []);
+  useEffect(() => {
+    if (!botsMapQuery.error) return;
+    uiLogger.error('Error loading bots:', botsMapQuery.error);
+  }, [botsMapQuery.error]);
 
   const licensesWithBots = useMemo(() => withBotDetails(licenses, bots), [licenses, bots]);
   const filteredLicenses = useMemo(
     () => filterLicenses(licensesWithBots, searchText, statusFilter, typeFilter),
-    [licensesWithBots, searchText, statusFilter, typeFilter]
+    [licensesWithBots, searchText, statusFilter, typeFilter],
   );
-  const stats = useMemo(() => computeStats(licensesWithBots, currentTime), [licensesWithBots, currentTime]);
+  const stats = useMemo(
+    () => computeStats(licensesWithBots, currentTime),
+    [licensesWithBots, currentTime],
+  );
 
   const copyKey = (key: string) => {
     navigator.clipboard.writeText(key);
@@ -99,7 +104,7 @@ export const LicensesPage: React.FC = () => {
 
   const handleDelete = async (license: LicenseWithBots) => {
     try {
-      await deleteLicense(license.id);
+      await deleteLicenseMutation.mutateAsync(license.id);
       message.success('License deleted');
     } catch (error) {
       uiLogger.error('Error deleting license:', error);
@@ -113,10 +118,10 @@ export const LicensesPage: React.FC = () => {
       const licenseData = buildLicensePayload(values, now, editingLicense?.bot_ids || []);
 
       if (editingLicense) {
-        await updateLicense(editingLicense.id, licenseData);
+        await updateLicenseMutation.mutateAsync({ id: editingLicense.id, payload: licenseData });
         message.success('License updated');
       } else {
-        await createLicense({
+        await createLicenseMutation.mutateAsync({
           ...licenseData,
           created_at: now,
         });
@@ -140,9 +145,12 @@ export const LicensesPage: React.FC = () => {
     try {
       const botId = values.bot_id;
       const currentBotIds = selectedLicenseForBot.bot_ids || [];
-      await updateLicense(selectedLicenseForBot.id, {
-        bot_ids: [...currentBotIds, botId],
-        updated_at: getCurrentTimestamp(),
+      await updateLicenseMutation.mutateAsync({
+        id: selectedLicenseForBot.id,
+        payload: {
+          bot_ids: [...currentBotIds, botId],
+          updated_at: getCurrentTimestamp(),
+        },
       });
 
       message.success('Bot added to license');
@@ -160,9 +168,12 @@ export const LicensesPage: React.FC = () => {
       const newBotIds = [...(license.bot_ids || [])];
       newBotIds.splice(botIndex, 1);
 
-      await updateLicense(license.id, {
-        bot_ids: newBotIds,
-        updated_at: getCurrentTimestamp(),
+      await updateLicenseMutation.mutateAsync({
+        id: license.id,
+        payload: {
+          bot_ids: newBotIds,
+          updated_at: getCurrentTimestamp(),
+        },
       });
 
       message.success('Bot removed from license');
@@ -208,7 +219,9 @@ export const LicensesPage: React.FC = () => {
             <Title level={4} className={styles.headerHeading}>
               <KeyOutlined /> Bot Licenses
             </Title>
-            <Text type="secondary" className={styles.headerSubtitle}>Manage bot software licenses</Text>
+            <Text type="secondary" className={styles.headerSubtitle}>
+              Manage bot software licenses
+            </Text>
           </div>
           <Space>
             <Button
@@ -236,13 +249,23 @@ export const LicensesPage: React.FC = () => {
             onChange={(event) => setSearchText(event.target.value)}
             className={styles.searchInput}
           />
-          <Select placeholder="Status" value={statusFilter} onChange={setStatusFilter} className={styles.statusSelect}>
+          <Select
+            placeholder="Status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            className={styles.statusSelect}
+          >
             <Option value="all">All Statuses</Option>
             <Option value="active">Active</Option>
             <Option value="expired">Expired</Option>
             <Option value="revoked">Revoked</Option>
           </Select>
-          <Select placeholder="Type" value={typeFilter} onChange={setTypeFilter} className={styles.typeSelect}>
+          <Select
+            placeholder="Type"
+            value={typeFilter}
+            onChange={setTypeFilter}
+            className={styles.typeSelect}
+          >
             <Option value="all">All Types</Option>
             <Option value="sin">SIN</Option>
             <Option value="other">Other</Option>

@@ -1,18 +1,24 @@
-import React from 'react';
 import { Checkbox, Form, Radio, Tag, Typography } from 'antd';
-import type { UnattendProfileConfig } from '../../../../services/unattendProfileService';
+import type React from 'react';
 import { VISUAL_EFFECTS } from '../../../../data/windows-visual-effects';
+import type { UnattendProfileConfig } from '../../../../entities/vm/model/unattend';
 
 const { Text } = Typography;
 
 interface VisualEffectsSectionProps {
   config: UnattendProfileConfig;
-  updateConfig: <K extends keyof UnattendProfileConfig>(section: K, patch: Partial<UnattendProfileConfig[K]>) => void;
+  updateConfig: <K extends keyof UnattendProfileConfig>(
+    section: K,
+    patch: Partial<UnattendProfileConfig[K]>,
+  ) => void;
 }
 
 type TriState = true | false | 'random';
 
-export const VisualEffectsSection: React.FC<VisualEffectsSectionProps> = ({ config, updateConfig }) => {
+export const VisualEffectsSection: React.FC<VisualEffectsSectionProps> = ({
+  config,
+  updateConfig,
+}) => {
   const mode = config.visualEffects.mode;
   const effects = config.visualEffects.effects || {};
   const isCustom = mode === 'custom' || mode === 'custom_randomize';
@@ -53,7 +59,8 @@ export const VisualEffectsSection: React.FC<VisualEffectsSectionProps> = ({ conf
           </Text>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px' }}>
             {VISUAL_EFFECTS.map((effect) => {
-              const value: TriState = effects[effect.key] !== undefined ? effects[effect.key] : 'random';
+              const value: TriState =
+                effects[effect.key] !== undefined ? effects[effect.key] : 'random';
               const isRandom = value === 'random' && mode === 'custom_randomize';
 
               return (
@@ -78,7 +85,14 @@ export const VisualEffectsSection: React.FC<VisualEffectsSectionProps> = ({ conf
                   >
                     {effect.name}
                   </Checkbox>
-                  {isRandom && <Tag color="blue" style={{ fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>rnd</Tag>}
+                  {isRandom && (
+                    <Tag
+                      color="blue"
+                      style={{ fontSize: 10, lineHeight: '16px', padding: '0 4px' }}
+                    >
+                      rnd
+                    </Tag>
+                  )}
                 </div>
               );
             })}

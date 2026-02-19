@@ -3,21 +3,25 @@
  * Управляет редактированием markdown текста, автосохранением и взаимодействием с backend API
  */
 
-import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Input, Button, Tag, Space, Tooltip, message } from 'antd';
 import {
-  SaveOutlined,
-  PushpinOutlined,
-  PushpinFilled,
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
+  PushpinFilled,
+  PushpinOutlined,
+  SaveOutlined,
   SplitCellsOutlined,
 } from '@ant-design/icons';
 import MDEditor from '@uiw/react-md-editor';
+import { Button, Input, message, Space, Tag, Tooltip } from 'antd';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import remarkGfm from 'remark-gfm';
-import type { Note } from '../../services/notesService';
-import { updateNote, deleteNote } from '../../services/notesService';
+import {
+  useDeleteNoteMutation,
+  useUpdateNoteMutation,
+} from '../../entities/notes/api/useNoteMutations';
+import type { Note } from '../../entities/notes/model/types';
 import { TableActionButton } from '../ui/TableActionButton';
 import '@uiw/react-md-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
@@ -50,7 +54,7 @@ const getInitialEditorMode = (): EditorMode => {
  */
 function useDebouncedSave(
   fn: (note: Note, silent: boolean) => Promise<void>,
-  delay: number
+  delay: number,
 ): (note: Note, silent?: boolean) => void {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -61,7 +65,7 @@ function useDebouncedSave(
       }
       timeoutRef.current = setTimeout(() => fn(note, silent), delay);
     },
-    [fn, delay]
+    [fn, delay],
   );
 
   useEffect(() => {
@@ -75,11 +79,9 @@ function useDebouncedSave(
   return debouncedFn;
 }
 
-export const NoteEditor: React.FC<NoteEditorProps> = ({
-  note,
-  onNoteChange,
-  onNoteDelete,
-}) => {
+export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onNoteChange, onNoteDelete }) => {
+  const updateNoteMutation = useUpdateNoteMutation();
+  const deleteNoteMutation = useDeleteNoteMutation();
   const cx = (...parts: Array<string | false | null | undefined>) =>
     parts.filter(Boolean).join(' ');
 
@@ -97,7 +99,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
     typeof document !== 'undefined' &&
     document.documentElement.getAttribute('data-theme') === 'dark'
       ? 'dark'
-      : 'light'
+      : 'light',
   );
 
   useEffect(() => {
@@ -144,11 +146,14 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
     async (noteToSave: Note, silent: boolean = false) => {
       try {
         setIsSaving(true);
-        await updateNote(noteToSave.id, {
-          title: noteToSave.title,
-          content: noteToSave.content,
-          tags: noteToSave.tags,
-          is_pinned: noteToSave.is_pinned,
+        await updateNoteMutation.mutateAsync({
+          noteId: noteToSave.id,
+          payload: {
+            title: noteToSave.title,
+            content: noteToSave.content,
+            tags: noteToSave.tags,
+            is_pinned: noteToSave.is_pinned,
+          },
         });
         setHasChanges(false);
         if (!silent) {
@@ -161,7 +166,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
         setIsSaving(false);
       }
     },
-    []
+    [updateNoteMutation],
   );
 
   const debouncedSave = useDebouncedSave(saveNote, 2000);
@@ -169,7 +174,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   // Обработка изменений заметки
   const handleNoteUpdate = useCallback(
     (updates: Partial<Note>) => {
-      setLocalNote(prev => {
+      setLocalNote((prev) => {
         const updated = { ...prev, ...updates, updated_at: Date.now() };
         setHasChanges(true);
         debouncedSave(updated, true);
@@ -177,7 +182,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
         return updated;
       });
     },
-    [debouncedSave, onNoteChange]
+    [debouncedSave, onNoteChange],
   );
 
   // Изменение заголовка
@@ -185,12 +190,12 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       handleNoteUpdate({ title: e.target.value });
     },
-    [handleNoteUpdate]
+    [handleNoteUpdate],
   );
 
   const handleContentChange = useCallback(
     (value?: string) => handleNoteUpdate({ content: value || '' }),
-    [handleNoteUpdate]
+    [handleNoteUpdate],
   );
 
   // Переключение закрепления
@@ -201,18 +206,18 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   // Удаление заметки
   const handleDelete = useCallback(async () => {
     try {
-      await deleteNote(localNote.id);
+      await deleteNoteMutation.mutateAsync(localNote.id);
       onNoteDelete?.(localNote.id);
       message.success('Note deleted');
     } catch (error) {
       console.error('Error deleting note:', error);
       message.error('Failed to delete note');
     }
-  }, [localNote.id, onNoteDelete]);
+  }, [deleteNoteMutation, localNote.id, onNoteDelete]);
 
   // Ручное сохранение
   const handleManualSave = useCallback(() => {
-    saveNote(localNote, false);
+    void saveNote(localNote, false);
   }, [localNote, saveNote]);
   const mdPreviewMode = useMemo<'edit' | 'live' | 'preview'>(() => {
     if (editorMode === 'edit') return 'edit';
@@ -241,7 +246,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               size="small"
               className={cx(
                 styles['editor-mode-button'],
-                editorMode === 'edit' && styles['editor-mode-button-active']
+                editorMode === 'edit' && styles['editor-mode-button-active'],
               )}
             >
               Edit
@@ -253,7 +258,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               size="small"
               className={cx(
                 styles['editor-mode-button'],
-                editorMode === 'split' && styles['editor-mode-button-active']
+                editorMode === 'split' && styles['editor-mode-button-active'],
               )}
             >
               Split
@@ -265,7 +270,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               size="small"
               className={cx(
                 styles['editor-mode-button'],
-                editorMode === 'preview' && styles['editor-mode-button-active']
+                editorMode === 'preview' && styles['editor-mode-button-active'],
               )}
             >
               Preview
@@ -273,9 +278,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           </div>
           <Tooltip title={localNote.is_pinned ? 'Unpin' : 'Pin'}>
             <Button
-              icon={
-                localNote.is_pinned ? <PushpinFilled /> : <PushpinOutlined />
-              }
+              icon={localNote.is_pinned ? <PushpinFilled /> : <PushpinOutlined />}
               type={localNote.is_pinned ? 'primary' : 'text'}
               onClick={handleTogglePin}
             />
@@ -298,7 +301,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
       {/* Теги */}
       {localNote.tags?.length > 0 && (
         <div className={styles['note-tags']}>
-          {localNote.tags.map(tag => (
+          {localNote.tags.map((tag) => (
             <Tag key={tag} className={styles['note-tag']}>
               {tag}
             </Tag>
@@ -315,7 +318,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           value={localNote.content || ''}
           onChange={handleContentChange}
           preview={mdPreviewMode}
-          height={Math.max(420, (typeof window !== 'undefined' ? window.innerHeight - 280 : 520))}
+          height={Math.max(420, typeof window !== 'undefined' ? window.innerHeight - 280 : 520)}
           visibleDragbar={false}
           textareaProps={{
             placeholder: 'Start writing your note in Markdown...',

@@ -1,43 +1,27 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Select, Tag, Typography, message } from 'antd';
-import {
-  VMStatusBar,
-  VMQueuePanel,
-  VMOperationLog,
-  VMListView,
-} from '../../components/vm';
-import { useProxmox } from '../../hooks/useProxmox';
-import { useVMLog } from '../../hooks/useVMLog';
-import { useVMQueue } from '../../hooks/useVMQueue';
-import { useVMKeyboardShortcuts } from '../../hooks/useVMKeyboardShortcuts';
-import { getVMSettings } from '../../services/vmSettingsService';
-import {
-  getVMConfig,
-  listProxmoxTargets,
-  type ProxmoxTargetInfo,
-} from '../../services/vmService';
+import { Button, message, Select, Tag, Typography } from 'antd';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { VMListView, VMOperationLog, VMQueuePanel, VMStatusBar } from '../../components/vm';
+import { useRefreshOnVmMutationEvents } from '../../entities/vm/api/useRefreshOnVmMutationEvents';
+import { useProxmoxTargetsQuery, useVmSettingsQuery } from '../../entities/vm/api/useVmQueries';
+import { getVMConfig } from '../../entities/vm/api/vmReadFacade';
 import {
   getSelectedProxmoxTargetId,
-  setSelectedProxmoxTargetNode,
   setSelectedProxmoxTargetId,
-} from '../../services/vmOpsService';
-import { subscribeToVmOpsEvents } from '../../services/vmOpsEventsService';
-import { VMPageModals } from './page/VMPageModals';
-import type {
-  ProxmoxVM,
-  VMGeneratorSettings,
-  VMQueueItem,
-  VMResourceMode,
-} from '../../types';
+  setSelectedProxmoxTargetNode,
+} from '../../entities/vm/api/vmSelectionFacade';
+import { useProxmox } from '../../hooks/useProxmox';
+import { useVMKeyboardShortcuts } from '../../hooks/useVMKeyboardShortcuts';
+import { useVMLog } from '../../hooks/useVMLog';
+import { useVMQueue } from '../../hooks/useVMQueue';
+import type { ProxmoxVM, VMGeneratorSettings, VMQueueItem, VMResourceMode } from '../../types';
 import { useDeleteVmWorkflow } from './hooks/useDeleteVmWorkflow';
+import { useVmStartAndQueueActions } from './hooks/useVmStartAndQueueActions';
 import { useVmStorageOptions } from './hooks/useVmStorageOptions';
 import { useVmWorkspaceLayout } from './hooks/useVmWorkspaceLayout';
-import { useVmStartAndQueueActions } from './hooks/useVmStartAndQueueActions';
-import {
-  normalizeCores,
-  normalizeMemory,
-} from './vmPageUtils';
+import { VMPageModals } from './page/VMPageModals';
 import styles from './VMsPage.module.css';
+import { normalizeCores, normalizeMemory } from './vmPageUtils';
 
 function cx(classNames: string): string {
   return classNames
@@ -57,26 +41,19 @@ function estimateProjectDiskBytes(
   settings: VMGeneratorSettings | null | undefined,
   projectId: string,
 ): number {
-  const projectConfig = projectId === 'wow_tbc' || projectId === 'wow_midnight'
-    ? settings?.projectHardware?.[projectId]
-    : undefined;
+  const projectConfig =
+    projectId === 'wow_tbc' || projectId === 'wow_midnight'
+      ? settings?.projectHardware?.[projectId]
+      : undefined;
   const configured = Number(projectConfig?.diskGiB);
-  const gib = Number.isFinite(configured) && configured > 0
-    ? configured
-    : (VM_PROJECT_DISK_FALLBACK_GIB[projectId] ?? 128);
-  return gib * (1024 ** 3);
+  const gib =
+    Number.isFinite(configured) && configured > 0
+      ? configured
+      : (VM_PROJECT_DISK_FALLBACK_GIB[projectId] ?? 128);
+  return gib * 1024 ** 3;
 }
 
 const VM_COMMAND_REFRESH_DEBOUNCE_MS = 500;
-const VM_MUTATION_COMMANDS = new Set([
-  'proxmox.clone',
-  'proxmox.delete',
-  'proxmox.start',
-  'proxmox.stop',
-  'proxmox.update-config',
-  'proxmox.ssh-write-config',
-]);
-const VM_TERMINAL_COMMAND_STATUSES = new Set(['succeeded', 'failed', 'cancelled', 'expired']);
 export const VMsPage: React.FC = () => {
   const proxmox = useProxmox();
   const refreshVMs = proxmox.refreshVMs;
@@ -97,16 +74,20 @@ export const VMsPage: React.FC = () => {
   const queueItemsRef = useRef<VMQueueItem[]>([]);
   const settingsRef = useRef<VMGeneratorSettings | null>(null);
   const templateHardwareLiveRef = useRef<{ cores: number; memory: number } | null>(null);
-  const vmCommandRefreshDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [settings, setSettings] = useState<VMGeneratorSettings | null>(null);
+  const [settingsOverride, setSettingsOverride] = useState<VMGeneratorSettings | null>(null);
   const [panelOpen, setPanelOpen] = useState<'settings' | null>(null);
-  const [templateHardwareLive, setTemplateHardwareLive] = useState<{ cores: number; memory: number } | null>(null);
-  const [proxmoxTargets, setProxmoxTargets] = useState<ProxmoxTargetInfo[]>([]);
-  const [targetsLoading, setTargetsLoading] = useState(false);
+  const [templateHardwareLive, setTemplateHardwareLive] = useState<{
+    cores: number;
+    memory: number;
+  } | null>(null);
   const [selectedTargetId, setSelectedTargetId] = useState<string | undefined>(
-    () => getSelectedProxmoxTargetId() || undefined
+    () => getSelectedProxmoxTargetId() || undefined,
   );
+  const vmSettingsQuery = useVmSettingsQuery();
+  const proxmoxTargetsQuery = useProxmoxTargetsQuery();
+  const settings = settingsOverride || vmSettingsQuery.data || null;
+  const proxmoxTargets = useMemo(() => proxmoxTargetsQuery.data || [], [proxmoxTargetsQuery.data]);
 
   useEffect(() => {
     proxmoxVmsRef.current = proxmox.vms;
@@ -151,7 +132,9 @@ export const VMsPage: React.FC = () => {
   }, [settings, refreshStorageOptions]);
 
   const syncTemplateHardwareFromApi = useCallback(
-    async (explicitSettings?: VMGeneratorSettings | null): Promise<{ cores: number; memory: number } | null> => {
+    async (
+      explicitSettings?: VMGeneratorSettings | null,
+    ): Promise<{ cores: number; memory: number } | null> => {
       const activeSettings = explicitSettings || settingsRef.current;
       if (!activeSettings) {
         return null;
@@ -185,9 +168,9 @@ export const VMsPage: React.FC = () => {
           const itemCores = normalizeCores(item.cores, previousTemplate.cores);
           const itemMemory = normalizeMemory(item.memory, previousTemplate.memory);
           const looksStale =
-            item.cores === undefined
-            || item.memory === undefined
-            || (itemCores === previousTemplate.cores && itemMemory === previousTemplate.memory);
+            item.cores === undefined ||
+            item.memory === undefined ||
+            (itemCores === previousTemplate.cores && itemMemory === previousTemplate.memory);
 
           if (looksStale) {
             updateQueueItem(item.id, { cores, memory });
@@ -201,30 +184,8 @@ export const VMsPage: React.FC = () => {
         return fallback;
       }
     },
-    [proxmox.node, updateQueueItem]
+    [proxmox.node, updateQueueItem],
   );
-
-  useEffect(() => {
-    let active = true;
-
-    getVMSettings().then((loadedSettings) => {
-      if (!active) {
-        return;
-      }
-
-      setSettings(loadedSettings);
-      setTemplateHardwareLive({
-        cores: normalizeCores(loadedSettings.hardware?.cores, 2),
-        memory: normalizeMemory(loadedSettings.hardware?.memory, 4096),
-      });
-
-      void syncTemplateHardwareFromApi(loadedSettings);
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [syncTemplateHardwareFromApi]);
 
   useEffect(() => {
     if (queue.uiState === 'success') {
@@ -232,50 +193,36 @@ export const VMsPage: React.FC = () => {
     }
   }, [queue.uiState, refreshStorageOptions]);
 
-  useEffect(() => {
-    const unsubscribe = subscribeToVmOpsEvents((event) => {
-      const commandType = String(event.command?.command_type || '').trim().toLowerCase();
-      const commandStatus = String(event.command?.status || '').trim().toLowerCase();
-
-      if (!VM_MUTATION_COMMANDS.has(commandType)) {
-        return;
-      }
-      if (!VM_TERMINAL_COMMAND_STATUSES.has(commandStatus)) {
-        return;
-      }
-      if (vmCommandRefreshDebounceRef.current) {
-        return;
-      }
-
-      vmCommandRefreshDebounceRef.current = setTimeout(() => {
-        vmCommandRefreshDebounceRef.current = null;
-        void refreshVMs();
-        void refreshStorageOptions();
-        void syncTemplateHardwareFromApi();
-      }, VM_COMMAND_REFRESH_DEBOUNCE_MS);
-    });
-
-    return () => {
-      unsubscribe();
-      if (vmCommandRefreshDebounceRef.current) {
-        clearTimeout(vmCommandRefreshDebounceRef.current);
-        vmCommandRefreshDebounceRef.current = null;
-      }
-    };
+  const handleVmMutationTerminalEvent = useCallback(() => {
+    void refreshVMs();
+    void refreshStorageOptions();
+    void syncTemplateHardwareFromApi();
   }, [refreshVMs, refreshStorageOptions, syncTemplateHardwareFromApi]);
+
+  useRefreshOnVmMutationEvents({
+    onMutationTerminalEvent: handleVmMutationTerminalEvent,
+    debounceMs: VM_COMMAND_REFRESH_DEBOUNCE_MS,
+  });
 
   const getResourcePreset = useCallback(
     (projectId: VMProjectId, mode: VMResourceMode) => {
       const fallbackCores = 2;
       const fallbackMemory = 4096;
-      const templateCores = normalizeCores(templateHardwareLive?.cores ?? settings?.hardware?.cores, fallbackCores);
-      const templateMemory = normalizeMemory(templateHardwareLive?.memory ?? settings?.hardware?.memory, fallbackMemory);
+      const templateCores = normalizeCores(
+        templateHardwareLive?.cores ?? settings?.hardware?.cores,
+        fallbackCores,
+      );
+      const templateMemory = normalizeMemory(
+        templateHardwareLive?.memory ?? settings?.hardware?.memory,
+        fallbackMemory,
+      );
       const projectPreset = settings?.projectHardware?.[projectId];
       const projectCores = normalizeCores(projectPreset?.cores, templateCores);
       const projectMemory = normalizeMemory(projectPreset?.memory, templateMemory);
-      const projectDiskGiB = Number.isFinite(Number(projectPreset?.diskGiB)) && Number(projectPreset?.diskGiB) > 0
-        ? Math.max(1, Math.trunc(Number(projectPreset?.diskGiB)))
-        : undefined;
+      const projectDiskGiB =
+        Number.isFinite(Number(projectPreset?.diskGiB)) && Number(projectPreset?.diskGiB) > 0
+          ? Math.max(1, Math.trunc(Number(projectPreset?.diskGiB)))
+          : undefined;
 
       if (mode === 'project' || mode === 'custom') {
         return { cores: projectCores, memory: projectMemory, diskGiB: projectDiskGiB };
@@ -283,7 +230,7 @@ export const VMsPage: React.FC = () => {
 
       return { cores: templateCores, memory: templateMemory, diskGiB: undefined };
     },
-    [settings, templateHardwareLive]
+    [settings, templateHardwareLive],
   );
 
   const handleAddVM = useCallback(async () => {
@@ -293,9 +240,11 @@ export const VMsPage: React.FC = () => {
     const autoSelectBest = activeSettings?.storage?.autoSelectBest ?? true;
 
     const configuredDefaultStorage = String(activeSettings?.storage?.default || '').trim();
-    const enabledTargets = Array.isArray(activeSettings?.storage?.enabledDisks) && activeSettings.storage.enabledDisks.length > 0
-      ? activeSettings.storage.enabledDisks
-      : storageOptions.map((opt) => opt.value);
+    const enabledTargets =
+      Array.isArray(activeSettings?.storage?.enabledDisks) &&
+      activeSettings.storage.enabledDisks.length > 0
+        ? activeSettings.storage.enabledDisks
+        : storageOptions.map((opt) => opt.value);
 
     const estimateBytes = estimateProjectDiskBytes(activeSettings, defaultProject);
 
@@ -324,15 +273,22 @@ export const VMsPage: React.FC = () => {
 
       const itemProject = item.projectId as VMProjectId;
       const customDiskGiB = Number(item.diskGiB);
-      const itemEstimateBytes = Number.isFinite(customDiskGiB) && customDiskGiB > 0
-        ? customDiskGiB * (1024 ** 3)
-        : estimateProjectDiskBytes(activeSettings, itemProject);
-      reservedBytesByStorage.set(storage, (reservedBytesByStorage.get(storage) ?? 0) + itemEstimateBytes);
+      const itemEstimateBytes =
+        Number.isFinite(customDiskGiB) && customDiskGiB > 0
+          ? customDiskGiB * 1024 ** 3
+          : estimateProjectDiskBytes(activeSettings, itemProject);
+      reservedBytesByStorage.set(
+        storage,
+        (reservedBytesByStorage.get(storage) ?? 0) + itemEstimateBytes,
+      );
     }
 
     const chooseStorage = (): string => {
-      const candidates = enabledTargets.length > 0 ? enabledTargets : storageOptions.map((opt) => opt.value);
-      const available = candidates.filter((name) => storageOptions.some((opt) => opt.value === name));
+      const candidates =
+        enabledTargets.length > 0 ? enabledTargets : storageOptions.map((opt) => opt.value);
+      const available = candidates.filter((name) =>
+        storageOptions.some((opt) => opt.value === name),
+      );
       const pool = available.length > 0 ? available : storageOptions.map((opt) => opt.value);
 
       if (!autoSelectBest) {
@@ -395,7 +351,7 @@ export const VMsPage: React.FC = () => {
     refreshVms: proxmox.refreshVMs,
     templateVmId,
     settings,
-    setSettings,
+    setSettings: setSettingsOverride,
   });
 
   const handleReset = useCallback(() => {
@@ -412,85 +368,93 @@ export const VMsPage: React.FC = () => {
     message.success('Log copied');
   }, [log]);
 
-  const handleCancelTask = useCallback((taskId: string) => {
-    const task = log.tasks.find((entry) => entry.id === taskId);
-    if (!task || task.status !== 'running') {
-      return;
+  const handleCancelTask = useCallback(
+    (taskId: string) => {
+      const task = log.tasks.find((entry) => entry.id === taskId);
+      if (!task || task.status !== 'running') {
+        return;
+      }
+
+      queue.cancelProcessing();
+      const cancelled = log.cancelTask(taskId, 'Task cancelled by user from Operation Console');
+      if (!cancelled) {
+        return;
+      }
+
+      const queueItemId = String(task.key || '').startsWith('vm:') ? String(task.key).slice(3) : '';
+      if (queueItemId) {
+        queue.updateQueueItem(queueItemId, {
+          status: 'error',
+          error: 'Cancelled by user',
+        });
+      }
+    },
+    [log, queue],
+  );
+
+  const effectiveSelectedTargetId = useMemo(() => {
+    const selectedFromState = selectedTargetId
+      ? proxmoxTargets.find((target) => target.id === selectedTargetId)
+      : undefined;
+    if (selectedFromState) {
+      return selectedFromState.id;
     }
 
-    queue.cancelProcessing();
-    const cancelled = log.cancelTask(taskId, 'Task cancelled by user from Operation Console');
-    if (!cancelled) {
-      return;
+    const persistedTargetId = getSelectedProxmoxTargetId();
+    const selectedFromStorage = persistedTargetId
+      ? proxmoxTargets.find((target) => target.id === persistedTargetId)
+      : undefined;
+    if (selectedFromStorage) {
+      return selectedFromStorage.id;
     }
 
-    const queueItemId = String(task.key || '').startsWith('vm:') ? String(task.key).slice(3) : '';
-    if (queueItemId) {
-      queue.updateQueueItem(queueItemId, {
-        status: 'error',
-        error: 'Cancelled by user',
-      });
-    }
-  }, [log, queue]);
-
-  const loadProxmoxTargets = useCallback(async () => {
-    setTargetsLoading(true);
-    try {
-      const targets = await listProxmoxTargets();
-      setProxmoxTargets(targets);
-
-      const persistedTargetId = getSelectedProxmoxTargetId();
-      const selectedFromStorage = persistedTargetId
-        ? targets.find((target) => target.id === persistedTargetId)
-        : undefined;
-      const activeTarget = targets.find((target) => target.isActive);
-      const effectiveTarget = selectedFromStorage || activeTarget;
-      const effectiveTargetId = effectiveTarget?.id;
-
-      setSelectedTargetId(effectiveTargetId || undefined);
-      setSelectedProxmoxTargetId(effectiveTargetId || null);
-      setSelectedProxmoxTargetNode(effectiveTarget?.node || null);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load computers';
-      message.warning(errorMessage);
-      setProxmoxTargets([]);
-      setSelectedTargetId(undefined);
-      setSelectedProxmoxTargetId(null);
-      setSelectedProxmoxTargetNode(null);
-    } finally {
-      setTargetsLoading(false);
-    }
-  }, []);
+    return proxmoxTargets.find((target) => target.isActive)?.id;
+  }, [proxmoxTargets, selectedTargetId]);
 
   useEffect(() => {
-    void loadProxmoxTargets();
-  }, [loadProxmoxTargets]);
-
-  const handleTargetChange = useCallback((nextTargetId?: string) => {
-    const normalizedTargetId = String(nextTargetId || '').trim() || undefined;
-    setSelectedTargetId(normalizedTargetId);
-    setSelectedProxmoxTargetId(normalizedTargetId || null);
-
-    const selectedTarget = proxmoxTargets.find((target) => target.id === normalizedTargetId);
+    const selectedTarget = proxmoxTargets.find((target) => target.id === effectiveSelectedTargetId);
+    setSelectedProxmoxTargetId(effectiveSelectedTargetId || null);
     setSelectedProxmoxTargetNode(selectedTarget?.node || null);
-    if (selectedTarget?.node) {
-      setSettings((previous) => {
-        if (!previous) return previous;
-        return {
-          ...previous,
-          proxmox: {
-            ...(previous.proxmox || {}),
-            node: selectedTarget.node,
-          },
-        };
-      });
+  }, [effectiveSelectedTargetId, proxmoxTargets]);
+
+  useEffect(() => {
+    if (!proxmoxTargetsQuery.error) {
+      return;
     }
 
-    void proxmox.checkConnections();
-    void proxmox.refreshVMs();
-    void refreshStorageOptions();
-    void syncTemplateHardwareFromApi();
-  }, [proxmox, proxmoxTargets, refreshStorageOptions, syncTemplateHardwareFromApi]);
+    message.warning(proxmoxTargetsQuery.error.message || 'Failed to load computers');
+  }, [proxmoxTargetsQuery.error]);
+
+  const handleTargetChange = useCallback(
+    (nextTargetId?: string) => {
+      const normalizedTargetId = String(nextTargetId || '').trim() || undefined;
+      setSelectedTargetId(normalizedTargetId);
+      setSelectedProxmoxTargetId(normalizedTargetId || null);
+
+      const selectedTarget = proxmoxTargets.find((target) => target.id === normalizedTargetId);
+      setSelectedProxmoxTargetNode(selectedTarget?.node || null);
+      if (selectedTarget?.node) {
+        setSettingsOverride((previous) => {
+          const baseSettings = previous || settings;
+          if (!baseSettings) return previous;
+
+          return {
+            ...baseSettings,
+            proxmox: {
+              ...(baseSettings.proxmox || {}),
+              node: selectedTarget.node,
+            },
+          };
+        });
+      }
+
+      void proxmox.checkConnections();
+      void proxmox.refreshVMs();
+      void refreshStorageOptions();
+      void syncTemplateHardwareFromApi();
+    },
+    [proxmox, proxmoxTargets, refreshStorageOptions, settings, syncTemplateHardwareFromApi],
+  );
 
   const {
     isStartActionRunning,
@@ -543,44 +507,51 @@ export const VMsPage: React.FC = () => {
     },
   };
 
-  const handleRecreateVm = useCallback((vm: ProxmoxVM) => {
-    const vmid = Number(vm.vmid);
-    if (!Number.isInteger(vmid) || vmid <= 0) {
-      message.error('Invalid VM ID for recreate');
-      return;
-    }
+  const handleRecreateVm = useCallback(
+    (vm: ProxmoxVM) => {
+      const vmid = Number(vm.vmid);
+      if (!Number.isInteger(vmid) || vmid <= 0) {
+        message.error('Invalid VM ID for recreate');
+        return;
+      }
 
-    const normalizedName = String(vm.name || '').toLowerCase();
-    const projectId: VMProjectId = normalizedName.includes('midnight') ? 'wow_midnight' : 'wow_tbc';
-    const preset = getResourcePreset(projectId, 'project');
-    const activeSettings = settingsRef.current || settings;
-    const storage = String(activeSettings?.storage?.default || '').trim() || 'data';
+      const normalizedName = String(vm.name || '').toLowerCase();
+      const projectId: VMProjectId = normalizedName.includes('midnight')
+        ? 'wow_midnight'
+        : 'wow_tbc';
+      const preset = getResourcePreset(projectId, 'project');
+      const activeSettings = settingsRef.current || settings;
+      const storage = String(activeSettings?.storage?.default || '').trim() || 'data';
 
-    const addedDelete = queue.addDeleteToQueue({
-      vmid,
-      name: vm.name || `VM ${vmid}`,
-      projectId,
-    });
+      const addedDelete = queue.addDeleteToQueue({
+        vmid,
+        name: vm.name || `VM ${vmid}`,
+        projectId,
+      });
 
-    queue.addToQueue({
-      name: vm.name || `VM ${vmid}`,
-      storage,
-      storageMode: activeSettings?.storage?.autoSelectBest ? 'auto' : 'manual',
-      format: activeSettings?.format?.default || 'raw',
-      projectId,
-      resourceMode: 'project',
-      cores: preset.cores,
-      memory: preset.memory,
-      diskGiB: preset.diskGiB,
-    });
+      queue.addToQueue({
+        name: vm.name || `VM ${vmid}`,
+        storage,
+        storageMode: activeSettings?.storage?.autoSelectBest ? 'auto' : 'manual',
+        format: activeSettings?.format?.default || 'raw',
+        projectId,
+        resourceMode: 'project',
+        cores: preset.cores,
+        memory: preset.memory,
+        diskGiB: preset.diskGiB,
+      });
 
-    if (!addedDelete) {
-      message.info(`Create task added for ${vm.name || `VM ${vmid}`}. Delete task already exists in queue.`);
-      return;
-    }
+      if (!addedDelete) {
+        message.info(
+          `Create task added for ${vm.name || `VM ${vmid}`}. Delete task already exists in queue.`,
+        );
+        return;
+      }
 
-    message.success(`Recreate queued: delete + create for ${vm.name || `VM ${vmid}`}`);
-  }, [getResourcePreset, queue, settings]);
+      message.success(`Recreate queued: delete + create for ${vm.name || `VM ${vmid}`}`);
+    },
+    [getResourcePreset, queue, settings],
+  );
 
   return (
     <div className={cx(`vm-generator ${isLogResizing ? 'vm-generator--resizing' : ''}`)}>
@@ -596,7 +567,9 @@ export const VMsPage: React.FC = () => {
         errorCount={queueStats.error}
         onStart={queue.processQueue}
         onStop={queue.cancelProcessing}
-        onOpenSettings={() => { setPanelOpen('settings'); }}
+        onOpenSettings={() => {
+          setPanelOpen('settings');
+        }}
         activeTopPanel={panelOpen}
       />
 
@@ -618,16 +591,22 @@ export const VMsPage: React.FC = () => {
           allowClear
           size="small"
           placeholder="Auto (active computer)"
-          value={selectedTargetId}
+          value={effectiveSelectedTargetId}
           options={proxmoxTargets.map((target) => ({
             value: target.id,
             label: `${target.label}${target.isActive ? ' (active)' : ''}`,
           }))}
-          loading={targetsLoading}
+          loading={proxmoxTargetsQuery.isLoading || proxmoxTargetsQuery.isFetching}
           onChange={(value) => handleTargetChange(value)}
           style={{ minWidth: 320, maxWidth: 520 }}
         />
-        <Button size="small" onClick={() => void loadProxmoxTargets()} loading={targetsLoading}>
+        <Button
+          size="small"
+          onClick={() => {
+            void proxmoxTargetsQuery.refetch();
+          }}
+          loading={proxmoxTargetsQuery.isFetching}
+        >
           Refresh Computers
         </Button>
         {!proxmox.sshConfigured && (
@@ -635,14 +614,17 @@ export const VMsPage: React.FC = () => {
         )}
         {proxmox.sshConfigured && !proxmox.sshConnected && (
           <Tag color="error">
-            SSH unavailable{proxmox.sshStatusCode ? ` (${proxmox.sshStatusCode})` : ''}: SSH-only features are disabled
+            SSH unavailable{proxmox.sshStatusCode ? ` (${proxmox.sshStatusCode})` : ''}: SSH-only
+            features are disabled
           </Tag>
         )}
       </div>
 
       <div
         ref={workspaceLayoutRef}
-        className={cx(`vm-generator-workspace${isWorkspaceResizing ? ' vm-generator-workspace--resizing' : ''}`)}
+        className={cx(
+          `vm-generator-workspace${isWorkspaceResizing ? ' vm-generator-workspace--resizing' : ''}`,
+        )}
         style={{ gridTemplateColumns: workspaceGridTemplateColumns }}
       >
         <div className={cx('vm-generator-service-pane')}>
@@ -656,10 +638,9 @@ export const VMsPage: React.FC = () => {
           />
         </div>
 
-        <div
+        <button
+          type="button"
           className={cx('vm-generator-workspace-resizer')}
-          role="separator"
-          aria-orientation="vertical"
           aria-label="Resize workspace panes"
           onMouseDown={startWorkspaceResize}
         />
@@ -685,11 +666,10 @@ export const VMsPage: React.FC = () => {
             />
           </div>
 
-          <div
+          <button
+            type="button"
             className={cx('vm-generator-log-resizer')}
             onMouseDown={startLogResize}
-            role="separator"
-            aria-orientation="horizontal"
             aria-label="Resize log panel"
           />
 
@@ -704,7 +684,12 @@ export const VMsPage: React.FC = () => {
         </div>
       </div>
 
-      <VMPageModals panelOpen={panelOpen} setPanelOpen={setPanelOpen} deleteVm={deleteVm} storageOptions={storageOptions} />
+      <VMPageModals
+        panelOpen={panelOpen}
+        setPanelOpen={setPanelOpen}
+        deleteVm={deleteVm}
+        storageOptions={storageOptions}
+      />
     </div>
   );
 };

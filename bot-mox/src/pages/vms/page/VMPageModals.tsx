@@ -1,9 +1,9 @@
-import React from 'react';
 import { Modal } from 'antd';
+import type React from 'react';
 import { VMSettingsForm } from '../../../components/vm';
+import type { VMStorageOption } from '../../../types';
 import { DeleteVmModal } from '../DeleteVmModal';
 import type { UseDeleteVmWorkflowResult } from '../hooks/deleteVmWorkflow.types';
-import type { VMStorageOption } from '../../../types';
 import styles from '../VMsPage.module.css';
 
 function cx(classNames: string): string {
@@ -50,11 +50,11 @@ export const VMPageModals: React.FC<VMPageModalsProps> = ({
     />
 
     <Modal
-      title={(
+      title={
         <span style={{ color: 'var(--boxmox-color-text-primary)', fontWeight: 700, fontSize: 13 }}>
           Virtual Machines Settings
         </span>
-      )}
+      }
       open={panelOpen === 'settings'}
       onCancel={() => setPanelOpen(null)}
       footer={null}

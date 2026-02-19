@@ -48,7 +48,7 @@ Key env concepts:
 You can generate `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` from a JWT secret:
 
 ```bash
-npm run supabase:generate-keys -- --jwt-secret "<32+ char secret>" --issuer "supabase"
+pnpm run supabase:generate-keys -- --jwt-secret "<32+ char secret>" --issuer "supabase"
 ```
 
 ### Create The First User (Email/Password)
@@ -56,7 +56,7 @@ npm run supabase:generate-keys -- --jwt-secret "<32+ char secret>" --issuer "sup
 To create an operator user (admin API of GoTrue; requires service role key):
 
 ```bash
-npm run supabase:create-user -- --email "admin@example.com" --password "ChangeMeNow!" --tenant "default"
+pnpm run supabase:create-user -- --email "admin@example.com" --password "ChangeMeNow!" --tenant "default"
 ```
 
 Then allowlist the operator to receive `admin` + `infra` roles in backend via:

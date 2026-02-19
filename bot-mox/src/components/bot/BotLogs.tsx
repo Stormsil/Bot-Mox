@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Card, List, Tag, Button, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
+import { Button, Card, List, Tag, Typography } from 'antd';
+import type React from 'react';
+import { useState } from 'react';
 import type { Bot, LogEntry, LogEventType } from '../../types';
 import styles from './BotLogs.module.css';
 
@@ -12,9 +13,30 @@ interface BotLogsProps {
 
 // Моковые данные логов - только важные события
 const mockLogs: LogEntry[] = [
-  { id: '1', bot_id: 'bot_101', type: 'level_up', message: 'Level up: 67 -> 68', timestamp: Date.now() - 86400000, details: { old_level: 67, new_level: 68 } },
-  { id: '2', bot_id: 'bot_101', type: 'death', message: 'Died in Shadowmoon Valley', timestamp: Date.now() - 172800000, details: { location: 'Shadowmoon Valley' } },
-  { id: '3', bot_id: 'bot_101', type: 'level_up', message: 'Level up: 66 -> 67', timestamp: Date.now() - 259200000, details: { old_level: 66, new_level: 67 } },
+  {
+    id: '1',
+    bot_id: 'bot_101',
+    type: 'level_up',
+    message: 'Level up: 67 -> 68',
+    timestamp: Date.now() - 86400000,
+    details: { old_level: 67, new_level: 68 },
+  },
+  {
+    id: '2',
+    bot_id: 'bot_101',
+    type: 'death',
+    message: 'Died in Shadowmoon Valley',
+    timestamp: Date.now() - 172800000,
+    details: { location: 'Shadowmoon Valley' },
+  },
+  {
+    id: '3',
+    bot_id: 'bot_101',
+    type: 'level_up',
+    message: 'Level up: 66 -> 67',
+    timestamp: Date.now() - 259200000,
+    details: { old_level: 66, new_level: 67 },
+  },
 ];
 
 const getEventColor = (type: LogEventType) => {
@@ -76,12 +98,7 @@ export const BotLogs: React.FC<BotLogsProps> = ({ bot }) => {
           },
         }}
         extra={
-          <Button
-            type="text"
-            size="small"
-            icon={<DownloadOutlined />}
-            onClick={handleExport}
-          >
+          <Button type="text" size="small" icon={<DownloadOutlined />} onClick={handleExport}>
             Export
           </Button>
         }

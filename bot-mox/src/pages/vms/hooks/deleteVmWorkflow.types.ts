@@ -1,9 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type {
-  ProxmoxVM,
-  VMGeneratorSettings,
-  VMQueueItem,
-} from '../../../types';
+import type { ProxmoxVM, VMGeneratorSettings, VMQueueItem } from '../../../types';
 import type { DeleteVmCandidateRow, DeleteVmFilters } from '../deleteVmRules';
 
 export interface DeleteVmQueueApi {

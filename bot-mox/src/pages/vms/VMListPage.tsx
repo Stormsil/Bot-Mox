@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { VMList } from '../../components/vm';
 import styles from './VMListPage.module.css';
 

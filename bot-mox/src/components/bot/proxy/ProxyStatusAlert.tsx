@@ -1,9 +1,9 @@
-import React from 'react';
-import { Alert } from 'antd';
 import { WarningOutlined } from '@ant-design/icons';
+import { Alert } from 'antd';
+import type React from 'react';
 import { getProxyAlertState } from './helpers';
-import type { ProxyInfo } from './types';
 import styles from './proxy.module.css';
+import type { ProxyInfo } from './types';
 
 interface ProxyStatusAlertProps {
   proxy: ProxyInfo;

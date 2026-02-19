@@ -1,8 +1,8 @@
-import React from 'react';
 import { Input } from 'antd';
-import type { SettingsSectionProps } from './types';
+import type React from 'react';
 import { SecretField } from './SecretField';
 import layout from './SettingsSectionLayout.module.css';
+import type { SettingsSectionProps } from './types';
 
 export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
   settings,
@@ -14,7 +14,7 @@ export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
     <h4>Proxmox Connection</h4>
     <div className={layout.row}>
       <div className={layout.field}>
-        <label>URL</label>
+        <div className={layout.fieldLabel}>URL</div>
         <Input
           value={settings.proxmox.url}
           onChange={(event) => onFieldChange('proxmox.url', event.target.value)}
@@ -22,7 +22,7 @@ export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
         />
       </div>
       <div className={layout.field}>
-        <label>Node</label>
+        <div className={layout.fieldLabel}>Node</div>
         <Input
           value={settings.proxmox.node}
           onChange={(event) => onFieldChange('proxmox.node', event.target.value)}
@@ -32,7 +32,7 @@ export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
     </div>
     <div className={layout.row}>
       <div className={layout.field}>
-        <label>Username</label>
+        <div className={layout.fieldLabel}>Username</div>
         <Input
           value={settings.proxmox.username}
           onChange={(event) => onFieldChange('proxmox.username', event.target.value)}
@@ -48,7 +48,7 @@ export const ProxmoxSection: React.FC<SettingsSectionProps> = ({
         />
       ) : (
         <div className={layout.field}>
-          <label>Password</label>
+          <div className={layout.fieldLabel}>Password</div>
           <Input.Password
             value={settings.proxmox.password ?? ''}
             onChange={(event) => onFieldChange('proxmox.password', event.target.value)}

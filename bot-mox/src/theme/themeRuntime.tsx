@@ -1,18 +1,20 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { theme, type ConfigProviderProps } from 'antd';
+
+import { type ConfigProviderProps, theme } from 'antd';
+import type React from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import {
+  getDefaultThemeSettings,
   getThemeSettings,
   type ThemeSettings,
-  getDefaultThemeSettings,
-} from '../services/themeService';
+} from '../entities/settings/api/themeFacade';
 import {
   applyThemePaletteToDocument,
   applyThemeShapeToDocument,
   applyThemeTypographyToDocument,
-  sanitizeThemeVisualSettings,
   sanitizeThemeShapeSettings,
   sanitizeThemeTypographySettings,
+  sanitizeThemeVisualSettings,
   type ThemeMode,
   type ThemePalettes,
   type ThemeShapeSettings,
@@ -48,7 +50,7 @@ function getInitialTheme(): ThemeMode {
   if (stored === 'light' || stored === 'dark') {
     return stored;
   }
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
     return 'dark';
   }
   return 'light';
@@ -58,7 +60,7 @@ function buildThemeConfig(
   mode: ThemeMode,
   palettes: ThemePalettes,
   typography: ThemeTypographySettings,
-  shape: ThemeShapeSettings
+  shape: ThemeShapeSettings,
 ): AntThemeConfig {
   const isDark = mode === 'dark';
   const palette = palettes[mode];
@@ -201,51 +203,56 @@ export const ThemeRuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [themeMode, themeSettings.palettes, themeSettings.typography, themeSettings.shape]);
 
   const themeConfig = useMemo(
-    () => buildThemeConfig(themeMode, themeSettings.palettes, themeSettings.typography, themeSettings.shape),
-    [themeMode, themeSettings.palettes, themeSettings.typography, themeSettings.shape]
+    () =>
+      buildThemeConfig(
+        themeMode,
+        themeSettings.palettes,
+        themeSettings.typography,
+        themeSettings.shape,
+      ),
+    [themeMode, themeSettings.palettes, themeSettings.typography, themeSettings.shape],
   );
 
-  const value: ThemeRuntimeContextValue = useMemo(() => ({
-    themeMode,
-    setThemeMode,
-    themeSettings,
-    setThemeSettings,
-    themePalettes: themeSettings.palettes,
-    visualSettings: sanitizeThemeVisualSettings(themeSettings.visual),
-    typographySettings: sanitizeThemeTypographySettings(themeSettings.typography),
-    shapeSettings: sanitizeThemeShapeSettings(themeSettings.shape),
-    setThemePalettes: (palettes) => {
-      setThemeSettings((current) => ({
-        ...current,
-        palettes,
-      }));
-    },
-    setVisualSettings: (visual) => {
-      setThemeSettings((current) => ({
-        ...current,
-        visual: sanitizeThemeVisualSettings(visual),
-      }));
-    },
-    setTypographySettings: (typography) => {
-      setThemeSettings((current) => ({
-        ...current,
-        typography: sanitizeThemeTypographySettings(typography),
-      }));
-    },
-    setShapeSettings: (shape) => {
-      setThemeSettings((current) => ({
-        ...current,
-        shape: sanitizeThemeShapeSettings(shape),
-      }));
-    },
-    themeConfig,
-  }), [themeMode, themeSettings, themeConfig]);
-
-  return (
-    <ThemeRuntimeContext.Provider value={value}>
-      {children}
-    </ThemeRuntimeContext.Provider>
+  const value: ThemeRuntimeContextValue = useMemo(
+    () => ({
+      themeMode,
+      setThemeMode,
+      themeSettings,
+      setThemeSettings,
+      themePalettes: themeSettings.palettes,
+      visualSettings: sanitizeThemeVisualSettings(themeSettings.visual),
+      typographySettings: sanitizeThemeTypographySettings(themeSettings.typography),
+      shapeSettings: sanitizeThemeShapeSettings(themeSettings.shape),
+      setThemePalettes: (palettes) => {
+        setThemeSettings((current) => ({
+          ...current,
+          palettes,
+        }));
+      },
+      setVisualSettings: (visual) => {
+        setThemeSettings((current) => ({
+          ...current,
+          visual: sanitizeThemeVisualSettings(visual),
+        }));
+      },
+      setTypographySettings: (typography) => {
+        setThemeSettings((current) => ({
+          ...current,
+          typography: sanitizeThemeTypographySettings(typography),
+        }));
+      },
+      setShapeSettings: (shape) => {
+        setThemeSettings((current) => ({
+          ...current,
+          shape: sanitizeThemeShapeSettings(shape),
+        }));
+      },
+      themeConfig,
+    }),
+    [themeMode, themeSettings, themeConfig],
   );
+
+  return <ThemeRuntimeContext.Provider value={value}>{children}</ThemeRuntimeContext.Provider>;
 };
 
 export function useThemeRuntime(): ThemeRuntimeContextValue {

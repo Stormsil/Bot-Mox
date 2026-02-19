@@ -1,16 +1,20 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import dayjs, { type Dayjs } from 'dayjs';
 import { CalendarOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Form, Segmented, Space, Typography, message } from 'antd';
+import { Button, Card, Form, message, Segmented, Space, Typography } from 'antd';
+import dayjs, { type Dayjs } from 'dayjs';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNotesIndexQuery } from '../../../entities/notes/api/useNotesIndexQuery';
+import type { NoteIndex } from '../../../entities/notes/model/types';
 import {
-  createCalendarEvent,
-  deleteCalendarEvent,
-  subscribeToCalendarEvents,
-  type WorkspaceCalendarEvent,
-  updateCalendarEvent,
-} from '../../../services/workspaceService';
-import { subscribeToNotesIndex, type NoteIndex } from '../../../services/notesService';
+  useCreateCalendarEventMutation,
+  useDeleteCalendarEventMutation,
+  useUpdateCalendarEventMutation,
+} from '../../../entities/workspace/api/useWorkspaceMutations';
+import { useWorkspaceCalendarEventsQuery } from '../../../entities/workspace/api/useWorkspaceQueries';
+import type { WorkspaceCalendarEvent } from '../../../entities/workspace/model/types';
+import { uiLogger } from '../../../observability/uiLogger';
+import type { CalendarEventFormValues, CalendarViewMode, SidebarMode } from './page';
 import {
   CALENDAR_VIEW_STORAGE_KEY,
   CalendarEventList,
@@ -20,17 +24,17 @@ import {
   getWeekStart,
   mapEventsByDate,
 } from './page';
-import type { CalendarEventFormValues, CalendarViewMode, SidebarMode } from './page';
 import styles from './WorkspaceCalendarPage.module.css';
-import { uiLogger } from '../../../observability/uiLogger'
 
 const { Title } = Typography;
 
 export const WorkspaceCalendarPage: React.FC = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState<WorkspaceCalendarEvent[]>([]);
-  const [notes, setNotes] = useState<NoteIndex[]>([]);
-  const [loading, setLoading] = useState(true);
+  const calendarEventsQuery = useWorkspaceCalendarEventsQuery();
+  const createCalendarEventMutation = useCreateCalendarEventMutation();
+  const updateCalendarEventMutation = useUpdateCalendarEventMutation();
+  const deleteCalendarEventMutation = useDeleteCalendarEventMutation();
+  const notesIndexQuery = useNotesIndexQuery();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<WorkspaceCalendarEvent | null>(null);
   const [saving, setSaving] = useState(false);
@@ -40,24 +44,26 @@ export const WorkspaceCalendarPage: React.FC = () => {
   const [form] = Form.useForm<CalendarEventFormValues>();
 
   useEffect(() => {
-    const unsubscribe = subscribeToCalendarEvents(
-      (nextEvents) => {
-        setEvents(nextEvents);
-        setLoading(false);
-      },
-      (error) => {
-        uiLogger.error('Failed to subscribe to calendar events:', error);
-        message.error('Failed to load calendar events');
-        setLoading(false);
-      }
-    );
-    return unsubscribe;
-  }, []);
+    if (!calendarEventsQuery.error) {
+      return;
+    }
+    uiLogger.error('Failed to load calendar events:', calendarEventsQuery.error);
+    message.error('Failed to load calendar events');
+  }, [calendarEventsQuery.error]);
 
   useEffect(() => {
-    const unsubscribe = subscribeToNotesIndex(setNotes);
-    return unsubscribe;
-  }, []);
+    if (!notesIndexQuery.error) {
+      return;
+    }
+    uiLogger.error('Failed to load notes index:', notesIndexQuery.error);
+  }, [notesIndexQuery.error]);
+
+  const notes = useMemo<NoteIndex[]>(() => notesIndexQuery.data || [], [notesIndexQuery.data]);
+  const events = useMemo<WorkspaceCalendarEvent[]>(
+    () => calendarEventsQuery.data || [],
+    [calendarEventsQuery.data],
+  );
+  const loading = calendarEventsQuery.isLoading;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -68,7 +74,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
   const selectedDateKey = selectedDate.format('YYYY-MM-DD');
   const selectedDateEvents = useMemo(
     () => eventsByDate.get(selectedDateKey) ?? [],
-    [eventsByDate, selectedDateKey]
+    [eventsByDate, selectedDateKey],
   );
 
   const overdueEvents = useMemo(
@@ -79,7 +85,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
           if (a.date === b.date) return b.updated_at - a.updated_at;
           return b.date.localeCompare(a.date);
         }),
-    [events]
+    [events],
   );
 
   const upcomingEvents = useMemo(
@@ -90,19 +96,16 @@ export const WorkspaceCalendarPage: React.FC = () => {
           if (a.date === b.date) return b.updated_at - a.updated_at;
           return a.date.localeCompare(b.date);
         }),
-    [events]
+    [events],
   );
 
   const weekStart = useMemo(() => getWeekStart(selectedDate), [selectedDate]);
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, index) => weekStart.add(index, 'day')),
-    [weekStart]
+    [weekStart],
   );
 
-  const noteTitleById = useMemo(
-    () => new Map(notes.map((note) => [note.id, note.title])),
-    [notes]
-  );
+  const noteTitleById = useMemo(() => new Map(notes.map((note) => [note.id, note.title])), [notes]);
 
   const noteOptions = useMemo(
     () =>
@@ -110,7 +113,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
         label: note.title || 'Untitled note',
         value: note.id,
       })),
-    [notes]
+    [notes],
   );
 
   const openNote = (noteId: string) => {
@@ -157,10 +160,10 @@ export const WorkspaceCalendarPage: React.FC = () => {
       };
 
       if (editingEvent) {
-        await updateCalendarEvent(editingEvent.id, payload);
+        await updateCalendarEventMutation.mutateAsync({ id: editingEvent.id, data: payload });
         message.success('Event updated');
       } else {
-        await createCalendarEvent(payload);
+        await createCalendarEventMutation.mutateAsync(payload);
         message.success('Event created');
       }
 
@@ -180,7 +183,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
 
   const handleDelete = async (eventId: string) => {
     try {
-      await deleteCalendarEvent(eventId);
+      await deleteCalendarEventMutation.mutateAsync(eventId);
       message.success('Event deleted');
     } catch (error) {
       uiLogger.error('Failed to delete calendar event:', error);
@@ -229,7 +232,9 @@ export const WorkspaceCalendarPage: React.FC = () => {
           weekDays={weekDays}
           onSelectDate={setDayFilter}
           onShiftWeek={(delta) =>
-            setSelectedDate((prev) => (delta > 0 ? prev.add(delta, 'week') : prev.subtract(Math.abs(delta), 'week')))
+            setSelectedDate((prev) =>
+              delta > 0 ? prev.add(delta, 'week') : prev.subtract(Math.abs(delta), 'week'),
+            )
           }
         />
 
@@ -243,7 +248,11 @@ export const WorkspaceCalendarPage: React.FC = () => {
                   Show all
                 </Button>
               )}
-              <Button size="small" icon={<PlusOutlined />} onClick={() => openCreateModal(selectedDate)}>
+              <Button
+                size="small"
+                icon={<PlusOutlined />}
+                onClick={() => openCreateModal(selectedDate)}
+              >
                 New
               </Button>
             </Space>

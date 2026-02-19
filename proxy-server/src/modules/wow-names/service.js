@@ -6,7 +6,8 @@ const WOW_AJAX_URL = 'https://www.warcrafttavern.com/wp-admin/admin-ajax.php';
 const WOW_VIEW_ID = '127153';
 
 const DEFAULT_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
+  'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
   Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   'Accept-Language': 'en-US,en;q=0.9',
 };
@@ -61,15 +62,20 @@ async function getWowNames(options = {}) {
   const countParam = Number(options.count);
   const count = Number.isFinite(countParam) && countParam > 0 ? Math.min(countParam, 50) : 0;
   const batchesParam = Number(options.batches);
-  const batches = Number.isFinite(batchesParam) && batchesParam > 0 ? Math.min(Math.floor(batchesParam), 5) : 1;
+  const batches =
+    Number.isFinite(batchesParam) && batchesParam > 0 ? Math.min(Math.floor(batchesParam), 5) : 1;
 
-  let names = normalizeNames(await Promise.all(Array.from({ length: batches }, () => fetchWowNamesFromGenerator())));
+  let names = normalizeNames(
+    await Promise.all(Array.from({ length: batches }, () => fetchWowNamesFromGenerator())),
+  );
 
   if (!names.length) {
     names = normalizeNames(
       await Promise.all(
-        Array.from({ length: batches }, (_, index) => fetchWowNames(`${Date.now()}-${index}-${Math.random()}`))
-      )
+        Array.from({ length: batches }, (_, index) =>
+          fetchWowNames(`${Date.now()}-${index}-${Math.random()}`),
+        ),
+      ),
     );
   }
 

@@ -24,14 +24,14 @@ interface UiLoggerPayload {
 
 interface UiLogger {
   debug(event: string, payload?: UiLoggerPayload): void;
-  info(event: string, payload?: UiLoggerPayload): void;
-  warn(event: string, payload?: UiLoggerPayload): void;
-  error(event: string, payload?: UiLoggerPayload): void;
-  // Compatibility mode for refactoring existing console.* calls.
   debug(...args: unknown[]): void;
+  info(event: string, payload?: UiLoggerPayload): void;
   info(...args: unknown[]): void;
+  warn(event: string, payload?: UiLoggerPayload): void;
   warn(...args: unknown[]): void;
+  error(event: string, payload?: UiLoggerPayload): void;
   error(...args: unknown[]): void;
+  // Compatibility mode for refactoring existing console.* calls.
   child(context: { module?: string }): UiLogger;
 }
 
@@ -67,16 +67,19 @@ function isPayloadLike(value: unknown): value is UiLoggerPayload {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const obj = value as Record<string, unknown>;
   return (
-    Object.prototype.hasOwnProperty.call(obj, 'message') ||
-    Object.prototype.hasOwnProperty.call(obj, 'module') ||
-    Object.prototype.hasOwnProperty.call(obj, 'error') ||
-    Object.prototype.hasOwnProperty.call(obj, 'extra') ||
-    Object.prototype.hasOwnProperty.call(obj, 'path') ||
-    Object.prototype.hasOwnProperty.call(obj, 'trace_id')
+    Object.hasOwn(obj, 'message') ||
+    Object.hasOwn(obj, 'module') ||
+    Object.hasOwn(obj, 'error') ||
+    Object.hasOwn(obj, 'extra') ||
+    Object.hasOwn(obj, 'path') ||
+    Object.hasOwn(obj, 'trace_id')
   );
 }
 
-function parseLegacyArgs(args: unknown[], fallbackEvent: string): { event: string; payload: UiLoggerPayload } {
+function parseLegacyArgs(
+  args: unknown[],
+  fallbackEvent: string,
+): { event: string; payload: UiLoggerPayload } {
   if (args.length === 0) {
     return {
       event: fallbackEvent,
@@ -107,7 +110,12 @@ function parseLegacyArgs(args: unknown[], fallbackEvent: string): { event: strin
   };
 }
 
-function buildEvent(level: UiLogLevel, event: string, payload: UiLoggerPayload, defaultModule?: string): UiLogEvent {
+function buildEvent(
+  level: UiLogLevel,
+  event: string,
+  payload: UiLoggerPayload,
+  defaultModule?: string,
+): UiLogEvent {
   const trace = getActiveTraceContext();
   const normalizedEvent = normalizeEventName(event, `frontend.${level}`);
   const message = normalizeMessage(payload.message, normalizedEvent);
@@ -170,4 +178,3 @@ function createLogger(context: { module?: string } = {}): UiLogger {
 }
 
 export const uiLogger = createLogger();
-

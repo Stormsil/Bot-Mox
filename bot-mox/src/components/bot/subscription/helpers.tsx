@@ -1,11 +1,15 @@
-import React from 'react';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import type { Bot, SubscriptionWithDetails } from '../../../types';
-import type { BotOption, ComputedSubscriptionStatus, SubscriptionType, SubscriptionTypeOption } from './types';
+import type {
+  BotOption,
+  ComputedSubscriptionStatus,
+  SubscriptionType,
+  SubscriptionTypeOption,
+} from './types';
 
 export const SUBSCRIPTION_TYPES: SubscriptionTypeOption[] = [
   { value: 'wow', label: 'WoW', color: 'blue' },
@@ -43,7 +47,8 @@ export const getStatusColor = (status: ComputedSubscriptionStatus) => {
 
 export const getStatusText = (subscription: SubscriptionWithDetails) => {
   if (subscription.computedStatus === 'expired') return 'Expired';
-  if (subscription.computedStatus === 'expiring_soon') return `Expires in ${subscription.daysRemaining} days`;
+  if (subscription.computedStatus === 'expiring_soon')
+    return `Expires in ${subscription.daysRemaining} days`;
   return 'Active';
 };
 
@@ -53,8 +58,10 @@ export const getTypeLabel = (type: SubscriptionType) =>
 export const getDaysLeftColor = (subscription: SubscriptionWithDetails): string => {
   if (subscription.isExpired) return '#ff4d4f';
   if (subscription.isExpiringSoon) return '#faad14';
-  if (typeof subscription.daysRemaining === 'number' && subscription.daysRemaining <= 3) return '#ff4d4f';
-  if (typeof subscription.daysRemaining === 'number' && subscription.daysRemaining <= 7) return '#faad14';
+  if (typeof subscription.daysRemaining === 'number' && subscription.daysRemaining <= 3)
+    return '#ff4d4f';
+  if (typeof subscription.daysRemaining === 'number' && subscription.daysRemaining <= 7)
+    return '#faad14';
   return '#52c41a';
 };
 

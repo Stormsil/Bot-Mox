@@ -15,7 +15,9 @@ class VmRegistryServiceError extends Error {
 }
 
 function normalizeVmUuid(vmUuid) {
-  const normalized = String(vmUuid || '').trim().toLowerCase();
+  const normalized = String(vmUuid || '')
+    .trim()
+    .toLowerCase();
   if (!normalized) {
     throw new VmRegistryServiceError(400, 'BAD_REQUEST', 'vm_uuid is required');
   }
@@ -60,7 +62,11 @@ function createVmRegistryService({ env }) {
       .maybeSingle();
 
     if (existingError) {
-      throw new VmRegistryServiceError(500, 'DB_ERROR', `Failed to read VM registry entry: ${existingError.message}`);
+      throw new VmRegistryServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to read VM registry entry: ${existingError.message}`,
+      );
     }
 
     const row = {
@@ -69,7 +75,10 @@ function createVmRegistryService({ env }) {
       user_id: normalizedUserId,
       vm_name: typeof vmName === 'string' ? vmName.trim() : '',
       project_id: typeof projectId === 'string' ? projectId.trim() : '',
-      status: String(status || 'active').trim().toLowerCase() || 'active',
+      status:
+        String(status || 'active')
+          .trim()
+          .toLowerCase() || 'active',
       metadata: metadata && typeof metadata === 'object' ? metadata : {},
       created_at_ms: Number(existing?.created_at_ms || now),
       updated_at_ms: now,
@@ -80,7 +89,11 @@ function createVmRegistryService({ env }) {
       .upsert(row, { onConflict: 'tenant_id,vm_uuid' });
 
     if (error) {
-      throw new VmRegistryServiceError(500, 'DB_ERROR', `Failed to write VM registry entry: ${error.message}`);
+      throw new VmRegistryServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to write VM registry entry: ${error.message}`,
+      );
     }
 
     return {

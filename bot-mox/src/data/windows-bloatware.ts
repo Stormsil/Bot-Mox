@@ -43,7 +43,11 @@ export const BLOATWARE_PACKAGES: BloatwarePackage[] = [
   { id: 'MicrosoftTeams', name: 'Microsoft Teams', category: 'social' },
   { id: 'Microsoft.OutlookForWindows', name: 'Outlook (New)', category: 'productivity' },
   { id: 'Microsoft.Windows.Photos', name: 'Photos', category: 'media' },
-  { id: 'Microsoft.WindowsCommunicationsApps', name: 'Mail and Calendar', category: 'productivity' },
+  {
+    id: 'Microsoft.WindowsCommunicationsApps',
+    name: 'Mail and Calendar',
+    category: 'productivity',
+  },
   { id: 'Microsoft.MixedReality.Portal', name: 'Mixed Reality Portal', category: 'other' },
   { id: 'Microsoft.3DBuilder', name: '3D Builder', category: 'other' },
   { id: 'Microsoft.Microsoft3DViewer', name: '3D Viewer', category: 'other' },

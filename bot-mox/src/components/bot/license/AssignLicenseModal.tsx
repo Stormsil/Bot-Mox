@@ -1,7 +1,7 @@
-import React from 'react';
-import { AutoComplete, Form, Modal } from 'antd';
 import type { FormInstance } from 'antd';
+import { AutoComplete, Form, Modal } from 'antd';
 import dayjs from 'dayjs';
+import type React from 'react';
 import type { AssignLicenseFormValues, LicenseInfo } from './types';
 
 const modalStyles = {
@@ -29,7 +29,9 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
   onSubmit,
 }) => (
   <Modal
-    title={<span style={{ color: 'var(--boxmox-color-text-primary)' }}>Assign Existing License</span>}
+    title={
+      <span style={{ color: 'var(--boxmox-color-text-primary)' }}>Assign Existing License</span>
+    }
     open={open}
     onOk={() => form.submit()}
     onCancel={onCancel}

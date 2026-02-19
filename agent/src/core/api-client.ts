@@ -1,19 +1,10 @@
 import { net } from 'electron';
-import { Logger } from './logger';
+import type { Logger } from './logger';
+import { apiEnvelopeSchema } from './schemas';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-interface ApiEnvelope<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: unknown;
-  };
-}
 
 export class ApiError extends Error {
   constructor(
@@ -109,21 +100,33 @@ export class ApiClient {
         response.on('end', () => {
           settle(() => {
             try {
-              const envelope: ApiEnvelope<T> = JSON.parse(responseData);
+              const rawEnvelope: unknown = JSON.parse(responseData);
+              const parsedEnvelope = apiEnvelopeSchema.safeParse(rawEnvelope);
+              if (!parsedEnvelope.success) {
+                reject(
+                  new ApiError(
+                    'PARSE_ERROR',
+                    `Failed to parse response envelope (HTTP ${statusCode})`,
+                  ),
+                );
+                return;
+              }
+
+              const envelope = parsedEnvelope.data;
 
               if (envelope.success && envelope.data !== undefined) {
-                resolve(envelope.data);
+                resolve(envelope.data as T);
               } else if (envelope.error) {
-                const err = new ApiError(
-                  envelope.error.code,
-                  envelope.error.message,
-                  statusCode,
-                );
+                const err = new ApiError(envelope.error.code, envelope.error.message, statusCode);
                 this.logger.error(`API error: ${err.code} — ${err.message}`);
                 reject(err);
-              } else {
+              } else if (envelope.success) {
                 // Some endpoints return { success: true } without data
                 resolve(undefined as T);
+              } else {
+                reject(
+                  new ApiError('API_ERROR', `Request failed (HTTP ${statusCode})`, statusCode),
+                );
               }
             } catch {
               reject(new ApiError('PARSE_ERROR', `Failed to parse response (HTTP ${statusCode})`));

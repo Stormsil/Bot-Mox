@@ -1,16 +1,20 @@
-import React, { useState, useMemo } from 'react';
-import { Select, Space, DatePicker, Card, Typography } from 'antd';
-import { ContentPanel } from '../../components/layout/ContentPanel';
-import { FinanceSummary, FinanceTransactions, TransactionForm } from '../../components/finance';
-import { useFinance } from '../../hooks/useFinance';
-import { 
-  getGoldPriceHistoryFromOperations,
-  calculateFinanceSummary,
-  calculateCategoryBreakdown,
-  prepareTimeSeriesData,
-} from '../../services/financeService';
-import type { FinanceOperation, FinanceOperationFormData } from '../../types';
+import { Card, DatePicker, Select, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import { FinanceSummary, FinanceTransactions, TransactionForm } from '../../components/finance';
+import { ContentPanel } from '../../components/layout/ContentPanel';
+import {
+  calculateCategoryBreakdown,
+  calculateFinanceSummary,
+  getGoldPriceHistoryFromOperations,
+  prepareTimeSeriesData,
+} from '../../entities/finance/lib/analytics';
+import type {
+  FinanceOperation,
+  FinanceOperationFormData,
+} from '../../entities/finance/model/types';
+import { useFinanceOperations } from '../../features/finance/model/useFinanceOperations';
 import styles from './FinancePage.module.css';
 
 const { RangePicker } = DatePicker;
@@ -25,44 +29,28 @@ export const FinancePage: React.FC = () => {
   // State for date range (default to last 30 days)
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>([
     dayjs().subtract(30, 'days'),
-    dayjs()
+    dayjs(),
   ]);
 
   const [formVisible, setFormVisible] = useState(false);
   const [editingOperation, setEditingOperation] = useState<FinanceOperation | null>(null);
 
-  const {
-    operations,
-    loading,
-    addOperation,
-    updateOperation,
-    deleteOperation,
-  } = useFinance({ days: 365 }); // Fetch enough data initially
+  const { operations, loading, addOperation, updateOperation, deleteOperation } =
+    useFinanceOperations();
 
   // Filter operations based on project and date range
   const filteredOperations = useMemo(() => {
     let filtered = operations;
 
-    // Filter by project
     if (selectedProject !== 'all') {
-      filtered = filtered.filter(op => op.project_id === selectedProject || op.project_id === null);
-      // Note: We include null project_id (global ops) if we want them to show everywhere, 
-      // OR we exclude them. Usually global costs (like server hosting) should be visible or split.
-      // For now, let's strict filter: if selecting a project, show only that project's direct costs/income?
-      // Or maybe global ops should be shown in 'all' only?
-      // Let's filter strictly by project_id for now, assuming global ops have project_id=null
-      // If user selects 'wow_tbc', they shouldn't see 'wow_midnight' ops.
-      // Global ops (null) might be relevant to all, but hard to split. 
-      // Let's include nulls only in 'all'.
-      filtered = operations.filter(op => op.project_id === selectedProject);
+      filtered = operations.filter((op) => op.project_id === selectedProject);
     }
 
-    // Filter by date range
     if (dateRange) {
       const [start, end] = dateRange;
       const startTime = start.startOf('day').valueOf();
       const endTime = end.endOf('day').valueOf();
-      filtered = filtered.filter(op => op.date >= startTime && op.date <= endTime);
+      filtered = filtered.filter((op) => op.date >= startTime && op.date <= endTime);
     }
 
     return filtered;
@@ -70,9 +58,15 @@ export const FinancePage: React.FC = () => {
 
   // Recalculate derived data based on filtered operations
   const summary = useMemo(() => calculateFinanceSummary(filteredOperations), [filteredOperations]);
-  const incomeBreakdown = useMemo(() => calculateCategoryBreakdown(filteredOperations, 'income'), [filteredOperations]);
-  const expenseBreakdown = useMemo(() => calculateCategoryBreakdown(filteredOperations, 'expense'), [filteredOperations]);
-  
+  const incomeBreakdown = useMemo(
+    () => calculateCategoryBreakdown(filteredOperations, 'income'),
+    [filteredOperations],
+  );
+  const expenseBreakdown = useMemo(
+    () => calculateCategoryBreakdown(filteredOperations, 'expense'),
+    [filteredOperations],
+  );
+
   // Calculate days difference for time series
   const daysDiff = useMemo(() => {
     if (!dateRange) return 30;
@@ -82,9 +76,9 @@ export const FinancePage: React.FC = () => {
   const timeSeriesData = useMemo(() => {
     if (!dateRange) return [];
     return prepareTimeSeriesData(
-      filteredOperations, 
-      dateRange[0].startOf('day').valueOf(), 
-      dateRange[1].endOf('day').valueOf()
+      filteredOperations,
+      dateRange[0].startOf('day').valueOf(),
+      dateRange[1].endOf('day').valueOf(),
     );
   }, [filteredOperations, dateRange]);
 
@@ -137,8 +131,8 @@ export const FinancePage: React.FC = () => {
             loading={loading}
             timeRange={daysDiff}
             onTimeRangeChange={(days) => {
-               // Update the Date Range picker based on quick select
-               setDateRange([dayjs().subtract(days, 'days'), dayjs()]);
+              // Update the Date Range picker based on quick select
+              setDateRange([dayjs().subtract(days, 'days'), dayjs()]);
             }}
             selectedProject={selectedProject}
             operations={filteredOperations}
@@ -172,9 +166,16 @@ export const FinancePage: React.FC = () => {
           { value: 'wow_midnight', label: 'WoW Midnight' },
         ]}
       />
-      <RangePicker 
+      <RangePicker
         value={dateRange}
-        onChange={(dates) => setDateRange(dates ? [dates[0]!, dates[1]!] : null)}
+        onChange={(dates) => {
+          const [start, end] = dates ?? [];
+          if (!start || !end) {
+            setDateRange(null);
+            return;
+          }
+          setDateRange([start, end]);
+        }}
         allowClear={false}
       />
     </Space>
@@ -183,17 +184,21 @@ export const FinancePage: React.FC = () => {
   return (
     <div className={styles.root}>
       {/* Global Filter Bar */}
-      <Card variant="borderless" className={styles.filterBar} styles={{ body: { padding: '14px 16px' } }}>
+      <Card
+        variant="borderless"
+        className={styles.filterBar}
+        styles={{ body: { padding: '14px 16px' } }}
+      >
         <div className={styles.toolbar}>
           <div className={styles.toolbarLeft}>
-            <Title level={4} className={styles.title}>Finance</Title>
+            <Title level={4} className={styles.title}>
+              Finance
+            </Title>
             <Text type="secondary" className={styles.subtitle}>
               Operational cashflow and performance
             </Text>
           </div>
-          <div className={styles.toolbarRight}>
-            {headerExtra}
-          </div>
+          <div className={styles.toolbarRight}>{headerExtra}</div>
         </div>
       </Card>
 

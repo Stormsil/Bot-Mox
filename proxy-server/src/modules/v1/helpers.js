@@ -16,7 +16,9 @@ function applyListQuery(items, parsedQuery) {
   const limit = parsedQuery.limit;
   const sort = parsedQuery.sort;
   const order = parsedQuery.order || 'asc';
-  const q = String(parsedQuery.q || '').trim().toLowerCase();
+  const q = String(parsedQuery.q || '')
+    .trim()
+    .toLowerCase();
 
   let data = Array.isArray(items) ? [...items] : [];
 

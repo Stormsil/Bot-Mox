@@ -1,11 +1,11 @@
-import type { IPQSResponse, Proxy } from '../types';
 import { API_BASE_URL as API_BASE_URL_FROM_ENV } from '../config/env';
+import { uiLogger } from '../observability/uiLogger';
+import { checkIpqsViaContract, getIpqsStatusViaContract } from '../providers/ipqs-contract-client';
+import type { IPQSResponse, Proxy as ProxyResource } from '../types';
+import { ApiClientError } from './apiClient';
 import { getApiKeys, getProxySettings } from './apiKeysService';
-import { apiGet, apiPost, ApiClientError } from './apiClient';
-import { uiLogger } from '../observability/uiLogger'
 
 const LOCAL_PROXY_URL = API_BASE_URL_FROM_ENV;
-const IPQS_API_PREFIX = '/api/v1/ipqs';
 
 interface BackendStatusPayload {
   enabled?: unknown;
@@ -41,7 +41,7 @@ function toErrorMessage(error: unknown): string {
 
 async function getStatusFromBackend(): Promise<BackendStatus | null> {
   try {
-    const response = await apiGet<BackendStatusPayload>(`${IPQS_API_PREFIX}/status`);
+    const response = await getIpqsStatusViaContract();
     return normalizeBackendStatus(response.data || {});
   } catch (error) {
     uiLogger.warn('Failed to fetch IPQS status from backend:', toErrorMessage(error));
@@ -70,9 +70,7 @@ async function checkIPQualityViaBackend(ip: string): Promise<IPQSResponse | null
   }
 
   try {
-    const response = await apiPost<IPQSResponse>(`${IPQS_API_PREFIX}/check`, {
-      ip: normalizedIp,
-    });
+    const response = await checkIpqsViaContract(normalizedIp);
     return response.data;
   } catch (error) {
     uiLogger.warn('IPQS backend check failed:', toErrorMessage(error));
@@ -123,7 +121,9 @@ export async function isAutoCheckEnabled(): Promise<boolean> {
     // Автопроверка включена только если:
     // 1. IPQS включен и есть API ключ
     // 2. В настройках прокси включена автопроверка при добавлении
-    return apiKeys.ipqs.enabled && apiKeys.ipqs.api_key.length > 0 && proxySettings.auto_check_on_add;
+    return (
+      apiKeys.ipqs.enabled && apiKeys.ipqs.api_key.length > 0 && proxySettings.auto_check_on_add
+    );
   } catch (error) {
     uiLogger.error('Error checking auto check status:', error);
     return false;
@@ -154,7 +154,11 @@ export async function isIPQSCheckEnabled(): Promise<boolean> {
  * Получает статус IPQS
  * @returns Promise<{ enabled: boolean; configured: boolean; localProxyAvailable: boolean }>
  */
-export async function getIPQSStatus(): Promise<{ enabled: boolean; configured: boolean; localProxyAvailable: boolean }> {
+export async function getIPQSStatus(): Promise<{
+  enabled: boolean;
+  configured: boolean;
+  localProxyAvailable: boolean;
+}> {
   const status = await getStatusFromBackend();
   if (status) {
     return {
@@ -199,10 +203,10 @@ export async function getFraudScoreThreshold(): Promise<number> {
  * @returns Partial<Proxy> - объект с обновленными полями
  */
 export function updateProxyWithIPQSData(
-  proxy: Partial<Proxy>,
-  ipqsData: IPQSResponse
-): Partial<Proxy> {
-  const updates: Partial<Proxy> = {
+  proxy: Partial<ProxyResource>,
+  ipqsData: IPQSResponse,
+): Partial<ProxyResource> {
+  const updates: Partial<ProxyResource> = {
     ...proxy,
     fraud_score: ipqsData.fraud_score,
     country: ipqsData.country_code || proxy.country || 'Unknown',
@@ -225,8 +229,8 @@ export function updateProxyWithIPQSData(
 
   // Удаляем undefined поля перед отправкой на backend
   Object.keys(updates).forEach((key) => {
-    if (updates[key as keyof Proxy] === undefined) {
-      delete updates[key as keyof Proxy];
+    if (updates[key as keyof ProxyResource] === undefined) {
+      delete updates[key as keyof ProxyResource];
     }
   });
 
@@ -274,9 +278,7 @@ export function getFraudScoreLabel(score: number): string {
  * @param ip - IP адрес для проверки
  * @returns Promise<{ data: IPQSResponse | null; isSuspicious: boolean; error?: string; localProxyUsed: boolean }>
  */
-export async function checkProxyWithValidation(
-  ip: string
-): Promise<{
+export async function checkProxyWithValidation(ip: string): Promise<{
   data: IPQSResponse | null;
   isSuspicious: boolean;
   error?: string;
@@ -338,6 +340,6 @@ export async function checkLocalProxyStatus(): Promise<{ available: boolean; mes
 
   return {
     available: false,
-    message: 'Backend API is unavailable. Please start proxy-server: cd proxy-server && npm start',
+    message: 'Backend API is unavailable. Start it with: pnpm run dev:proxy',
   };
 }

@@ -1,3 +1,4 @@
+import { uiLogger } from '../observability/uiLogger';
 import type {
   BotStatus,
   ComputedSubscriptionStatus,
@@ -6,7 +7,6 @@ import type {
   SubscriptionWithDetails,
 } from '../types';
 import { ApiClientError, apiGet } from './apiClient';
-import { uiLogger } from '../observability/uiLogger'
 import {
   createResource,
   deleteResource,
@@ -43,7 +43,12 @@ export function parseDateToTimestamp(dateString: string): number {
   const timestamp = date.getTime();
 
   if (!Number.isFinite(timestamp)) {
-    uiLogger.error('parseDateToTimestamp: failed to create valid date', { day, month, year, dateString });
+    uiLogger.error('parseDateToTimestamp: failed to create valid date', {
+      day,
+      month,
+      year,
+      dateString,
+    });
     return Number.NaN;
   }
 
@@ -66,7 +71,7 @@ export function formatTimestampToDate(timestamp: number): string {
  */
 export function calculateSubscriptionStatus(
   subscription: Subscription,
-  warningDays: number = 7
+  warningDays: number = 7,
 ): {
   computedStatus: ComputedSubscriptionStatus;
   daysRemaining: number;
@@ -136,7 +141,7 @@ export async function createSubscription(data: SubscriptionFormData): Promise<st
 
   const created = await createResource<Subscription>(
     'subscriptions',
-    subscriptionPayload as unknown as Record<string, unknown>
+    subscriptionPayload as unknown as Record<string, unknown>,
   );
 
   if (!created?.id) {
@@ -149,7 +154,10 @@ export async function createSubscription(data: SubscriptionFormData): Promise<st
 /**
  * Обновляет существующую подписку
  */
-export async function updateSubscription(id: string, data: Partial<SubscriptionFormData>): Promise<void> {
+export async function updateSubscription(
+  id: string,
+  data: Partial<SubscriptionFormData>,
+): Promise<void> {
   const updates: Partial<Subscription> = {
     updated_at: Date.now(),
   };
@@ -168,7 +176,11 @@ export async function updateSubscription(id: string, data: Partial<SubscriptionF
   if (data.project_id !== undefined) updates.project_id = data.project_id;
   if (data.notes !== undefined) updates.notes = data.notes;
 
-  await updateResource<Subscription>('subscriptions', id, updates as unknown as Record<string, unknown>);
+  await updateResource<Subscription>(
+    'subscriptions',
+    id,
+    updates as unknown as Record<string, unknown>,
+  );
 }
 
 /**
@@ -190,7 +202,9 @@ export async function getSubscriptions(): Promise<Subscription[]> {
  */
 export async function getSubscriptionById(id: string): Promise<Subscription | null> {
   try {
-    const response = await apiGet<Subscription>(`/api/v1/resources/subscriptions/${encodeURIComponent(String(id || '').trim())}`);
+    const response = await apiGet<Subscription>(
+      `/api/v1/resources/subscriptions/${encodeURIComponent(String(id || '').trim())}`,
+    );
     return response.data || null;
   } catch (error) {
     if (error instanceof ApiClientError && error.status === 404) {
@@ -213,7 +227,7 @@ export async function getSubscriptionsByBotId(botId: string): Promise<Subscripti
  */
 export function subscribeToSubscriptions(
   callback: (subscriptions: Subscription[]) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): () => void {
   return subscribeResources<Subscription>('subscriptions', callback, onError, { intervalMs: 6000 });
 }
@@ -224,14 +238,11 @@ export function subscribeToSubscriptions(
 export function subscribeToBotSubscriptions(
   botId: string,
   callback: (subscriptions: Subscription[]) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): () => void {
-  return subscribeToSubscriptions(
-    (subscriptions) => {
-      callback(subscriptions.filter((subscription) => subscription.bot_id === botId));
-    },
-    onError
-  );
+  return subscribeToSubscriptions((subscriptions) => {
+    callback(subscriptions.filter((subscription) => subscription.bot_id === botId));
+  }, onError);
 }
 
 /**
@@ -240,7 +251,7 @@ export function subscribeToBotSubscriptions(
 export function enrichSubscriptionsWithDetails(
   subscriptions: Subscription[],
   warningDays: number = 7,
-  botsMap?: Map<string, { name: string; character?: string; status?: BotStatus; vmName?: string }>
+  botsMap?: Map<string, { name: string; character?: string; status?: BotStatus; vmName?: string }>,
 ): SubscriptionWithDetails[] {
   return subscriptions.map((subscription) => {
     const statusInfo = calculateSubscriptionStatus(subscription, warningDays);

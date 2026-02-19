@@ -4,18 +4,16 @@ export {
 } from './credentials-sections';
 
 export {
-  PasswordGeneratorOptionsCard,
-  GeneratorPresetsCard,
-  RegistrationDateSection,
   ActionButtonsSection,
+  GeneratorPresetsCard,
+  PasswordGeneratorOptionsCard,
+  RegistrationDateSection,
 } from './generator-sections';
-
-export {
-  AccountWorkflowAlert,
-  AccountCardTitle,
-  IncompleteAccountAlert,
-  AccountUnavailableState,
-  AccountLoadingState,
-} from './state-sections';
-
 export { ConfirmGenerationModal } from './modals';
+export {
+  AccountCardTitle,
+  AccountLoadingState,
+  AccountUnavailableState,
+  AccountWorkflowAlert,
+  IncompleteAccountAlert,
+} from './state-sections';

@@ -1,21 +1,21 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import { message } from 'antd';
-import { uiLogger } from '../../observability/uiLogger'
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type {
+  ThemeBackgroundAsset,
+  ThemePreset,
+  ThemeSettings,
+} from '../../entities/settings/api/themeFacade';
+import { useThemeAssetsQuery } from '../../entities/settings/api/useThemeAssetsQuery';
 import {
-  applyThemePreset,
-  deleteThemePreset,
-  saveThemePreset,
-  updateThemeSettings,
-  updateThemeVisualSettings,
-  type ThemePreset,
-  type ThemeSettings,
-} from '../../services/themeService';
-import {
-  deleteThemeAsset,
-  listThemeAssets,
-  uploadThemeAsset,
-  type ThemeBackgroundAsset,
-} from '../../services/themeAssetsService';
+  useApplyThemePresetMutation,
+  useDeleteThemeAssetMutation,
+  useDeleteThemePresetMutation,
+  useSaveThemePresetMutation,
+  useUpdateThemeSettingsMutation,
+  useUpdateThemeVisualSettingsMutation,
+  useUploadThemeAssetMutation,
+} from '../../entities/settings/api/useThemeMutations';
+import { uiLogger } from '../../observability/uiLogger';
 import {
   createDefaultThemePalettes,
   normalizeHexColor,
@@ -84,7 +84,7 @@ interface UseThemeSettingsResult {
     mode: ThemeMode,
     cssVar: ThemeColorVariable,
     rawColor: string,
-    options?: { syncApp?: boolean }
+    options?: { syncApp?: boolean },
   ) => void;
   handleThemeInputChange: (mode: ThemeMode, cssVar: ThemeColorVariable, value: string) => void;
   commitThemeInput: (mode: ThemeMode, cssVar: ThemeColorVariable) => void;
@@ -132,23 +132,28 @@ export function useThemeSettings({
   const [selectedPresetId, setSelectedPresetId] = useState<string | undefined>();
   const [activePresetId, setActivePresetId] = useState<string | undefined>();
   const [newThemePresetName, setNewThemePresetName] = useState('');
-  const [themeAssetsLoading, setThemeAssetsLoading] = useState(false);
-  const [themeAssetUploading, setThemeAssetUploading] = useState(false);
-  const [themeAssets, setThemeAssets] = useState<ThemeBackgroundAsset[]>([]);
+  const themeAssetsQuery = useThemeAssetsQuery();
+  const updateThemeSettingsMutation = useUpdateThemeSettingsMutation();
+  const updateThemeVisualSettingsMutation = useUpdateThemeVisualSettingsMutation();
+  const saveThemePresetMutation = useSaveThemePresetMutation();
+  const applyThemePresetMutation = useApplyThemePresetMutation();
+  const deleteThemePresetMutation = useDeleteThemePresetMutation();
+  const uploadThemeAssetMutation = useUploadThemeAssetMutation();
+  const deleteThemeAssetMutation = useDeleteThemeAssetMutation();
   const [localThemePalettes, setLocalThemePalettes] = useState<ThemePalettes>(() =>
-    cloneThemePalettes(themePalettes ?? DEFAULT_THEME_PALETTES)
+    cloneThemePalettes(themePalettes ?? DEFAULT_THEME_PALETTES),
   );
   const [themeInputValues, setThemeInputValues] = useState<ThemePalettes>(() =>
-    cloneThemePalettes(themePalettes ?? DEFAULT_THEME_PALETTES)
+    cloneThemePalettes(themePalettes ?? DEFAULT_THEME_PALETTES),
   );
   const [localVisualSettings, setLocalVisualSettings] = useState<ThemeVisualSettings>(() =>
-    sanitizeThemeVisualSettings(visualSettings)
+    sanitizeThemeVisualSettings(visualSettings),
   );
-  const [localTypographySettings, setLocalTypographySettings] = useState<ThemeTypographySettings>(() =>
-    sanitizeThemeTypographySettings(typographySettings)
+  const [localTypographySettings, setLocalTypographySettings] = useState<ThemeTypographySettings>(
+    () => sanitizeThemeTypographySettings(typographySettings),
   );
   const [localShapeSettings, setLocalShapeSettings] = useState<ThemeShapeSettings>(() =>
-    sanitizeThemeShapeSettings(shapeSettings)
+    sanitizeThemeShapeSettings(shapeSettings),
   );
 
   useEffect(() => {
@@ -170,115 +175,127 @@ export function useThemeSettings({
     setLocalShapeSettings(sanitizeThemeShapeSettings(shapeSettings));
   }, [shapeSettings]);
 
+  const themeAssets = useMemo<ThemeBackgroundAsset[]>(
+    () => themeAssetsQuery.data || [],
+    [themeAssetsQuery.data],
+  );
+  const themeAssetsLoading = themeAssetsQuery.isLoading || themeAssetsQuery.isFetching;
+  const themeAssetUploading = uploadThemeAssetMutation.isPending;
+
   const handleRefreshThemeAssets = useCallback(async () => {
-    setThemeAssetsLoading(true);
     try {
-      const data = await listThemeAssets();
-      setThemeAssets(data.items.filter((item) => item.status === 'ready' || item.status === 'pending'));
+      await themeAssetsQuery.refetch();
     } catch (error) {
       uiLogger.error('Error loading theme assets:', error);
       message.error('Failed to load background images');
-    } finally {
-      setThemeAssetsLoading(false);
     }
-  }, []);
+  }, [themeAssetsQuery]);
 
-  useEffect(() => {
-    void handleRefreshThemeAssets();
-  }, [handleRefreshThemeAssets]);
+  const applyThemeSettings = useCallback(
+    (settings: ThemeSettings) => {
+      const nextPalettes = cloneThemePalettes(settings.palettes);
+      const presets = mapThemePresetsToList(settings.presets);
+      const nextVisual = sanitizeThemeVisualSettings(settings.visual);
+      const nextTypography = sanitizeThemeTypographySettings(settings.typography);
+      const nextShape = sanitizeThemeShapeSettings(settings.shape);
+      setLocalThemePalettes(nextPalettes);
+      setThemeInputValues(nextPalettes);
+      setThemePresets(presets);
+      setActivePresetId(settings.active_preset_id);
+      setSelectedPresetId(settings.active_preset_id ?? presets[0]?.id);
+      setLocalVisualSettings(nextVisual);
+      setLocalTypographySettings(nextTypography);
+      setLocalShapeSettings(nextShape);
+      onThemePalettesChange?.(settings.palettes);
+      onVisualSettingsChange?.(nextVisual);
+      onTypographySettingsChange?.(nextTypography);
+      onShapeSettingsChange?.(nextShape);
+    },
+    [
+      onShapeSettingsChange,
+      onThemePalettesChange,
+      onTypographySettingsChange,
+      onVisualSettingsChange,
+    ],
+  );
 
-  const applyThemeSettings = useCallback((settings: ThemeSettings) => {
-    const nextPalettes = cloneThemePalettes(settings.palettes);
-    const presets = mapThemePresetsToList(settings.presets);
-    const nextVisual = sanitizeThemeVisualSettings(settings.visual);
-    const nextTypography = sanitizeThemeTypographySettings(settings.typography);
-    const nextShape = sanitizeThemeShapeSettings(settings.shape);
-    setLocalThemePalettes(nextPalettes);
-    setThemeInputValues(nextPalettes);
-    setThemePresets(presets);
-    setActivePresetId(settings.active_preset_id);
-    setSelectedPresetId(settings.active_preset_id ?? presets[0]?.id);
-    setLocalVisualSettings(nextVisual);
-    setLocalTypographySettings(nextTypography);
-    setLocalShapeSettings(nextShape);
-    onThemePalettesChange?.(settings.palettes);
-    onVisualSettingsChange?.(nextVisual);
-    onTypographySettingsChange?.(nextTypography);
-    onShapeSettingsChange?.(nextShape);
-  }, [onShapeSettingsChange, onThemePalettesChange, onTypographySettingsChange, onVisualSettingsChange]);
+  const updateThemeColor = useCallback(
+    (
+      mode: ThemeMode,
+      cssVar: ThemeColorVariable,
+      rawColor: string,
+      options?: { syncApp?: boolean },
+    ) => {
+      const normalized = normalizeHexColor(rawColor, DEFAULT_THEME_PALETTES[mode][cssVar]);
+      const shouldSyncApp = options?.syncApp ?? true;
 
-  const updateThemeColor = useCallback((
-    mode: ThemeMode,
-    cssVar: ThemeColorVariable,
-    rawColor: string,
-    options?: { syncApp?: boolean }
-  ) => {
-    const normalized = normalizeHexColor(rawColor, DEFAULT_THEME_PALETTES[mode][cssVar]);
-    const shouldSyncApp = options?.syncApp ?? true;
+      setLocalThemePalettes((current) => {
+        const next: ThemePalettes = {
+          ...current,
+          [mode]: {
+            ...current[mode],
+            [cssVar]: normalized,
+          },
+        };
+        if (shouldSyncApp) {
+          onThemePalettesChange?.(next);
+        }
+        return next;
+      });
 
-    setLocalThemePalettes((current) => {
-      const next: ThemePalettes = {
+      setThemeInputValues((current) => ({
         ...current,
         [mode]: {
           ...current[mode],
           [cssVar]: normalized,
         },
-      };
-      if (shouldSyncApp) {
-        onThemePalettesChange?.(next);
-      }
-      return next;
-    });
+      }));
+    },
+    [onThemePalettesChange],
+  );
 
-    setThemeInputValues((current) => ({
-      ...current,
-      [mode]: {
-        ...current[mode],
-        [cssVar]: normalized,
-      },
-    }));
-  }, [onThemePalettesChange]);
+  const handleThemeInputChange = useCallback(
+    (mode: ThemeMode, cssVar: ThemeColorVariable, value: string) => {
+      setThemeInputValues((current) => ({
+        ...current,
+        [mode]: {
+          ...current[mode],
+          [cssVar]: value,
+        },
+      }));
+    },
+    [],
+  );
 
-  const handleThemeInputChange = useCallback((
-    mode: ThemeMode,
-    cssVar: ThemeColorVariable,
-    value: string
-  ) => {
-    setThemeInputValues((current) => ({
-      ...current,
-      [mode]: {
-        ...current[mode],
-        [cssVar]: value,
-      },
-    }));
-  }, []);
+  const commitThemeInput = useCallback(
+    (mode: ThemeMode, cssVar: ThemeColorVariable) => {
+      updateThemeColor(mode, cssVar, themeInputValues[mode][cssVar]);
+    },
+    [themeInputValues, updateThemeColor],
+  );
 
-  const commitThemeInput = useCallback((mode: ThemeMode, cssVar: ThemeColorVariable) => {
-    updateThemeColor(mode, cssVar, themeInputValues[mode][cssVar]);
-  }, [themeInputValues, updateThemeColor]);
-
-  const handlePickColorFromScreen = useCallback(async (
-    mode: ThemeMode,
-    cssVar: ThemeColorVariable
-  ) => {
-    const eyedropperWindow = window as WindowWithEyeDropper;
-    if (!eyedropperWindow.EyeDropper) {
-      message.warning('Eyedropper API is not supported in this browser');
-      return;
-    }
-
-    try {
-      const eyeDropper = new eyedropperWindow.EyeDropper();
-      const result = await eyeDropper.open();
-      updateThemeColor(mode, cssVar, result.sRGBHex);
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
+  const handlePickColorFromScreen = useCallback(
+    async (mode: ThemeMode, cssVar: ThemeColorVariable) => {
+      const eyedropperWindow = window as WindowWithEyeDropper;
+      if (!eyedropperWindow.EyeDropper) {
+        message.warning('Eyedropper API is not supported in this browser');
         return;
       }
-      uiLogger.error('Eyedropper failed:', error);
-      message.error('Failed to pick color from screen');
-    }
-  }, [updateThemeColor]);
+
+      try {
+        const eyeDropper = new eyedropperWindow.EyeDropper();
+        const result = await eyeDropper.open();
+        updateThemeColor(mode, cssVar, result.sRGBHex);
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
+        uiLogger.error('Eyedropper failed:', error);
+        message.error('Failed to pick color from screen');
+      }
+    },
+    [updateThemeColor],
+  );
 
   const handleResetCurrentPalette = useCallback(() => {
     const resetPalette = { ...DEFAULT_THEME_PALETTES[editingThemeMode] };
@@ -301,9 +318,14 @@ export function useThemeSettings({
   const handleSaveThemeColors = useCallback(async () => {
     setThemeSaving(true);
     try {
-      await updateThemeSettings(localThemePalettes, undefined, activePresetId, {
-        syncActivePreset: true,
-      }, localVisualSettings, localTypographySettings, localShapeSettings);
+      await updateThemeSettingsMutation.mutateAsync({
+        palettes: localThemePalettes,
+        activePresetId,
+        options: { syncActivePreset: true },
+        visualSettings: localVisualSettings,
+        typographySettings: localTypographySettings,
+        shapeSettings: localShapeSettings,
+      });
       message.success('Theme colors saved');
     } catch (error) {
       uiLogger.error('Error saving theme colors:', error);
@@ -311,36 +333,52 @@ export function useThemeSettings({
     } finally {
       setThemeSaving(false);
     }
-  }, [activePresetId, localShapeSettings, localThemePalettes, localTypographySettings, localVisualSettings]);
+  }, [
+    activePresetId,
+    localShapeSettings,
+    localThemePalettes,
+    localTypographySettings,
+    localVisualSettings,
+    updateThemeSettingsMutation,
+  ]);
 
-  const handleVisualSettingsChange = useCallback((patch: Partial<ThemeVisualSettings>) => {
-    setLocalVisualSettings((current) => {
-      const next = sanitizeThemeVisualSettings({ ...current, ...patch });
-      onVisualSettingsChange?.(next);
-      return next;
-    });
-  }, [onVisualSettingsChange]);
+  const handleVisualSettingsChange = useCallback(
+    (patch: Partial<ThemeVisualSettings>) => {
+      setLocalVisualSettings((current) => {
+        const next = sanitizeThemeVisualSettings({ ...current, ...patch });
+        onVisualSettingsChange?.(next);
+        return next;
+      });
+    },
+    [onVisualSettingsChange],
+  );
 
-  const handleTypographySettingsChange = useCallback((patch: Partial<ThemeTypographySettings>) => {
-    setLocalTypographySettings((current) => {
-      const next = sanitizeThemeTypographySettings({ ...current, ...patch });
-      onTypographySettingsChange?.(next);
-      return next;
-    });
-  }, [onTypographySettingsChange]);
+  const handleTypographySettingsChange = useCallback(
+    (patch: Partial<ThemeTypographySettings>) => {
+      setLocalTypographySettings((current) => {
+        const next = sanitizeThemeTypographySettings({ ...current, ...patch });
+        onTypographySettingsChange?.(next);
+        return next;
+      });
+    },
+    [onTypographySettingsChange],
+  );
 
-  const handleShapeSettingsChange = useCallback((patch: Partial<ThemeShapeSettings>) => {
-    setLocalShapeSettings((current) => {
-      const next = sanitizeThemeShapeSettings({ ...current, ...patch });
-      onShapeSettingsChange?.(next);
-      return next;
-    });
-  }, [onShapeSettingsChange]);
+  const handleShapeSettingsChange = useCallback(
+    (patch: Partial<ThemeShapeSettings>) => {
+      setLocalShapeSettings((current) => {
+        const next = sanitizeThemeShapeSettings({ ...current, ...patch });
+        onShapeSettingsChange?.(next);
+        return next;
+      });
+    },
+    [onShapeSettingsChange],
+  );
 
   const handleSaveVisualSettings = useCallback(async () => {
     setThemeSaving(true);
     try {
-      await updateThemeVisualSettings(localVisualSettings);
+      await updateThemeVisualSettingsMutation.mutateAsync({ visual: localVisualSettings });
       message.success('Visual theme settings saved');
     } catch (error) {
       uiLogger.error('Error saving visual theme settings:', error);
@@ -348,73 +386,77 @@ export function useThemeSettings({
     } finally {
       setThemeSaving(false);
     }
-  }, [localVisualSettings]);
+  }, [localVisualSettings, updateThemeVisualSettingsMutation]);
 
-  const handleUploadThemeAsset = useCallback(async (file: File) => {
-    setThemeAssetUploading(true);
-    try {
-      const uploaded = await uploadThemeAsset(file);
-      setThemeAssets((current) => [uploaded, ...current.filter((item) => item.id !== uploaded.id)]);
+  const handleUploadThemeAsset = useCallback(
+    async (file: File) => {
+      try {
+        const uploaded = await uploadThemeAssetMutation.mutateAsync(file);
+        setLocalVisualSettings((current) => {
+          const next = sanitizeThemeVisualSettings({
+            ...current,
+            enabled: true,
+            mode: 'image',
+            backgroundAssetId: uploaded.id,
+            backgroundImageUrl: uploaded.image_url || undefined,
+          });
+          onVisualSettingsChange?.(next);
+          return next;
+        });
+        message.success('Background image uploaded');
+      } catch (error) {
+        uiLogger.error('Error uploading theme asset:', error);
+        message.error(error instanceof Error ? error.message : 'Failed to upload background image');
+      }
+    },
+    [onVisualSettingsChange, uploadThemeAssetMutation],
+  );
+
+  const handleSelectThemeBackground = useCallback(
+    (assetId?: string) => {
+      const selectedAsset = themeAssets.find((item) => item.id === assetId);
+
       setLocalVisualSettings((current) => {
         const next = sanitizeThemeVisualSettings({
           ...current,
-          enabled: true,
-          mode: 'image',
-          backgroundAssetId: uploaded.id,
-          backgroundImageUrl: uploaded.image_url || undefined,
+          enabled: Boolean(assetId),
+          mode: assetId ? 'image' : 'none',
+          backgroundAssetId: assetId,
+          backgroundImageUrl: selectedAsset?.image_url || undefined,
         });
         onVisualSettingsChange?.(next);
         return next;
       });
-      message.success('Background image uploaded');
-    } catch (error) {
-      uiLogger.error('Error uploading theme asset:', error);
-      message.error(error instanceof Error ? error.message : 'Failed to upload background image');
-    } finally {
-      setThemeAssetUploading(false);
-    }
-  }, [onVisualSettingsChange]);
+    },
+    [onVisualSettingsChange, themeAssets],
+  );
 
-  const handleSelectThemeBackground = useCallback((assetId?: string) => {
-    const selectedAsset = themeAssets.find((item) => item.id === assetId);
-
-    setLocalVisualSettings((current) => {
-      const next = sanitizeThemeVisualSettings({
-        ...current,
-        enabled: Boolean(assetId),
-        mode: assetId ? 'image' : 'none',
-        backgroundAssetId: assetId,
-        backgroundImageUrl: selectedAsset?.image_url || undefined,
-      });
-      onVisualSettingsChange?.(next);
-      return next;
-    });
-  }, [onVisualSettingsChange, themeAssets]);
-
-  const handleDeleteThemeAsset = useCallback(async (assetId: string) => {
-    try {
-      await deleteThemeAsset(assetId);
-      setThemeAssets((current) => current.filter((item) => item.id !== assetId));
-      setLocalVisualSettings((current) => {
-        if (current.backgroundAssetId !== assetId) {
-          return current;
-        }
-        const next = sanitizeThemeVisualSettings({
-          ...current,
-          enabled: false,
-          mode: 'none',
-          backgroundAssetId: undefined,
-          backgroundImageUrl: undefined,
+  const handleDeleteThemeAsset = useCallback(
+    async (assetId: string) => {
+      try {
+        await deleteThemeAssetMutation.mutateAsync(assetId);
+        setLocalVisualSettings((current) => {
+          if (current.backgroundAssetId !== assetId) {
+            return current;
+          }
+          const next = sanitizeThemeVisualSettings({
+            ...current,
+            enabled: false,
+            mode: 'none',
+            backgroundAssetId: undefined,
+            backgroundImageUrl: undefined,
+          });
+          onVisualSettingsChange?.(next);
+          return next;
         });
-        onVisualSettingsChange?.(next);
-        return next;
-      });
-      message.success('Background image deleted');
-    } catch (error) {
-      uiLogger.error('Error deleting theme asset:', error);
-      message.error('Failed to delete background image');
-    }
-  }, [onVisualSettingsChange]);
+        message.success('Background image deleted');
+      } catch (error) {
+        uiLogger.error('Error deleting theme asset:', error);
+        message.error('Failed to delete background image');
+      }
+    },
+    [deleteThemeAssetMutation, onVisualSettingsChange],
+  );
 
   const handleSaveCurrentAsPreset = useCallback(async () => {
     const presetName = newThemePresetName.trim();
@@ -425,12 +467,15 @@ export function useThemeSettings({
 
     setThemePresetSaving(true);
     try {
-      const preset = await saveThemePreset(presetName, localThemePalettes);
+      const preset = await saveThemePresetMutation.mutateAsync({
+        name: presetName,
+        palettes: localThemePalettes,
+      });
       setThemePresets((current) =>
         mapThemePresetsToList({
           ...Object.fromEntries(current.map((item) => [item.id, item])),
           [preset.id]: preset,
-        })
+        }),
       );
       setSelectedPresetId(preset.id);
       setActivePresetId(preset.id);
@@ -442,7 +487,7 @@ export function useThemeSettings({
     } finally {
       setThemePresetSaving(false);
     }
-  }, [localThemePalettes, newThemePresetName]);
+  }, [localThemePalettes, newThemePresetName, saveThemePresetMutation]);
 
   const handleApplySelectedPreset = useCallback(async () => {
     if (!selectedPresetId) {
@@ -452,7 +497,9 @@ export function useThemeSettings({
 
     setThemePresetApplying(true);
     try {
-      const nextSettings = await applyThemePreset(selectedPresetId);
+      const nextSettings = await applyThemePresetMutation.mutateAsync({
+        presetId: selectedPresetId,
+      });
       const nextPalettes = cloneThemePalettes(nextSettings.palettes);
       const nextVisual = sanitizeThemeVisualSettings(nextSettings.visual);
       const nextTypography = sanitizeThemeTypographySettings(nextSettings.typography);
@@ -476,7 +523,14 @@ export function useThemeSettings({
     } finally {
       setThemePresetApplying(false);
     }
-  }, [onShapeSettingsChange, onThemePalettesChange, onTypographySettingsChange, onVisualSettingsChange, selectedPresetId]);
+  }, [
+    applyThemePresetMutation,
+    onShapeSettingsChange,
+    onThemePalettesChange,
+    onTypographySettingsChange,
+    onVisualSettingsChange,
+    selectedPresetId,
+  ]);
 
   const handleDeleteSelectedPreset = useCallback(async () => {
     if (!selectedPresetId) {
@@ -485,7 +539,9 @@ export function useThemeSettings({
 
     setThemePresetDeleting(true);
     try {
-      const nextSettings = await deleteThemePreset(selectedPresetId);
+      const nextSettings = await deleteThemePresetMutation.mutateAsync({
+        presetId: selectedPresetId,
+      });
       const nextPresets = mapThemePresetsToList(nextSettings.presets);
       const nextTypography = sanitizeThemeTypographySettings(nextSettings.typography);
       const nextShape = sanitizeThemeShapeSettings(nextSettings.shape);
@@ -503,7 +559,12 @@ export function useThemeSettings({
     } finally {
       setThemePresetDeleting(false);
     }
-  }, [onShapeSettingsChange, onTypographySettingsChange, selectedPresetId]);
+  }, [
+    deleteThemePresetMutation,
+    onShapeSettingsChange,
+    onTypographySettingsChange,
+    selectedPresetId,
+  ]);
 
   const themePresetOptions = useMemo(() => {
     return themePresets.map((preset) => ({

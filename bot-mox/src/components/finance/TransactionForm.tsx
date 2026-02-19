@@ -1,20 +1,25 @@
-import React, { useEffect, useState } from 'react';
 import {
-  Modal,
+  DatePicker,
+  Divider,
   Form,
   Input,
-  Select,
-  DatePicker,
   InputNumber,
+  Modal,
   Radio,
+  Select,
   Space,
   Typography,
-  Divider,
   theme,
 } from 'antd';
-import type { FinanceOperation, FinanceOperationFormData, FinanceOperationType } from '../../types';
-import { formatTimestampToDate } from '../../services/financeService';
 import dayjs from 'dayjs';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { formatTimestampToDate } from '../../entities/finance/lib/date';
+import type {
+  FinanceOperation,
+  FinanceOperationFormData,
+  FinanceOperationType,
+} from '../../entities/finance/model/types';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -141,7 +146,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
     if (type === 'income') {
       // Для доходов всегда продажа золота
       setSelectedCategory('sale');
-      form.setFieldsValue({ 
+      form.setFieldsValue({
         category: 'sale',
         project_id: undefined,
       });
@@ -196,11 +201,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         },
       }}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{ type: 'expense', currency: 'USD' }}
-      >
+      <Form form={form} layout="vertical" initialValues={{ type: 'expense', currency: 'USD' }}>
         {/* Тип транзакции */}
         <Form.Item
           name="type"
@@ -225,11 +226,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
             label="Category"
             rules={[{ required: true, message: 'Please select category' }]}
           >
-            <Select
-              placeholder="Select category"
-              onChange={handleCategoryChange}
-              disabled={isEdit}
-            >
+            <Select placeholder="Select category" onChange={handleCategoryChange} disabled={isEdit}>
               {categories.map((cat) => (
                 <Option key={cat.value} value={cat.value}>
                   {cat.label}
@@ -335,22 +332,16 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
           label="Date & Time"
           rules={[{ required: true, message: 'Please select date and time' }]}
         >
-          <DatePicker 
-            style={{ width: '100%' }} 
+          <DatePicker
+            style={{ width: '100%' }}
             format="DD.MM.YYYY HH:mm"
             showTime={{ format: 'HH:mm' }}
           />
         </Form.Item>
 
         {/* Описание (опционально) */}
-        <Form.Item
-          name="description"
-          label="Description"
-        >
-          <Input.TextArea
-            rows={2}
-            placeholder="Enter transaction description (optional)"
-          />
+        <Form.Item name="description" label="Description">
+          <Input.TextArea rows={2} placeholder="Enter transaction description (optional)" />
         </Form.Item>
       </Form>
     </Modal>

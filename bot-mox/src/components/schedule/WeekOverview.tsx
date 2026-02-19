@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import type { BotScheduleV2, ScheduleSession } from '../../types';
+import { formatDateShort, getDayName, getWeekDates, sortSessions } from '../../utils/scheduleUtils';
 import { TimelineVisualizer } from './TimelineVisualizer';
-import { sortSessions, getDayName, formatDateShort, getWeekDates } from '../../utils/scheduleUtils';
 import styles from './WeekOverview.module.css';
 
 interface WeekOverviewProps {
@@ -21,7 +22,7 @@ export const WeekOverview: React.FC<WeekOverviewProps> = ({
   onSave,
   onReset,
   hasChanges,
-  onDaySelect
+  onDaySelect,
 }) => {
   void onSave;
   void onReset;
@@ -36,36 +37,37 @@ export const WeekOverview: React.FC<WeekOverviewProps> = ({
   };
 
   // Handle session change from timeline drag-and-drop for a specific day
-  const handleSessionChange = useCallback((dayIndex: number, session: ScheduleSession) => {
-    if (!schedule) return;
+  const handleSessionChange = useCallback(
+    (dayIndex: number, session: ScheduleSession) => {
+      if (!schedule) return;
 
-    const dayKey = dayIndex.toString() as keyof typeof schedule.days;
-    const dayData = schedule.days[dayKey];
-    const sessionsArray = Array.isArray(dayData.sessions) ? dayData.sessions : [];
-    const newSessions = sessionsArray.map(s =>
-      s.id === session.id ? session : s
-    );
+      const dayKey = dayIndex.toString() as keyof typeof schedule.days;
+      const dayData = schedule.days[dayKey];
+      const sessionsArray = Array.isArray(dayData.sessions) ? dayData.sessions : [];
+      const newSessions = sessionsArray.map((s) => (s.id === session.id ? session : s));
 
-    const newSchedule: BotScheduleV2 = {
-      ...schedule,
-      days: {
-        ...schedule.days,
-        [dayKey]: {
-          ...dayData,
-          sessions: sortSessions(newSessions),
-          enabled: newSessions.some(s => s.enabled)
-        }
-      },
-      updated_at: Date.now()
-    };
+      const newSchedule: BotScheduleV2 = {
+        ...schedule,
+        days: {
+          ...schedule.days,
+          [dayKey]: {
+            ...dayData,
+            sessions: sortSessions(newSessions),
+            enabled: newSessions.some((s) => s.enabled),
+          },
+        },
+        updated_at: Date.now(),
+      };
 
-    onScheduleChange(newSchedule);
-  }, [schedule, onScheduleChange]);
+      onScheduleChange(newSchedule);
+    },
+    [schedule, onScheduleChange],
+  );
 
   // Get date for a specific day index
   const getDateForDay = (dayIndex: number): Date => {
     // Find the date in weekDates that matches this day index
-    const date = weekDates.find(d => d.getDay() === dayIndex);
+    const date = weekDates.find((d) => d.getDay() === dayIndex);
     return date || new Date();
   };
 
@@ -93,11 +95,13 @@ export const WeekOverview: React.FC<WeekOverviewProps> = ({
           const dayData = getDayData(dayIndex);
           const date = getDateForDay(dayIndex);
           const dayName = getDayName(dayIndex, true);
-          const hasSessions = dayData.enabled && dayData.sessions && dayData.sessions.some(s => s.enabled);
+          const hasSessions =
+            dayData.enabled && dayData.sessions && dayData.sessions.some((s) => s.enabled);
 
           return (
             <div key={dayIndex} className={styles['week-day-row']}>
               <button
+                type="button"
                 className={styles['week-day-label']}
                 onClick={() => onDaySelect(dayIndex)}
                 title={`Click to edit ${dayName}`}
@@ -143,7 +147,9 @@ export const WeekOverview: React.FC<WeekOverviewProps> = ({
           <span>End</span>
         </div>
         <div className={styles['legend-item']}>
-          <span className={styles['legend-text']}>Drag bars to move, edges to resize. Red areas are restricted.</span>
+          <span className={styles['legend-text']}>
+            Drag bars to move, edges to resize. Red areas are restricted.
+          </span>
         </div>
       </div>
     </div>

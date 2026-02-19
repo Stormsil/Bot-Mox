@@ -3,8 +3,9 @@
  * Поддерживает заголовки (H1, H2, H3) и параграфы
  */
 
-import React, { useRef, useEffect, useCallback, useState } from 'react';
-import type { TextBlock, NoteBlockType } from '../../services/notesService';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { NoteBlockType, TextBlock } from '../../entities/notes/model/types';
 import styles from './NotesComponents.module.css';
 
 interface BlockEditorProps {
@@ -45,8 +46,7 @@ const stripMarkdown = (content: string, type: NoteBlockType): string => {
   }
 };
 
-const cx = (...parts: Array<string | false | null | undefined>) =>
-  parts.filter(Boolean).join(' ');
+const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 
 /**
  * Получает CSS класс для типа блока
@@ -59,7 +59,6 @@ const getBlockClassName = (type: NoteBlockType): string => {
       return cx(styles['block-editor'], styles['heading-2']);
     case 'heading_3':
       return cx(styles['block-editor'], styles['heading-3']);
-    case 'paragraph':
     default:
       return cx(styles['block-editor'], styles.paragraph);
   }
@@ -76,7 +75,6 @@ const getPlaceholder = (type: NoteBlockType): string => {
       return 'Heading 2';
     case 'heading_3':
       return 'Heading 3';
-    case 'paragraph':
     default:
       return "Type '/' for commands";
   }
@@ -174,7 +172,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
         slashMenuTriggered.current = false;
       }
     },
-    [onEnter, onBackspace]
+    [onEnter, onBackspace],
   );
 
   // Обработка фокуса
@@ -199,9 +197,8 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
 
   return (
     <div className={className} data-block-id={block.id} data-block-type={block.type}>
-      {showPlaceholder && (
-        <div className={styles['block-placeholder']}>{displayPlaceholder}</div>
-      )}
+      {showPlaceholder && <div className={styles['block-placeholder']}>{displayPlaceholder}</div>}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: contentEditable div is the rich-text editor surface */}
       <div
         ref={contentRef}
         className={styles['block-content']}

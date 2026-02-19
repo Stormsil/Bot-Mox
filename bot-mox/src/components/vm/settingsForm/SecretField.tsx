@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Button, Input, Modal, Tag, message } from 'antd';
 import { CheckCircleOutlined, LockOutlined } from '@ant-design/icons';
+import { Button, Input, Modal, message, Tag } from 'antd';
+import type React from 'react';
+import { useState } from 'react';
+import { setVmSettingsSecret } from '../../../entities/vm/api/secretsFacade';
 import type { SecretBinding } from '../../../types';
-import { setVmSettingsSecret } from '../../../services/secretsService';
 import layout from './SettingsSectionLayout.module.css';
 
 interface SecretFieldProps {
@@ -33,11 +34,7 @@ export const SecretField: React.FC<SecretFieldProps> = ({
 
     setSaving(true);
     try {
-      const newBinding = await setVmSettingsSecret(
-        fieldName,
-        trimmed,
-        binding?.secret_ref,
-      );
+      const newBinding = await setVmSettingsSecret(fieldName, trimmed, binding?.secret_ref);
       onBindingChange(fieldName, newBinding);
       message.success(isBound ? 'Secret rotated' : 'Secret set');
       setModalOpen(false);
@@ -52,7 +49,7 @@ export const SecretField: React.FC<SecretFieldProps> = ({
 
   return (
     <div className={layout.field}>
-      <label>{label}</label>
+      <div className={layout.fieldLabel}>{label}</div>
       <div className={layout.inlineRow}>
         {isBound ? (
           <Tag icon={<CheckCircleOutlined />} color="success">
@@ -61,11 +58,7 @@ export const SecretField: React.FC<SecretFieldProps> = ({
         ) : (
           <Tag color="warning">No secret</Tag>
         )}
-        <Button
-          size="small"
-          icon={<LockOutlined />}
-          onClick={() => setModalOpen(true)}
-        >
+        <Button size="small" icon={<LockOutlined />} onClick={() => setModalOpen(true)}>
           {isBound ? 'Rotate' : 'Set'}
         </Button>
       </div>

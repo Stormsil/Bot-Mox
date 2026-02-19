@@ -1,8 +1,8 @@
-import React from 'react';
-import { AutoComplete, DatePicker, Form, Input, Modal, Select } from 'antd';
 import type { FormInstance } from 'antd';
+import { AutoComplete, DatePicker, Form, Input, Modal, Select } from 'antd';
+import type React from 'react';
 import type { LicenseWithBots } from '../../../types';
-import type { BotsMap, AddBotFormValues, LicenseFormValues } from './types';
+import type { AddBotFormValues, BotsMap, LicenseFormValues } from './types';
 
 const { Option } = Select;
 
@@ -47,10 +47,12 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
       >
         <AutoComplete
           placeholder="Enter type (e.g., SIN, Baneto)"
-          options={Array.from(new Set(licenses.map((license) => license.type).filter(Boolean))).map((type) => ({
-            value: type,
-            label: type,
-          }))}
+          options={Array.from(new Set(licenses.map((license) => license.type).filter(Boolean))).map(
+            (type) => ({
+              value: type,
+              label: type,
+            }),
+          )}
           filterOption={(inputValue, option) =>
             option?.value?.toLowerCase().includes(inputValue.toLowerCase()) ?? false
           }

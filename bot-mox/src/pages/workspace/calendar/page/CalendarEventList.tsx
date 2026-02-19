@@ -1,11 +1,17 @@
-import React from 'react';
-import { ClockCircleOutlined, DeleteOutlined, EditOutlined, FileTextOutlined, FlagOutlined } from '@ant-design/icons';
+import {
+  ClockCircleOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  FileTextOutlined,
+  FlagOutlined,
+} from '@ant-design/icons';
 import { Button, Divider, Empty, List, Popconfirm, Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
+import type React from 'react';
 import { TableActionButton } from '../../../../components/ui/TableActionButton';
-import type { WorkspaceCalendarEvent } from '../../../../services/workspaceService';
-import type { CalendarEventListHandlers, SidebarMode } from './types';
+import type { WorkspaceCalendarEvent } from '../../../../entities/workspace/model/types';
 import styles from '../WorkspaceCalendarPage.module.css';
+import type { CalendarEventListHandlers, SidebarMode } from './types';
 
 const { Text } = Typography;
 
@@ -22,7 +28,7 @@ interface CalendarEventListProps {
 const renderSingleEventItem = (
   event: WorkspaceCalendarEvent,
   noteTitleById: Map<string, string>,
-  handlers: CalendarEventListHandlers
+  handlers: CalendarEventListHandlers,
 ) => {
   const linkedNoteTitle = event.linked_note_id
     ? noteTitleById.get(event.linked_note_id) || 'Linked note'
@@ -36,7 +42,10 @@ const renderSingleEventItem = (
           <TableActionButton
             key="note"
             icon={<FileTextOutlined />}
-            onClick={() => handlers.onOpenNote(event.linked_note_id!)}
+            onClick={() => {
+              if (!event.linked_note_id) return;
+              handlers.onOpenNote(event.linked_note_id);
+            }}
             tooltip="Open linked note"
           />
         ) : null,
@@ -61,7 +70,9 @@ const renderSingleEventItem = (
         title={
           <Space size={8}>
             <span>{event.title}</span>
-            <Tag color={dayjs(event.date).isBefore(dayjs().startOf('day'), 'day') ? 'error' : 'blue'}>
+            <Tag
+              color={dayjs(event.date).isBefore(dayjs().startOf('day'), 'day') ? 'error' : 'blue'}
+            >
               {dayjs(event.date).format('DD MMM')}
             </Tag>
           </Space>
@@ -73,7 +84,10 @@ const renderSingleEventItem = (
               <Button
                 type="link"
                 icon={<FileTextOutlined />}
-                onClick={() => handlers.onOpenNote(event.linked_note_id!)}
+                onClick={() => {
+                  if (!event.linked_note_id) return;
+                  handlers.onOpenNote(event.linked_note_id);
+                }}
                 className={styles.noteLink}
               >
                 {linkedNoteTitle}
@@ -90,7 +104,7 @@ const renderEventsList = (
   listEvents: WorkspaceCalendarEvent[],
   emptyText: string,
   noteTitleById: Map<string, string>,
-  handlers: CalendarEventListHandlers
+  handlers: CalendarEventListHandlers,
 ) => {
   if (listEvents.length === 0) {
     return (

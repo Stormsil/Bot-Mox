@@ -1,0 +1,286 @@
+import { uiLogger } from '../observability/uiLogger';
+import { apiGet, apiPatch } from '../services/apiClient';
+import type { VMGeneratorSettings } from '../types';
+
+const SETTINGS_PATH = 'vmgenerator';
+const SETTINGS_API_PREFIX = '/api/v1/settings';
+
+const DEFAULT_DELETE_VM_FILTERS: NonNullable<VMGeneratorSettings['deleteVmFilters']> = {
+  policy: {
+    allowBanned: true,
+    allowPrepareNoResources: true,
+    allowOrphan: true,
+  },
+  view: {
+    showAllowed: true,
+    showLocked: true,
+    showRunning: true,
+    showStopped: true,
+  },
+};
+
+const LEGACY_STORAGE_PLACEHOLDER = 'disk';
+const FALLBACK_STORAGE_VALUES = ['data', 'nvme0n1'];
+
+const DEFAULT_SETTINGS: VMGeneratorSettings = {
+  proxmox: {
+    url: 'https://127.0.0.1:8006/',
+    username: '',
+    node: 'h1',
+  },
+  ssh: {
+    host: '127.0.0.1',
+    port: 22,
+    username: '',
+    useKeyAuth: true,
+  },
+  storage: {
+    options: [...FALLBACK_STORAGE_VALUES],
+    enabledDisks: [...FALLBACK_STORAGE_VALUES],
+    autoSelectBest: true,
+    default: FALLBACK_STORAGE_VALUES[0],
+  },
+  format: {
+    options: ['raw', 'qcow2'],
+    default: 'raw',
+  },
+  template: {
+    vmId: 100,
+    name: 'VM 100',
+  },
+  hardware: {
+    cores: 2,
+    sockets: 1,
+    memory: 4096,
+    balloon: 0,
+    cpu: 'host',
+    onboot: false,
+    agent: false,
+  },
+  projectHardware: {
+    wow_tbc: {
+      cores: 2,
+      memory: 4096,
+      diskGiB: 128,
+    },
+    wow_midnight: {
+      cores: 2,
+      memory: 4096,
+      diskGiB: 256,
+    },
+  },
+  hardwareApply: {
+    applyCpu: false,
+    applyOnboot: false,
+    applyAgent: false,
+  },
+  services: {
+    proxmoxUrl: 'https://127.0.0.1:8006/',
+    tinyFmUrl: 'http://127.0.0.1:8080/index.php?p=',
+    syncThingUrl: 'https://127.0.0.1:8384/',
+    proxmoxAutoLogin: false,
+    tinyFmAutoLogin: false,
+    tinyFmUsername: '',
+    syncThingAutoLogin: false,
+    syncThingUsername: '',
+  },
+  deleteVmFilters: DEFAULT_DELETE_VM_FILTERS,
+};
+
+function normalizeTinyFmUrl(input?: string): string {
+  const fallback = DEFAULT_SETTINGS.services.tinyFmUrl;
+  const raw = String(input || fallback).trim();
+  try {
+    const parsed = new URL(raw);
+    parsed.searchParams.set('p', '');
+    return parsed.toString();
+  } catch {
+    return fallback;
+  }
+}
+
+function normalizeStorageSettings(
+  input: VMGeneratorSettings['storage'],
+): VMGeneratorSettings['storage'] {
+  const normalizeList = (value: unknown): string[] => {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    const seen = new Set<string>();
+    const result: string[] = [];
+
+    for (const rawEntry of value) {
+      const entry = String(rawEntry ?? '').trim();
+      if (!entry) {
+        continue;
+      }
+      if (entry.toLowerCase() === LEGACY_STORAGE_PLACEHOLDER) {
+        continue;
+      }
+      if (seen.has(entry)) {
+        continue;
+      }
+      seen.add(entry);
+      result.push(entry);
+    }
+
+    return result;
+  };
+
+  const optionsRaw = normalizeList(input.options);
+  const enabledRaw = normalizeList(input.enabledDisks);
+  const defaultRaw = String(input.default ?? '').trim();
+  const defaultCandidate =
+    defaultRaw && defaultRaw.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER ? defaultRaw : '';
+
+  const options: string[] = [...optionsRaw];
+  for (const entry of enabledRaw) {
+    if (!options.includes(entry)) {
+      options.push(entry);
+    }
+  }
+  if (defaultCandidate && !options.includes(defaultCandidate)) {
+    options.push(defaultCandidate);
+  }
+
+  if (options.length === 0) {
+    options.push(...FALLBACK_STORAGE_VALUES);
+  }
+
+  let enabled =
+    enabledRaw.length > 0 ? enabledRaw.filter((entry) => options.includes(entry)) : [...options];
+  if (enabled.length === 0) {
+    enabled = [...options];
+  }
+
+  const defaultValue =
+    defaultCandidate && enabled.includes(defaultCandidate)
+      ? defaultCandidate
+      : enabled[0] || options[0] || FALLBACK_STORAGE_VALUES[0];
+
+  return {
+    ...input,
+    options,
+    enabledDisks: enabled,
+    default: defaultValue,
+  };
+}
+
+function mergeSettings(data: Partial<VMGeneratorSettings> | undefined | null): VMGeneratorSettings {
+  const legacyTiny = (data as Record<string, unknown> | null | undefined)?.tinyFM as
+    | Record<string, unknown>
+    | undefined;
+  const legacySyncThing = (data as Record<string, unknown> | null | undefined)?.syncThing as
+    | Record<string, unknown>
+    | undefined;
+
+  const servicesFromLegacy: Partial<VMGeneratorSettings['services']> = {};
+  if (typeof legacyTiny?.url === 'string') servicesFromLegacy.tinyFmUrl = legacyTiny.url;
+  if (typeof legacyTiny?.username === 'string')
+    servicesFromLegacy.tinyFmUsername = legacyTiny.username;
+  if (typeof legacyTiny?.password === 'string')
+    servicesFromLegacy.tinyFmPassword = legacyTiny.password;
+  if (typeof legacySyncThing?.url === 'string')
+    servicesFromLegacy.syncThingUrl = legacySyncThing.url;
+  if (typeof legacySyncThing?.username === 'string')
+    servicesFromLegacy.syncThingUsername = legacySyncThing.username;
+  if (typeof legacySyncThing?.password === 'string')
+    servicesFromLegacy.syncThingPassword = legacySyncThing.password;
+
+  const mergedStorage = normalizeStorageSettings({
+    ...DEFAULT_SETTINGS.storage,
+    ...(data?.storage || {}),
+  });
+
+  return {
+    ...DEFAULT_SETTINGS,
+    ...data,
+    proxmox: { ...DEFAULT_SETTINGS.proxmox, ...(data?.proxmox || {}) },
+    ssh: { ...DEFAULT_SETTINGS.ssh, ...(data?.ssh || {}) },
+    storage: mergedStorage,
+    format: { ...DEFAULT_SETTINGS.format, ...(data?.format || {}) },
+    template: { ...DEFAULT_SETTINGS.template, ...(data?.template || {}) },
+    hardware: { ...DEFAULT_SETTINGS.hardware, ...(data?.hardware || {}) },
+    projectHardware: {
+      wow_tbc: {
+        ...DEFAULT_SETTINGS.projectHardware.wow_tbc,
+        ...(data?.projectHardware?.wow_tbc || {}),
+      },
+      wow_midnight: {
+        ...DEFAULT_SETTINGS.projectHardware.wow_midnight,
+        ...(data?.projectHardware?.wow_midnight || {}),
+      },
+    },
+    hardwareApply: { ...DEFAULT_SETTINGS.hardwareApply, ...(data?.hardwareApply || {}) },
+    services: {
+      ...DEFAULT_SETTINGS.services,
+      ...servicesFromLegacy,
+      ...(data?.services || {}),
+      tinyFmUrl: normalizeTinyFmUrl(
+        (data?.services?.tinyFmUrl as string | undefined) ??
+          servicesFromLegacy.tinyFmUrl ??
+          DEFAULT_SETTINGS.services.tinyFmUrl,
+      ),
+    },
+    deleteVmFilters: {
+      policy: {
+        ...DEFAULT_DELETE_VM_FILTERS.policy,
+        ...(data?.deleteVmFilters?.policy || {}),
+      },
+      view: {
+        ...DEFAULT_DELETE_VM_FILTERS.view,
+        ...(data?.deleteVmFilters?.view || {}),
+      },
+    },
+  };
+}
+
+function normalizeApiPath(path: string): string {
+  const normalized = String(path || '')
+    .trim()
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
+  if (!normalized) {
+    return SETTINGS_API_PREFIX;
+  }
+  return `${SETTINGS_API_PREFIX}/${normalized}`;
+}
+
+async function readSettingsPath<T>(path: string): Promise<T | undefined> {
+  const response = await apiGet<T>(normalizeApiPath(path));
+  return response.data;
+}
+
+export async function getVMSettings(): Promise<VMGeneratorSettings> {
+  try {
+    const data = await readSettingsPath<Partial<VMGeneratorSettings>>(SETTINGS_PATH);
+    return mergeSettings(data);
+  } catch (error) {
+    uiLogger.error('Error loading VM settings:', error);
+    return DEFAULT_SETTINGS;
+  }
+}
+
+export function stripPasswords(
+  settings: Partial<VMGeneratorSettings>,
+): Partial<VMGeneratorSettings> {
+  const cleaned = structuredClone(settings);
+
+  if (cleaned.proxmox) {
+    delete cleaned.proxmox.password;
+  }
+  if (cleaned.ssh) {
+    delete cleaned.ssh.password;
+  }
+  if (cleaned.services) {
+    delete cleaned.services.tinyFmPassword;
+    delete cleaned.services.syncThingPassword;
+  }
+
+  return cleaned;
+}
+
+export async function updateVMSettings(settings: Partial<VMGeneratorSettings>): Promise<void> {
+  await apiPatch(normalizeApiPath(SETTINGS_PATH), settings);
+}

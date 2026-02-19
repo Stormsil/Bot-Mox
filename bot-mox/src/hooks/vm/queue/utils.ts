@@ -20,7 +20,7 @@ export function parseConfigTextToMap(configText: string): Record<string, string>
 
 export function buildMutableConfigPatch(
   originalConfig: Record<string, unknown>,
-  patchedConfigText: string
+  patchedConfigText: string,
 ): Record<string, string> {
   const originalMap: Record<string, string> = {};
   for (const [key, value] of Object.entries(originalConfig)) {
@@ -76,7 +76,7 @@ export function formatMemoryWithGb(memoryMb: number): string {
 export function buildConfigDiffLines(
   before: Record<string, unknown>,
   after: Record<string, unknown>,
-  fields: readonly string[]
+  fields: readonly string[],
 ): string[] {
   const lines: string[] = [];
   for (const field of fields) {
@@ -89,7 +89,12 @@ export function buildConfigDiffLines(
   return lines;
 }
 
-export function logTaskFieldChanges(log: VMLog, taskKey: string, title: string, lines: string[]): void {
+export function logTaskFieldChanges(
+  log: VMLog,
+  taskKey: string,
+  title: string,
+  lines: string[],
+): void {
   if (lines.length === 0) {
     log.taskLog(taskKey, `${title}: no changes`);
     return;
@@ -102,12 +107,13 @@ export function logTaskFieldChanges(log: VMLog, taskKey: string, title: string, 
 
 export function buildPatchChangeLines(
   changes: Array<{ field: string; oldValue: string; newValue: string }>,
-  originalIp: string
+  originalIp: string,
 ): string[] {
   return changes.map((change) => {
-    const oldValue = change.field === 'IP (SMBIOS)'
-      ? (String(change.oldValue || '').trim() || originalIp)
-      : change.oldValue;
+    const oldValue =
+      change.field === 'IP (SMBIOS)'
+        ? String(change.oldValue || '').trim() || originalIp
+        : change.oldValue;
     return `${change.field}: ${formatConfigValueFull(oldValue)} -> ${formatConfigValueFull(change.newValue)}`;
   });
 }
@@ -119,7 +125,11 @@ export interface ExpectationCheck {
   ok: boolean;
 }
 
-export function buildExpectationCheck(field: string, expected: unknown, actual: unknown): ExpectationCheck {
+export function buildExpectationCheck(
+  field: string,
+  expected: unknown,
+  actual: unknown,
+): ExpectationCheck {
   const expectedText = formatConfigValue(expected, 120);
   const actualText = formatConfigValue(actual, 120);
   return {
@@ -131,7 +141,7 @@ export function buildExpectationCheck(field: string, expected: unknown, actual: 
 }
 
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function normalizeCores(value: unknown, fallback: number): number {
@@ -169,11 +179,11 @@ export function generateNextVmName(
   prefix: string,
   proxmoxUsedIds: Set<number>,
   proxmoxUsedNames: Set<string>,
-  queueNames: string[]
+  queueNames: string[],
 ): { name: string; number: number } {
   const allNames = new Set([
     ...Array.from(proxmoxUsedNames),
-    ...queueNames.map(n => n.toLowerCase()),
+    ...queueNames.map((n) => n.toLowerCase()),
   ]);
   let i = 1;
   while (true) {

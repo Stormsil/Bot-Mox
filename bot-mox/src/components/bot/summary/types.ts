@@ -1,6 +1,6 @@
-import type React from 'react';
 import type { AlertProps } from 'antd';
-import type { Bot, BotLicense, Proxy, Subscription } from '../../../types';
+import type React from 'react';
+import type { Bot, BotLicense, Proxy as ProxyResource, Subscription } from '../../../types';
 
 export interface BotSummaryBot extends Bot {
   account?: {
@@ -30,7 +30,7 @@ export interface BotSummaryBot extends Bot {
     provider?: string;
     country?: string;
     expires_at?: number;
-    status?: Proxy['status'];
+    status?: ProxyResource['status'];
   };
   schedule?: unknown;
   updated_at?: number;
@@ -60,7 +60,7 @@ export interface BotStatusInfo {
 export interface ProxyDetails {
   ip?: string;
   port?: number;
-  status?: Proxy['status'];
+  status?: ProxyResource['status'];
   expires_at?: number;
   provider?: string;
   country?: string;

@@ -1,5 +1,3 @@
-import React from 'react';
-import { Button, Card, Tag, Typography } from 'antd';
 import {
   DollarOutlined,
   DownOutlined,
@@ -7,6 +5,7 @@ import {
   RightOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
+import { Button, Card, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
 import type {
   ContentMapSection,
@@ -113,28 +112,42 @@ export function FinanceNotesSection({
             <div className={cx('map-kpi-grid')}>
               <div className={cx('map-kpi')}>
                 <span className={cx('map-kpi-label')}>Income</span>
-                <span className={cx('map-kpi-value')}>{formatCurrency(financeSummary.totalIncome)}</span>
+                <span className={cx('map-kpi-value')}>
+                  {formatCurrency(financeSummary.totalIncome)}
+                </span>
               </div>
               <div className={cx('map-kpi')}>
                 <span className={cx('map-kpi-label')}>Expenses</span>
-                <span className={cx('map-kpi-value')}>{formatCurrency(financeSummary.totalExpenses)}</span>
+                <span className={cx('map-kpi-value')}>
+                  {formatCurrency(financeSummary.totalExpenses)}
+                </span>
               </div>
               <div className={cx('map-kpi')}>
                 <span className={cx('map-kpi-label')}>Net</span>
-                <span className={cx('map-kpi-value')}>{formatSignedCurrency(financeSummary.netProfit)}</span>
+                <span className={cx('map-kpi-value')}>
+                  {formatSignedCurrency(financeSummary.netProfit)}
+                </span>
               </div>
               <div className={cx('map-kpi map-kpi--stack')}>
                 <span className={cx('map-kpi-label')}>Sold Gold</span>
                 <div className={cx('map-kpi-lines')}>
                   <div className={cx('map-kpi-line')}>
                     <span className={cx('map-kpi-line-label')}>WoW TBC</span>
-                    <span className={cx('map-kpi-line-value')}>{financeGoldByProject.wow_tbc.totalGold.toLocaleString()} g</span>
-                    <span className={cx('map-kpi-line-sub')}>${financeGoldByProject.wow_tbc.avgPrice.toFixed(4)}/1000g</span>
+                    <span className={cx('map-kpi-line-value')}>
+                      {financeGoldByProject.wow_tbc.totalGold.toLocaleString()} g
+                    </span>
+                    <span className={cx('map-kpi-line-sub')}>
+                      ${financeGoldByProject.wow_tbc.avgPrice.toFixed(4)}/1000g
+                    </span>
                   </div>
                   <div className={cx('map-kpi-line')}>
                     <span className={cx('map-kpi-line-label')}>WoW Midnight</span>
-                    <span className={cx('map-kpi-line-value')}>{financeGoldByProject.wow_midnight.totalGold.toLocaleString()} g</span>
-                    <span className={cx('map-kpi-line-sub')}>${financeGoldByProject.wow_midnight.avgPrice.toFixed(4)}/1000g</span>
+                    <span className={cx('map-kpi-line-value')}>
+                      {financeGoldByProject.wow_midnight.totalGold.toLocaleString()} g
+                    </span>
+                    <span className={cx('map-kpi-line-sub')}>
+                      ${financeGoldByProject.wow_midnight.avgPrice.toFixed(4)}/1000g
+                    </span>
                   </div>
                 </div>
               </div>
@@ -230,18 +243,20 @@ export function ExpiringSection({
             <div className={cx('expiring-list')}>
               {expiringItems.slice(0, 4).map((item) => (
                 <div key={item.id} className={cx('expiring-row')}>
-                  <Tag className={`expiring-tag expiring-tag--${item.type}`}>
-                    {item.type}
-                  </Tag>
+                  <Tag className={`expiring-tag expiring-tag--${item.type}`}>{item.type}</Tag>
                   <div className={cx('expiring-main')}>
                     <span className={cx('expiring-name')}>{item.name}</span>
                     {item.botName && <span className={cx('expiring-bot')}>{item.botName}</span>}
                   </div>
                   <div className={cx('expiring-meta')}>
-                    <span className={`expiring-days ${item.daysRemaining <= 3 ? 'danger' : 'warning'}`}>
+                    <span
+                      className={`expiring-days ${item.daysRemaining <= 3 ? 'danger' : 'warning'}`}
+                    >
                       {item.daysRemaining}d
                     </span>
-                    <span className={cx('expiring-date')}>{dayjs(item.expiresAt).format('DD.MM.YYYY')}</span>
+                    <span className={cx('expiring-date')}>
+                      {dayjs(item.expiresAt).format('DD.MM.YYYY')}
+                    </span>
                   </div>
                 </div>
               ))}

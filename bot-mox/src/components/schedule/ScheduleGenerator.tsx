@@ -1,12 +1,38 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Button, InputNumber, TimePicker, Form, Space, Popover, Switch, Divider, Input, List, message, Tooltip } from 'antd';
-import { SettingOutlined, ThunderboltOutlined, SaveOutlined, DeleteOutlined, FolderOpenOutlined, LockOutlined } from '@ant-design/icons';
-import { apiGet, apiPatch, apiPut } from '../../services/apiClient';
+import {
+  DeleteOutlined,
+  FolderOpenOutlined,
+  LockOutlined,
+  SaveOutlined,
+  SettingOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
+import {
+  Button,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  List,
+  message,
+  Popover,
+  Space,
+  Switch,
+  TimePicker,
+  Tooltip,
+} from 'antd';
+import dayjs from 'dayjs';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useDeleteScheduleTemplateMutation,
+  useSaveScheduleLastParamsMutation,
+  useSaveScheduleTemplateMutation,
+  useScheduleGeneratorSettingsQuery,
+} from '../../entities/settings/api/useScheduleGeneratorSettings';
 import type { ScheduleGenerationParams, ScheduleTemplate } from '../../types';
 import { validateGenerationParams } from '../../utils/scheduleUtils';
 import { TableActionButton } from '../ui/TableActionButton';
-import { CONSTRAINTS, DEFAULT_PARAMS, toTemplatesList } from './generator-config';
-import dayjs from 'dayjs';
+import { CONSTRAINTS, DEFAULT_PARAMS } from './generator-config';
 import styles from './ScheduleGenerator.module.css';
 
 interface ScheduleGeneratorProps {
@@ -18,48 +44,46 @@ interface ScheduleGeneratorProps {
 export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
   onGenerate,
   disabled = false,
-  locked = false
+  locked = false,
 }) => {
+  const scheduleSettingsQuery = useScheduleGeneratorSettingsQuery();
+  const saveLastParamsMutation = useSaveScheduleLastParamsMutation();
+  const saveTemplateMutation = useSaveScheduleTemplateMutation();
+  const deleteTemplateMutation = useDeleteScheduleTemplateMutation();
   const [isOpen, setIsOpen] = useState(false);
   const [params, setParams] = useState<ScheduleGenerationParams>(DEFAULT_PARAMS);
   const [errors, setErrors] = useState<string[]>([]);
-  const [templates, setTemplates] = useState<ScheduleTemplate[]>([]);
   const [templateName, setTemplateName] = useState('');
   const [showTemplates, setShowTemplates] = useState(false);
-  const formLabel = (text: string) => <span className={styles['generator-form-label']}>{text}</span>;
+  const templates = useMemo<ScheduleTemplate[]>(
+    () => scheduleSettingsQuery.data?.templates || [],
+    [scheduleSettingsQuery.data],
+  );
+  const lastSavedParams = scheduleSettingsQuery.data?.lastParams;
+  const formLabel = (text: string) => (
+    <span className={styles['generator-form-label']}>{text}</span>
+  );
 
-  // Load templates and last params via API
+  // Keep local parameters in sync with last saved generator state.
   useEffect(() => {
-    let isActive = true;
+    if (!lastSavedParams) {
+      return;
+    }
 
-    const loadGeneratorData = async () => {
-      try {
-        const [templatesResponse, lastParamsResponse] = await Promise.all([
-          apiGet<unknown>('/api/v1/settings/schedule/templates'),
-          apiGet<unknown>('/api/v1/settings/schedule/last_params'),
-        ]);
-
-        if (!isActive) return;
-
-        setTemplates(toTemplatesList(templatesResponse.data));
-        if (lastParamsResponse.data && typeof lastParamsResponse.data === 'object') {
-          setParams((prev) => ({ ...prev, ...(lastParamsResponse.data as Partial<ScheduleGenerationParams>) }));
-        }
-      } catch (error) {
-        console.error('Failed to load schedule generator settings:', error);
-      }
-    };
-
-    void loadGeneratorData();
-    const timer = setInterval(() => {
-      void loadGeneratorData();
-    }, 8000);
-
+    const frameId = window.requestAnimationFrame(() => {
+      setParams((prev) => ({ ...prev, ...lastSavedParams }));
+    });
     return () => {
-      isActive = false;
-      clearInterval(timer);
+      window.cancelAnimationFrame(frameId);
     };
-  }, []);
+  }, [lastSavedParams]);
+
+  useEffect(() => {
+    if (!scheduleSettingsQuery.error) {
+      return;
+    }
+    console.error('Failed to load schedule generator settings:', scheduleSettingsQuery.error);
+  }, [scheduleSettingsQuery.error]);
 
   const handleGenerate = useCallback(async () => {
     const { valid, errors: validationErrors } = validateGenerationParams(params);
@@ -67,10 +91,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
       setErrors(validationErrors);
       return;
     }
-    
+
     // Save as last used params
     try {
-      await apiPut('/api/v1/settings/schedule/last_params', params);
+      await saveLastParamsMutation.mutateAsync(params);
     } catch (err) {
       console.error('Failed to save last params:', err);
     }
@@ -78,15 +102,15 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
     onGenerate(params);
     setIsOpen(false);
     setErrors([]);
-  }, [params, onGenerate]);
+  }, [params, onGenerate, saveLastParamsMutation]);
 
-  const updateParam = useCallback(<K extends keyof ScheduleGenerationParams>(
-    key: K,
-    value: ScheduleGenerationParams[K]
-  ) => {
-    setParams(prev => ({ ...prev, [key]: value }));
-    setErrors([]);
-  }, []);
+  const updateParam = useCallback(
+    <K extends keyof ScheduleGenerationParams>(key: K, value: ScheduleGenerationParams[K]) => {
+      setParams((prev) => ({ ...prev, [key]: value }));
+      setErrors([]);
+    },
+    [],
+  );
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
@@ -96,11 +120,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
 
     try {
       const templateId = `schedule_tpl_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-      await apiPut(`/api/v1/settings/schedule/templates/${templateId}`, {
+      await saveTemplateMutation.mutateAsync({
+        templateId,
         name: templateName,
         params,
-        created_at: Date.now(),
-        updated_at: Date.now()
       });
       setTemplateName('');
       message.success('Template saved');
@@ -127,9 +150,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
   const handleDeleteTemplate = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     try {
-      await apiPatch('/api/v1/settings/schedule/templates', {
-        [id]: null,
-      });
+      await deleteTemplateMutation.mutateAsync(id);
       message.success('Template deleted');
     } catch (err) {
       console.error('Failed to delete template:', err);
@@ -137,19 +158,21 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
     }
   };
 
+  const errorKeyCounts = new Map<string, number>();
+
   const popoverContent = (
     <div className={styles['schedule-generator-form']}>
       <div className={styles['generator-tabs-header']}>
-        <Button 
-          type={!showTemplates ? "primary" : "default"} 
-          size="small" 
+        <Button
+          type={!showTemplates ? 'primary' : 'default'}
+          size="small"
           onClick={() => setShowTemplates(false)}
         >
           Generator
         </Button>
-        <Button 
-          type={showTemplates ? "primary" : "default"} 
-          size="small" 
+        <Button
+          type={showTemplates ? 'primary' : 'default'}
+          size="small"
           icon={<FolderOpenOutlined />}
           onClick={() => setShowTemplates(true)}
         >
@@ -185,10 +208,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
 
           <div className={styles['generator-window-toggle']}>
             <span className={styles['toggle-label']}>Second Window (e.g. night sessions)</span>
-            <Switch 
-              size="small" 
-              checked={params.useSecondWindow} 
-              onChange={(checked) => updateParam('useSecondWindow', checked)} 
+            <Switch
+              size="small"
+              checked={params.useSecondWindow}
+              onChange={(checked) => updateParam('useSecondWindow', checked)}
             />
           </div>
 
@@ -217,10 +240,10 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
 
           <Divider style={{ margin: '8px 0' }} />
 
-          <Form.Item 
+          <Form.Item
             className={[styles['generator-form-item'], styles['highlight-param']].join(' ')}
             label={formLabel(
-              `Target Active Time: ${params.targetActiveMinutes} min (${Math.floor(params.targetActiveMinutes / 60)}h ${params.targetActiveMinutes % 60}m)`
+              `Target Active Time: ${params.targetActiveMinutes} min (${Math.floor(params.targetActiveMinutes / 60)}h ${params.targetActiveMinutes % 60}m)`,
             )}
           >
             <InputNumber
@@ -257,11 +280,17 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
             </Form.Item>
           </div>
 
-          <Form.Item 
-            className={[styles['generator-form-item'], styles['highlight-param'], styles['randomness-param']].join(' ')}
+          <Form.Item
+            className={[
+              styles['generator-form-item'],
+              styles['highlight-param'],
+              styles['randomness-param'],
+            ].join(' ')}
             label={
               <Space>
-                <span className={styles['generator-form-label']}>Randomization Factor: ±{params.randomOffsetMinutes} min</span>
+                <span className={styles['generator-form-label']}>
+                  Randomization Factor: ±{params.randomOffsetMinutes} min
+                </span>
                 <Tooltip title="Adds randomness to every session boundary (+/-) to ensure uniqueness.">
                   <SettingOutlined style={{ fontSize: '10px' }} />
                 </Tooltip>
@@ -281,21 +310,29 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
 
           {errors.length > 0 && (
             <div className={styles['generator-errors']}>
-              {errors.map((err, i) => <div key={i} className={styles['error-item']}>{err}</div>)}
+              {errors.map((err) => {
+                const occurrence = errorKeyCounts.get(err) || 0;
+                errorKeyCounts.set(err, occurrence + 1);
+                return (
+                  <div key={`${err}-${occurrence}`} className={styles['error-item']}>
+                    {err}
+                  </div>
+                );
+              })}
             </div>
           )}
 
           <div className={styles['generator-template-save']}>
-            <Input 
-              placeholder="Template name" 
-              size="small" 
+            <Input
+              placeholder="Template name"
+              size="small"
               value={templateName}
-              onChange={e => setTemplateName(e.target.value)}
+              onChange={(e) => setTemplateName(e.target.value)}
               style={{ width: '140px' }}
             />
-            <Button 
-              size="small" 
-              icon={<SaveOutlined />} 
+            <Button
+              size="small"
+              icon={<SaveOutlined />}
               onClick={handleSaveTemplate}
               title="Save as template"
             >
@@ -307,9 +344,9 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
             <Button size="small" onClick={() => setParams(DEFAULT_PARAMS)}>
               Reset
             </Button>
-            <Button 
-              type="primary" 
-              size="small" 
+            <Button
+              type="primary"
+              size="small"
               icon={<ThunderboltOutlined />}
               onClick={handleGenerate}
             >
@@ -322,11 +359,12 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           <List
             size="small"
             dataSource={templates}
-            renderItem={item => (
-              <List.Item 
+            renderItem={(item) => (
+              <List.Item
                 className={styles['template-item']}
                 actions={[
-                  <Button 
+                  <Button
+                    key="apply"
                     type="primary"
                     size="small"
                     className={styles['template-apply-btn']}
@@ -340,7 +378,7 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
                   >
                     Apply
                   </Button>,
-                  <Space size={0}>
+                  <Space key="item-actions" size={0}>
                     <TableActionButton
                       icon={<FolderOpenOutlined />}
                       onClick={() => handleLoadTemplate(item)}
@@ -352,13 +390,14 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
                       onClick={(e) => handleDeleteTemplate(e as React.MouseEvent, item.id)}
                       tooltip="Delete template"
                     />
-                  </Space>
+                  </Space>,
                 ]}
               >
                 <div className={styles['template-info']}>
                   <div className={styles['template-name']}>{item.name}</div>
                   <div className={styles['template-details']}>
-                    {Math.floor(item.params.targetActiveMinutes / 60)}h {item.params.targetActiveMinutes % 60}m 
+                    {Math.floor(item.params.targetActiveMinutes / 60)}h{' '}
+                    {item.params.targetActiveMinutes % 60}m
                     {item.params.useSecondWindow ? ' | 2 Windows' : ''}
                   </div>
                 </div>

@@ -1,12 +1,12 @@
-import React from 'react';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { List, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
+import type React from 'react';
 import { TableActionButton } from '../../ui/TableActionButton';
 import { getDaysLeftColor, getStatusColor, getStatusIcon, getStatusText } from './helpers';
 import { SubscriptionStatusAlert } from './SubscriptionAlerts';
-import type { SubscriptionWithDetails } from './types';
 import styles from './subscription.module.css';
+import type { SubscriptionWithDetails } from './types';
 
 const { Text } = Typography;
 
@@ -91,7 +91,9 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
         </div>
         <div className={styles['detail-row']}>
           <Text type="secondary">Created:</Text>
-          <Text style={{ fontSize: '12px' }}>{dayjs(subscription.created_at).format('DD.MM.YYYY')}</Text>
+          <Text style={{ fontSize: '12px' }}>
+            {dayjs(subscription.created_at).format('DD.MM.YYYY')}
+          </Text>
         </div>
         <div className={styles['detail-row']}>
           <Text type="secondary">Days Left:</Text>

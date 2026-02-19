@@ -60,7 +60,9 @@ function createLicenseRoutes({ licenseService, authMiddleware }) {
     withLicenseErrors(async (req, res) => {
       const parsedBody = licenseLeaseRequestSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -76,7 +78,7 @@ function createLicenseRoutes({ licenseService, authMiddleware }) {
       });
 
       return res.status(201).json(success(lease));
-    })
+    }),
   );
 
   router.post(
@@ -84,7 +86,9 @@ function createLicenseRoutes({ licenseService, authMiddleware }) {
     withLicenseErrors(async (req, res) => {
       const parsedBody = licenseHeartbeatSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -95,7 +99,7 @@ function createLicenseRoutes({ licenseService, authMiddleware }) {
       });
 
       return res.json(success(heartbeat));
-    })
+    }),
   );
 
   router.post(
@@ -104,7 +108,9 @@ function createLicenseRoutes({ licenseService, authMiddleware }) {
     withLicenseErrors(async (req, res) => {
       const parsedBody = licenseRevokeSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -116,7 +122,7 @@ function createLicenseRoutes({ licenseService, authMiddleware }) {
       });
 
       return res.json(success(revoked));
-    })
+    }),
   );
 
   return router;

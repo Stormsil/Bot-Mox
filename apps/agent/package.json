@@ -1,0 +1,13 @@
+{
+  "name": "@botmox/agent",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "pnpm --dir ../../agent dev",
+    "build": "pnpm --dir ../../agent build",
+    "lint": "pnpm --dir ../.. exec biome check agent/src",
+    "typecheck": "pnpm --dir ../../agent typecheck",
+    "contract:check": "pnpm --filter @botmox/api-contract contract:check",
+    "check": "pnpm run typecheck"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-02-19T04:07:06.999Z",
+  "schemaList": "public,storage,graphql_public",
+  "migrationsHash": "ed987d2909a7053afde99c61cb6d7e1932bda0191cb2033982096ea73c996223",
+  "migrationFiles": [
+    "supabase/migrations/20260212000100_create_storage_policies.sql",
+    "supabase/migrations/20260212000200_create_artifacts_domain.sql",
+    "supabase/migrations/20260212000300_create_runner_gating_domain.sql",
+    "supabase/migrations/20260212000400_create_agents_domain.sql",
+    "supabase/migrations/20260212000500_create_domain_entities.sql",
+    "supabase/migrations/20260213001000_add_agents_owner_user_id.sql",
+    "supabase/migrations/20260213002000_backfill_agents_owner_user_id.sql",
+    "supabase/migrations/20260215001000_create_unattend_provisioning.sql",
+    "supabase/migrations/20260216001000_create_theme_background_assets.sql",
+    "supabase/migrations/20260216002000_create_playbooks.sql",
+    "supabase/migrations/20260219000100_normalize_resources_subscriptions_projection.sql",
+    "supabase/migrations/20260219000200_normalize_resources_finance_projections.sql",
+    "supabase/migrations/20260219000300_normalize_workspace_bots_settings_projections.sql"
+  ]
+}

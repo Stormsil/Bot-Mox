@@ -1,7 +1,7 @@
-import React from 'react';
 import { Card } from 'antd';
-import type { LicensesStats } from './types';
+import type React from 'react';
 import styles from '../LicensesPage.module.css';
+import type { LicensesStats } from './types';
 
 interface LicensesStatsProps {
   stats: LicensesStats;

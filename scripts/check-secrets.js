@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const { execFileSync } = require('child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 
 const root = process.cwd();
 
@@ -10,7 +10,20 @@ const secretRules = [
 ];
 
 const textFileExtensions = new Set([
-  '.js', '.cjs', '.mjs', '.ts', '.tsx', '.json', '.md', '.yml', '.yaml', '.env', '.txt', '.css', '.scss', '.html',
+  '.js',
+  '.cjs',
+  '.mjs',
+  '.ts',
+  '.tsx',
+  '.json',
+  '.md',
+  '.yml',
+  '.yaml',
+  '.env',
+  '.txt',
+  '.css',
+  '.scss',
+  '.html',
 ]);
 
 function isTextCandidate(filePath) {
@@ -22,11 +35,15 @@ function isTextCandidate(filePath) {
 }
 
 function listTrackedFiles() {
-  const raw = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
-    cwd: root,
-    encoding: 'utf8',
-    maxBuffer: 10 * 1024 * 1024,
-  });
+  const raw = execFileSync(
+    'git',
+    ['ls-files', '-z', '--cached', '--others', '--exclude-standard'],
+    {
+      cwd: root,
+      encoding: 'utf8',
+      maxBuffer: 10 * 1024 * 1024,
+    },
+  );
 
   return raw
     .split('\0')

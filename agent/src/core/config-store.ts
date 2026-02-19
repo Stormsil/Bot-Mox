@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { app, safeStorage } from 'electron';
 
 // ---------------------------------------------------------------------------
@@ -155,7 +155,8 @@ export class ConfigStore {
     shouldRewrite: boolean;
   } {
     const persisted = persistedConfig || {};
-    const hasEncryptedPayload = typeof persisted.payloadEncrypted === 'string' && persisted.payloadEncrypted.length > 0;
+    const hasEncryptedPayload =
+      typeof persisted.payloadEncrypted === 'string' && persisted.payloadEncrypted.length > 0;
     if (hasEncryptedPayload) {
       const decryptedRuntime = this.decryptRuntimePayload(String(persisted.payloadEncrypted || ''));
       if (decryptedRuntime) {
@@ -189,7 +190,11 @@ export class ConfigStore {
       }
     }
 
-    if (runtime.proxmox && typeof persisted.proxmox?.passwordEncrypted === 'string' && persisted.proxmox.passwordEncrypted) {
+    if (
+      runtime.proxmox &&
+      typeof persisted.proxmox?.passwordEncrypted === 'string' &&
+      persisted.proxmox.passwordEncrypted
+    ) {
       const decryptedPassword = this.decryptString(persisted.proxmox.passwordEncrypted);
       if (decryptedPassword !== null) {
         runtime.proxmox.password = decryptedPassword;
@@ -198,7 +203,11 @@ export class ConfigStore {
       }
     }
 
-    if (runtime.proxmox && !runtime.proxmox.password && typeof persisted.proxmox?.password === 'string') {
+    if (
+      runtime.proxmox &&
+      !runtime.proxmox.password &&
+      typeof persisted.proxmox?.password === 'string'
+    ) {
       runtime.proxmox.password = persisted.proxmox.password;
       if (this.canEncrypt()) {
         shouldRewrite = true;
@@ -239,7 +248,7 @@ export class ConfigStore {
         if (normalized.shouldRewrite) {
           this.writeRuntimeConfig(normalized.runtime);
         }
-        return this.data!;
+        return this.data;
       }
     } catch {
       // Corrupted config — start fresh
@@ -251,10 +260,10 @@ export class ConfigStore {
   save(config: Partial<AgentConfig>): void {
     const current = this.load();
     const incomingProxmox: Partial<ProxmoxConfig> = config.proxmox || {};
-    const incomingPassword = typeof incomingProxmox.password === 'string'
-      ? incomingProxmox.password
-      : undefined;
-    const keepExistingPassword = incomingPassword === '' && typeof current.proxmox?.password === 'string';
+    const incomingPassword =
+      typeof incomingProxmox.password === 'string' ? incomingProxmox.password : undefined;
+    const keepExistingPassword =
+      incomingPassword === '' && typeof current.proxmox?.password === 'string';
 
     const mergedProxmox = {
       ...(current.proxmox || {}),

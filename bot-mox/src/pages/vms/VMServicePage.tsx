@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Spin, Tag } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
-import { getVMSettings } from '../../services/vmSettingsService';
-import { proxmoxLogin } from '../../services/vmService';
-import type { VMGeneratorSettings } from '../../types';
+import { Button, Spin, Tag } from 'antd';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildProxyUiUrl } from '../../config/env';
+import { useProxmoxLoginMutation } from '../../entities/vm/api/useVmActionMutations';
+import { useVmSettingsQuery } from '../../entities/vm/api/useVmQueries';
+import type { VMGeneratorSettings } from '../../types';
 import styles from './VMServicePage.module.css';
 
 type ServiceKind = 'proxmox' | 'tinyfm' | 'syncthing';
@@ -56,6 +57,8 @@ function getTitle(kind: ServiceKind): string {
 }
 
 export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
+  const proxmoxLoginMutation = useProxmoxLoginMutation();
+  const { data: cachedVmSettings, refetch: refetchVmSettings } = useVmSettingsQuery();
   const [settings, setSettings] = useState<VMGeneratorSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingText, setLoadingText] = useState('Loading settings...');
@@ -107,8 +110,9 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
       passInput.value = password;
       fireEvents(passInput);
 
-      const loginNode = Array.from(doc.querySelectorAll('span.x-btn-inner,button,span'))
-        .find(el => /^\s*Login\s*$/i.test(el.textContent || ''));
+      const loginNode = Array.from(doc.querySelectorAll('span.x-btn-inner,button,span')).find(
+        (el) => /^\s*Login\s*$/i.test(el.textContent || ''),
+      );
       const loginButton = loginNode?.closest('span.x-btn-button,button') as HTMLElement | null;
       if (loginButton) {
         loginButton.click();
@@ -176,7 +180,7 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
       fireEvents(passInput);
 
       const loginButton = doc.querySelector(
-        'button[type="submit"], button.btn-success, input[type="submit"]'
+        'button[type="submit"], button.btn-success, input[type="submit"]',
       ) as HTMLElement | null;
       if (loginButton) {
         loginButton.click();
@@ -226,10 +230,10 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
       }
 
       const userInput = doc.querySelector(
-        'input[name="user"], input[type="text"]'
+        'input[name="user"], input[type="text"]',
       ) as HTMLInputElement | null;
       const passInput = doc.querySelector(
-        'input[name="password"], input[type="password"]'
+        'input[name="password"], input[type="password"]',
       ) as HTMLInputElement | null;
       if (!userInput || !passInput) return false;
 
@@ -247,7 +251,7 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
       fireEvents(passInput);
 
       const loginButton = doc.querySelector(
-        'button[type="submit"], input[type="submit"], .btn-primary'
+        'button[type="submit"], input[type="submit"], .btn-primary',
       ) as HTMLElement | null;
       if (loginButton) {
         loginButton.click();
@@ -283,19 +287,24 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
   }, [kind, tryProxmoxFormAutoLogin, tryTinyFmFormAutoLogin, trySyncThingFormAutoLogin]);
 
   useEffect(() => {
+    void reloadKey;
     let cancelled = false;
 
     const load = async () => {
       setLoading(true);
       setLoadingText('Loading settings...');
       try {
-        const next = await getVMSettings();
+        const queryResult = await refetchVmSettings();
+        const next = queryResult.data || cachedVmSettings;
+        if (!next) {
+          return;
+        }
         if (cancelled) return;
         setSettings(next);
 
         if (kind === 'proxmox' && next.services.proxmoxAutoLogin) {
           setLoadingText('Proxmox auto login...');
-          const ok = await proxmoxLogin();
+          const ok = await proxmoxLoginMutation.mutateAsync();
           if (cancelled) return;
           setProxmoxApiLoginOk(ok);
           if (!ok) {
@@ -313,11 +322,13 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
     return () => {
       cancelled = true;
     };
-  }, [kind, reloadKey]);
+  }, [cachedVmSettings, kind, proxmoxLoginMutation, refetchVmSettings, reloadKey]);
 
   useEffect(() => {
+    void reloadKey;
     if (loading) return;
-    if (kind === 'proxmox' && (!settings?.services.proxmoxAutoLogin || proxmoxApiLoginOk === true)) return;
+    if (kind === 'proxmox' && (!settings?.services.proxmoxAutoLogin || proxmoxApiLoginOk === true))
+      return;
     if (kind === 'tinyfm' && !settings?.services.tinyFmAutoLogin) return;
     if (kind === 'syncthing' && !settings?.services.syncThingAutoLogin) return;
     const t = window.setTimeout(() => {
@@ -339,9 +350,9 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
           {kind === 'proxmox' && settings?.services.proxmoxAutoLogin && (
             <Tag color="success">Auto Login</Tag>
           )}
-          {kind === 'proxmox' && settings?.services.proxmoxAutoLogin && proxmoxApiLoginOk === false && (
-            <Tag color="warning">API Login Failed, JS Fallback</Tag>
-          )}
+          {kind === 'proxmox' &&
+            settings?.services.proxmoxAutoLogin &&
+            proxmoxApiLoginOk === false && <Tag color="warning">API Login Failed, JS Fallback</Tag>}
           {kind === 'tinyfm' && settings?.services.tinyFmAutoLogin && (
             <Tag color="success">Auto Login</Tag>
           )}
@@ -353,7 +364,7 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
         <Button
           size="small"
           icon={<ReloadOutlined />}
-          onClick={() => setReloadKey(prev => prev + 1)}
+          onClick={() => setReloadKey((prev) => prev + 1)}
         >
           Reload
         </Button>
@@ -372,9 +383,15 @@ export const VMServicePage: React.FC<VMServicePageProps> = ({ kind }) => {
             src={iframeUrl}
             title={getTitle(kind)}
             onLoad={() => {
-              if (kind === 'proxmox' && settings?.services.proxmoxAutoLogin && proxmoxApiLoginOk !== true) runJsAutoLoginFallback();
+              if (
+                kind === 'proxmox' &&
+                settings?.services.proxmoxAutoLogin &&
+                proxmoxApiLoginOk !== true
+              )
+                runJsAutoLoginFallback();
               if (kind === 'tinyfm' && settings?.services.tinyFmAutoLogin) runJsAutoLoginFallback();
-              if (kind === 'syncthing' && settings?.services.syncThingAutoLogin) runJsAutoLoginFallback();
+              if (kind === 'syncthing' && settings?.services.syncThingAutoLogin)
+                runJsAutoLoginFallback();
             }}
           />
         ) : (

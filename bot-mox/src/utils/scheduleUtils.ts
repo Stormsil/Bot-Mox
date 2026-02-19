@@ -1,11 +1,17 @@
-import type { BotScheduleV2, ScheduleDay, ScheduleSession, ScheduleValidationError, DayScheduleStats, ScheduleGenerationParams, GeneratedSchedule } from '../types';
+import type {
+  BotScheduleV2,
+  DayScheduleStats,
+  GeneratedSchedule,
+  ScheduleDay,
+  ScheduleGenerationParams,
+  ScheduleSession,
+  ScheduleValidationError,
+} from '../types';
 
 const DEFAULT_TIMEZONE = 'Europe/Moscow';
 
 type UnknownRecord = Record<string, unknown>;
-type LegacyScheduleSlot = Partial<
-  Pick<ScheduleSession, 'start' | 'end' | 'enabled' | 'profile'>
-> &
+type LegacyScheduleSlot = Partial<Pick<ScheduleSession, 'start' | 'end' | 'enabled' | 'profile'>> &
   UnknownRecord;
 
 interface LauncherScheduleSlot {
@@ -38,22 +44,22 @@ export interface LauncherSchedulePayload {
 export function createEmptySchedule(): BotScheduleV2 {
   const emptyDay = (): ScheduleDay => ({
     enabled: false,
-    sessions: []
+    sessions: [],
   });
 
   return {
     version: 2,
     timezone: DEFAULT_TIMEZONE,
     days: {
-      "0": emptyDay(),
-      "1": emptyDay(),
-      "2": emptyDay(),
-      "3": emptyDay(),
-      "4": emptyDay(),
-      "5": emptyDay(),
-      "6": emptyDay()
+      '0': emptyDay(),
+      '1': emptyDay(),
+      '2': emptyDay(),
+      '3': emptyDay(),
+      '4': emptyDay(),
+      '5': emptyDay(),
+      '6': emptyDay(),
     },
-    updated_at: Date.now()
+    updated_at: Date.now(),
   };
 }
 
@@ -68,27 +74,27 @@ export function createDefaultSchedule(): BotScheduleV2 {
     end: '17:00',
     enabled: true,
     profile: 'farming',
-    type: 'active'
+    type: 'active',
   };
 
   const workDay = (): ScheduleDay => ({
     enabled: true,
-    sessions: [{ ...workSession, id: generateSessionId() }]
+    sessions: [{ ...workSession, id: generateSessionId() }],
   });
 
   return {
     version: 2,
     timezone: DEFAULT_TIMEZONE,
     days: {
-      "0": workDay(),   // Sunday
-      "1": workDay(),   // Monday
-      "2": workDay(),   // Tuesday
-      "3": workDay(),   // Wednesday
-      "4": workDay(),   // Thursday
-      "5": workDay(),   // Friday
-      "6": workDay()    // Saturday
+      '0': workDay(), // Sunday
+      '1': workDay(), // Monday
+      '2': workDay(), // Tuesday
+      '3': workDay(), // Wednesday
+      '4': workDay(), // Thursday
+      '5': workDay(), // Friday
+      '6': workDay(), // Saturday
     },
-    updated_at: Date.now()
+    updated_at: Date.now(),
   };
 }
 
@@ -104,7 +110,7 @@ export function migrateSchedule(oldSchedule: UnknownRecord | null): BotScheduleV
   }
 
   // Если уже v2 - проверяем и исправляем структуру
-  if (oldSchedule['version'] === 2 && typeof oldSchedule['days'] === 'object' && oldSchedule['days']) {
+  if (oldSchedule.version === 2 && typeof oldSchedule.days === 'object' && oldSchedule.days) {
     const schedule = oldSchedule as unknown as BotScheduleV2;
     // Проверяем, что у всех дней есть массив sessions
     for (let day = 0; day <= 6; day++) {
@@ -127,7 +133,7 @@ export function migrateSchedule(oldSchedule: UnknownRecord | null): BotScheduleV
     // v1: oldDay - это массив слотов
     if (oldDay && Array.isArray(oldDay) && oldDay.length > 0) {
       const sessions: ScheduleSession[] = [];
-      
+
       // Конвертируем все слоты v1 в сессии v2
       for (const slot of oldDay) {
         if (slot && typeof slot === 'object') {
@@ -138,17 +144,17 @@ export function migrateSchedule(oldSchedule: UnknownRecord | null): BotScheduleV
             end: slotRecord.end || '17:00',
             enabled: slotRecord.enabled ?? false,
             profile: slotRecord.profile || 'farming',
-            type: 'active'
+            type: 'active',
           });
         }
       }
-      
+
       // Считаем день включенным, если хотя бы одна сессия enabled
-      const hasEnabledSession = sessions.some(s => s.enabled);
-      
+      const hasEnabledSession = sessions.some((s) => s.enabled);
+
       newSchedule.days[dayKey as keyof typeof newSchedule.days] = {
         enabled: hasEnabledSession,
-        sessions: sessions
+        sessions: sessions,
       };
     }
   }
@@ -208,14 +214,14 @@ export function validateSessions(sessions: ScheduleSession[]): ScheduleValidatio
     if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(session.start)) {
       errors.push({
         sessionId: session.id,
-        message: `Invalid start time format: ${session.start}`
+        message: `Invalid start time format: ${session.start}`,
       });
     }
 
     if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(session.end)) {
       errors.push({
         sessionId: session.id,
-        message: `Invalid end time format: ${session.end}`
+        message: `Invalid end time format: ${session.end}`,
       });
     }
 
@@ -225,14 +231,14 @@ export function validateSessions(sessions: ScheduleSession[]): ScheduleValidatio
     // Проверка длительности (минимум 15 минут)
     // Учитываем переход через полночь: end может быть меньше start
     const crossesMidnight = endMin < startMin;
-    const duration = crossesMidnight 
-      ? (1440 - startMin) + endMin  // Минут до полуночи + минут с полуночи
+    const duration = crossesMidnight
+      ? 1440 - startMin + endMin // Минут до полуночи + минут с полуночи
       : endMin - startMin;
-    
+
     if (duration < 15) {
       errors.push({
         sessionId: session.id,
-        message: `Session must be at least 15 minutes: ${session.start}-${session.end}`
+        message: `Session must be at least 15 minutes: ${session.start}-${session.end}`,
       });
     }
 
@@ -242,7 +248,7 @@ export function validateSessions(sessions: ScheduleSession[]): ScheduleValidatio
       if (startMin < prevEnd) {
         errors.push({
           sessionId: session.id,
-          message: `Session overlaps with previous: ${sorted[i - 1].start}-${sorted[i - 1].end} and ${session.start}-${session.end}`
+          message: `Session overlaps with previous: ${sorted[i - 1].start}-${sorted[i - 1].end} and ${session.start}-${session.end}`,
         });
       }
     }
@@ -257,13 +263,13 @@ export function validateSessions(sessions: ScheduleSession[]): ScheduleValidatio
 export function hasOverlap(
   newSession: ScheduleSession,
   existingSessions: ScheduleSession[],
-  excludeId?: string
+  excludeId?: string,
 ): boolean {
   const newStart = timeToMinutes(newSession.start);
   const newEnd = timeToMinutes(newSession.end);
   const newCrossesMidnight = newEnd < newStart;
 
-  return existingSessions.some(session => {
+  return existingSessions.some((session) => {
     if (session.id === excludeId) return false;
 
     const existingStart = timeToMinutes(session.start);
@@ -277,18 +283,22 @@ export function hasOverlap(
     if (newCrossesMidnight) {
       // Пересекается, если существующая начинается до полуночи и заканчивается после начала новой
       // или начинается после полуночи и до конца новой
-      return (existingStart >= newStart && existingStart < 1440) || // До полуночи
-             (existingEnd > 0 && existingEnd <= newEnd) || // После полуночи
-             (existingStart < newStart && existingEnd > newEnd); // Охватывает всю новую
+      return (
+        (existingStart >= newStart && existingStart < 1440) || // До полуночи
+        (existingEnd > 0 && existingEnd <= newEnd) || // После полуночи
+        (existingStart < newStart && existingEnd > newEnd)
+      ); // Охватывает всю новую
     }
 
     // Существующая сессия пересекает полночь
     if (existingCrossesMidnight) {
       // Пересекается, если новая начинается до полуночи и заканчивается после начала существующей
       // или начинается после полуночи и до конца существующей
-      return (newStart >= existingStart && newStart < 1440) ||
-             (newEnd > 0 && newEnd <= existingEnd) ||
-             (newStart < existingStart && newEnd > existingEnd);
+      return (
+        (newStart >= existingStart && newStart < 1440) ||
+        (newEnd > 0 && newEnd <= existingEnd) ||
+        (newStart < existingStart && newEnd > existingEnd)
+      );
     }
 
     // Обычный случай - ни одна не пересекает полночь
@@ -306,7 +316,7 @@ export function hasOverlap(
 export function calculateDayStats(sessions: ScheduleSession[]): DayScheduleStats {
   // Defensive check: ensure sessions is an array
   const sessionsArray = Array.isArray(sessions) ? sessions : [];
-  const sorted = sortSessions(sessionsArray.filter(s => s.enabled));
+  const sorted = sortSessions(sessionsArray.filter((s) => s.enabled));
 
   let totalActiveMinutes = 0;
 
@@ -315,7 +325,7 @@ export function calculateDayStats(sessions: ScheduleSession[]): DayScheduleStats
     const endMin = timeToMinutes(session.end);
     // Учитываем переход через полночь
     if (endMin < startMin) {
-      totalActiveMinutes += (1440 - startMin) + endMin;
+      totalActiveMinutes += 1440 - startMin + endMin;
     } else {
       totalActiveMinutes += endMin - startMin;
     }
@@ -333,7 +343,7 @@ export function calculateDayStats(sessions: ScheduleSession[]): DayScheduleStats
     totalActiveMinutes,
     totalBreakMinutes,
     sessionCount: sorted.length,
-    activePercentage: Math.round((totalActiveMinutes / 1440) * 100) // 1440 = minutes in a day
+    activePercentage: Math.round((totalActiveMinutes / 1440) * 100), // 1440 = minutes in a day
   };
 }
 
@@ -410,7 +420,7 @@ export function getCarouselDayIndex(carouselIndex: number): number {
 export function formatDateShort(date: Date): string {
   return date.toLocaleDateString('ru-RU', {
     day: '2-digit',
-    month: '2-digit'
+    month: '2-digit',
   });
 }
 
@@ -429,7 +439,7 @@ export function getDayName(dayIndex: number, short: boolean = true): string {
  */
 export function generateScheduleForLauncher(
   schedule: BotScheduleV2,
-  botId: string
+  botId: string,
 ): LauncherSchedulePayload {
   const weekDates = getWeekDates();
   const currentWeek: LauncherScheduleWeek = {};
@@ -439,12 +449,12 @@ export function generateScheduleForLauncher(
     const daySchedule = schedule.days[dayKey];
     const dateStr = date.toISOString().split('T')[0];
 
-    const sortedSessions = sortSessions(daySchedule.sessions.filter(s => s.enabled));
+    const sortedSessions = sortSessions(daySchedule.sessions.filter((s) => s.enabled));
     const slots: LauncherScheduleSlot[] = [];
 
     let lastEndMinutes = 0;
 
-    sortedSessions.forEach(session => {
+    sortedSessions.forEach((session) => {
       const startMin = timeToMinutes(session.start);
       const endMin = timeToMinutes(session.end);
 
@@ -454,7 +464,7 @@ export function generateScheduleForLauncher(
           start: minutesToTime(lastEndMinutes),
           end: session.start,
           action: 'stop',
-          profile: undefined
+          profile: undefined,
         });
       }
 
@@ -463,7 +473,7 @@ export function generateScheduleForLauncher(
         start: session.start,
         end: session.end,
         action: 'start',
-        profile: session.profile
+        profile: session.profile,
       });
 
       lastEndMinutes = endMin;
@@ -475,7 +485,7 @@ export function generateScheduleForLauncher(
         start: minutesToTime(lastEndMinutes),
         end: '23:59',
         action: 'stop',
-        profile: undefined
+        profile: undefined,
       });
     }
 
@@ -485,7 +495,7 @@ export function generateScheduleForLauncher(
       day_of_week: index,
       enabled: daySchedule.enabled,
       total_active_minutes: stats.totalActiveMinutes,
-      slots
+      slots,
     };
   });
 
@@ -494,7 +504,7 @@ export function generateScheduleForLauncher(
     schedule_version: schedule.version,
     timezone: schedule.timezone,
     current_week: currentWeek,
-    generated_at: Date.now()
+    generated_at: Date.now(),
   };
 }
 
@@ -503,16 +513,16 @@ export function generateScheduleForLauncher(
  */
 export function addSessionToDay(
   day: ScheduleDay,
-  session: Omit<ScheduleSession, 'id'>
+  session: Omit<ScheduleSession, 'id'>,
 ): ScheduleDay {
   const newSession: ScheduleSession = {
     ...session,
-    id: generateSessionId()
+    id: generateSessionId(),
   };
 
   return {
     ...day,
-    sessions: sortSessions([...day.sessions, newSession])
+    sessions: sortSessions([...day.sessions, newSession]),
   };
 }
 
@@ -522,26 +532,21 @@ export function addSessionToDay(
 export function updateSessionInDay(
   day: ScheduleDay,
   sessionId: string,
-  updates: Partial<Omit<ScheduleSession, 'id'>>
+  updates: Partial<Omit<ScheduleSession, 'id'>>,
 ): ScheduleDay {
   return {
     ...day,
-    sessions: day.sessions.map(s =>
-      s.id === sessionId ? { ...s, ...updates } : s
-    )
+    sessions: day.sessions.map((s) => (s.id === sessionId ? { ...s, ...updates } : s)),
   };
 }
 
 /**
  * Удаляет сессию из дня
  */
-export function removeSessionFromDay(
-  day: ScheduleDay,
-  sessionId: string
-): ScheduleDay {
+export function removeSessionFromDay(day: ScheduleDay, sessionId: string): ScheduleDay {
   return {
     ...day,
-    sessions: day.sessions.filter(s => s.id !== sessionId)
+    sessions: day.sessions.filter((s) => s.id !== sessionId),
   };
 }
 
@@ -549,7 +554,7 @@ export function removeSessionFromDay(
  * Проверяет, есть ли активные сессии в дне
  */
 export function hasActiveSessions(day: ScheduleDay): boolean {
-  return day.sessions.some(s => s.enabled);
+  return day.sessions.some((s) => s.enabled);
 }
 
 /**
@@ -557,7 +562,7 @@ export function hasActiveSessions(day: ScheduleDay): boolean {
  */
 export function getNextAvailableSlot(
   day: ScheduleDay,
-  durationMinutes: number = 150 // 2.5 hours default
+  durationMinutes: number = 150, // 2.5 hours default
 ): { start: string; end: string } | null {
   const sorted = sortSessions(day.sessions);
 
@@ -569,14 +574,12 @@ export function getNextAvailableSlot(
   // Ищем промежуток между сессиями
   for (let i = 0; i < sorted.length; i++) {
     const currentEnd = timeToMinutes(sorted[i].end);
-    const nextStart = i < sorted.length - 1
-      ? timeToMinutes(sorted[i + 1].start)
-      : 1440; // End of day
+    const nextStart = i < sorted.length - 1 ? timeToMinutes(sorted[i + 1].start) : 1440; // End of day
 
     if (nextStart - currentEnd >= durationMinutes) {
       return {
         start: minutesToTime(currentEnd + 30), // +30 min break
-        end: minutesToTime(currentEnd + 30 + durationMinutes)
+        end: minutesToTime(currentEnd + 30 + durationMinutes),
       };
     }
   }
@@ -594,17 +597,20 @@ export function randomInt(min: number, max: number): number {
 /**
  * Валидирует параметры генерации расписания
  */
-export function validateGenerationParams(params: ScheduleGenerationParams): { valid: boolean; errors: string[] } {
+export function validateGenerationParams(params: ScheduleGenerationParams): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
-  
+
   const getWindowDuration = (start: string, end: string) => {
     const s = timeToMinutes(start);
     const e = timeToMinutes(end);
-    return e < s ? (1440 - s) + e : e - s;
+    return e < s ? 1440 - s + e : e - s;
   };
 
   const window1Duration = getWindowDuration(params.startTime, params.endTime);
-  
+
   if (window1Duration <= 0) {
     errors.push('Window 1: End time must be after start time');
   }
@@ -650,57 +656,66 @@ export function validateGenerationParams(params: ScheduleGenerationParams): { va
 
     totalWindowDuration += window2Duration;
   }
-  
+
   // Проверка целевого времени активности
   if (params.targetActiveMinutes < 30) {
     errors.push('Target active time must be at least 30 minutes');
   }
-  
+
   if (params.targetActiveMinutes > 1380) {
     errors.push('Target active time cannot exceed 23 hours (1380 minutes)');
   }
-  
+
   if (totalWindowDuration > 0 && params.targetActiveMinutes > totalWindowDuration) {
-    errors.push(`Target active time cannot exceed total window duration (${totalWindowDuration} minutes)`);
+    errors.push(
+      `Target active time cannot exceed total window duration (${totalWindowDuration} minutes)`,
+    );
   }
-  
+
   // Проверка минимальной длительности сессии
   if (params.minSessionMinutes < 15) {
     errors.push('Minimum session duration must be at least 15 minutes');
   }
-  
+
   if (params.minSessionMinutes > 480) {
     errors.push('Minimum session duration cannot exceed 8 hours');
   }
-  
+
   // Проверка минимального перерыва
   if (params.minBreakMinutes < 5) {
     errors.push('Minimum break duration must be at least 5 minutes');
   }
-  
+
   // Проверка рандомного отклонения
   if (params.randomOffsetMinutes < 0) {
     errors.push('Random offset cannot be negative');
   }
-  
+
   // Проверка достижимости цели с учетом перерывов
   if (totalWindowDuration > 0) {
-    // Максимально плотный график: 
+    // Максимально плотный график:
     // Сессии максимально длинные (до 4 часов), перерывы минимальные
-    const maxPossibleSessions = Math.max(1, Math.floor((totalWindowDuration + params.minBreakMinutes) / (params.minSessionMinutes + params.minBreakMinutes)));
-    const maxPossibleActiveTime = totalWindowDuration - (maxPossibleSessions - 1) * params.minBreakMinutes;
+    const maxPossibleSessions = Math.max(
+      1,
+      Math.floor(
+        (totalWindowDuration + params.minBreakMinutes) /
+          (params.minSessionMinutes + params.minBreakMinutes),
+      ),
+    );
+    const maxPossibleActiveTime =
+      totalWindowDuration - (maxPossibleSessions - 1) * params.minBreakMinutes;
 
     if (params.targetActiveMinutes > maxPossibleActiveTime) {
       errors.push(
         `Target active time (${params.targetActiveMinutes}min) might be unreachable with current min session/break settings. ` +
-        `Max possible is ~${maxPossibleActiveTime}min.`
+          `Max possible is ~${maxPossibleActiveTime}min.`,
       );
     }
   }
-  
+
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -709,15 +724,10 @@ export function validateGenerationParams(params: ScheduleGenerationParams): { va
  */
 export function generateDaySchedule(
   params: ScheduleGenerationParams,
-  dayIndex?: number
+  dayIndex?: number,
 ): ScheduleDay {
   void dayIndex;
-  const {
-    targetActiveMinutes,
-    minSessionMinutes,
-    minBreakMinutes,
-    profile = 'farming'
-  } = params;
+  const { targetActiveMinutes, minSessionMinutes, minBreakMinutes, profile = 'farming' } = params;
 
   // 1. Собираем все доступные временные интервалы (минуты дня)
   const isTimeAllowed = new Array(1440).fill(false);
@@ -736,14 +746,14 @@ export function generateDaySchedule(
     markAllowed(params.startTime2, params.endTime2);
   }
 
-  const totalAllowedMinutes = isTimeAllowed.filter(t => t).length;
+  const totalAllowedMinutes = isTimeAllowed.filter((t) => t).length;
   if (totalAllowedMinutes < targetActiveMinutes) {
     return { enabled: false, sessions: [] };
   }
 
   let finalSessions: ScheduleSession[] = [];
   let bestActiveTime = 0;
-  
+
   // Пробуем разные стратегии количества сессий
   const sessionCountsToTry = [
     Math.max(1, Math.round(targetActiveMinutes / 180)), // Сессии по ~3ч
@@ -761,8 +771,14 @@ export function generateDaySchedule(
         if (i === numSessions - 1) {
           sessionDurations.push(remainingMinutes);
         } else {
-          const duration = Math.max(minSessionMinutes, Math.floor(remainingMinutes / (numSessions - i)) + randomInt(-40, 40));
-          const finalDuration = Math.min(duration, remainingMinutes - (numSessions - i - 1) * minSessionMinutes);
+          const duration = Math.max(
+            minSessionMinutes,
+            Math.floor(remainingMinutes / (numSessions - i)) + randomInt(-40, 40),
+          );
+          const finalDuration = Math.min(
+            duration,
+            remainingMinutes - (numSessions - i - 1) * minSessionMinutes,
+          );
           sessionDurations.push(finalDuration);
           remainingMinutes -= finalDuration;
         }
@@ -807,11 +823,12 @@ export function generateDaySchedule(
           let start: number;
           // Если места мало (target > 65% от allowed), предпочитаем края для компактности
           if (targetActiveMinutes / totalAllowedMinutes > 0.65) {
-            start = Math.random() > 0.5 ? possibleStarts[0] : possibleStarts[possibleStarts.length - 1];
+            start =
+              Math.random() > 0.5 ? possibleStarts[0] : possibleStarts[possibleStarts.length - 1];
           } else {
             start = possibleStarts[randomInt(0, possibleStarts.length - 1)];
           }
-          
+
           for (let m = 0; m < duration; m++) {
             occupied[(start + m) % 1440] = true;
           }
@@ -822,7 +839,7 @@ export function generateDaySchedule(
             end: minutesToTime((start + duration) % 1440),
             enabled: true,
             profile,
-            type: 'active'
+            type: 'active',
           });
         } else {
           success = false;
@@ -831,10 +848,10 @@ export function generateDaySchedule(
       }
 
       const totalActive = currentSessions.reduce((sum, s) => {
-          const sMin = timeToMinutes(s.start);
-          const eMin = timeToMinutes(s.end);
-          const d = eMin - sMin;
-          return sum + (d <= 0 ? d + 1440 : d);
+        const sMin = timeToMinutes(s.start);
+        const eMin = timeToMinutes(s.end);
+        const d = eMin - sMin;
+        return sum + (d <= 0 ? d + 1440 : d);
       }, 0);
 
       if (totalActive > bestActiveTime) {
@@ -850,7 +867,7 @@ export function generateDaySchedule(
 
   return {
     enabled: finalSessions.length > 0,
-    sessions: sortSessions(finalSessions)
+    sessions: sortSessions(finalSessions),
   };
 }
 
@@ -858,16 +875,16 @@ export function generateDaySchedule(
  * Генерирует расписание на основе параметров для всех 7 дней
  */
 export function generateSchedule(
-  params: ScheduleGenerationParams
+  params: ScheduleGenerationParams,
 ): GeneratedSchedule & { allowedWindows: Array<{ start: string; end: string }> } {
   const days: GeneratedSchedule['days'] = {
-    "0": { enabled: true, sessions: [] },
-    "1": { enabled: true, sessions: [] },
-    "2": { enabled: true, sessions: [] },
-    "3": { enabled: true, sessions: [] },
-    "4": { enabled: true, sessions: [] },
-    "5": { enabled: true, sessions: [] },
-    "6": { enabled: true, sessions: [] }
+    '0': { enabled: true, sessions: [] },
+    '1': { enabled: true, sessions: [] },
+    '2': { enabled: true, sessions: [] },
+    '3': { enabled: true, sessions: [] },
+    '4': { enabled: true, sessions: [] },
+    '5': { enabled: true, sessions: [] },
+    '6': { enabled: true, sessions: [] },
   };
 
   // Генерируем для каждого дня недели

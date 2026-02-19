@@ -1,0 +1,5 @@
+{
+  "generatedAt": "2026-02-19T05:06:19.369Z",
+  "description": "Temporary allowlist for legacy services imports inside entities; new imports are blocked by check script.",
+  "allowed": []
+}

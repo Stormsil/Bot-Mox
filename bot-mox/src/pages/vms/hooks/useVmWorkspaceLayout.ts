@@ -55,10 +55,10 @@ interface UseVmWorkspaceLayoutResult {
   workspaceSplitRatio: number;
   workspaceGridTemplateColumns: string;
   isWorkspaceResizing: boolean;
-  startWorkspaceResize: (event: React.MouseEvent<HTMLDivElement>) => void;
+  startWorkspaceResize: (event: React.MouseEvent<HTMLButtonElement>) => void;
   logHeight: number;
   isLogResizing: boolean;
-  startLogResize: (event: React.MouseEvent<HTMLDivElement>) => void;
+  startLogResize: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const useVmWorkspaceLayout = ({
@@ -86,7 +86,8 @@ export const useVmWorkspaceLayout = ({
     const columns = queuePanel.querySelector('.vm-queue-columns') as HTMLElement | null;
     const gap = parseCssPixels(columns ? window.getComputedStyle(columns).columnGap : '', 8);
 
-    const contentWidth = vm + storage + project + resources + state + remove + (gap * QUEUE_GRID_GAP_COUNT);
+    const contentWidth =
+      vm + storage + project + resources + state + remove + gap * QUEUE_GRID_GAP_COUNT;
     return Math.max(1, Math.ceil(contentWidth + RIGHT_PANEL_TOTAL_SIDE_PADDING_PX));
   }, [workspaceRef]);
 
@@ -108,13 +109,14 @@ export const useVmWorkspaceLayout = ({
       const minRight = Math.max(1, Math.min(WORKSPACE_MIN_RIGHT_PX, usableWidth - minLeft));
       const workspaceGap = parseCssPixels(
         typeof window !== 'undefined' ? window.getComputedStyle(root).columnGap : '',
-        0
+        0,
       );
       const totalGridGap = workspaceGap * 2;
       const desiredRightWidth = Math.max(minRight, getPreferredRightPanelWidth());
       const maxRightByContent = Math.max(
         minRight,
-        ((desiredRightWidth + totalGridGap + WORKSPACE_RESIZER_WIDTH_PX) * usableWidth) / Math.max(1, rect.width)
+        ((desiredRightWidth + totalGridGap + WORKSPACE_RESIZER_WIDTH_PX) * usableWidth) /
+          Math.max(1, rect.width),
       );
       const maxRight = Math.min(usableWidth - minLeft, maxRightByContent);
       const minLeftByRightLimit = Math.max(minLeft, usableWidth - maxRight);
@@ -123,7 +125,7 @@ export const useVmWorkspaceLayout = ({
       const leftPx = Math.min(Math.max(rawLeft, minLeftByRightLimit), maxLeft);
       return leftPx / usableWidth;
     },
-    [getPreferredRightPanelWidth, workspaceLayoutRef]
+    [getPreferredRightPanelWidth, workspaceLayoutRef],
   );
 
   const clampLogHeight = useCallback(
@@ -136,7 +138,7 @@ export const useVmWorkspaceLayout = ({
       const maxHeight = Math.max(LOG_MIN_HEIGHT, root.clientHeight - MAIN_MIN_HEIGHT);
       return Math.min(Math.max(next, LOG_MIN_HEIGHT), maxHeight);
     },
-    [workspaceRef]
+    [workspaceRef],
   );
 
   useEffect(() => {
@@ -172,7 +174,7 @@ export const useVmWorkspaceLayout = ({
   }, []);
 
   const startLogResize = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
+    (event: React.MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
 
       const startY = event.clientY;
@@ -197,11 +199,11 @@ export const useVmWorkspaceLayout = ({
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     },
-    [clampLogHeight, logHeight]
+    [clampLogHeight, logHeight],
   );
 
   const startWorkspaceResize = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
+    (event: React.MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
       const root = workspaceLayoutRef.current;
       if (!root) {
@@ -240,7 +242,7 @@ export const useVmWorkspaceLayout = ({
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     },
-    [clampWorkspaceSplitRatio, workspaceLayoutRef]
+    [clampWorkspaceSplitRatio, workspaceLayoutRef],
   );
 
   const workspaceGridTemplateColumns = useMemo(() => {

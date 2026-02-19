@@ -1,4 +1,10 @@
-const { S3Client, GetObjectCommand, HeadObjectCommand, HeadBucketCommand, PutObjectCommand } = require('@aws-sdk/client-s3');
+const {
+  S3Client,
+  GetObjectCommand,
+  HeadObjectCommand,
+  HeadBucketCommand,
+  PutObjectCommand,
+} = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 const DEFAULT_REGION = 'us-east-1';
@@ -35,12 +41,18 @@ function clamp(value, min, max) {
 }
 
 function normalizeObjectKey(value) {
-  const normalized = String(value || '').trim().replace(/^\/+/, '');
+  const normalized = String(value || '')
+    .trim()
+    .replace(/^\/+/, '');
   if (!normalized) {
     throw new S3StorageProviderError(400, 'BAD_REQUEST', 'object_key is required');
   }
   if (normalized.includes('..') || normalized.includes('//')) {
-    throw new S3StorageProviderError(400, 'BAD_REQUEST', 'object_key contains invalid path traversal');
+    throw new S3StorageProviderError(
+      400,
+      'BAD_REQUEST',
+      'object_key contains invalid path traversal',
+    );
   }
   return normalized;
 }
@@ -49,13 +61,22 @@ function parseS3Config(inputEnv) {
   const endpoint = String(inputEnv?.s3Endpoint || inputEnv?.S3_ENDPOINT || '').trim();
   const bucket = String(inputEnv?.s3BucketArtifacts || inputEnv?.S3_BUCKET_ARTIFACTS || '').trim();
   const accessKeyId = String(inputEnv?.s3AccessKeyId || inputEnv?.S3_ACCESS_KEY_ID || '').trim();
-  const secretAccessKey = String(inputEnv?.s3SecretAccessKey || inputEnv?.S3_SECRET_ACCESS_KEY || '').trim();
-  const region = String(inputEnv?.s3Region || inputEnv?.S3_REGION || DEFAULT_REGION).trim() || DEFAULT_REGION;
-  const forcePathStyle = toBoolean(inputEnv?.s3ForcePathStyle ?? inputEnv?.S3_FORCE_PATH_STYLE, true);
+  const secretAccessKey = String(
+    inputEnv?.s3SecretAccessKey || inputEnv?.S3_SECRET_ACCESS_KEY || '',
+  ).trim();
+  const region =
+    String(inputEnv?.s3Region || inputEnv?.S3_REGION || DEFAULT_REGION).trim() || DEFAULT_REGION;
+  const forcePathStyle = toBoolean(
+    inputEnv?.s3ForcePathStyle ?? inputEnv?.S3_FORCE_PATH_STYLE,
+    true,
+  );
   const defaultPresignTtlSeconds = clamp(
-    toInt(inputEnv?.s3PresignTtlSeconds ?? inputEnv?.S3_PRESIGN_TTL_SECONDS, DEFAULT_PRESIGN_TTL_SECONDS),
+    toInt(
+      inputEnv?.s3PresignTtlSeconds ?? inputEnv?.S3_PRESIGN_TTL_SECONDS,
+      DEFAULT_PRESIGN_TTL_SECONDS,
+    ),
     MIN_PRESIGN_TTL_SECONDS,
-    MAX_PRESIGN_TTL_SECONDS
+    MAX_PRESIGN_TTL_SECONDS,
   );
 
   const anyConfigured = Boolean(endpoint || bucket || accessKeyId || secretAccessKey);
@@ -142,7 +163,7 @@ class S3StorageProvider {
       await this.client.send(
         new HeadBucketCommand({
           Bucket: this.config.bucket,
-        })
+        }),
       );
       return {
         ready: true,
@@ -163,7 +184,7 @@ class S3StorageProvider {
         new HeadObjectCommand({
           Bucket: targetBucket,
           Key: key,
-        })
+        }),
       );
 
       return {
@@ -187,7 +208,7 @@ class S3StorageProvider {
         502,
         'S3_HEAD_OBJECT_FAILED',
         'Failed to read object metadata from S3 storage',
-        this.extractErrorReason(error)
+        this.extractErrorReason(error),
       );
     }
   }
@@ -217,7 +238,7 @@ class S3StorageProvider {
         502,
         'S3_PRESIGN_FAILED',
         'Failed to generate presigned S3 download URL',
-        this.extractErrorReason(error)
+        this.extractErrorReason(error),
       );
     }
   }
@@ -252,7 +273,7 @@ class S3StorageProvider {
         502,
         'S3_PRESIGN_FAILED',
         'Failed to generate presigned S3 upload URL',
-        this.extractErrorReason(error)
+        this.extractErrorReason(error),
       );
     }
   }

@@ -14,15 +14,15 @@ Frontend приложение Bot-Mox на `React + TypeScript + Vite` с `Refin
 ## Требования
 
 - Node.js 20+
-- npm 10+
+- pnpm 10+
 - запущенный backend (`proxy-server`) на `http://localhost:3001`
 
 ## Локальный запуск
 
 ```bash
 cd bot-mox
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 Приложение будет доступно на `http://localhost:5173`.
@@ -30,10 +30,10 @@ npm run dev
 ## Основные команды
 
 ```bash
-npm run dev
-npm run build
-npm run lint
-npx tsc -b --pretty false
+pnpm run dev
+pnpm run build
+pnpm run lint
+pnpm exec tsc -b --pretty false
 ```
 
 ## Структура (кратко)

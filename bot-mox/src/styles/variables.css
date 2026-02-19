@@ -42,9 +42,9 @@
   --boxmox-color-header-hover: #344a5e;
 
   /* Шрифты */
-  --font-primary: 'Roboto', 'Segoe UI', sans-serif;
-  --font-condensed: 'Roboto Condensed', sans-serif;
-  --font-mono: 'Roboto Mono', monospace;
+  --font-primary: "Roboto", "Segoe UI", sans-serif;
+  --font-condensed: "Roboto Condensed", sans-serif;
+  --font-mono: "Roboto Mono", monospace;
 
   /* Размеры текста */
   --text-xs: 11px;
@@ -74,7 +74,7 @@
 }
 
 /* Dark theme overrides */
-:root[data-theme='dark'] {
+:root[data-theme="dark"] {
   --boxmox-color-surface-base: #1e1f22;
   --boxmox-color-surface-panel: #2a2f35;
   --boxmox-color-surface-muted: #31363d;

@@ -4,11 +4,7 @@
 export type FinanceOperationType = 'income' | 'expense';
 
 // Категории расходов
-export type ExpenseCategory =
-  | 'subscription_game'
-  | 'proxy'
-  | 'bot_license'
-  | 'other';
+export type ExpenseCategory = 'subscription_game' | 'proxy' | 'bot_license' | 'other';
 
 // Категории доходов
 export type IncomeCategory = 'sale' | 'other';
@@ -123,4 +119,3 @@ export interface FinanceEntry {
   description: string;
   timestamp: number;
 }
-

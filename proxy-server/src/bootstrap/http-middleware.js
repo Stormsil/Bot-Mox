@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const { correlationIdMiddleware } = require('../middleware/correlation-id');
 const pinoHttp = require('pino-http');
 const { logger, getTraceIds } = require('../observability/logger');
@@ -72,10 +72,19 @@ function createCorsOptions(env) {
   ];
 
   const originsFromEnv = Array.isArray(env?.corsOrigins) ? env.corsOrigins : [];
-  const uniqueOrigins = (values) => [...new Set(values.filter(Boolean).map((v) => String(v).trim()).filter(Boolean))];
+  const uniqueOrigins = (values) => [
+    ...new Set(
+      values
+        .filter(Boolean)
+        .map((v) => String(v).trim())
+        .filter(Boolean),
+    ),
+  ];
 
   const allowedOrigins = originsFromEnv.length > 0 ? originsFromEnv : devLocalOrigins;
-  const mergedOrigins = isDev ? uniqueOrigins([...allowedOrigins, ...devLocalOrigins]) : uniqueOrigins(allowedOrigins);
+  const mergedOrigins = isDev
+    ? uniqueOrigins([...allowedOrigins, ...devLocalOrigins])
+    : uniqueOrigins(allowedOrigins);
   const internalNetworkPortPattern = isDev ? '(5173|5174|3000)' : '(5173|3000)';
 
   return {
@@ -83,8 +92,12 @@ function createCorsOptions(env) {
       mergedOrigins.length > 0
         ? [
             ...mergedOrigins,
-            new RegExp(`^https?:\\/\\/192\\.168\\.\\d{1,3}\\.\\d{1,3}:${internalNetworkPortPattern}$`),
-            new RegExp(`^https?:\\/\\/10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:${internalNetworkPortPattern}$`),
+            new RegExp(
+              `^https?:\\/\\/192\\.168\\.\\d{1,3}\\.\\d{1,3}:${internalNetworkPortPattern}$`,
+            ),
+            new RegExp(
+              `^https?:\\/\\/10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:${internalNetworkPortPattern}$`,
+            ),
           ]
         : devLocalOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -135,7 +148,7 @@ function mountCoreHttpMiddleware({ app, env, corsOptions }) {
         ],
         remove: true,
       },
-    })
+    }),
   );
 
   // Make trace identifiers easily discoverable by clients/Playwright.
@@ -155,7 +168,7 @@ function mountCoreHttpMiddleware({ app, env, corsOptions }) {
     helmet({
       contentSecurityPolicy: false,
       crossOriginEmbedderPolicy: false,
-    })
+    }),
   );
   app.use(cors(corsOptions));
   app.use(express.json());
@@ -189,20 +202,20 @@ function mountCoreHttpMiddleware({ app, env, corsOptions }) {
         }
         return req.ip || req.socket?.remoteAddress || 'unknown';
       },
-    })
+    }),
   );
   app.options('/api/*', cors(corsOptions));
 }
 
 function mountLegacyErrorHandlers(app) {
-  app.use((req, res) => {
+  app.use((_req, res) => {
     res.status(404).json({
       success: false,
       error: 'Endpoint not found',
     });
   });
 
-  app.use((err, req, res, next) => {
+  app.use((err, req, res, _next) => {
     logger.error({ err, path: req?.originalUrl || req?.url }, 'Unhandled error');
     res.status(500).json({
       success: false,

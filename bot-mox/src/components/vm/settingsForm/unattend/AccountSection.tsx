@@ -1,12 +1,15 @@
-import React from 'react';
 import { Form, Input, InputNumber, Radio, Select, Typography } from 'antd';
-import type { UnattendProfileConfig } from '../../../../services/unattendProfileService';
+import type React from 'react';
+import type { UnattendProfileConfig } from '../../../../entities/vm/model/unattend';
 
 const { Text } = Typography;
 
 interface AccountSectionProps {
   config: UnattendProfileConfig;
-  updateConfig: <K extends keyof UnattendProfileConfig>(section: K, patch: Partial<UnattendProfileConfig[K]>) => void;
+  updateConfig: <K extends keyof UnattendProfileConfig>(
+    section: K,
+    patch: Partial<UnattendProfileConfig[K]>,
+  ) => void;
 }
 
 export const AccountSection: React.FC<AccountSectionProps> = ({ config, updateConfig }) => (

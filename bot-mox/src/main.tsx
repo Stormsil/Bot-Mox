@@ -1,13 +1,18 @@
-import './observability/otel'
-import { initClientLogTransport } from './observability/clientLogTransport'
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
+import './observability/otel';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import { initClientLogTransport } from './observability/clientLogTransport';
 
-initClientLogTransport()
+initClientLogTransport();
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error('Root element "#root" was not found');
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <App />
   </StrictMode>,
-)
+);

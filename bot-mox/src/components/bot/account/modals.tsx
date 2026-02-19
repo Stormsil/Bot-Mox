@@ -50,8 +50,8 @@ export function ConfirmGenerationModal({
           {pendingGenerationType === 'both'
             ? 'Password and Email'
             : pendingGenerationType === 'password'
-            ? 'Password'
-            : 'Email'}
+              ? 'Password'
+              : 'Email'}
         </strong>
       </p>
       {pendingGenerationType !== 'password' && !isPersonComplete && (

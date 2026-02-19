@@ -1,20 +1,3 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import dayjs, { type Dayjs } from 'dayjs';
-import {
-  Button,
-  Card,
-  DatePicker,
-  Empty,
-  Form,
-  Input,
-  Modal,
-  Popconfirm,
-  Select,
-  Space,
-  Tag,
-  Typography,
-  message,
-} from 'antd';
 import {
   CheckCircleOutlined,
   DeleteOutlined,
@@ -23,16 +6,33 @@ import {
   RightOutlined,
 } from '@ant-design/icons';
 import {
-  createKanbanTask,
-  deleteKanbanTask,
-  subscribeToKanbanTasks,
-  type KanbanStatus,
-  type KanbanTask,
-  updateKanbanTask,
-} from '../../../services/workspaceService';
+  Button,
+  Card,
+  DatePicker,
+  Empty,
+  Form,
+  Input,
+  Modal,
+  message,
+  Popconfirm,
+  Select,
+  Space,
+  Tag,
+  Typography,
+} from 'antd';
+import dayjs, { type Dayjs } from 'dayjs';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TableActionButton } from '../../../components/ui/TableActionButton';
+import {
+  useCreateKanbanTaskMutation,
+  useDeleteKanbanTaskMutation,
+  useUpdateKanbanTaskMutation,
+} from '../../../entities/workspace/api/useWorkspaceMutations';
+import { useWorkspaceKanbanTasksQuery } from '../../../entities/workspace/api/useWorkspaceQueries';
+import type { KanbanStatus, KanbanTask } from '../../../entities/workspace/model/types';
+import { uiLogger } from '../../../observability/uiLogger';
 import styles from './WorkspaceKanbanPage.module.css';
-import { uiLogger } from '../../../observability/uiLogger'
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -51,28 +51,25 @@ const STATUSES: Array<{ key: KanbanStatus; title: string; color: string }> = [
 ];
 
 export const WorkspaceKanbanPage: React.FC = () => {
-  const [tasks, setTasks] = useState<KanbanTask[]>([]);
-  const [loading, setLoading] = useState(true);
+  const kanbanTasksQuery = useWorkspaceKanbanTasksQuery();
+  const createKanbanTaskMutation = useCreateKanbanTaskMutation();
+  const updateKanbanTaskMutation = useUpdateKanbanTaskMutation();
+  const deleteKanbanTaskMutation = useDeleteKanbanTaskMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<KanbanTask | null>(null);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm<KanbanFormValues>();
 
   useEffect(() => {
-    const unsubscribe = subscribeToKanbanTasks(
-      (nextTasks) => {
-        setTasks(nextTasks);
-        setLoading(false);
-      },
-      (error) => {
-        uiLogger.error('Failed to subscribe to kanban tasks:', error);
-        message.error('Failed to load kanban tasks');
-        setLoading(false);
-      }
-    );
+    if (!kanbanTasksQuery.error) {
+      return;
+    }
+    uiLogger.error('Failed to load kanban tasks:', kanbanTasksQuery.error);
+    message.error('Failed to load kanban tasks');
+  }, [kanbanTasksQuery.error]);
 
-    return unsubscribe;
-  }, []);
+  const tasks = useMemo<KanbanTask[]>(() => kanbanTasksQuery.data || [], [kanbanTasksQuery.data]);
+  const loading = kanbanTasksQuery.isLoading;
 
   const tasksByStatus = useMemo(() => {
     const grouped: Record<KanbanStatus, KanbanTask[]> = {
@@ -133,10 +130,10 @@ export const WorkspaceKanbanPage: React.FC = () => {
       };
 
       if (editingTask) {
-        await updateKanbanTask(editingTask.id, payload);
+        await updateKanbanTaskMutation.mutateAsync({ id: editingTask.id, data: payload });
         message.success('Task updated');
       } else {
-        await createKanbanTask({
+        await createKanbanTaskMutation.mutateAsync({
           ...payload,
           order: getNextOrder(payload.status),
         });
@@ -157,7 +154,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
 
   const handleDelete = async (taskId: string) => {
     try {
-      await deleteKanbanTask(taskId);
+      await deleteKanbanTaskMutation.mutateAsync(taskId);
       message.success('Task deleted');
     } catch (error) {
       uiLogger.error('Failed to delete task:', error);
@@ -172,9 +169,12 @@ export const WorkspaceKanbanPage: React.FC = () => {
     }
     const nextStatus = STATUSES[currentIndex + 1].key;
     try {
-      await updateKanbanTask(task.id, {
-        status: nextStatus,
-        order: getNextOrder(nextStatus),
+      await updateKanbanTaskMutation.mutateAsync({
+        id: task.id,
+        data: {
+          status: nextStatus,
+          order: getNextOrder(nextStatus),
+        },
       });
     } catch (error) {
       uiLogger.error('Failed to move task:', error);
@@ -227,7 +227,12 @@ export const WorkspaceKanbanPage: React.FC = () => {
                 ) : (
                   <div className={styles.tasks}>
                     {columnTasks.map((task) => (
-                      <Card key={task.id} className={styles.task} size="small" styles={{ body: { padding: '10px 12px' } }}>
+                      <Card
+                        key={task.id}
+                        className={styles.task}
+                        size="small"
+                        styles={{ body: { padding: '10px 12px' } }}
+                      >
                         <div className={styles.taskHeader}>
                           <Text strong>{task.title}</Text>
                           <Space size={2}>
@@ -249,7 +254,11 @@ export const WorkspaceKanbanPage: React.FC = () => {
                               cancelText="Cancel"
                               onConfirm={() => handleDelete(task.id)}
                             >
-                              <TableActionButton danger icon={<DeleteOutlined />} tooltip="Delete task" />
+                              <TableActionButton
+                                danger
+                                icon={<DeleteOutlined />}
+                                tooltip="Delete task"
+                              />
                             </Popconfirm>
                           </Space>
                         </div>
@@ -262,7 +271,11 @@ export const WorkspaceKanbanPage: React.FC = () => {
                         )}
                         <div className={styles.taskFooter}>
                           {task.due_date ? (
-                            <Tag color={dayjs(task.due_date).isBefore(dayjs(), 'day') ? 'error' : 'blue'}>
+                            <Tag
+                              color={
+                                dayjs(task.due_date).isBefore(dayjs(), 'day') ? 'error' : 'blue'
+                              }
+                            >
                               Due {dayjs(task.due_date).format('DD MMM')}
                             </Tag>
                           ) : (

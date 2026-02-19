@@ -1,14 +1,8 @@
-'use strict';
-
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 
 function base64UrlEncode(value) {
   const buffer = Buffer.isBuffer(value) ? value : Buffer.from(String(value), 'utf8');
-  return buffer
-    .toString('base64')
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
+  return buffer.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 
 function base64UrlDecode(value) {
@@ -31,16 +25,13 @@ function safeJsonParse(text) {
   }
 }
 
-function signAgentToken({
-  secret,
-  agentId,
-  tenantId,
-  expiresInSeconds = 60 * 60 * 24 * 30,
-}) {
+function signAgentToken({ secret, agentId, tenantId, expiresInSeconds = 60 * 60 * 24 * 30 }) {
   const normalizedSecret = String(secret || '').trim();
   const normalizedAgentId = String(agentId || '').trim();
   const normalizedTenantId = String(tenantId || '').trim() || 'default';
-  const ttl = Number.isFinite(Number(expiresInSeconds)) ? Number(expiresInSeconds) : 60 * 60 * 24 * 30;
+  const ttl = Number.isFinite(Number(expiresInSeconds))
+    ? Number(expiresInSeconds)
+    : 60 * 60 * 24 * 30;
 
   if (!normalizedSecret) {
     throw new Error('AGENT_AUTH_SECRET is required');

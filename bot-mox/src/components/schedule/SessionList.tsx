@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button, Switch, Empty } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Empty, Switch } from 'antd';
+import type React from 'react';
 import type { ScheduleSession } from '../../types';
 import { formatDuration, timeToMinutes } from '../../utils/scheduleUtils';
 import { TableActionButton } from '../ui/TableActionButton';
@@ -28,16 +28,14 @@ export const SessionList: React.FC<SessionListProps> = ({
 
   // Sort sessions by start time
   const sortedSessions = [...sessionsArray].sort(
-    (a, b) => timeToMinutes(a.start) - timeToMinutes(b.start)
+    (a, b) => timeToMinutes(a.start) - timeToMinutes(b.start),
   );
 
   const getSessionDuration = (session: ScheduleSession): string => {
     const startMin = timeToMinutes(session.start);
     const endMin = timeToMinutes(session.end);
     // Учитываем переход через полночь
-    const minutes = endMin < startMin 
-      ? (1440 - startMin) + endMin 
-      : endMin - startMin;
+    const minutes = endMin < startMin ? 1440 - startMin + endMin : endMin - startMin;
     return formatDuration(minutes);
   };
 
@@ -45,12 +43,7 @@ export const SessionList: React.FC<SessionListProps> = ({
     <div className={[styles['session-list'], className].filter(Boolean).join(' ')}>
       <div className={styles['session-list-header']}>
         <h4>Sessions</h4>
-        <Button
-          type="primary"
-          size="small"
-          icon={<PlusOutlined />}
-          onClick={onAdd}
-        >
+        <Button type="primary" size="small" icon={<PlusOutlined />} onClick={onAdd}>
           Add Session
         </Button>
       </div>
@@ -67,10 +60,7 @@ export const SessionList: React.FC<SessionListProps> = ({
             {sortedSessions.map((session, index) => (
               <div
                 key={session.id}
-                className={[
-                  styles['session-item'],
-                  !session.enabled ? styles.disabled : '',
-                ]
+                className={[styles['session-item'], !session.enabled ? styles.disabled : '']
                   .filter(Boolean)
                   .join(' ')}
               >
@@ -80,9 +70,7 @@ export const SessionList: React.FC<SessionListProps> = ({
                   <span className={styles['time-range']}>
                     {session.start} - {session.end}
                   </span>
-                  <span className={styles.duration}>
-                    ({getSessionDuration(session)})
-                  </span>
+                  <span className={styles.duration}>({getSessionDuration(session)})</span>
                 </div>
 
                 <div className={styles['session-actions']}>

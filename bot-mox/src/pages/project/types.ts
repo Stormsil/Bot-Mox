@@ -1,4 +1,4 @@
-import type { BotLicense, BotStatus, Proxy, Subscription } from '../../types';
+import type { BotLicense, BotStatus, Proxy as ProxyResource, Subscription } from '../../types';
 
 export const OFFLINE_THRESHOLD_MS = 5 * 60 * 1000;
 
@@ -9,7 +9,7 @@ export type SubscriptionStatus = 'none' | 'active' | 'expiring' | 'expired';
 
 export type ProxyLike = {
   expires_at?: number;
-  status?: Proxy['status'];
+  status?: ProxyResource['status'];
 };
 
 export interface BotRecord {
@@ -88,7 +88,7 @@ export const STATUS_FILTER_VALUES: BotStatus[] = [
 ];
 
 export type ResourcesByBotMaps = {
-  proxiesByBot: Map<string, Proxy | ProxyLike>;
+  proxiesByBot: Map<string, ProxyResource | ProxyLike>;
   subscriptionsByBot: Map<string, Subscription[]>;
   licensesByBot: Map<string, BotLicense[]>;
 };

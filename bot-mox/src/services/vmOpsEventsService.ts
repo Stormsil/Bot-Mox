@@ -235,7 +235,7 @@ export async function ensureVmOpsEventsConnection(): Promise<void> {
 export function subscribeToVmOpsEvents(
   onEvent: (event: VmOpsCommandEvent) => void,
   onError?: (error: Error) => void,
-  options: { agentId?: string; commandId?: string } = {}
+  options: { agentId?: string; commandId?: string } = {},
 ): () => void {
   const listener: VmOpsEventsListener = {
     onEvent,

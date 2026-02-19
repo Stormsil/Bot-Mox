@@ -1,8 +1,13 @@
-import { apiGet, apiPut } from './apiClient';
-import type { ApiKeys, ProxySettings, NotificationEvents } from '../types';
-import { uiLogger } from '../observability/uiLogger'
-
-const SETTINGS_API_PREFIX = '/api/v1/settings';
+import { uiLogger } from '../observability/uiLogger';
+import {
+  getApiKeysViaContract,
+  getNotificationEventsViaContract,
+  getProxySettingsViaContract,
+  putApiKeysViaContract,
+  putNotificationEventsViaContract,
+  putProxySettingsViaContract,
+} from '../providers/settings-contract-client';
+import type { ApiKeys, NotificationEvents, ProxySettings } from '../types';
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
@@ -44,7 +49,8 @@ const normalizeNotificationEvents = (value: unknown): NotificationEvents => {
     bot_offline: typeof source.bot_offline === 'boolean' ? source.bot_offline : true,
     bot_online: typeof source.bot_online === 'boolean' ? source.bot_online : false,
     level_up: typeof source.level_up === 'boolean' ? source.level_up : true,
-    profession_maxed: typeof source.profession_maxed === 'boolean' ? source.profession_maxed : false,
+    profession_maxed:
+      typeof source.profession_maxed === 'boolean' ? source.profession_maxed : false,
     low_fraud_score: typeof source.low_fraud_score === 'boolean' ? source.low_fraud_score : true,
     daily_report: typeof source.daily_report === 'boolean' ? source.daily_report : false,
   };
@@ -98,7 +104,7 @@ export function getDefaultNotificationEvents(): NotificationEvents {
  */
 export async function getApiKeys(): Promise<ApiKeys> {
   try {
-    const response = await apiGet<unknown>(`${SETTINGS_API_PREFIX}/api_keys`);
+    const response = await getApiKeysViaContract();
     return normalizeApiKeys(response.data);
   } catch (error) {
     uiLogger.error('Error loading API keys:', error);
@@ -123,7 +129,7 @@ export async function updateApiKeys(apiKeys: Partial<ApiKeys>): Promise<void> {
     },
   };
 
-  await apiPut(`${SETTINGS_API_PREFIX}/api_keys`, updates);
+  await putApiKeysViaContract(updates);
 }
 
 /**
@@ -131,7 +137,7 @@ export async function updateApiKeys(apiKeys: Partial<ApiKeys>): Promise<void> {
  */
 export async function getProxySettings(): Promise<ProxySettings> {
   try {
-    const response = await apiGet<unknown>(`${SETTINGS_API_PREFIX}/proxy`);
+    const response = await getProxySettingsViaContract();
     return normalizeProxySettings(response.data);
   } catch (error) {
     uiLogger.error('Error loading proxy settings:', error);
@@ -150,7 +156,7 @@ export async function updateProxySettings(settings: Partial<ProxySettings>): Pro
     ...settings,
   };
 
-  await apiPut(`${SETTINGS_API_PREFIX}/proxy`, updates);
+  await putProxySettingsViaContract(updates);
 }
 
 /**
@@ -158,7 +164,7 @@ export async function updateProxySettings(settings: Partial<ProxySettings>): Pro
  */
 export async function getNotificationEvents(): Promise<NotificationEvents> {
   try {
-    const response = await apiGet<unknown>(`${SETTINGS_API_PREFIX}/notifications/events`);
+    const response = await getNotificationEventsViaContract();
     return normalizeNotificationEvents(response.data);
   } catch (error) {
     uiLogger.error('Error loading notification events:', error);
@@ -177,7 +183,7 @@ export async function updateNotificationEvents(events: Partial<NotificationEvent
     ...events,
   };
 
-  await apiPut(`${SETTINGS_API_PREFIX}/notifications/events`, updates);
+  await putNotificationEventsViaContract(updates);
 }
 
 /**
@@ -204,9 +210,11 @@ export async function getIPQSApiKey(): Promise<string | null> {
  */
 export async function isTelegramEnabled(): Promise<boolean> {
   const apiKeys = await getApiKeys();
-  return apiKeys.telegram.enabled && 
-         apiKeys.telegram.bot_token.length > 0 && 
-         apiKeys.telegram.chat_id.length > 0;
+  return (
+    apiKeys.telegram.enabled &&
+    apiKeys.telegram.bot_token.length > 0 &&
+    apiKeys.telegram.chat_id.length > 0
+  );
 }
 
 /**
@@ -235,21 +243,21 @@ export async function initApiSettings(): Promise<void> {
     ]);
 
     if (!apiKeys.ipqs || !apiKeys.telegram) {
-      await apiPut(`${SETTINGS_API_PREFIX}/api_keys`, getDefaultApiKeys());
+      await putApiKeysViaContract(getDefaultApiKeys());
     }
 
     if (
-      typeof proxySettings.auto_check_on_add !== 'boolean'
-      || typeof proxySettings.fraud_score_threshold !== 'number'
+      typeof proxySettings.auto_check_on_add !== 'boolean' ||
+      typeof proxySettings.fraud_score_threshold !== 'number'
     ) {
-      await apiPut(`${SETTINGS_API_PREFIX}/proxy`, getDefaultProxySettings());
+      await putProxySettingsViaContract(getDefaultProxySettings());
     }
 
     if (
-      typeof notificationEvents.bot_banned !== 'boolean'
-      || typeof notificationEvents.bot_offline !== 'boolean'
+      typeof notificationEvents.bot_banned !== 'boolean' ||
+      typeof notificationEvents.bot_offline !== 'boolean'
     ) {
-      await apiPut(`${SETTINGS_API_PREFIX}/notifications/events`, getDefaultNotificationEvents());
+      await putNotificationEventsViaContract(getDefaultNotificationEvents());
     }
   } catch (error) {
     uiLogger.error('Error initializing API settings:', error);

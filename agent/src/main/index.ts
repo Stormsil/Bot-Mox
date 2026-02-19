@@ -1,10 +1,11 @@
-import { app } from 'electron';
-import { ConfigStore, AgentConfig } from '../core/config-store';
-import { Logger } from '../core/logger';
-import { ApiClient } from '../core/api-client';
+import { app, shell } from 'electron';
 import { AgentLoop } from '../core/agent-loop';
-import { AgentTray } from './tray';
+import { ApiClient } from '../core/api-client';
+import { type AgentConfig, ConfigStore } from '../core/config-store';
+import { createDiagnosticBundle } from '../core/diagnostics';
+import { Logger } from '../core/logger';
 import { PairingWindow } from './pairing-window';
+import { AgentTray } from './tray';
 
 // ---------------------------------------------------------------------------
 // Single instance lock
@@ -94,6 +95,27 @@ app.on('ready', () => {
   pairingWindow = new PairingWindow(configStore, logger);
 
   tray.setCallbacks({
+    onCreateDiagnosticBundle: () => {
+      try {
+        const bundlePath = createDiagnosticBundle({
+          appVersion: app.getVersion(),
+          config: configStore.get(),
+          configDir: configStore.getConfigDir(),
+          logPath: logger.getLogPath(),
+        });
+        logger.info('Diagnostic bundle created', {
+          bundle_path: bundlePath,
+          event_name: 'agent.diagnostics.bundle.created',
+        });
+        shell.showItemInFolder(bundlePath);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logger.error('Failed to create diagnostic bundle', {
+          error: message,
+          event_name: 'agent.diagnostics.bundle.failed',
+        });
+      }
+    },
     onRepair: () => showPairing(),
     onLogout: () => logout(),
     onQuit: () => {

@@ -5,8 +5,8 @@
   "main": "dist/main/index.js",
   "scripts": {
     "copy-static": "node -e \"const fs=require('fs'),p=require('path');const s=p.join('src','ui'),d=p.join('dist','ui');fs.mkdirSync(d,{recursive:true});fs.readdirSync(s).filter(f=>!f.endsWith('.ts')).forEach(f=>fs.copyFileSync(p.join(s,f),p.join(d,f)));console.log('Static files copied')\"",
-    "dev": "tsc && npm run copy-static && node scripts/run-electron-dev.js",
-    "build": "tsc && npm run copy-static && electron-builder --win portable",
+    "dev": "tsc && pnpm run copy-static && node scripts/run-electron-dev.js",
+    "build": "tsc && pnpm run copy-static && electron-builder --win portable",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist"
   },
@@ -14,7 +14,8 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "ssh2": "^1.17.0"
+    "ssh2": "^1.17.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/ssh2": "^1.15.5",

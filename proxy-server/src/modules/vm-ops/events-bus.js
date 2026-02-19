@@ -1,4 +1,4 @@
-const { EventEmitter } = require('events');
+const { EventEmitter } = require('node:events');
 
 const MAX_BUFFERED_EVENTS = 5_000;
 
@@ -25,12 +25,14 @@ function normalizeCommandPayload(command) {
     status: String(command.status || '').trim(),
     payload: command.payload && typeof command.payload === 'object' ? command.payload : {},
     result: command.result,
-    error_message: command.error_message === undefined ? undefined : String(command.error_message || '').trim(),
+    error_message:
+      command.error_message === undefined ? undefined : String(command.error_message || '').trim(),
     queued_at: command.queued_at || null,
     started_at: command.started_at || null,
     completed_at: command.completed_at || null,
     expires_at: command.expires_at || null,
-    created_by: command.created_by === undefined ? null : String(command.created_by || '').trim() || null,
+    created_by:
+      command.created_by === undefined ? null : String(command.created_by || '').trim() || null,
   };
 
   return normalized.id ? normalized : null;
@@ -87,4 +89,3 @@ module.exports = {
   subscribeVmOpsCommandEvents,
   listVmOpsCommandEventsSince,
 };
-

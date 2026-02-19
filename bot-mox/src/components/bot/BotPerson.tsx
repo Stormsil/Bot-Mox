@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
 import { Card, Form, message } from 'antd';
-import { apiPatch } from '../../services/apiClient';
-import { subscribeBotById } from '../../services/botsApiService';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useUpdateBotMutation } from '../../entities/bot/api/useBotMutations';
+import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
+import type { BotPersonProps, PersonFormValues } from './person';
 import {
   countries,
   generateRandomPersonData,
@@ -18,16 +20,19 @@ import {
   toPersonFormValues,
   toPersonPayload,
 } from './person';
-import type { BotPersonProps, PersonFormValues } from './person';
 import styles from './person/person.module.css';
 
 export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
   const [form] = Form.useForm<PersonFormValues>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState<string>(() => loadPersonGeneratorCountry() || countries[0]);
+  const [selectedCountry, setSelectedCountry] = useState<string>(
+    () => loadPersonGeneratorCountry() || countries[0],
+  );
   const [generationLocked, setGenerationLocked] = useState(false);
   const [pendingLock, setPendingLock] = useState(false);
+  const botQuery = useBotByIdQuery(bot?.id);
+  const updateBotMutation = useUpdateBotMutation();
 
   useEffect(() => {
     if (!bot) {
@@ -49,22 +54,12 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
   }, [bot, form]);
 
   useEffect(() => {
-    if (!bot?.id) return;
-
-    const unsubscribe = subscribeBotById(
-      bot.id,
-      (payload) => {
-        const locks = (payload?.generation_locks || {}) as Record<string, unknown>;
-        setGenerationLocked(Boolean(locks.person_data));
-      },
-      (error) => {
-        console.error('Failed to load person lock state:', error);
-      },
-      { intervalMs: 5000 }
-    );
-
-    return () => unsubscribe();
-  }, [bot?.id]);
+    if (!botQuery.data) {
+      return;
+    }
+    const locks = (botQuery.data.generation_locks || {}) as Record<string, unknown>;
+    setGenerationLocked(Boolean(locks.person_data));
+  }, [botQuery.data]);
 
   useEffect(() => {
     const normalizedCountry = normalizeCountry(selectedCountry);
@@ -89,9 +84,12 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
 
     setSaving(true);
     try {
-      await apiPatch(`/api/v1/bots/${encodeURIComponent(bot.id)}`, {
-        person: toPersonPayload(values),
-        ...(pendingLock ? { 'generation_locks/person_data': true } : {}),
+      await updateBotMutation.mutateAsync({
+        botId: bot.id,
+        payload: {
+          person: toPersonPayload(values),
+          ...(pendingLock ? { 'generation_locks/person_data': true } : {}),
+        },
       });
 
       if (pendingLock) {
@@ -101,7 +99,9 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
       message.success('Person data saved successfully');
     } catch (error) {
       console.error('Error saving person data:', error);
-      message.error(`Failed to save person data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(
+        `Failed to save person data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     } finally {
       setSaving(false);
     }
@@ -123,8 +123,11 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
     if (!bot?.id) return;
 
     try {
-      await apiPatch(`/api/v1/bots/${encodeURIComponent(bot.id)}`, {
-        'generation_locks/person_data': false,
+      await updateBotMutation.mutateAsync({
+        botId: bot.id,
+        payload: {
+          'generation_locks/person_data': false,
+        },
       });
 
       setPendingLock(false);
@@ -134,7 +137,7 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
       console.error('Failed to unlock person generation:', error);
       message.error('Failed to unlock generation');
     }
-  }, [bot?.id]);
+  }, [bot?.id, updateBotMutation]);
 
   const hasIncompleteData = !isPersonDataComplete(bot?.person);
   const manualEditLocked = generationLocked;
@@ -160,7 +163,10 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
           },
         }}
       >
-        <PersonStatusAlerts hasIncompleteData={hasIncompleteData} manualEditLocked={manualEditLocked} />
+        <PersonStatusAlerts
+          hasIncompleteData={hasIncompleteData}
+          manualEditLocked={manualEditLocked}
+        />
 
         <Form
           form={form}

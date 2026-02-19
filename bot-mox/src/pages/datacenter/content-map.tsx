@@ -1,9 +1,6 @@
-import React from 'react';
 import { Typography } from 'antd';
-import {
-  ProjectsSection,
-  ResourcesSection,
-} from './content-map-sections';
+import type React from 'react';
+import { ProjectsSection, ResourcesSection } from './content-map-sections';
 import { ExpiringSection, FinanceNotesSection } from './content-map-sections-secondary';
 import type {
   ContentMapSection,

@@ -54,7 +54,7 @@ async function verifyTokenWithBackend(token: string): Promise<StoredIdentity | n
         uid?: unknown;
         email?: unknown;
         roles?: unknown;
-      }>('/api/v1/auth/verify', {
+      }>('/api/v1/auth/whoami', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${normalizedToken}`,

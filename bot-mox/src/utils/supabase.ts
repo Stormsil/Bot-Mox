@@ -13,7 +13,7 @@ export const hasSupabaseAuth = Boolean(supabaseUrl && supabaseAnonKey);
 
 if (!hasSupabaseAuth) {
   console.warn(
-    '[Supabase] Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (dev: bot-mox/.env; docker: runtime-config.js).'
+    '[Supabase] Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (dev: bot-mox/.env; docker: runtime-config.js).',
   );
 }
 

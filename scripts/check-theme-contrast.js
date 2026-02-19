@@ -22,8 +22,11 @@ function extractPalette(name) {
   const body = source.slice(from, end);
   const entries = {};
   const regex = /'(--boxmox-[^']+)':\s*'(#?[0-9a-fA-F]{6})'/g;
-  let match;
-  while ((match = regex.exec(body)) !== null) {
+  while (true) {
+    const match = regex.exec(body);
+    if (match === null) {
+      break;
+    }
     entries[match[1]] = normalizeHex(match[2]);
   }
   return entries;

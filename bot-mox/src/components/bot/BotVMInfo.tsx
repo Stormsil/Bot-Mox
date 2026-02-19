@@ -1,8 +1,8 @@
-import React from 'react';
-import { Card, Typography, Empty, Space } from 'antd';
 import { DesktopOutlined } from '@ant-design/icons';
-import type { Bot } from '../../types';
+import { Card, Empty, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
+import type React from 'react';
+import type { Bot } from '../../types';
 import styles from './BotVMInfo.module.css';
 
 const { Text } = Typography;
@@ -90,19 +90,25 @@ export const BotVMInfo: React.FC<BotVMInfoProps> = ({ bot }) => {
       >
         <div className={styles['vm-content']}>
           <div className={styles['vm-field']}>
-            <Text type="secondary" className={styles['field-label']}>VM Name</Text>
+            <Text type="secondary" className={styles['field-label']}>
+              VM Name
+            </Text>
             <Text strong>{vm.name}</Text>
           </div>
 
           <div className={styles['vm-field']}>
-            <Text type="secondary" className={styles['field-label']}>IP Address</Text>
+            <Text type="secondary" className={styles['field-label']}>
+              IP Address
+            </Text>
             <Text strong className={styles['vm-ip']} copyable>
               {vm.ip}
             </Text>
           </div>
 
           <div className={styles['vm-field']}>
-            <Text type="secondary" className={styles['field-label']}>Created At</Text>
+            <Text type="secondary" className={styles['field-label']}>
+              Created At
+            </Text>
             <Text>{formattedCreatedAt}</Text>
           </div>
         </div>

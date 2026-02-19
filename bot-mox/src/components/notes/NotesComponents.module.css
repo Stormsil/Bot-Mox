@@ -30,7 +30,7 @@
   --color-fg-muted: var(--boxmox-color-text-muted);
   --color-accent-fg: var(--boxmox-color-brand-primary);
   --color-neutral-muted: rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.12);
-  --md-editor-font-family: var(--font-mono, 'Roboto Mono', 'Consolas', monospace);
+  --md-editor-font-family: var(--font-mono, "Roboto Mono", "Consolas", monospace);
 }
 
 .note-md-editor-root :global(.w-md-editor-toolbar) {
@@ -62,13 +62,13 @@
 .note-md-editor-root :global(.w-md-editor-text-pre),
 .note-md-editor-root :global(.w-md-editor-text-input),
 .note-md-editor-root :global(.w-md-editor-text) {
-  font-family: var(--font-mono, 'Roboto Mono', 'Consolas', monospace);
+  font-family: var(--font-mono, "Roboto Mono", "Consolas", monospace);
   font-size: 14px;
   line-height: 1.6;
 }
 
 .note-md-editor-root :global(.w-md-editor-text-pre) > code {
-  font-family: var(--font-mono, 'Roboto Mono', 'Consolas', monospace);
+  font-family: var(--font-mono, "Roboto Mono", "Consolas", monospace);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -146,7 +146,7 @@
   width: 100%;
   min-height: 400px;
   padding: 16px;
-  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   font-size: var(--text-base);
   line-height: 1.7;
   color: var(--boxmox-color-text-primary);
@@ -155,7 +155,9 @@
   border-radius: var(--radius-md);
   resize: vertical;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .markdown-textarea:focus {
@@ -308,7 +310,7 @@
 }
 
 .markdown-preview code {
-  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   font-size: 0.9em;
   padding: 2px 6px;
   background-color: var(--boxmox-color-surface-muted);
@@ -417,7 +419,7 @@
 }
 
 .markdown-checkbox-input:checked::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 5px;
   top: 2px;
@@ -492,7 +494,7 @@
 }
 
 .markdown-preview :global(.task-list-item) input[type="checkbox"]:checked::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 5px;
   top: 2px;
@@ -529,7 +531,7 @@
    Monaco Editor Styles
    ============================================ */
 
-:global(.monaco-editor)-wrapper {
+:global(.monaco-editor-wrapper) {
   flex: 1;
   min-height: 400px;
   border: 1px solid var(--boxmox-color-border-default);
@@ -537,15 +539,15 @@
   overflow: hidden;
 }
 
-:global(.monaco-editor)-wrapper :global(.monaco-editor) {
+:global(.monaco-editor-wrapper) :global(.monaco-editor) {
   background-color: var(--boxmox-color-surface-panel);
 }
 
-:global(.monaco-editor)-wrapper :global(.monaco-editor) :global(.overflow-guard) {
+:global(.monaco-editor-wrapper) :global(.monaco-editor) :global(.overflow-guard) {
   border-radius: var(--radius-md);
 }
 
-:global(.monaco-editor)-half {
+:global(.monaco-editor-half) {
   flex: 1;
 }
 
@@ -619,7 +621,7 @@
 }
 
 .block-content:empty::before {
-  content: '\200B';
+  content: "\200B";
 }
 
 /* Заголовки */
@@ -699,7 +701,7 @@
 }
 
 .checkbox-input:checked::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 5px;
   top: 2px;
@@ -733,7 +735,7 @@
 }
 
 .checkbox-content:empty::before {
-  content: '\200B';
+  content: "\200B";
 }
 
 /* ============================================
@@ -784,7 +786,7 @@
 }
 
 .list-item-content:empty::before {
-  content: '\200B';
+  content: "\200B";
 }
 
 /* ============================================
@@ -805,8 +807,13 @@
 }
 
 .slash-command-item {
+  appearance: none;
   display: flex;
   align-items: center;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
   gap: 12px;
   padding: 8px 16px;
   cursor: pointer;
@@ -1210,11 +1217,17 @@
   width: 50px;
   min-width: 50px;
   max-width: 50px;
-  transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
+  transition:
+    width 0.2s ease,
+    min-width 0.2s ease,
+    max-width 0.2s ease;
 }
 
 .note-sidebar {
-  transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
+  transition:
+    width 0.2s ease,
+    min-width 0.2s ease,
+    max-width 0.2s ease;
 }
 
 .note-sidebar.collapsed .note-sidebar-header {

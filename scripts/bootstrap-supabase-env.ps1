@@ -45,8 +45,8 @@ $envPath = Join-Path $repoRoot 'proxy-server/.env'
 Write-Step 'Ensuring Supabase stack is running...'
 Push-Location $repoRoot
 try {
-  npx supabase start | Out-Host
-  $statusJsonRaw = npx supabase status -o json
+  corepack pnpm exec supabase start | Out-Host
+  $statusJsonRaw = corepack pnpm exec supabase status -o json
   $statusJsonText = ($statusJsonRaw -join [Environment]::NewLine)
   $status = $statusJsonText | ConvertFrom-Json
 } finally {

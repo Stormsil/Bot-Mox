@@ -133,15 +133,6 @@
   margin-bottom: 8px;
 }
 
-.leveling-content {
-}
-
-.professions-content {
-}
-
-.farm-content {
-}
-
 /* Stat Cards */
 .stage-stat-card {
   background: var(--boxmox-color-surface-panel);
@@ -207,9 +198,6 @@
 .active {
   border-color: var(--boxmox-color-status-success);
   box-shadow: 0 0 8px rgba(82, 196, 26, 0.2);
-}
-
-.banned {
 }
 
 .inactive {

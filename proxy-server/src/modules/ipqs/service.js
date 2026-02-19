@@ -1,7 +1,8 @@
 const axios = require('axios');
 
 const IPQS_API_BASE = 'https://www.ipqualityscore.com/api/json/ip';
-const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+const IPV4_REGEX =
+  /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
 function createServiceError(status, code, message, details) {
   const error = new Error(String(message || 'Service error'));
@@ -28,7 +29,7 @@ function normalizeAxiosError(error, fallbackMessage = 'Internal server error') {
         Number(error.response.status || 502),
         'IPQS_API_ERROR',
         `IPQS API error: ${error.response.status || 'unknown'}`,
-        error.response.data
+        error.response.data,
       );
     }
   }
@@ -38,7 +39,9 @@ function normalizeAxiosError(error, fallbackMessage = 'Internal server error') {
 
 function createIpqsService({ settingsReader }) {
   async function getApiKeyFromSettings() {
-    const apiKey = await settingsReader?.readPath('settings/api_keys/ipqs/api_key', { fallback: null });
+    const apiKey = await settingsReader?.readPath('settings/api_keys/ipqs/api_key', {
+      fallback: null,
+    });
     if (typeof apiKey === 'string' && apiKey.trim()) {
       return apiKey.trim();
     }
@@ -55,7 +58,9 @@ function createIpqsService({ settingsReader }) {
 
   async function isEnabled() {
     try {
-      const enabledInDb = await settingsReader?.readPath('settings/api_keys/ipqs/enabled', { fallback: null });
+      const enabledInDb = await settingsReader?.readPath('settings/api_keys/ipqs/enabled', {
+        fallback: null,
+      });
       if (enabledInDb === null || enabledInDb === undefined) {
         const key = await getApiKey();
         return Boolean(key);
@@ -118,7 +123,7 @@ function createIpqsService({ settingsReader }) {
       throw createServiceError(
         503,
         'IPQS_KEY_MISSING',
-        'IPQS API key not configured. Please add API key to settings/api_keys/ipqs/api_key or set IPQS_API_KEY in .env'
+        'IPQS API key not configured. Please add API key to settings/api_keys/ipqs/api_key or set IPQS_API_KEY in .env',
       );
     }
 
@@ -173,7 +178,7 @@ function createIpqsService({ settingsReader }) {
             details: normalized.details,
           };
         }
-      })
+      }),
     );
 
     return { results };

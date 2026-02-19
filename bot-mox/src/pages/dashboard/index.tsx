@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Table, Typography, Spin } from 'antd';
-import type { TableColumnsType } from 'antd';
 import {
-  RobotOutlined,
   PlayCircleOutlined,
   RiseOutlined,
+  RobotOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
+import type { TableColumnsType } from 'antd';
+import { Card, Col, Row, Spin, Table, Typography } from 'antd';
+import type React from 'react';
+import { useEffect, useMemo } from 'react';
 import { MetricCard } from '../../components/ui/MetricCard';
 import { StatusBadge } from '../../components/ui/StatusBadge';
+import { useBotsListQuery } from '../../entities/bot/api/useBotQueries';
+import { uiLogger } from '../../observability/uiLogger';
 import type { Bot } from '../../types';
-import { subscribeBotsList } from '../../services/botsApiService';
 import styles from './Dashboard.module.css';
-import { uiLogger } from '../../observability/uiLogger'
 
 function cx(classNames: string): string {
   return classNames
@@ -68,7 +69,9 @@ const columns: TableColumnsType<BotData> = [
     render: (character: BotData['character']) => (
       <div>
         <div className={cx('char-name')}>{character.name}</div>
-        <div className={cx('char-info')}>Lv.{character.level} {character.race} {character.class}</div>
+        <div className={cx('char-info')}>
+          Lv.{character.level} {character.race} {character.class}
+        </div>
       </div>
     ),
   },
@@ -85,7 +88,7 @@ const columns: TableColumnsType<BotData> = [
     key: 'project_id',
     className: tableCellClassName,
     onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
-    render: (projectId: string) => projectId === 'wow_tbc' ? 'WoW TBC' : 'WoW Midnight',
+    render: (projectId: string) => (projectId === 'wow_tbc' ? 'WoW TBC' : 'WoW Midnight'),
   },
   {
     title: 'Last Seen',
@@ -99,7 +102,7 @@ const columns: TableColumnsType<BotData> = [
       const now = new Date();
       const diff = now.getTime() - date.getTime();
       const minutes = Math.floor(diff / 60000);
-      
+
       if (minutes < 1) return 'Just now';
       if (minutes < 60) return `${minutes} min ago`;
       if (minutes < 1440) return `${Math.floor(minutes / 60)} hours ago`;
@@ -109,41 +112,29 @@ const columns: TableColumnsType<BotData> = [
 ];
 
 export const DashboardPage: React.FC = () => {
-  const [bots, setBots] = useState<BotData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [metrics, setMetrics] = useState({
-    totalBots: 0,
-    activeBots: 0,
-    levelingBots: 0,
-    farmingBots: 0,
-    bannedBots: 0,
-  });
+  const botsQuery = useBotsListQuery();
+  const bots = useMemo(() => (botsQuery.data || []) as BotData[], [botsQuery.data]);
+  const metrics = useMemo(
+    () => ({
+      totalBots: bots.length,
+      activeBots: bots.filter((bot) =>
+        ['prepare', 'leveling', 'profession', 'farming'].includes(bot.status),
+      ).length,
+      levelingBots: bots.filter((bot) => bot.status === 'leveling').length,
+      farmingBots: bots.filter((bot) => bot.status === 'farming').length,
+      bannedBots: bots.filter((bot) => bot.status === 'banned').length,
+    }),
+    [bots],
+  );
 
-  // Загрузка ботов через backend API с polling-обновлениями
   useEffect(() => {
-    return subscribeBotsList(
-      (botsList) => {
-        const botsArray = botsList as BotData[];
-        setBots(botsArray);
-        setMetrics({
-          totalBots: botsArray.length,
-          activeBots: botsArray.filter((bot) => ['prepare', 'leveling', 'profession', 'farming'].includes(bot.status))
-            .length,
-          levelingBots: botsArray.filter((bot) => bot.status === 'leveling').length,
-          farmingBots: botsArray.filter((bot) => bot.status === 'farming').length,
-          bannedBots: botsArray.filter((bot) => bot.status === 'banned').length,
-        });
-        setLoading(false);
-      },
-      (error) => {
-        uiLogger.error('Error loading bots:', error);
-        setLoading(false);
-      },
-      { intervalMs: 5000 }
-    );
-  }, []);
+    if (!botsQuery.error) {
+      return;
+    }
+    uiLogger.error('Error loading bots:', botsQuery.error);
+  }, [botsQuery.error]);
 
-  if (loading) {
+  if (botsQuery.isLoading) {
     return (
       <div className={cx('dashboard-page')}>
         <div className={cx('dashboard-loading')}>
@@ -162,11 +153,7 @@ export const DashboardPage: React.FC = () => {
 
       <Row gutter={[16, 16]} className={cx('metrics-row')}>
         <Col span={6}>
-          <MetricCard
-            label="Total Bots"
-            value={metrics.totalBots}
-            icon={<RobotOutlined />}
-          />
+          <MetricCard label="Total Bots" value={metrics.totalBots} icon={<RobotOutlined />} />
         </Col>
         <Col span={6}>
           <MetricCard
@@ -176,18 +163,10 @@ export const DashboardPage: React.FC = () => {
           />
         </Col>
         <Col span={6}>
-          <MetricCard
-            label="Leveling"
-            value={metrics.levelingBots}
-            icon={<RiseOutlined />}
-          />
+          <MetricCard label="Leveling" value={metrics.levelingBots} icon={<RiseOutlined />} />
         </Col>
         <Col span={6}>
-          <MetricCard
-            label="Banned"
-            value={metrics.bannedBots}
-            icon={<WarningOutlined />}
-          />
+          <MetricCard label="Banned" value={metrics.bannedBots} icon={<WarningOutlined />} />
         </Col>
       </Row>
 

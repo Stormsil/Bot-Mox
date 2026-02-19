@@ -1,6 +1,4 @@
-'use strict';
-
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const { createSupabaseServiceClient } = require('../../repositories/supabase/client');
 
 class ProvisioningServiceError extends Error {
@@ -25,7 +23,9 @@ function base64UrlEncode(value) {
 }
 
 function base64UrlDecode(value) {
-  const normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+  const normalized = String(value || '')
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
   const padLen = (4 - (normalized.length % 4)) % 4;
   return Buffer.from(normalized + '='.repeat(padLen), 'base64').toString('utf8');
 }
@@ -35,7 +35,11 @@ function hmacSha256Base64Url(message, secret) {
 }
 
 function safeJsonParse(text) {
-  try { return JSON.parse(String(text || '')); } catch { return null; }
+  try {
+    return JSON.parse(String(text || ''));
+  } catch {
+    return null;
+  }
 }
 
 function signProvisionToken({ secret, userId, tenantId, vmUuid, expiresInSeconds }) {
@@ -105,9 +109,15 @@ function createProvisioningService({ env }) {
   }
 
   function getSecret() {
-    const secret = String(env.provisionTokenSecret || env.agentAuthSecret || env.licenseLeaseSecret || '').trim();
+    const secret = String(
+      env.provisionTokenSecret || env.agentAuthSecret || env.licenseLeaseSecret || '',
+    ).trim();
     if (!secret) {
-      throw new ProvisioningServiceError(500, 'CONFIG_ERROR', 'PROVISION_TOKEN_SECRET is not configured');
+      throw new ProvisioningServiceError(
+        500,
+        'CONFIG_ERROR',
+        'PROVISION_TOKEN_SECRET is not configured',
+      );
     }
     return secret;
   }
@@ -124,7 +134,11 @@ function createProvisioningService({ env }) {
       .order('created_at', { ascending: true });
 
     if (error) {
-      throw new ProvisioningServiceError(500, 'DB_ERROR', `Failed to list profiles: ${error.message}`);
+      throw new ProvisioningServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to list profiles: ${error.message}`,
+      );
     }
     return data || [];
   }
@@ -173,9 +187,17 @@ function createProvisioningService({ env }) {
 
     if (error) {
       if (String(error.code) === '23505') {
-        throw new ProvisioningServiceError(409, 'DUPLICATE_NAME', `Profile name "${name}" already exists`);
+        throw new ProvisioningServiceError(
+          409,
+          'DUPLICATE_NAME',
+          `Profile name "${name}" already exists`,
+        );
       }
-      throw new ProvisioningServiceError(500, 'DB_ERROR', `Failed to create profile: ${error.message}`);
+      throw new ProvisioningServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to create profile: ${error.message}`,
+      );
     }
     return data;
   }
@@ -217,15 +239,24 @@ function createProvisioningService({ env }) {
 
   async function deleteProfile({ tenantId, userId, profileId }) {
     const client = getClient();
-    const { error } = await client
+    const { data, error } = await client
       .from('unattend_profiles')
       .delete()
       .eq('id', String(profileId))
       .eq('tenant_id', String(tenantId || 'default'))
-      .eq('user_id', String(userId));
+      .eq('user_id', String(userId))
+      .select('id');
 
     if (error) {
-      throw new ProvisioningServiceError(500, 'DB_ERROR', `Failed to delete profile: ${error.message}`);
+      throw new ProvisioningServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to delete profile: ${error.message}`,
+      );
+    }
+
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new ProvisioningServiceError(404, 'PROFILE_NOT_FOUND', 'Unattend profile not found');
     }
   }
 
@@ -250,22 +281,29 @@ function createProvisioningService({ env }) {
     // Upsert — replace existing token for same VM
     const { data, error } = await client
       .from('provisioning_tokens')
-      .upsert({
-        tenant_id: normalizedTenantId,
-        user_id: String(userId),
-        vm_uuid: String(vmUuid),
-        token,
-        status: 'active',
-        issued_at: new Date().toISOString(),
-        expires_at: expiresAt,
-        used_at: null,
-        metadata: {},
-      }, { onConflict: 'tenant_id,vm_uuid' })
+      .upsert(
+        {
+          tenant_id: normalizedTenantId,
+          user_id: String(userId),
+          vm_uuid: String(vmUuid),
+          token,
+          status: 'active',
+          issued_at: new Date().toISOString(),
+          expires_at: expiresAt,
+          used_at: null,
+          metadata: {},
+        },
+        { onConflict: 'tenant_id,vm_uuid' },
+      )
       .select('id, token, expires_at')
       .single();
 
     if (error) {
-      throw new ProvisioningServiceError(500, 'DB_ERROR', `Failed to issue token: ${error.message}`);
+      throw new ProvisioningServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to issue token: ${error.message}`,
+      );
     }
 
     return { tokenId: data.id, token: data.token, expiresAt: data.expires_at };
@@ -368,7 +406,11 @@ function createProvisioningService({ env }) {
       .single();
 
     if (error) {
-      throw new ProvisioningServiceError(500, 'DB_ERROR', `Failed to report progress: ${error.message}`);
+      throw new ProvisioningServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to report progress: ${error.message}`,
+      );
     }
     return data;
   }
@@ -383,7 +425,11 @@ function createProvisioningService({ env }) {
       .order('created_at', { ascending: true });
 
     if (error) {
-      throw new ProvisioningServiceError(500, 'DB_ERROR', `Failed to get progress: ${error.message}`);
+      throw new ProvisioningServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to get progress: ${error.message}`,
+      );
     }
     return data || [];
   }

@@ -1,31 +1,39 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Card, Input, Space, Spin, Typography, Upload, message } from 'antd';
-import { PlusOutlined, DeleteOutlined, SaveOutlined, DownloadOutlined, UploadOutlined, ReloadOutlined } from '@ant-design/icons';
-import type { UploadProps } from 'antd';
 import {
-  listUnattendProfiles,
+  DeleteOutlined,
+  DownloadOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SaveOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
+import type { UploadProps } from 'antd';
+import { Button, Card, Input, message, Space, Spin, Typography, Upload } from 'antd';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
   createUnattendProfile,
-  updateUnattendProfile,
-  deleteUnattendProfile,
-  migrateProfileConfig,
   DEFAULT_PROFILE_CONFIG,
+  deleteUnattendProfile,
+  listUnattendProfiles,
+  migrateProfileConfig,
   type UnattendProfile,
   type UnattendProfileConfig,
-} from '../../../services/unattendProfileService';
+  updateUnattendProfile,
+} from '../../../entities/vm/api/unattendProfileFacade';
 import {
   buildFinalUnattendXml,
   DEFAULT_UNATTEND_XML_TEMPLATE,
   triggerXmlDownload,
   validateUnattendXml,
 } from '../../../utils/unattendXml';
-import { RegionLanguageSection } from './unattend/RegionLanguageSection';
-import { AccountSection } from './unattend/AccountSection';
-import { VisualEffectsSection } from './unattend/VisualEffectsSection';
-import { DesktopIconsSection } from './unattend/DesktopIconsSection';
-import { BloatwareSection } from './unattend/BloatwareSection';
-import { WindowsSettingsSection } from './unattend/WindowsSettingsSection';
-import { CustomScriptSection } from './unattend/CustomScriptSection';
 import styles from './UnattendTab.module.css';
+import { AccountSection } from './unattend/AccountSection';
+import { BloatwareSection } from './unattend/BloatwareSection';
+import { CustomScriptSection } from './unattend/CustomScriptSection';
+import { DesktopIconsSection } from './unattend/DesktopIconsSection';
+import { RegionLanguageSection } from './unattend/RegionLanguageSection';
+import { VisualEffectsSection } from './unattend/VisualEffectsSection';
+import { WindowsSettingsSection } from './unattend/WindowsSettingsSection';
 
 const { Text, Title } = Typography;
 
@@ -139,7 +147,11 @@ export const UnattendTab: React.FC = () => {
     ) => {
       setConfig((prev) => {
         const currentSection = prev[section];
-        if (!currentSection || typeof currentSection !== 'object' || Array.isArray(currentSection)) {
+        if (
+          !currentSection ||
+          typeof currentSection !== 'object' ||
+          Array.isArray(currentSection)
+        ) {
           return prev;
         }
 
@@ -156,7 +168,9 @@ export const UnattendTab: React.FC = () => {
   );
 
   const templateXml = useMemo(
-    () => String(config.xmlTemplate || DEFAULT_UNATTEND_XML_TEMPLATE).trim() || DEFAULT_UNATTEND_XML_TEMPLATE,
+    () =>
+      String(config.xmlTemplate || DEFAULT_UNATTEND_XML_TEMPLATE).trim() ||
+      DEFAULT_UNATTEND_XML_TEMPLATE,
     [config.xmlTemplate],
   );
 
@@ -198,7 +212,13 @@ export const UnattendTab: React.FC = () => {
   return (
     <div className={styles.layout}>
       <aside className={styles.sidebar}>
-        <Button icon={<PlusOutlined />} size="small" onClick={handleNew} block style={{ marginBottom: 8 }}>
+        <Button
+          icon={<PlusOutlined />}
+          size="small"
+          onClick={handleNew}
+          block
+          style={{ marginBottom: 8 }}
+        >
           New Profile
         </Button>
 
@@ -265,13 +285,24 @@ export const UnattendTab: React.FC = () => {
 
         <Card size="small" title="XML Template" className={styles.sectionCard}>
           <Space wrap>
-            <Upload beforeUpload={handleImportTemplate} showUploadList={false} accept=".xml,text/xml,application/xml">
-              <Button size="small" icon={<UploadOutlined />}>Import XML</Button>
+            <Upload
+              beforeUpload={handleImportTemplate}
+              showUploadList={false}
+              accept=".xml,text/xml,application/xml"
+            >
+              <Button size="small" icon={<UploadOutlined />}>
+                Import XML
+              </Button>
             </Upload>
             <Button size="small" icon={<DownloadOutlined />} onClick={handleExportTemplate}>
               Export Template
             </Button>
-            <Button size="small" icon={<DownloadOutlined />} onClick={handleExportFinal} type="primary">
+            <Button
+              size="small"
+              icon={<DownloadOutlined />}
+              onClick={handleExportFinal}
+              type="primary"
+            >
               Export Final XML
             </Button>
             <Button size="small" icon={<ReloadOutlined />} onClick={handleResetTemplate}>
@@ -288,7 +319,12 @@ export const UnattendTab: React.FC = () => {
           )}
         </Card>
 
-        <Card id="unattend-region" size="small" title="Region & Language" className={styles.sectionCard}>
+        <Card
+          id="unattend-region"
+          size="small"
+          title="Region & Language"
+          className={styles.sectionCard}
+        >
           <RegionLanguageSection config={config} updateConfig={updateConfig} />
         </Card>
 
@@ -296,23 +332,48 @@ export const UnattendTab: React.FC = () => {
           <AccountSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-visual" size="small" title="Visual Effects" className={styles.sectionCard}>
+        <Card
+          id="unattend-visual"
+          size="small"
+          title="Visual Effects"
+          className={styles.sectionCard}
+        >
           <VisualEffectsSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-desktop" size="small" title="Desktop & Icons" className={styles.sectionCard}>
+        <Card
+          id="unattend-desktop"
+          size="small"
+          title="Desktop & Icons"
+          className={styles.sectionCard}
+        >
           <DesktopIconsSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-bloatware" size="small" title="Bloatware & Capabilities" className={styles.sectionCard}>
+        <Card
+          id="unattend-bloatware"
+          size="small"
+          title="Bloatware & Capabilities"
+          className={styles.sectionCard}
+        >
           <BloatwareSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-windows" size="small" title="Windows Settings" className={styles.sectionCard}>
+        <Card
+          id="unattend-windows"
+          size="small"
+          title="Windows Settings"
+          className={styles.sectionCard}
+        >
           <WindowsSettingsSection config={config} updateConfig={updateConfig} />
         </Card>
 
-        <Card id="unattend-script" size="small" title="Custom Script" className={styles.sectionCard}>
+        <Card
+          id="unattend-script"
+          size="small"
+          title="Custom Script"
+          className={styles.sectionCard}
+        >
           <CustomScriptSection config={config} updateConfig={updateConfig} />
         </Card>
       </section>

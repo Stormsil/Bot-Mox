@@ -16,7 +16,9 @@ function createWorkspaceRoutes({ repositories }) {
     asyncHandler(async (req, res) => {
       const parsedKind = workspaceKindParamSchema.safeParse(req.params);
       if (!parsedKind.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid workspace kind', parsedKind.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid workspace kind', parsedKind.error.flatten()));
       }
 
       const { kind } = parsedKind.data;
@@ -27,17 +29,21 @@ function createWorkspaceRoutes({ repositories }) {
 
       const parsedQuery = parseListQuery(req.query);
       if (!parsedQuery.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid query parameters', parsedQuery.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid query parameters', parsedQuery.error.flatten()));
       }
 
       const items = await repo.list();
       const result = applyListQuery(items, parsedQuery.data);
-      return res.json(success(result.items, {
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-      }));
-    })
+      return res.json(
+        success(result.items, {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+        }),
+      );
+    }),
   );
 
   router.get(
@@ -45,7 +51,9 @@ function createWorkspaceRoutes({ repositories }) {
     asyncHandler(async (req, res) => {
       const parsedKind = workspaceKindParamSchema.safeParse(req.params);
       if (!parsedKind.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid workspace kind', parsedKind.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid workspace kind', parsedKind.error.flatten()));
       }
 
       const { kind } = parsedKind.data;
@@ -56,7 +64,9 @@ function createWorkspaceRoutes({ repositories }) {
 
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid workspace id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid workspace id', parsedId.error.flatten()));
       }
 
       const entity = await repo.getById(parsedId.data.id);
@@ -65,7 +75,7 @@ function createWorkspaceRoutes({ repositories }) {
       }
 
       return res.json(success(entity));
-    })
+    }),
   );
 
   router.post(
@@ -73,7 +83,9 @@ function createWorkspaceRoutes({ repositories }) {
     asyncHandler(async (req, res) => {
       const parsedKind = workspaceKindParamSchema.safeParse(req.params);
       if (!parsedKind.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid workspace kind', parsedKind.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid workspace kind', parsedKind.error.flatten()));
       }
 
       const { kind } = parsedKind.data;
@@ -84,13 +96,15 @@ function createWorkspaceRoutes({ repositories }) {
 
       const parsedBody = getWorkspaceCreateSchema(kind).safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
-      const explicitId = typeof req.body?.id === 'string' ? req.body.id.trim() : '';
+      const explicitId = typeof parsedBody.data.id === 'string' ? parsedBody.data.id.trim() : '';
       const created = await repo.create(parsedBody.data, explicitId || undefined);
       return res.status(201).json(success(created));
-    })
+    }),
   );
 
   router.patch(
@@ -98,7 +112,9 @@ function createWorkspaceRoutes({ repositories }) {
     asyncHandler(async (req, res) => {
       const parsedKind = workspaceKindParamSchema.safeParse(req.params);
       if (!parsedKind.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid workspace kind', parsedKind.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid workspace kind', parsedKind.error.flatten()));
       }
 
       const { kind } = parsedKind.data;
@@ -109,12 +125,16 @@ function createWorkspaceRoutes({ repositories }) {
 
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid workspace id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid workspace id', parsedId.error.flatten()));
       }
 
       const parsedBody = getWorkspacePatchSchema(kind).safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const updated = await repo.patch(parsedId.data.id, parsedBody.data);
@@ -123,7 +143,7 @@ function createWorkspaceRoutes({ repositories }) {
       }
 
       return res.json(success(updated));
-    })
+    }),
   );
 
   router.delete(
@@ -131,7 +151,9 @@ function createWorkspaceRoutes({ repositories }) {
     asyncHandler(async (req, res) => {
       const parsedKind = workspaceKindParamSchema.safeParse(req.params);
       if (!parsedKind.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid workspace kind', parsedKind.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid workspace kind', parsedKind.error.flatten()));
       }
 
       const { kind } = parsedKind.data;
@@ -142,7 +164,9 @@ function createWorkspaceRoutes({ repositories }) {
 
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid workspace id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid workspace id', parsedId.error.flatten()));
       }
 
       const deleted = await repo.remove(parsedId.data.id);
@@ -151,7 +175,7 @@ function createWorkspaceRoutes({ repositories }) {
       }
 
       return res.json(success({ id: parsedId.data.id, deleted: true }));
-    })
+    }),
   );
 
   return router;

@@ -50,7 +50,10 @@ function jwtHs256(secret, payload) {
 }
 
 async function main() {
-  const secret = required('arg --jwt-secret', readArg('jwt-secret') || process.env.SUPABASE_JWT_SECRET);
+  const secret = required(
+    'arg --jwt-secret',
+    readArg('jwt-secret') || process.env.SUPABASE_JWT_SECRET,
+  );
   const issuer = String(readArg('issuer') || 'supabase').trim() || 'supabase';
   const ttlDays = Math.max(1, toInt(readArg('days') || '3650', 3650));
   const exp = Math.floor(Date.now() / 1000) + ttlDays * 24 * 60 * 60;
@@ -69,4 +72,3 @@ main().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });
-

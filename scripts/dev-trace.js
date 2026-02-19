@@ -1,8 +1,8 @@
 // Launch the dev environment with OpenTelemetry enabled (backend + frontend context propagation).
 // This is intentionally implemented as a node script (not cross-env) to be portable across shells/OS.
 
-const { spawn } = require('child_process');
-const path = require('path');
+const { spawn } = require('node:child_process');
+const path = require('node:path');
 
 const rootDir = path.join(__dirname, '..');
 const startScript = path.join(rootDir, 'start-dev.js');
@@ -31,7 +31,8 @@ const env = {
   // Export frontend spans through the backend proxy (avoids Jaeger CORS issues).
   // This is safe to disable by setting it to empty string.
   VITE_OTEL_EXPORTER_OTLP_ENDPOINT:
-    process.env.VITE_OTEL_EXPORTER_OTLP_ENDPOINT || `http://localhost:${proxyPort}/api/v1/otel/v1/traces`,
+    process.env.VITE_OTEL_EXPORTER_OTLP_ENDPOINT ||
+    `http://localhost:${proxyPort}/api/v1/otel/v1/traces`,
 };
 
 const child = spawn(process.execPath, [startScript], {

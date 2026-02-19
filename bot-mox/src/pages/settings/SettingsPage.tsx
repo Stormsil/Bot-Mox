@@ -1,37 +1,38 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Button,
-  Form,
-  Row,
-  Typography,
-  message,
-} from 'antd';
-import {
-  ReloadOutlined,
-  ToolOutlined,
-} from '@ant-design/icons';
-import type { ApiKeys, NotificationEvents, ProxySettings, SubscriptionSettings } from '../../types';
-import {
-  getApiKeys,
-  getNotificationEvents,
-  getProxySettings,
-  updateApiKeys,
-  updateNotificationEvents,
-  updateProxySettings,
-} from '../../services/apiKeysService';
-import { getThemeSettings } from '../../services/themeService';
-import {
-  getProjectSettings,
-  type ProjectSettings,
-} from '../../services/projectSettingsService';
+import { ReloadOutlined, ToolOutlined } from '@ant-design/icons';
+import { Button, Form, message, Row, Typography } from 'antd';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   getDefaultSettings,
-  getSubscriptionSettings,
-  updateSubscriptionSettings,
-} from '../../services/settingsService';
-import { getStoragePolicy, updateStoragePolicy } from '../../services/storagePolicyService';
+  type ProjectSettings,
+} from '../../entities/settings/api/settingsFacade';
+import { useProjectSettingsQuery } from '../../entities/settings/api/useProjectSettingsQuery';
+import {
+  useUpdateApiKeysMutation,
+  useUpdateNotificationEventsMutation,
+  useUpdateProxySettingsMutation,
+  useUpdateStoragePolicyMutation,
+} from '../../entities/settings/api/useSettingsMutations';
+import {
+  useApiKeysQuery,
+  useNotificationEventsQuery,
+  useProxySettingsQuery,
+  useStoragePolicyQuery,
+  useThemeSettingsQuery,
+} from '../../entities/settings/api/useSettingsQueries';
+import { useUpdateSubscriptionSettingsMutation } from '../../entities/settings/api/useSubscriptionSettingsMutation';
+import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
+import { uiLogger } from '../../observability/uiLogger';
 import { useThemeRuntime } from '../../theme/themeRuntime';
-import { ApiKeysCard, NotificationsCard, ProjectsCard, ProxyAndAlertsCards, StoragePolicyCard } from './SettingsSections';
+import type { ApiKeys, NotificationEvents, ProxySettings, SubscriptionSettings } from '../../types';
+import styles from './SettingsPage.module.css';
+import {
+  ApiKeysCard,
+  NotificationsCard,
+  ProjectsCard,
+  ProxyAndAlertsCards,
+  StoragePolicyCard,
+} from './SettingsSections';
 import { ThemeSettingsPanel } from './ThemeSettingsPanel';
 import type {
   ApiKeysFormValues,
@@ -40,8 +41,6 @@ import type {
   StoragePolicyFormValues,
 } from './types';
 import { useThemeSettings } from './useThemeSettings';
-import styles from './SettingsPage.module.css';
-import { uiLogger } from '../../observability/uiLogger'
 
 function cx(classNames: string): string {
   return classNames
@@ -54,6 +53,7 @@ function cx(classNames: string): string {
 const { Title } = Typography;
 
 export const SettingsPage: React.FC = () => {
+  const subscriptionSettingsQuery = useSubscriptionSettingsQuery();
   const {
     themePalettes,
     setThemePalettes,
@@ -64,10 +64,8 @@ export const SettingsPage: React.FC = () => {
     shapeSettings,
     setShapeSettings,
   } = useThemeRuntime();
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [projectsVisible, setProjectsVisible] = useState(false);
-  const [projects, setProjects] = useState<Record<string, ProjectSettings>>({});
 
   const [apiKeysForm] = Form.useForm();
 
@@ -76,7 +74,18 @@ export const SettingsPage: React.FC = () => {
   const [notificationsForm] = Form.useForm();
   const [alertsForm] = Form.useForm();
   const [storagePolicyForm] = Form.useForm();
-  const [globalAlerts, setGlobalAlerts] = useState<SubscriptionSettings>(getDefaultSettings());
+  const apiKeysQuery = useApiKeysQuery();
+  const proxySettingsQuery = useProxySettingsQuery();
+  const notificationEventsQuery = useNotificationEventsQuery();
+  const themeSettingsQuery = useThemeSettingsQuery();
+  const projectSettingsQuery = useProjectSettingsQuery();
+  const storagePolicyQuery = useStoragePolicyQuery();
+  const updateApiKeysMutation = useUpdateApiKeysMutation();
+  const updateProxySettingsMutation = useUpdateProxySettingsMutation();
+  const updateNotificationEventsMutation = useUpdateNotificationEventsMutation();
+  const updateSubscriptionSettingsMutation = useUpdateSubscriptionSettingsMutation();
+  const updateStoragePolicyMutation = useUpdateStoragePolicyMutation();
+
   const theme = useThemeSettings({
     themePalettes,
     onThemePalettesChange: setThemePalettes,
@@ -88,66 +97,94 @@ export const SettingsPage: React.FC = () => {
     onShapeSettingsChange: setShapeSettings,
   });
 
-  const loadSettings = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [keys, proxy, events, themeSettings, projectSettings, alertsSettings, storagePolicySettings] = await Promise.all([
-        getApiKeys(),
-        getProxySettings(),
-        getNotificationEvents(),
-        getThemeSettings(),
-        getProjectSettings(),
-        getSubscriptionSettings(),
-        getStoragePolicy(),
-      ]);
+  useEffect(() => {
+    if (!apiKeysQuery.data) return;
+    apiKeysForm.setFieldsValue({
+      ipqs_api_key: apiKeysQuery.data.ipqs.api_key,
+      ipqs_enabled: apiKeysQuery.data.ipqs.enabled,
+      telegram_bot_token: apiKeysQuery.data.telegram.bot_token,
+      telegram_chat_id: apiKeysQuery.data.telegram.chat_id,
+      telegram_enabled: apiKeysQuery.data.telegram.enabled,
+    });
+  }, [apiKeysForm, apiKeysQuery.data]);
 
-      theme.applyThemeSettings(themeSettings);
-      setProjects(projectSettings);
-      setGlobalAlerts(alertsSettings);
+  useEffect(() => {
+    if (!proxySettingsQuery.data) return;
+    proxyForm.setFieldsValue({
+      auto_check_on_add: proxySettingsQuery.data.auto_check_on_add,
+      fraud_score_threshold: proxySettingsQuery.data.fraud_score_threshold,
+      check_interval_hours: proxySettingsQuery.data.check_interval_hours,
+    });
+  }, [proxyForm, proxySettingsQuery.data]);
 
-      // Set form values
-      apiKeysForm.setFieldsValue({
-        ipqs_api_key: keys.ipqs.api_key,
-        ipqs_enabled: keys.ipqs.enabled,
-        telegram_bot_token: keys.telegram.bot_token,
-        telegram_chat_id: keys.telegram.chat_id,
-        telegram_enabled: keys.telegram.enabled,
-      });
+  useEffect(() => {
+    if (!notificationEventsQuery.data) return;
+    notificationsForm.setFieldsValue(notificationEventsQuery.data);
+  }, [notificationEventsQuery.data, notificationsForm]);
 
-      proxyForm.setFieldsValue({
-        auto_check_on_add: proxy.auto_check_on_add,
-        fraud_score_threshold: proxy.fraud_score_threshold,
-        check_interval_hours: proxy.check_interval_hours,
-      });
+  useEffect(() => {
+    if (!storagePolicyQuery.data) return;
+    storagePolicyForm.setFieldsValue({
+      operational: storagePolicyQuery.data.operational,
+      sync_enabled: Boolean(storagePolicyQuery.data.sync?.enabled),
+    });
+  }, [storagePolicyForm, storagePolicyQuery.data]);
 
-      notificationsForm.setFieldsValue(events);
-      alertsForm.setFieldsValue({
-        warning_days: alertsSettings.warning_days,
-      });
+  useEffect(() => {
+    if (!themeSettingsQuery.data) return;
+    theme.applyThemeSettings(themeSettingsQuery.data);
+  }, [theme, themeSettingsQuery.data]);
 
-      storagePolicyForm.setFieldsValue({
-        operational: storagePolicySettings.operational,
-        sync_enabled: Boolean(storagePolicySettings.sync?.enabled),
-      });
-    } catch (error) {
-      uiLogger.error('Error loading settings:', error);
-      message.error('Failed to load settings');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!subscriptionSettingsQuery.data) {
+      return;
+    }
+
+    alertsForm.setFieldsValue({
+      warning_days: subscriptionSettingsQuery.data.warning_days,
+    });
+  }, [alertsForm, subscriptionSettingsQuery.data]);
+
+  useEffect(() => {
+    if (apiKeysQuery.error) uiLogger.error('Error loading API keys:', apiKeysQuery.error);
+    if (proxySettingsQuery.error)
+      uiLogger.error('Error loading proxy settings:', proxySettingsQuery.error);
+    if (notificationEventsQuery.error)
+      uiLogger.error('Error loading notification settings:', notificationEventsQuery.error);
+    if (themeSettingsQuery.error)
+      uiLogger.error('Error loading theme settings:', themeSettingsQuery.error);
+    if (projectSettingsQuery.error)
+      uiLogger.error('Error loading project settings:', projectSettingsQuery.error);
+    if (storagePolicyQuery.error)
+      uiLogger.error('Error loading storage policy:', storagePolicyQuery.error);
+    if (subscriptionSettingsQuery.error) {
+      uiLogger.error('Error loading subscription settings:', subscriptionSettingsQuery.error);
     }
   }, [
-    alertsForm,
-    apiKeysForm,
-    notificationsForm,
-    proxyForm,
-    storagePolicyForm,
-    theme,
+    apiKeysQuery.error,
+    notificationEventsQuery.error,
+    projectSettingsQuery.error,
+    proxySettingsQuery.error,
+    storagePolicyQuery.error,
+    subscriptionSettingsQuery.error,
+    themeSettingsQuery.error,
   ]);
 
-  // Load settings on mount
-  useEffect(() => {
-    void loadSettings();
-  }, [loadSettings]);
+  const loading =
+    apiKeysQuery.isLoading ||
+    proxySettingsQuery.isLoading ||
+    notificationEventsQuery.isLoading ||
+    themeSettingsQuery.isLoading ||
+    projectSettingsQuery.isLoading ||
+    storagePolicyQuery.isLoading ||
+    subscriptionSettingsQuery.isLoading ||
+    apiKeysQuery.isFetching ||
+    proxySettingsQuery.isFetching ||
+    notificationEventsQuery.isFetching ||
+    themeSettingsQuery.isFetching ||
+    projectSettingsQuery.isFetching ||
+    storagePolicyQuery.isFetching ||
+    subscriptionSettingsQuery.isFetching;
 
   // Save API Keys
   const handleSaveApiKeys = async (values: ApiKeysFormValues) => {
@@ -165,7 +202,7 @@ export const SettingsPage: React.FC = () => {
         },
       };
 
-      await updateApiKeys(newApiKeys);
+      await updateApiKeysMutation.mutateAsync(newApiKeys);
       message.success('API keys saved');
     } catch (error) {
       uiLogger.error('Error saving API keys:', error);
@@ -185,7 +222,7 @@ export const SettingsPage: React.FC = () => {
         check_interval_hours: Number(values.check_interval_hours || 0),
       };
 
-      await updateProxySettings(newProxySettings);
+      await updateProxySettingsMutation.mutateAsync(newProxySettings);
       message.success('Proxy settings saved');
     } catch (error) {
       uiLogger.error('Error saving proxy settings:', error);
@@ -209,7 +246,7 @@ export const SettingsPage: React.FC = () => {
         daily_report: Boolean(values.daily_report),
       };
 
-      await updateNotificationEvents(newEvents);
+      await updateNotificationEventsMutation.mutateAsync(newEvents);
       message.success('Notification settings saved');
     } catch (error) {
       uiLogger.error('Error saving notification settings:', error);
@@ -222,13 +259,11 @@ export const SettingsPage: React.FC = () => {
   const handleSaveGlobalAlerts = async (values: { warning_days: number }) => {
     setSaving(true);
     try {
-      const nextAlerts: SubscriptionSettings = {
-        ...globalAlerts,
+      const nextAlerts: Partial<SubscriptionSettings> = {
+        ...(subscriptionSettingsQuery.data || getDefaultSettings()),
         warning_days: values.warning_days,
-        updated_at: Date.now(),
       };
-      await updateSubscriptionSettings(nextAlerts);
-      setGlobalAlerts(nextAlerts);
+      await updateSubscriptionSettingsMutation.mutateAsync(nextAlerts);
       message.success('Global alert settings saved');
     } catch (error) {
       uiLogger.error('Error saving global alert settings:', error);
@@ -241,7 +276,7 @@ export const SettingsPage: React.FC = () => {
   const handleSaveStoragePolicy = async (values: StoragePolicyFormValues) => {
     setSaving(true);
     try {
-      await updateStoragePolicy({
+      await updateStoragePolicyMutation.mutateAsync({
         secrets: 'local-only',
         operational: values.operational === 'local' ? 'local' : 'cloud',
         sync: {
@@ -257,11 +292,14 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  const projectEntries = Object.entries(projects).sort((a, b) => {
-    const aName = (a[1].name || a[0]).trim();
-    const bName = (b[1].name || b[0]).trim();
-    return aName.localeCompare(bName);
-  });
+  const projectEntries = useMemo(() => {
+    const projects: Record<string, ProjectSettings> = projectSettingsQuery.data || {};
+    return Object.entries(projects).sort((a, b) => {
+      const aName = (a[1].name || a[0]).trim();
+      const bName = (b[1].name || b[0]).trim();
+      return aName.localeCompare(bName);
+    });
+  }, [projectSettingsQuery.data]);
 
   return (
     <div className={cx('settings-page')}>
@@ -276,7 +314,15 @@ export const SettingsPage: React.FC = () => {
         <Button
           icon={<ReloadOutlined />}
           onClick={() => {
-            void loadSettings();
+            void Promise.all([
+              apiKeysQuery.refetch(),
+              proxySettingsQuery.refetch(),
+              notificationEventsQuery.refetch(),
+              themeSettingsQuery.refetch(),
+              projectSettingsQuery.refetch(),
+              storagePolicyQuery.refetch(),
+              subscriptionSettingsQuery.refetch(),
+            ]);
           }}
           loading={loading}
         >

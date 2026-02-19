@@ -202,7 +202,10 @@ const normalizeFromHex = (value: string): string | null => {
   const hex = cleaned.replace('#', '').toLowerCase();
 
   if (hex.length === 3) {
-    const expanded = hex.split('').map((char) => `${char}${char}`).join('');
+    const expanded = hex
+      .split('')
+      .map((char) => `${char}${char}`)
+      .join('');
     return `#${expanded}`;
   }
 
@@ -260,10 +263,7 @@ export const normalizeHexColor = (value: string, fallback: string): string => {
   return fallbackHex ?? '#000000';
 };
 
-const sanitizePalette = (
-  source: unknown,
-  fallback: ThemePalette
-): ThemePalette => {
+const sanitizePalette = (source: unknown, fallback: ThemePalette): ThemePalette => {
   const sourcePalette = (source ?? {}) as Record<string, unknown>;
   const nextPalette = { ...fallback };
 
@@ -313,19 +313,22 @@ export const sanitizeThemeVisualSettings = (source: unknown): ThemeVisualSetting
   const fallback = DEFAULT_THEME_VISUAL_SETTINGS;
 
   const mode = payload.mode === 'image' ? 'image' : 'none';
-  const backgroundPosition: ThemeVisualPosition = payload.backgroundPosition === 'top'
-    ? 'top'
-    : payload.backgroundPosition === 'custom'
-      ? 'custom'
-      : 'center';
-  const backgroundSize: ThemeVisualSize = payload.backgroundSize === 'contain'
-    ? 'contain'
-    : payload.backgroundSize === 'auto'
-      ? 'auto'
-      : 'cover';
-  const backgroundAssetId = typeof payload.backgroundAssetId === 'string' && payload.backgroundAssetId.trim()
-    ? payload.backgroundAssetId.trim()
-    : undefined;
+  const backgroundPosition: ThemeVisualPosition =
+    payload.backgroundPosition === 'top'
+      ? 'top'
+      : payload.backgroundPosition === 'custom'
+        ? 'custom'
+        : 'center';
+  const backgroundSize: ThemeVisualSize =
+    payload.backgroundSize === 'contain'
+      ? 'contain'
+      : payload.backgroundSize === 'auto'
+        ? 'auto'
+        : 'cover';
+  const backgroundAssetId =
+    typeof payload.backgroundAssetId === 'string' && payload.backgroundAssetId.trim()
+      ? payload.backgroundAssetId.trim()
+      : undefined;
 
   return {
     enabled: payload.enabled === true,
@@ -335,8 +338,14 @@ export const sanitizeThemeVisualSettings = (source: unknown): ThemeVisualSetting
     backgroundPosition,
     backgroundSize,
     overlayOpacity: clampNumber(payload.overlayOpacity, fallback.overlayOpacity, 0, 1),
-    overlayColorLight: normalizeHexColor(String(payload.overlayColorLight ?? ''), fallback.overlayColorLight),
-    overlayColorDark: normalizeHexColor(String(payload.overlayColorDark ?? ''), fallback.overlayColorDark),
+    overlayColorLight: normalizeHexColor(
+      String(payload.overlayColorLight ?? ''),
+      fallback.overlayColorLight,
+    ),
+    overlayColorDark: normalizeHexColor(
+      String(payload.overlayColorDark ?? ''),
+      fallback.overlayColorDark,
+    ),
     blurPx: clampNumber(payload.blurPx, fallback.blurPx, 0, 24),
     dimStrength: clampNumber(payload.dimStrength, fallback.dimStrength, 0, 1),
   };
@@ -386,7 +395,7 @@ export const applyThemePaletteToDocument = (palette: ThemePalette): void => {
 
   const brandPrimary = normalizeHexColor(
     palette['--boxmox-color-brand-primary'],
-    '#3b7db8'
+    '#3b7db8',
   ).replace('#', '');
 
   const r = Number.parseInt(brandPrimary.slice(0, 2), 16);
@@ -395,7 +404,7 @@ export const applyThemePaletteToDocument = (palette: ThemePalette): void => {
 
   document.documentElement.style.setProperty(
     '--boxmox-color-brand-primary-rgb',
-    `${r}, ${g}, ${b}`
+    `${r}, ${g}, ${b}`,
   );
 };
 

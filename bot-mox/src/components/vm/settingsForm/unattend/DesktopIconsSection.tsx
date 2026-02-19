@@ -1,16 +1,22 @@
-import React from 'react';
 import { Checkbox, Form, Radio, Typography } from 'antd';
-import type { UnattendProfileConfig } from '../../../../services/unattendProfileService';
+import type React from 'react';
 import { DESKTOP_ICONS, START_FOLDERS } from '../../../../data/windows-visual-effects';
+import type { UnattendProfileConfig } from '../../../../entities/vm/model/unattend';
 
 const { Text } = Typography;
 
 interface DesktopIconsSectionProps {
   config: UnattendProfileConfig;
-  updateConfig: <K extends keyof UnattendProfileConfig>(section: K, patch: Partial<UnattendProfileConfig[K]>) => void;
+  updateConfig: <K extends keyof UnattendProfileConfig>(
+    section: K,
+    patch: Partial<UnattendProfileConfig[K]>,
+  ) => void;
 }
 
-export const DesktopIconsSection: React.FC<DesktopIconsSectionProps> = ({ config, updateConfig }) => {
+export const DesktopIconsSection: React.FC<DesktopIconsSectionProps> = ({
+  config,
+  updateConfig,
+}) => {
   const mode = config.desktopIcons.mode;
   const icons = config.desktopIcons.icons || {};
   const startFolders = config.desktopIcons.startFolders || {};
@@ -40,7 +46,9 @@ export const DesktopIconsSection: React.FC<DesktopIconsSectionProps> = ({ config
 
       {isCustom && (
         <>
-          <Text strong style={{ display: 'block', marginBottom: 8 }}>Desktop Icons</Text>
+          <Text strong style={{ display: 'block', marginBottom: 8 }}>
+            Desktop Icons
+          </Text>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 16 }}>
             {DESKTOP_ICONS.map((icon) => (
               <Checkbox
@@ -57,7 +65,9 @@ export const DesktopIconsSection: React.FC<DesktopIconsSectionProps> = ({ config
             ))}
           </div>
 
-          <Text strong style={{ display: 'block', marginBottom: 8 }}>Start Menu Folders</Text>
+          <Text strong style={{ display: 'block', marginBottom: 8 }}>
+            Start Menu Folders
+          </Text>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {START_FOLDERS.map((folder) => (
               <Checkbox

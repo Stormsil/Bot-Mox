@@ -3,14 +3,13 @@
  * Интегрирует NoteSidebar и NoteEditor для полноценной работы с заметками
  */
 
-import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
-import { Empty, Spin, message } from 'antd';
+import { Empty, message, Spin } from 'antd';
+import type React from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { NoteSidebar } from '../../components/notes';
-import type { Note } from '../../services/notesService';
-import {
-  subscribeToNote,
-} from '../../services/notesService';
+import { useNoteByIdQuery } from '../../entities/notes/api/useNoteByIdQuery';
+import type { Note } from '../../entities/notes/model/types';
 import styles from './NotesPage.module.css';
 
 const NoteEditor = lazy(async () => ({
@@ -23,8 +22,7 @@ export const NotesPage: React.FC = () => {
   const location = useLocation();
   // Состояние выбранной заметки
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
-  const [currentNote, setCurrentNote] = useState<Note | null>(null);
-  const [loading, setLoading] = useState(false);
+  const noteByIdQuery = useNoteByIdQuery(selectedNoteId);
 
   // Состояние сворачивания боковой панели
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -47,59 +45,32 @@ export const NotesPage: React.FC = () => {
 
   // Загрузка заметки при изменении выбранного ID
   useEffect(() => {
-    if (!selectedNoteId) {
+    if (!noteByIdQuery.error) {
       return;
     }
-
-    const loadingFrame = window.requestAnimationFrame(() => {
-      setLoading(true);
-    });
-
-    // Подписываемся на realtime обновления заметки
-    const unsubscribe = subscribeToNote(selectedNoteId, (note) => {
-      if (note) {
-        setCurrentNote(note);
-      } else {
-        // Заметка была удалена
-        setCurrentNote(null);
-        setSelectedNoteId(null);
-        message.info('Note was deleted');
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(loadingFrame);
-      unsubscribe();
-    };
-  }, [selectedNoteId]);
+    message.error('Failed to load note');
+  }, [noteByIdQuery.error]);
 
   // Обработчик выбора заметки из sidebar
   const handleSelectNote = useCallback((noteId: string) => {
-    setCurrentNote(null);
     setSelectedNoteId(noteId);
   }, []);
 
   // Обработчик создания новой заметки
   const handleCreateNote = useCallback(() => {
-    // Заметка создается в NoteSidebar, здесь только сбрасываем выбор
-    setCurrentNote(null);
-    setLoading(false);
     setSelectedNoteId(null);
     message.success('Note created');
   }, []);
 
   // Обработчик обновления заметки (локально)
   const handleNoteChange = useCallback((updatedNote: Note) => {
-    setCurrentNote(updatedNote);
+    void updatedNote;
   }, []);
 
   // Обработчик удаления заметки
   const handleNoteDelete = useCallback((noteId: string) => {
     void noteId;
     setSelectedNoteId(null);
-    setCurrentNote(null);
-    setLoading(false);
     message.success('Note deleted');
   }, []);
 
@@ -111,6 +82,9 @@ export const NotesPage: React.FC = () => {
       return newValue;
     });
   }, []);
+
+  const currentNote = noteByIdQuery.data || null;
+  const loading = Boolean(selectedNoteId) && noteByIdQuery.isLoading;
 
   return (
     <div className={styles.root}>
@@ -134,12 +108,12 @@ export const NotesPage: React.FC = () => {
             </div>
           ) : currentNote ? (
             <Suspense
-              fallback={(
+              fallback={
                 <div className={styles.loading}>
                   <Spin size="large" />
                   <span>Loading editor...</span>
                 </div>
-              )}
+              }
             >
               <NoteEditor
                 note={currentNote}

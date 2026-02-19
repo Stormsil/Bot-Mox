@@ -1,15 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Button,
-  Card,
-  Input,
-  Modal,
-  Select,
-  Space,
-  Table,
-  Typography,
-  message,
-} from 'antd';
 import {
   CreditCardOutlined,
   DownOutlined,
@@ -18,19 +6,22 @@ import {
   RightOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { useSubscriptions } from '../../hooks/useSubscriptions';
+import { Button, Card, Input, Modal, message, Select, Space, Table, Typography } from 'antd';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { SubscriptionForm } from '../../components/subscriptions/SubscriptionForm';
-import { fetchBotsList } from '../../services/botsApiService';
+import { useBotsListQuery } from '../../entities/bot/api/useBotQueries';
+import { useSubscriptions } from '../../hooks/useSubscriptions';
+import { uiLogger } from '../../observability/uiLogger';
 import type {
   ComputedSubscriptionStatus,
   SubscriptionFormData,
   SubscriptionWithDetails,
 } from '../../types';
-import { buildSubscriptionColumns } from './subscription-columns';
 import { ExpiringSubscriptionsAlert } from './ExpiringSubscriptionsAlert';
-import { SubscriptionsStats } from './SubscriptionsStats';
 import styles from './SubscriptionsPage.module.css';
-import { uiLogger } from '../../observability/uiLogger'
+import { SubscriptionsStats } from './SubscriptionsStats';
+import { buildSubscriptionColumns } from './subscription-columns';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -47,6 +38,7 @@ interface BotOption {
 }
 
 export const SubscriptionsPage: React.FC = () => {
+  const botsQuery = useBotsListQuery();
   const {
     subscriptions,
     loading,
@@ -61,41 +53,40 @@ export const SubscriptionsPage: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<ComputedSubscriptionStatus | 'all'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithDetails | null>(null);
-  const [bots, setBots] = useState<BotOption[]>([]);
+  const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithDetails | null>(
+    null,
+  );
   const [saving, setSaving] = useState(false);
   const [statsCollapsed, setStatsCollapsed] = useState<boolean>(() => {
     const saved = localStorage.getItem(STATS_COLLAPSED_KEY);
     return saved ? Boolean(JSON.parse(saved)) : false;
   });
+  const bots = useMemo<BotOption[]>(
+    () =>
+      (botsQuery.data || []).map((bot) => ({
+        id: bot.id,
+        name: bot.name || bot.id,
+        character: bot.character?.name,
+        status: bot.status,
+        account_email:
+          bot.account && typeof bot.account === 'object' && 'email' in bot.account
+            ? String((bot.account as { email?: unknown }).email || '')
+            : undefined,
+        vmName: bot.vm?.name,
+      })),
+    [botsQuery.data],
+  );
 
   useEffect(() => {
     localStorage.setItem(STATS_COLLAPSED_KEY, JSON.stringify(statsCollapsed));
   }, [statsCollapsed]);
 
   useEffect(() => {
-    const loadBots = async () => {
-      try {
-        const botsData = await fetchBotsList();
-        const botsList: BotOption[] = botsData.map((bot) => ({
-          id: bot.id,
-          name: bot.name || bot.id,
-          character: bot.character?.name,
-          status: bot.status,
-          account_email:
-            bot.account && typeof bot.account === 'object' && 'email' in bot.account
-              ? String((bot.account as { email?: unknown }).email || '')
-              : undefined,
-          vmName: bot.vm?.name,
-        }));
-        setBots(botsList);
-      } catch (error) {
-        uiLogger.error('Error loading bots:', error);
-      }
-    };
-
-    void loadBots();
-  }, []);
+    if (!botsQuery.error) {
+      return;
+    }
+    uiLogger.error('Error loading bots:', botsQuery.error);
+  }, [botsQuery.error]);
 
   const filteredSubscriptions = subscriptions.filter((sub) => {
     const normalizedSearch = searchText.toLowerCase();
@@ -177,7 +168,9 @@ export const SubscriptionsPage: React.FC = () => {
             <Title level={4} className={styles.headerHeading}>
               <CreditCardOutlined /> Subscriptions
             </Title>
-            <Text type="secondary" className={styles.headerSubtitle}>Manage bot subscriptions</Text>
+            <Text type="secondary" className={styles.headerSubtitle}>
+              Manage bot subscriptions
+            </Text>
           </div>
           <Space>
             <Button
@@ -207,7 +200,12 @@ export const SubscriptionsPage: React.FC = () => {
             onChange={(event) => setSearchText(event.target.value)}
             style={{ width: 300 }}
           />
-          <Select placeholder="Status" value={statusFilter} onChange={setStatusFilter} style={{ width: 150 }}>
+          <Select
+            placeholder="Status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            style={{ width: 150 }}
+          >
             <Option value="all">All Statuses</Option>
             <Option value="active">Active</Option>
             <Option value="expiring_soon">Expiring Soon</Option>
@@ -230,7 +228,7 @@ export const SubscriptionsPage: React.FC = () => {
           dataSource={filteredSubscriptions}
           columns={columns}
           rowKey="id"
-          loading={loading}
+          loading={loading || botsQuery.isLoading}
           className={styles.table}
           rowClassName={() => styles.tableRow}
           pagination={{

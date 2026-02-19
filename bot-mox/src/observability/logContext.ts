@@ -164,4 +164,3 @@ export function normalizeField(value: unknown): string | undefined {
   const normalized = trimTo(value, MAX_FIELD);
   return normalized || undefined;
 }
-

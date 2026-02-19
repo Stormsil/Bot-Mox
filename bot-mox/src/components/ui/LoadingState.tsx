@@ -1,5 +1,5 @@
-import React from 'react';
-import { Spin, Card, Skeleton } from 'antd';
+import { Card, Skeleton, Spin } from 'antd';
+import type React from 'react';
 import styles from './LoadingState.module.css';
 
 interface LoadingStateProps {
@@ -13,6 +13,8 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   count = 1,
   rows = 4,
 }) => {
+  const cardSkeletonKeys = Array.from({ length: count }, (_unused, position) => `card-${position}`);
+
   if (type === 'spinner') {
     return (
       <div className={`${styles.loadingState} ${styles.spinner}`}>
@@ -32,8 +34,8 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   if (type === 'card') {
     return (
       <div className={`${styles.loadingState} ${styles.card}`}>
-        {Array.from({ length: count }).map((_, index) => (
-          <Card key={index} className={styles.loadingCard}>
+        {cardSkeletonKeys.map((key) => (
+          <Card key={key} className={styles.loadingCard}>
             <Skeleton active paragraph={{ rows }} />
           </Card>
         ))}
@@ -54,8 +56,8 @@ export const TableLoadingState: React.FC = () => (
 // Компонент для отображения состояния загрузки в списке
 export const ListLoadingState: React.FC<{ count?: number }> = ({ count = 5 }) => (
   <div className={styles.listLoadingState}>
-    {Array.from({ length: count }).map((_, index) => (
-      <div key={index} className={styles.listLoadingItem}>
+    {Array.from({ length: count }, (_unused, position) => `list-${position}`).map((key) => (
+      <div key={key} className={styles.listLoadingItem}>
         <Skeleton active avatar paragraph={{ rows: 1 }} />
       </div>
     ))}

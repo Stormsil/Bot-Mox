@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Form, TimePicker, Switch, Alert, theme } from 'antd';
-import type { ScheduleSession } from '../../types';
-import { hasOverlap, timeToMinutes, generateSessionId } from '../../utils/scheduleUtils';
+import { Alert, Form, Modal, Switch, TimePicker, theme } from 'antd';
 import dayjs from 'dayjs';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import type { ScheduleSession } from '../../types';
+import { generateSessionId, hasOverlap, timeToMinutes } from '../../utils/scheduleUtils';
 
 interface SessionEditorProps {
   session?: ScheduleSession | null;
@@ -17,7 +18,7 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
   existingSessions,
   visible,
   onSave,
-  onCancel
+  onCancel,
 }) => {
   const [form] = Form.useForm();
   const [error, setError] = useState<string | null>(null);
@@ -30,14 +31,14 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
         form.setFieldsValue({
           start: dayjs(session.start, 'HH:mm'),
           end: dayjs(session.end, 'HH:mm'),
-          enabled: session.enabled
+          enabled: session.enabled,
         });
       } else {
         // Default values for new session
         form.setFieldsValue({
           start: dayjs('09:00', 'HH:mm'),
           end: dayjs('11:30', 'HH:mm'),
-          enabled: true
+          enabled: true,
         });
       }
       const frameId = window.requestAnimationFrame(() => {
@@ -51,7 +52,7 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
   }, [visible, session, form]);
 
   const handleOk = () => {
-    form.validateFields().then(values => {
+    form.validateFields().then((values) => {
       const startTime = values.start.format('HH:mm');
       const endTime = values.end.format('HH:mm');
       const startMinutes = timeToMinutes(startTime);
@@ -59,10 +60,10 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
 
       // Check if session crosses midnight (end time is earlier than start time)
       const crossesMidnight = endMinutes < startMinutes;
-      
+
       // Calculate duration (handle midnight crossing)
-      const duration = crossesMidnight 
-        ? (1440 - startMinutes) + endMinutes  // Minutes until midnight + minutes from midnight
+      const duration = crossesMidnight
+        ? 1440 - startMinutes + endMinutes // Minutes until midnight + minutes from midnight
         : endMinutes - startMinutes;
 
       // Validate minimum duration (15 minutes)
@@ -76,7 +77,7 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
         start: startTime,
         end: endTime,
         enabled: values.enabled,
-        type: 'active'
+        type: 'active',
       };
 
       // Check for overlaps
@@ -104,9 +105,7 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
   return (
     <Modal
       title={
-        <span style={{ color: token.colorText }}>
-          {isEditing ? 'Edit Session' : 'Add Session'}
-        </span>
+        <span style={{ color: token.colorText }}>{isEditing ? 'Edit Session' : 'Add Session'}</span>
       }
       open={visible}
       onOk={handleOk}
@@ -137,10 +136,7 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
         />
       )}
 
-      <Form
-        form={form}
-        layout="vertical"
-      >
+      <Form form={form} layout="vertical">
         <Form.Item
           label="Start Time"
           name="start"
@@ -167,11 +163,7 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
           />
         </Form.Item>
 
-        <Form.Item
-          label="Enabled"
-          name="enabled"
-          valuePropName="checked"
-        >
+        <Form.Item label="Enabled" name="enabled" valuePropName="checked">
           <Switch />
         </Form.Item>
       </Form>

@@ -1,14 +1,11 @@
 const axios = require('axios');
-const https = require('https');
-const path = require('path');
-const fs = require('fs');
+const https = require('node:https');
+const path = require('node:path');
+const fs = require('node:fs');
 const { Client: SSHClient } = require('ssh2');
 const { logger } = require('../../observability/logger');
 
-function createInfraConnectors({
-  settingsReader,
-  setProxmoxTarget,
-}) {
+function createInfraConnectors({ settingsReader, setProxmoxTarget }) {
   const proxmoxAgent = new https.Agent({ rejectUnauthorized: false });
 
   const proxmoxSession = {
@@ -30,7 +27,9 @@ function createInfraConnectors({
     };
 
     try {
-      const data = await settingsReader?.readPath('settings/vmgenerator/proxmox', { fallback: null });
+      const data = await settingsReader?.readPath('settings/vmgenerator/proxmox', {
+        fallback: null,
+      });
       if (data) return data;
     } catch (error) {
       logger.error({ err: error }, 'Error reading Proxmox settings from Supabase settings');
@@ -44,7 +43,10 @@ function createInfraConnectors({
       host: String(process.env.SSH_HOST || '127.0.0.1').trim(),
       port: Number(process.env.SSH_PORT || 22),
       username: String(process.env.SSH_USERNAME || 'root').trim(),
-      useKeyAuth: String(process.env.SSH_USE_KEY_AUTH || 'true').trim().toLowerCase() !== 'false',
+      useKeyAuth:
+        String(process.env.SSH_USE_KEY_AUTH || 'true')
+          .trim()
+          .toLowerCase() !== 'false',
       password: String(process.env.SSH_PASSWORD || ''),
       privateKeyPath: String(process.env.SSH_PRIVATE_KEY_PATH || '').trim(),
     };
@@ -79,7 +81,7 @@ function createInfraConnectors({
         httpsAgent: proxmoxAgent,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         timeout: 10000,
-      }
+      },
     );
 
     const loginData = response?.data?.data || {};
@@ -133,79 +135,89 @@ function createInfraConnectors({
   }
 
   function sshExec(command, timeoutMs = 30000) {
-    return new Promise(async (resolve, reject) => {
-      const settings = await getSSHSettings();
-      const conn = new SSHClient();
-      let stdout = '';
-      let stderr = '';
-      let timedOut = false;
+    return new Promise((resolve, reject) => {
+      getSSHSettings()
+        .then((settings) => {
+          const conn = new SSHClient();
+          let stdout = '';
+          let stderr = '';
+          let timedOut = false;
 
-      const timer = setTimeout(() => {
-        timedOut = true;
-        conn.end();
-        reject(new Error('SSH command timed out'));
-      }, timeoutMs);
-
-      conn.on('ready', () => {
-        conn.exec(command, (err, stream) => {
-          if (err) {
-            clearTimeout(timer);
+          const timer = setTimeout(() => {
+            timedOut = true;
             conn.end();
-            return reject(err);
-          }
+            reject(new Error('SSH command timed out'));
+          }, timeoutMs);
 
-          stream.on('close', (code) => {
-            clearTimeout(timer);
-            conn.end();
-            if (!timedOut) {
-              resolve({ stdout: stdout.trim(), stderr: stderr.trim(), exitCode: code });
-            }
+          conn.on('ready', () => {
+            conn.exec(command, (err, stream) => {
+              if (err) {
+                clearTimeout(timer);
+                conn.end();
+                reject(err);
+                return;
+              }
+
+              stream.on('close', (code) => {
+                clearTimeout(timer);
+                conn.end();
+                if (!timedOut) {
+                  resolve({ stdout: stdout.trim(), stderr: stderr.trim(), exitCode: code });
+                }
+              });
+
+              stream.on('data', (data) => {
+                stdout += data.toString();
+              });
+              stream.stderr.on('data', (data) => {
+                stderr += data.toString();
+              });
+            });
           });
 
-          stream.on('data', (data) => { stdout += data.toString(); });
-          stream.stderr.on('data', (data) => { stderr += data.toString(); });
-        });
-      });
+          conn.on('error', (err) => {
+            clearTimeout(timer);
+            reject(err);
+          });
 
-      conn.on('error', (err) => {
-        clearTimeout(timer);
-        reject(err);
-      });
+          const connectConfig = {
+            host: settings.host,
+            port: settings.port || 22,
+            username: settings.username || 'root',
+          };
 
-      const connectConfig = {
-        host: settings.host,
-        port: settings.port || 22,
-        username: settings.username || 'root',
-      };
+          if (settings.useKeyAuth !== false) {
+            const keyPaths = [
+              settings.privateKeyPath,
+              path.join(process.env.USERPROFILE || process.env.HOME || '', '.ssh', 'id_rsa'),
+              path.join(process.env.USERPROFILE || process.env.HOME || '', '.ssh', 'id_ed25519'),
+            ].filter(Boolean);
 
-      if (settings.useKeyAuth !== false) {
-        const keyPaths = [
-          settings.privateKeyPath,
-          path.join(process.env.USERPROFILE || process.env.HOME || '', '.ssh', 'id_rsa'),
-          path.join(process.env.USERPROFILE || process.env.HOME || '', '.ssh', 'id_ed25519'),
-        ].filter(Boolean);
-
-        let keyLoaded = false;
-        for (const keyPath of keyPaths) {
-          try {
-            if (fs.existsSync(keyPath)) {
-              connectConfig.privateKey = fs.readFileSync(keyPath);
-              keyLoaded = true;
-              break;
+            let keyLoaded = false;
+            for (const keyPath of keyPaths) {
+              try {
+                if (fs.existsSync(keyPath)) {
+                  connectConfig.privateKey = fs.readFileSync(keyPath);
+                  keyLoaded = true;
+                  break;
+                }
+              } catch {
+                // Try next key path.
+              }
             }
-          } catch {
-            // Try next key path.
+
+            if (!keyLoaded && settings.password) {
+              connectConfig.password = settings.password;
+            }
+          } else if (settings.password) {
+            connectConfig.password = settings.password;
           }
-        }
 
-        if (!keyLoaded && settings.password) {
-          connectConfig.password = settings.password;
-        }
-      } else if (settings.password) {
-        connectConfig.password = settings.password;
-      }
-
-      conn.connect(connectConfig);
+          conn.connect(connectConfig);
+        })
+        .catch((error) => {
+          reject(error);
+        });
     });
   }
 

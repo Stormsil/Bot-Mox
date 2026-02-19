@@ -1,5 +1,5 @@
-import React from 'react';
 import { Badge } from 'antd';
+import type React from 'react';
 import type { BotStatus } from '../../types';
 import styles from './StatusBadge.module.css';
 
@@ -27,10 +27,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
   return (
     <span className={styles.statusBadge} data-status={status} data-size={size}>
-      <Badge
-        color={config.color}
-        text={showText ? config.text : undefined}
-      />
+      <Badge color={config.color} text={showText ? config.text : undefined} />
     </span>
   );
 };

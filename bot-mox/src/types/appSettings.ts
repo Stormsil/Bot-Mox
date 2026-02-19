@@ -36,7 +36,7 @@ export interface NotificationEvents {
 // Extended Notification Settings
 export interface NotificationSettings {
   telegram_bot_token?: string; // DEPRECATED
-  telegram_chat_id?: string;   // DEPRECATED
+  telegram_chat_id?: string; // DEPRECATED
   alerts: {
     bot_offline_delay_minutes: number;
     low_roi_threshold: number;
@@ -102,4 +102,3 @@ export interface AppSettings {
   development: DevelopmentSettings;
   storage_policy?: StoragePolicy;
 }
-

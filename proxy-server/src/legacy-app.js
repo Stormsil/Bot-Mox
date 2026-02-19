@@ -28,6 +28,7 @@ const {
 const { createIpqsService } = require('./modules/ipqs/service');
 const wowNamesService = require('./modules/wow-names/service');
 const { startServerRuntime } = require('./bootstrap/runtime');
+const { createNestStranglerMiddleware } = require('./bootstrap/nest-strangler');
 const { logger } = require('./observability/logger');
 const { createUiTargets } = require('./bootstrap/ui-targets');
 const { createAppSettingsReader } = require('./repositories/supabase/app-settings-reader');
@@ -63,16 +64,11 @@ async function authorizeInfraRequest(req) {
 const corsOptions = createCorsOptions(env);
 const uiTargets = createUiTargets();
 
-const {
-  proxmoxAgent,
-  proxmoxSession,
-  proxmoxLogin,
-  proxmoxRequest,
-  sshExec,
-} = createInfraConnectors({
-  settingsReader,
-  setProxmoxTarget: uiTargets.setProxmoxTarget,
-});
+const { proxmoxAgent, proxmoxSession, proxmoxLogin, proxmoxRequest, sshExec } =
+  createInfraConnectors({
+    settingsReader,
+    setProxmoxTarget: uiTargets.setProxmoxTarget,
+  });
 
 const uiServiceAuth = createUiServiceAuth({
   settingsReader,
@@ -139,9 +135,15 @@ const ipqsService = createIpqsService({
   settingsReader,
 });
 
+const nestStranglerMiddleware = createNestStranglerMiddleware({
+  env,
+  logger,
+});
+
 // Canonical API v1.
 app.use(
   '/api/v1',
+  nestStranglerMiddleware,
   createApiV1Router({
     authMiddleware,
     env,
@@ -150,7 +152,7 @@ app.use(
     sshExec,
     ipqsService,
     wowNamesService,
-  })
+  }),
 );
 
 // Service-aware fallback for root-level absolute assets/API calls inside proxied iframes.
@@ -173,7 +175,7 @@ app.use(
     setTinyFmTarget: uiTargets.setTinyFmTarget,
     getSyncThingTarget: uiTargets.getSyncThingTarget,
     setSyncThingTarget: uiTargets.setSyncThingTarget,
-  })
+  }),
 );
 
 // Catch-all: proxy any unmatched request to Proxmox (for iframe assets at unpredictable paths)
@@ -183,7 +185,7 @@ app.use(
     authorizeRequest: authorizeInfraRequest,
     proxmoxUIProxy,
     getProxmoxTarget: uiTargets.getProxmoxTarget,
-  })
+  }),
 );
 
 mountLegacyErrorHandlers(app);

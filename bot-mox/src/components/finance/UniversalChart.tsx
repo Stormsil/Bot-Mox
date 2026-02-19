@@ -1,19 +1,24 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { SettingOutlined } from '@ant-design/icons';
+import { Button, Card, Checkbox, ColorPicker, Popover, Select } from 'antd';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  ComposedChart,
-  Line,
   Bar,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from 'recharts';
-import { Card, Select, Checkbox, Popover, Button, ColorPicker } from 'antd';
-import { SettingOutlined } from '@ant-design/icons';
-import type { TimeSeriesData, GoldPriceHistoryEntry } from '../../types';
-import { saveChartConfig, getChartConfig, type ChartSeriesConfig } from '../../services/financeService';
+import {
+  getFinanceChartConfig,
+  saveFinanceChartConfig,
+} from '../../entities/finance/api/chartConfig';
+import type { ChartSeriesConfig } from '../../entities/finance/model/chart';
+import type { GoldPriceHistoryEntry, TimeSeriesData } from '../../entities/finance/model/types';
 import styles from './UniversalChart.module.css';
 
 interface UniversalChartProps {
@@ -25,12 +30,60 @@ interface UniversalChartProps {
 }
 
 const DEFAULT_CONFIG: ChartSeriesConfig[] = [
-  { key: 'income', name: 'Income', color: '#9a9a9a', type: 'line', yAxisId: 'left', visible: true, unit: '$' },
-  { key: 'expense', name: 'Expense', color: '#7a7a7a', type: 'line', yAxisId: 'left', visible: true, unit: '$' },
-  { key: 'profit', name: 'Profit', color: '#8b8b8b', type: 'line', yAxisId: 'left', visible: true, unit: '$' },
-  { key: 'dailyProfit', name: 'Daily Net', color: '#5f5f5f', type: 'bar', yAxisId: 'left', visible: false, unit: '$' },
-  { key: 'gold_price_wow_tbc', name: 'Gold Price (TBC)', color: '#8a8a8a', type: 'line', yAxisId: 'right', visible: true, unit: '$' },
-  { key: 'gold_price_wow_midnight', name: 'Gold Price (Midnight)', color: '#6f6f6f', type: 'line', yAxisId: 'right', visible: true, unit: '$' },
+  {
+    key: 'income',
+    name: 'Income',
+    color: '#9a9a9a',
+    type: 'line',
+    yAxisId: 'left',
+    visible: true,
+    unit: '$',
+  },
+  {
+    key: 'expense',
+    name: 'Expense',
+    color: '#7a7a7a',
+    type: 'line',
+    yAxisId: 'left',
+    visible: true,
+    unit: '$',
+  },
+  {
+    key: 'profit',
+    name: 'Profit',
+    color: '#8b8b8b',
+    type: 'line',
+    yAxisId: 'left',
+    visible: true,
+    unit: '$',
+  },
+  {
+    key: 'dailyProfit',
+    name: 'Daily Net',
+    color: '#5f5f5f',
+    type: 'bar',
+    yAxisId: 'left',
+    visible: false,
+    unit: '$',
+  },
+  {
+    key: 'gold_price_wow_tbc',
+    name: 'Gold Price (TBC)',
+    color: '#8a8a8a',
+    type: 'line',
+    yAxisId: 'right',
+    visible: true,
+    unit: '$',
+  },
+  {
+    key: 'gold_price_wow_midnight',
+    name: 'Gold Price (Midnight)',
+    color: '#6f6f6f',
+    type: 'line',
+    yAxisId: 'right',
+    visible: true,
+    unit: '$',
+  },
 ];
 
 type ChartDataPoint = {
@@ -51,19 +104,25 @@ interface CustomChartTooltipProps {
   config: ChartSeriesConfig[];
 }
 
-const CustomChartTooltip: React.FC<CustomChartTooltipProps> = ({ active, payload, label, config }) => {
+const CustomChartTooltip: React.FC<CustomChartTooltipProps> = ({
+  active,
+  payload,
+  label,
+  config,
+}) => {
   if (active && payload && payload.length) {
     return (
       <div className={styles.tooltip}>
         <p className={styles.tooltipDate}>{label}</p>
-        {payload.map((entry, index) => {
+        {payload.map((entry) => {
           const dataKey = String(entry.dataKey || '');
           const conf = config.find((item) => item.key === dataKey);
           if (!conf) return null;
 
           return (
-            <p key={index} style={{ color: entry.color }}>
-              {entry.name}: {conf.unit === '$' ? `$${Number(entry.value || 0).toFixed(2)}` : entry.value}
+            <p key={dataKey || entry.name} style={{ color: entry.color }}>
+              {entry.name}:{' '}
+              {conf.unit === '$' ? `$${Number(entry.value || 0).toFixed(2)}` : entry.value}
             </p>
           );
         })}
@@ -75,27 +134,23 @@ const CustomChartTooltip: React.FC<CustomChartTooltipProps> = ({ active, payload
 };
 
 export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
-  const {
-    timeSeriesData,
-    goldPriceHistory,
-    loading = false,
-  } = props;
+  const { timeSeriesData, goldPriceHistory, loading = false } = props;
   const [config, setConfig] = useState<ChartSeriesConfig[]>(DEFAULT_CONFIG);
 
   // Load config from DB on mount
   useEffect(() => {
-    getChartConfig().then((savedConfig) => {
+    getFinanceChartConfig().then((savedConfig) => {
       if (savedConfig) {
         // Merge saved config with default to ensure new keys exist
         const mergedConfig = [...savedConfig];
-        
+
         // Add any missing keys from DEFAULT_CONFIG
-        DEFAULT_CONFIG.forEach(defaultItem => {
-          if (!mergedConfig.find(c => c.key === defaultItem.key)) {
+        DEFAULT_CONFIG.forEach((defaultItem) => {
+          if (!mergedConfig.find((c) => c.key === defaultItem.key)) {
             mergedConfig.push(defaultItem);
           }
         });
-        
+
         setConfig(mergedConfig);
       }
     });
@@ -123,8 +178,8 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
     });
 
     // Convert to array and sort
-    return Array.from(dataMap.values()).sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    return Array.from(dataMap.values()).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
   }, [timeSeriesData, goldPriceHistory]);
 
@@ -132,7 +187,7 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
     const newConfig = config.map((item) => (item.key === key ? { ...item, ...updates } : item));
     setConfig(newConfig);
     // Debounce save or just save? Let's just save for now, it's low frequency.
-    saveChartConfig(newConfig);
+    saveFinanceChartConfig(newConfig);
   };
 
   const renderSettingsContent = () => (
@@ -146,21 +201,21 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
             {item.name}
           </Checkbox>
           <div className={styles.settingControls}>
-             <ColorPicker
-                value={item.color}
-                onChange={(c) => handleConfigChange(item.key, { color: c.toHexString() })}
-                size="small"
-              />
-              <Select
-                value={item.type}
-                onChange={(val) => handleConfigChange(item.key, { type: val })}
-                size="small"
-                style={{ width: 80 }}
-                options={[
-                  { value: 'line', label: 'Line' },
-                  { value: 'bar', label: 'Bar' },
-                ]}
-              />
+            <ColorPicker
+              value={item.color}
+              onChange={(c) => handleConfigChange(item.key, { color: c.toHexString() })}
+              size="small"
+            />
+            <Select
+              value={item.type}
+              onChange={(val) => handleConfigChange(item.key, { type: val })}
+              size="small"
+              style={{ width: 80 }}
+              options={[
+                { value: 'line', label: 'Line' },
+                { value: 'bar', label: 'Bar' },
+              ]}
+            />
           </div>
         </div>
       ))}
@@ -168,18 +223,23 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
   );
 
   return (
-    <Card 
-      className={styles.card} 
-      title="Financial Overview" 
+    <Card
+      className={styles.card}
+      title="Financial Overview"
       loading={loading}
       extra={
-        <Popover 
-          content={renderSettingsContent} 
-          title="Chart Settings" 
+        <Popover
+          content={renderSettingsContent}
+          title="Chart Settings"
           trigger="click"
           placement="bottomRight"
         >
-          <Button className={styles.settingsButton} icon={<SettingOutlined />} size="small" type="text">
+          <Button
+            className={styles.settingsButton}
+            icon={<SettingOutlined />}
+            size="small"
+            type="text"
+          >
             Settings
           </Button>
         </Popover>
@@ -188,32 +248,48 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
       <div className={styles.container}>
         <ResponsiveContainer width="100%" height={400}>
           <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--boxmox-color-border-default)" />
-            <XAxis 
-              dataKey="date" 
-              tick={{ fontSize: 11, fill: 'var(--boxmox-color-text-secondary)' }}
-              tickFormatter={(date) => new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            <CartesianGrid
+              strokeDasharray="3 3"
+              vertical={false}
+              stroke="var(--boxmox-color-border-default)"
             />
-            <YAxis 
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 11, fill: 'var(--boxmox-color-text-secondary)' }}
+              tickFormatter={(date) =>
+                new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+              }
+            />
+            <YAxis
               yAxisId="left"
               orientation="left"
               tickFormatter={(val) => `$${val}`}
               tick={{ fontSize: 11, fill: 'var(--boxmox-color-text-secondary)' }}
-              label={{ value: 'Amount (USD)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: 'var(--boxmox-color-text-muted)' } }}
+              label={{
+                value: 'Amount (USD)',
+                angle: -90,
+                position: 'insideLeft',
+                style: { textAnchor: 'middle', fill: 'var(--boxmox-color-text-muted)' },
+              }}
             />
-            <YAxis 
+            <YAxis
               yAxisId="right"
               orientation="right"
               tickFormatter={(val) => `$${val}`}
               tick={{ fontSize: 11, fill: 'var(--boxmox-color-text-secondary)' }}
-              label={{ value: 'Gold Price', angle: 90, position: 'insideRight', style: { textAnchor: 'middle', fill: 'var(--boxmox-color-text-muted)' } }}
+              label={{
+                value: 'Gold Price',
+                angle: 90,
+                position: 'insideRight',
+                style: { textAnchor: 'middle', fill: 'var(--boxmox-color-text-muted)' },
+              }}
             />
             <Tooltip content={<CustomChartTooltip config={config} />} />
             <Legend wrapperStyle={{ color: 'var(--boxmox-color-text-secondary)', fontSize: 11 }} />
-            
+
             {config.map((item) => {
               if (!item.visible) return null;
-              
+
               if (item.type === 'bar') {
                 return (
                   <Bar
@@ -225,7 +301,7 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
                   />
                 );
               }
-              
+
               return (
                 <Line
                   key={item.key}

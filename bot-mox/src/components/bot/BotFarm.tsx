@@ -1,6 +1,11 @@
+import {
+  ClockCircleOutlined,
+  DollarOutlined,
+  ShoppingOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
+import { Card, Col, List, Row, Statistic, Tag, Typography } from 'antd';
 import React from 'react';
-import { Card, Statistic, Row, Col, Typography, Tag, List } from 'antd';
-import { DollarOutlined, ClockCircleOutlined, ThunderboltOutlined, ShoppingOutlined } from '@ant-design/icons';
 import type { Bot, InventoryItem } from '../../types';
 import styles from './BotFarm.module.css';
 
@@ -118,7 +123,10 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
             <List.Item className={styles['inventory-item']}>
               <div className={styles['inventory-item-info']}>
                 <ShoppingOutlined className={styles['inventory-item-icon']} />
-                <Text className={styles['inventory-item-name']} style={{ color: getQualityColor(item.quality) }}>
+                <Text
+                  className={styles['inventory-item-name']}
+                  style={{ color: getQualityColor(item.quality) }}
+                >
                   {item.name}
                 </Text>
               </div>

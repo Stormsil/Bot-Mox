@@ -22,7 +22,7 @@ Make Bot-Mox easy to debug (for humans and AI agents) by ensuring:
 ### Frontend (bot-mox)
 - **Tracing**: OpenTelemetry Web SDK (Document Load + User Interaction + Fetch).
 - **Propagation**: fetch instrumentation injects W3C headers to backend requests.
-- **Export (optional but enabled in `npm run dev:trace`)**:
+- **Export (optional but enabled in `pnpm run dev:trace`)**:
   - frontend spans are exported via backend proxy to avoid Jaeger CORS issues
 - **Frontend incident logs**:
   - `uiLogger` emits normalized events
@@ -41,7 +41,7 @@ Make Bot-Mox easy to debug (for humans and AI agents) by ensuring:
 
 ### 1) Start Observability UI (Jaeger)
 ```bash
-npm run obs:up
+pnpm run obs:up
 ```
 
 - Jaeger UI: `http://localhost:16686`
@@ -49,17 +49,17 @@ npm run obs:up
 
 Stop:
 ```bash
-npm run obs:down
+pnpm run obs:down
 ```
 
 ### 2) Start Dev With Tracing Enabled
 ```bash
-npm run dev:trace
+pnpm run dev:trace
 ```
 
 If `3001` is busy, set:
 ```bash
-BOTMOX_PROXY_PORT=3101 npm run dev:trace
+BOTMOX_PROXY_PORT=3101 pnpm run dev:trace
 ```
 
 This enables:
@@ -69,24 +69,24 @@ This enables:
 
 ### 3) Run E2E
 ```bash
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 Open report:
 ```bash
-npm run test:e2e:report
+pnpm run test:e2e:report
 ```
 
 ### Prod-like Smoke (http://localhost/)
 If you are running the prod-like stack (Caddy) and want a fast validation without starting dev servers:
 ```bash
-npm run doctor
-npm run test:e2e:prodlike
+pnpm run doctor
+pnpm run test:e2e:prodlike
 ```
 
 Or as a single command:
 ```bash
-npm run smoke:prodlike
+pnpm run smoke:prodlike
 ```
 
 ### Prod-like: enable tracing signals (recommended for debugging)
@@ -107,13 +107,13 @@ BOTMOX_OTEL_PROXY_ENABLED=1
 OTEL_SERVICE_NAME=bot-mox-backend
 ```
 
-If Jaeger is started on the host (`npm run obs:up`), use OTLP endpoint reachable from the container:
+If Jaeger is started on the host (`pnpm run obs:up`), use OTLP endpoint reachable from the container:
 - Windows/macOS Docker Desktop: `OTEL_EXPORTER_OTLP_ENDPOINT=http://host.docker.internal:4318`
 
 ## Debug Runbook (Human + AI Agent)
 
 ### If an E2E test fails
-1. Open Playwright HTML report (`npm run test:e2e:report`) and/or `bot-mox/test-results/playwright-report.json`.
+1. Open Playwright HTML report (`pnpm run test:e2e:report`) and/or `bot-mox/test-results/playwright-report.json`.
 2. Open the Playwright trace (`trace.zip`) from `bot-mox/test-results/**/trace.zip`.
 3. Find the failing network request and read response headers:
    - `x-trace-id`
@@ -144,8 +144,8 @@ If Jaeger is started on the host (`npm run obs:up`), use OTLP endpoint reachable
 
 ## Guardrails
 
-- Backend: `npm run check:backend:logging`
-- Frontend (wave-1 scope): `npm run check:frontend:logging`
+- Backend: `pnpm run check:backend:logging`
+- Frontend (wave-1 scope): `pnpm run check:frontend:logging`
 
 Frontend guardrail fails CI on new `console.*` in:
 - `bot-mox/src/services/**`
@@ -165,3 +165,4 @@ Download via GitHub CLI:
 gh run list --workflow CI
 gh run download <run_id> -n playwright-artifacts
 ```
+

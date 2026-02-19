@@ -1,13 +1,16 @@
-import React from 'react';
 import { Button, Divider, Form, Radio, Select, Slider, Space, Typography } from 'antd';
-import type { UnattendProfileConfig } from '../../../../services/unattendProfileService';
+import type React from 'react';
 import { BLOATWARE_PACKAGES, WINDOWS_CAPABILITIES } from '../../../../data/windows-bloatware';
+import type { UnattendProfileConfig } from '../../../../entities/vm/model/unattend';
 
 const { Text } = Typography;
 
 interface BloatwareSectionProps {
   config: UnattendProfileConfig;
-  updateConfig: <K extends keyof UnattendProfileConfig>(section: K, patch: Partial<UnattendProfileConfig[K]>) => void;
+  updateConfig: <K extends keyof UnattendProfileConfig>(
+    section: K,
+    patch: Partial<UnattendProfileConfig[K]>,
+  ) => void;
 }
 
 export const BloatwareSection: React.FC<BloatwareSectionProps> = ({ config, updateConfig }) => {
@@ -48,8 +51,12 @@ export const BloatwareSection: React.FC<BloatwareSectionProps> = ({ config, upda
       {(sr.mode === 'fixed' || sr.mode === 'fixed_random') && (
         <Form.Item label="Packages to always remove">
           <Space style={{ marginBottom: 4 }}>
-            <Button size="small" onClick={() => handleSelectAll('fixedPackages')}>Select all</Button>
-            <Button size="small" onClick={() => handleClearAll('fixedPackages')}>Clear</Button>
+            <Button size="small" onClick={() => handleSelectAll('fixedPackages')}>
+              Select all
+            </Button>
+            <Button size="small" onClick={() => handleClearAll('fixedPackages')}>
+              Clear
+            </Button>
           </Space>
           <Select
             mode="multiple"
@@ -67,8 +74,12 @@ export const BloatwareSection: React.FC<BloatwareSectionProps> = ({ config, upda
         <>
           <Form.Item label="Random pool">
             <Space style={{ marginBottom: 4 }}>
-              <Button size="small" onClick={() => handleSelectAll('randomPool')}>Select all</Button>
-              <Button size="small" onClick={() => handleClearAll('randomPool')}>Clear</Button>
+              <Button size="small" onClick={() => handleSelectAll('randomPool')}>
+                Select all
+              </Button>
+              <Button size="small" onClick={() => handleClearAll('randomPool')}>
+                Clear
+              </Button>
             </Space>
             <Select
               mode="multiple"
@@ -88,7 +99,9 @@ export const BloatwareSection: React.FC<BloatwareSectionProps> = ({ config, upda
               value={[sr.randomCount?.min ?? 5, sr.randomCount?.max ?? 15]}
               onChange={(value) => {
                 if (Array.isArray(value)) {
-                  updateConfig('softwareRemoval', { randomCount: { min: value[0], max: value[1] } });
+                  updateConfig('softwareRemoval', {
+                    randomCount: { min: value[0], max: value[1] },
+                  });
                 }
               }}
             />

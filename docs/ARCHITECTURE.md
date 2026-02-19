@@ -216,10 +216,10 @@ Daily workflow:
    - light mode (Supabase CLI + backend/frontend local hot reload),
    - full `prod-sim` compose stack.
 2. Implement changes in affected package (`bot-mox`, `proxy-server`, `agent`).
-3. Run quality gate: `npm run check:all`.
-4. If DB schema changed: add migration in `supabase/migrations/*` and run `npx supabase db reset`.
+3. Run quality gate: `pnpm run check:all`.
+4. If DB schema changed: add migration in `supabase/migrations/*` and run `corepack pnpm exec supabase db reset`.
 5. Validate feature flow with domain-specific smoke/manual checks.
-6. Run decommission audit after architecture/dependency changes: `npm run audit:firebase:decommission`.
+6. Run decommission audit after architecture/dependency changes: `pnpm run audit:firebase:decommission`.
 
 Team references:
 

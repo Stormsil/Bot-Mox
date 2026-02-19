@@ -14,9 +14,12 @@ class SupabaseStoragePolicyRepositoryError extends Error {
 
 function normalizeStoragePolicy(record) {
   const source = record && typeof record === 'object' ? record : {};
-  const operational = String(source.operational || '').trim().toLowerCase() === 'local'
-    ? 'local'
-    : 'cloud';
+  const operational =
+    String(source.operational || '')
+      .trim()
+      .toLowerCase() === 'local'
+      ? 'local'
+      : 'cloud';
 
   return {
     secrets: 'local-only',
@@ -60,7 +63,7 @@ function createSupabaseStoragePolicyRepository({ env }) {
         502,
         'SUPABASE_QUERY_FAILED',
         'Failed to read storage policy from Supabase',
-        error.message
+        error.message,
       );
     }
 
@@ -77,7 +80,12 @@ function createSupabaseStoragePolicyRepository({ env }) {
     const row = {
       tenant_id: normalizedTenantId,
       secrets: 'local-only',
-      operational: String(source.operational || '').trim().toLowerCase() === 'local' ? 'local' : 'cloud',
+      operational:
+        String(source.operational || '')
+          .trim()
+          .toLowerCase() === 'local'
+          ? 'local'
+          : 'cloud',
       sync_enabled: Boolean(sync.enabled),
       updated_at_ms: now,
       updated_by: String(actorId || source.updated_by || '').trim() || null,
@@ -94,7 +102,7 @@ function createSupabaseStoragePolicyRepository({ env }) {
         502,
         'SUPABASE_QUERY_FAILED',
         'Failed to write storage policy to Supabase',
-        error.message
+        error.message,
       );
     }
 

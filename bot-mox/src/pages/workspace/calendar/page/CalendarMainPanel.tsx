@@ -1,10 +1,10 @@
-import React from 'react';
-import { Calendar, Button, Card, Space, Tag, Typography } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { Button, Calendar, Card, Space, Tag, Typography } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
-import type { WorkspaceCalendarEvent } from '../../../../services/workspaceService';
-import type { CalendarViewMode } from './types';
+import type React from 'react';
+import type { WorkspaceCalendarEvent } from '../../../../entities/workspace/model/types';
 import styles from '../WorkspaceCalendarPage.module.css';
+import type { CalendarViewMode } from './types';
 
 const { Text } = Typography;
 
@@ -119,7 +119,9 @@ export const CalendarMainPanel: React.FC<CalendarMainPanelProps> = ({
                           {event.title}
                         </Tag>
                       ))}
-                      {dayEvents.length > 3 && <Text type="secondary">+{dayEvents.length - 3} more</Text>}
+                      {dayEvents.length > 3 && (
+                        <Text type="secondary">+{dayEvents.length - 3} more</Text>
+                      )}
                     </>
                   )}
                 </div>

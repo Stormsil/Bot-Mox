@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import {
-  getClusterResources,
-  getVMConfig,
-  listVMs,
-} from '../../../services/vmService';
+import { getClusterResources, getVMConfig, listVMs } from '../../../entities/vm/api/vmReadFacade';
 import type {
   ProxmoxClusterResource,
   ProxmoxVM,
@@ -68,7 +64,9 @@ const formatUsagePercent = (usedBytes: number, totalBytes: number): string => {
 };
 
 const isStorageAllowed = (storageName: string): boolean => {
-  const normalized = String(storageName || '').trim().toLowerCase();
+  const normalized = String(storageName || '')
+    .trim()
+    .toLowerCase();
   if (!normalized) {
     return false;
   }
@@ -77,7 +75,9 @@ const isStorageAllowed = (storageName: string): boolean => {
 };
 
 const storageSupportsVmDisks = (resource: ProxmoxClusterResource): boolean => {
-  const contentRaw = String(resource.content ?? '').trim().toLowerCase();
+  const contentRaw = String(resource.content ?? '')
+    .trim()
+    .toLowerCase();
   if (!contentRaw) {
     return true;
   }
@@ -90,17 +90,16 @@ const storageSupportsVmDisks = (resource: ProxmoxClusterResource): boolean => {
   return parts.includes('images');
 };
 
-const buildStorageDetails = (
-  stats?: { vmCount: number; usedBytes?: number; totalBytes?: number }
-): string => {
+const buildStorageDetails = (stats?: {
+  vmCount: number;
+  usedBytes?: number;
+  totalBytes?: number;
+}): string => {
   const vmCount = stats?.vmCount ?? 0;
   const usedBytes = Number(stats?.usedBytes);
   const totalBytes = Number(stats?.totalBytes);
   const hasCapacity =
-    Number.isFinite(usedBytes)
-    && usedBytes >= 0
-    && Number.isFinite(totalBytes)
-    && totalBytes > 0;
+    Number.isFinite(usedBytes) && usedBytes >= 0 && Number.isFinite(totalBytes) && totalBytes > 0;
   const vmLabel = vmCount === 1 ? 'VM' : 'VMs';
 
   if (hasCapacity) {
@@ -162,7 +161,7 @@ export const useVmStorageOptions = ({
   proxmoxVmsRef,
 }: UseVmStorageOptionsParams): UseVmStorageOptionsResult => {
   const [storageOptions, setStorageOptions] = useState<VMStorageOption[]>(
-    mapStorageValuesToOptions(FALLBACK_STORAGE_VALUES)
+    mapStorageValuesToOptions(FALLBACK_STORAGE_VALUES),
   );
   const storageRefreshSeqRef = useRef(0);
   const storageRefreshInFlightRef = useRef(false);
@@ -336,7 +335,7 @@ export const useVmStorageOptions = ({
 
           const delay = Math.min(
             STORAGE_CAPACITY_RETRY_MAX_DELAY_MS,
-            STORAGE_CAPACITY_RETRY_BASE_DELAY_MS * Math.pow(2, attempt),
+            STORAGE_CAPACITY_RETRY_BASE_DELAY_MS * 2 ** attempt,
           );
 
           capacityRetryTimerRef.current = setTimeout(() => {
@@ -349,7 +348,7 @@ export const useVmStorageOptions = ({
         storageRefreshInFlightRef.current = false;
       }
     },
-    [settings, proxmoxNode, proxmoxVmsRef]
+    [settings, proxmoxNode, proxmoxVmsRef],
   );
 
   return {

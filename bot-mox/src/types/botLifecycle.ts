@@ -6,16 +6,16 @@ import type { BotStatus, Character } from './core';
 
 export type BotLifecycleStage = 'prepare' | 'leveling' | 'profession' | 'farming';
 
-export type BanMechanism = 
-  | 'battlenet_account_closure' 
-  | 'battlenet_account_suspension' 
-  | 'game_suspension' 
-  | 'hardware_ban' 
-  | 'ip_ban' 
+export type BanMechanism =
+  | 'battlenet_account_closure'
+  | 'battlenet_account_suspension'
+  | 'game_suspension'
+  | 'hardware_ban'
+  | 'ip_ban'
   | 'other';
 
 export interface BanDetails {
-  ban_date: string;  // Формат DD.MM.YYYY
+  ban_date: string; // Формат DD.MM.YYYY
   ban_reason: string;
   ban_mechanism: BanMechanism;
   unbanned_at?: number;
@@ -46,4 +46,3 @@ export interface ArchiveEntry {
     total_runtime_hours: number;
   };
 }
-

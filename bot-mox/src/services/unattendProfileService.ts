@@ -1,5 +1,5 @@
-import { apiGet, apiPost, apiPut, apiDelete, type ApiSuccessEnvelope } from './apiClient';
 import { DEFAULT_UNATTEND_XML_TEMPLATE } from '../utils/unattendXml';
+import { type ApiSuccessEnvelope, apiDelete, apiGet, apiPost, apiPut } from './apiClient';
 
 const PROFILES_PREFIX = '/api/v1/unattend-profiles';
 const PROVISIONING_PREFIX = '/api/v1/provisioning';
@@ -204,20 +204,53 @@ export const DEFAULT_PROFILE_CONFIG: UnattendProfileConfig = {
 
 function isLegacyStubTemplate(xmlTemplate: string): boolean {
   const normalized = xmlTemplate.replace(/\s+/g, ' ').toLowerCase();
-  return normalized.includes('default template generated from schneegans unattend generator')
-    && normalized.includes('c:\\windows\\setup\\scripts\\useronce.ps1')
-    && !normalized.includes('c:\\windows\\setup\\scripts\\specialize.ps1');
+  return (
+    normalized.includes('default template generated from schneegans unattend generator') &&
+    normalized.includes('c:\\windows\\setup\\scripts\\useronce.ps1') &&
+    !normalized.includes('c:\\windows\\setup\\scripts\\specialize.ps1')
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Migration: backwards-compat for old profile configs
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function migrateProfileConfig(raw: any): UnattendProfileConfig {
+interface LegacyLocaleConfig extends Partial<UnattendLocaleConfig> {
+  inputLocales?: string[];
+}
+
+interface LegacyVisualEffectsConfig extends Omit<Partial<UnattendVisualEffects>, 'mode'> {
+  mode?: UnattendVisualEffects['mode'] | 'balanced' | 'random';
+  cursorShadow?: boolean;
+  fontSmoothing?: boolean;
+}
+
+interface LegacyDesktopIconsConfig extends Partial<UnattendDesktopIcons> {
+  recycleBin?: boolean;
+  thisPC?: boolean;
+}
+
+interface LegacyProfileConfig {
+  user?: Partial<UnattendUserConfig>;
+  computerName?: Partial<UnattendComputerNameConfig>;
+  locale?: LegacyLocaleConfig;
+  softwareRemoval?: Omit<Partial<UnattendSoftwareRemovalConfig>, 'mode'> & {
+    mode?: UnattendSoftwareRemovalConfig['mode'] | 'mixed';
+  };
+  capabilityRemoval?: Omit<Partial<UnattendCapabilityRemovalConfig>, 'mode'> & {
+    mode?: UnattendCapabilityRemovalConfig['mode'] | 'mixed';
+  };
+  windowsSettings?: Partial<UnattendWindowsSettings>;
+  visualEffects?: LegacyVisualEffectsConfig;
+  desktopIcons?: LegacyDesktopIconsConfig;
+  customScript?: Partial<UnattendCustomScript>;
+  xmlTemplate?: string;
+}
+
+export function migrateProfileConfig(raw: unknown): UnattendProfileConfig {
   if (!raw || typeof raw !== 'object') return structuredClone(DEFAULT_PROFILE_CONFIG);
 
-  const config = structuredClone(raw);
+  const config: LegacyProfileConfig = structuredClone(raw as LegacyProfileConfig);
 
   // user: add autoLogonCount if missing
   if (config.user) {
@@ -237,7 +270,9 @@ export function migrateProfileConfig(raw: any): UnattendProfileConfig {
       delete config.locale.inputLocales;
     }
     if (!config.locale.keyboardLayouts) {
-      config.locale.keyboardLayouts = structuredClone(DEFAULT_PROFILE_CONFIG.locale.keyboardLayouts);
+      config.locale.keyboardLayouts = structuredClone(
+        DEFAULT_PROFILE_CONFIG.locale.keyboardLayouts,
+      );
     }
   } else {
     config.locale = structuredClone(DEFAULT_PROFILE_CONFIG.locale);
@@ -260,7 +295,8 @@ export function migrateProfileConfig(raw: any): UnattendProfileConfig {
 
   // windowsSettings: add enableRemoteDesktop
   if (config.windowsSettings) {
-    if (config.windowsSettings.enableRemoteDesktop === undefined) config.windowsSettings.enableRemoteDesktop = false;
+    if (config.windowsSettings.enableRemoteDesktop === undefined)
+      config.windowsSettings.enableRemoteDesktop = false;
   } else {
     config.windowsSettings = structuredClone(DEFAULT_PROFILE_CONFIG.windowsSettings);
   }
@@ -291,7 +327,8 @@ export function migrateProfileConfig(raw: any): UnattendProfileConfig {
     if (config.desktopIcons.mode === undefined) {
       // old format: { recycleBin: bool, thisPC: bool }
       const oldIcons: Record<string, boolean> = {};
-      if (config.desktopIcons.recycleBin !== undefined) oldIcons.recycleBin = config.desktopIcons.recycleBin;
+      if (config.desktopIcons.recycleBin !== undefined)
+        oldIcons.recycleBin = config.desktopIcons.recycleBin;
       if (config.desktopIcons.thisPC !== undefined) oldIcons.thisPC = config.desktopIcons.thisPC;
       config.desktopIcons = {
         mode: 'custom',
@@ -302,7 +339,8 @@ export function migrateProfileConfig(raw: any): UnattendProfileConfig {
     }
     if (!config.desktopIcons.icons) config.desktopIcons.icons = {};
     if (!config.desktopIcons.startFolders) config.desktopIcons.startFolders = {};
-    if (config.desktopIcons.deleteEdgeShortcut === undefined) config.desktopIcons.deleteEdgeShortcut = true;
+    if (config.desktopIcons.deleteEdgeShortcut === undefined)
+      config.desktopIcons.deleteEdgeShortcut = true;
   } else {
     config.desktopIcons = structuredClone(DEFAULT_PROFILE_CONFIG.desktopIcons);
   }
@@ -365,6 +403,8 @@ export async function generateIsoPayload(
   );
 }
 
-export async function getVmSetupProgress(vmUuid: string): Promise<ApiSuccessEnvelope<VmSetupProgressEntry[]>> {
+export async function getVmSetupProgress(
+  vmUuid: string,
+): Promise<ApiSuccessEnvelope<VmSetupProgressEntry[]>> {
   return apiGet<VmSetupProgressEntry[]>(`${PROVISIONING_PREFIX}/progress/${vmUuid}`);
 }

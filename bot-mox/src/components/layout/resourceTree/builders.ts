@@ -1,6 +1,6 @@
-import type { BotRecord } from '../../../services/botsApiService';
-import type { BotItem, BotStatus, StatusGroup, TreeItem } from './types';
+import type { BotRecord } from '../../../entities/bot/model/types';
 import { formatProjectLabel, groupBotsByStatus } from './tree-utils';
+import type { BotItem, BotStatus, StatusGroup, TreeItem } from './types';
 
 interface BuildProjectsInput {
   bots: Record<string, BotRecord>;
@@ -45,13 +45,13 @@ export function buildProjectsTreeData({
       ...Object.values(bots)
         .map((bot) => String(bot.project_id || '').trim())
         .filter(Boolean),
-    ])
+    ]),
   ).sort((a, b) => a.localeCompare(b));
 
   return projectIds.map((projectId) => {
     const projectBots = getBotsForProject(bots, projectId);
     const groups = groupBotsByStatus(projectBots).filter((group) =>
-      visibleStatuses.includes(group.status)
+      visibleStatuses.includes(group.status),
     );
 
     const projectName = projectsMeta[projectId]?.name || formatProjectLabel(projectId);
@@ -96,7 +96,11 @@ interface BuildUnifiedInput {
   visibleStatuses: BotStatus[];
 }
 
-export function buildUnifiedTreeData({ bots, projectsMeta, visibleStatuses }: BuildUnifiedInput): TreeItem[] {
+export function buildUnifiedTreeData({
+  bots,
+  projectsMeta,
+  visibleStatuses,
+}: BuildUnifiedInput): TreeItem[] {
   return [
     {
       key: 'datacenter',

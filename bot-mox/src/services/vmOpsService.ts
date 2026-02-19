@@ -1,8 +1,11 @@
-import { ApiClientError, apiGet, apiPost } from './apiClient';
+import {
+  createAgentPairingViaContract,
+  dispatchVmOpsViaContract,
+  getVmOpsCommandViaContract,
+  listAgentsViaContract,
+} from '../providers/vmops-contract-client';
+import { ApiClientError } from './apiClient';
 import { subscribeToVmOpsEvents, type VmOpsCommandEvent } from './vmOpsEventsService';
-
-const VM_OPS_PREFIX = '/api/v1/vm-ops';
-const AGENTS_PREFIX = '/api/v1/agents';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -55,6 +58,128 @@ export interface AgentPairingRecord {
   pairing_url?: string;
   server_url?: string;
   proxmox_defaults?: AgentPairingDefaults;
+}
+
+function asString(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
+function asOptionalString(value: unknown): string | undefined {
+  const normalized = asString(value).trim();
+  return normalized ? normalized : undefined;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+}
+
+function toAgentSummaryList(payload: unknown): AgentSummary[] {
+  if (!Array.isArray(payload)) {
+    return [];
+  }
+
+  return payload
+    .map((item) => {
+      const record = asRecord(item);
+      const id = asString(record.id).trim();
+      if (!id) {
+        return null;
+      }
+
+      const name = asString(record.name).trim() || id;
+      const status = asString(record.status).trim();
+      const lastSeenAtRaw = record.last_seen_at;
+      const last_seen_at =
+        typeof lastSeenAtRaw === 'string' && lastSeenAtRaw.trim() ? lastSeenAtRaw : null;
+
+      return {
+        id,
+        name,
+        status,
+        last_seen_at,
+      };
+    })
+    .filter((item): item is AgentSummary => item !== null);
+}
+
+function toAgentPairingRecord(payload: unknown): AgentPairingRecord {
+  const record = asRecord(payload);
+  const id = asString(record.id).trim();
+  const tenant_id = asString(record.tenant_id).trim();
+  const name = asString(record.name).trim();
+  const status = asString(record.status).trim();
+  const pairing_code = asString(record.pairing_code).trim();
+  const pairing_expires_at = asString(record.pairing_expires_at).trim();
+
+  if (!id || !pairing_code) {
+    throw new ApiClientError('Invalid pairing response payload', {
+      status: 500,
+      code: 'INVALID_RESPONSE',
+      details: payload,
+    });
+  }
+
+  const proxmoxDefaults = asRecord(record.proxmox_defaults);
+  const proxmox_defaults =
+    Object.keys(proxmoxDefaults).length > 0
+      ? {
+          url: asOptionalString(proxmoxDefaults.url),
+          username: asOptionalString(proxmoxDefaults.username),
+          node: asOptionalString(proxmoxDefaults.node),
+        }
+      : undefined;
+
+  return {
+    id,
+    tenant_id,
+    name,
+    status,
+    pairing_code,
+    pairing_expires_at,
+    pairing_bundle: asOptionalString(record.pairing_bundle),
+    pairing_uri: asOptionalString(record.pairing_uri),
+    pairing_url: asOptionalString(record.pairing_url),
+    server_url: asOptionalString(record.server_url),
+    proxmox_defaults,
+  };
+}
+
+function toCommandStatus(payload: unknown): CommandStatus {
+  const record = asRecord(payload);
+  const id = asString(record.id).trim();
+  const status = asString(record.status).trim();
+  const command_type = asString(record.command_type).trim();
+  const tenant_id = asString(record.tenant_id).trim();
+  const agent_id = asString(record.agent_id).trim();
+  const queued_at = asString(record.queued_at).trim();
+  const expires_at = asString(record.expires_at).trim();
+
+  if (!id || !status || !command_type) {
+    throw new ApiClientError('Invalid VM ops command payload', {
+      status: 500,
+      code: 'INVALID_RESPONSE',
+      details: payload,
+    });
+  }
+
+  return {
+    id,
+    status,
+    command_type,
+    tenant_id,
+    agent_id,
+    queued_at,
+    expires_at,
+    payload:
+      record.payload && typeof record.payload === 'object'
+        ? (record.payload as Record<string, unknown>)
+        : undefined,
+    result: record.result,
+    error_message: asOptionalString(record.error_message),
+    started_at: asOptionalString(record.started_at),
+    completed_at: asOptionalString(record.completed_at),
+    created_by: asOptionalString(record.created_by) ?? null,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -127,14 +252,18 @@ function parseTimestampMs(value: string | null | undefined): number {
 }
 
 function isAgentOnline(agent: AgentSummary, nowMs = Date.now()): boolean {
-  if (String(agent.status || '').trim().toLowerCase() !== 'active') {
+  if (
+    String(agent.status || '')
+      .trim()
+      .toLowerCase() !== 'active'
+  ) {
     return false;
   }
   const lastSeenAtMs = parseTimestampMs(agent.last_seen_at);
   if (lastSeenAtMs <= 0) {
     return false;
   }
-  return (nowMs - lastSeenAtMs) < AGENT_ONLINE_WINDOW_MS;
+  return nowMs - lastSeenAtMs < AGENT_ONLINE_WINDOW_MS;
 }
 
 function hasFreshAgentCache(nowMs = Date.now()): boolean {
@@ -148,12 +277,15 @@ function setCachedAgentId(agentId: string | null): void {
 
 async function lookupActiveAgentId(): Promise<string | null> {
   try {
-    const { data } = await apiGet<AgentSummary[]>(`${AGENTS_PREFIX}?status=active`);
-    const agents = Array.isArray(data) ? data : [];
+    const { data } = await listAgentsViaContract({ status: 'active' });
+    const agents = toAgentSummaryList(data);
     const nowMs = Date.now();
     const online = agents
       .filter((agent) => isAgentOnline(agent, nowMs))
-      .sort((first, second) => parseTimestampMs(second.last_seen_at) - parseTimestampMs(first.last_seen_at))[0];
+      .sort(
+        (first, second) =>
+          parseTimestampMs(second.last_seen_at) - parseTimestampMs(first.last_seen_at),
+      )[0];
     if (online) {
       setCachedAgentId(online.id);
       return online.id;
@@ -170,7 +302,9 @@ async function lookupActiveAgentId(): Promise<string | null> {
  * Get the first online agent for the current tenant.
  * Caches the result for the session to avoid repeated queries.
  */
-export async function getActiveAgentId(options: { forceRefresh?: boolean } = {}): Promise<string | null> {
+export async function getActiveAgentId(
+  options: { forceRefresh?: boolean } = {},
+): Promise<string | null> {
   const forceRefresh = options.forceRefresh === true;
   if (!forceRefresh && hasFreshAgentCache()) {
     return cachedAgentId;
@@ -226,11 +360,14 @@ function clearAgentUnavailableBackoff(): void {
   agentUnavailableUntilMs = 0;
 }
 
-function buildDedupeKey(params: {
-  type: 'proxmox' | 'syncthing';
-  action: string;
-  params?: Record<string, unknown>;
-}, agentId: string): string | null {
+function buildDedupeKey(
+  params: {
+    type: 'proxmox' | 'syncthing';
+    action: string;
+    params?: Record<string, unknown>;
+  },
+  agentId: string,
+): string | null {
   const opKey = `${params.type}.${params.action}`;
   if (!DEDUPED_VM_OPS.has(opKey)) {
     return null;
@@ -244,16 +381,19 @@ export async function createAgentPairing(params?: {
   name?: string;
   expiresInMinutes?: number;
 }): Promise<AgentPairingRecord> {
-  const payload: Record<string, unknown> = {};
+  const payload: {
+    name?: string;
+    expires_in_minutes?: number;
+  } = {};
   if (params?.name && String(params.name).trim()) {
     payload.name = String(params.name).trim();
   }
   if (typeof params?.expiresInMinutes === 'number' && Number.isFinite(params.expiresInMinutes)) {
-    payload.expires_in_minutes = Math.max(5, Math.min(1440, Math.trunc(params.expiresInMinutes)));
+    payload.expires_in_minutes = Math.max(5, Math.min(1_440, Math.trunc(params.expiresInMinutes)));
   }
 
-  const { data } = await apiPost<AgentPairingRecord>(`${AGENTS_PREFIX}/pairings`, payload);
-  return data;
+  const { data } = await createAgentPairingViaContract(payload);
+  return toAgentPairingRecord(data);
 }
 
 // ---------------------------------------------------------------------------
@@ -265,7 +405,9 @@ const VM_OPS_WAIT_TIMEOUT_MS = 120_000;
 const VM_OPS_STATUS_POLL_INTERVAL_MS = 1_500;
 
 function commandErrorFromStatus(status: CommandStatus): Error {
-  const statusValue = String(status.status || '').trim().toLowerCase();
+  const statusValue = String(status.status || '')
+    .trim()
+    .toLowerCase();
   if (statusValue === 'failed') {
     const rawMessage = String(status.error_message || 'Command failed').trim();
     const tagged = rawMessage.match(/^([A-Z_]+):\s*(.+)$/);
@@ -285,12 +427,16 @@ function commandErrorFromStatus(status: CommandStatus): Error {
 }
 
 async function fetchCommandStatus(commandId: string): Promise<CommandStatus> {
-  const { data } = await apiGet<CommandStatus>(`${VM_OPS_PREFIX}/commands/${encodeURIComponent(commandId)}`);
-  return data;
+  const { data } = await getVmOpsCommandViaContract(commandId);
+  return toCommandStatus(data);
 }
 
 function isTerminalStatus(status: string): boolean {
-  return TERMINAL_STATES.has(String(status || '').trim().toLowerCase());
+  return TERMINAL_STATES.has(
+    String(status || '')
+      .trim()
+      .toLowerCase(),
+  );
 }
 
 async function waitForCommandTerminal<T>(params: {
@@ -311,9 +457,10 @@ async function waitForCommandTerminal<T>(params: {
 
   const waitPromise = (async (): Promise<T> => {
     const timeoutMs = params.timeoutMs ?? VM_OPS_WAIT_TIMEOUT_MS;
-    const pollIntervalMs = Math.max(500, Math.min(10_000, Math.trunc(
-      params.pollIntervalMs ?? VM_OPS_STATUS_POLL_INTERVAL_MS,
-    )));
+    const pollIntervalMs = Math.max(
+      500,
+      Math.min(10_000, Math.trunc(params.pollIntervalMs ?? VM_OPS_STATUS_POLL_INTERVAL_MS)),
+    );
     const initialStatus = await fetchCommandStatus(commandId);
     if (isTerminalStatus(initialStatus.status)) {
       if (initialStatus.status === 'succeeded') {
@@ -394,14 +541,17 @@ async function waitForCommandTerminal<T>(params: {
           handleTerminalStatus(command as CommandStatus);
         },
         undefined,
-        { agentId: params.agentId, commandId }
+        { agentId: params.agentId, commandId },
       );
       cleanupCallbacks.push(unsubscribe);
 
-      pollTimer = globalThis.setTimeout(() => {
-        pollTimer = null;
-        void pollCommandStatus();
-      }, Math.min(300, pollIntervalMs));
+      pollTimer = globalThis.setTimeout(
+        () => {
+          pollTimer = null;
+          void pollCommandStatus();
+        },
+        Math.min(300, pollIntervalMs),
+      );
 
       const timeout = globalThis.setTimeout(async () => {
         try {
@@ -445,13 +595,14 @@ export async function dispatchAndPoll<T = unknown>(params: {
   timeoutMs?: number;
   pollIntervalMs?: number;
 }): Promise<T> {
-  const { data: cmd } = await apiPost<CommandEnvelope>(
-    `${VM_OPS_PREFIX}/${params.type}/${params.action}`,
-    { agent_id: params.agentId, params: params.params },
-  );
+  const { data: cmd } = await dispatchVmOpsViaContract(params.type, params.action, {
+    agent_id: params.agentId,
+    params: params.params,
+  });
+  const command = toCommandStatus(cmd);
 
   return waitForCommandTerminal<T>({
-    commandId: cmd.id,
+    commandId: command.id,
     timeoutMs: params.timeoutMs,
     pollIntervalMs: params.pollIntervalMs,
     agentId: params.agentId,
@@ -468,17 +619,12 @@ export async function executeVmOps<T = unknown>(params: {
   params?: Record<string, unknown>;
   timeoutMs?: number;
 }): Promise<T> {
-  const selectedProxmoxTargetId = params.type === 'proxmox'
-    ? getSelectedProxmoxTargetId()
-    : null;
-  const selectedProxmoxTargetNode = params.type === 'proxmox'
-    ? getSelectedProxmoxTargetNode()
-    : null;
+  const selectedProxmoxTargetId = params.type === 'proxmox' ? getSelectedProxmoxTargetId() : null;
+  const selectedProxmoxTargetNode =
+    params.type === 'proxmox' ? getSelectedProxmoxTargetNode() : null;
 
   const commandParams = (() => {
-    const source = params.params && typeof params.params === 'object'
-      ? params.params
-      : {};
+    const source = params.params && typeof params.params === 'object' ? params.params : {};
     if (!selectedProxmoxTargetId) {
       return source;
     }

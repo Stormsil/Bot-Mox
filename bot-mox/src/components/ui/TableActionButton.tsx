@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button, Space, Tooltip } from 'antd';
 import type { ButtonProps, SpaceProps } from 'antd';
+import { Button, Space, Tooltip } from 'antd';
+import type React from 'react';
 import styles from './TableActionButton.module.css';
 
 type TableActionButtonProps = Omit<ButtonProps, 'type' | 'size'> & {

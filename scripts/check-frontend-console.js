@@ -1,8 +1,8 @@
 // Fail the build if frontend critical paths contain console.* usage.
 // Phase-1 scope: services/hooks/pages/observability/ErrorBoundary.
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const repoRoot = path.join(__dirname, '..');
 const frontendRoot = path.join(repoRoot, 'bot-mox', 'src');
@@ -58,7 +58,8 @@ function main() {
   if (offenders.length > 0) {
     // eslint-disable-next-line no-console
     console.error(
-      '[check-frontend-console] console.* usage found in guarded frontend paths:\n' + offenders.join('\n')
+      '[check-frontend-console] console.* usage found in guarded frontend paths:\n' +
+        offenders.join('\n'),
     );
     process.exit(1);
   }
@@ -68,4 +69,3 @@ function main() {
 }
 
 main();
-

@@ -8,7 +8,7 @@
  *   { list, getById, create, patch, remove }
  */
 
-const { randomUUID } = require('crypto');
+const { randomUUID } = require('node:crypto');
 
 // ---------------------------------------------------------------------------
 // Deep-path merge (slash-delimited keys update nested objects)
@@ -108,7 +108,7 @@ class SupabaseCollectionRepository {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
-        { onConflict: 'tenant_id,id' }
+        { onConflict: 'tenant_id,id' },
       )
       .select('id, data')
       .single();

@@ -2,10 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const { logger } = require('../../observability/logger');
 
-function createUiServiceAuth({
-  settingsReader,
-  httpsAgent,
-}) {
+function createUiServiceAuth({ settingsReader, httpsAgent }) {
   const tinyFMSession = {
     baseUrl: '',
     cookieHeader: '',
@@ -70,7 +67,9 @@ function createUiServiceAuth({
 
     const list = Array.isArray(setCookieHeaders)
       ? setCookieHeaders
-      : (setCookieHeaders ? [setCookieHeaders] : []);
+      : setCookieHeaders
+        ? [setCookieHeaders]
+        : [];
     for (const item of list) {
       if (!item || typeof item !== 'string') continue;
       const pair = item.split(';')[0];
@@ -89,38 +88,48 @@ function createUiServiceAuth({
       proxmoxUrl: String(process.env.PROXMOX_URL || 'https://127.0.0.1:8006/').trim(),
       tinyFmUrl: String(process.env.TINYFM_URL || 'http://127.0.0.1:8080/index.php?p=').trim(),
       syncThingUrl: String(process.env.SYNCTHING_URL || 'https://127.0.0.1:8384/').trim(),
-      proxmoxAutoLogin: String(process.env.PROXMOX_AUTO_LOGIN || 'true').trim().toLowerCase() !== 'false',
-      tinyFmAutoLogin: String(process.env.TINYFM_AUTO_LOGIN || 'true').trim().toLowerCase() !== 'false',
+      proxmoxAutoLogin:
+        String(process.env.PROXMOX_AUTO_LOGIN || 'true')
+          .trim()
+          .toLowerCase() !== 'false',
+      tinyFmAutoLogin:
+        String(process.env.TINYFM_AUTO_LOGIN || 'true')
+          .trim()
+          .toLowerCase() !== 'false',
       tinyFmUsername: String(process.env.TINYFM_USERNAME || '').trim(),
       tinyFmPassword: String(process.env.TINYFM_PASSWORD || ''),
-      syncThingAutoLogin: String(process.env.SYNCTHING_AUTO_LOGIN || 'true').trim().toLowerCase() !== 'false',
+      syncThingAutoLogin:
+        String(process.env.SYNCTHING_AUTO_LOGIN || 'true')
+          .trim()
+          .toLowerCase() !== 'false',
       syncThingUsername: String(process.env.SYNCTHING_USERNAME || '').trim(),
       syncThingPassword: String(process.env.SYNCTHING_PASSWORD || ''),
     };
 
     try {
-      const rootData = await settingsReader?.readPath('settings/vmgenerator', { fallback: {} }) || {};
+      const rootData =
+        (await settingsReader?.readPath('settings/vmgenerator', { fallback: {} })) || {};
       const servicesData = rootData.services || {};
       const legacyTiny = rootData.tinyFM || {};
       const legacySyncThing = rootData.syncThing || {};
       const proxmoxUrlFromSettings = pickString(
         servicesData.proxmoxUrl,
         rootData?.proxmox?.url,
-        fallback.proxmoxUrl
+        fallback.proxmoxUrl,
       );
       const proxmoxHost = extractHostFromUrl(proxmoxUrlFromSettings);
-      const hostDerivedTiny = !isLoopbackHost(proxmoxHost) && proxmoxHost
-        ? `http://${proxmoxHost}:8080/index.php?p=`
-        : fallback.tinyFmUrl;
-      const hostDerivedSyncThing = !isLoopbackHost(proxmoxHost) && proxmoxHost
-        ? `https://${proxmoxHost}:8384/`
-        : '';
+      const hostDerivedTiny =
+        !isLoopbackHost(proxmoxHost) && proxmoxHost
+          ? `http://${proxmoxHost}:8080/index.php?p=`
+          : fallback.tinyFmUrl;
+      const hostDerivedSyncThing =
+        !isLoopbackHost(proxmoxHost) && proxmoxHost ? `https://${proxmoxHost}:8384/` : '';
 
       let tinyFmUrl = pickString(
         servicesData.tinyFmUrl,
         legacyTiny.url,
         hostDerivedTiny,
-        fallback.tinyFmUrl
+        fallback.tinyFmUrl,
       );
       try {
         const tinyUrlObj = new URL(normalizeBaseUrl(tinyFmUrl, fallback.tinyFmUrl));
@@ -134,7 +143,7 @@ function createUiServiceAuth({
         servicesData.syncThingUrl,
         legacySyncThing.url,
         fallback.syncThingUrl,
-        hostDerivedSyncThing
+        hostDerivedSyncThing,
       );
 
       return {
@@ -142,34 +151,37 @@ function createUiServiceAuth({
         proxmoxUrl: proxmoxUrlFromSettings || fallback.proxmoxUrl,
         tinyFmUrl,
         syncThingUrl,
-        proxmoxAutoLogin: typeof servicesData.proxmoxAutoLogin === 'boolean'
-          ? servicesData.proxmoxAutoLogin
-          : fallback.proxmoxAutoLogin,
-        tinyFmAutoLogin: typeof servicesData.tinyFmAutoLogin === 'boolean'
-          ? servicesData.tinyFmAutoLogin
-          : fallback.tinyFmAutoLogin,
+        proxmoxAutoLogin:
+          typeof servicesData.proxmoxAutoLogin === 'boolean'
+            ? servicesData.proxmoxAutoLogin
+            : fallback.proxmoxAutoLogin,
+        tinyFmAutoLogin:
+          typeof servicesData.tinyFmAutoLogin === 'boolean'
+            ? servicesData.tinyFmAutoLogin
+            : fallback.tinyFmAutoLogin,
         tinyFmUsername: pickString(
           servicesData.tinyFmUsername,
           legacyTiny.username,
-          fallback.tinyFmUsername
+          fallback.tinyFmUsername,
         ),
         tinyFmPassword: pickString(
           servicesData.tinyFmPassword,
           legacyTiny.password,
-          fallback.tinyFmPassword
+          fallback.tinyFmPassword,
         ),
-        syncThingAutoLogin: typeof servicesData.syncThingAutoLogin === 'boolean'
-          ? servicesData.syncThingAutoLogin
-          : fallback.syncThingAutoLogin,
+        syncThingAutoLogin:
+          typeof servicesData.syncThingAutoLogin === 'boolean'
+            ? servicesData.syncThingAutoLogin
+            : fallback.syncThingAutoLogin,
         syncThingUsername: pickString(
           servicesData.syncThingUsername,
           legacySyncThing.username,
-          fallback.syncThingUsername
+          fallback.syncThingUsername,
         ),
         syncThingPassword: pickString(
           servicesData.syncThingPassword,
           legacySyncThing.password,
-          fallback.syncThingPassword
+          fallback.syncThingPassword,
         ),
       };
     } catch (error) {
@@ -181,13 +193,13 @@ function createUiServiceAuth({
   async function ensureTinyFMLogin(settings) {
     const baseUrl = normalizeBaseUrl(
       settings.tinyFmUrl,
-      String(process.env.TINYFM_URL || 'http://127.0.0.1:8080/index.php?p=')
+      String(process.env.TINYFM_URL || 'http://127.0.0.1:8080/index.php?p='),
     );
     const now = Date.now();
     if (
-      tinyFMSession.cookieHeader
-      && tinyFMSession.baseUrl === baseUrl
-      && now < tinyFMSession.expiresAt
+      tinyFMSession.cookieHeader &&
+      tinyFMSession.baseUrl === baseUrl &&
+      now < tinyFMSession.expiresAt
     ) {
       return;
     }
@@ -266,13 +278,13 @@ function createUiServiceAuth({
   async function ensureSyncThingLogin(settings) {
     const baseUrl = normalizeBaseUrl(
       settings.syncThingUrl,
-      String(process.env.SYNCTHING_URL || 'https://127.0.0.1:8384/')
+      String(process.env.SYNCTHING_URL || 'https://127.0.0.1:8384/'),
     );
     const now = Date.now();
     if (
-      syncThingSession.cookieHeader
-      && syncThingSession.baseUrl === baseUrl
-      && now < syncThingSession.expiresAt
+      syncThingSession.cookieHeader &&
+      syncThingSession.baseUrl === baseUrl &&
+      now < syncThingSession.expiresAt
     ) {
       return;
     }
@@ -294,20 +306,24 @@ function createUiServiceAuth({
 
       const authBase = `${baseUrl.replace(/\/+$/, '')}/rest/noauth/auth`;
       const authPasswordUrl = `${authBase}/password`;
-      let authResp = await axios.post(authPasswordUrl, {
-        username,
-        password,
-        stayLoggedIn: true,
-      }, {
-        httpsAgent,
-        timeout: 10000,
-        maxRedirects: 0,
-        validateStatus: () => true,
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookieHeader,
+      let authResp = await axios.post(
+        authPasswordUrl,
+        {
+          username,
+          password,
+          stayLoggedIn: true,
         },
-      });
+        {
+          httpsAgent,
+          timeout: 10000,
+          maxRedirects: 0,
+          validateStatus: () => true,
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: cookieHeader,
+          },
+        },
+      );
 
       if (authResp.status >= 400 || authResp.status === 404) {
         const payload = new URLSearchParams();
@@ -375,9 +391,9 @@ function createUiServiceAuth({
     const normalizedPreferred = normalizeBaseUrl(preferredUrl, fallbackLocalUrl);
     const now = Date.now();
     if (
-      syncThingResolvedUrlCache.sourceUrl === normalizedPreferred
-      && syncThingResolvedUrlCache.resolvedUrl
-      && now < syncThingResolvedUrlCache.expiresAt
+      syncThingResolvedUrlCache.sourceUrl === normalizedPreferred &&
+      syncThingResolvedUrlCache.resolvedUrl &&
+      now < syncThingResolvedUrlCache.expiresAt
     ) {
       return syncThingResolvedUrlCache.resolvedUrl;
     }
@@ -411,7 +427,7 @@ function createUiServiceAuth({
         });
         logger.warn(
           { err: error },
-          `SyncThing preferred URL unreachable (${normalizedPreferred}), fallback to ${fallbackLocalUrl}`
+          `SyncThing preferred URL unreachable (${normalizedPreferred}), fallback to ${fallbackLocalUrl}`,
         );
         syncThingResolvedUrlCache.sourceUrl = normalizedPreferred;
         syncThingResolvedUrlCache.resolvedUrl = fallbackLocalUrl;

@@ -5,12 +5,16 @@ function parseBoolean(value, fallback = false) {
 }
 
 function resolveOtlpTracesEndpoint() {
-  const explicitTracesEndpoint = String(process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || '').trim();
+  const explicitTracesEndpoint = String(
+    process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || '',
+  ).trim();
   if (explicitTracesEndpoint) {
     return explicitTracesEndpoint;
   }
 
-  const base = String(process.env.OTEL_EXPORTER_OTLP_ENDPOINT || '').trim().replace(/\/+$/, '');
+  const base = String(process.env.OTEL_EXPORTER_OTLP_ENDPOINT || '')
+    .trim()
+    .replace(/\/+$/, '');
   if (base) {
     return `${base}/v1/traces`;
   }
@@ -54,11 +58,9 @@ function startTracingIfEnabled() {
     sdk.start();
 
     const shutdown = () => {
-      sdk
-        .shutdown()
-        .catch(() => {
-          // Ignore shutdown errors.
-        });
+      sdk.shutdown().catch(() => {
+        // Ignore shutdown errors.
+      });
     };
 
     process.once('SIGTERM', shutdown);

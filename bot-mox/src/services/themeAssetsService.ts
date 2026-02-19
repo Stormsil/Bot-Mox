@@ -1,40 +1,33 @@
-import { ApiClientError, apiDelete, apiGet, apiPost } from './apiClient';
+import {
+  completeThemeAssetViaContract,
+  createThemeAssetPresignUploadViaContract,
+  deleteThemeAssetViaContract,
+  listThemeAssetsViaContract,
+  type ThemeAssetMimeType,
+  type ThemeAssetPayload,
+} from '../providers/theme-assets-contract-client';
+import { ApiClientError } from './apiClient';
 
-export interface ThemeBackgroundAsset {
-  id: string;
-  object_key: string;
-  mime_type: string;
-  size_bytes: number;
-  width?: number | null;
-  height?: number | null;
-  status: 'pending' | 'ready' | 'failed' | 'deleted';
-  image_url?: string | null;
-  image_url_expires_at_ms?: number | null;
-  created_at?: string;
-  updated_at?: string;
-}
+export type ThemeBackgroundAsset = ThemeAssetPayload;
 
 interface ListThemeAssetsResponse {
   generated_at_ms: number;
   items: ThemeBackgroundAsset[];
 }
 
-interface PresignUploadResponse {
-  asset_id: string;
-  object_key: string;
-  upload_url: string;
-  expires_at_ms: number;
-  expires_in_seconds: number;
-}
-
 function assertAllowedImageType(file: File): void {
-  const allowed = new Set(['image/jpeg', 'image/png', 'image/webp']);
-  if (!allowed.has(file.type)) {
+  const allowed = new Set<ThemeAssetMimeType>(['image/jpeg', 'image/png', 'image/webp']);
+  if (!allowed.has(file.type as ThemeAssetMimeType)) {
     throw new ApiClientError('Only JPG, PNG and WEBP files are supported', {
       status: 400,
       code: 'UNSUPPORTED_MEDIA_TYPE',
     });
   }
+}
+
+function getAllowedImageMimeType(file: File): ThemeAssetMimeType {
+  assertAllowedImageType(file);
+  return file.type as ThemeAssetMimeType;
 }
 
 function loadImageDimensions(file: File): Promise<{ width: number; height: number }> {
@@ -51,10 +44,12 @@ function loadImageDimensions(file: File): Promise<{ width: number; height: numbe
 
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new ApiClientError('Failed to read image dimensions', {
-        status: 400,
-        code: 'IMAGE_INVALID',
-      }));
+      reject(
+        new ApiClientError('Failed to read image dimensions', {
+          status: 400,
+          code: 'IMAGE_INVALID',
+        }),
+      );
     };
 
     image.src = objectUrl;
@@ -62,7 +57,7 @@ function loadImageDimensions(file: File): Promise<{ width: number; height: numbe
 }
 
 export async function listThemeAssets(): Promise<ListThemeAssetsResponse> {
-  const response = await apiGet<ListThemeAssetsResponse>('/api/v1/theme-assets');
+  const response = await listThemeAssetsViaContract();
   const payload = response.data;
   return {
     generated_at_ms: Number(payload?.generated_at_ms || Date.now()),
@@ -71,12 +66,11 @@ export async function listThemeAssets(): Promise<ListThemeAssetsResponse> {
 }
 
 export async function uploadThemeAsset(file: File): Promise<ThemeBackgroundAsset> {
-  assertAllowedImageType(file);
-
+  const mimeType = getAllowedImageMimeType(file);
   const dimensions = await loadImageDimensions(file);
-  const presign = await apiPost<PresignUploadResponse>('/api/v1/theme-assets/presign-upload', {
+  const presign = await createThemeAssetPresignUploadViaContract({
     filename: file.name,
-    mime_type: file.type,
+    mime_type: mimeType,
     size_bytes: file.size,
   });
 
@@ -95,7 +89,7 @@ export async function uploadThemeAsset(file: File): Promise<ThemeBackgroundAsset
     });
   }
 
-  const complete = await apiPost<ThemeBackgroundAsset>('/api/v1/theme-assets/complete', {
+  const complete = await completeThemeAssetViaContract({
     asset_id: presign.data.asset_id,
     width: dimensions.width,
     height: dimensions.height,
@@ -105,5 +99,5 @@ export async function uploadThemeAsset(file: File): Promise<ThemeBackgroundAsset
 }
 
 export async function deleteThemeAsset(assetId: string): Promise<void> {
-  await apiDelete(`/api/v1/theme-assets/${encodeURIComponent(assetId)}`);
+  await deleteThemeAssetViaContract(assetId);
 }

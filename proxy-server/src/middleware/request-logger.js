@@ -17,7 +17,7 @@ function requestLogger(req, res, next) {
         status_code: res.statusCode,
         duration_ms: durationMs,
       },
-      'request'
+      'request',
     );
   });
 

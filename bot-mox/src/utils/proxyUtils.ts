@@ -51,9 +51,13 @@ export function parseProxyString(proxyString: string): ParsedProxy | null {
     const match = cleanString.match(regex);
     if (match) {
       const groups = match.slice(1);
-      
+
       // Определяем, какой формат сработал
-      if (regex.source.includes('@') && regex.source.includes('\\d+') && regex.source.indexOf('\\d+') > regex.source.indexOf('@')) {
+      if (
+        regex.source.includes('@') &&
+        regex.source.includes('\\d+') &&
+        regex.source.indexOf('\\d+') > regex.source.indexOf('@')
+      ) {
         // login:password@ip:port
         return {
           login: groups[0],
@@ -83,12 +87,12 @@ export function parseProxyString(proxyString: string): ParsedProxy | null {
  */
 export function getCountryFlag(countryCode: string): string {
   if (!countryCode || countryCode.length !== 2) return '🏳️';
-  
+
   // Конвертируем код страны в эмодзи флага
   const codePoints = countryCode
     .toUpperCase()
     .split('')
-    .map(char => 127397 + char.charCodeAt(0));
-  
+    .map((char) => 127397 + char.charCodeAt(0));
+
   return String.fromCodePoint(...codePoints);
 }

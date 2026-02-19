@@ -3,6 +3,8 @@ const { success, failure } = require('../../contracts/envelope');
 const {
   artifactReleaseCreateSchema,
   artifactAssignSchema,
+  artifactAssignmentPathSchema,
+  artifactAssignmentQuerySchema,
   artifactResolveDownloadSchema,
 } = require('../../contracts/schemas');
 const { asyncHandler } = require('./helpers');
@@ -47,7 +49,9 @@ function createArtifactsRoutes({ artifactsService, authMiddleware }) {
     withArtifactsErrors(async (req, res) => {
       const parsedBody = artifactReleaseCreateSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -58,7 +62,7 @@ function createArtifactsRoutes({ artifactsService, authMiddleware }) {
       });
 
       return res.status(201).json(success(release));
-    })
+    }),
   );
 
   router.post(
@@ -67,7 +71,9 @@ function createArtifactsRoutes({ artifactsService, authMiddleware }) {
     withArtifactsErrors(async (req, res) => {
       const parsedBody = artifactAssignSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -78,35 +84,37 @@ function createArtifactsRoutes({ artifactsService, authMiddleware }) {
       });
 
       return res.status(201).json(success(assignment));
-    })
+    }),
   );
 
   router.get(
     '/assign/:userId/:module',
     requireAnyRole(['infra', 'admin']),
     withArtifactsErrors(async (req, res) => {
-      const userId = String(req.params?.userId || '').trim();
-      const module = String(req.params?.module || '').trim();
-      const platform = String(req.query?.platform || '').trim() || 'windows';
-      const channel = String(req.query?.channel || '').trim() || 'stable';
-
-      if (!userId || !module) {
-        return res.status(400).json(
-          failure('BAD_REQUEST', 'userId and module path params are required')
-        );
+      const parsedPath = artifactAssignmentPathSchema.safeParse(req.params || {});
+      if (!parsedPath.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid path params', parsedPath.error.flatten()));
+      }
+      const parsedQuery = artifactAssignmentQuerySchema.safeParse(req.query || {});
+      if (!parsedQuery.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid query', parsedQuery.error.flatten()));
       }
 
       const auth = req.auth || {};
       const assignment = await artifactsService.getEffectiveAssignment({
         tenantId: auth.tenant_id,
-        userId,
-        module,
-        platform,
-        channel,
+        userId: parsedPath.data.userId,
+        module: parsedPath.data.module,
+        platform: parsedQuery.data.platform,
+        channel: parsedQuery.data.channel,
       });
 
       return res.json(success(assignment));
-    })
+    }),
   );
 
   router.post(
@@ -114,7 +122,9 @@ function createArtifactsRoutes({ artifactsService, authMiddleware }) {
     withArtifactsErrors(async (req, res) => {
       const parsedBody = artifactResolveDownloadSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -130,7 +140,7 @@ function createArtifactsRoutes({ artifactsService, authMiddleware }) {
       });
 
       return res.json(success(payload));
-    })
+    }),
   );
 
   return router;

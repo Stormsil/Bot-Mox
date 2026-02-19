@@ -1,27 +1,23 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
 import { message } from 'antd';
+import { useCallback, useMemo } from 'react';
+import { useBotsListQuery } from '../entities/bot/api/useBotQueries';
+import { enrichSubscriptionsWithDetails } from '../entities/resources/api/subscriptionFacade';
+import { useSubscriptionsQuery } from '../entities/resources/api/useResourcesQueries';
+import {
+  useCreateSubscriptionMutation,
+  useDeleteSubscriptionMutation,
+  useUpdateSubscriptionMutation,
+} from '../entities/resources/api/useSubscriptionMutations';
+import { getDefaultSettings } from '../entities/settings/api/settingsFacade';
+import { useUpdateSubscriptionSettingsMutation } from '../entities/settings/api/useSubscriptionSettingsMutation';
+import { useSubscriptionSettingsQuery } from '../entities/settings/api/useSubscriptionSettingsQuery';
+import { uiLogger } from '../observability/uiLogger';
 import type {
-  Subscription,
-  SubscriptionWithDetails,
+  ComputedSubscriptionStatus,
   SubscriptionFormData,
   SubscriptionSettings,
-  ComputedSubscriptionStatus,
+  SubscriptionWithDetails,
 } from '../types';
-import {
-  subscribeToSubscriptions,
-  subscribeToBotSubscriptions,
-  createSubscription,
-  updateSubscription,
-  deleteSubscription,
-  enrichSubscriptionsWithDetails,
-} from '../services/subscriptionService';
-import { fetchBotsList } from '../services/botsApiService';
-import { uiLogger } from '../observability/uiLogger'
-import {
-  getSubscriptionSettings,
-  updateSubscriptionSettings,
-  getDefaultSettings,
-} from '../services/settingsService';
 
 interface UseSubscriptionsOptions {
   botId?: string; // Если указан, загружаем только подписки этого бота
@@ -54,89 +50,65 @@ interface UseSubscriptionsReturn {
  */
 export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubscriptionsReturn {
   const { botId } = options;
+  const subscriptionsQuery = useSubscriptionsQuery();
+  const settingsQuery = useSubscriptionSettingsQuery();
+  const botsQuery = useBotsListQuery();
+  const createSubscriptionMutation = useCreateSubscriptionMutation();
+  const updateSubscriptionMutation = useUpdateSubscriptionMutation();
+  const deleteSubscriptionMutation = useDeleteSubscriptionMutation();
+  const updateSettingsMutation = useUpdateSubscriptionSettingsMutation();
 
-  // Состояния
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [settings, setSettings] = useState<SubscriptionSettings>(getDefaultSettings());
-  const [botsMap, setBotsMap] = useState<
-    Map<string, { name: string; character?: string; status?: SubscriptionWithDetails['botStatus']; vmName?: string }>
-  >(new Map());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const subscriptions = useMemo(
+    () =>
+      botId
+        ? (subscriptionsQuery.data || []).filter((subscription) => subscription.bot_id === botId)
+        : subscriptionsQuery.data || [],
+    [botId, subscriptionsQuery.data],
+  );
 
-  // Загрузка настроек
-  const loadSettings = useCallback(async () => {
-    try {
-      const loadedSettings = await getSubscriptionSettings();
-      setSettings(loadedSettings);
-    } catch (err) {
-      uiLogger.error('Error loading settings:', err);
-      // Используем дефолтные настройки при ошибке
-      setSettings(getDefaultSettings());
-    }
-  }, []);
+  const settings = useMemo<SubscriptionSettings>(
+    () => settingsQuery.data || getDefaultSettings(),
+    [settingsQuery.data],
+  );
 
-  // Загрузка данных ботов для отображения
-  const loadBotsData = useCallback(async () => {
-    try {
-      const bots = await fetchBotsList();
-      const nextBotsMap = new Map<
-        string,
-        { name: string; character?: string; status?: SubscriptionWithDetails['botStatus']; vmName?: string }
-      >();
+  const botsMap = useMemo<
+    Map<
+      string,
+      {
+        name: string;
+        character?: string;
+        status?: SubscriptionWithDetails['botStatus'];
+        vmName?: string;
+      }
+    >
+  >(() => {
+    const nextBotsMap = new Map<
+      string,
+      {
+        name: string;
+        character?: string;
+        status?: SubscriptionWithDetails['botStatus'];
+        vmName?: string;
+      }
+    >();
 
-      bots.forEach((bot) => {
-        nextBotsMap.set(bot.id, {
-          name: bot.name || bot.id,
-          character: bot.character?.name,
-          status: bot.status,
-          vmName: bot.vm?.name,
-        });
+    (botsQuery.data || []).forEach((bot) => {
+      nextBotsMap.set(bot.id, {
+        name: bot.name || bot.id,
+        character: bot.character?.name,
+        status: bot.status,
+        vmName: bot.vm?.name,
       });
-
-      setBotsMap(nextBotsMap);
-    } catch (err) {
-      uiLogger.error('Error loading bots data:', err);
-    }
-  }, []);
-
-  // Подписка на изменения подписок
-  useEffect(() => {
-    const frameId = window.requestAnimationFrame(() => {
-      setLoading(true);
-      setError(null);
     });
 
-    // Загружаем настройки и данные ботов
-    const loadTimer = window.setTimeout(() => {
-      void loadSettings();
-      void loadBotsData();
-    }, 0);
+    return nextBotsMap;
+  }, [botsQuery.data]);
 
-    // Подписываемся на подписки
-    const unsubscribe = botId
-      ? subscribeToBotSubscriptions(
-          botId,
-          (subs: Subscription[]) => setSubscriptions(subs),
-          (err: Error) => setError(err)
-        )
-      : subscribeToSubscriptions(
-          (subs: Subscription[]) => setSubscriptions(subs),
-          (err: Error) => setError(err)
-        );
-
-    // Отмечаем загрузку завершенной после небольшой задержки
-    const timeout = setTimeout(() => {
-      setLoading(false);
-    }, 300);
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-      clearTimeout(loadTimer);
-      unsubscribe();
-      clearTimeout(timeout);
-    };
-  }, [botId, loadSettings, loadBotsData]);
+  const loading = subscriptionsQuery.isLoading || settingsQuery.isLoading || botsQuery.isLoading;
+  const error = (subscriptionsQuery.error ||
+    settingsQuery.error ||
+    botsQuery.error ||
+    null) as Error | null;
 
   // Вычисляем расширенные подписки с деталями
   const subscriptionsWithDetails = useMemo(() => {
@@ -148,86 +120,97 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
   /**
    * Добавляет новую подписку
    */
-  const addSubscription = useCallback(async (data: SubscriptionFormData) => {
-    try {
-      // Детальное логирование входных данных
-      uiLogger.info('Creating subscription with data:', {
-        ...data,
-        expires_at: data.expires_at,
-        expires_at_type: typeof data.expires_at,
-      });
-      
-      await createSubscription(data);
-      message.success('Подписка успешно создана');
-    } catch (err) {
-      // Детальное логирование ошибки
-      uiLogger.error('Error creating subscription:', err);
-      uiLogger.error('Error details:', {
-        name: (err as Error).name,
-        message: (err as Error).message,
-        stack: (err as Error).stack,
-        data: {
+  const addSubscription = useCallback(
+    async (data: SubscriptionFormData) => {
+      try {
+        // Детальное логирование входных данных
+        uiLogger.info('Creating subscription with data:', {
           ...data,
           expires_at: data.expires_at,
-        },
-      });
-      
-      // Показываем более информативное сообщение об ошибке
-      const errorMessage = (err as Error).message || 'Неизвестная ошибка';
-      message.error(`Ошибка при создании подписки: ${errorMessage}`);
-      throw err;
-    }
-  }, []);
+          expires_at_type: typeof data.expires_at,
+        });
+
+        await createSubscriptionMutation.mutateAsync(data);
+        message.success('Подписка успешно создана');
+      } catch (err) {
+        // Детальное логирование ошибки
+        uiLogger.error('Error creating subscription:', err);
+        uiLogger.error('Error details:', {
+          name: (err as Error).name,
+          message: (err as Error).message,
+          stack: (err as Error).stack,
+          data: {
+            ...data,
+            expires_at: data.expires_at,
+          },
+        });
+
+        // Показываем более информативное сообщение об ошибке
+        const errorMessage = (err as Error).message || 'Неизвестная ошибка';
+        message.error(`Ошибка при создании подписки: ${errorMessage}`);
+        throw err;
+      }
+    },
+    [createSubscriptionMutation],
+  );
 
   /**
    * Обновляет существующую подписку
    */
-  const handleUpdateSubscription = useCallback(async (id: string, data: Partial<SubscriptionFormData>) => {
-    try {
-      await updateSubscription(id, data);
-      message.success('Подписка успешно обновлена');
-    } catch (err) {
-      uiLogger.error('Error updating subscription:', err);
-      message.error('Ошибка при обновлении подписки');
-      throw err;
-    }
-  }, []);
+  const handleUpdateSubscription = useCallback(
+    async (id: string, data: Partial<SubscriptionFormData>) => {
+      try {
+        await updateSubscriptionMutation.mutateAsync({ id, payload: data });
+        message.success('Подписка успешно обновлена');
+      } catch (err) {
+        uiLogger.error('Error updating subscription:', err);
+        message.error('Ошибка при обновлении подписки');
+        throw err;
+      }
+    },
+    [updateSubscriptionMutation],
+  );
 
   /**
    * Удаляет подписку
    */
-  const handleDeleteSubscription = useCallback(async (id: string) => {
-    try {
-      await deleteSubscription(id);
-      message.success('Подписка удалена');
-    } catch (err) {
-      uiLogger.error('Error deleting subscription:', err);
-      message.error('Ошибка при удалении подписки');
-      throw err;
-    }
-  }, []);
+  const handleDeleteSubscription = useCallback(
+    async (id: string) => {
+      try {
+        await deleteSubscriptionMutation.mutateAsync(id);
+        message.success('Подписка удалена');
+      } catch (err) {
+        uiLogger.error('Error deleting subscription:', err);
+        message.error('Ошибка при удалении подписки');
+        throw err;
+      }
+    },
+    [deleteSubscriptionMutation],
+  );
 
   /**
    * Обновляет настройки
    */
-  const handleUpdateSettings = useCallback(async (newSettings: Partial<SubscriptionSettings>) => {
-    try {
-      await updateSubscriptionSettings(newSettings);
-      setSettings((prev) => ({ ...prev, ...newSettings, updated_at: Date.now() }));
-      message.success('Настройки сохранены');
-    } catch (err) {
-      uiLogger.error('Error updating settings:', err);
-      message.error('Ошибка при сохранении настроек');
-      throw err;
-    }
-  }, []);
+  const handleUpdateSettings = useCallback(
+    async (newSettings: Partial<SubscriptionSettings>) => {
+      try {
+        await updateSettingsMutation.mutateAsync(newSettings);
+        message.success('Настройки сохранены');
+      } catch (err) {
+        uiLogger.error('Error updating settings:', err);
+        message.error('Ошибка при сохранении настроек');
+        throw err;
+      }
+    },
+    [updateSettingsMutation],
+  );
 
   /**
    * Обновляет настройки из backend API
    */
   const refreshSettings = useCallback(async () => {
-    await loadSettings();
-  }, [loadSettings]);
+    await settingsQuery.refetch();
+  }, [settingsQuery]);
 
   // Фильтрация
 
@@ -239,7 +222,7 @@ export function useSubscriptions(options: UseSubscriptionsOptions = {}): UseSubs
       if (status === 'all') return subscriptionsWithDetails;
       return subscriptionsWithDetails.filter((sub) => sub.computedStatus === status);
     },
-    [subscriptionsWithDetails]
+    [subscriptionsWithDetails],
   );
 
   /**

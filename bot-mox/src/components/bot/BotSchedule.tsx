@@ -1,25 +1,31 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Button, Spin, Alert, message } from 'antd';
-import { SaveOutlined, ReloadOutlined, CalendarOutlined, UnlockOutlined } from '@ant-design/icons';
-import { apiPatch } from '../../services/apiClient';
-import { subscribeBotById } from '../../services/botsApiService';
-import type { BotScheduleV2, ScheduleDay, ScheduleSession, ScheduleGenerationParams } from '../../types';
-import {
-  DayTabs,
-  SessionList,
-  SessionEditor,
-  TimelineVisualizer,
-  DayStats,
-  ScheduleGenerator,
-  WeekPanel,
-  WeekOverview
-} from '../schedule';
+import { CalendarOutlined, ReloadOutlined, SaveOutlined, UnlockOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, message, Spin } from 'antd';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useUpdateBotMutation } from '../../entities/bot/api/useBotMutations';
+import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
+import type {
+  BotScheduleV2,
+  ScheduleDay,
+  ScheduleGenerationParams,
+  ScheduleSession,
+} from '../../types';
 import {
   createEmptySchedule,
+  generateSchedule,
   migrateSchedule,
   sortSessions,
-  generateSchedule
 } from '../../utils/scheduleUtils';
+import {
+  DayStats,
+  DayTabs,
+  ScheduleGenerator,
+  SessionEditor,
+  SessionList,
+  TimelineVisualizer,
+  WeekOverview,
+  WeekPanel,
+} from '../schedule';
 import styles from './BotSchedule.module.css';
 
 interface BotScheduleProps {
@@ -38,46 +44,59 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
   const [editingSession, setEditingSession] = useState<ScheduleSession | null>(null);
   const [scheduleLocked, setScheduleLocked] = useState(false);
   const [pendingScheduleLock, setPendingScheduleLock] = useState(false);
+  const botQuery = useBotByIdQuery(botId);
+  const updateBotMutation = useUpdateBotMutation();
 
-  // Load schedule via API subscription
+  // Load schedule from shared query cache.
   useEffect(() => {
-    if (!botId) return;
-    const unsubscribe = subscribeBotById(
-      botId,
-      (payload) => {
-        const locks = (payload?.generation_locks || {}) as Record<string, unknown>;
-        setScheduleLocked(Boolean(locks.schedule));
-
-        const incoming = payload?.schedule
-          ? migrateSchedule(payload.schedule as Record<string, unknown>)
-          : createEmptySchedule();
-
-        setServerSchedule(incoming);
-        if (!hasChanges) {
-          setSchedule(incoming);
-        }
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Failed to load schedule:', err);
+    if (!botId) {
+      return;
+    }
+    if (botQuery.isLoading && !botQuery.data) {
+      return;
+    }
+    const frameId = window.requestAnimationFrame(() => {
+      if (botQuery.error) {
+        console.error('Failed to load schedule:', botQuery.error);
         setError('Failed to load schedule');
         setLoading(false);
-      },
-      { intervalMs: 5000 }
-    );
+        return;
+      }
 
-    return () => unsubscribe();
-  }, [botId, hasChanges]);
+      const payload = botQuery.data;
+      const locks = (payload?.generation_locks || {}) as Record<string, unknown>;
+      setScheduleLocked(Boolean(locks.schedule));
+
+      const incoming = payload?.schedule
+        ? migrateSchedule(payload.schedule as Record<string, unknown>)
+        : createEmptySchedule();
+
+      setServerSchedule(incoming);
+      if (!hasChanges) {
+        setSchedule(incoming);
+      }
+      setError(null);
+      setLoading(false);
+    });
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [botId, botQuery.data, botQuery.error, botQuery.isLoading, hasChanges]);
 
   // Get current day schedule
   const getCurrentDaySchedule = useCallback((): ScheduleDay => {
     if (!schedule) return { enabled: false, sessions: [] };
-    return schedule.days[selectedDay.toString() as keyof typeof schedule.days] || { enabled: false, sessions: [] };
+    return (
+      schedule.days[selectedDay.toString() as keyof typeof schedule.days] || {
+        enabled: false,
+        sessions: [],
+      }
+    );
   }, [schedule, selectedDay]);
 
   // Update day in schedule
   const updateDay = useCallback((dayIndex: number, updates: Partial<ScheduleDay>) => {
-    setSchedule(prev => {
+    setSchedule((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
@@ -85,9 +104,9 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
           ...prev.days,
           [dayIndex.toString()]: {
             ...prev.days[dayIndex.toString() as keyof typeof prev.days],
-            ...updates
-          }
-        }
+            ...updates,
+          },
+        },
       };
     });
     setHasChanges(true);
@@ -112,78 +131,84 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
   }, []);
 
   // Handle delete session
-  const handleDeleteSession = useCallback((sessionId: string) => {
-    const currentDay = getCurrentDaySchedule();
-    // Defensive check: ensure sessions is an array
-    const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
-    const newSessions = sessionsArray.filter(s => s.id !== sessionId);
-    
-    // FIX: Update day enabled status based on whether any session remains enabled
-    const hasEnabledSessions = newSessions.some(s => s.enabled);
-    updateDay(selectedDay, { 
-      sessions: sortSessions(newSessions),
-      enabled: hasEnabledSessions
-    });
-  }, [getCurrentDaySchedule, selectedDay, updateDay]);
+  const handleDeleteSession = useCallback(
+    (sessionId: string) => {
+      const currentDay = getCurrentDaySchedule();
+      // Defensive check: ensure sessions is an array
+      const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
+      const newSessions = sessionsArray.filter((s) => s.id !== sessionId);
+
+      // FIX: Update day enabled status based on whether any session remains enabled
+      const hasEnabledSessions = newSessions.some((s) => s.enabled);
+      updateDay(selectedDay, {
+        sessions: sortSessions(newSessions),
+        enabled: hasEnabledSessions,
+      });
+    },
+    [getCurrentDaySchedule, selectedDay, updateDay],
+  );
 
   // Handle toggle session
-  const handleToggleSession = useCallback((sessionId: string, enabled: boolean) => {
-    const currentDay = getCurrentDaySchedule();
-    // Defensive check: ensure sessions is an array
-    const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
-    const newSessions = sessionsArray.map(s =>
-      s.id === sessionId ? { ...s, enabled } : s
-    );
-    
-    // FIX: Update day enabled status based on whether any session is enabled
-    const hasEnabledSessions = newSessions.some(s => s.enabled);
-    updateDay(selectedDay, { 
-      sessions: sortSessions(newSessions),
-      enabled: hasEnabledSessions
-    });
-  }, [getCurrentDaySchedule, selectedDay, updateDay]);
+  const handleToggleSession = useCallback(
+    (sessionId: string, enabled: boolean) => {
+      const currentDay = getCurrentDaySchedule();
+      // Defensive check: ensure sessions is an array
+      const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
+      const newSessions = sessionsArray.map((s) => (s.id === sessionId ? { ...s, enabled } : s));
+
+      // FIX: Update day enabled status based on whether any session is enabled
+      const hasEnabledSessions = newSessions.some((s) => s.enabled);
+      updateDay(selectedDay, {
+        sessions: sortSessions(newSessions),
+        enabled: hasEnabledSessions,
+      });
+    },
+    [getCurrentDaySchedule, selectedDay, updateDay],
+  );
 
   // Handle save session
-  const handleSaveSession = useCallback((session: ScheduleSession) => {
-    const currentDay = getCurrentDaySchedule();
-    // Defensive check: ensure sessions is an array
-    const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
-    let newSessions: ScheduleSession[];
+  const handleSaveSession = useCallback(
+    (session: ScheduleSession) => {
+      const currentDay = getCurrentDaySchedule();
+      // Defensive check: ensure sessions is an array
+      const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
+      let newSessions: ScheduleSession[];
 
-    if (editingSession) {
-      // Update existing
-      newSessions = sessionsArray.map(s =>
-        s.id === session.id ? session : s
-      );
-    } else {
-      // Add new
-      newSessions = [...sessionsArray, session];
-    }
+      if (editingSession) {
+        // Update existing
+        newSessions = sessionsArray.map((s) => (s.id === session.id ? session : s));
+      } else {
+        // Add new
+        newSessions = [...sessionsArray, session];
+      }
 
-    // FIX: Also set enabled: true when adding a session to ensure day is marked as active
-    const hasEnabledSessions = newSessions.some(s => s.enabled);
-    updateDay(selectedDay, {
-      sessions: sortSessions(newSessions),
-      enabled: hasEnabledSessions || currentDay.enabled
-    });
-    setIsEditorOpen(false);
-    setEditingSession(null);
-  }, [editingSession, getCurrentDaySchedule, selectedDay, updateDay]);
+      // FIX: Also set enabled: true when adding a session to ensure day is marked as active
+      const hasEnabledSessions = newSessions.some((s) => s.enabled);
+      updateDay(selectedDay, {
+        sessions: sortSessions(newSessions),
+        enabled: hasEnabledSessions || currentDay.enabled,
+      });
+      setIsEditorOpen(false);
+      setEditingSession(null);
+    },
+    [editingSession, getCurrentDaySchedule, selectedDay, updateDay],
+  );
 
   // Handle session change from timeline drag-and-drop
-  const handleSessionChange = useCallback((session: ScheduleSession) => {
-    const currentDay = getCurrentDaySchedule();
-    // Defensive check: ensure sessions is an array
-    const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
-    const newSessions = sessionsArray.map(s =>
-      s.id === session.id ? session : s
-    );
+  const handleSessionChange = useCallback(
+    (session: ScheduleSession) => {
+      const currentDay = getCurrentDaySchedule();
+      // Defensive check: ensure sessions is an array
+      const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
+      const newSessions = sessionsArray.map((s) => (s.id === session.id ? session : s));
 
-    updateDay(selectedDay, {
-      sessions: sortSessions(newSessions),
-      enabled: newSessions.some(s => s.enabled)
-    });
-  }, [getCurrentDaySchedule, selectedDay, updateDay]);
+      updateDay(selectedDay, {
+        sessions: sortSessions(newSessions),
+        enabled: newSessions.some((s) => s.enabled),
+      });
+    },
+    [getCurrentDaySchedule, selectedDay, updateDay],
+  );
 
   const handleSave = useCallback(async () => {
     if (!schedule || !botId) return;
@@ -193,9 +218,12 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
         ...schedule,
         updated_at: Date.now(),
       };
-      await apiPatch(`/api/v1/bots/${encodeURIComponent(botId)}`, {
-        schedule: nextSchedule,
-        ...(pendingScheduleLock ? { 'generation_locks/schedule': true } : {}),
+      await updateBotMutation.mutateAsync({
+        botId,
+        payload: {
+          schedule: nextSchedule,
+          ...(pendingScheduleLock ? { 'generation_locks/schedule': true } : {}),
+        },
       });
       setServerSchedule(nextSchedule);
       if (pendingScheduleLock) setPendingScheduleLock(false);
@@ -205,7 +233,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
       console.error('Failed to save schedule:', err);
       message.error('Failed to save schedule');
     }
-  }, [schedule, botId, pendingScheduleLock]);
+  }, [schedule, botId, pendingScheduleLock, updateBotMutation]);
 
   const handleReset = useCallback(() => {
     if (serverSchedule) {
@@ -216,33 +244,39 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     setHasChanges(false);
   }, [serverSchedule]);
 
-  const handleGenerateSchedule = useCallback((params: ScheduleGenerationParams) => {
-    if (scheduleLocked) {
-      message.warning('Schedule generation is locked');
-      return;
-    }
-    const generated = generateSchedule(params);
-    
-    setSchedule(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        days: generated.days,
-        allowedWindows: generated.allowedWindows,
-        updated_at: Date.now()
-      };
-    });
-    setHasChanges(true);
-    setPendingScheduleLock(true);
-    message.success('Schedule generated for all 7 days');
-  }, [scheduleLocked]);
+  const handleGenerateSchedule = useCallback(
+    (params: ScheduleGenerationParams) => {
+      if (scheduleLocked) {
+        message.warning('Schedule generation is locked');
+        return;
+      }
+      const generated = generateSchedule(params);
+
+      setSchedule((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          days: generated.days,
+          allowedWindows: generated.allowedWindows,
+          updated_at: Date.now(),
+        };
+      });
+      setHasChanges(true);
+      setPendingScheduleLock(true);
+      message.success('Schedule generated for all 7 days');
+    },
+    [scheduleLocked],
+  );
 
   const handleUnlockGeneration = useCallback(async () => {
     if (!botId) return;
 
     try {
-      await apiPatch(`/api/v1/bots/${encodeURIComponent(botId)}`, {
-        'generation_locks/schedule': false,
+      await updateBotMutation.mutateAsync({
+        botId,
+        payload: {
+          'generation_locks/schedule': false,
+        },
       });
       setPendingScheduleLock(false);
       setScheduleLocked(false);
@@ -251,7 +285,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
       console.error('Failed to unlock schedule generation:', error);
       message.error('Failed to unlock generation');
     }
-  }, [botId]);
+  }, [botId, updateBotMutation]);
 
   if (loading) {
     return (
@@ -264,12 +298,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
   if (error) {
     return (
       <div className={styles['bot-schedule-error']}>
-        <Alert
-          message="Error"
-          description={error}
-          type="error"
-          showIcon
-        />
+        <Alert message="Error" description={error} type="error" showIcon />
       </div>
     );
   }
@@ -332,7 +361,10 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
               size="small"
               onClick={handleSave}
               disabled={!hasChanges}
-              className={[styles['schedule-action-btn'], styles['schedule-action-btn-primary']].join(' ')}
+              className={[
+                styles['schedule-action-btn'],
+                styles['schedule-action-btn-primary'],
+              ].join(' ')}
             >
               Save
             </Button>
@@ -350,11 +382,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
         )}
 
         <div className={styles['schedule-content-wrapper']}>
-          <WeekPanel
-            schedule={schedule}
-            selectedDay={selectedDay}
-            onDaySelect={setSelectedDay}
-          />
+          <WeekPanel schedule={schedule} selectedDay={selectedDay} onDaySelect={setSelectedDay} />
 
           <div className={styles['schedule-main-content']}>
             <DayTabs

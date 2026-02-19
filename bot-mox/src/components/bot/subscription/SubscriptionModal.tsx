@@ -1,5 +1,5 @@
-import React from 'react';
 import { Modal } from 'antd';
+import type React from 'react';
 import { SubscriptionForm } from '../../subscriptions/SubscriptionForm';
 import type { BotOption, SubscriptionFormData, SubscriptionWithDetails } from './types';
 

@@ -1,1 +1,1 @@
-export { VMProxmoxPage, VMTinyFMPage, VMSyncThingPage } from '../VMServicePage';
+export { VMProxmoxPage, VMSyncThingPage, VMTinyFMPage } from '../VMServicePage';

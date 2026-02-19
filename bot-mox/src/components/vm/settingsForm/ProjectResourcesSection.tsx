@@ -1,7 +1,7 @@
-import React from 'react';
 import { InputNumber, Table, Typography } from 'antd';
-import type { SettingsSectionProps } from './types';
+import type React from 'react';
 import styles from './ProjectResourcesSection.module.css';
+import type { SettingsSectionProps } from './types';
 
 const { Text } = Typography;
 
@@ -64,7 +64,10 @@ const RESOURCE_ROWS: ResourceMatrixRow[] = [
   },
 ];
 
-export const ProjectResourcesSection: React.FC<SettingsSectionProps> = ({ settings, onFieldChange }) => {
+export const ProjectResourcesSection: React.FC<SettingsSectionProps> = ({
+  settings,
+  onFieldChange,
+}) => {
   const renderProjectInput = (project: ProjectCardConfig, row: ResourceMatrixRow) => {
     const data = settings.projectHardware[project.key];
 
@@ -86,7 +89,9 @@ export const ProjectResourcesSection: React.FC<SettingsSectionProps> = ({ settin
       return (
         <InputNumber
           value={mbToGiB(data.memory)}
-          onChange={(value) => onFieldChange(`projectHardware.${project.key}.memory`, giBToMb(value))}
+          onChange={(value) =>
+            onFieldChange(`projectHardware.${project.key}.memory`, giBToMb(value))
+          }
           size="small"
           min={1}
           max={512}
@@ -113,7 +118,8 @@ export const ProjectResourcesSection: React.FC<SettingsSectionProps> = ({ settin
     <div className={styles.section}>
       <h4>Project Resource Profiles</h4>
       <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-        Configure default CPU, RAM, and disk size for each project. RAM is edited in GiB and saved internally as MB.
+        Configure default CPU, RAM, and disk size for each project. RAM is edited in GiB and saved
+        internally as MB.
       </Text>
 
       <div className={styles.matrixWrap}>
@@ -132,7 +138,9 @@ export const ProjectResourcesSection: React.FC<SettingsSectionProps> = ({ settin
               render: (_value, row) => (
                 <div className={styles.parameter}>
                   <Text strong>{row.label}</Text>
-                  <Text type="secondary" className={styles.hint}>{row.hint}</Text>
+                  <Text type="secondary" className={styles.hint}>
+                    {row.hint}
+                  </Text>
                 </div>
               ),
             },
@@ -140,7 +148,9 @@ export const ProjectResourcesSection: React.FC<SettingsSectionProps> = ({ settin
               title: (
                 <div className={styles.projectHead}>
                   <Text strong>{project.title}</Text>
-                  <Text type="secondary" className={styles.projectDesc}>{project.description}</Text>
+                  <Text type="secondary" className={styles.projectDesc}>
+                    {project.description}
+                  </Text>
                 </div>
               ),
               key: project.key,

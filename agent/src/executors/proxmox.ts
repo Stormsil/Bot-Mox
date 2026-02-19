@@ -1,7 +1,7 @@
-import * as https from 'https';
-import * as http from 'http';
-import { ProxmoxConfig } from '../core/config-store';
-import { Logger } from '../core/logger';
+import * as http from 'node:http';
+import * as https from 'node:https';
+import type { ProxmoxConfig } from '../core/config-store';
+import type { Logger } from '../core/logger';
 import { buildSshStatus, executeSshCommand, resolveSshConfig } from './ssh';
 
 // ---------------------------------------------------------------------------
@@ -90,7 +90,9 @@ function normalizeVmId(value: unknown): number {
 }
 
 function parseTaggedErrorCode(message: string): string {
-  const match = String(message || '').trim().match(/^([A-Z_]+):/);
+  const match = String(message || '')
+    .trim()
+    .match(/^([A-Z_]+):/);
   return match ? match[1] : 'SSH_EXEC_ERROR';
 }
 
@@ -154,9 +156,7 @@ async function probeSshStatus(
 
 function buildAuthKey(config: ProxmoxConfig): string {
   const baseUrl = String(config.url || '').replace(/\/+$/, '');
-  const username = config.username.includes('@')
-    ? config.username
-    : `${config.username}@pam`;
+  const username = config.username.includes('@') ? config.username : `${config.username}@pam`;
   const password = String(config.password || '');
   return `${baseUrl}|${username}|${password}`;
 }
@@ -188,7 +188,9 @@ function httpRequest(
 
     const req = lib.request(options, (res) => {
       let raw = '';
-      res.on('data', (chunk: Buffer) => { raw += chunk.toString(); });
+      res.on('data', (chunk: Buffer) => {
+        raw += chunk.toString();
+      });
       res.on('end', () => {
         try {
           const data = JSON.parse(raw);
@@ -230,9 +232,7 @@ async function login(
   }
 
   const baseUrl = config.url.replace(/\/+$/, '');
-  const username = config.username.includes('@')
-    ? config.username
-    : `${config.username}@pam`;
+  const username = config.username.includes('@') ? config.username : `${config.username}@pam`;
 
   logger.info(`Proxmox login to ${baseUrl} as ${username}`);
 
@@ -245,11 +245,15 @@ async function login(
     body,
   );
 
-  const loginData = (response.data as { data?: { ticket?: string; CSRFPreventionToken?: string } })?.data;
+  const loginData = (response.data as { data?: { ticket?: string; CSRFPreventionToken?: string } })
+    ?.data;
   if (!loginData?.ticket) {
-    const detail = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+    const detail =
+      typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
     if (response.status === 401 || response.status === 403) {
-      throw new Error(`Proxmox authentication failed (HTTP ${response.status}). Possible wrong username/password.`);
+      throw new Error(
+        `Proxmox authentication failed (HTTP ${response.status}). Possible wrong username/password.`,
+      );
     }
     throw new Error(`Proxmox login failed (HTTP ${response.status}): ${detail}`);
   }
@@ -305,7 +309,8 @@ async function proxmoxRequest(
   }
 
   if (response.status >= 400) {
-    const detail = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+    const detail =
+      typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
     throw new Error(`Proxmox API ${method} ${apiPath} failed (HTTP ${response.status}): ${detail}`);
   }
 
@@ -335,8 +340,12 @@ export async function executeProxmox(
     case 'suspend':
     case 'resume': {
       if (!vmid) throw new Error(`vmid required for proxmox.${action}`);
-      const taskResult = await proxmoxRequest(config, logger, 'POST',
-        `/api2/json/nodes/${node}/qemu/${vmid}/status/${action}`);
+      const taskResult = await proxmoxRequest(
+        config,
+        logger,
+        'POST',
+        `/api2/json/nodes/${node}/qemu/${vmid}/status/${action}`,
+      );
       return { upid: extractUpid(taskResult) };
     }
 
@@ -350,8 +359,13 @@ export async function executeProxmox(
       if (payload.storage) cloneData.storage = payload.storage;
       if (payload.format) cloneData.format = payload.format;
       if (payload.full !== undefined) cloneData.full = payload.full ? 1 : 0;
-      const taskResult = await proxmoxRequest(config, logger, 'POST',
-        `/api2/json/nodes/${node}/qemu/${templateVmId}/clone`, cloneData);
+      const taskResult = await proxmoxRequest(
+        config,
+        logger,
+        'POST',
+        `/api2/json/nodes/${node}/qemu/${templateVmId}/clone`,
+        cloneData,
+      );
       return { upid: extractUpid(taskResult) };
     }
 
@@ -362,30 +376,36 @@ export async function executeProxmox(
       if (payload.purge) params.push('purge=1');
       if (payload.destroyUnreferencedDisks) params.push('destroy-unreferenced-disks=1');
       const qs = params.length ? `?${params.join('&')}` : '';
-      const taskResult = await proxmoxRequest(config, logger, 'DELETE',
-        `/api2/json/nodes/${node}/qemu/${vmid}${qs}`);
+      const taskResult = await proxmoxRequest(
+        config,
+        logger,
+        'DELETE',
+        `/api2/json/nodes/${node}/qemu/${vmid}${qs}`,
+      );
       return { upid: extractUpid(taskResult) };
     }
 
     // List VMs (frontend sends 'list-vms', curl sends 'list')
     case 'list':
     case 'list-vms':
-      return proxmoxRequest(config, logger, 'GET',
-        `/api2/json/nodes/${node}/qemu`);
+      return proxmoxRequest(config, logger, 'GET', `/api2/json/nodes/${node}/qemu`);
 
     // Get single VM status
     case 'vm-status': {
       if (!vmid) throw new Error('vmid required for proxmox.vm-status');
-      return proxmoxRequest(config, logger, 'GET',
-        `/api2/json/nodes/${node}/qemu/${vmid}/status/current`);
+      return proxmoxRequest(
+        config,
+        logger,
+        'GET',
+        `/api2/json/nodes/${node}/qemu/${vmid}/status/current`,
+      );
     }
 
     // Get VM config
     case 'config.get':
     case 'get-config': {
       if (!vmid) throw new Error('vmid required for proxmox.get-config');
-      return proxmoxRequest(config, logger, 'GET',
-        `/api2/json/nodes/${node}/qemu/${vmid}/config`);
+      return proxmoxRequest(config, logger, 'GET', `/api2/json/nodes/${node}/qemu/${vmid}/config`);
     }
 
     // Update VM config
@@ -399,8 +419,13 @@ export async function executeProxmox(
         if (['vmid', 'node', 'config', 'target', 'targetId'].includes(k)) continue;
         cfgData[k] = v;
       }
-      const taskResult = await proxmoxRequest(config, logger, 'PUT',
-        `/api2/json/nodes/${node}/qemu/${vmid}/config`, cfgData);
+      const taskResult = await proxmoxRequest(
+        config,
+        logger,
+        'PUT',
+        `/api2/json/nodes/${node}/qemu/${vmid}/config`,
+        cfgData,
+      );
       return { upid: extractUpid(taskResult) };
     }
 
@@ -412,8 +437,13 @@ export async function executeProxmox(
       if (!disk) throw new Error('disk required for proxmox.resize-disk');
       if (!size) throw new Error('size required for proxmox.resize-disk');
 
-      const taskResult = await proxmoxRequest(config, logger, 'PUT',
-        `/api2/json/nodes/${node}/qemu/${vmid}/resize`, { disk, size });
+      const taskResult = await proxmoxRequest(
+        config,
+        logger,
+        'PUT',
+        `/api2/json/nodes/${node}/qemu/${vmid}/resize`,
+        { disk, size },
+      );
       return { upid: extractUpid(taskResult) };
     }
 
@@ -421,8 +451,12 @@ export async function executeProxmox(
     case 'task-status': {
       const upid = extractUpid(payload.upid ?? payload.task ?? payload.taskId);
       if (!upid) throw new Error('upid required for proxmox.task-status');
-      return proxmoxRequest(config, logger, 'GET',
-        `/api2/json/nodes/${node}/tasks/${encodeURIComponent(upid)}/status`);
+      return proxmoxRequest(
+        config,
+        logger,
+        'GET',
+        `/api2/json/nodes/${node}/tasks/${encodeURIComponent(upid)}/status`,
+      );
     }
 
     // Wait for task completion on agent side (reduces command-bus traffic)
@@ -440,9 +474,17 @@ export async function executeProxmox(
       const deadline = Date.now() + timeoutMs;
 
       while (Date.now() < deadline) {
-        const status = await proxmoxRequest(config, logger, 'GET',
-          `/api2/json/nodes/${node}/tasks/${encodeURIComponent(upid)}/status`) as Record<string, unknown>;
-        if (String(status.status || '').trim().toLowerCase() === 'stopped') {
+        const status = (await proxmoxRequest(
+          config,
+          logger,
+          'GET',
+          `/api2/json/nodes/${node}/tasks/${encodeURIComponent(upid)}/status`,
+        )) as Record<string, unknown>;
+        if (
+          String(status.status || '')
+            .trim()
+            .toLowerCase() === 'stopped'
+        ) {
           return status;
         }
         await sleep(intervalMs);
@@ -454,7 +496,9 @@ export async function executeProxmox(
     // Wait until VM reaches desired status
     case 'wait-vm-status': {
       if (!vmid) throw new Error('vmid required for proxmox.wait-vm-status');
-      const desiredStatus = String(payload.desiredStatus || payload.status || 'running').trim().toLowerCase();
+      const desiredStatus = String(payload.desiredStatus || payload.status || 'running')
+        .trim()
+        .toLowerCase();
       if (!desiredStatus) throw new Error('desiredStatus is required for proxmox.wait-vm-status');
       const timeoutMs = normalizeTimeoutMs(payload.timeoutMs ?? payload.timeout_ms, 120_000, {
         min: 1_000,
@@ -467,15 +511,25 @@ export async function executeProxmox(
       const deadline = Date.now() + timeoutMs;
 
       while (Date.now() < deadline) {
-        const status = await proxmoxRequest(config, logger, 'GET',
-          `/api2/json/nodes/${node}/qemu/${vmid}/status/current`) as Record<string, unknown>;
-        if (String(status.status || '').trim().toLowerCase() === desiredStatus) {
+        const status = (await proxmoxRequest(
+          config,
+          logger,
+          'GET',
+          `/api2/json/nodes/${node}/qemu/${vmid}/status/current`,
+        )) as Record<string, unknown>;
+        if (
+          String(status.status || '')
+            .trim()
+            .toLowerCase() === desiredStatus
+        ) {
           return status;
         }
         await sleep(intervalMs);
       }
 
-      throw new Error(`VM ${vmid} did not reach status "${desiredStatus}" within ${Math.ceil(timeoutMs / 1000)}s`);
+      throw new Error(
+        `VM ${vmid} did not reach status "${desiredStatus}" within ${Math.ceil(timeoutMs / 1000)}s`,
+      );
     }
 
     // Wait for VM presence/absence in node VM list
@@ -493,10 +547,15 @@ export async function executeProxmox(
       const deadline = Date.now() + timeoutMs;
 
       while (Date.now() < deadline) {
-        const vmList = await proxmoxRequest(config, logger, 'GET',
-          `/api2/json/nodes/${node}/qemu`) as Array<Record<string, unknown>>;
-        const exists = Array.isArray(vmList)
-          && vmList.some((vm) => String(vm?.vmid || '').trim() === String(vmid));
+        const vmList = (await proxmoxRequest(
+          config,
+          logger,
+          'GET',
+          `/api2/json/nodes/${node}/qemu`,
+        )) as Array<Record<string, unknown>>;
+        const exists =
+          Array.isArray(vmList) &&
+          vmList.some((vm) => String(vm?.vmid || '').trim() === String(vmid));
         if (exists === shouldExist) {
           return { vmid: Number(vmid), exists };
         }
@@ -504,7 +563,9 @@ export async function executeProxmox(
       }
 
       const expected = shouldExist ? 'present' : 'absent';
-      throw new Error(`VM ${vmid} did not become ${expected} within ${Math.ceil(timeoutMs / 1000)}s`);
+      throw new Error(
+        `VM ${vmid} did not become ${expected} within ${Math.ceil(timeoutMs / 1000)}s`,
+      );
     }
 
     // Send key to VM
@@ -512,8 +573,13 @@ export async function executeProxmox(
       if (!vmid) throw new Error('vmid required for proxmox.sendkey');
       const key = payload.key ? String(payload.key) : undefined;
       if (!key) throw new Error('key required for proxmox.sendkey');
-      return proxmoxRequest(config, logger, 'PUT',
-        `/api2/json/nodes/${node}/qemu/${vmid}/sendkey`, { key });
+      return proxmoxRequest(
+        config,
+        logger,
+        'PUT',
+        `/api2/json/nodes/${node}/qemu/${vmid}/sendkey`,
+        { key },
+      );
     }
 
     // Cluster resources
@@ -561,7 +627,9 @@ export async function executeProxmox(
         enforceAllowlist: true,
       });
       if (result.exitCode !== 0) {
-        throw new Error(`SSH_READ_FAILED: ${result.stderr || `Failed to read VM config for ${normalizedVmid}`}`);
+        throw new Error(
+          `SSH_READ_FAILED: ${result.stderr || `Failed to read VM config for ${normalizedVmid}`}`,
+        );
       }
       return { config: result.stdout };
     }
@@ -581,7 +649,9 @@ export async function executeProxmox(
         enforceAllowlist: false,
       });
       if (result.exitCode !== 0) {
-        throw new Error(`SSH_WRITE_FAILED: ${result.stderr || `Failed to write VM config for ${normalizedVmid}`}`);
+        throw new Error(
+          `SSH_WRITE_FAILED: ${result.stderr || `Failed to write VM config for ${normalizedVmid}`}`,
+        );
       }
       return { written: true };
     }
@@ -635,8 +705,8 @@ export async function executeProxmox(
       // Generate ISO with genisoimage (common on Proxmox/Debian) or mkisofs
       writeCommands.push(
         `(command -v genisoimage >/dev/null 2>&1 && genisoimage -o ${isoPath} -J -R -V PROVISION ${tmpDir}) || ` +
-        `(command -v mkisofs >/dev/null 2>&1 && mkisofs -o ${isoPath} -J -R -V PROVISION ${tmpDir}) || ` +
-        `{ echo "ERROR: no ISO tool found"; exit 1; }`
+          `(command -v mkisofs >/dev/null 2>&1 && mkisofs -o ${isoPath} -J -R -V PROVISION ${tmpDir}) || ` +
+          `{ echo "ERROR: no ISO tool found"; exit 1; }`,
       );
 
       // Move ISO to Proxmox ISO storage
@@ -655,7 +725,9 @@ export async function executeProxmox(
       });
 
       if (createResult.exitCode !== 0) {
-        throw new Error(`ISO_CREATE_FAILED: ${createResult.stderr || 'Failed to create provision ISO'}`);
+        throw new Error(
+          `ISO_CREATE_FAILED: ${createResult.stderr || 'Failed to create provision ISO'}`,
+        );
       }
 
       return {
@@ -672,10 +744,15 @@ export async function executeProxmox(
       if (!isoPath) throw new Error('isoPath required for proxmox.attach-cdrom');
       const cdromSlot = String(payload.cdromSlot || 'ide2');
 
-      const taskResult = await proxmoxRequest(config, logger, 'PUT',
-        `/api2/json/nodes/${node}/qemu/${vmid}/config`, {
+      const taskResult = await proxmoxRequest(
+        config,
+        logger,
+        'PUT',
+        `/api2/json/nodes/${node}/qemu/${vmid}/config`,
+        {
           [cdromSlot]: `${isoPath},media=cdrom`,
-        });
+        },
+      );
       return { upid: extractUpid(taskResult), attached: true };
     }
 
@@ -689,8 +766,12 @@ export async function executeProxmox(
       let currentIsoPath = '';
       if (deleteIso) {
         try {
-          const vmConfig = await proxmoxRequest(config, logger, 'GET',
-            `/api2/json/nodes/${node}/qemu/${vmid}/config`) as Record<string, unknown>;
+          const vmConfig = (await proxmoxRequest(
+            config,
+            logger,
+            'GET',
+            `/api2/json/nodes/${node}/qemu/${vmid}/config`,
+          )) as Record<string, unknown>;
           const cdromValue = String(vmConfig[cdromSlot] || '');
           const match = cdromValue.match(/^([^,]+)/);
           if (match) currentIsoPath = match[1];
@@ -699,10 +780,15 @@ export async function executeProxmox(
         }
       }
 
-      const taskResult = await proxmoxRequest(config, logger, 'PUT',
-        `/api2/json/nodes/${node}/qemu/${vmid}/config`, {
+      const taskResult = await proxmoxRequest(
+        config,
+        logger,
+        'PUT',
+        `/api2/json/nodes/${node}/qemu/${vmid}/config`,
+        {
           [cdromSlot]: 'none,media=cdrom',
-        });
+        },
+      );
 
       // Delete the ISO file via SSH if requested
       if (deleteIso && currentIsoPath) {

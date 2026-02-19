@@ -1,4 +1,4 @@
-import type { DeleteVmBotRecord } from '../../services/vmDeleteContextService';
+import type { DeleteVmBotRecord } from '../../entities/vm/api/vmDeleteContextFacade';
 import type { ProxmoxVM, VMGeneratorSettings } from '../../types';
 
 export interface DeleteVmBotEvaluation {
@@ -39,10 +39,14 @@ export const DEFAULT_DELETE_VM_FILTERS: DeleteVmFilters = {
 };
 
 export function normalizeToken(value: unknown): string {
-  return String(value ?? '').trim().toLowerCase();
+  return String(value ?? '')
+    .trim()
+    .toLowerCase();
 }
 
-export function normalizeDeleteVmFilters(input?: VMGeneratorSettings['deleteVmFilters']): DeleteVmFilters {
+export function normalizeDeleteVmFilters(
+  input?: VMGeneratorSettings['deleteVmFilters'],
+): DeleteVmFilters {
   return {
     policy: {
       ...DEFAULT_DELETE_VM_FILTERS.policy,
@@ -62,7 +66,7 @@ export function evaluateDeleteBot(
     hasSubscription: boolean;
     hasLicense: boolean;
   },
-  policy: DeleteVmFilters['policy']
+  policy: DeleteVmFilters['policy'],
 ): DeleteVmBotEvaluation {
   const status = normalizeToken(bot.status);
   const hasEmail = Boolean(bot.accountEmail);
@@ -72,16 +76,9 @@ export function evaluateDeleteBot(
   const hasLicense = resources.hasLicense;
   const isBanned = status === 'banned';
   const isPrepare = status === 'prepare';
-  const isPrepareNoResources = isPrepare
-    && !hasProxy
-    && !hasSubscription
-    && !hasLicense;
-  const isPrepareSeed = isPrepare
-    && !hasEmail
-    && !hasPassword
-    && !hasProxy
-    && !hasSubscription
-    && !hasLicense;
+  const isPrepareNoResources = isPrepare && !hasProxy && !hasSubscription && !hasLicense;
+  const isPrepareSeed =
+    isPrepare && !hasEmail && !hasPassword && !hasProxy && !hasSubscription && !hasLicense;
 
   if (isBanned && policy.allowBanned) {
     return {

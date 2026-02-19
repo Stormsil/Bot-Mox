@@ -18,7 +18,8 @@ function normalizeClonePayload(body) {
     payload.newid = Number(body.newid);
   }
   if (typeof body?.name === 'string' && body.name.trim()) payload.name = body.name.trim();
-  if (typeof body?.storage === 'string' && body.storage.trim()) payload.storage = body.storage.trim();
+  if (typeof body?.storage === 'string' && body.storage.trim())
+    payload.storage = body.storage.trim();
   if (typeof body?.format === 'string' && body.format.trim()) payload.format = body.format.trim();
   if (body?.full !== undefined) payload.full = body.full ? 1 : 0;
 
@@ -110,8 +111,14 @@ class InfraServiceError extends Error {
 }
 
 function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshCommandAllowed }) {
-  if (typeof proxmoxLogin !== 'function' || typeof proxmoxRequest !== 'function' || typeof sshExec !== 'function') {
-    throw new Error('createInfraService requires proxmoxLogin, proxmoxRequest and sshExec functions');
+  if (
+    typeof proxmoxLogin !== 'function' ||
+    typeof proxmoxRequest !== 'function' ||
+    typeof sshExec !== 'function'
+  ) {
+    throw new Error(
+      'createInfraService requires proxmoxLogin, proxmoxRequest and sshExec functions',
+    );
   }
 
   const allowUnsafe = Boolean(env?.sshExecAllowUnsafe);
@@ -134,7 +141,9 @@ function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshC
   }
 
   function ensureAction(action) {
-    const normalizedAction = String(action || '').trim().toLowerCase();
+    const normalizedAction = String(action || '')
+      .trim()
+      .toLowerCase();
     if (!VALID_VM_ACTIONS.has(normalizedAction)) {
       throw new InfraServiceError(400, 'BAD_REQUEST', `Invalid action: ${normalizedAction}`);
     }
@@ -146,7 +155,7 @@ function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshC
     if (!normalizedKey) {
       throw new InfraServiceError(400, 'BAD_REQUEST', 'key is required');
     }
-    if (!/^[A-Za-z0-9_+\-]+$/.test(normalizedKey)) {
+    if (!/^[A-Za-z0-9_+-]+$/.test(normalizedKey)) {
       throw new InfraServiceError(400, 'BAD_REQUEST', 'Invalid key format');
     }
     return normalizedKey;
@@ -183,14 +192,21 @@ function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshC
       const normalizedNode = ensureNode(node);
       const normalizedVmid = ensureVmid(vmid, 'Invalid clone target');
       const payload = normalizeClonePayload(body || {});
-      const result = await proxmoxRequest('post', `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}/clone`, payload);
+      const result = await proxmoxRequest(
+        'post',
+        `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}/clone`,
+        payload,
+      );
       return { upid: result?.data || null };
     },
 
     async getVmConfig({ node, vmid }) {
       const normalizedNode = ensureNode(node);
       const normalizedVmid = ensureVmid(vmid);
-      const result = await proxmoxRequest('get', `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}/config`);
+      const result = await proxmoxRequest(
+        'get',
+        `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}/config`,
+      );
       return result?.data || {};
     },
 
@@ -210,7 +226,11 @@ function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshC
         throw new InfraServiceError(400, 'BAD_REQUEST', 'No config parameters provided');
       }
 
-      const result = await proxmoxRequest('put', `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}/config`, params);
+      const result = await proxmoxRequest(
+        'put',
+        `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}/config`,
+        params,
+      );
       return { upid: result?.data || null };
     },
 
@@ -222,7 +242,7 @@ function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshC
       }
       const result = await proxmoxRequest(
         'get',
-        `/api2/json/nodes/${normalizedNode}/tasks/${encodeURIComponent(normalizedUpid)}/status`
+        `/api2/json/nodes/${normalizedNode}/tasks/${encodeURIComponent(normalizedUpid)}/status`,
       );
       return result?.data || {};
     },
@@ -233,7 +253,7 @@ function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshC
       const normalizedAction = ensureAction(action);
       const result = await proxmoxRequest(
         'post',
-        `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}/status/${normalizedAction}`
+        `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}/status/${normalizedAction}`,
       );
       return { upid: result?.data || null };
     },
@@ -249,7 +269,10 @@ function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshC
       if (normalizedDestroy) queryParts.push('destroy-unreferenced-disks=1');
       const querySuffix = queryParts.length > 0 ? `?${queryParts.join('&')}` : '';
 
-      const result = await proxmoxRequest('delete', `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}${querySuffix}`);
+      const result = await proxmoxRequest(
+        'delete',
+        `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}${querySuffix}`,
+      );
       return { upid: result?.data || null };
     },
 
@@ -281,7 +304,7 @@ function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshC
           'SENDKEY_FAILED',
           apiErrorMessage
             ? `Proxmox API sendkey failed (${apiErrorMessage}); SSH fallback failed (${message})`
-            : `SSH fallback failed: ${message}`
+            : `SSH fallback failed: ${message}`,
         );
       }
 
@@ -294,7 +317,10 @@ function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshC
     async getVmCurrentStatus({ node, vmid }) {
       const normalizedNode = ensureNode(node);
       const normalizedVmid = ensureVmid(vmid);
-      const result = await proxmoxRequest('get', `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}/status/current`);
+      const result = await proxmoxRequest(
+        'get',
+        `/api2/json/nodes/${normalizedNode}/qemu/${normalizedVmid}/status/current`,
+      );
       return result?.data || {};
     },
 
@@ -322,7 +348,7 @@ function createInfraService({ proxmoxLogin, proxmoxRequest, sshExec, env, isSshC
         throw new InfraServiceError(
           403,
           'SSH_COMMAND_FORBIDDEN',
-          'Command is not allowlisted. Set SSH_EXEC_ALLOW_UNSAFE=true for emergency bypass.'
+          'Command is not allowlisted. Set SSH_EXEC_ALLOW_UNSAFE=true for emergency bypass.',
         );
       }
 

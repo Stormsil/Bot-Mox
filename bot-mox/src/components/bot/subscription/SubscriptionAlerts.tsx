@@ -1,9 +1,9 @@
-import React from 'react';
-import { Alert } from 'antd';
 import { WarningOutlined } from '@ant-design/icons';
-import type { SubscriptionWithDetails } from './types';
+import { Alert } from 'antd';
+import type React from 'react';
 import { getTypeLabel } from './helpers';
 import styles from './subscription.module.css';
+import type { SubscriptionWithDetails } from './types';
 
 interface ProblemSubscriptionsAlertProps {
   subscriptions: SubscriptionWithDetails[];
@@ -13,7 +13,9 @@ interface SubscriptionStatusAlertProps {
   subscription: SubscriptionWithDetails;
 }
 
-export const ProblemSubscriptionsAlert: React.FC<ProblemSubscriptionsAlertProps> = ({ subscriptions }) => {
+export const ProblemSubscriptionsAlert: React.FC<ProblemSubscriptionsAlertProps> = ({
+  subscriptions,
+}) => {
   if (subscriptions.length === 0) return null;
 
   return (
@@ -42,7 +44,9 @@ export const ProblemSubscriptionsAlert: React.FC<ProblemSubscriptionsAlertProps>
   );
 };
 
-export const SubscriptionStatusAlert: React.FC<SubscriptionStatusAlertProps> = ({ subscription }) => {
+export const SubscriptionStatusAlert: React.FC<SubscriptionStatusAlertProps> = ({
+  subscription,
+}) => {
   if (!subscription.isExpired && !subscription.isExpiringSoon) return null;
 
   return (

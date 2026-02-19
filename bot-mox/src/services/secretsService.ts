@@ -1,4 +1,4 @@
-import type { SecretMeta, SecretBinding, SecretBindingsMap } from '../types';
+import type { SecretBinding, SecretBindingsMap, SecretMeta } from '../types';
 import { apiGet, apiPost, buildQueryString } from './apiClient';
 
 const SECRETS_PREFIX = '/api/v1/secrets';
@@ -19,17 +19,13 @@ async function getOrCreateLocalKey(): Promise<CryptoKey> {
   const stored = localStorage.getItem(LOCAL_KEY_STORAGE_KEY);
   if (stored) {
     const raw = Uint8Array.from(atob(stored), (c) => c.charCodeAt(0));
-    return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, true, [
-      'encrypt',
-      'decrypt',
-    ]);
+    return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
   }
 
-  const key = await crypto.subtle.generateKey(
-    { name: 'AES-GCM', length: 256 },
-    true,
-    ['encrypt', 'decrypt'],
-  );
+  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
+    'encrypt',
+    'decrypt',
+  ]);
 
   const exported = await crypto.subtle.exportKey('raw', key);
   localStorage.setItem(LOCAL_KEY_STORAGE_KEY, toBase64(exported));
@@ -42,11 +38,7 @@ async function encryptValue(
   const key = await getOrCreateLocalKey();
   const nonce = crypto.getRandomValues(new Uint8Array(12));
   const encoded = new TextEncoder().encode(plaintext);
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv: nonce },
-    key,
-    encoded,
-  );
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, key, encoded);
 
   return {
     ciphertext: toBase64(encrypted),
@@ -98,10 +90,7 @@ export async function createBinding(params: {
   return data;
 }
 
-export async function listBindings(
-  scopeType: string,
-  scopeId: string,
-): Promise<SecretBinding[]> {
+export async function listBindings(scopeType: string, scopeId: string): Promise<SecretBinding[]> {
   const qs = buildQueryString({ scope_type: scopeType, scope_id: scopeId });
   const { data } = await apiGet<SecretBinding[]>(`${SECRETS_PREFIX}/bindings${qs}`);
   return data;

@@ -125,12 +125,19 @@ function createVmOpsService({ env }) {
     }
 
     const lastSeenAtMs = agent.last_seen_at ? new Date(agent.last_seen_at).getTime() : 0;
-    const isOnline = String(agent.status || '').trim().toLowerCase() === 'active'
-      && lastSeenAtMs > 0
-      && (Date.now() - lastSeenAtMs) < 120_000;
+    const isOnline =
+      String(agent.status || '')
+        .trim()
+        .toLowerCase() === 'active' &&
+      lastSeenAtMs > 0 &&
+      Date.now() - lastSeenAtMs < 120_000;
 
     if (!isOnline) {
-      throw new VmOpsServiceError(409, 'AGENT_OFFLINE', 'Agent is not online. VM operations require an active agent connection.');
+      throw new VmOpsServiceError(
+        409,
+        'AGENT_OFFLINE',
+        'Agent is not online. VM operations require an active agent connection.',
+      );
     }
 
     const expiresAt = new Date(Date.now() + expiresInSeconds * 1000).toISOString();
@@ -139,7 +146,9 @@ function createVmOpsService({ env }) {
     if (dedupeAllowed) {
       let dedupeQuery = client
         .from('agent_commands')
-        .select('id, tenant_id, agent_id, command_type, status, payload, result, error_message, queued_at, started_at, completed_at, expires_at, created_by')
+        .select(
+          'id, tenant_id, agent_id, command_type, status, payload, result, error_message, queued_at, started_at, completed_at, expires_at, created_by',
+        )
         .eq('tenant_id', normalizedTenantId)
         .eq('agent_id', normalizedAgentId)
         .eq('command_type', normalizedCommandType)
@@ -158,9 +167,11 @@ function createVmOpsService({ env }) {
 
         const reusable = recentCommands.find((candidate) => {
           const queuedAtMs = candidate.queued_at ? new Date(candidate.queued_at).getTime() : 0;
-          const completedAtMs = candidate.completed_at ? new Date(candidate.completed_at).getTime() : 0;
+          const completedAtMs = candidate.completed_at
+            ? new Date(candidate.completed_at).getTime()
+            : 0;
           const candidateFreshness = candidate.status === 'succeeded' ? completedAtMs : queuedAtMs;
-          if (!candidateFreshness || (nowMs - candidateFreshness) > READ_ONLY_DEDUPE_WINDOW_MS) {
+          if (!candidateFreshness || nowMs - candidateFreshness > READ_ONLY_DEDUPE_WINDOW_MS) {
             return false;
           }
           return stableStringify(candidate.payload || {}) === normalizedPayloadHash;
@@ -183,7 +194,9 @@ function createVmOpsService({ env }) {
         expires_at: expiresAt,
         created_by: createdBy ? String(createdBy).trim() : null,
       })
-      .select('id, tenant_id, agent_id, command_type, payload, status, result, error_message, queued_at, started_at, completed_at, expires_at, created_by')
+      .select(
+        'id, tenant_id, agent_id, command_type, payload, status, result, error_message, queued_at, started_at, completed_at, expires_at, created_by',
+      )
       .single();
 
     if (error) {
@@ -218,7 +231,9 @@ function createVmOpsService({ env }) {
 
     const { data, error } = await client
       .from('agent_commands')
-      .select('id, tenant_id, agent_id, command_type, status, result, error_message, queued_at, started_at, completed_at, expires_at, created_by')
+      .select(
+        'id, tenant_id, agent_id, command_type, status, result, error_message, queued_at, started_at, completed_at, expires_at, created_by',
+      )
       .eq('id', normalizedCommandId)
       .eq('tenant_id', normalizedTenantId)
       .single();
@@ -249,7 +264,14 @@ function createVmOpsService({ env }) {
     return data;
   }
 
-  async function updateCommandStatus({ tenantId, commandId, agentId, status, result, errorMessage }) {
+  async function updateCommandStatus({
+    tenantId,
+    commandId,
+    agentId,
+    status,
+    result,
+    errorMessage,
+  }) {
     const client = getClient();
     const normalizedTenantId = String(tenantId || '').trim() || 'default';
     const normalizedCommandId = String(commandId || '').trim();
@@ -293,7 +315,9 @@ function createVmOpsService({ env }) {
       .update(updatePayload)
       .eq('id', normalizedCommandId)
       .eq('tenant_id', normalizedTenantId)
-      .select('id, tenant_id, agent_id, command_type, payload, status, result, error_message, queued_at, started_at, completed_at, expires_at, created_by')
+      .select(
+        'id, tenant_id, agent_id, command_type, payload, status, result, error_message, queued_at, started_at, completed_at, expires_at, created_by',
+      )
       .single();
 
     if (error) {
@@ -325,7 +349,11 @@ function createVmOpsService({ env }) {
     if (requestSource === 'agent') {
       const normalizedRequesterAgentId = String(requesterAgentId || '').trim();
       if (normalizedRequesterAgentId && normalizedRequesterAgentId !== normalizedAgentId) {
-        throw new VmOpsServiceError(403, 'FORBIDDEN', 'Agent token can only access its own command queue');
+        throw new VmOpsServiceError(
+          403,
+          'FORBIDDEN',
+          'Agent token can only access its own command queue',
+        );
       }
       return;
     }
@@ -369,7 +397,9 @@ function createVmOpsService({ env }) {
 
     let query = client
       .from('agent_commands')
-      .select('id, tenant_id, agent_id, command_type, payload, status, queued_at, started_at, completed_at, expires_at, created_by')
+      .select(
+        'id, tenant_id, agent_id, command_type, payload, status, queued_at, started_at, completed_at, expires_at, created_by',
+      )
       .eq('tenant_id', normalizedTenantId)
       .order('queued_at', { ascending: false })
       .limit(100);
@@ -421,9 +451,13 @@ function createVmOpsService({ env }) {
       requestSource,
     });
 
-    const normalizedTimeoutMs = Math.max(1_000, Math.min(60_000, Math.trunc(Number(timeoutMs) || 25_000)));
+    const normalizedTimeoutMs = Math.max(
+      1_000,
+      Math.min(60_000, Math.trunc(Number(timeoutMs) || 25_000)),
+    );
 
-    const commandSelectFields = 'id, tenant_id, agent_id, command_type, payload, status, result, error_message, queued_at, started_at, completed_at, expires_at, created_by';
+    const commandSelectFields =
+      'id, tenant_id, agent_id, command_type, payload, status, result, error_message, queued_at, started_at, completed_at, expires_at, created_by';
 
     const markQueuedCommandExpired = async (command) => {
       const nowIso = new Date().toISOString();
@@ -465,7 +499,11 @@ function createVmOpsService({ env }) {
           .maybeSingle();
 
         if (error) {
-          throw new VmOpsServiceError(500, 'DB_ERROR', `Failed to fetch queued command: ${error.message}`);
+          throw new VmOpsServiceError(
+            500,
+            'DB_ERROR',
+            `Failed to fetch queued command: ${error.message}`,
+          );
         }
         if (!data) {
           return null;
@@ -526,7 +564,11 @@ function createVmOpsService({ env }) {
         if (String(command.agent_id || '').trim() !== normalizedAgentId) {
           return;
         }
-        if (String(command.status || '').trim().toLowerCase() !== 'queued') {
+        if (
+          String(command.status || '')
+            .trim()
+            .toLowerCase() !== 'queued'
+        ) {
           return;
         }
 

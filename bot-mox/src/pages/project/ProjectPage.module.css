@@ -115,6 +115,17 @@
   cursor: pointer;
 }
 
+.cellLinkButton {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
 .cellLink:hover .secondary {
   color: var(--boxmox-color-text-primary);
 }
@@ -134,7 +145,8 @@
 }
 
 .id {
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-family:
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
   font-size: 12px;
 }
 

@@ -9,7 +9,7 @@ import {
 
 export function subscribeLicenses(
   onData: (licenses: BotLicense[]) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ): () => void {
   return subscribeResources<BotLicense>('licenses', onData, onError, { intervalMs: 7000 });
 }

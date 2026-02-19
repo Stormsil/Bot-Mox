@@ -1,9 +1,9 @@
-export { VMList, VMListView } from './VMList';
+export { VMCommandPanel } from './VMCommandPanel';
 export { VMConfigPreview } from './VMConfigPreview';
-export { VMServicesPanel } from './VMServicesPanel';
-export { VMSettingsForm } from './VMSettingsForm';
+export { VMList, VMListView } from './VMList';
 export { VMOperationLog } from './VMOperationLog';
 export { VMQueuePanel } from './VMQueuePanel';
-export { VMCommandPanel } from './VMCommandPanel';
-export { VMStatusBar } from './VMStatusBar';
+export { VMServicesPanel } from './VMServicesPanel';
+export { VMSettingsForm } from './VMSettingsForm';
 export { VMSetupProgress } from './VMSetupProgress';
+export { VMStatusBar } from './VMStatusBar';

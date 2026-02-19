@@ -1,6 +1,7 @@
 const express = require('express');
 const { success, failure } = require('../../contracts/envelope');
 const {
+  idParamSchema,
   agentPairingSchema,
   agentRegisterSchema,
   agentQuickPairSchema,
@@ -33,8 +34,12 @@ function inferServerBaseUrl(req, env) {
   const envBase = String(env?.agentPairingPublicUrl || '').trim();
   if (envBase) return envBase.replace(/\/+$/, '');
 
-  const forwardedProto = normalizeHeaderValue(req?.headers?.['x-forwarded-proto']).split(',')[0]?.trim();
-  const forwardedHost = normalizeHeaderValue(req?.headers?.['x-forwarded-host']).split(',')[0]?.trim();
+  const forwardedProto = normalizeHeaderValue(req?.headers?.['x-forwarded-proto'])
+    .split(',')[0]
+    ?.trim();
+  const forwardedHost = normalizeHeaderValue(req?.headers?.['x-forwarded-host'])
+    .split(',')[0]
+    ?.trim();
   const proto = forwardedProto || req?.protocol || 'http';
   const host = forwardedHost || req?.get?.('host') || '';
   if (!host) return '';
@@ -106,22 +111,32 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
     withAgentErrors(async (req, res) => {
       const parsed = agentPairingSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
       const privileged = isPrivileged(auth);
       const requestedOwnerUserId = String(parsed.data.owner_user_id || '').trim();
-      if (requestedOwnerUserId && !privileged && requestedOwnerUserId !== String(auth.uid || '').trim()) {
+      if (
+        requestedOwnerUserId &&
+        !privileged &&
+        requestedOwnerUserId !== String(auth.uid || '').trim()
+      ) {
         return res.status(403).json(failure('FORBIDDEN', 'owner_user_id override is not allowed'));
       }
       const defaultOwnerUserId = String(auth.uid || '').trim();
       const effectiveOwnerUserId = requestedOwnerUserId || defaultOwnerUserId || null;
       if (!effectiveOwnerUserId) {
-        return res.status(400).json(failure(
-          'BAD_REQUEST',
-          'owner_user_id is required (or must be resolvable from authenticated user context)'
-        ));
+        return res
+          .status(400)
+          .json(
+            failure(
+              'BAD_REQUEST',
+              'owner_user_id is required (or must be resolvable from authenticated user context)',
+            ),
+          );
       }
 
       const data = await agentService.createPairing({
@@ -138,11 +153,13 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
         proxmoxDefaults: data?.proxmox_defaults,
       });
 
-      return res.status(201).json(success({
-        ...data,
-        ...hints,
-      }));
-    })
+      return res.status(201).json(
+        success({
+          ...data,
+          ...hints,
+        }),
+      );
+    }),
   );
 
   // POST /api/v1/agents/register — register agent using pairing code
@@ -151,7 +168,9 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
     withAgentErrors(async (req, res) => {
       const parsed = agentRegisterSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -165,7 +184,7 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
       });
 
       return res.status(201).json(success(data));
-    })
+    }),
   );
 
   // POST /api/v1/agents/quick-pair — login/password -> hidden pairing + register
@@ -174,7 +193,9 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
     withAgentErrors(async (req, res) => {
       const parsed = agentQuickPairSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const data = await agentService.quickPairWithCredentials({
@@ -188,7 +209,7 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
       });
 
       return res.status(201).json(success(data));
-    })
+    }),
   );
 
   // POST /api/v1/agents/heartbeat — agent heartbeat
@@ -197,12 +218,19 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
     withAgentErrors(async (req, res) => {
       const parsed = agentHeartbeatSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
-      if (isAgentAuth(req) && String(parsed.data.agent_id).trim() !== String(auth.agent_id || '').trim()) {
-        return res.status(403).json(failure('FORBIDDEN', 'Agent token can only heartbeat for itself'));
+      if (
+        isAgentAuth(req) &&
+        String(parsed.data.agent_id).trim() !== String(auth.agent_id || '').trim()
+      ) {
+        return res
+          .status(403)
+          .json(failure('FORBIDDEN', 'Agent token can only heartbeat for itself'));
       }
 
       const data = await agentService.heartbeat({
@@ -211,7 +239,7 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   // GET /api/v1/agents — list agents for tenant
@@ -224,7 +252,9 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
 
       const parsed = agentListQuerySchema.safeParse(req.query || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid query', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid query', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -237,7 +267,7 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   // GET /api/v1/agents/:id — get single agent
@@ -245,25 +275,29 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
     '/:id',
     withAgentErrors(async (req, res) => {
       if (isAgentAuth(req)) {
-        return res.status(403).json(failure('FORBIDDEN', 'Agent token cannot read agent directory'));
+        return res
+          .status(403)
+          .json(failure('FORBIDDEN', 'Agent token cannot read agent directory'));
       }
 
-      const agentId = String(req.params.id || '').trim();
-      if (!agentId) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Agent ID is required'));
+      const parsedId = idParamSchema.safeParse(req.params || {});
+      if (!parsedId.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid path params', parsedId.error.flatten()));
       }
 
       const auth = req.auth || {};
       const privileged = isPrivileged(auth);
       const data = await agentService.getAgent({
         tenantId: auth.tenant_id,
-        agentId,
+        agentId: parsedId.data.id,
         requesterUserId: auth.uid,
         includeAll: privileged,
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   // POST /api/v1/agents/:id/revoke — revoke an agent (admin/infra only)
@@ -271,26 +305,30 @@ function createAgentsRoutes({ agentService, authMiddleware, env }) {
     '/:id/revoke',
     requireAnyRole(['admin', 'infra']),
     withAgentErrors(async (req, res) => {
-      const agentId = String(req.params.id || '').trim();
-      if (!agentId) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Agent ID is required'));
+      const parsedId = idParamSchema.safeParse(req.params || {});
+      if (!parsedId.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid path params', parsedId.error.flatten()));
       }
 
       const parsed = agentRevokeSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
       const data = await agentService.revokeAgent({
         tenantId: auth.tenant_id,
-        agentId,
+        agentId: parsedId.data.id,
         revokedBy: auth.uid,
         reason: parsed.data.reason,
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   return router;

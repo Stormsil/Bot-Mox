@@ -28,13 +28,17 @@ function trimTrailingSlash(value) {
 async function main() {
   const supabasePublicUrl = required(
     'env SUPABASE_PUBLIC_URL',
-    process.env.SUPABASE_PUBLIC_URL || process.env.SUPABASE_URL
+    process.env.SUPABASE_PUBLIC_URL || process.env.SUPABASE_URL,
   );
-  const serviceRoleKey = required('env SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const serviceRoleKey = required(
+    'env SUPABASE_SERVICE_ROLE_KEY',
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+  );
 
   const email = required('arg --email', readArg('email'));
   const password = required('arg --password', readArg('password'));
-  const tenantId = String(readArg('tenant') || process.env.DEFAULT_TENANT_ID || 'default').trim() || 'default';
+  const tenantId =
+    String(readArg('tenant') || process.env.DEFAULT_TENANT_ID || 'default').trim() || 'default';
 
   const url = `${trimTrailingSlash(supabasePublicUrl)}/auth/v1/admin/users`;
   const response = await fetch(url, {
@@ -57,7 +61,8 @@ async function main() {
   const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const message = payload?.msg || payload?.error_description || payload?.error || response.statusText;
+    const message =
+      payload?.msg || payload?.error_description || payload?.error || response.statusText;
     throw new Error(`Supabase user create failed (${response.status}): ${message}`);
   }
 
@@ -72,4 +77,3 @@ main().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });
-

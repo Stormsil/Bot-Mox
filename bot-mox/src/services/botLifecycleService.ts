@@ -1,19 +1,12 @@
-import { apiGet, apiPost } from './apiClient';
-import type {
-  BanDetails,
-  BotLifecycle,
-  BotStatus,
-} from '../types';
-
-interface LifecycleTransitionsPayload {
-  data?: BotLifecycle['stage_transitions'];
-}
-
-interface IsBannedPayload {
-  data?: {
-    banned?: boolean;
-  };
-}
+import {
+  banBotViaContract,
+  getBotLifecycleTransitionsViaContract,
+  getBotLifecycleViaContract,
+  isBotBannedViaContract,
+  transitionBotLifecycleViaContract,
+  unbanBotViaContract,
+} from '../providers/bot-contract-client';
+import type { BanDetails, BotLifecycle, BotStatus } from '../types';
 
 function normalizeLifecycle(value: unknown): BotLifecycle | null {
   if (!value || typeof value !== 'object') return null;
@@ -23,26 +16,18 @@ function normalizeLifecycle(value: unknown): BotLifecycle | null {
 /**
  * Автоматический переход статуса бота.
  */
-export const transitionBotStatus = async (
-  botId: string,
-  newStatus: BotStatus
-): Promise<void> => {
+export const transitionBotStatus = async (botId: string, newStatus: BotStatus): Promise<void> => {
   if (!botId) {
     throw new Error('botId is required');
   }
 
-  await apiPost(`/api/v1/bots/${encodeURIComponent(botId)}/lifecycle/transition`, {
-    status: newStatus,
-  });
+  await transitionBotLifecycleViaContract(botId, newStatus);
 };
 
 /**
  * Бан бота.
  */
-export const banBot = async (
-  botId: string,
-  banDetails: BanDetails
-): Promise<void> => {
+export const banBot = async (botId: string, banDetails: BanDetails): Promise<void> => {
   if (!botId) {
     throw new Error('botId is required');
   }
@@ -51,7 +36,7 @@ export const banBot = async (
     throw new Error('ban_date, ban_reason, and ban_mechanism are required');
   }
 
-  await apiPost(`/api/v1/bots/${encodeURIComponent(botId)}/lifecycle/ban`, banDetails);
+  await banBotViaContract(botId, banDetails);
 };
 
 /**
@@ -62,7 +47,7 @@ export const unbanBot = async (botId: string): Promise<void> => {
     throw new Error('botId is required');
   }
 
-  await apiPost(`/api/v1/bots/${encodeURIComponent(botId)}/lifecycle/unban`, {});
+  await unbanBotViaContract(botId);
 };
 
 /**
@@ -73,7 +58,7 @@ export const getBotLifecycle = async (botId: string): Promise<BotLifecycle | nul
     throw new Error('botId is required');
   }
 
-  const response = await apiGet<BotLifecycle | null>(`/api/v1/bots/${encodeURIComponent(botId)}/lifecycle`);
+  const response = await getBotLifecycleViaContract(botId);
   return normalizeLifecycle(response.data);
 };
 
@@ -85,25 +70,23 @@ export const isBotBanned = async (botId: string): Promise<boolean> => {
     throw new Error('botId is required');
   }
 
-  const response = await apiGet<IsBannedPayload['data']>(
-    `/api/v1/bots/${encodeURIComponent(botId)}/lifecycle/is-banned`
-  );
+  const response = await isBotBannedViaContract(botId);
   return Boolean(response.data?.banned);
 };
 
 /**
  * Получает историю переходов статусов бота.
  */
-export const getStageTransitions = async (botId: string): Promise<BotLifecycle['stage_transitions']> => {
+export const getStageTransitions = async (
+  botId: string,
+): Promise<BotLifecycle['stage_transitions']> => {
   if (!botId) {
     throw new Error('botId is required');
   }
 
-  const response = await apiGet<LifecycleTransitionsPayload['data']>(
-    `/api/v1/bots/${encodeURIComponent(botId)}/lifecycle/transitions`
-  );
+  const response = await getBotLifecycleTransitionsViaContract(botId);
 
-  return Array.isArray(response.data) ? response.data : [];
+  return Array.isArray(response.data) ? (response.data as BotLifecycle['stage_transitions']) : [];
 };
 
 /**

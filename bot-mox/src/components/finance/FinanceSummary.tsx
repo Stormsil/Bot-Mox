@@ -1,18 +1,18 @@
-import React, { useMemo } from 'react';
-import { Card, Row, Col, Typography, Empty } from 'antd';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-} from 'recharts';
-import type { FinanceSummary as FinanceSummaryType, CategoryBreakdown, TimeSeriesData, GoldPriceHistoryEntry, FinanceOperation } from '../../types';
-import { UniversalChart } from './UniversalChart';
-import { ProjectPerformanceTable } from './ProjectPerformanceTable';
+import { Card, Col, Empty, Row, Typography } from 'antd';
+import type React from 'react';
+import { useMemo } from 'react';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import type {
+  CategoryBreakdown,
+  FinanceOperation,
+  FinanceSummary as FinanceSummaryType,
+  GoldPriceHistoryEntry,
+  TimeSeriesData,
+} from '../../entities/finance/model/types';
 import { CostAnalysis } from './CostAnalysis';
 import styles from './FinanceSummary.module.css';
+import { ProjectPerformanceTable } from './ProjectPerformanceTable';
+import { UniversalChart } from './UniversalChart';
 
 const { Text } = Typography;
 
@@ -47,7 +47,11 @@ const COLORS = {
   categories: ['#5b6f8f', '#4f8a8b', '#8b5a3c', '#7a5c8f', '#6b7a88', '#8a8f4f'],
 };
 
-const PieTooltipContent: React.FC<PieTooltipContentProps> = ({ active, payload, formatCurrency }) => {
+const PieTooltipContent: React.FC<PieTooltipContentProps> = ({
+  active,
+  payload,
+  formatCurrency,
+}) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
@@ -198,7 +202,7 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
       </span>
     );
   };
-/*  */
+  /*  */
   return (
     <div className={styles.container}>
       {/* Основные метрики */}
@@ -256,15 +260,20 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
 
       {/* Project Performance Table */}
       <Row gutter={[16, 16]}>
-         <Col span={24}>
-            <ProjectPerformanceTable operations={operations} loading={loading} />
-         </Col>
+        <Col span={24}>
+          <ProjectPerformanceTable operations={operations} loading={loading} />
+        </Col>
       </Row>
 
       {/* Expense Analysis (Pie + Cost Structure) */}
       <Row gutter={[16, 16]}>
         <Col span={12}>
-          <Card className={styles.chartCard} title="Expenses Distribution" loading={loading} variant="borderless">
+          <Card
+            className={styles.chartCard}
+            title="Expenses Distribution"
+            loading={loading}
+            variant="borderless"
+          >
             {expensePieData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -283,7 +292,7 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
                   >
                     {expensePieData.map((entry, index) => (
                       <Cell
-                        key={`cell-${index}`}
+                        key={entry.name}
                         fill={COLORS.categories[index % COLORS.categories.length]}
                       />
                     ))}
@@ -306,10 +315,10 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
           </Card>
         </Col>
         <Col span={12}>
-          <CostAnalysis 
-             expenseBreakdown={expenseBreakdown} 
-             totalExpenses={summary.totalExpenses}
-             loading={loading}
+          <CostAnalysis
+            expenseBreakdown={expenseBreakdown}
+            totalExpenses={summary.totalExpenses}
+            loading={loading}
           />
         </Col>
       </Row>

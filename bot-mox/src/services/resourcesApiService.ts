@@ -24,7 +24,7 @@ function hasStringId(value: unknown): value is { id: string } {
 
 async function fetchResourcePage<T extends { id: string }>(
   kind: ResourceKind,
-  page: number
+  page: number,
 ): Promise<{ items: T[]; total: number }> {
   const query = buildQueryString({
     page,
@@ -34,7 +34,9 @@ async function fetchResourcePage<T extends { id: string }>(
   });
 
   const payload = await apiGet<T[]>(`/api/v1/resources/${kind}${query}`);
-  const items = Array.isArray(payload.data) ? payload.data.filter((item): item is T => hasStringId(item)) : [];
+  const items = Array.isArray(payload.data)
+    ? payload.data.filter((item): item is T => hasStringId(item))
+    : [];
   const total = Number(payload.meta?.total ?? items.length);
 
   return {
@@ -60,7 +62,7 @@ export async function fetchResources<T extends { id: string }>(kind: ResourceKin
 
 export async function createResource<T extends { id: string }>(
   kind: ResourceKind,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
 ): Promise<T> {
   const response = await apiPost<T>(`/api/v1/resources/${kind}`, payload);
   return response.data;
@@ -69,9 +71,12 @@ export async function createResource<T extends { id: string }>(
 export async function updateResource<T extends { id: string }>(
   kind: ResourceKind,
   id: string,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
 ): Promise<T> {
-  const response = await apiPatch<T>(`/api/v1/resources/${kind}/${encodeURIComponent(String(id || '').trim())}`, payload);
+  const response = await apiPatch<T>(
+    `/api/v1/resources/${kind}/${encodeURIComponent(String(id || '').trim())}`,
+    payload,
+  );
   return response.data;
 }
 
@@ -87,7 +92,7 @@ export function subscribeResources<T extends ResourceRecord>(
   kind: ResourceKind,
   onData: (items: T[]) => void,
   onError?: (error: Error) => void,
-  options: SubscribeOptions = {}
+  options: SubscribeOptions = {},
 ): () => void {
   return createPollingSubscription(() => fetchResources<T>(kind), onData, onError, {
     key: `resources:${kind}`,

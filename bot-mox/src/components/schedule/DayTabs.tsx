@@ -1,6 +1,7 @@
-import React, { useRef, useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ScheduleDay } from '../../types';
-import { getDayName, formatDateShort } from '../../utils/scheduleUtils';
+import { formatDateShort, getDayName } from '../../utils/scheduleUtils';
 import styles from './DayTabs.module.css';
 
 interface DayTabsProps {
@@ -14,32 +15,28 @@ const generateDatesFromToday = (count: number = 18): Date[] => {
   const dates: Date[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   for (let i = 0; i < count; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
     dates.push(date);
   }
-  
+
   return dates;
 };
 
-export const DayTabs: React.FC<DayTabsProps> = ({
-  selectedDay,
-  onDayChange,
-  days
-}) => {
+export const DayTabs: React.FC<DayTabsProps> = ({ selectedDay, onDayChange, days }) => {
   const [carouselDates] = useState(() => generateDatesFromToday(18));
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const getDayStatus = (dayIndex: number): 'active' | 'disabled' | 'empty' => {
     const dayKey = dayIndex.toString();
     const day = days[dayKey];
-    
+
     if (!day || !day.enabled) return 'disabled';
     const sessions = Array.isArray(day.sessions) ? day.sessions : [];
-    const hasSessions = sessions.some(s => s.enabled);
-    
+    const hasSessions = sessions.some((s) => s.enabled);
+
     return hasSessions ? 'active' : 'empty';
   };
 
@@ -47,14 +44,14 @@ export const DayTabs: React.FC<DayTabsProps> = ({
   useEffect(() => {
     if (scrollContainerRef.current) {
       // Находим первый день с выбранным dayIndex
-      const targetIndex = carouselDates.findIndex(d => d.getDay() === selectedDay);
+      const targetIndex = carouselDates.findIndex((d) => d.getDay() === selectedDay);
       if (targetIndex !== -1) {
         const containerWidth = scrollContainerRef.current.clientWidth;
         const dayWidth = containerWidth / 7; // показываем 7 дней
         const scrollPosition = targetIndex * dayWidth;
         scrollContainerRef.current.scrollTo({
           left: scrollPosition,
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
       }
     }
@@ -78,7 +75,8 @@ export const DayTabs: React.FC<DayTabsProps> = ({
 
           return (
             <button
-              key={index}
+              key={date.toISOString()}
+              type="button"
               className={[
                 styles['day-tab'],
                 isSelected ? styles.selected : '',

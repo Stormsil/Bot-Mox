@@ -1,21 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Card, Form, Tooltip, message } from 'antd';
 import { EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { apiGet, apiPatch } from '../../services/apiClient';
-import { subscribeBotById } from '../../services/botsApiService';
-import { getWowNames } from '../../services/wowNamesService';
+import { Card, Form, message, Tooltip } from 'antd';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useUpdateBotMutation } from '../../entities/bot/api/useBotMutations';
+import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
+import { useBotReferenceDataQuery } from '../../entities/bot/api/useBotReferenceDataQuery';
+import { useWowNamesMutation } from '../../entities/bot/api/useWowNamesMutation';
 import type { FactionType } from '../../types';
+import type { BotCharacterProps, CharacterFormData, ReferenceData } from './character';
 import {
   CharacterEditForm,
   CharacterErrorCard,
   CharacterLoadingCard,
   CharacterViewMode,
   DEFAULT_FORM_DATA,
-  RACE_ICONS,
   isCharacterComplete,
+  RACE_ICONS,
   toReferenceData,
 } from './character';
-import type { BotCharacterProps, CharacterFormData, ReferenceData } from './character';
 import styles from './character/character.module.css';
 
 export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }) => {
@@ -30,49 +32,16 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
   const [error, setError] = useState<string | null>(null);
   const usedGeneratedNamesRef = useRef<Set<string>>(new Set());
 
-  const [referenceData, setReferenceData] = useState<ReferenceData>({
-    servers: {},
-    races: {},
-    classes: {},
-    factions: {},
-  });
-  const [refDataLoading, setRefDataLoading] = useState(true);
   const [formData, setFormData] = useState<CharacterFormData>(DEFAULT_FORM_DATA);
-
-  useEffect(() => {
-    if (!bot?.project_id) {
-      setRefDataLoading(false);
-      return;
-    }
-
-    setRefDataLoading(true);
-    let isActive = true;
-
-    const loadReferenceData = async () => {
-      try {
-        const response = await apiGet<unknown>(
-          `/api/v1/settings/projects/${encodeURIComponent(bot.project_id)}/referenceData`
-        );
-        if (!isActive) return;
-        setReferenceData(toReferenceData(response.data));
-      } catch (err) {
-        console.error('Error loading reference data:', err);
-        if (isActive) {
-          setError('Failed to load reference data');
-        }
-      } finally {
-        if (isActive) {
-          setRefDataLoading(false);
-        }
-      }
-    };
-
-    void loadReferenceData();
-
-    return () => {
-      isActive = false;
-    };
-  }, [bot?.project_id]);
+  const botQuery = useBotByIdQuery(bot?.id);
+  const referenceDataQuery = useBotReferenceDataQuery(bot?.project_id);
+  const updateBotMutation = useUpdateBotMutation();
+  const wowNamesMutation = useWowNamesMutation();
+  const referenceData = useMemo<ReferenceData>(
+    () => toReferenceData(referenceDataQuery.data),
+    [referenceDataQuery.data],
+  );
+  const refDataLoading = referenceDataQuery.isLoading;
 
   useEffect(() => {
     if (!bot?.id) {
@@ -80,39 +49,39 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
       return;
     }
 
-    setLoading(true);
-    const unsubscribe = subscribeBotById(
-      bot.id,
-      (payload) => {
-        const source = (payload?.character ||
-          bot.character ||
-          {}) as Partial<CharacterFormData> & { level?: number };
-        const newFormData: CharacterFormData = {
-          name: source.name || '',
-          level: typeof source.level === 'number' ? source.level : 1,
-          server: source.server || '',
-          faction: (source.faction as FactionType) || '',
-          race: source.race || '',
-          class: source.class || '',
-        };
+    if (botQuery.isLoading && !botQuery.data) {
+      setLoading(true);
+      return;
+    }
 
-        setFormData(newFormData);
-        characterForm.setFieldsValue(newFormData);
+    if (botQuery.error) {
+      console.error('Error loading character data:', botQuery.error);
+      setError('Failed to load character data');
+      setLoading(false);
+      return;
+    }
 
-        const locks = (payload?.generation_locks || {}) as Record<string, unknown>;
-        setNameLocked(Boolean(locks.character_name));
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Error loading character data:', err);
-        setError('Failed to load character data');
-        setLoading(false);
-      },
-      { intervalMs: 5000 }
-    );
+    const payload = botQuery.data;
+    const source = (payload?.character || bot.character || {}) as Partial<CharacterFormData> & {
+      level?: number;
+    };
+    const newFormData: CharacterFormData = {
+      name: source.name || '',
+      level: typeof source.level === 'number' ? source.level : 1,
+      server: source.server || '',
+      faction: (source.faction as FactionType) || '',
+      race: source.race || '',
+      class: source.class || '',
+    };
 
-    return () => unsubscribe();
-  }, [bot?.id, bot?.character, characterForm]);
+    setFormData(newFormData);
+    characterForm.setFieldsValue(newFormData);
+
+    const locks = (payload?.generation_locks || {}) as Record<string, unknown>;
+    setNameLocked(Boolean(locks.character_name));
+    setError(null);
+    setLoading(false);
+  }, [bot?.id, bot?.character, botQuery.data, botQuery.error, botQuery.isLoading, characterForm]);
 
   const handleValuesChange = useCallback(
     (changedValues: Partial<CharacterFormData>, allValues: CharacterFormData) => {
@@ -126,7 +95,7 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
         characterForm.setFieldsValue({ class: '' });
       }
     },
-    [characterForm]
+    [characterForm],
   );
 
   const filteredRaces = useMemo(() => {
@@ -138,7 +107,9 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
     if (!formData.race) return [];
     const selectedRace = referenceData.races[formData.race];
     if (!selectedRace?.available_classes) return [];
-    return selectedRace.available_classes.map((classId) => referenceData.classes[classId]).filter(Boolean);
+    return selectedRace.available_classes
+      .map((classId) => referenceData.classes[classId])
+      .filter(Boolean);
   }, [referenceData.races, referenceData.classes, formData.race]);
 
   const handleSave = async (values: CharacterFormData) => {
@@ -173,19 +144,24 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
       };
 
       const shouldLockName = !!String(values.name || '').trim();
-      await apiPatch(`/api/v1/bots/${encodeURIComponent(bot.id)}`, {
-        character: characterData,
-        'generation_locks/character_name': shouldLockName,
+      await updateBotMutation.mutateAsync({
+        botId: bot.id,
+        payload: {
+          character: characterData,
+          'generation_locks/character_name': shouldLockName,
+        },
       });
       setNameLocked(shouldLockName);
       setPendingNameLock(false);
-      message.success(shouldLockName ? 'Character data saved and name locked' : 'Character data saved');
+      message.success(
+        shouldLockName ? 'Character data saved and name locked' : 'Character data saved',
+      );
       setHasChanges(false);
     } catch (saveError) {
       console.error('Error saving character data:', saveError);
       message.error(
         'Failed to save character data: ' +
-          (saveError instanceof Error ? saveError.message : 'Unknown error')
+          (saveError instanceof Error ? saveError.message : 'Unknown error'),
       );
     } finally {
       setSaving(false);
@@ -206,7 +182,7 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
     setNameGenerating(true);
 
     try {
-      const data = await getWowNames({ batches: 3 });
+      const data = await wowNamesMutation.mutateAsync({ batches: 3 });
       const names = Array.isArray(data.names) ? data.names.filter((name: string) => name) : [];
       let candidatePool = names.filter((name: string) => !usedGeneratedNamesRef.current.has(name));
       if (!candidatePool.length) {
@@ -244,13 +220,16 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
     } finally {
       setNameGenerating(false);
     }
-  }, [characterForm, lastGeneratedName, nameGenerating, nameLocked]);
+  }, [characterForm, lastGeneratedName, nameGenerating, nameLocked, wowNamesMutation]);
 
   const handleUnlockName = useCallback(async () => {
     if (!bot?.id) return;
     try {
-      await apiPatch(`/api/v1/bots/${encodeURIComponent(bot.id)}`, {
-        'generation_locks/character_name': false,
+      await updateBotMutation.mutateAsync({
+        botId: bot.id,
+        payload: {
+          'generation_locks/character_name': false,
+        },
       });
       setPendingNameLock(false);
       message.success('Name generation unlocked');
@@ -258,7 +237,7 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
       console.error('Failed to unlock character name generation:', unlockError);
       message.error('Failed to unlock name generation');
     }
-  }, [bot?.id]);
+  }, [bot?.id, updateBotMutation]);
 
   const complete = useMemo(() => isCharacterComplete(formData), [formData]);
   const raceIconUrl = useMemo(() => {
@@ -270,8 +249,8 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
     return <CharacterLoadingCard />;
   }
 
-  if (error) {
-    return <CharacterErrorCard error={error} />;
+  if (error || referenceDataQuery.error) {
+    return <CharacterErrorCard error={error || 'Failed to load reference data'} />;
   }
 
   return (
@@ -280,8 +259,14 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
         className={styles['character-card']}
         title={
           <div className={styles['character-card-header']}>
-            {mode === 'view' ? <EyeOutlined className={styles['header-icon']} /> : <EditOutlined className={styles['header-icon']} />}
-            <span className={styles['character-card-title']}>{mode === 'view' ? 'Character Information' : 'Character Configuration'}</span>
+            {mode === 'view' ? (
+              <EyeOutlined className={styles['header-icon']} />
+            ) : (
+              <EditOutlined className={styles['header-icon']} />
+            )}
+            <span className={styles['character-card-title']}>
+              {mode === 'view' ? 'Character Information' : 'Character Configuration'}
+            </span>
             {!complete && (
               <Tooltip title="Character data is incomplete">
                 <span className={styles['incomplete-dot']} aria-hidden="true" />
@@ -296,7 +281,11 @@ export const BotCharacter: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }
         bodyStyle={{ padding: 16 }}
       >
         {mode === 'view' ? (
-          <CharacterViewMode formData={formData} referenceData={referenceData} raceIconUrl={raceIconUrl} />
+          <CharacterViewMode
+            formData={formData}
+            referenceData={referenceData}
+            raceIconUrl={raceIconUrl}
+          />
         ) : (
           <CharacterEditForm
             form={characterForm}

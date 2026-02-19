@@ -17,7 +17,8 @@ function attachVmOperationsWebSocket({
       return;
     }
 
-    const targetNode = node || (typeof getDefaultNode === 'function' ? getDefaultNode() : null) || 'h1';
+    const targetNode =
+      node || (typeof getDefaultNode === 'function' ? getDefaultNode() : null) || 'h1';
     const total = items.length;
 
     for (let i = 0; i < total; i++) {
@@ -25,14 +26,16 @@ function attachVmOperationsWebSocket({
       const vmName = item.name;
 
       try {
-        ws.send(JSON.stringify({
-          type: 'progress',
-          step: i + 1,
-          total,
-          vmName,
-          message: `Cloning ${vmName}...`,
-          level: 'info',
-        }));
+        ws.send(
+          JSON.stringify({
+            type: 'progress',
+            step: i + 1,
+            total,
+            vmName,
+            message: `Cloning ${vmName}...`,
+            level: 'info',
+          }),
+        );
 
         const cloneParams = { name: vmName, full: 1 };
         if (item.storage) cloneParams.storage = item.storage;
@@ -41,16 +44,18 @@ function attachVmOperationsWebSocket({
         const cloneResult = await proxmoxRequest(
           'post',
           `/api2/json/nodes/${targetNode}/qemu/${templateVmId || 100}/clone`,
-          cloneParams
+          cloneParams,
         );
         const upid = cloneResult.data;
 
-        ws.send(JSON.stringify({
-          type: 'log',
-          vmName,
-          level: 'info',
-          message: `Clone started, UPID: ${upid}`,
-        }));
+        ws.send(
+          JSON.stringify({
+            type: 'log',
+            vmName,
+            level: 'info',
+            message: `Clone started, UPID: ${upid}`,
+          }),
+        );
 
         let taskDone = false;
         let attempts = 0;
@@ -60,7 +65,7 @@ function attachVmOperationsWebSocket({
           try {
             const statusResult = await proxmoxRequest(
               'get',
-              `/api2/json/nodes/${targetNode}/tasks/${encodeURIComponent(upid)}/status`
+              `/api2/json/nodes/${targetNode}/tasks/${encodeURIComponent(upid)}/status`,
             );
             const status = statusResult.data;
             if (status.status === 'stopped') {
@@ -78,12 +83,14 @@ function attachVmOperationsWebSocket({
           throw new Error('Clone timed out after 5 minutes');
         }
 
-        ws.send(JSON.stringify({
-          type: 'log',
-          vmName,
-          level: 'info',
-          message: 'Clone complete. Finding VM ID...',
-        }));
+        ws.send(
+          JSON.stringify({
+            type: 'log',
+            vmName,
+            level: 'info',
+            message: 'Clone complete. Finding VM ID...',
+          }),
+        );
 
         const vmList = await proxmoxRequest('get', `/api2/json/nodes/${targetNode}/qemu`);
         const newVm = vmList.data.find((vm) => vm.name === vmName);
@@ -92,34 +99,40 @@ function attachVmOperationsWebSocket({
         }
         const newVmId = newVm.vmid;
 
-        ws.send(JSON.stringify({
-          type: 'log',
-          vmName,
-          level: 'info',
-          message: `Found VM ID: ${newVmId}. Reading config...`,
-        }));
+        ws.send(
+          JSON.stringify({
+            type: 'log',
+            vmName,
+            level: 'info',
+            message: `Found VM ID: ${newVmId}. Reading config...`,
+          }),
+        );
 
         const configResult = await sshExec(`cat /etc/pve/qemu-server/${newVmId}.conf`, 10000);
         if (configResult.exitCode !== 0) {
           throw new Error(`Failed to read config: ${configResult.stderr}`);
         }
 
-        ws.send(JSON.stringify({
-          type: 'config-ready',
-          vmName,
-          vmId: newVmId,
-          config: configResult.stdout,
-          step: i + 1,
-          total,
-        }));
+        ws.send(
+          JSON.stringify({
+            type: 'config-ready',
+            vmName,
+            vmId: newVmId,
+            config: configResult.stdout,
+            step: i + 1,
+            total,
+          }),
+        );
       } catch (itemError) {
-        ws.send(JSON.stringify({
-          type: 'error',
-          vmName,
-          step: i + 1,
-          total,
-          message: itemError.message,
-        }));
+        ws.send(
+          JSON.stringify({
+            type: 'error',
+            vmName,
+            step: i + 1,
+            total,
+            message: itemError.message,
+          }),
+        );
       }
     }
 
@@ -134,19 +147,23 @@ function attachVmOperationsWebSocket({
       if (result.exitCode !== 0) {
         throw new Error(result.stderr || 'Failed to write config');
       }
-      ws.send(JSON.stringify({
-        type: 'config-written',
-        vmName,
-        vmId,
-        message: 'Config patched and written successfully',
-      }));
+      ws.send(
+        JSON.stringify({
+          type: 'config-written',
+          vmName,
+          vmId,
+          message: 'Config patched and written successfully',
+        }),
+      );
     } catch (writeError) {
-      ws.send(JSON.stringify({
-        type: 'error',
-        vmName,
-        vmId,
-        message: `Write failed: ${writeError.message}`,
-      }));
+      ws.send(
+        JSON.stringify({
+          type: 'error',
+          vmName,
+          vmId,
+          message: `Write failed: ${writeError.message}`,
+        }),
+      );
     }
   }
 
@@ -155,11 +172,13 @@ function attachVmOperationsWebSocket({
       try {
         const authResult = await authorizeSocketRequest(req);
         if (!authResult?.ok) {
-          ws.send(JSON.stringify({
-            type: 'error',
-            message: authResult?.payload?.error?.message || 'Unauthorized',
-            code: authResult?.payload?.error?.code || 'UNAUTHORIZED',
-          }));
+          ws.send(
+            JSON.stringify({
+              type: 'error',
+              message: authResult?.payload?.error?.message || 'Unauthorized',
+              code: authResult?.payload?.error?.code || 'UNAUTHORIZED',
+            }),
+          );
           ws.close(4001, 'Unauthorized');
           return;
         }

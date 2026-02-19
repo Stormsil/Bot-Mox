@@ -7,15 +7,15 @@ function normalizeBaseTarget(value, fallback) {
 function createUiTargets() {
   let proxmoxUITarget = normalizeBaseTarget(
     process.env.PROXMOX_URL || process.env.PROXMOX_UI_TARGET,
-    'https://127.0.0.1:8006'
+    'https://127.0.0.1:8006',
   );
   let tinyFMUITarget = normalizeBaseTarget(
     process.env.TINYFM_URL || process.env.TINYFM_UI_TARGET,
-    'http://127.0.0.1:8080'
+    'http://127.0.0.1:8080',
   );
   let syncThingUITarget = normalizeBaseTarget(
     process.env.SYNCTHING_URL || process.env.SYNCTHING_UI_TARGET,
-    'https://127.0.0.1:8384'
+    'https://127.0.0.1:8384',
   );
 
   return {

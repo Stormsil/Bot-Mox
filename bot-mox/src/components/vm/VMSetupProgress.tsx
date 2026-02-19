@@ -1,9 +1,6 @@
-import React, { useEffect, useState } from 'react';
 import { Steps, Tag, Typography } from 'antd';
-import {
-  getVmSetupProgress,
-  type VmSetupProgressEntry,
-} from '../../services/unattendProfileService';
+import type React from 'react';
+import { useVmSetupProgressQuery } from '../../entities/vm/api/useVmQueries';
 
 const { Text } = Typography;
 
@@ -45,31 +42,11 @@ export const VMSetupProgress: React.FC<VMSetupProgressProps> = ({
   vmUuid,
   pollIntervalMs = 5000,
 }) => {
-  const [entries, setEntries] = useState<VmSetupProgressEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    const doLoad = async () => {
-      try {
-        const envelope = await getVmSetupProgress(vmUuid);
-        if (!cancelled) setEntries(envelope.data || []);
-      } catch {
-        // Silently ignore polling errors
-      }
-      if (!cancelled) setLoading(false);
-    };
-
-    doLoad();
-    const timer = setInterval(doLoad, pollIntervalMs);
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
-  }, [vmUuid, pollIntervalMs]);
+  const setupProgressQuery = useVmSetupProgressQuery(vmUuid, pollIntervalMs);
+  const entries = setupProgressQuery.data || [];
 
   // Build step map from entries (latest status per step)
-  const stepMap = new Map<string, VmSetupProgressEntry>();
+  const stepMap = new Map<string, (typeof entries)[number]>();
   for (const entry of entries) {
     const existing = stepMap.get(entry.step);
     if (!existing || new Date(entry.created_at) > new Date(existing.created_at)) {
@@ -87,7 +64,7 @@ export const VMSetupProgress: React.FC<VMSetupProgressProps> = ({
     }
   }
 
-  if (loading && entries.length === 0) {
+  if (setupProgressQuery.isLoading && entries.length === 0) {
     return <Text type="secondary">Loading setup progress...</Text>;
   }
 
@@ -105,11 +82,12 @@ export const VMSetupProgress: React.FC<VMSetupProgressProps> = ({
         return {
           title: STEP_LABELS[step] || step,
           status: entry ? statusToStepStatus(entry.status) : 'wait',
-          description: entry?.status === 'failed'
-            ? <Tag color="red">Failed</Tag>
-            : entry?.status === 'running'
-              ? <Tag color="blue">In progress</Tag>
-              : undefined,
+          description:
+            entry?.status === 'failed' ? (
+              <Tag color="red">Failed</Tag>
+            ) : entry?.status === 'running' ? (
+              <Tag color="blue">In progress</Tag>
+            ) : undefined,
         };
       })}
     />

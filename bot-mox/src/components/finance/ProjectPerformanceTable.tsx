@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
-import { Table, Tag, Card, Typography } from 'antd';
-import type { FinanceOperation } from '../../types';
+import { Card, Table, Tag, Typography } from 'antd';
+import type React from 'react';
+import { useMemo } from 'react';
+import type { FinanceOperation } from '../../entities/finance/model/types';
 import commonStyles from './FinanceCommon.module.css';
 import styles from './FinanceSummary.module.css';
 
@@ -31,8 +32,8 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
 
     // Initialize projects (hardcoded for now to ensure they appear even if empty)
     const projects = ['wow_tbc', 'wow_midnight'];
-    
-    projects.forEach(proj => {
+
+    projects.forEach((proj) => {
       statsMap.set(proj, {
         key: proj,
         project: proj === 'wow_tbc' ? 'WoW TBC Classic' : 'WoW Midnight',
@@ -57,15 +58,15 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       transactionCount: 0,
     });
 
-    operations.forEach(op => {
+    operations.forEach((op) => {
       const key = op.project_id || 'global';
       const stats = statsMap.get(key);
-      
+
       if (stats) {
         if (op.type === 'income') {
           stats.income += op.amount;
           if (op.category === 'sale') {
-            stats.goldVolume += (op.gold_amount || 0);
+            stats.goldVolume += op.gold_amount || 0;
           }
         } else {
           stats.expense += op.amount;
@@ -75,11 +76,13 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
     });
 
     // Calculate derived metrics
-    return Array.from(statsMap.values()).map(stat => {
-      stat.profit = stat.income - stat.expense;
-      stat.margin = stat.income > 0 ? (stat.profit / stat.income) * 100 : 0;
-      return stat;
-    }).filter(stat => stat.transactionCount > 0); // Hide completely empty rows
+    return Array.from(statsMap.values())
+      .map((stat) => {
+        stat.profit = stat.income - stat.expense;
+        stat.margin = stat.income > 0 ? (stat.profit / stat.income) * 100 : 0;
+        return stat;
+      })
+      .filter((stat) => stat.transactionCount > 0); // Hide completely empty rows
   }, [operations]);
 
   const columns = [
@@ -117,7 +120,8 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       key: 'profit',
       render: (val: number) => (
         <Text style={{ fontWeight: 600 }}>
-          {val >= 0 ? '+' : ''}${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {val >= 0 ? '+' : ''}$
+          {val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </Text>
       ),
       sorter: (a: ProjectStats, b: ProjectStats) => a.profit - b.profit,
@@ -130,7 +134,7 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       render: (val: number, record: ProjectStats) => {
         // If it's pure expense (Global), margin doesn't make sense
         if (record.income === 0) return <Tag className={commonStyles.financeTag}>N/A</Tag>;
-        
+
         return <Tag className={commonStyles.financeTag}>{val.toFixed(1)}%</Tag>;
       },
     },
@@ -138,22 +142,22 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       title: 'Gold Sold',
       dataIndex: 'goldVolume',
       key: 'goldVolume',
-      render: (val: number) => val > 0 ? `${val.toLocaleString()} g` : '-',
+      render: (val: number) => (val > 0 ? `${val.toLocaleString()} g` : '-'),
     },
   ];
 
   return (
-    <Card 
-      title="Project Performance Analysis" 
-      variant="borderless" 
+    <Card
+      title="Project Performance Analysis"
+      variant="borderless"
       className={styles.projectPerformanceCard}
       loading={loading}
     >
-      <Table 
+      <Table
         className={styles.projectPerformanceTable}
-        dataSource={data} 
-        columns={columns} 
-        pagination={false} 
+        dataSource={data}
+        columns={columns}
+        pagination={false}
         size="small"
       />
     </Card>

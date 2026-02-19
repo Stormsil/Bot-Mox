@@ -1,5 +1,5 @@
-import { Tray, Menu, nativeImage, shell } from 'electron';
-import { AgentStatus } from '../core/agent-loop';
+import { Menu, nativeImage, shell, Tray } from 'electron';
+import type { AgentStatus } from '../core/agent-loop';
 
 // ---------------------------------------------------------------------------
 // Tray icon colors (16x16 colored squares generated in-memory)
@@ -17,7 +17,9 @@ function createColorIcon(r: number, g: number, b: number): Electron.NativeImage 
     // Simple circle: color inside radius, transparent outside
     const x = i % size;
     const y = Math.floor(i / size);
-    const cx = size / 2, cy = size / 2, radius = 6;
+    const cx = size / 2,
+      cy = size / 2,
+      radius = 6;
     const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
     if (dist <= radius) {
       buf[i * 4] = r;
@@ -32,11 +34,11 @@ function createColorIcon(r: number, g: number, b: number): Electron.NativeImage 
 
 function createIcons(): Record<AgentStatus, Electron.NativeImage> {
   return {
-    idle: createColorIcon(128, 128, 128),      // gray
-    connecting: createColorIcon(255, 200, 0),  // yellow
-    online: createColorIcon(0, 180, 0),        // green
-    error: createColorIcon(220, 50, 50),       // red
-    revoked: createColorIcon(100, 100, 100),   // dark gray
+    idle: createColorIcon(128, 128, 128), // gray
+    connecting: createColorIcon(255, 200, 0), // yellow
+    online: createColorIcon(0, 180, 0), // green
+    error: createColorIcon(220, 50, 50), // red
+    revoked: createColorIcon(100, 100, 100), // dark gray
   };
 }
 
@@ -61,6 +63,7 @@ export class AgentTray {
   private onRepair: (() => void) | null = null;
   private onLogout: (() => void) | null = null;
   private onQuit: (() => void) | null = null;
+  private onCreateDiagnosticBundle: (() => void) | null = null;
   private logPath = '';
 
   constructor() {
@@ -71,11 +74,13 @@ export class AgentTray {
   }
 
   setCallbacks(opts: {
+    onCreateDiagnosticBundle: () => void;
     onRepair: () => void;
     onLogout: () => void;
     onQuit: () => void;
     logPath: string;
   }): void {
+    this.onCreateDiagnosticBundle = opts.onCreateDiagnosticBundle;
     this.onRepair = opts.onRepair;
     this.onLogout = opts.onLogout;
     this.onQuit = opts.onQuit;
@@ -118,6 +123,10 @@ export class AgentTray {
         click: () => {
           if (this.logPath) shell.openPath(this.logPath);
         },
+      },
+      {
+        label: 'Create Diagnostic Bundle',
+        click: () => this.onCreateDiagnosticBundle?.(),
       },
       { type: 'separator' },
       {

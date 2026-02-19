@@ -1,11 +1,23 @@
-import React, { useEffect } from 'react';
-
 import { CheckCircleFilled, CloseCircleFilled, LoadingOutlined } from '@ant-design/icons';
-import { Descriptions, Divider, InputNumber, Progress, Radio, Space, Switch, Table, Tag, Tooltip, Typography } from 'antd';
-import type { TemplateSyncState, SettingsFieldUpdater, TemplateVmSummary } from './types';
-import { VMConfigPreview } from '../VMConfigPreview';
+import {
+  Descriptions,
+  Divider,
+  InputNumber,
+  Progress,
+  Radio,
+  Space,
+  Switch,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd';
+import type React from 'react';
+import { useEffect } from 'react';
 import type { VMGeneratorSettings, VMStorageOption } from '../../../types';
+import { VMConfigPreview } from '../VMConfigPreview';
 import styles from './ProxmoxTab.module.css';
+import type { SettingsFieldUpdater, TemplateSyncState, TemplateVmSummary } from './types';
 
 const { Text } = Typography;
 
@@ -34,7 +46,7 @@ const formatGiBFromMb = (memoryMb: number): string => {
 };
 
 const formatGiBFromBytes = (bytes: number): string => {
-  const gib = bytes / (1024 ** 3);
+  const gib = bytes / 1024 ** 3;
   if (!Number.isFinite(gib) || gib <= 0) return '-';
   return Number.isInteger(gib) ? `${gib.toFixed(0)} GiB` : `${gib.toFixed(1)} GiB`;
 };
@@ -45,7 +57,9 @@ const formatGb = (bytes: number): string => {
   return gb.toFixed(2);
 };
 
-const buildStorageUsage = (opt: VMStorageOption): null | {
+const buildStorageUsage = (
+  opt: VMStorageOption,
+): null | {
   percent: number;
   label: string;
   freeLabel: string;
@@ -117,10 +131,11 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
   const rawEnabledValues = uniqueTrimmed(
     Array.isArray(settings.storage.enabledDisks) && settings.storage.enabledDisks.length > 0
       ? settings.storage.enabledDisks
-      : (settings.storage.options ?? [])
+      : (settings.storage.options ?? []),
   ).filter((value) => value.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER);
   const availableStorageValues = uniqueTrimmed(storageOptions.map((opt) => opt.value));
-  const candidatePool = availableStorageValues.length > 0 ? availableStorageValues : rawEnabledValues;
+  const candidatePool =
+    availableStorageValues.length > 0 ? availableStorageValues : rawEnabledValues;
   const enabledDisks = rawEnabledValues.filter((value) => candidatePool.includes(value));
   const autoSelectBest = settings.storage.autoSelectBest ?? true;
 
@@ -148,11 +163,12 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
           : 'Template VM is not loaded yet.';
 
   const configuredDefaultRaw = String(settings.storage.default || '').trim();
-  const configuredDefault = configuredDefaultRaw
-    && configuredDefaultRaw.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER
-    && candidatePool.includes(configuredDefaultRaw)
-    ? configuredDefaultRaw
-    : '';
+  const configuredDefault =
+    configuredDefaultRaw &&
+    configuredDefaultRaw.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER &&
+    candidatePool.includes(configuredDefaultRaw)
+      ? configuredDefaultRaw
+      : '';
   const storageCandidates = candidatePool;
   const storageByName = new Map(storageOptions.map((opt) => [opt.value, opt] as const));
 
@@ -188,13 +204,8 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
     return storageCandidates[0] ?? null;
   };
 
-  const manualTarget = configuredDefault
-    || enabledDisks[0]
-    || storageCandidates[0]
-    || null;
-  const currentTarget = autoSelectBest
-    ? pickBestStorage()
-    : manualTarget;
+  const manualTarget = configuredDefault || enabledDisks[0] || storageCandidates[0] || null;
+  const currentTarget = autoSelectBest ? pickBestStorage() : manualTarget;
 
   useEffect(() => {
     if (autoSelectBest) {
@@ -206,9 +217,7 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
       return;
     }
 
-    const needsEnabledSync =
-      rawEnabledValues.length !== 1
-      || rawEnabledValues[0] !== selected;
+    const needsEnabledSync = rawEnabledValues.length !== 1 || rawEnabledValues[0] !== selected;
     if (needsEnabledSync) {
       onFieldChange('storage.enabledDisks', [selected]);
     }
@@ -243,7 +252,9 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
     }
   };
 
-  const storageRows: StorageRow[] = (candidatePool.length > 0 ? candidatePool : storageOptions.map((opt) => opt.value)).map((name) => {
+  const storageRows: StorageRow[] = (
+    candidatePool.length > 0 ? candidatePool : storageOptions.map((opt) => opt.value)
+  ).map((name) => {
     const opt = storageByName.get(name);
     const usage = opt ? buildStorageUsage(opt) : null;
     return {
@@ -260,7 +271,7 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
     <div className={styles.section}>
       <div className={styles.row}>
         <div className={styles.field}>
-          <label>Clone Source VM ID</label>
+          <div className={styles.fieldLabel}>Clone Source VM ID</div>
           <InputNumber
             value={settings.template.vmId}
             onChange={(value) => onFieldChange('template.vmId', value || 100)}
@@ -291,7 +302,11 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
             size="small"
             column={2}
             labelStyle={{ color: 'var(--boxmox-color-text-secondary)', fontSize: 11 }}
-            contentStyle={{ color: 'var(--boxmox-color-text-primary)', fontSize: 12, fontWeight: 600 }}
+            contentStyle={{
+              color: 'var(--boxmox-color-text-primary)',
+              fontSize: 12,
+              fontWeight: 600,
+            }}
             items={[
               {
                 key: 'cores',
@@ -321,8 +336,9 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
                 key: 'display',
                 label: 'Display',
                 children: mapDisplayName(templateSummary.display),
-              }
-            ]} />
+              },
+            ]}
+          />
         </div>
       ) : null}
 
@@ -333,8 +349,12 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
 
       {currentTarget ? (
         <div className={styles.storageCurrent}>
-          <Text type="secondary">{autoSelectBest ? 'Current target (auto):' : 'Current target:'}</Text>
-          <Text strong className={styles.storageCurrentValue}>{currentTarget}</Text>
+          <Text type="secondary">
+            {autoSelectBest ? 'Current target (auto):' : 'Current target:'}
+          </Text>
+          <Text strong className={styles.storageCurrentValue}>
+            {currentTarget}
+          </Text>
         </div>
       ) : null}
 
@@ -403,11 +423,7 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
 
       <div className={`${styles.row} ${styles.rowCompact}`}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Switch
-            size="small"
-            checked={autoSelectBest}
-            onChange={handleAutoSelectChange}
-          />
+          <Switch size="small" checked={autoSelectBest} onChange={handleAutoSelectChange} />
           <Text>Auto-select best disk (most free space)</Text>
         </div>
       </div>

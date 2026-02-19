@@ -1,5 +1,3 @@
-'use strict';
-
 const yaml = require('js-yaml');
 const { createSupabaseServiceClient } = require('../../repositories/supabase/client');
 const { playbookContentStructureSchema } = require('../../contracts/schemas');
@@ -68,7 +66,11 @@ function createPlaybookService({ env }) {
       .maybeSingle();
 
     if (error) {
-      throw new PlaybookServiceError(500, 'DB_ERROR', `Failed to get default playbook: ${error.message}`);
+      throw new PlaybookServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to get default playbook: ${error.message}`,
+      );
     }
     return data || null;
   }
@@ -101,9 +103,17 @@ function createPlaybookService({ env }) {
 
     if (error) {
       if (String(error.code) === '23505') {
-        throw new PlaybookServiceError(409, 'DUPLICATE_NAME', `Playbook name "${name}" already exists`);
+        throw new PlaybookServiceError(
+          409,
+          'DUPLICATE_NAME',
+          `Playbook name "${name}" already exists`,
+        );
       }
-      throw new PlaybookServiceError(500, 'DB_ERROR', `Failed to create playbook: ${error.message}`);
+      throw new PlaybookServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to create playbook: ${error.message}`,
+      );
     }
     return data;
   }
@@ -153,7 +163,11 @@ function createPlaybookService({ env }) {
       .eq('user_id', String(userId));
 
     if (error) {
-      throw new PlaybookServiceError(500, 'DB_ERROR', `Failed to delete playbook: ${error.message}`);
+      throw new PlaybookServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to delete playbook: ${error.message}`,
+      );
     }
   }
 
@@ -183,7 +197,7 @@ function createPlaybookService({ env }) {
     if (!result.success) {
       return {
         valid: false,
-        errors: result.error.issues.map(issue => ({
+        errors: result.error.issues.map((issue) => ({
           path: issue.path.join('.'),
           message: issue.message,
         })),
@@ -192,14 +206,22 @@ function createPlaybookService({ env }) {
     }
 
     const knownRoles = new Set([
-      'base-system', 'privacy-debloat', 'network-config', 'common-apps',
-      'personalization', 'nvidia-driver', 'syncthing', 'proxifier',
+      'base-system',
+      'privacy-debloat',
+      'network-config',
+      'common-apps',
+      'personalization',
+      'nvidia-driver',
+      'syncthing',
+      'proxifier',
       'post-reboot',
     ]);
 
     for (const role of result.data.roles) {
       if (!knownRoles.has(role.role)) {
-        warnings.push({ message: `Unknown role "${role.role}" — ensure a matching role exists in Winsible` });
+        warnings.push({
+          message: `Unknown role "${role.role}" — ensure a matching role exists in Winsible`,
+        });
       }
     }
 

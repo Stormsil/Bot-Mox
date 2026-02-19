@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const { createSupabaseServiceClient } = require('../../repositories/supabase/client');
 
 class LicenseServiceError extends Error {
@@ -120,7 +120,11 @@ function ensureModuleAllowed(entitlementsEntry, moduleName) {
   if (Array.isArray(modules)) {
     const allowed = modules.some((entry) => String(entry || '').trim() === normalizedModule);
     if (!allowed) {
-      throw new LicenseServiceError(403, 'MODULE_NOT_ALLOWED', `Module '${normalizedModule}' is not allowed`);
+      throw new LicenseServiceError(
+        403,
+        'MODULE_NOT_ALLOWED',
+        `Module '${normalizedModule}' is not allowed`,
+      );
     }
     return;
   }
@@ -129,7 +133,11 @@ function ensureModuleAllowed(entitlementsEntry, moduleName) {
     const hasWildcard = modules['*'] === true;
     const allowed = modules[normalizedModule] === true;
     if (!hasWildcard && !allowed) {
-      throw new LicenseServiceError(403, 'MODULE_NOT_ALLOWED', `Module '${normalizedModule}' is not allowed`);
+      throw new LicenseServiceError(
+        403,
+        'MODULE_NOT_ALLOWED',
+        `Module '${normalizedModule}' is not allowed`,
+      );
     }
     return;
   }
@@ -139,10 +147,14 @@ function ensureModuleAllowed(entitlementsEntry, moduleName) {
 
 function isLicenseActive(license, now) {
   if (!license || typeof license !== 'object') return false;
-  const status = String(license.status || 'active').trim().toLowerCase();
+  const status = String(license.status || 'active')
+    .trim()
+    .toLowerCase();
   if (status !== 'active') return false;
 
-  const type = String(license.type || '').trim().toLowerCase();
+  const type = String(license.type || '')
+    .trim()
+    .toLowerCase();
   if (type === 'perpetual' || type === 'alltime') return true;
 
   const expiresAt = Number(license.expires_at || license.expires_at_ms || 0);
@@ -171,7 +183,9 @@ function createLicenseService({ env, vmRegistryService }) {
     if (!vm) {
       throw new LicenseServiceError(404, 'VM_NOT_REGISTERED', 'VM UUID is not registered');
     }
-    const vmStatus = String(vm.status || 'active').trim().toLowerCase();
+    const vmStatus = String(vm.status || 'active')
+      .trim()
+      .toLowerCase();
     if (vmStatus !== 'active') {
       throw new LicenseServiceError(403, 'VM_INACTIVE', 'VM is not active');
     }
@@ -214,7 +228,11 @@ function createLicenseService({ env, vmRegistryService }) {
 
     const active = candidates.find((license) => isLicenseActive(license, now));
     if (!active) {
-      throw new LicenseServiceError(403, 'LICENSE_INACTIVE', 'Active subscription or perpetual license is required');
+      throw new LicenseServiceError(
+        403,
+        'LICENSE_INACTIVE',
+        'Active subscription or perpetual license is required',
+      );
     }
 
     return active;
@@ -232,7 +250,11 @@ function createLicenseService({ env, vmRegistryService }) {
       .maybeSingle();
 
     if (error) {
-      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to read entitlements: ${error.message}`);
+      throw new LicenseServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to read entitlements: ${error.message}`,
+      );
     }
 
     const entry = data ? { modules: data.modules || {} } : null;
@@ -274,7 +296,11 @@ function createLicenseService({ env, vmRegistryService }) {
     }
 
     const [vm, license] = await Promise.all([
-      ensureVmOwnership({ tenantId: normalizedTenantId, userId: normalizedUserId, vmUuid: normalizedVmUuid }),
+      ensureVmOwnership({
+        tenantId: normalizedTenantId,
+        userId: normalizedUserId,
+        vmUuid: normalizedVmUuid,
+      }),
       ensureActiveLicense({ tenantId: normalizedTenantId, userId: normalizedUserId }),
     ]);
     await ensureEntitlement({
@@ -322,12 +348,14 @@ function createLicenseService({ env, vmRegistryService }) {
     };
 
     const client = getClient();
-    const { error } = await client
-      .from('execution_leases')
-      .insert(record);
+    const { error } = await client.from('execution_leases').insert(record);
 
     if (error) {
-      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to create execution lease: ${error.message}`);
+      throw new LicenseServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to create execution lease: ${error.message}`,
+      );
     }
 
     return {
@@ -357,7 +385,11 @@ function createLicenseService({ env, vmRegistryService }) {
       .maybeSingle();
 
     if (lookupError) {
-      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to read execution lease: ${lookupError.message}`);
+      throw new LicenseServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to read execution lease: ${lookupError.message}`,
+      );
     }
 
     if (!lease) {
@@ -367,10 +399,16 @@ function createLicenseService({ env, vmRegistryService }) {
     const normalizedUserId = String(userId || '').trim();
     const leaseUserId = String(lease.user_id || '').trim();
     if (leaseUserId && leaseUserId !== normalizedUserId) {
-      throw new LicenseServiceError(403, 'LEASE_OWNER_MISMATCH', 'Execution lease belongs to another user');
+      throw new LicenseServiceError(
+        403,
+        'LEASE_OWNER_MISMATCH',
+        'Execution lease belongs to another user',
+      );
     }
 
-    const status = String(lease.status || 'active').trim().toLowerCase();
+    const status = String(lease.status || 'active')
+      .trim()
+      .toLowerCase();
     if (status !== 'active') {
       throw new LicenseServiceError(409, 'LEASE_INACTIVE', 'Execution lease is not active');
     }
@@ -391,7 +429,11 @@ function createLicenseService({ env, vmRegistryService }) {
       .eq('id', normalizedLeaseId);
 
     if (updateError) {
-      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to update execution lease heartbeat: ${updateError.message}`);
+      throw new LicenseServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to update execution lease heartbeat: ${updateError.message}`,
+      );
     }
 
     return {
@@ -418,7 +460,11 @@ function createLicenseService({ env, vmRegistryService }) {
       .maybeSingle();
 
     if (lookupError) {
-      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to read execution lease: ${lookupError.message}`);
+      throw new LicenseServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to read execution lease: ${lookupError.message}`,
+      );
     }
 
     if (!lease) {
@@ -439,7 +485,11 @@ function createLicenseService({ env, vmRegistryService }) {
       .eq('id', normalizedLeaseId);
 
     if (updateError) {
-      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to revoke execution lease: ${updateError.message}`);
+      throw new LicenseServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to revoke execution lease: ${updateError.message}`,
+      );
     }
 
     return {
@@ -449,12 +499,7 @@ function createLicenseService({ env, vmRegistryService }) {
     };
   }
 
-  async function resolveActiveLeaseByToken({
-    tenantId,
-    token,
-    expectedVmUuid,
-    expectedModule,
-  }) {
+  async function resolveActiveLeaseByToken({ tenantId, token, expectedVmUuid, expectedModule }) {
     const client = getClient();
     const normalizedTenantId = String(tenantId || '').trim() || 'default';
     if (!signingSecret) {
@@ -475,7 +520,11 @@ function createLicenseService({ env, vmRegistryService }) {
       .maybeSingle();
 
     if (lookupError) {
-      throw new LicenseServiceError(500, 'DB_ERROR', `Failed to read execution lease: ${lookupError.message}`);
+      throw new LicenseServiceError(
+        500,
+        'DB_ERROR',
+        `Failed to read execution lease: ${lookupError.message}`,
+      );
     }
 
     if (!lease) {
@@ -491,7 +540,9 @@ function createLicenseService({ env, vmRegistryService }) {
       throw new LicenseServiceError(403, 'FORBIDDEN', 'Execution lease tenant mismatch');
     }
 
-    const status = String(lease.status || 'active').trim().toLowerCase();
+    const status = String(lease.status || 'active')
+      .trim()
+      .toLowerCase();
     if (status !== 'active') {
       throw new LicenseServiceError(409, 'LEASE_INACTIVE', 'Execution lease is not active');
     }

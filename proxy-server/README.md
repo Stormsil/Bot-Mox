@@ -5,13 +5,13 @@ Express backend для Bot-Mox. Единственный поддерживае�
 ## Требования
 
 - Node.js 20+
-- npm 10+
+- pnpm 10+
 
 ## Установка
 
 ```bash
 cd proxy-server
-npm install
+pnpm install
 ```
 
 ## Конфигурация
@@ -39,14 +39,14 @@ Runtime mode:
 Из корня репозитория:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Только backend:
 
 ```bash
 cd proxy-server
-npm start
+pnpm start
 ```
 
 По умолчанию сервер доступен на `http://localhost:3001`.

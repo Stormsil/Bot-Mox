@@ -2,25 +2,22 @@ import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { popularEmailDomains } from '../../../utils/accountGenerators';
 import {
-  DEFAULT_ACCOUNT_PASSWORD_OPTIONS,
-} from './types';
-import type {
-  AccountGeneratorSettings,
-  AccountGeneratorTemplate,
-} from './types';
-import {
   accountGeneratorPaths,
   loadLegacyTemplateSnapshot,
+  patchSettingsPath,
   readSettingsPath,
   templatesArrayToMap,
   templatesMapToArray,
-  patchSettingsPath,
   writeSettingsPath,
 } from './settings-storage';
+import type { AccountGeneratorSettings, AccountGeneratorTemplate } from './types';
+import { DEFAULT_ACCOUNT_PASSWORD_OPTIONS } from './types';
 
 interface AccountGeneratorState {
   passwordOptions: AccountGeneratorSettings['passwordOptions'];
-  setPasswordOptions: React.Dispatch<React.SetStateAction<AccountGeneratorSettings['passwordOptions']>>;
+  setPasswordOptions: React.Dispatch<
+    React.SetStateAction<AccountGeneratorSettings['passwordOptions']>
+  >;
   selectedDomain: string;
   setSelectedDomain: React.Dispatch<React.SetStateAction<string>>;
   customDomain: string;
@@ -47,7 +44,9 @@ interface AccountGeneratorState {
 
 export const useAccountGeneratorState = (): AccountGeneratorState => {
   const [passwordOptions, setPasswordOptions] = useState(DEFAULT_ACCOUNT_PASSWORD_OPTIONS);
-  const [selectedDomain, setSelectedDomain] = useState<string>(popularEmailDomains[0] || 'gmail.com');
+  const [selectedDomain, setSelectedDomain] = useState<string>(
+    popularEmailDomains[0] || 'gmail.com',
+  );
   const [customDomain, setCustomDomain] = useState<string>('');
   const [useCustomDomain, setUseCustomDomain] = useState(false);
 
@@ -73,7 +72,7 @@ export const useAccountGeneratorState = (): AccountGeneratorState => {
     const hasValidDomain = popularEmailDomains.includes(settings.selectedDomain);
     const normalizedDomain = hasValidDomain
       ? settings.selectedDomain
-      : (popularEmailDomains[0] || 'gmail.com');
+      : popularEmailDomains[0] || 'gmail.com';
     setUseCustomDomain(Boolean(settings.useCustomDomain));
     setCustomDomain(settings.customDomain || '');
     setSelectedDomain(settings.useCustomDomain ? 'custom' : normalizedDomain);
@@ -85,7 +84,9 @@ export const useAccountGeneratorState = (): AccountGeneratorState => {
     const loadTemplateStorage = async () => {
       try {
         const [templatesData, defaultTemplateData, lastSettingsData] = await Promise.all([
-          readSettingsPath<Record<string, Omit<AccountGeneratorTemplate, 'id'>>>(accountGeneratorPaths.templates),
+          readSettingsPath<Record<string, Omit<AccountGeneratorTemplate, 'id'>>>(
+            accountGeneratorPaths.templates,
+          ),
           readSettingsPath<string>(accountGeneratorPaths.defaultTemplate),
           readSettingsPath<AccountGeneratorSettings>(accountGeneratorPaths.lastSettings),
         ]);
@@ -99,12 +100,18 @@ export const useAccountGeneratorState = (): AccountGeneratorState => {
           const localSnapshot = loadLegacyTemplateSnapshot();
 
           if (localSnapshot.templates.length > 0) {
-            await writeSettingsPath(accountGeneratorPaths.templates, templatesArrayToMap(localSnapshot.templates));
+            await writeSettingsPath(
+              accountGeneratorPaths.templates,
+              templatesArrayToMap(localSnapshot.templates),
+            );
             loadedTemplates = localSnapshot.templates;
           }
 
           if (localSnapshot.defaultTemplateId) {
-            await writeSettingsPath(accountGeneratorPaths.defaultTemplate, localSnapshot.defaultTemplateId);
+            await writeSettingsPath(
+              accountGeneratorPaths.defaultTemplate,
+              localSnapshot.defaultTemplateId,
+            );
             loadedDefaultTemplateId = localSnapshot.defaultTemplateId;
           }
 
@@ -121,7 +128,9 @@ export const useAccountGeneratorState = (): AccountGeneratorState => {
         setLastUsedSettings(loadedLastSettings);
 
         if (loadedDefaultTemplateId) {
-          const defaultTemplate = loadedTemplates.find((template) => template.id === loadedDefaultTemplateId);
+          const defaultTemplate = loadedTemplates.find(
+            (template) => template.id === loadedDefaultTemplateId,
+          );
           if (defaultTemplate) {
             applyGeneratorSettings(defaultTemplate.settings);
             setSelectedTemplateId(defaultTemplate.id);
@@ -148,36 +157,44 @@ export const useAccountGeneratorState = (): AccountGeneratorState => {
     };
   }, [applyGeneratorSettings]);
 
-  const currentGeneratorSettings = useMemo<AccountGeneratorSettings>(() => ({
-    passwordOptions,
-    selectedDomain,
-    customDomain,
-    useCustomDomain,
-  }), [passwordOptions, selectedDomain, customDomain, useCustomDomain]);
+  const currentGeneratorSettings = useMemo<AccountGeneratorSettings>(
+    () => ({
+      passwordOptions,
+      selectedDomain,
+      customDomain,
+      useCustomDomain,
+    }),
+    [passwordOptions, selectedDomain, customDomain, useCustomDomain],
+  );
 
   useEffect(() => {
     if (!templateStorageReady) return;
     setLastUsedSettings(currentGeneratorSettings);
-    void writeSettingsPath(accountGeneratorPaths.lastSettings, currentGeneratorSettings).catch((error) => {
-      console.error('Failed to save last account generator settings:', error);
-    });
+    void writeSettingsPath(accountGeneratorPaths.lastSettings, currentGeneratorSettings).catch(
+      (error) => {
+        console.error('Failed to save last account generator settings:', error);
+      },
+    );
   }, [currentGeneratorSettings, templateStorageReady]);
 
-  const handleTemplateSelect = useCallback((value: string) => {
-    setSelectedTemplateId(value);
-    if (value === 'last') {
-      if (lastUsedSettings) {
-        applyGeneratorSettings(lastUsedSettings);
+  const handleTemplateSelect = useCallback(
+    (value: string) => {
+      setSelectedTemplateId(value);
+      if (value === 'last') {
+        if (lastUsedSettings) {
+          applyGeneratorSettings(lastUsedSettings);
+        }
+        return;
       }
-      return;
-    }
 
-    const template = templates.find((item) => item.id === value);
-    if (template) {
-      applyGeneratorSettings(template.settings);
-      message.success(`Template "${template.name}" loaded`);
-    }
-  }, [applyGeneratorSettings, lastUsedSettings, templates]);
+      const template = templates.find((item) => item.id === value);
+      if (template) {
+        applyGeneratorSettings(template.settings);
+        message.success(`Template "${template.name}" loaded`);
+      }
+    },
+    [applyGeneratorSettings, lastUsedSettings, templates],
+  );
 
   const handleSaveTemplate = useCallback(async () => {
     const name = templateName.trim();

@@ -40,9 +40,10 @@ function getBodyShape(body) {
 
 function createAuditLogMiddleware(options = {}) {
   const scope = String(options.scope || 'api.audit');
-  const methods = Array.isArray(options.methods) && options.methods.length > 0
-    ? new Set(options.methods.map((method) => String(method).toUpperCase()))
-    : null;
+  const methods =
+    Array.isArray(options.methods) && options.methods.length > 0
+      ? new Set(options.methods.map((method) => String(method).toUpperCase()))
+      : null;
 
   return function auditLogMiddleware(req, res, next) {
     const method = String(req.method || '').toUpperCase();

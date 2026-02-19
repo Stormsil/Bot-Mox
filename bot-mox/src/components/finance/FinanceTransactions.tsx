@@ -1,29 +1,34 @@
-import React, { useState, useMemo } from 'react';
-import type { ColumnsType } from 'antd/es/table';
 import {
-  Card,
-  Table,
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  PlusOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
+import {
   Button,
+  Card,
+  Col,
+  DatePicker,
+  Empty,
+  Input,
+  Popconfirm,
+  Row,
+  Select,
   Space,
+  Table,
   Tag,
   Typography,
-  DatePicker,
-  Select,
-  Input,
-  Row,
-  Col,
-  Popconfirm,
-  Empty,
 } from 'antd';
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  SearchOutlined,
-  DownloadOutlined,
-} from '@ant-design/icons';
-import type { FinanceOperation, FinanceOperationType, FinanceCategory } from '../../types';
-import { formatTimestampToDate } from '../../services/financeService';
+import type { ColumnsType } from 'antd/es/table';
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import { formatTimestampToDate } from '../../entities/finance/lib/date';
+import type {
+  FinanceCategory,
+  FinanceOperation,
+  FinanceOperationType,
+} from '../../entities/finance/model/types';
 import { TableActionButton, TableActionGroup } from '../ui/TableActionButton';
 import commonStyles from './FinanceCommon.module.css';
 import styles from './FinanceTransactions.module.css';
@@ -137,9 +142,7 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       className: tableCellClassName,
       onHeaderCell: () => tableHeaderCellProps,
       render: (category: string) => (
-        <Tag className={commonStyles.financeTag}>
-          {CATEGORY_LABELS[category] || category}
-        </Tag>
+        <Tag className={commonStyles.financeTag}>{CATEGORY_LABELS[category] || category}</Tag>
       ),
     },
     {
@@ -201,7 +204,11 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
       onHeaderCell: () => tableHeaderCellProps,
       render: (_value: unknown, record: FinanceOperation) => (
         <TableActionGroup>
-          <TableActionButton icon={<EditOutlined />} onClick={() => onEdit(record)} tooltip="Edit" />
+          <TableActionButton
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+            tooltip="Edit"
+          />
           <Popconfirm
             title="Delete transaction"
             description="Are you sure you want to delete this transaction?"
@@ -284,11 +291,12 @@ export const FinanceTransactions: React.FC<FinanceTransactionsProps> = ({
               <RangePicker
                 className={styles.filterRange}
                 onChange={(dates) => {
-                  if (dates) {
-                    setDateRange([dates[0]!.format('YYYY-MM-DD'), dates[1]!.format('YYYY-MM-DD')]);
-                  } else {
+                  const [start, end] = dates ?? [];
+                  if (!start || !end) {
                     setDateRange(null);
+                    return;
                   }
+                  setDateRange([start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD')]);
                 }}
               />
               <Input

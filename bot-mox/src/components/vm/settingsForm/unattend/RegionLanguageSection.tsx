@@ -1,22 +1,34 @@
-import React from 'react';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Form, Select, Space, Typography } from 'antd';
-import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
-import type { UnattendProfileConfig, KeyboardLayoutPair } from '../../../../services/unattendProfileService';
-import { WINDOWS_LANGUAGES } from '../../../../data/windows-languages';
-import { KEYBOARD_GROUPS, getKeyboardLayoutsForLanguage } from '../../../../data/windows-keyboards';
-import { WINDOWS_TIMEZONES } from '../../../../data/windows-timezones';
+import type React from 'react';
 import { WINDOWS_GEOLOCATIONS } from '../../../../data/windows-geolocations';
+import { getKeyboardLayoutsForLanguage, KEYBOARD_GROUPS } from '../../../../data/windows-keyboards';
+import { WINDOWS_LANGUAGES } from '../../../../data/windows-languages';
+import { WINDOWS_TIMEZONES } from '../../../../data/windows-timezones';
+import type {
+  KeyboardLayoutPair,
+  UnattendProfileConfig,
+} from '../../../../entities/vm/model/unattend';
 
 const { Text } = Typography;
 
 interface RegionLanguageSectionProps {
   config: UnattendProfileConfig;
-  updateConfig: <K extends keyof UnattendProfileConfig>(section: K, patch: Partial<UnattendProfileConfig[K]>) => void;
+  updateConfig: <K extends keyof UnattendProfileConfig>(
+    section: K,
+    patch: Partial<UnattendProfileConfig[K]>,
+  ) => void;
 }
 
-export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({ config, updateConfig }) => {
+export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({
+  config,
+  updateConfig,
+}) => {
   const keyboards = config.locale.keyboardLayouts || [];
-  const keyboardLanguageNameById = new Map(KEYBOARD_GROUPS.map((group) => [group.languageId, group.name] as const));
+  const keyboardLanguageNameById = new Map(
+    KEYBOARD_GROUPS.map((group) => [group.languageId, group.name] as const),
+  );
+  const keyboardRowKeys = new Map<string, number>();
 
   const handleAddKeyboard = () => {
     if (keyboards.length >= 3) return;
@@ -63,47 +75,59 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({ co
 
       <Form.Item label="Keyboard Layouts (max 3)">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {keyboards.map((kb, index) => (
-            <Space key={index} align="start">
-              <Select
-                showSearch
-                value={kb.language}
-                onChange={(value) => handleKeyboardChange(index, 'language', value)}
-                optionFilterProp="label"
-                style={{ width: 220 }}
-                options={KEYBOARD_GROUPS.map((g) => ({
-                  value: g.languageId,
-                  label: g.name,
-                }))}
-                placeholder="Language"
-              />
-              <Select
-                showSearch
-                value={kb.layout}
-                onChange={(value) => handleKeyboardChange(index, 'layout', value)}
-                optionFilterProp="label"
-                style={{ width: 260 }}
-                options={getKeyboardLayoutsForLanguage(
-                  KEYBOARD_GROUPS.find((g) => g.languageId === kb.language)?.tag || ''
-                ).map((l) => ({
-                  value: l.id,
-                  label: l.name,
-                }))}
-                placeholder="Layout"
-              />
-              {keyboards.length > 1 && (
-                <Button
-                  type="text"
-                  danger
-                  icon={<MinusCircleOutlined />}
-                  onClick={() => handleRemoveKeyboard(index)}
-                  size="small"
+          {keyboards.map((kb, index) => {
+            const baseKey = `${kb.language}:${kb.layout}`;
+            const occurrence = keyboardRowKeys.get(baseKey) || 0;
+            keyboardRowKeys.set(baseKey, occurrence + 1);
+            const rowKey = `${baseKey}:${occurrence}`;
+            return (
+              <Space key={rowKey} align="start">
+                <Select
+                  showSearch
+                  value={kb.language}
+                  onChange={(value) => handleKeyboardChange(index, 'language', value)}
+                  optionFilterProp="label"
+                  style={{ width: 220 }}
+                  options={KEYBOARD_GROUPS.map((g) => ({
+                    value: g.languageId,
+                    label: g.name,
+                  }))}
+                  placeholder="Language"
                 />
-              )}
-            </Space>
-          ))}
+                <Select
+                  showSearch
+                  value={kb.layout}
+                  onChange={(value) => handleKeyboardChange(index, 'layout', value)}
+                  optionFilterProp="label"
+                  style={{ width: 260 }}
+                  options={getKeyboardLayoutsForLanguage(
+                    KEYBOARD_GROUPS.find((g) => g.languageId === kb.language)?.tag || '',
+                  ).map((l) => ({
+                    value: l.id,
+                    label: l.name,
+                  }))}
+                  placeholder="Layout"
+                />
+                {keyboards.length > 1 && (
+                  <Button
+                    type="text"
+                    danger
+                    icon={<MinusCircleOutlined />}
+                    onClick={() => handleRemoveKeyboard(index)}
+                    size="small"
+                  />
+                )}
+              </Space>
+            );
+          })}
           {keyboards.length < 3 && (
-            <Button type="dashed" onClick={handleAddKeyboard} icon={<PlusOutlined />} size="small" style={{ width: 160 }}>
+            <Button
+              type="dashed"
+              onClick={handleAddKeyboard}
+              icon={<PlusOutlined />}
+              size="small"
+              style={{ width: 160 }}
+            >
               Add language
             </Button>
           )}
@@ -139,13 +163,17 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({ co
       </Form.Item>
 
       <Text type="secondary">
-        Input locale preview: {keyboards.map((kb) => {
-          const languageName = keyboardLanguageNameById.get(kb.language) || kb.language;
-          const layoutName = getKeyboardLayoutsForLanguage(
-            KEYBOARD_GROUPS.find((g) => g.languageId === kb.language)?.tag || ''
-          ).find((layout) => layout.id === kb.layout)?.name || kb.layout;
-          return `${languageName}: ${layoutName}`;
-        }).join('; ')}
+        Input locale preview:{' '}
+        {keyboards
+          .map((kb) => {
+            const languageName = keyboardLanguageNameById.get(kb.language) || kb.language;
+            const layoutName =
+              getKeyboardLayoutsForLanguage(
+                KEYBOARD_GROUPS.find((g) => g.languageId === kb.language)?.tag || '',
+              ).find((layout) => layout.id === kb.layout)?.name || kb.layout;
+            return `${languageName}: ${layoutName}`;
+          })
+          .join('; ')}
       </Text>
     </Form>
   );

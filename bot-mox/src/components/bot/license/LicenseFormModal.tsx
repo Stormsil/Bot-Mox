@@ -1,6 +1,6 @@
-import React from 'react';
-import { AutoComplete, DatePicker, Form, Input, Modal } from 'antd';
 import type { FormInstance } from 'antd';
+import { AutoComplete, DatePicker, Form, Input, Modal } from 'antd';
+import type React from 'react';
 import type { LicenseFormValues } from './types';
 
 const modalStyles = {

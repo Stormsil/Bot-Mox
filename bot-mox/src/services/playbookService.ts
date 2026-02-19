@@ -1,6 +1,12 @@
-import { apiGet, apiPost, apiPut, apiDelete, type ApiSuccessEnvelope } from './apiClient';
-
-const PREFIX = '/api/v1/playbooks';
+import {
+  createPlaybookViaContract,
+  deletePlaybookViaContract,
+  getPlaybookViaContract,
+  listPlaybooksViaContract,
+  updatePlaybookViaContract,
+  validatePlaybookViaContract,
+} from '../providers/playbook-contract-client';
+import type { ApiSuccessEnvelope } from './apiClient';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,11 +34,11 @@ export interface PlaybookValidationResult {
 // ---------------------------------------------------------------------------
 
 export async function listPlaybooks(): Promise<ApiSuccessEnvelope<Playbook[]>> {
-  return apiGet<Playbook[]>(PREFIX);
+  return listPlaybooksViaContract() as Promise<ApiSuccessEnvelope<Playbook[]>>;
 }
 
 export async function getPlaybook(id: string): Promise<ApiSuccessEnvelope<Playbook>> {
-  return apiGet<Playbook>(`${PREFIX}/${id}`);
+  return getPlaybookViaContract(id) as Promise<ApiSuccessEnvelope<Playbook>>;
 }
 
 export async function createPlaybook(payload: {
@@ -40,7 +46,7 @@ export async function createPlaybook(payload: {
   is_default?: boolean;
   content: string;
 }): Promise<ApiSuccessEnvelope<Playbook>> {
-  return apiPost<Playbook>(PREFIX, payload);
+  return createPlaybookViaContract(payload) as Promise<ApiSuccessEnvelope<Playbook>>;
 }
 
 export async function updatePlaybook(
@@ -51,15 +57,17 @@ export async function updatePlaybook(
     content?: string;
   },
 ): Promise<ApiSuccessEnvelope<Playbook>> {
-  return apiPut<Playbook>(`${PREFIX}/${id}`, payload);
+  return updatePlaybookViaContract(id, payload) as Promise<ApiSuccessEnvelope<Playbook>>;
 }
 
 export async function deletePlaybook(id: string): Promise<void> {
-  await apiDelete(`${PREFIX}/${id}`);
+  await deletePlaybookViaContract(id);
 }
 
 export async function validatePlaybook(
   content: string,
 ): Promise<ApiSuccessEnvelope<PlaybookValidationResult>> {
-  return apiPost<PlaybookValidationResult>(`${PREFIX}/validate`, { content });
+  return validatePlaybookViaContract(content) as Promise<
+    ApiSuccessEnvelope<PlaybookValidationResult>
+  >;
 }

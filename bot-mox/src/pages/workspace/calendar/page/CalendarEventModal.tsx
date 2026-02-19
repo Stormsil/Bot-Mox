@@ -1,6 +1,6 @@
-import React from 'react';
-import { DatePicker, Form, Input, Modal, Select } from 'antd';
 import type { FormInstance } from 'antd';
+import { DatePicker, Form, Input, Modal, Select } from 'antd';
+import type React from 'react';
 import type { CalendarEventFormValues } from './types';
 
 const { TextArea } = Input;
@@ -40,11 +40,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
       >
         <Input placeholder="Event title" maxLength={120} />
       </Form.Item>
-      <Form.Item
-        name="date"
-        label="Date"
-        rules={[{ required: true, message: 'Date is required' }]}
-      >
+      <Form.Item name="date" label="Date" rules={[{ required: true, message: 'Date is required' }]}>
         <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
       </Form.Item>
       <Form.Item name="linked_note_id" label="Link note (optional)">

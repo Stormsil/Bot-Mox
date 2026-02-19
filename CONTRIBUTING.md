@@ -19,12 +19,12 @@ Use clear, scoped commit messages:
 ## Quality Checklist
 
 Before pushing:
-1. `npm run lint`
-2. `npm run check:types`
-3. `npm run build`
-4. `npm run check:backend:syntax`
-5. `npm run check:backend:smoke`
-6. `npm run check:secrets`
+1. `pnpm run lint`
+2. `pnpm run check:types`
+3. `pnpm run build`
+4. `pnpm run check:backend:syntax`
+5. `pnpm run check:backend:smoke`
+6. `pnpm run check:secrets`
 
 ## Security Rules
 

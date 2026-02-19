@@ -11,4 +11,12 @@ export const DEFAULT_HARDWARE: VMHardwareConfig = {
 };
 
 export const MUTABLE_PROXMOX_CONFIG_KEY = /^(args|net\d+|sata\d+)$/i;
-export const TASK_CONFIG_DIFF_FIELDS = ['name', 'cores', 'memory', 'net0', 'sata0', 'args', 'smbios1'] as const;
+export const TASK_CONFIG_DIFF_FIELDS = [
+  'name',
+  'cores',
+  'memory',
+  'net0',
+  'sata0',
+  'args',
+  'smbios1',
+] as const;

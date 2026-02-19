@@ -1,10 +1,10 @@
-import { Alert, Badge, Card, Spin, Tooltip } from 'antd';
 import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
-  QuestionCircleOutlined,
   LockOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
+import { Alert, Badge, Card, Spin, Tooltip } from 'antd';
 import styles from './account.module.css';
 
 interface AccountWorkflowAlertProps {
@@ -20,24 +20,28 @@ export function AccountWorkflowAlert({ accountLocked }: AccountWorkflowAlertProp
       type={accountLocked ? 'info' : 'success'}
       showIcon
       icon={
-        accountLocked
-          ? <LockOutlined style={{ fontSize: 14, color: 'var(--boxmox-color-text-secondary)' }} />
-          : <CheckCircleOutlined style={{ fontSize: 14, color: 'var(--boxmox-color-brand-primary)' }} />
+        accountLocked ? (
+          <LockOutlined style={{ fontSize: 14, color: 'var(--boxmox-color-text-secondary)' }} />
+        ) : (
+          <CheckCircleOutlined
+            style={{ fontSize: 14, color: 'var(--boxmox-color-brand-primary)' }}
+          />
+        )
       }
-      message={(
+      message={
         <span className={styles['account-workflow-message']}>
           <span className={styles['account-workflow-text']}>{messageText}</span>
           <Tooltip
-            title={(
+            title={
               accountLocked
                 ? 'Unlock -> edit or generate -> Save to lock again.'
                 : 'Set options -> generate email/password -> Save to lock.'
-            )}
+            }
           >
             <QuestionCircleOutlined className={styles['account-workflow-help-icon']} />
           </Tooltip>
         </span>
-      )}
+      }
       style={{
         marginBottom: 16,
         padding: '6px 10px',
@@ -71,18 +75,19 @@ export function IncompleteAccountAlert() {
     <Alert
       className={styles['config-incomplete-alert']}
       message={<span className={styles['alert-title']}>Incomplete Account Data</span>}
-      description={(
+      description={
         <span className={styles['alert-description']}>
           Some fields are empty. Please fill in all account data or use the Generate buttons.
         </span>
-      )}
+      }
       type="warning"
       showIcon
       icon={<ExclamationCircleOutlined />}
       style={{
         marginBottom: 16,
         borderColor: 'var(--boxmox-color-brand-warning)',
-        background: 'color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted))',
+        background:
+          'color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted))',
       }}
     />
   );
@@ -91,12 +96,7 @@ export function IncompleteAccountAlert() {
 export function AccountUnavailableState() {
   return (
     <div className={styles['bot-account']}>
-      <Alert
-        message="Error"
-        description="Bot data is not available"
-        type="error"
-        showIcon
-      />
+      <Alert message="Error" description="Bot data is not available" type="error" showIcon />
     </div>
   );
 }

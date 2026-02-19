@@ -64,7 +64,7 @@ const checkRestrictedOverlap = (session: ScheduleSession, allowedWindows: Allowe
 
 export const getSessionSegments = (
   sessions: ScheduleSession[],
-  allowedWindows: AllowedWindow[]
+  allowedWindows: AllowedWindow[],
 ): TimelineSegment[] => {
   return sessions.map((session) => {
     const startMinutes = timeToMinutes(session.start);
@@ -93,7 +93,9 @@ export const getSessionSegments = (
   });
 };
 
-export const getRestrictedSegments = (allowedWindows: AllowedWindow[] = []): TimelineZoneSegment[] => {
+export const getRestrictedSegments = (
+  allowedWindows: AllowedWindow[] = [],
+): TimelineZoneSegment[] => {
   if (!allowedWindows.length) return [];
 
   const normalized = allowedWindows

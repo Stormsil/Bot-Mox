@@ -15,7 +15,7 @@ const requireNonEmpty = (schema, message) =>
 
 const nonEmptyObjectSchema = requireNonEmpty(
   z.object({}).passthrough(),
-  'Payload must contain at least one field'
+  'Payload must contain at least one field',
 );
 
 const timestampSchema = z.coerce.number().int().nonnegative();
@@ -36,6 +36,11 @@ const idParamSchema = z.object({
 const vmResolveParamSchema = z.object({
   uuid: stringIdSchema,
 });
+
+const settingsPathInputSchema = z.preprocess(
+  (value) => String(value ?? '').trim(),
+  z.string().max(512),
+);
 
 const resourceKindParamSchema = z.object({
   kind: z.enum(RESOURCE_KINDS),
@@ -94,7 +99,7 @@ const lifecycleSchema = z
           from: z.enum(['prepare', 'leveling', 'profession', 'farming', 'create']),
           to: z.enum(['prepare', 'leveling', 'profession', 'farming']),
           timestamp: timestampSchema,
-        })
+        }),
       )
       .optional(),
     ban_details: banDetailsSchema
@@ -116,7 +121,7 @@ const botCreateSchema = requireNonEmpty(
       lifecycle: lifecycleSchema.optional(),
     })
     .passthrough(),
-  'Bot payload must not be empty'
+  'Bot payload must not be empty',
 );
 
 const botPatchSchema = botCreateSchema;
@@ -139,7 +144,7 @@ const licenseMutationSchema = requireNonEmpty(
       updated_at: timestampSchema.optional(),
     })
     .passthrough(),
-  'License payload must not be empty'
+  'License payload must not be empty',
 );
 
 const proxyMutationSchema = requireNonEmpty(
@@ -175,7 +180,7 @@ const proxyMutationSchema = requireNonEmpty(
       last_checked: timestampSchema.optional(),
     })
     .passthrough(),
-  'Proxy payload must not be empty'
+  'Proxy payload must not be empty',
 );
 
 const subscriptionMutationSchema = requireNonEmpty(
@@ -194,7 +199,7 @@ const subscriptionMutationSchema = requireNonEmpty(
       notes: z.string().max(1000).optional(),
     })
     .passthrough(),
-  'Subscription payload must not be empty'
+  'Subscription payload must not be empty',
 );
 
 const resourceMutationSchemas = {
@@ -213,7 +218,7 @@ const resourceCreateSchema = requireNonEmpty(
       type: z.string().trim().min(1).optional(),
     })
     .passthrough(),
-  'Resource payload must not be empty'
+  'Resource payload must not be empty',
 );
 
 const resourcePatchSchema = resourceCreateSchema;
@@ -234,7 +239,7 @@ const notesMutationSchema = requireNonEmpty(
       created_by: z.string().trim().optional(),
     })
     .passthrough(),
-  'Notes payload must not be empty'
+  'Notes payload must not be empty',
 );
 
 const calendarMutationSchema = requireNonEmpty(
@@ -249,7 +254,7 @@ const calendarMutationSchema = requireNonEmpty(
       updated_at: timestampSchema.optional(),
     })
     .passthrough(),
-  'Calendar payload must not be empty'
+  'Calendar payload must not be empty',
 );
 
 const kanbanMutationSchema = requireNonEmpty(
@@ -259,13 +264,15 @@ const kanbanMutationSchema = requireNonEmpty(
       title: z.string().trim().optional(),
       description: z.string().optional(),
       status: z.enum(['todo', 'in_progress', 'done']).optional(),
-      due_date: z.union([z.string().regex(ISO_DATE_REGEX, 'Expected YYYY-MM-DD format'), z.null()]).optional(),
+      due_date: z
+        .union([z.string().regex(ISO_DATE_REGEX, 'Expected YYYY-MM-DD format'), z.null()])
+        .optional(),
       order: z.coerce.number().int().optional(),
       created_at: timestampSchema.optional(),
       updated_at: timestampSchema.optional(),
     })
     .passthrough(),
-  'Kanban payload must not be empty'
+  'Kanban payload must not be empty',
 );
 
 const workspaceMutationSchemas = {
@@ -284,7 +291,7 @@ const workspaceCreateSchema = requireNonEmpty(
       date: z.string().trim().optional(),
     })
     .passthrough(),
-  'Workspace payload must not be empty'
+  'Workspace payload must not be empty',
 );
 
 const workspacePatchSchema = workspaceCreateSchema;
@@ -318,7 +325,7 @@ const settingsApiKeysMutationSchema = requireNonEmpty(
         .optional(),
     })
     .passthrough(),
-  'API keys payload must not be empty'
+  'API keys payload must not be empty',
 );
 
 const settingsProxyMutationSchema = requireNonEmpty(
@@ -329,7 +336,7 @@ const settingsProxyMutationSchema = requireNonEmpty(
       check_interval_hours: z.coerce.number().int().min(0).max(168).optional(),
     })
     .passthrough(),
-  'Proxy settings payload must not be empty'
+  'Proxy settings payload must not be empty',
 );
 
 const settingsNotificationEventsMutationSchema = requireNonEmpty(
@@ -344,7 +351,7 @@ const settingsNotificationEventsMutationSchema = requireNonEmpty(
       daily_report: z.boolean().optional(),
     })
     .passthrough(),
-  'Notification events payload must not be empty'
+  'Notification events payload must not be empty',
 );
 
 const storagePolicyMutationSchema = requireNonEmpty(
@@ -362,7 +369,7 @@ const storagePolicyMutationSchema = requireNonEmpty(
       updated_by: z.string().trim().optional(),
     })
     .passthrough(),
-  'Storage policy payload must not be empty'
+  'Storage policy payload must not be empty',
 );
 
 const projectSettingsEntryMutationSchema = requireNonEmpty(
@@ -383,12 +390,12 @@ const projectSettingsEntryMutationSchema = requireNonEmpty(
       updated_at: timestampSchema.optional(),
     })
     .passthrough(),
-  'Project settings payload must not be empty'
+  'Project settings payload must not be empty',
 );
 
 const projectsCollectionMutationSchema = requireNonEmpty(
   z.record(z.union([projectSettingsEntryMutationSchema, z.null()])),
-  'Projects payload must not be empty'
+  'Projects payload must not be empty',
 );
 
 const settingsResourceTreeMutationSchema = requireNonEmpty(
@@ -400,7 +407,7 @@ const settingsResourceTreeMutationSchema = requireNonEmpty(
       updated_at: timestampSchema.optional(),
     })
     .passthrough(),
-  'Resource tree settings payload must not be empty'
+  'Resource tree settings payload must not be empty',
 );
 
 const financeChartConfigEntryMutationSchema = z
@@ -435,7 +442,7 @@ const scheduleGenerationParamsMutationSchema = requireNonEmpty(
       updated_at: timestampSchema.optional(),
     })
     .passthrough(),
-  'Schedule params payload must not be empty'
+  'Schedule params payload must not be empty',
 );
 
 const scheduleTemplateEntryMutationSchema = requireNonEmpty(
@@ -447,12 +454,12 @@ const scheduleTemplateEntryMutationSchema = requireNonEmpty(
       updated_at: timestampSchema.optional(),
     })
     .passthrough(),
-  'Schedule template payload must not be empty'
+  'Schedule template payload must not be empty',
 );
 
 const scheduleTemplatesCollectionMutationSchema = requireNonEmpty(
   z.record(z.union([scheduleTemplateEntryMutationSchema, z.null()])),
-  'Schedule templates payload must not be empty'
+  'Schedule templates payload must not be empty',
 );
 
 const settingsAlertsMutationSchema = requireNonEmpty(
@@ -463,7 +470,7 @@ const settingsAlertsMutationSchema = requireNonEmpty(
       updated_by: z.string().trim().optional(),
     })
     .passthrough(),
-  'Alerts payload must not be empty'
+  'Alerts payload must not be empty',
 );
 
 const themePresetMutationSchema = z
@@ -481,7 +488,9 @@ const themeVisualSettingsMutationSchema = z
     enabled: z.boolean().optional(),
     mode: z.enum(['none', 'image']).optional(),
     backgroundAssetId: z.union([stringIdSchema, z.null()]).optional(),
-    backgroundImageUrl: z.union([z.string().trim().url(), z.string().trim().length(0), z.null()]).optional(),
+    backgroundImageUrl: z
+      .union([z.string().trim().url(), z.string().trim().length(0), z.null()])
+      .optional(),
     backgroundPosition: z.enum(['center', 'top', 'custom']).optional(),
     backgroundSize: z.enum(['cover', 'contain', 'auto']).optional(),
     overlayOpacity: z.coerce.number().min(0).max(1).optional(),
@@ -522,13 +531,17 @@ const themeSettingsMutationSchema = requireNonEmpty(
       updated_by: z.string().trim().optional(),
     })
     .passthrough(),
-  'Theme payload must not be empty'
+  'Theme payload must not be empty',
 );
 
 const themeAssetPresignUploadSchema = z.object({
   filename: z.string().trim().min(1).max(255),
   mime_type: z.enum(['image/jpeg', 'image/png', 'image/webp']),
-  size_bytes: z.coerce.number().int().min(1).max(20 * 1024 * 1024),
+  size_bytes: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(20 * 1024 * 1024),
 });
 
 const themeAssetCompleteSchema = z.object({
@@ -662,7 +675,7 @@ const vmGeneratorMutationSchema = requireNonEmpty(
       syncThing: z.record(z.unknown()).optional(),
     })
     .passthrough(),
-  'VM generator payload must not be empty'
+  'VM generator payload must not be empty',
 );
 
 const vmProfileMutationSchema = requireNonEmpty(
@@ -674,12 +687,12 @@ const vmProfileMutationSchema = requireNonEmpty(
       updated_at: timestampSchema.optional(),
     })
     .passthrough(),
-  'VM profile payload must not be empty'
+  'VM profile payload must not be empty',
 );
 
 const vmProfilesCollectionMutationSchema = requireNonEmpty(
   z.record(z.union([vmProfileMutationSchema, z.null()])),
-  'VM profiles payload must not be empty'
+  'VM profiles payload must not be empty',
 );
 
 const accountGeneratorPasswordOptionsMutationSchema = z
@@ -701,7 +714,7 @@ const accountGeneratorSettingsMutationSchema = requireNonEmpty(
       useCustomDomain: z.boolean().optional(),
     })
     .passthrough(),
-  'Account generator settings payload must not be empty'
+  'Account generator settings payload must not be empty',
 );
 
 const accountGeneratorTemplateEntryMutationSchema = requireNonEmpty(
@@ -713,12 +726,12 @@ const accountGeneratorTemplateEntryMutationSchema = requireNonEmpty(
       settings: accountGeneratorSettingsMutationSchema.optional(),
     })
     .passthrough(),
-  'Account generator template payload must not be empty'
+  'Account generator template payload must not be empty',
 );
 
 const accountGeneratorTemplatesCollectionMutationSchema = requireNonEmpty(
   z.record(z.union([accountGeneratorTemplateEntryMutationSchema, z.null()])),
-  'Account generator templates payload must not be empty'
+  'Account generator templates payload must not be empty',
 );
 
 const accountGeneratorDefaultTemplateIdMutationSchema = z.union([stringIdSchema, z.null()]);
@@ -741,10 +754,87 @@ const financeOperationBaseSchema = z
   .passthrough();
 
 const financeOperationCreateSchema = financeOperationBaseSchema;
-const financeOperationPatchSchema = financeOperationBaseSchema.partial().refine(
-  (value) => Object.keys(value || {}).length > 0,
-  'Finance operation patch must not be empty'
-);
+const financeOperationPatchSchema = financeOperationBaseSchema
+  .partial()
+  .refine(
+    (value) => Object.keys(value || {}).length > 0,
+    'Finance operation patch must not be empty',
+  );
+
+const ipqsCheckBodySchema = z.object({
+  ip: z.string().trim().min(1),
+});
+
+const ipqsCheckBatchBodySchema = z.object({
+  ips: z.array(z.string().trim().min(1)).min(1).max(10),
+});
+
+const wowNamesQuerySchema = z.object({
+  count: z.preprocess((value) => {
+    if (value === undefined || value === null) return undefined;
+    const normalized = String(value).trim();
+    if (!normalized) return undefined;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : Number.NaN;
+  }, z.number().int().min(1).max(100).optional()),
+  batches: z.preprocess((value) => {
+    if (value === undefined || value === null) return undefined;
+    const normalized = String(value).trim();
+    if (!normalized) return undefined;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : Number.NaN;
+  }, z.number().int().min(1).max(20).optional()),
+});
+
+const optionalBooleanFlagSchema = z.preprocess((value) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+    return true;
+  }
+  if (['0', 'false', 'no', 'off'].includes(normalized)) {
+    return false;
+  }
+  return value;
+}, z.boolean().optional());
+
+const infraNodePathSchema = z.object({
+  node: z.string().trim().min(1),
+});
+
+const infraNodeVmidPathSchema = z.object({
+  node: z.string().trim().min(1),
+  vmid: z.string().trim().min(1),
+});
+
+const infraTaskStatusPathSchema = z.object({
+  node: z.string().trim().min(1),
+  upid: z.string().trim().min(1),
+});
+
+const infraVmActionPathSchema = z.object({
+  node: z.string().trim().min(1),
+  vmid: z.string().trim().min(1),
+  action: z.string().trim().min(1),
+});
+
+const infraDeleteVmQuerySchema = z.object({
+  purge: optionalBooleanFlagSchema,
+  'destroy-unreferenced-disks': optionalBooleanFlagSchema,
+});
+
+const infraSendKeyBodySchema = z.object({
+  key: z.string().trim().min(1),
+});
+
+const infraSshVmConfigPathSchema = z.object({
+  vmid: z.string().trim().min(1),
+});
 
 const infraCloneRequestSchema = z
   .object({
@@ -768,7 +858,12 @@ const sshVmConfigWriteSchema = z.object({
 });
 
 const vmRegisterSchema = z.object({
-  vm_uuid: z.string().trim().min(8).max(128).regex(/^[A-Za-z0-9:_-]+$/),
+  vm_uuid: z
+    .string()
+    .trim()
+    .min(8)
+    .max(128)
+    .regex(/^[A-Za-z0-9:_-]+$/),
   user_id: stringIdSchema.optional(),
   vm_name: z.string().trim().max(200).optional(),
   project_id: z.string().trim().max(100).optional(),
@@ -777,7 +872,12 @@ const vmRegisterSchema = z.object({
 });
 
 const licenseLeaseRequestSchema = z.object({
-  vm_uuid: z.string().trim().min(8).max(128).regex(/^[A-Za-z0-9:_-]+$/),
+  vm_uuid: z
+    .string()
+    .trim()
+    .min(8)
+    .max(128)
+    .regex(/^[A-Za-z0-9:_-]+$/),
   user_id: stringIdSchema.optional(),
   agent_id: z.string().trim().min(1).max(200),
   runner_id: z.string().trim().min(1).max(200),
@@ -800,7 +900,10 @@ const artifactReleaseCreateSchema = z.object({
   channel: z.string().trim().min(1).max(100).optional().default('stable'),
   version: z.string().trim().min(1).max(100),
   object_key: z.string().trim().min(1).max(1024),
-  sha256: z.string().trim().regex(/^[a-fA-F0-9]{64}$/),
+  sha256: z
+    .string()
+    .trim()
+    .regex(/^[a-fA-F0-9]{64}$/),
   size_bytes: z.coerce.number().int().positive(),
   status: z.enum(ARTIFACT_RELEASE_STATUSES).optional().default('active'),
 });
@@ -813,9 +916,30 @@ const artifactAssignSchema = z.object({
   release_id: z.coerce.number().int().positive(),
 });
 
+const artifactAssignmentPathSchema = z.object({
+  userId: z.string().trim().min(1).max(200),
+  module: z.string().trim().min(1).max(200),
+});
+
+const artifactAssignmentQuerySchema = z.object({
+  platform: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(100).optional().default('windows')),
+  channel: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(100).optional().default('stable')),
+});
+
 const artifactResolveDownloadSchema = z.object({
   lease_token: z.string().trim().min(1),
-  vm_uuid: z.string().trim().min(8).max(128).regex(/^[A-Za-z0-9:_-]+$/),
+  vm_uuid: z
+    .string()
+    .trim()
+    .min(8)
+    .max(128)
+    .regex(/^[A-Za-z0-9:_-]+$/),
   module: z.string().trim().min(1).max(200),
   platform: z.string().trim().min(1).max(100),
   channel: z.string().trim().min(1).max(100).optional().default('stable'),
@@ -902,11 +1026,66 @@ const secretBindingCreateSchema = z.object({
   field_name: z.string().trim().min(1).max(200),
 });
 
+const secretBindingsListQuerySchema = z.object({
+  scope_type: z.enum(['bot', 'vm', 'agent', 'tenant']).optional(),
+  scope_id: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(200).optional()),
+});
+
 // --- VM Ops ---
+
+const vmOpsCommandNextQuerySchema = z.object({
+  agent_id: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(200).optional()),
+  timeout_ms: z.preprocess((value) => {
+    const parsed = Number.parseInt(String(value ?? '').trim(), 10);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }, z.number().int().min(1000).max(60000).optional()),
+});
+
+const vmOpsCommandListQuerySchema = z.object({
+  agent_id: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(200).optional()),
+  status: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(100).optional()),
+});
+
+const vmOpsEventsQuerySchema = z.object({
+  agent_id: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(200).optional()),
+  command_id: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(200).optional()),
+  last_event_id: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    if (!normalized) return undefined;
+    const parsed = Number.parseInt(normalized, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  }, z.number().int().positive().optional()),
+});
 
 const vmOpsCommandSchema = z.object({
   agent_id: z.string().trim().min(1).max(200),
   params: z.record(z.unknown()).optional().default({}),
+});
+
+const vmOpsActionPathSchema = z.object({
+  action: z.string().trim().min(1),
+});
+
+const vmOpsCommandIdPathSchema = z.object({
+  id: z.string().trim().min(1),
 });
 
 // --- Unattend Profiles ---
@@ -916,80 +1095,95 @@ const keyboardLayoutPairSchema = z.object({
   layout: z.string().trim().min(1),
 });
 
-const unattendProfileConfigSchema = z.object({
-  user: z.object({
-    nameMode: z.enum(['random', 'fixed', 'custom']),
-    customName: z.string().trim().max(200).optional(),
-    customNameSuffix: z.enum(['none', 'random_digits', 'sequential']).optional().default('none'),
-    displayName: z.string().trim().max(200).optional(),
-    password: z.string().max(200).default('1204'),
-    group: z.enum(['Administrators', 'Users']).default('Administrators'),
-    autoLogonCount: z.coerce.number().int().min(0).default(9999999),
-  }),
-  computerName: z.object({
-    mode: z.enum(['random', 'fixed', 'custom']),
-    customName: z.string().trim().max(15).optional(),
-  }),
-  locale: z.object({
-    uiLanguage: z.string().trim().default('en-US'),
-    // accept both old and new field names
-    inputLocales: z.array(z.string().trim()).optional(),
-    keyboardLayouts: z.array(keyboardLayoutPairSchema).optional(),
-    timeZone: z.string().trim().default('Turkey Standard Time'),
-    geoLocation: z.coerce.number().int().default(235),
-  }),
-  softwareRemoval: z.object({
-    mode: z.enum(['fixed', 'random', 'mixed', 'fixed_random']),
-    fixedPackages: z.array(z.string().trim()).default([]),
-    randomPool: z.array(z.string().trim()).default([]),
-    neverRemove: z.array(z.string().trim()).optional().default([]),
-    randomCount: z.object({
-      min: z.coerce.number().int().min(0).default(5),
-      max: z.coerce.number().int().min(0).default(15),
-    }).optional(),
-  }),
-  capabilityRemoval: z.object({
-    mode: z.enum(['fixed', 'random', 'mixed', 'fixed_random']),
-    fixedCapabilities: z.array(z.string().trim()).default([]),
-    randomPool: z.array(z.string().trim()).default([]),
-  }),
-  windowsSettings: z.object({
-    disableDefender: z.boolean().default(true),
-    disableWindowsUpdate: z.boolean().default(true),
-    disableUac: z.boolean().default(true),
-    disableSmartScreen: z.boolean().default(true),
-    disableSystemRestore: z.boolean().default(true),
-    enableLongPaths: z.boolean().default(true),
-    allowPowerShellScripts: z.boolean().default(true),
-    disableWidgets: z.boolean().default(true),
-    disableEdgeStartup: z.boolean().default(true),
-    preventDeviceEncryption: z.boolean().default(true),
-    disableStickyKeys: z.boolean().default(true),
-    enableRemoteDesktop: z.boolean().optional().default(false),
-  }),
-  visualEffects: z.object({
-    mode: z.enum(['default', 'appearance', 'performance', 'custom', 'custom_randomize',
+const unattendProfileConfigSchema = z
+  .object({
+    user: z.object({
+      nameMode: z.enum(['random', 'fixed', 'custom']),
+      customName: z.string().trim().max(200).optional(),
+      customNameSuffix: z.enum(['none', 'random_digits', 'sequential']).optional().default('none'),
+      displayName: z.string().trim().max(200).optional(),
+      password: z.string().max(200).default('1204'),
+      group: z.enum(['Administrators', 'Users']).default('Administrators'),
+      autoLogonCount: z.coerce.number().int().min(0).default(9999999),
+    }),
+    computerName: z.object({
+      mode: z.enum(['random', 'fixed', 'custom']),
+      customName: z.string().trim().max(15).optional(),
+    }),
+    locale: z.object({
+      uiLanguage: z.string().trim().default('en-US'),
+      // accept both old and new field names
+      inputLocales: z.array(z.string().trim()).optional(),
+      keyboardLayouts: z.array(keyboardLayoutPairSchema).optional(),
+      timeZone: z.string().trim().default('Turkey Standard Time'),
+      geoLocation: z.coerce.number().int().default(235),
+    }),
+    softwareRemoval: z.object({
+      mode: z.enum(['fixed', 'random', 'mixed', 'fixed_random']),
+      fixedPackages: z.array(z.string().trim()).default([]),
+      randomPool: z.array(z.string().trim()).default([]),
+      neverRemove: z.array(z.string().trim()).optional().default([]),
+      randomCount: z
+        .object({
+          min: z.coerce.number().int().min(0).default(5),
+          max: z.coerce.number().int().min(0).default(15),
+        })
+        .optional(),
+    }),
+    capabilityRemoval: z.object({
+      mode: z.enum(['fixed', 'random', 'mixed', 'fixed_random']),
+      fixedCapabilities: z.array(z.string().trim()).default([]),
+      randomPool: z.array(z.string().trim()).default([]),
+    }),
+    windowsSettings: z.object({
+      disableDefender: z.boolean().default(true),
+      disableWindowsUpdate: z.boolean().default(true),
+      disableUac: z.boolean().default(true),
+      disableSmartScreen: z.boolean().default(true),
+      disableSystemRestore: z.boolean().default(true),
+      enableLongPaths: z.boolean().default(true),
+      allowPowerShellScripts: z.boolean().default(true),
+      disableWidgets: z.boolean().default(true),
+      disableEdgeStartup: z.boolean().default(true),
+      preventDeviceEncryption: z.boolean().default(true),
+      disableStickyKeys: z.boolean().default(true),
+      enableRemoteDesktop: z.boolean().optional().default(false),
+    }),
+    visualEffects: z.object({
+      mode: z
+        .enum([
+          'default',
+          'appearance',
+          'performance',
+          'custom',
+          'custom_randomize',
+          // legacy compat
+          'balanced',
+          'random',
+        ])
+        .default('performance'),
+      effects: z.record(z.boolean()).optional().default({}),
       // legacy compat
-      'balanced', 'random']).default('performance'),
-    effects: z.record(z.boolean()).optional().default({}),
-    // legacy compat
-    cursorShadow: z.boolean().optional(),
-    fontSmoothing: z.boolean().optional(),
-  }),
-  desktopIcons: z.object({
-    mode: z.enum(['default', 'custom', 'custom_randomize']).optional().default('default'),
-    icons: z.record(z.boolean()).optional().default({}),
-    startFolders: z.record(z.boolean()).optional().default({}),
-    deleteEdgeShortcut: z.boolean().optional().default(true),
-    // legacy compat
-    recycleBin: z.boolean().optional(),
-    thisPC: z.boolean().optional(),
-  }),
-  customScript: z.object({
-    executable: z.string().trim().default('START.exe'),
-    delaySeconds: z.coerce.number().int().min(0).max(600).default(20),
-  }).optional(),
-}).passthrough();
+      cursorShadow: z.boolean().optional(),
+      fontSmoothing: z.boolean().optional(),
+    }),
+    desktopIcons: z.object({
+      mode: z.enum(['default', 'custom', 'custom_randomize']).optional().default('default'),
+      icons: z.record(z.boolean()).optional().default({}),
+      startFolders: z.record(z.boolean()).optional().default({}),
+      deleteEdgeShortcut: z.boolean().optional().default(true),
+      // legacy compat
+      recycleBin: z.boolean().optional(),
+      thisPC: z.boolean().optional(),
+    }),
+    customScript: z
+      .object({
+        executable: z.string().trim().default('START.exe'),
+        delaySeconds: z.coerce.number().int().min(0).max(600).default(20),
+      })
+      .optional(),
+  })
+  .passthrough();
 
 const unattendProfileCreateSchema = z.object({
   name: z.string().trim().min(1).max(200),
@@ -1029,10 +1223,14 @@ const playbookRoleEntrySchema = z.object({
 const playbookContentStructureSchema = z.object({
   name: z.string().trim().min(1),
   vars: z.record(z.unknown()).optional(),
-  pre_checks: z.array(z.object({
-    name: z.string().trim().min(1),
-    check: z.string().trim().min(1),
-  })).optional(),
+  pre_checks: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1),
+        check: z.string().trim().min(1),
+      }),
+    )
+    .optional(),
   roles: z.array(playbookRoleEntrySchema).min(1),
   notifications: z.record(z.unknown()).optional(),
 });
@@ -1049,6 +1247,10 @@ const playbookUpdateSchema = z.object({
   content: z.string().min(1).max(65536).optional(),
 });
 
+const playbookValidateBodySchema = z.object({
+  content: z.string().trim().min(1),
+});
+
 const provisioningValidateTokenSchema = z.object({
   token: z.string().trim().min(1),
   vm_uuid: z.string().trim().min(1),
@@ -1060,6 +1262,10 @@ const provisioningReportProgressSchema = z.object({
   step: z.string().trim().min(1).max(200),
   status: z.enum(['pending', 'running', 'completed', 'failed']),
   details: z.record(z.unknown()).optional().default({}),
+});
+
+const provisioningProgressPathSchema = z.object({
+  vmUuid: z.string().trim().min(1),
 });
 
 function getResourceCreateSchema(kind) {
@@ -1079,7 +1285,10 @@ function getWorkspacePatchSchema(kind) {
 }
 
 function normalizeSettingsSubPath(pathValue) {
-  const normalized = String(pathValue || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
+  const normalized = String(pathValue || '')
+    .trim()
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
   if (!normalized) return '';
   if (normalized.startsWith('settings/')) {
     return normalized.slice('settings/'.length);
@@ -1191,6 +1400,7 @@ module.exports = {
   listQuerySchema,
   idParamSchema,
   vmResolveParamSchema,
+  settingsPathInputSchema,
   resourceKindParamSchema,
   workspaceKindParamSchema,
   botCreateSchema,
@@ -1210,6 +1420,16 @@ module.exports = {
   resolveSettingsMutationSchema,
   financeOperationCreateSchema,
   financeOperationPatchSchema,
+  ipqsCheckBodySchema,
+  ipqsCheckBatchBodySchema,
+  wowNamesQuerySchema,
+  infraNodePathSchema,
+  infraNodeVmidPathSchema,
+  infraTaskStatusPathSchema,
+  infraVmActionPathSchema,
+  infraDeleteVmQuerySchema,
+  infraSendKeyBodySchema,
+  infraSshVmConfigPathSchema,
   infraCloneRequestSchema,
   infraVmConfigUpdateSchema,
   sshExecRequestSchema,
@@ -1220,6 +1440,8 @@ module.exports = {
   licenseRevokeSchema,
   artifactReleaseCreateSchema,
   artifactAssignSchema,
+  artifactAssignmentPathSchema,
+  artifactAssignmentQuerySchema,
   artifactResolveDownloadSchema,
   themeAssetPresignUploadSchema,
   themeAssetCompleteSchema,
@@ -1235,14 +1457,22 @@ module.exports = {
   secretCreateSchema,
   secretRotateSchema,
   secretBindingCreateSchema,
+  secretBindingsListQuerySchema,
+  vmOpsCommandNextQuerySchema,
+  vmOpsCommandListQuerySchema,
+  vmOpsEventsQuerySchema,
   vmOpsCommandSchema,
+  vmOpsActionPathSchema,
+  vmOpsCommandIdPathSchema,
   unattendProfileConfigSchema,
   unattendProfileCreateSchema,
   unattendProfileUpdateSchema,
   generateIsoPayloadSchema,
   provisioningValidateTokenSchema,
   provisioningReportProgressSchema,
+  provisioningProgressPathSchema,
   playbookContentStructureSchema,
   playbookCreateSchema,
   playbookUpdateSchema,
+  playbookValidateBodySchema,
 };

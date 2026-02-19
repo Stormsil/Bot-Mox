@@ -37,7 +37,7 @@ function getTraceIdsFromHttpArgs(args) {
     const candidate = args[i];
     if (!candidate || typeof candidate !== 'object') continue;
     const req = candidate.req;
-    const ids = req && req.traceIds;
+    const ids = req?.traceIds;
     if (ids && typeof ids === 'object') {
       return {
         trace_id: ids.trace_id ?? null,
@@ -48,7 +48,8 @@ function getTraceIdsFromHttpArgs(args) {
   return null;
 }
 
-const serviceName = String(process.env.OTEL_SERVICE_NAME || 'bot-mox-backend').trim() || 'bot-mox-backend';
+const serviceName =
+  String(process.env.OTEL_SERVICE_NAME || 'bot-mox-backend').trim() || 'bot-mox-backend';
 const envName = String(process.env.NODE_ENV || 'development').trim() || 'development';
 
 const logger = pino({
@@ -77,10 +78,10 @@ const logger = pino({
 
       if (objIndex >= 0) {
         const obj = args[objIndex];
-        if (!Object.prototype.hasOwnProperty.call(obj, 'trace_id')) {
+        if (!Object.hasOwn(obj, 'trace_id')) {
           obj.trace_id = ids.trace_id;
         }
-        if (!Object.prototype.hasOwnProperty.call(obj, 'span_id')) {
+        if (!Object.hasOwn(obj, 'span_id')) {
           obj.span_id = ids.span_id;
         }
       } else {

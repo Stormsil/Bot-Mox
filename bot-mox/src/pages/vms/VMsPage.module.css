@@ -61,6 +61,11 @@
 }
 
 .vm-generator-workspace-resizer {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   width: 10px;
   min-width: 10px;
   cursor: col-resize;
@@ -70,7 +75,7 @@
 }
 
 .vm-generator-workspace-resizer::before {
-  content: '';
+  content: "";
   width: 2px;
   height: 72px;
   background: var(--vmx-border-strong);
@@ -121,6 +126,9 @@
 }
 
 .vm-generator-log-resizer {
+  appearance: none;
+  width: 100%;
+  padding: 0;
   flex-shrink: 0;
   height: 8px;
   cursor: row-resize;
@@ -131,7 +139,7 @@
 }
 
 .vm-generator-log-resizer::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 50%;
   top: 50%;
@@ -434,7 +442,7 @@
 }
 
 .vm-delete-vm-modal-item::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;

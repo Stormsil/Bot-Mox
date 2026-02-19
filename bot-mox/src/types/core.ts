@@ -130,10 +130,10 @@ export interface ScheduleEntry {
 // Schedule Types v2 - Новая система с сессиями
 export interface ScheduleSession {
   id: string;
-  start: string;        // HH:MM format
-  end: string;          // HH:MM format
+  start: string; // HH:MM format
+  end: string; // HH:MM format
   enabled: boolean;
-  profile?: string;     // farming, leveling, etc.
+  profile?: string; // farming, leveling, etc.
   type: 'active' | 'break';
 }
 
@@ -146,13 +146,13 @@ export interface BotScheduleV2 {
   version: number;
   timezone: string;
   days: {
-    "0": ScheduleDay;  // Sunday
-    "1": ScheduleDay;  // Monday
-    "2": ScheduleDay;  // Tuesday
-    "3": ScheduleDay;  // Wednesday
-    "4": ScheduleDay;  // Thursday
-    "5": ScheduleDay;  // Friday
-    "6": ScheduleDay;  // Saturday
+    '0': ScheduleDay; // Sunday
+    '1': ScheduleDay; // Monday
+    '2': ScheduleDay; // Tuesday
+    '3': ScheduleDay; // Wednesday
+    '4': ScheduleDay; // Thursday
+    '5': ScheduleDay; // Friday
+    '6': ScheduleDay; // Saturday
   };
   allowedWindows?: Array<{ start: string; end: string }>;
   updated_at: number;
@@ -208,13 +208,13 @@ export interface ScheduleTemplate {
 // Result of schedule generation
 export interface GeneratedSchedule {
   days: {
-    "0": ScheduleDay;
-    "1": ScheduleDay;
-    "2": ScheduleDay;
-    "3": ScheduleDay;
-    "4": ScheduleDay;
-    "5": ScheduleDay;
-    "6": ScheduleDay;
+    '0': ScheduleDay;
+    '1': ScheduleDay;
+    '2': ScheduleDay;
+    '3': ScheduleDay;
+    '4': ScheduleDay;
+    '5': ScheduleDay;
+    '6': ScheduleDay;
   };
 }
 
@@ -261,4 +261,3 @@ export interface User {
   email: string;
   role: 'admin' | 'operator';
 }
-

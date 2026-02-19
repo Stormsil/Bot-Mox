@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   CheckCircleOutlined,
   CopyOutlined,
@@ -8,13 +7,25 @@ import {
   PlusOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { Alert, Button, Card, Dropdown, Empty, Popconfirm, Space, Spin, Tag, Typography } from 'antd';
-import dayjs from 'dayjs';
 import type { MenuProps } from 'antd';
+import {
+  Alert,
+  Button,
+  Card,
+  Dropdown,
+  Empty,
+  Popconfirm,
+  Space,
+  Spin,
+  Tag,
+  Typography,
+} from 'antd';
+import dayjs from 'dayjs';
+import type React from 'react';
 import { TableActionButton } from '../../ui/TableActionButton';
 import { getDaysLeftColor, getLicenseStatusColor, getLicenseStatusText } from './helpers';
-import type { BotLicenseProps, LicenseInfo } from './types';
 import styles from './license.module.css';
+import type { BotLicenseProps, LicenseInfo } from './types';
 
 const { Text } = Typography;
 const cardStyles = {
@@ -40,7 +51,10 @@ interface LicenseEmptyCardProps {
   onAddMenuClick: MenuProps['onClick'];
 }
 
-export const LicenseEmptyCard: React.FC<LicenseEmptyCardProps> = ({ addMenuItems, onAddMenuClick }) => (
+export const LicenseEmptyCard: React.FC<LicenseEmptyCardProps> = ({
+  addMenuItems,
+  onAddMenuClick,
+}) => (
   <Card
     className={styles['license-card']}
     styles={cardStyles}
@@ -135,7 +149,10 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
             License Key
           </Text>
           <div className={styles['license-key-container']}>
-            <Text className={styles['license-key']} copyable={{ text: license.key, icon: <CopyOutlined /> }}>
+            <Text
+              className={styles['license-key']}
+              copyable={{ text: license.key, icon: <CopyOutlined /> }}
+            >
               {license.key.substring(0, 40)}...
             </Text>
             <TableActionButton icon={<CopyOutlined />} onClick={onCopyKey} tooltip="Copy">

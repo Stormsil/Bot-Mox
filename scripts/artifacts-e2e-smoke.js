@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-const crypto = require('crypto');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 if (typeof fetch !== 'function') {
   console.error('[artifacts-e2e] This script requires Node.js 18+ (global fetch).');
@@ -26,7 +26,9 @@ function readRequiredEnv(name) {
 }
 
 function normalizeBaseUrl(value) {
-  const normalized = String(value || '').trim().replace(/\/+$/, '');
+  const normalized = String(value || '')
+    .trim()
+    .replace(/\/+$/, '');
   if (!normalized) {
     throw new Error('API_BASE_URL is required');
   }
@@ -85,7 +87,9 @@ function toErrorSnippet(result) {
 
 function expectSuccess(result, expectedStatus, label) {
   if (result.status !== expectedStatus) {
-    throw new Error(`${label} failed (${result.status}), expected ${expectedStatus}. ${toErrorSnippet(result)}`);
+    throw new Error(
+      `${label} failed (${result.status}), expected ${expectedStatus}. ${toErrorSnippet(result)}`,
+    );
   }
   if (!result.payload || result.payload.success !== true) {
     throw new Error(`${label} failed: response envelope is not success=true`);
@@ -95,7 +99,9 @@ function expectSuccess(result, expectedStatus, label) {
 
 function expectFailure(result, expectedStatus, expectedCode, label) {
   if (result.status !== expectedStatus) {
-    throw new Error(`${label} failed (${result.status}), expected ${expectedStatus}. ${toErrorSnippet(result)}`);
+    throw new Error(
+      `${label} failed (${result.status}), expected ${expectedStatus}. ${toErrorSnippet(result)}`,
+    );
   }
   if (!result.payload || result.payload.success !== false) {
     throw new Error(`${label} failed: expected error envelope`);
@@ -145,7 +151,9 @@ async function run() {
   }
   const adminToken = readEnv('ADMIN_BEARER_TOKEN', '');
   const userId = readRequiredEnv('E2E_USER_ID');
-  const vmUuid = (readEnv('E2E_VM_UUID', createRandomVmUuid()) || createRandomVmUuid()).toLowerCase();
+  const vmUuid = (
+    readEnv('E2E_VM_UUID', createRandomVmUuid()) || createRandomVmUuid()
+  ).toLowerCase();
   const moduleName = readEnv('E2E_MODULE', 'runner-installer');
   const platform = readEnv('E2E_PLATFORM', 'windows');
   const channel = readEnv('E2E_CHANNEL', 'stable');
@@ -155,8 +163,12 @@ async function run() {
   const revokeReason = readEnv('E2E_REVOKE_REASON', 'artifacts-e2e-smoke');
 
   console.log(`[artifacts-e2e] API=${baseUrl}`);
-  console.log(`[artifacts-e2e] user=${userId}, vm=${vmUuid}, module=${moduleName}, platform=${platform}, channel=${channel}`);
-  console.log(`[artifacts-e2e] admin_token=${adminToken ? 'set' : 'not-set'} (controls assign/revoke steps)`);
+  console.log(
+    `[artifacts-e2e] user=${userId}, vm=${vmUuid}, module=${moduleName}, platform=${platform}, channel=${channel}`,
+  );
+  console.log(
+    `[artifacts-e2e] admin_token=${adminToken ? 'set' : 'not-set'} (controls assign/revoke steps)`,
+  );
 
   const registerResult = await requestJson({
     baseUrl,
@@ -194,21 +206,21 @@ async function run() {
     if (!adminToken) {
       console.log('[artifacts-e2e] ADMIN_BEARER_TOKEN is not set, skipping artifacts/assign');
     } else {
-    const assignResult = await requestJson({
-      baseUrl,
-      token: adminToken,
-      method: 'POST',
-      endpoint: '/api/v1/artifacts/assign',
-      body: {
-        user_id: userId,
-        module: moduleName,
-        platform,
-        channel,
-        release_id: releaseId,
-      },
-    });
-    expectSuccess(assignResult, 201, 'artifacts/assign');
-    console.log(`[artifacts-e2e] artifacts/assign OK (release_id=${releaseId})`);
+      const assignResult = await requestJson({
+        baseUrl,
+        token: adminToken,
+        method: 'POST',
+        endpoint: '/api/v1/artifacts/assign',
+        body: {
+          user_id: userId,
+          module: moduleName,
+          platform,
+          channel,
+          release_id: releaseId,
+        },
+      });
+      expectSuccess(assignResult, 201, 'artifacts/assign');
+      console.log(`[artifacts-e2e] artifacts/assign OK (release_id=${releaseId})`);
     }
   } else {
     console.log('[artifacts-e2e] E2E_RELEASE_ID is not set, using existing assignment');
@@ -231,13 +243,17 @@ async function run() {
   if (!resolved || !resolved.download_url || !resolved.sha256) {
     throw new Error('artifacts/resolve-download returned incomplete payload');
   }
-  console.log(`[artifacts-e2e] artifacts/resolve-download OK (release_id=${resolved.release_id}, version=${resolved.version})`);
+  console.log(
+    `[artifacts-e2e] artifacts/resolve-download OK (release_id=${resolved.release_id}, version=${resolved.version})`,
+  );
 
   const tempFile = path.join(os.tmpdir(), `bot-mox-artifact-${Date.now()}.bin`);
   try {
     const bytes = await downloadToFile(resolved.download_url, tempFile);
     const actualSha = computeSha256(tempFile);
-    const expectedSha = String(resolved.sha256 || '').trim().toLowerCase();
+    const expectedSha = String(resolved.sha256 || '')
+      .trim()
+      .toLowerCase();
     if (actualSha !== expectedSha) {
       throw new Error(`sha256 mismatch, expected=${expectedSha}, actual=${actualSha}`);
     }
@@ -278,11 +294,18 @@ async function run() {
       channel,
     },
   });
-  expectFailure(wrongModuleResult, 403, 'MODULE_MISMATCH', 'artifacts/resolve-download wrong module');
+  expectFailure(
+    wrongModuleResult,
+    403,
+    'MODULE_MISMATCH',
+    'artifacts/resolve-download wrong module',
+  );
   console.log('[artifacts-e2e] negative MODULE_MISMATCH OK');
 
   if (!adminToken) {
-    console.log('[artifacts-e2e] ADMIN_BEARER_TOKEN is not set, skipping license/revoke + LEASE_INACTIVE negative case');
+    console.log(
+      '[artifacts-e2e] ADMIN_BEARER_TOKEN is not set, skipping license/revoke + LEASE_INACTIVE negative case',
+    );
   } else {
     const revokeResult = await requestJson({
       baseUrl,
@@ -310,7 +333,12 @@ async function run() {
         channel,
       },
     });
-    expectFailure(revokedLeaseResult, 409, 'LEASE_INACTIVE', 'artifacts/resolve-download revoked lease');
+    expectFailure(
+      revokedLeaseResult,
+      409,
+      'LEASE_INACTIVE',
+      'artifacts/resolve-download revoked lease',
+    );
     console.log('[artifacts-e2e] negative LEASE_INACTIVE OK');
   }
 
@@ -333,13 +361,23 @@ async function run() {
   // Either way, expired token is a denied resolve — we accept both 401 and 409.
   const dummySecret = 'e2e-test-secret-not-real';
   const expiredHeader = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
-    .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
   const expiredBody = Buffer.from(JSON.stringify(expiredPayload))
-    .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
   const expiredSigInput = `${expiredHeader}.${expiredBody}`;
-  const expiredSig = crypto.createHmac('sha256', dummySecret)
-    .update(expiredSigInput).digest('base64')
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  const expiredSig = crypto
+    .createHmac('sha256', dummySecret)
+    .update(expiredSigInput)
+    .digest('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
   const expiredToken = `${expiredSigInput}.${expiredSig}`;
 
   const expiredResult = await requestJson({
@@ -365,6 +403,8 @@ async function run() {
 }
 
 run().catch((error) => {
-  console.error(`[artifacts-e2e] FAILED: ${error instanceof Error ? error.message : String(error)}`);
+  console.error(
+    `[artifacts-e2e] FAILED: ${error instanceof Error ? error.message : String(error)}`,
+  );
   process.exit(1);
 });

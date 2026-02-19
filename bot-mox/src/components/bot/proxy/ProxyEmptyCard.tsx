@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button, Card, Empty, Space, Typography } from 'antd';
 import { GlobalOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Card, Empty, Space, Typography } from 'antd';
+import type React from 'react';
 import styles from './proxy.module.css';
 
 const { Text } = Typography;

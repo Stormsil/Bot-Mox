@@ -1,11 +1,11 @@
-import dayjs from 'dayjs';
 import type { FormInstance } from 'antd';
+import dayjs from 'dayjs';
 import type { LicenseWithBots } from '../../../types';
 import type { LicenseFormValues } from './types';
 
 export const setLicenseEditorDefaults = (
   form: FormInstance<LicenseFormValues>,
-  license?: LicenseWithBots
+  license?: LicenseWithBots,
 ) => {
   if (license) {
     form.setFieldsValue({

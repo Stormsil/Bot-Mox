@@ -3,8 +3,15 @@
  * Версия 2: markdown content + backward compatibility для legacy blocks.
  */
 
-import { apiDelete, apiGet, apiPatch, apiPost, ApiClientError, createPollingSubscription } from './apiClient';
-import { uiLogger } from '../observability/uiLogger'
+import { uiLogger } from '../observability/uiLogger';
+import {
+  createWorkspaceNoteViaContract,
+  deleteWorkspaceNoteViaContract,
+  getWorkspaceNoteViaContract,
+  listWorkspaceNotesViaContract,
+  patchWorkspaceNoteViaContract,
+} from '../providers/workspace-contract-client';
+import { ApiClientError, createPollingSubscription } from './apiClient';
 
 // ============================================
 // Type Definitions
@@ -125,30 +132,12 @@ export type Unsubscribe = () => void;
 // Constants
 // ============================================
 
-const NOTES_API_PATH = '/api/v1/workspace/notes';
 const DEFAULT_POLL_INTERVAL_MS = 3000;
 const FETCH_LIMIT = 200;
 
 // ============================================
 // API Helpers
 // ============================================
-
-function buildNotesListPath(params?: {
-  page?: number;
-  limit?: number;
-  sort?: string;
-  order?: 'asc' | 'desc';
-  q?: string;
-}): string {
-  const search = new URLSearchParams();
-  if (params?.page) search.set('page', String(params.page));
-  if (params?.limit) search.set('limit', String(params.limit));
-  if (params?.sort) search.set('sort', params.sort);
-  if (params?.order) search.set('order', params.order);
-  if (params?.q) search.set('q', params.q);
-  const query = search.toString();
-  return query ? `${NOTES_API_PATH}?${query}` : NOTES_API_PATH;
-}
 
 async function fetchAllNotesRaw(options?: {
   q?: string;
@@ -162,18 +151,16 @@ async function fetchAllNotesRaw(options?: {
   while (guard < 1000) {
     guard += 1;
 
-    const response = await apiGet<unknown[]>(
-      buildNotesListPath({
-        page,
-        limit: FETCH_LIMIT,
-        sort: options?.sort,
-        order: options?.order,
-        q: options?.q,
-      })
-    );
+    const response = await listWorkspaceNotesViaContract({
+      page,
+      limit: FETCH_LIMIT,
+      sort: options?.sort,
+      order: options?.order,
+      q: options?.q,
+    });
 
     const pageItems = Array.isArray(response.data) ? response.data : [];
-    items.push(...(pageItems as NoteDb[]));
+    items.push(...(pageItems as unknown as NoteDb[]));
 
     const totalRaw = Number(response.meta?.total ?? NaN);
     const total = Number.isFinite(totalRaw) ? totalRaw : undefined;
@@ -210,8 +197,8 @@ export async function createNote(data: CreateNoteData, userId?: string): Promise
       ...(userId ? { created_by: userId } : {}),
     };
 
-    const response = await apiPost<NoteDb>(NOTES_API_PATH, payload);
-    return convertDbToNote(response.data);
+    const response = await createWorkspaceNoteViaContract(payload as Record<string, unknown>);
+    return convertDbToNote(response.data as unknown as NoteDb);
   } catch (error) {
     uiLogger.error('Error creating note:', error);
     throw normalizeApiErrorMessage(error, 'Failed to create note');
@@ -220,8 +207,8 @@ export async function createNote(data: CreateNoteData, userId?: string): Promise
 
 export async function getNote(id: string): Promise<Note | null> {
   try {
-    const response = await apiGet<NoteDb>(`${NOTES_API_PATH}/${encodeURIComponent(id)}`);
-    return convertDbToNote(response.data);
+    const response = await getWorkspaceNoteViaContract(String(id));
+    return convertDbToNote(response.data as unknown as NoteDb);
   } catch (error) {
     if (error instanceof ApiClientError && error.status === 404) {
       return null;
@@ -252,7 +239,7 @@ export async function updateNote(id: string, data: UpdateNoteData): Promise<void
     }
 
     if (Object.keys(payload).length === 0) return;
-    await apiPatch(`${NOTES_API_PATH}/${encodeURIComponent(id)}`, payload);
+    await patchWorkspaceNoteViaContract(String(id), payload);
   } catch (error) {
     uiLogger.error(`Error updating note ${id}:`, error);
     throw normalizeApiErrorMessage(error, 'Failed to update note');
@@ -261,7 +248,7 @@ export async function updateNote(id: string, data: UpdateNoteData): Promise<void
 
 export async function deleteNote(id: string): Promise<void> {
   try {
-    await apiDelete(`${NOTES_API_PATH}/${encodeURIComponent(id)}`);
+    await deleteWorkspaceNoteViaContract(String(id));
   } catch (error) {
     uiLogger.error(`Error deleting note ${id}:`, error);
     throw normalizeApiErrorMessage(error, 'Failed to delete note');
@@ -271,9 +258,7 @@ export async function deleteNote(id: string): Promise<void> {
 export async function getAllNotes(): Promise<Note[]> {
   try {
     const raw = await fetchAllNotesRaw({ sort: 'updated_at', order: 'desc' });
-    return raw
-      .map(convertDbToNote)
-      .sort((a, b) => b.updated_at - a.updated_at);
+    return raw.map(convertDbToNote).sort((a, b) => b.updated_at - a.updated_at);
   } catch (error) {
     uiLogger.error('Error getting all notes:', error);
     throw normalizeApiErrorMessage(error, 'Failed to get notes');
@@ -359,25 +344,23 @@ function toNoteIndex(note: Note): NoteIndex {
   };
 }
 
-export async function listNotes(
-  filter?: NotesFilter,
-  sort?: NotesSort
-): Promise<NoteIndex[]> {
+export async function listNotes(filter?: NotesFilter, sort?: NotesSort): Promise<NoteIndex[]> {
   try {
     let notes = (await getAllNotes()).map(toNoteIndex);
 
     if (filter) {
       if (filter.search) {
         const searchLower = filter.search.toLowerCase();
-        notes = notes.filter((n) =>
-          n.title.toLowerCase().includes(searchLower)
-          || n.preview.toLowerCase().includes(searchLower)
-          || n.tags.some((t) => t.toLowerCase().includes(searchLower))
+        notes = notes.filter(
+          (n) =>
+            n.title.toLowerCase().includes(searchLower) ||
+            n.preview.toLowerCase().includes(searchLower) ||
+            n.tags.some((t) => t.toLowerCase().includes(searchLower)),
         );
       }
 
       if (filter.tags?.length) {
-        notes = notes.filter((n) => filter.tags!.some((t) => n.tags.includes(t)));
+        notes = notes.filter((n) => filter.tags?.some((t) => n.tags.includes(t)));
       }
 
       if (filter.bot_id !== undefined) {
@@ -417,10 +400,7 @@ export async function listNotes(
 // Realtime Subscriptions (polling)
 // ============================================
 
-export function subscribeToNote(
-  id: string,
-  callback: (note: Note | null) => void
-): Unsubscribe {
+export function subscribeToNote(id: string, callback: (note: Note | null) => void): Unsubscribe {
   return createPollingSubscription(
     async () => getNote(id),
     callback,
@@ -428,13 +408,11 @@ export function subscribeToNote(
       uiLogger.error(`Error subscribing to note ${id}:`, error);
       callback(null);
     },
-    { key: `notes:${id}`, intervalMs: 2000, immediate: true }
+    { key: `notes:${id}`, intervalMs: 2000, immediate: true },
   );
 }
 
-export function subscribeToAllNotes(
-  callback: (notes: Note[]) => void
-): Unsubscribe {
+export function subscribeToAllNotes(callback: (notes: Note[]) => void): Unsubscribe {
   return createPollingSubscription(
     async () => getAllNotes(),
     callback,
@@ -442,13 +420,13 @@ export function subscribeToAllNotes(
       uiLogger.error('Error subscribing to all notes:', error);
       callback([]);
     },
-    { key: 'notes:all', intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
+    { key: 'notes:all', intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true },
   );
 }
 
 export function subscribeToNotesByBot(
   botId: string,
-  callback: (notes: Note[]) => void
+  callback: (notes: Note[]) => void,
 ): Unsubscribe {
   return createPollingSubscription(
     async () => getNotesByBot(botId),
@@ -457,13 +435,11 @@ export function subscribeToNotesByBot(
       uiLogger.error(`Error subscribing to notes by bot ${botId}:`, error);
       callback([]);
     },
-    { key: `notes:bot:${botId}`, intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
+    { key: `notes:bot:${botId}`, intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true },
   );
 }
 
-export function subscribeToNotesIndex(
-  callback: (notes: NoteIndex[]) => void
-): Unsubscribe {
+export function subscribeToNotesIndex(callback: (notes: NoteIndex[]) => void): Unsubscribe {
   return createPollingSubscription(
     async () => listNotes(),
     callback,
@@ -471,7 +447,7 @@ export function subscribeToNotesIndex(
       uiLogger.error('Error subscribing to notes index:', error);
       callback([]);
     },
-    { key: 'notes:index', intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true }
+    { key: 'notes:index', intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true },
   );
 }
 
@@ -506,10 +482,7 @@ export function generateListItemId(): string {
   return `item_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
-export function createTextBlock(
-  content: string,
-  type: TextBlock['type'] = 'paragraph'
-): TextBlock {
+export function createTextBlock(content: string, type: TextBlock['type'] = 'paragraph'): TextBlock {
   const now = Date.now();
   return {
     id: generateBlockId(),
@@ -520,10 +493,7 @@ export function createTextBlock(
   };
 }
 
-export function createCheckboxBlock(
-  content: string,
-  checked = false
-): CheckboxBlock {
+export function createCheckboxBlock(content: string, checked = false): CheckboxBlock {
   const now = Date.now();
   return {
     id: generateBlockId(),
@@ -535,10 +505,7 @@ export function createCheckboxBlock(
   };
 }
 
-export function createListBlock(
-  type: ListBlock['type'],
-  items: string[] = []
-): ListBlock {
+export function createListBlock(type: ListBlock['type'], items: string[] = []): ListBlock {
   const now = Date.now();
   return {
     id: generateBlockId(),
@@ -584,25 +551,26 @@ function convertBlocksToMarkdown(blocks: Record<string, NoteBlock>): string {
   }
 
   const blockList = Object.values(blocks).sort((a, b) => a.created_at - b.created_at);
-  return blockList.map((block) => {
-    switch (block.type) {
-      case 'heading_1':
-        return `# ${block.content}`;
-      case 'heading_2':
-        return `## ${block.content}`;
-      case 'heading_3':
-        return `### ${block.content}`;
-      case 'checkbox':
-        return `- [${block.checked ? 'x' : ' '}] ${block.content}`;
-      case 'bullet_list':
-        return block.items.map((item) => `- ${item.content}`).join('\n');
-      case 'numbered_list':
-        return block.items.map((item, index) => `${index + 1}. ${item.content}`).join('\n');
-      case 'paragraph':
-      default:
-        return block.content;
-    }
-  }).join('\n\n');
+  return blockList
+    .map((block) => {
+      switch (block.type) {
+        case 'heading_1':
+          return `# ${block.content}`;
+        case 'heading_2':
+          return `## ${block.content}`;
+        case 'heading_3':
+          return `### ${block.content}`;
+        case 'checkbox':
+          return `- [${block.checked ? 'x' : ' '}] ${block.content}`;
+        case 'bullet_list':
+          return block.items.map((item) => `- ${item.content}`).join('\n');
+        case 'numbered_list':
+          return block.items.map((item, index) => `${index + 1}. ${item.content}`).join('\n');
+        default:
+          return block.content;
+      }
+    })
+    .join('\n\n');
 }
 
 function generatePreview(note: Pick<Note, 'content' | 'blocks'>): string {

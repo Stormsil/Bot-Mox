@@ -1,30 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Tree } from 'antd';
 import type { TreeDataNode } from 'antd';
+import { Tree } from 'antd';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { subscribeBotsMap } from '../../services/botsApiService';
-import type { BotRecord } from '../../services/botsApiService';
-import { subscribeToProjectSettings } from '../../services/projectSettingsService';
-import { fetchResourceTreeSettings, saveResourceTreeSettings } from '../../services/resourceTreeSettingsService';
+import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
+import type { BotRecord } from '../../entities/bot/model/types';
+import { useProjectSettingsQuery } from '../../entities/settings/api/useProjectSettingsQuery';
+import {
+  useResourceTreeSettingsQuery,
+  useSaveResourceTreeSettingsMutation,
+} from '../../entities/settings/api/useResourceTreeSettings';
+import styles from './ResourceTree.module.css';
 import { buildUnifiedTreeData } from './resourceTree/builders';
+import { resolveStaticPathForTreeKey } from './resourceTree/navigation';
 import {
   ResourceTreeCollapsedNav,
   ResourceTreeFilters,
   ResourceTreeToolbar,
 } from './resourceTree/parts';
-import {
-  COLLAPSED_TREE_WIDTH,
-  DEFAULT_TREE_WIDTH,
-  MAX_TREE_WIDTH,
-  MIN_TREE_WIDTH,
-  RESOURCE_TREE_COLLAPSED_KEY,
-  RESOURCE_TREE_WIDTH_KEY,
-  ROOT_SECTION_KEYS,
-  SHOW_FILTERS_KEY,
-  DEFAULT_VISIBLE_STATUSES,
-  sanitizeBotStatuses,
-} from './resourceTree/types';
-import type { BotStatus, TreeItem } from './resourceTree/types';
 import {
   collectExpandableKeys,
   convertToTreeData,
@@ -33,8 +25,19 @@ import {
   isProjectsBranchKey,
   parseStatusGroupKey,
 } from './resourceTree/tree-utils';
-import { resolveStaticPathForTreeKey } from './resourceTree/navigation';
-import styles from './ResourceTree.module.css';
+import type { BotStatus, TreeItem } from './resourceTree/types';
+import {
+  COLLAPSED_TREE_WIDTH,
+  DEFAULT_TREE_WIDTH,
+  DEFAULT_VISIBLE_STATUSES,
+  MAX_TREE_WIDTH,
+  MIN_TREE_WIDTH,
+  RESOURCE_TREE_COLLAPSED_KEY,
+  RESOURCE_TREE_WIDTH_KEY,
+  ROOT_SECTION_KEYS,
+  SHOW_FILTERS_KEY,
+  sanitizeBotStatuses,
+} from './resourceTree/types';
 
 function cx(classNames: string): string {
   return classNames
@@ -55,9 +58,28 @@ export const ResourceTree: React.FC = () => {
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
   const [showFilters, setShowFilters] = useState(true);
-  const [bots, setBots] = useState<Record<string, BotRecord>>({});
-  const [projectsMeta, setProjectsMeta] = useState<Record<string, { id: string; name: string }>>({});
-  const [loading, setLoading] = useState(true);
+  const botsMapQuery = useBotsMapQuery();
+  const projectSettingsQuery = useProjectSettingsQuery();
+  const resourceTreeSettingsQuery = useResourceTreeSettingsQuery();
+  const saveResourceTreeSettingsMutation = useSaveResourceTreeSettingsMutation();
+  const bots = useMemo<Record<string, BotRecord>>(
+    () => (botsMapQuery.data || {}) as Record<string, BotRecord>,
+    [botsMapQuery.data],
+  );
+  const projectsMeta = useMemo<Record<string, { id: string; name: string }>>(
+    () =>
+      Object.fromEntries(
+        Object.entries(projectSettingsQuery.data || {}).map(([projectId, project]) => [
+          projectId,
+          {
+            id: projectId,
+            name: (project.name || projectId).trim(),
+          },
+        ]),
+      ),
+    [projectSettingsQuery.data],
+  );
+  const loading = botsMapQuery.isLoading;
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [hasRemoteSettings, setHasRemoteSettings] = useState(false);
   const [treeWidth, setTreeWidth] = useState<number>(() => {
@@ -74,92 +96,90 @@ export const ResourceTree: React.FC = () => {
   const [visibleStatuses, setVisibleStatuses] = useState<BotStatus[]>(DEFAULT_VISIBLE_STATUSES);
 
   useEffect(() => {
-    let isMounted = true;
+    if (settingsLoaded || !resourceTreeSettingsQuery.isFetched) {
+      return;
+    }
 
-    fetchResourceTreeSettings()
-      .then((data) => {
-        if (!isMounted) return;
-
-        if (data) {
-          setHasRemoteSettings(true);
-          if (data.visibleStatuses?.length) {
-            setVisibleStatuses(sanitizeBotStatuses(data.visibleStatuses));
-          }
-          if (Array.isArray(data.expandedKeys)) {
-            setExpandedKeys(data.expandedKeys);
-          }
-          if (typeof data.showFilters === 'boolean') {
-            setShowFilters(data.showFilters);
-          }
-        } else {
-          try {
-            const savedFilters = localStorage.getItem('resourceTreeFilters');
-            if (savedFilters) {
-              setVisibleStatuses(sanitizeBotStatuses(JSON.parse(savedFilters)));
-            }
-            const savedExpanded = localStorage.getItem('resourceTreeExpanded');
-            if (savedExpanded) {
-              setExpandedKeys(JSON.parse(savedExpanded));
-            }
-            const savedShowFilters = localStorage.getItem(SHOW_FILTERS_KEY);
-            if (savedShowFilters) {
-              setShowFilters(JSON.parse(savedShowFilters));
-            }
-          } catch (error) {
-            console.warn('Failed to parse local resource tree settings:', error);
-          }
+    const data = resourceTreeSettingsQuery.data;
+    if (data) {
+      const frameId = window.requestAnimationFrame(() => {
+        setHasRemoteSettings(true);
+        if (data.visibleStatuses?.length) {
+          setVisibleStatuses(sanitizeBotStatuses(data.visibleStatuses));
         }
-
-        setSettingsLoaded(true);
-      })
-      .catch((error) => {
-        if (!isMounted) return;
-        console.error('Error loading resource tree settings:', error);
+        if (Array.isArray(data.expandedKeys)) {
+          setExpandedKeys(data.expandedKeys);
+        }
+        if (typeof data.showFilters === 'boolean') {
+          setShowFilters(data.showFilters);
+        }
         setSettingsLoaded(true);
       });
+      return () => {
+        window.cancelAnimationFrame(frameId);
+      };
+    }
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    let nextVisibleStatuses: BotStatus[] | null = null;
+    let nextExpandedKeys: React.Key[] | null = null;
+    let nextShowFilters: boolean | null = null;
 
-  useEffect(() => {
-    return subscribeBotsMap(
-      (data) => {
-        setBots(data || {});
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Error loading bots:', error);
-        setLoading(false);
-      },
-      { intervalMs: 5000 }
-    );
-  }, []);
-
-  useEffect(() => {
-    return subscribeToProjectSettings(
-      (projects) => {
-        const mapped = Object.fromEntries(
-          Object.entries(projects).map(([projectId, project]) => [
-            projectId,
-            {
-              id: projectId,
-              name: (project.name || projectId).trim(),
-            },
-          ])
-        );
-        setProjectsMeta(mapped);
-      },
-      (error) => {
-        console.error('Error loading projects for resource tree:', error);
+    try {
+      const savedFilters = localStorage.getItem('resourceTreeFilters');
+      if (savedFilters) {
+        nextVisibleStatuses = sanitizeBotStatuses(JSON.parse(savedFilters));
       }
-    );
-  }, []);
+      const savedExpanded = localStorage.getItem('resourceTreeExpanded');
+      if (savedExpanded) {
+        nextExpandedKeys = JSON.parse(savedExpanded);
+      }
+      const savedShowFilters = localStorage.getItem(SHOW_FILTERS_KEY);
+      if (savedShowFilters) {
+        nextShowFilters = JSON.parse(savedShowFilters);
+      }
+    } catch (error) {
+      console.warn('Failed to parse local resource tree settings:', error);
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      if (nextVisibleStatuses) {
+        setVisibleStatuses(nextVisibleStatuses);
+      }
+      if (nextExpandedKeys) {
+        setExpandedKeys(nextExpandedKeys);
+      }
+      if (typeof nextShowFilters === 'boolean') {
+        setShowFilters(nextShowFilters);
+      }
+      setSettingsLoaded(true);
+    });
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [settingsLoaded, resourceTreeSettingsQuery.isFetched, resourceTreeSettingsQuery.data]);
+
+  useEffect(() => {
+    if (!botsMapQuery.error) {
+      return;
+    }
+    console.error('Error loading bots:', botsMapQuery.error);
+  }, [botsMapQuery.error]);
+  useEffect(() => {
+    if (!projectSettingsQuery.error) {
+      return;
+    }
+    console.error('Error loading projects for resource tree:', projectSettingsQuery.error);
+  }, [projectSettingsQuery.error]);
+  useEffect(() => {
+    if (!resourceTreeSettingsQuery.error) {
+      return;
+    }
+    console.error('Error loading resource tree settings:', resourceTreeSettingsQuery.error);
+  }, [resourceTreeSettingsQuery.error]);
 
   const treeData = useMemo(
     () => buildUnifiedTreeData({ bots, projectsMeta, visibleStatuses }),
-    [bots, projectsMeta, visibleStatuses]
+    [bots, projectsMeta, visibleStatuses],
   );
 
   useEffect(() => {
@@ -185,13 +205,21 @@ export const ResourceTree: React.FC = () => {
     };
 
     const timeout = setTimeout(() => {
-      saveResourceTreeSettings(payload).catch((error) => {
-        console.error('Error saving resource tree settings:', error);
+      saveResourceTreeSettingsMutation.mutate(payload, {
+        onError: (error) => {
+          console.error('Error saving resource tree settings:', error);
+        },
       });
     }, 400);
 
     return () => clearTimeout(timeout);
-  }, [settingsLoaded, expandedKeys, visibleStatuses, showFilters]);
+  }, [
+    settingsLoaded,
+    expandedKeys,
+    visibleStatuses,
+    showFilters,
+    saveResourceTreeSettingsMutation,
+  ]);
 
   useEffect(() => {
     try {
@@ -237,7 +265,7 @@ export const ResourceTree: React.FC = () => {
         navigate(targetPath);
       }
     },
-    [bots, navigate]
+    [bots, navigate],
   );
 
   const setCollapsedState = useCallback((next: boolean) => {
@@ -249,29 +277,29 @@ export const ResourceTree: React.FC = () => {
     }
   }, []);
 
-  const handleCollapsedRootClick = useCallback((item: TreeItem) => {
-    if (item.type === 'section') {
-      setCollapsedState(false);
-      setExpandedKeys((prev) => {
-        const set = new Set(prev.map(String));
-        set.add(item.key);
-        return Array.from(set);
-      });
-      return;
-    }
+  const handleCollapsedRootClick = useCallback(
+    (item: TreeItem) => {
+      if (item.type === 'section') {
+        setCollapsedState(false);
+        setExpandedKeys((prev) => {
+          const set = new Set(prev.map(String));
+          set.add(item.key);
+          return Array.from(set);
+        });
+        return;
+      }
 
-    setSelectedKeys([item.key]);
-    navigateByTreeKey(item.key);
-  }, [navigateByTreeKey, setCollapsedState]);
-
-  const toggleStatus = useCallback(
-    (status: BotStatus) => {
-      setVisibleStatuses((prev) => (
-        prev.includes(status) ? prev.filter((value) => value !== status) : [...prev, status]
-      ));
+      setSelectedKeys([item.key]);
+      navigateByTreeKey(item.key);
     },
-    []
+    [navigateByTreeKey, setCollapsedState],
   );
+
+  const toggleStatus = useCallback((status: BotStatus) => {
+    setVisibleStatuses((prev) =>
+      prev.includes(status) ? prev.filter((value) => value !== status) : [...prev, status],
+    );
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -282,7 +310,10 @@ export const ResourceTree: React.FC = () => {
     const handleMouseMove = (event: MouseEvent) => {
       if (!isResizingRef.current || !containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      const nextWidth = Math.min(MAX_TREE_WIDTH, Math.max(MIN_TREE_WIDTH, event.clientX - rect.left));
+      const nextWidth = Math.min(
+        MAX_TREE_WIDTH,
+        Math.max(MIN_TREE_WIDTH, event.clientX - rect.left),
+      );
       setTreeWidth(nextWidth);
     };
 
@@ -305,17 +336,20 @@ export const ResourceTree: React.FC = () => {
   const treeDataNodes = useMemo(() => convertToTreeData(treeData, cx), [treeData]);
 
   const selectedKeySet = useMemo(() => new Set(selectedKeys.map(String)), [selectedKeys]);
-  const titleRender = useCallback((node: TreeDataNode) => {
-    const key = String(node.key);
-    const isSelected = selectedKeySet.has(key);
-    const rawTitle =
-      typeof node.title === 'function' ? node.title(node) : (node.title as React.ReactNode);
-    return (
-      <span className={cx(`resource-tree-node-content ${isSelected ? 'selected' : ''}`)}>
-        {rawTitle}
-      </span>
-    );
-  }, [selectedKeySet]);
+  const titleRender = useCallback(
+    (node: TreeDataNode) => {
+      const key = String(node.key);
+      const isSelected = selectedKeySet.has(key);
+      const rawTitle =
+        typeof node.title === 'function' ? node.title(node) : (node.title as React.ReactNode);
+      return (
+        <span className={cx(`resource-tree-node-content ${isSelected ? 'selected' : ''}`)}>
+          {rawTitle}
+        </span>
+      );
+    },
+    [selectedKeySet],
+  );
 
   const selectedRootKey = useMemo(() => {
     if (selectedKeys.length === 0) return '';
@@ -338,7 +372,8 @@ export const ResourceTree: React.FC = () => {
     const found = findNodePath(treeData, targetKey);
     if (!found) return;
     if (found.path.some((key) => isProjectsBranchKey(key))) return;
-    const shouldExpand = found.node.children && found.node.children.length > 0 ? found.path : found.path.slice(0, -1);
+    const shouldExpand =
+      found.node.children && found.node.children.length > 0 ? found.path : found.path.slice(0, -1);
     if (shouldExpand.length === 0) return;
 
     const frameId = window.requestAnimationFrame(() => {
@@ -360,7 +395,7 @@ export const ResourceTree: React.FC = () => {
     };
   }, [selectedKeys, treeData]);
 
-  const handleResizeStart = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleResizeStart = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (isCollapsed) return;
     event.preventDefault();
     isResizingRef.current = true;
@@ -372,7 +407,9 @@ export const ResourceTree: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className={cx(`resource-tree-container ${isCollapsed ? 'collapsed' : ''} ${isResizing ? 'resizing' : ''}`)}
+      className={cx(
+        `resource-tree-container ${isCollapsed ? 'collapsed' : ''} ${isResizing ? 'resizing' : ''}`,
+      )}
       style={{ width: isCollapsed ? COLLAPSED_TREE_WIDTH : treeWidth }}
     >
       <ResourceTreeToolbar
@@ -384,7 +421,12 @@ export const ResourceTree: React.FC = () => {
         onToggleExpandAll={() => setExpandedKeys(isAllExpanded ? [] : expandableKeys)}
       />
 
-      <div className={cx('resource-tree-resizer')} onMouseDown={handleResizeStart} />
+      <button
+        type="button"
+        className={cx('resource-tree-resizer')}
+        onMouseDown={handleResizeStart}
+        aria-label="Resize resource tree"
+      />
 
       <ResourceTreeFilters
         showFilters={showFilters}

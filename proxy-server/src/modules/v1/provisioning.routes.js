@@ -1,5 +1,3 @@
-'use strict';
-
 const express = require('express');
 const { success, failure } = require('../../contracts/envelope');
 const {
@@ -7,6 +5,7 @@ const {
   unattendProfileCreateSchema,
   unattendProfileUpdateSchema,
   generateIsoPayloadSchema,
+  provisioningProgressPathSchema,
   provisioningValidateTokenSchema,
   provisioningReportProgressSchema,
 } = require('../../contracts/schemas');
@@ -44,7 +43,7 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
         userId: auth.uid,
       });
       return res.json(success(data));
-    })
+    }),
   );
 
   // POST /api/v1/unattend-profiles
@@ -53,7 +52,9 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
     withProvisioningErrors(async (req, res) => {
       const parsed = unattendProfileCreateSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -66,7 +67,7 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
       });
 
       return res.status(201).json(success(data));
-    })
+    }),
   );
 
   // PUT /api/v1/unattend-profiles/:id
@@ -80,7 +81,9 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
 
       const parsed = unattendProfileUpdateSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -92,7 +95,7 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   // DELETE /api/v1/unattend-profiles/:id
@@ -112,7 +115,7 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
       });
 
       return res.json(success({ deleted: true }));
-    })
+    }),
   );
 
   // =========================================================================
@@ -125,7 +128,9 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
     withProvisioningErrors(async (req, res) => {
       const parsed = generateIsoPayloadSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -142,7 +147,9 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
       }
 
       if (!profileConfig) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Either profile_id or profile_config is required'));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Either profile_id or profile_config is required'));
       }
 
       // Issue provisioning token
@@ -153,8 +160,8 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
       });
 
       // Resolve API endpoint for provision.json
-      const apiEndpoint = String(env.agentPairingPublicUrl || '').trim()
-        || `http://127.0.0.1:${env.port || 3001}`;
+      const apiEndpoint =
+        String(env.agentPairingPublicUrl || '').trim() || `http://127.0.0.1:${env.port || 3001}`;
 
       // Build XML + provision.json
       const { xml, provisionJson, computerName, username } = buildUnattendXml({
@@ -199,7 +206,7 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
             });
           }
 
-          if (playbook && playbook.content) {
+          if (playbook?.content) {
             isoFiles['playbook.yml'] = Buffer.from(playbook.content, 'utf-8').toString('base64');
             playbookId = playbook.id;
           }
@@ -224,17 +231,19 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
         }
       }
 
-      return res.json(success({
-        files: isoFiles,
-        token: tokenResult.token,
-        tokenId: tokenResult.tokenId,
-        expiresAt: tokenResult.expiresAt,
-        computerName,
-        username,
-        vmUuid: parsed.data.vm_uuid,
-        playbookId,
-      }));
-    })
+      return res.json(
+        success({
+          files: isoFiles,
+          token: tokenResult.token,
+          tokenId: tokenResult.tokenId,
+          expiresAt: tokenResult.expiresAt,
+          computerName,
+          username,
+          vmUuid: parsed.data.vm_uuid,
+          playbookId,
+        }),
+      );
+    }),
   );
 
   // =========================================================================
@@ -247,12 +256,14 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
     withProvisioningErrors(async (req, res) => {
       const parsed = provisioningValidateTokenSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const result = await provisioningService.validateToken(
         parsed.data.token,
-        parsed.data.vm_uuid
+        parsed.data.vm_uuid,
       );
 
       if (!result.valid) {
@@ -273,14 +284,16 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
         }
       }
 
-      return res.json(success({
-        valid: true,
-        userId: result.userId,
-        tenantId: result.tenantId,
-        bootstrap_url: bootstrapUrl,
-        app_url: appUrl,
-      }));
-    })
+      return res.json(
+        success({
+          valid: true,
+          userId: result.userId,
+          tenantId: result.tenantId,
+          bootstrap_url: bootstrapUrl,
+          app_url: appUrl,
+        }),
+      );
+    }),
   );
 
   // POST /api/v1/provisioning/report-progress
@@ -289,13 +302,15 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
     withProvisioningErrors(async (req, res) => {
       const parsed = provisioningReportProgressSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       // Validate the token first
       const tokenResult = await provisioningService.validateToken(
         parsed.data.token,
-        parsed.data.vm_uuid
+        parsed.data.vm_uuid,
       );
 
       if (!tokenResult.valid) {
@@ -317,26 +332,28 @@ function createProvisioningRoutes({ provisioningService, playbookService, s3Serv
       }
 
       return res.json(success(data));
-    })
+    }),
   );
 
   // GET /api/v1/provisioning/progress/:vmUuid
   router.get(
     '/provisioning/progress/:vmUuid',
     withProvisioningErrors(async (req, res) => {
-      const auth = req.auth || {};
-      const vmUuid = String(req.params.vmUuid || '').trim();
-      if (!vmUuid) {
-        return res.status(400).json(failure('BAD_REQUEST', 'VM UUID is required'));
+      const parsedPath = provisioningProgressPathSchema.safeParse(req.params || {});
+      if (!parsedPath.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid route parameters', parsedPath.error.flatten()));
       }
 
+      const auth = req.auth || {};
       const data = await provisioningService.getProgress({
         tenantId: auth.tenant_id,
-        vmUuid,
+        vmUuid: parsedPath.data.vmUuid,
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   return router;

@@ -16,7 +16,9 @@ function createResourcesRoutes({ repositories }) {
     asyncHandler(async (req, res) => {
       const parsedKind = resourceKindParamSchema.safeParse(req.params);
       if (!parsedKind.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid resource kind', parsedKind.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid resource kind', parsedKind.error.flatten()));
       }
 
       const { kind } = parsedKind.data;
@@ -27,18 +29,22 @@ function createResourcesRoutes({ repositories }) {
 
       const parsedQuery = parseListQuery(req.query);
       if (!parsedQuery.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid query parameters', parsedQuery.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid query parameters', parsedQuery.error.flatten()));
       }
 
       const items = await repo.list();
       const result = applyListQuery(items, parsedQuery.data);
 
-      return res.json(success(result.items, {
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-      }));
-    })
+      return res.json(
+        success(result.items, {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+        }),
+      );
+    }),
   );
 
   router.get(
@@ -46,7 +52,9 @@ function createResourcesRoutes({ repositories }) {
     asyncHandler(async (req, res) => {
       const parsedKind = resourceKindParamSchema.safeParse(req.params);
       if (!parsedKind.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid resource kind', parsedKind.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid resource kind', parsedKind.error.flatten()));
       }
 
       const { kind } = parsedKind.data;
@@ -57,7 +65,9 @@ function createResourcesRoutes({ repositories }) {
 
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid resource id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid resource id', parsedId.error.flatten()));
       }
 
       const resource = await repo.getById(parsedId.data.id);
@@ -66,7 +76,7 @@ function createResourcesRoutes({ repositories }) {
       }
 
       return res.json(success(resource));
-    })
+    }),
   );
 
   router.post(
@@ -74,7 +84,9 @@ function createResourcesRoutes({ repositories }) {
     asyncHandler(async (req, res) => {
       const parsedKind = resourceKindParamSchema.safeParse(req.params);
       if (!parsedKind.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid resource kind', parsedKind.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid resource kind', parsedKind.error.flatten()));
       }
 
       const { kind } = parsedKind.data;
@@ -85,14 +97,16 @@ function createResourcesRoutes({ repositories }) {
 
       const parsedBody = getResourceCreateSchema(kind).safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
-      const explicitId = typeof req.body?.id === 'string' ? req.body.id.trim() : '';
+      const explicitId = typeof parsedBody.data.id === 'string' ? parsedBody.data.id.trim() : '';
       const created = await repo.create(parsedBody.data, explicitId || undefined);
 
       return res.status(201).json(success(created));
-    })
+    }),
   );
 
   router.patch(
@@ -100,7 +114,9 @@ function createResourcesRoutes({ repositories }) {
     asyncHandler(async (req, res) => {
       const parsedKind = resourceKindParamSchema.safeParse(req.params);
       if (!parsedKind.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid resource kind', parsedKind.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid resource kind', parsedKind.error.flatten()));
       }
 
       const { kind } = parsedKind.data;
@@ -111,12 +127,16 @@ function createResourcesRoutes({ repositories }) {
 
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid resource id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid resource id', parsedId.error.flatten()));
       }
 
       const parsedBody = getResourcePatchSchema(kind).safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const updated = await repo.patch(parsedId.data.id, parsedBody.data);
@@ -125,7 +145,7 @@ function createResourcesRoutes({ repositories }) {
       }
 
       return res.json(success(updated));
-    })
+    }),
   );
 
   router.delete(
@@ -133,7 +153,9 @@ function createResourcesRoutes({ repositories }) {
     asyncHandler(async (req, res) => {
       const parsedKind = resourceKindParamSchema.safeParse(req.params);
       if (!parsedKind.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid resource kind', parsedKind.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid resource kind', parsedKind.error.flatten()));
       }
 
       const { kind } = parsedKind.data;
@@ -144,7 +166,9 @@ function createResourcesRoutes({ repositories }) {
 
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid resource id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid resource id', parsedId.error.flatten()));
       }
 
       const deleted = await repo.remove(parsedId.data.id);
@@ -153,7 +177,7 @@ function createResourcesRoutes({ repositories }) {
       }
 
       return res.json(success({ id: parsedId.data.id, deleted: true }));
-    })
+    }),
   );
 
   return router;

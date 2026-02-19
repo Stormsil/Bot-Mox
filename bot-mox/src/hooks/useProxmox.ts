@@ -1,10 +1,14 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import type { ProxmoxVM } from '../types';
-import { listVMs, getProxmoxConnectionSnapshot, getSshConnectionStatus } from '../services/vmService';
-import { getVMSettings } from '../services/vmSettingsService';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ApiClientError } from '../services/apiClient';
 import { subscribeToVmOpsEvents } from '../services/vmOpsEventsService';
 import { getSelectedProxmoxTargetNode } from '../services/vmOpsService';
-import { ApiClientError } from '../services/apiClient';
+import {
+  getProxmoxConnectionSnapshot,
+  getSshConnectionStatus,
+  listVMs,
+} from '../services/vmService';
+import { getVMSettings } from '../services/vmSettingsService';
+import type { ProxmoxVM } from '../types';
 
 const VM_MUTATION_COMMANDS = new Set([
   'proxmox.clone',
@@ -66,7 +70,10 @@ export function useProxmox() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to refresh VMs';
       setError(msg);
-      if (err instanceof ApiClientError && CONNECTIVITY_ERROR_CODES.has(String(err.code || '').trim())) {
+      if (
+        err instanceof ApiClientError &&
+        CONNECTIVITY_ERROR_CODES.has(String(err.code || '').trim())
+      ) {
         setConnected(false);
       }
     } finally {
@@ -87,8 +94,8 @@ export function useProxmox() {
   }, [refreshVMs]);
 
   // Computed sets for smart VM name generation
-  const usedIds = useMemo(() => new Set(vms.map(vm => vm.vmid)), [vms]);
-  const usedNames = useMemo(() => new Set(vms.map(vm => (vm.name || '').toLowerCase())), [vms]);
+  const usedIds = useMemo(() => new Set(vms.map((vm) => vm.vmid)), [vms]);
+  const usedNames = useMemo(() => new Set(vms.map((vm) => (vm.name || '').toLowerCase())), [vms]);
 
   // Initial load
   useEffect(() => {
@@ -96,8 +103,12 @@ export function useProxmox() {
     void refreshVMs();
 
     const unsubscribe = subscribeToVmOpsEvents((event) => {
-      const commandType = String(event.command?.command_type || '').trim().toLowerCase();
-      const commandStatus = String(event.command?.status || '').trim().toLowerCase();
+      const commandType = String(event.command?.command_type || '')
+        .trim()
+        .toLowerCase();
+      const commandStatus = String(event.command?.status || '')
+        .trim()
+        .toLowerCase();
       if (!VM_MUTATION_COMMANDS.has(commandType)) {
         return;
       }

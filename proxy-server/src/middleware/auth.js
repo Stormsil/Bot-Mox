@@ -56,7 +56,9 @@ function pickTenantIdFromSupabaseUser(user = {}, fallbackTenantId = 'default') {
 }
 
 function isLikelyJwt(token) {
-  const parts = String(token || '').trim().split('.');
+  const parts = String(token || '')
+    .trim()
+    .split('.');
   return parts.length === 3 && parts.every((part) => Boolean(part));
 }
 
@@ -157,7 +159,7 @@ function createAuthMiddleware({ env }) {
           tenant_id: tenantId,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -229,7 +231,10 @@ function createAuthMiddleware({ env }) {
       if (hasRole(req.auth, role)) {
         return next();
       }
-      return writeAuthError(res, makeAuthError(403, `Role '${role}' is required for this endpoint`));
+      return writeAuthError(
+        res,
+        makeAuthError(403, `Role '${role}' is required for this endpoint`),
+      );
     };
   }
 
@@ -240,7 +245,10 @@ function createAuthMiddleware({ env }) {
       if (hasAnyRole) {
         return next();
       }
-      return writeAuthError(res, makeAuthError(403, `One of roles is required: ${list.join(', ')}`));
+      return writeAuthError(
+        res,
+        makeAuthError(403, `One of roles is required: ${list.join(', ')}`),
+      );
     };
   }
 

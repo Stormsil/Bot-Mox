@@ -1,16 +1,17 @@
-import React, { useMemo } from 'react';
+import { Card, Empty, Spin } from 'antd';
+import type React from 'react';
+import { useMemo } from 'react';
 import {
-  LineChart,
+  CartesianGrid,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from 'recharts';
-import { Card, Empty, Spin } from 'antd';
-import type { GoldPriceHistoryEntry } from '../../types';
+import type { GoldPriceHistoryEntry } from '../../entities/finance/model/types';
 import styles from './GoldPriceChart.module.css';
 
 interface GoldPriceChartProps {
@@ -59,12 +60,12 @@ const GoldChartTooltip: React.FC<GoldChartTooltipProps> = ({ active, payload, la
     return (
       <div className={styles.tooltip}>
         <p className={styles.tooltipDate}>{label}</p>
-        {payload.map((entry, index) =>
+        {payload.map((entry) =>
           entry.value !== null ? (
-            <p key={index} className={styles.tooltipPrice} style={{ color: entry.color }}>
+            <p key={entry.name} className={styles.tooltipPrice} style={{ color: entry.color }}>
               {entry.name}: {formatPrice(entry.value)}
             </p>
-          ) : null
+          ) : null,
         )}
       </div>
     );
@@ -72,10 +73,7 @@ const GoldChartTooltip: React.FC<GoldChartTooltipProps> = ({ active, payload, la
   return null;
 };
 
-export const GoldPriceChart: React.FC<GoldPriceChartProps> = ({
-  data,
-  loading = false,
-}) => {
+export const GoldPriceChart: React.FC<GoldPriceChartProps> = ({ data, loading = false }) => {
   // Подготавливаем данные для графика
   const chartData = useMemo<ChartDataPoint[]>(() => {
     if (!data || data.length === 0) return [];
@@ -105,13 +103,10 @@ export const GoldPriceChart: React.FC<GoldPriceChartProps> = ({
   }, [data]);
 
   // Проверяем наличие данных для каждого проекта
-  const hasTBCData = useMemo(
-    () => chartData.some((d) => d.wow_tbc !== null),
-    [chartData]
-  );
+  const hasTBCData = useMemo(() => chartData.some((d) => d.wow_tbc !== null), [chartData]);
   const hasMidnightData = useMemo(
     () => chartData.some((d) => d.wow_midnight !== null),
-    [chartData]
+    [chartData],
   );
 
   if (loading) {
@@ -159,11 +154,7 @@ export const GoldPriceChart: React.FC<GoldPriceChartProps> = ({
               }}
             />
             <Tooltip content={<GoldChartTooltip />} />
-            <Legend
-              verticalAlign="top"
-              height={36}
-              iconType="line"
-            />
+            <Legend verticalAlign="top" height={36} iconType="line" />
             {hasTBCData && (
               <Line
                 type="monotone"

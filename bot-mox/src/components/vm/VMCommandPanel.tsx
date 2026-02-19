@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
 import { message } from 'antd';
-import { startAndSendKeyBatch } from '../../services/vmService';
+import type React from 'react';
+import { useMemo, useState } from 'react';
+import { useStartAndSendKeyBatchMutation } from '../../entities/vm/api/useVmActionMutations';
 import styles from './VMCommandPanel.module.css';
 
 interface VMCommandPanelProps {
@@ -9,20 +10,19 @@ interface VMCommandPanelProps {
   onRunFinished?: () => void | Promise<void>;
 }
 
-export const VMCommandPanel: React.FC<VMCommandPanelProps> = ({
-  vmIds,
-  node,
-  onRunFinished,
-}) => {
+export const VMCommandPanel: React.FC<VMCommandPanelProps> = ({ vmIds, node, onRunFinished }) => {
+  const startAndSendKeyBatchMutation = useStartAndSendKeyBatchMutation();
   const [isRunning, setIsRunning] = useState(false);
 
-  const normalizedVmIds = useMemo(() => (
-    Array.from(new Set(
-      (vmIds || [])
-        .map(id => Number(id))
-        .filter(id => Number.isInteger(id) && id > 0)
-    ))
-  ), [vmIds]);
+  const normalizedVmIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          (vmIds || []).map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0),
+        ),
+      ),
+    [vmIds],
+  );
 
   if (normalizedVmIds.length === 0) return null;
 
@@ -32,25 +32,26 @@ export const VMCommandPanel: React.FC<VMCommandPanelProps> = ({
     if (isRunning) return;
     setIsRunning(true);
     try {
-      const result = await startAndSendKeyBatch(normalizedVmIds, {
-        node,
-        key: 'a',
-        repeatCount: 10,
-        intervalMs: 1000,
-        startupDelayMs: 3000,
+      const result = await startAndSendKeyBatchMutation.mutateAsync({
+        vmIds: normalizedVmIds,
+        options: {
+          node,
+          key: 'a',
+          repeatCount: 10,
+          intervalMs: 1000,
+          startupDelayMs: 3000,
+        },
       });
 
       if (result.failed === 0) {
         message.success(`VM start completed: ${result.ok}/${result.total}`);
       } else {
         const failedPreview = result.results
-          .filter(item => !item.success)
+          .filter((item) => !item.success)
           .slice(0, 2)
-          .map(item => `VM ${item.vmid}: ${item.error || 'Unknown error'}`)
+          .map((item) => `VM ${item.vmid}: ${item.error || 'Unknown error'}`)
           .join(' | ');
-        message.warning(
-          `Completed with errors: ${result.ok}/${result.total}. ${failedPreview}`
-        );
+        message.warning(`Completed with errors: ${result.ok}/${result.total}. ${failedPreview}`);
       }
       await Promise.resolve(onRunFinished?.());
     } catch (err) {
@@ -67,6 +68,7 @@ export const VMCommandPanel: React.FC<VMCommandPanelProps> = ({
         <code className={styles.code}>Ready VM IDs: {vmIdsText}</code>
         <div className={styles.actions}>
           <button
+            type="button"
             onClick={handleRun}
             className={`${styles.actionBtn} ${styles.runBtn}`}
             disabled={isRunning}

@@ -1,7 +1,10 @@
 const express = require('express');
 const { env } = require('../../config/env');
 const { success, failure } = require('../../contracts/envelope');
-const { resolveSettingsMutationSchema } = require('../../contracts/schemas');
+const {
+  resolveSettingsMutationSchema,
+  settingsPathInputSchema,
+} = require('../../contracts/schemas');
 const { buildTenantPath } = require('../../utils/tenant-paths');
 const {
   createSupabaseStoragePolicyRepository,
@@ -10,7 +13,7 @@ const {
 const { asyncHandler } = require('./helpers');
 
 const SETTINGS_ROOT = 'settings';
-const INVALID_PATH_SEGMENT_PATTERN = /[.#$\[\]]/;
+const INVALID_PATH_SEGMENT_PATTERN = /[.#$[\]]/;
 
 function parseSettingsPath(pathValue) {
   const rawPath = String(pathValue || '').trim();
@@ -75,20 +78,24 @@ function resolveTenantId(auth) {
 }
 
 function writeSupabaseConfigError(res, reason) {
-  return res.status(503).json(
-    failure(
-      'SUPABASE_CONFIG_ERROR',
-      'Supabase storage policy backend is not configured',
-      reason || null
-    )
-  );
+  return res
+    .status(503)
+    .json(
+      failure(
+        'SUPABASE_CONFIG_ERROR',
+        'Supabase storage policy backend is not configured',
+        reason || null,
+      ),
+    );
 }
 
 function writeSupabaseStoragePolicyError(res, error) {
   if (error instanceof SupabaseStoragePolicyRepositoryError) {
     return res.status(error.status).json(failure(error.code, error.message, error.details));
   }
-  return res.status(500).json(failure('INTERNAL_ERROR', 'Unexpected storage policy backend failure'));
+  return res
+    .status(500)
+    .json(failure('INTERNAL_ERROR', 'Unexpected storage policy backend failure'));
 }
 
 function createSettingsRoutes({ repo }) {
@@ -100,19 +107,29 @@ function createSettingsRoutes({ repo }) {
     asyncHandler(async (_req, res) => {
       const data = await repo.read(SETTINGS_ROOT);
       return res.json(success(data || {}));
-    })
+    }),
   );
 
   router.get(
     '/*',
     asyncHandler(async (req, res) => {
-      const parsedPath = parseSettingsPath(req.params[0]);
+      const parsedPathInput = settingsPathInputSchema.safeParse(req.params?.[0]);
+      if (!parsedPathInput.success) {
+        return res.status(400).json(
+          failure('BAD_REQUEST', 'Invalid settings path', {
+            path: req.params?.[0],
+            reason: parsedPathInput.error.flatten(),
+          }),
+        );
+      }
+
+      const parsedPath = parseSettingsPath(parsedPathInput.data);
       if (!parsedPath.success) {
         return res.status(400).json(
           failure('BAD_REQUEST', 'Invalid settings path', {
             path: req.params[0],
             reason: parsedPath.error,
-          })
+          }),
         );
       }
 
@@ -132,26 +149,38 @@ function createSettingsRoutes({ repo }) {
       const targetPath = resolveSettingsTargetPath(parsedPath, req.auth);
       const data = await repo.read(targetPath);
       return res.json(success(data));
-    })
+    }),
   );
 
   router.put(
     '/*',
     asyncHandler(async (req, res) => {
-      const parsedPath = parseSettingsPath(req.params[0]);
+      const parsedPathInput = settingsPathInputSchema.safeParse(req.params?.[0]);
+      if (!parsedPathInput.success) {
+        return res.status(400).json(
+          failure('BAD_REQUEST', 'Invalid settings path', {
+            path: req.params?.[0],
+            reason: parsedPathInput.error.flatten(),
+          }),
+        );
+      }
+
+      const parsedPath = parseSettingsPath(parsedPathInput.data);
       if (!parsedPath.success) {
         return res.status(400).json(
           failure('BAD_REQUEST', 'Invalid settings path', {
             path: req.params[0],
             reason: parsedPath.error,
-          })
+          }),
         );
       }
 
       const mutationSchema = resolveSettingsMutationSchema(parsedPath.subPath);
       const parsedBody = mutationSchema.safeParse(req.body);
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       if (shouldUseSupabaseStoragePolicy(parsedPath)) {
@@ -163,7 +192,7 @@ function createSettingsRoutes({ repo }) {
           const data = await storagePolicyRepository.upsertByTenantId(
             resolveTenantId(req.auth),
             parsedBody.data,
-            req.auth?.uid
+            req.auth?.uid,
           );
           return res.json(success(data));
         } catch (error) {
@@ -174,26 +203,38 @@ function createSettingsRoutes({ repo }) {
       const targetPath = resolveSettingsTargetPath(parsedPath, req.auth);
       const data = await repo.write(targetPath, parsedBody.data, { merge: true });
       return res.json(success(data));
-    })
+    }),
   );
 
   router.patch(
     '/*',
     asyncHandler(async (req, res) => {
-      const parsedPath = parseSettingsPath(req.params[0]);
+      const parsedPathInput = settingsPathInputSchema.safeParse(req.params?.[0]);
+      if (!parsedPathInput.success) {
+        return res.status(400).json(
+          failure('BAD_REQUEST', 'Invalid settings path', {
+            path: req.params?.[0],
+            reason: parsedPathInput.error.flatten(),
+          }),
+        );
+      }
+
+      const parsedPath = parseSettingsPath(parsedPathInput.data);
       if (!parsedPath.success) {
         return res.status(400).json(
           failure('BAD_REQUEST', 'Invalid settings path', {
             path: req.params[0],
             reason: parsedPath.error,
-          })
+          }),
         );
       }
 
       const mutationSchema = resolveSettingsMutationSchema(parsedPath.subPath);
       const parsedBody = mutationSchema.safeParse(req.body);
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       if (shouldUseSupabaseStoragePolicy(parsedPath)) {
@@ -205,7 +246,7 @@ function createSettingsRoutes({ repo }) {
           const data = await storagePolicyRepository.upsertByTenantId(
             resolveTenantId(req.auth),
             parsedBody.data,
-            req.auth?.uid
+            req.auth?.uid,
           );
           return res.json(success(data));
         } catch (error) {
@@ -216,7 +257,7 @@ function createSettingsRoutes({ repo }) {
       const targetPath = resolveSettingsTargetPath(parsedPath, req.auth);
       const data = await repo.write(targetPath, parsedBody.data, { merge: true });
       return res.json(success(data));
-    })
+    }),
   );
 
   router.use((_req, res) => {

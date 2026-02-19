@@ -1,6 +1,6 @@
-import React from 'react';
-import { Alert, Badge, Card, Spin, Tooltip } from 'antd';
 import { ExclamationCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { Alert, Badge, Card, Spin, Tooltip } from 'antd';
+import type React from 'react';
 import styles from './person.module.css';
 
 interface PersonCardTitleProps {
@@ -25,7 +25,10 @@ export const PersonCardTitle: React.FC<PersonCardTitleProps> = ({ hasIncompleteD
   </div>
 );
 
-export const PersonStatusAlerts: React.FC<PersonStatusAlertsProps> = ({ hasIncompleteData, manualEditLocked }) => (
+export const PersonStatusAlerts: React.FC<PersonStatusAlertsProps> = ({
+  hasIncompleteData,
+  manualEditLocked,
+}) => (
   <>
     {hasIncompleteData && (
       <Alert

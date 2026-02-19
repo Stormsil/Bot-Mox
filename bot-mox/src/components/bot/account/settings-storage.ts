@@ -1,5 +1,11 @@
-import { apiGet, apiPatch, apiPut } from '../../../services/apiClient';
+import {
+  getSettingsPath,
+  patchSettingsPath,
+  readSettingsPath,
+  writeSettingsPath,
+} from '../../../entities/settings/api/settingsPathClient';
 import { popularEmailDomains } from '../../../utils/accountGenerators';
+import type { AccountGeneratorSettings, AccountGeneratorTemplate } from './types';
 import {
   ACCOUNT_DEFAULT_TEMPLATE_MIGRATION_KEY,
   ACCOUNT_DEFAULT_TEMPLATE_PATH,
@@ -9,7 +15,6 @@ import {
   ACCOUNT_TEMPLATES_PATH,
   DEFAULT_ACCOUNT_PASSWORD_OPTIONS,
 } from './types';
-import type { AccountGeneratorSettings, AccountGeneratorTemplate } from './types';
 
 export const accountGeneratorPaths = {
   lastSettings: ACCOUNT_LAST_SETTINGS_PATH,
@@ -17,22 +22,9 @@ export const accountGeneratorPaths = {
   defaultTemplate: ACCOUNT_DEFAULT_TEMPLATE_PATH,
 };
 
-export const getSettingsPath = (path: string): string => `/api/v1/settings/${path}`;
+export { getSettingsPath, patchSettingsPath, readSettingsPath, writeSettingsPath };
 
-export const readSettingsPath = async <T,>(path: string): Promise<T | null> => {
-  const response = await apiGet<unknown>(getSettingsPath(path));
-  return (response.data as T) ?? null;
-};
-
-export const writeSettingsPath = async (path: string, payload: unknown): Promise<void> => {
-  await apiPut(getSettingsPath(path), payload);
-};
-
-export const patchSettingsPath = async (path: string, payload: unknown): Promise<void> => {
-  await apiPatch(getSettingsPath(path), payload);
-};
-
-export const loadFromLocalStorage = <T,>(key: string): T | null => {
+export const loadFromLocalStorage = <T>(key: string): T | null => {
   try {
     const data = localStorage.getItem(key);
     return data ? (JSON.parse(data) as T) : null;
@@ -52,13 +44,14 @@ export const loadLegacyDefaultTemplateId = (): string | null => {
 };
 
 export const loadLegacyTemplateSnapshot = () => ({
-  templates: loadFromLocalStorage<AccountGeneratorTemplate[]>(ACCOUNT_TEMPLATES_MIGRATION_KEY) || [],
+  templates:
+    loadFromLocalStorage<AccountGeneratorTemplate[]>(ACCOUNT_TEMPLATES_MIGRATION_KEY) || [],
   defaultTemplateId: loadLegacyDefaultTemplateId(),
   lastSettings: loadFromLocalStorage<AccountGeneratorSettings>(ACCOUNT_SETTINGS_MIGRATION_KEY),
 });
 
 export const templatesArrayToMap = (
-  templates: AccountGeneratorTemplate[]
+  templates: AccountGeneratorTemplate[],
 ): Record<string, Omit<AccountGeneratorTemplate, 'id'>> => {
   return templates.reduce<Record<string, Omit<AccountGeneratorTemplate, 'id'>>>((acc, template) => {
     acc[template.id] = {

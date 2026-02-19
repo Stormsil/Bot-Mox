@@ -1,6 +1,6 @@
-import React from 'react';
-import { Card, Progress, Statistic, Row, Col, Typography, Tag } from 'antd';
-import { RiseOutlined, ClockCircleOutlined, AimOutlined } from '@ant-design/icons';
+import { AimOutlined, ClockCircleOutlined, RiseOutlined } from '@ant-design/icons';
+import { Card, Col, Progress, Row, Statistic, Tag, Typography } from 'antd';
+import type React from 'react';
 import type { Bot, LevelingProgress } from '../../types';
 import styles from './BotLeveling.module.css';
 

@@ -1,6 +1,6 @@
+import { uiLogger } from '../observability/uiLogger';
 import type { SubscriptionSettings } from '../types';
 import { apiGet, apiPut } from './apiClient';
-import { uiLogger } from '../observability/uiLogger'
 
 const SETTINGS_PATH = '/api/v1/settings/alerts';
 
@@ -52,7 +52,7 @@ export async function getSubscriptionSettings(): Promise<SubscriptionSettings> {
  */
 export async function updateSubscriptionSettings(
   settings: Partial<SubscriptionSettings>,
-  userId?: string
+  userId?: string,
 ): Promise<void> {
   const updates: SubscriptionSettings = {
     ...getDefaultSettings(),

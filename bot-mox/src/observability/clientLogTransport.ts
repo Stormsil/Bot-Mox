@@ -14,10 +14,13 @@ let unloadListenerRegistered = false;
 
 function scheduleFlush(delayMs = FLUSH_INTERVAL_MS): void {
   if (flushTimer) return;
-  flushTimer = setTimeout(() => {
-    flushTimer = null;
-    void flushQueue();
-  }, Math.max(0, delayMs));
+  flushTimer = setTimeout(
+    () => {
+      flushTimer = null;
+      void flushQueue();
+    },
+    Math.max(0, delayMs),
+  );
 }
 
 function getEndpoint(): string {
@@ -103,4 +106,3 @@ export function enqueueClientLog(event: UiLogEvent): void {
   }
   scheduleFlush(queue.length >= MAX_BATCH_SIZE ? 0 : FLUSH_INTERVAL_MS);
 }
-

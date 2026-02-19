@@ -1,7 +1,8 @@
-import { ApiClient, ApiError } from './api-client';
-import { AgentConfig } from './config-store';
-import { Logger } from './logger';
 import { executeCommand } from '../executors';
+import { type ApiClient, ApiError } from './api-client';
+import type { AgentConfig } from './config-store';
+import type { Logger } from './logger';
+import { type QueuedCommand, queuedCommandSchema } from './schemas';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -13,17 +14,6 @@ const NEXT_COMMAND_TIMEOUT_MS = 25_000;
 const COMMAND_ERROR_BACKOFF_MS = 1_500;
 const RATE_LIMIT_COOLDOWN_MS = 45_000;
 
-interface QueuedCommand {
-  id: string;
-  tenant_id: string;
-  agent_id: string;
-  command_type: string;
-  payload: Record<string, unknown>;
-  status: string;
-  queued_at: string;
-  expires_at: string;
-}
-
 export type StatusCallback = (status: AgentStatus, message?: string) => void;
 
 // ---------------------------------------------------------------------------
@@ -34,10 +24,8 @@ export class AgentLoop {
   private interval: ReturnType<typeof setInterval> | null = null;
   private status: AgentStatus = 'idle';
   private onStatusChange: StatusCallback | null = null;
-  private executing = false;
   private nextTickAt = 0;
   private running = false;
-  private commandLoopPromise: Promise<void> | null = null;
 
   constructor(
     private config: AgentConfig,
@@ -63,14 +51,10 @@ export class AgentLoop {
 
     await this.sendHeartbeat();
 
-    this.commandLoopPromise = this.runCommandLoop()
-      .catch((error) => {
-        const message = error instanceof Error ? error.message : String(error);
-        this.logger.error(`Command loop crashed: ${message}`);
-      })
-      .finally(() => {
-        this.commandLoopPromise = null;
-      });
+    void this.runCommandLoop().catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Command loop crashed: ${message}`);
+    });
 
     this.interval = setInterval(() => {
       void this.sendHeartbeat();
@@ -84,7 +68,6 @@ export class AgentLoop {
       this.interval = null;
     }
     this.nextTickAt = 0;
-    this.executing = false;
     if (this.status !== 'revoked') {
       this.setStatus('idle');
     }
@@ -94,7 +77,7 @@ export class AgentLoop {
   private setStatus(status: AgentStatus, message?: string): void {
     if (this.status === status) return;
     this.status = status;
-    this.logger.info(`Status: ${status}${message ? ' — ' + message : ''}`);
+    this.logger.info(`Status: ${status}${message ? ` — ${message}` : ''}`);
     this.onStatusChange?.(status, message);
   }
 
@@ -129,7 +112,10 @@ export class AgentLoop {
     } catch (err) {
       if (this.isRateLimitedError(err)) {
         this.nextTickAt = Date.now() + RATE_LIMIT_COOLDOWN_MS;
-        this.setStatus('error', `Rate limited, retrying in ${Math.ceil(RATE_LIMIT_COOLDOWN_MS / 1000)}s`);
+        this.setStatus(
+          'error',
+          `Rate limited, retrying in ${Math.ceil(RATE_LIMIT_COOLDOWN_MS / 1000)}s`,
+        );
         return;
       }
 
@@ -152,16 +138,23 @@ export class AgentLoop {
       { timeoutMs: NEXT_COMMAND_TIMEOUT_MS + 15_000 },
     );
 
-    if (!command || typeof command !== 'object') {
+    if (command === null) {
       return null;
     }
 
-    const id = String(command.id || '').trim();
-    if (!id) {
+    const parsed = queuedCommandSchema.safeParse(command);
+    if (!parsed.success) {
+      this.logger.warn('Skipping invalid queued command payload', {
+        event_name: 'agent.command.invalid_payload',
+        issues: parsed.error.issues.map((issue) => ({
+          path: issue.path.join('.'),
+          message: issue.message,
+        })),
+      });
       return null;
     }
 
-    return command;
+    return parsed.data;
   }
 
   private async runCommandLoop(): Promise<void> {
@@ -180,19 +173,17 @@ export class AgentLoop {
           continue;
         }
 
-        this.executing = true;
-        try {
-          const result = await this.processCommand(command);
-          if (result === 'rate_limited') {
-            this.nextTickAt = Date.now() + RATE_LIMIT_COOLDOWN_MS;
-          }
-        } finally {
-          this.executing = false;
+        const result = await this.processCommand(command);
+        if (result === 'rate_limited') {
+          this.nextTickAt = Date.now() + RATE_LIMIT_COOLDOWN_MS;
         }
       } catch (err) {
         if (this.isRateLimitedError(err)) {
           this.nextTickAt = Date.now() + RATE_LIMIT_COOLDOWN_MS;
-          this.setStatus('error', `Rate limited, retrying in ${Math.ceil(RATE_LIMIT_COOLDOWN_MS / 1000)}s`);
+          this.setStatus(
+            'error',
+            `Rate limited, retrying in ${Math.ceil(RATE_LIMIT_COOLDOWN_MS / 1000)}s`,
+          );
           await new Promise((resolve) => setTimeout(resolve, 500));
           continue;
         }
@@ -234,7 +225,9 @@ export class AgentLoop {
       });
     } catch (err) {
       if (this.isRateLimitedError(err)) {
-        this.logger.warn(`Rate limited while claiming command ${cmd.id}, delaying further processing`);
+        this.logger.warn(
+          `Rate limited while claiming command ${cmd.id}, delaying further processing`,
+        );
         return 'rate_limited';
       }
       this.logger.error(`Failed to mark command ${cmd.id} as running:`, err);

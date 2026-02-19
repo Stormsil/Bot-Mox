@@ -28,7 +28,8 @@
   gap: 12px;
 }
 
-.field label {
+.field label,
+.fieldLabel {
   display: block;
   font-size: 12px;
   color: var(--boxmox-color-text-secondary);

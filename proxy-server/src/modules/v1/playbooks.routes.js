@@ -1,11 +1,10 @@
-'use strict';
-
 const express = require('express');
 const { success, failure } = require('../../contracts/envelope');
 const {
   idParamSchema,
   playbookCreateSchema,
   playbookUpdateSchema,
+  playbookValidateBodySchema,
 } = require('../../contracts/schemas');
 const { asyncHandler } = require('./helpers');
 const { PlaybookServiceError } = require('../playbooks/service');
@@ -36,7 +35,7 @@ function createPlaybookRoutes({ playbookService }) {
         userId: auth.uid,
       });
       return res.json(success(data));
-    })
+    }),
   );
 
   // GET /api/v1/playbooks/:id
@@ -55,7 +54,7 @@ function createPlaybookRoutes({ playbookService }) {
         playbookId: paramParsed.data.id,
       });
       return res.json(success(data));
-    })
+    }),
   );
 
   // POST /api/v1/playbooks
@@ -64,7 +63,9 @@ function createPlaybookRoutes({ playbookService }) {
     withPlaybookErrors(async (req, res) => {
       const parsed = playbookCreateSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       const auth = req.auth || {};
@@ -72,10 +73,12 @@ function createPlaybookRoutes({ playbookService }) {
       // Validate YAML content
       const validation = playbookService.validatePlaybookContent(parsed.data.content);
       if (!validation.valid) {
-        return res.status(422).json(failure('INVALID_PLAYBOOK', 'Playbook YAML validation failed', {
-          errors: validation.errors,
-          warnings: validation.warnings,
-        }));
+        return res.status(422).json(
+          failure('INVALID_PLAYBOOK', 'Playbook YAML validation failed', {
+            errors: validation.errors,
+            warnings: validation.warnings,
+          }),
+        );
       }
 
       const data = await playbookService.createPlaybook({
@@ -87,7 +90,7 @@ function createPlaybookRoutes({ playbookService }) {
       });
 
       return res.status(201).json(success(data));
-    })
+    }),
   );
 
   // PUT /api/v1/playbooks/:id
@@ -101,17 +104,21 @@ function createPlaybookRoutes({ playbookService }) {
 
       const parsed = playbookUpdateSchema.safeParse(req.body || {});
       if (!parsed.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
       // Validate YAML if content is being updated
       if (parsed.data.content !== undefined) {
         const validation = playbookService.validatePlaybookContent(parsed.data.content);
         if (!validation.valid) {
-          return res.status(422).json(failure('INVALID_PLAYBOOK', 'Playbook YAML validation failed', {
-            errors: validation.errors,
-            warnings: validation.warnings,
-          }));
+          return res.status(422).json(
+            failure('INVALID_PLAYBOOK', 'Playbook YAML validation failed', {
+              errors: validation.errors,
+              warnings: validation.warnings,
+            }),
+          );
         }
       }
 
@@ -124,7 +131,7 @@ function createPlaybookRoutes({ playbookService }) {
       });
 
       return res.json(success(data));
-    })
+    }),
   );
 
   // DELETE /api/v1/playbooks/:id
@@ -144,21 +151,23 @@ function createPlaybookRoutes({ playbookService }) {
       });
 
       return res.json(success({ deleted: true }));
-    })
+    }),
   );
 
   // POST /api/v1/playbooks/validate
   router.post(
     '/validate',
     withPlaybookErrors(async (req, res) => {
-      const content = String(req.body?.content || '');
-      if (!content.trim()) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Content is required'));
+      const parsed = playbookValidateBodySchema.safeParse(req.body || {});
+      if (!parsed.success) {
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsed.error.flatten()));
       }
 
-      const result = playbookService.validatePlaybookContent(content);
+      const result = playbookService.validatePlaybookContent(parsed.data.content);
       return res.json(success(result));
-    })
+    }),
   );
 
   return router;

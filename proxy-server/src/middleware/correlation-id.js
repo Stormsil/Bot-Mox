@@ -1,4 +1,4 @@
-const { randomUUID } = require('crypto');
+const { randomUUID } = require('node:crypto');
 
 function correlationIdMiddleware(req, res, next) {
   const existing = req.headers['x-correlation-id'];

@@ -1,15 +1,21 @@
-import React from 'react';
 import { Form, Input, InputNumber, Typography } from 'antd';
-import type { UnattendProfileConfig } from '../../../../services/unattendProfileService';
+import type React from 'react';
+import type { UnattendProfileConfig } from '../../../../entities/vm/model/unattend';
 
 const { Text } = Typography;
 
 interface CustomScriptSectionProps {
   config: UnattendProfileConfig;
-  updateConfig: <K extends keyof UnattendProfileConfig>(section: K, patch: Partial<UnattendProfileConfig[K]>) => void;
+  updateConfig: <K extends keyof UnattendProfileConfig>(
+    section: K,
+    patch: Partial<UnattendProfileConfig[K]>,
+  ) => void;
 }
 
-export const CustomScriptSection: React.FC<CustomScriptSectionProps> = ({ config, updateConfig }) => {
+export const CustomScriptSection: React.FC<CustomScriptSectionProps> = ({
+  config,
+  updateConfig,
+}) => {
   const executable = config.customScript?.executable || 'START.exe';
   const delaySeconds = config.customScript?.delaySeconds ?? 20;
 
@@ -36,8 +42,19 @@ export const CustomScriptSection: React.FC<CustomScriptSectionProps> = ({ config
       <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
         Generated command preview:
       </Text>
-      <code style={{ display: 'block', marginTop: 4, padding: 8, background: 'var(--ant-color-fill-tertiary)', borderRadius: 4, fontSize: 12, wordBreak: 'break-all' }}>
-        cmd /c "timeout /t {delaySeconds} /nobreak & start "SETUP_LOG" powershell.exe -NoExit -NoProfile -ExecutionPolicy Bypass -WindowStyle Normal -File C:\WindowsSetup\{executable}"
+      <code
+        style={{
+          display: 'block',
+          marginTop: 4,
+          padding: 8,
+          background: 'var(--ant-color-fill-tertiary)',
+          borderRadius: 4,
+          fontSize: 12,
+          wordBreak: 'break-all',
+        }}
+      >
+        cmd /c "timeout /t {delaySeconds} /nobreak & start "SETUP_LOG" powershell.exe -NoExit
+        -NoProfile -ExecutionPolicy Bypass -WindowStyle Normal -File C:\WindowsSetup\{executable}"
       </code>
     </Form>
   );

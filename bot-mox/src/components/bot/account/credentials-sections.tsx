@@ -1,6 +1,6 @@
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, Row, Select } from 'antd';
 import type { ReactNode } from 'react';
-import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import { popularEmailDomains } from '../../../utils/accountGenerators';
 import styles from './account.module.css';
 
@@ -31,19 +31,15 @@ export function EmailSection({
     <Row gutter={16}>
       <Col xs={24} md={16}>
         <Form.Item
-          label={(
+          label={
             <span className={styles['field-label']}>
               Email
               {emailWarning}
             </span>
-          )}
+          }
           name="email"
         >
-          <Input
-            placeholder="Enter email address"
-            autoComplete="off"
-            disabled={accountLocked}
-          />
+          <Input placeholder="Enter email address" autoComplete="off" disabled={accountLocked} />
         </Form.Item>
       </Col>
       <Col xs={24} md={8}>
@@ -70,7 +66,7 @@ export function EmailSection({
                   value={customDomain}
                   onChange={(event) => setCustomDomain(event.target.value)}
                   disabled={accountLocked}
-                  suffix={(
+                  suffix={
                     <Button
                       type="text"
                       size="small"
@@ -79,7 +75,7 @@ export function EmailSection({
                     >
                       Back
                     </Button>
-                  )}
+                  }
                 />
               )}
               {selectedDomain === 'custom' && !useCustomDomain && (
@@ -117,12 +113,12 @@ export function PasswordSection({
     <Row gutter={16}>
       <Col xs={24} md={16}>
         <Form.Item
-          label={(
+          label={
             <span className={styles['field-label']}>
               Password
               {passwordWarning}
             </span>
-          )}
+          }
           name="password"
         >
           <Input
@@ -130,7 +126,7 @@ export function PasswordSection({
             placeholder="Enter password"
             autoComplete="off"
             disabled={accountLocked}
-            suffix={(
+            suffix={
               <Button
                 type="text"
                 size="small"
@@ -138,7 +134,7 @@ export function PasswordSection({
                 onClick={() => setShowPassword((prev) => !prev)}
                 disabled={accountLocked}
               />
-            )}
+            }
           />
         </Form.Item>
       </Col>

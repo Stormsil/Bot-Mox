@@ -1,10 +1,14 @@
-import React from 'react';
-import { CheckCircleOutlined, ClockCircleOutlined, ExclamationCircleOutlined, WarningOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  ExclamationCircleOutlined,
+  WarningOutlined,
+} from '@ant-design/icons';
 import type { AlertProps } from 'antd';
-import type { Proxy } from '../../../types';
+import type { Proxy as ProxyResource } from '../../../types';
 import type { ProxyInfo } from './types';
 
-export const withProxyComputedState = (proxy: Proxy): ProxyInfo => {
+export const withProxyComputedState = (proxy: ProxyResource): ProxyInfo => {
   const daysRemaining = Math.ceil((proxy.expires_at - Date.now()) / (1000 * 60 * 60 * 24));
   return {
     ...proxy,
@@ -53,7 +57,8 @@ export const getProxyAlertState = (proxy: ProxyInfo): ProxyAlertState | null => 
   if (proxy.status === 'banned') {
     return {
       message: 'Proxy Banned',
-      description: 'This proxy has been banned. The bot may not function properly. Please assign a new proxy.',
+      description:
+        'This proxy has been banned. The bot may not function properly. Please assign a new proxy.',
       type: 'error',
     };
   }

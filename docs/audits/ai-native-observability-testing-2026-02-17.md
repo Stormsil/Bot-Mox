@@ -29,8 +29,8 @@ Introduce an "AI-Native Observability & Testing" baseline so agents can debug by
   - replaced `console.*` with `uiLogger.*` in `services/hooks/pages/observability/ErrorBoundary`.
 - Added frontend logging guardrail:
   - `scripts/check-frontend-console.js`
-  - `npm run check:frontend:logging`
-  - integrated into `npm run check:all`.
+  - `pnpm run check:frontend:logging`
+  - integrated into `pnpm run check:all`.
 
 ### Backend (proxy-server)
 - Added OpenTelemetry bootstrap:
@@ -77,11 +77,11 @@ Introduce an "AI-Native Observability & Testing" baseline so agents can debug by
 - Added Jaeger compose:
   - `deploy/compose.observability.yml`
 - Added scripts:
-  - `npm run obs:up`, `npm run obs:down`
-  - `npm run dev:trace` (via `scripts/dev-trace.js`)
-  - `npm run doctor` (via `scripts/doctor.js`) for fast non-scenario validation
-  - `npm run test:e2e`, `npm run test:e2e:report`
-  - `npm run test:e2e:prodlike` (via `scripts/e2e-prodlike.js`) to run Playwright against `http://localhost/`
+  - `pnpm run obs:up`, `pnpm run obs:down`
+  - `pnpm run dev:trace` (via `scripts/dev-trace.js`)
+  - `pnpm run doctor` (via `scripts/doctor.js`) for fast non-scenario validation
+  - `pnpm run test:e2e`, `pnpm run test:e2e:report`
+  - `pnpm run test:e2e:prodlike` (via `scripts/e2e-prodlike.js`) to run Playwright against `http://localhost/`
 - CI:
   - `.github/workflows/ci.yml` now runs Playwright E2E and uploads artifacts.
 
@@ -91,21 +91,21 @@ Introduce an "AI-Native Observability & Testing" baseline so agents can debug by
 
 ## How To Verify
 1. Start Jaeger:
-   - `npm run obs:up`
+   - `pnpm run obs:up`
 2. Run app with tracing:
-   - `npm run dev:trace`
+   - `pnpm run dev:trace`
 3. Open UI and verify requests include W3C headers (DevTools -> Network -> Request headers):
    - `traceparent`, `tracestate`, `baggage`
 4. Verify backend responses include:
    - `x-trace-id`, `x-span-id`, `x-correlation-id`
 5. Verify backend logs are JSON and contain `trace_id` / `span_id`.
 6. Run E2E:
-   - `npm run test:e2e`
+   - `pnpm run test:e2e`
    - force a failure and verify `trace.zip` exists under `bot-mox/test-results/**`.
 7. Fast sanity check (prod-like or dev):
-   - `npm run doctor` writes `logs/doctor-report.json` with detected mode + headers + dependency status.
+   - `pnpm run doctor` writes `logs/doctor-report.json` with detected mode + headers + dependency status.
 8. Frontend logging guardrail:
-   - `npm run check:frontend:logging` must pass.
+   - `pnpm run check:frontend:logging` must pass.
 9. Frontend ingest contract:
    - `POST /api/v1/client-logs` with valid payload returns `success=true` and `accepted > 0`.
 10. Correlation path:
@@ -123,3 +123,4 @@ Introduce an "AI-Native Observability & Testing" baseline so agents can debug by
   - Playwright artifacts
   - filtered backend logs by `trace_id`
   - Jaeger trace export
+

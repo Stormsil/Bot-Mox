@@ -4,17 +4,8 @@ const { success, failure } = require('../../contracts/envelope');
 function createAuthRoutes({ authenticate }) {
   const router = express.Router();
 
-  router.get('/verify', authenticate, (req, res) => {
-    const auth = req.auth || {};
-    return res.json(
-      success({
-        uid: auth.uid || null,
-        email: auth.email || null,
-        roles: Array.isArray(auth.roles) ? auth.roles : [],
-        source: auth.source || 'unknown',
-        tenant_id: auth.tenant_id || 'default',
-      })
-    );
+  router.get('/verify', authenticate, (_req, res) => {
+    return res.json(success({ valid: true }));
   });
 
   router.get('/whoami', authenticate, (req, res) => {

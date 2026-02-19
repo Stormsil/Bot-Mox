@@ -44,7 +44,9 @@ function createDefaultLifecycle() {
 }
 
 function toLifecycleStageFromStatus(status) {
-  const normalized = String(status || '').trim().toLowerCase();
+  const normalized = String(status || '')
+    .trim()
+    .toLowerCase();
   return BOT_STATUS_TO_STAGE[normalized] || null;
 }
 
@@ -56,18 +58,22 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedQuery = parseListQuery(req.query);
       if (!parsedQuery.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid query parameters', parsedQuery.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid query parameters', parsedQuery.error.flatten()));
       }
 
       const items = await repo.list();
       const result = applyListQuery(items, parsedQuery.data);
 
-      return res.json(success(result.items, {
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-      }));
-    })
+      return res.json(
+        success(result.items, {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+        }),
+      );
+    }),
   );
 
   router.get(
@@ -75,7 +81,9 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
       }
 
       const entity = await repo.getById(parsedId.data.id);
@@ -84,7 +92,7 @@ function createBotsRoutes({ repo }) {
       }
 
       return res.json(success(entity));
-    })
+    }),
   );
 
   router.post(
@@ -92,13 +100,15 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedBody = botCreateSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
-      const explicitId = typeof req.body?.id === 'string' ? req.body.id.trim() : '';
+      const explicitId = typeof parsedBody.data.id === 'string' ? parsedBody.data.id.trim() : '';
       const created = await repo.create(parsedBody.data, explicitId || undefined);
       return res.status(201).json(success(created));
-    })
+    }),
   );
 
   router.patch(
@@ -106,12 +116,16 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
       }
 
       const parsedBody = botPatchSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid request body', parsedBody.error.flatten()));
       }
 
       const updated = await repo.patch(parsedId.data.id, parsedBody.data);
@@ -120,7 +134,7 @@ function createBotsRoutes({ repo }) {
       }
 
       return res.json(success(updated));
-    })
+    }),
   );
 
   router.get(
@@ -128,7 +142,9 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
       }
 
       const entity = await repo.getById(parsedId.data.id);
@@ -138,7 +154,7 @@ function createBotsRoutes({ repo }) {
 
       const lifecycle = entity?.lifecycle || null;
       return res.json(success(lifecycle));
-    })
+    }),
   );
 
   router.get(
@@ -146,7 +162,9 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
       }
 
       const entity = await repo.getById(parsedId.data.id);
@@ -158,7 +176,7 @@ function createBotsRoutes({ repo }) {
         ? entity.lifecycle.stage_transitions
         : [];
       return res.json(success(transitions));
-    })
+    }),
   );
 
   router.get(
@@ -166,7 +184,9 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
       }
 
       const entity = await repo.getById(parsedId.data.id);
@@ -174,11 +194,12 @@ function createBotsRoutes({ repo }) {
         return res.status(404).json(failure('NOT_FOUND', 'Bot not found'));
       }
 
-      const isBanned = String(entity?.status || '').toLowerCase() === 'banned'
-        || String(entity?.lifecycle?.current_stage || '').toLowerCase() === 'banned';
+      const isBanned =
+        String(entity?.status || '').toLowerCase() === 'banned' ||
+        String(entity?.lifecycle?.current_stage || '').toLowerCase() === 'banned';
 
       return res.json(success({ banned: isBanned }));
-    })
+    }),
   );
 
   router.post(
@@ -186,12 +207,16 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
       }
 
       const parsedBody = botLifecycleTransitionSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid transition payload', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid transition payload', parsedBody.error.flatten()));
       }
 
       const botId = parsedId.data.id;
@@ -250,11 +275,11 @@ function createBotsRoutes({ repo }) {
         {
           from: currentStatus,
           to: nextStatus,
-        }
+        },
       );
 
       return res.json(success(updated));
-    })
+    }),
   );
 
   router.post(
@@ -262,12 +287,16 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
       }
 
       const parsedBody = banDetailsSchema.safeParse(req.body || {});
       if (!parsedBody.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid ban payload', parsedBody.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid ban payload', parsedBody.error.flatten()));
       }
 
       const botId = parsedId.data.id;
@@ -307,19 +336,14 @@ function createBotsRoutes({ repo }) {
       });
 
       await repo.writeArchiveEntry(botId, entity, banDetails);
-      await repo.writeLifecycleLog(
-        botId,
-        'ban',
-        `Bot banned: ${parsedBody.data.ban_reason}`,
-        {
-          from: currentStatus,
-          mechanism: parsedBody.data.ban_mechanism,
-          ban_date: parsedBody.data.ban_date,
-        }
-      );
+      await repo.writeLifecycleLog(botId, 'ban', `Bot banned: ${parsedBody.data.ban_reason}`, {
+        from: currentStatus,
+        mechanism: parsedBody.data.ban_mechanism,
+        ban_date: parsedBody.data.ban_date,
+      });
 
       return res.json(success(updated));
-    })
+    }),
   );
 
   router.post(
@@ -327,7 +351,9 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
       }
 
       const botId = parsedId.data.id;
@@ -341,7 +367,9 @@ function createBotsRoutes({ repo }) {
         return res.status(400).json(failure('BAD_REQUEST', 'Bot is not banned'));
       }
 
-      const restoredStatus = RESTORABLE_STATUSES.has(String(lifecycle.previous_status || '').toLowerCase())
+      const restoredStatus = RESTORABLE_STATUSES.has(
+        String(lifecycle.previous_status || '').toLowerCase(),
+      )
         ? lifecycle.previous_status
         : 'offline';
       const restoredStage = toLifecycleStageFromStatus(restoredStatus) || 'prepare';
@@ -364,11 +392,11 @@ function createBotsRoutes({ repo }) {
         `Bot unbanned and restored to ${restoredStatus}`,
         {
           restored_status: restoredStatus,
-        }
+        },
       );
 
       return res.json(success(updated));
-    })
+    }),
   );
 
   router.delete(
@@ -376,7 +404,9 @@ function createBotsRoutes({ repo }) {
     asyncHandler(async (req, res) => {
       const parsedId = idParamSchema.safeParse(req.params);
       if (!parsedId.success) {
-        return res.status(400).json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
+        return res
+          .status(400)
+          .json(failure('BAD_REQUEST', 'Invalid bot id', parsedId.error.flatten()));
       }
 
       const deleted = await repo.remove(parsedId.data.id);
@@ -385,7 +415,7 @@ function createBotsRoutes({ repo }) {
       }
 
       return res.json(success({ id: parsedId.data.id, deleted: true }));
-    })
+    }),
   );
 
   return router;

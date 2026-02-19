@@ -1,4 +1,12 @@
-import React from 'react';
+import {
+  BgColorsOutlined,
+  CheckOutlined,
+  DeleteOutlined,
+  HighlightOutlined,
+  PictureOutlined,
+  SaveOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -18,15 +26,9 @@ import {
   Typography,
   Upload,
 } from 'antd';
-import {
-  BgColorsOutlined,
-  CheckOutlined,
-  DeleteOutlined,
-  HighlightOutlined,
-  PictureOutlined,
-  SaveOutlined,
-  UploadOutlined,
-} from '@ant-design/icons';
+import type React from 'react';
+import { TableActionButton } from '../../components/ui/TableActionButton';
+import type { ThemeBackgroundAsset } from '../../entities/settings/model/theme';
 import {
   THEME_COLOR_DEFINITIONS,
   type ThemeColorVariable,
@@ -36,8 +38,6 @@ import {
   type ThemeTypographySettings,
   type ThemeVisualSettings,
 } from '../../theme/themePalette';
-import type { ThemeBackgroundAsset } from '../../services/themeAssetsService';
-import { TableActionButton } from '../../components/ui/TableActionButton';
 import styles from './SettingsPage.module.css';
 
 const { Text } = Typography;
@@ -80,7 +80,7 @@ interface ThemeSettingsPanelProps {
     mode: ThemeMode,
     cssVar: ThemeColorVariable,
     rawColor: string,
-    options?: { syncApp?: boolean }
+    options?: { syncApp?: boolean },
   ) => void;
   onThemeInputChange: (mode: ThemeMode, cssVar: ThemeColorVariable, value: string) => void;
   onThemeInputCommit: (mode: ThemeMode, cssVar: ThemeColorVariable) => void;
@@ -189,11 +189,7 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
               >
                 Apply
               </Button>
-              <Button
-                type="primary"
-                icon={<BgColorsOutlined />}
-                onClick={onOpenThemeEditor}
-              >
+              <Button type="primary" icon={<BgColorsOutlined />} onClick={onOpenThemeEditor}>
                 Open Theme Editor
               </Button>
             </div>
@@ -202,12 +198,12 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
       </Col>
 
       <Drawer
-        title={(
+        title={
           <Space>
             <BgColorsOutlined />
             <span>Theme Colors</span>
           </Space>
-        )}
+        }
         placement="right"
         width={640}
         className={cx('theme-settings-drawer')}
@@ -222,7 +218,7 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
             background: 'var(--boxmox-color-surface-panel)',
           },
         }}
-        extra={(
+        extra={
           <Button
             type="primary"
             icon={<SaveOutlined />}
@@ -231,10 +227,12 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
           >
             Save
           </Button>
-        )}
+        }
       >
         <div className={cx('theme-preset-panel')}>
-          <Text strong className={cx('theme-preset-title')}>Saved Themes</Text>
+          <Text strong className={cx('theme-preset-title')}>
+            Saved Themes
+          </Text>
           <div className={cx('theme-preset-row')}>
             <Select
               placeholder="Select saved theme"
@@ -292,16 +290,16 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
 
         <Card className={cx('settings-card')} size="small" title="Typography & Shape">
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
-            <Text type="secondary">
-              These settings are global and apply across the whole UI.
-            </Text>
+            <Text type="secondary">These settings are global and apply across the whole UI.</Text>
 
             <div className={cx('theme-form-grid')}>
               <div className={cx('theme-form-item')}>
                 <Text type="secondary">Primary font</Text>
                 <Input
                   value={localTypographySettings.fontPrimary}
-                  onChange={(event) => onTypographySettingsChange({ fontPrimary: event.target.value })}
+                  onChange={(event) =>
+                    onTypographySettingsChange({ fontPrimary: event.target.value })
+                  }
                   placeholder='e.g. "Roboto Condensed", system-ui, sans-serif'
                 />
               </div>
@@ -310,7 +308,9 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
                 <Text type="secondary">Condensed font</Text>
                 <Input
                   value={localTypographySettings.fontCondensed}
-                  onChange={(event) => onTypographySettingsChange({ fontCondensed: event.target.value })}
+                  onChange={(event) =>
+                    onTypographySettingsChange({ fontCondensed: event.target.value })
+                  }
                   placeholder='e.g. "Roboto Condensed", system-ui, sans-serif'
                 />
               </div>
@@ -373,13 +373,23 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
           </Space>
         </Card>
 
-        <Card className={cx('settings-card')} size="small" title={<><PictureOutlined /> Visual Background</>}>
+        <Card
+          className={cx('settings-card')}
+          size="small"
+          title={
+            <>
+              <PictureOutlined /> Visual Background
+            </>
+          }
+        >
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
             <div className={cx('theme-visual-row')}>
               <Text>Enable visual background</Text>
               <Switch
                 checked={localVisualSettings.enabled}
-                onChange={(checked) => onVisualSettingsChange({ enabled: checked, mode: checked ? 'image' : 'none' })}
+                onChange={(checked) =>
+                  onVisualSettingsChange({ enabled: checked, mode: checked ? 'image' : 'none' })
+                }
               />
             </div>
 
@@ -394,9 +404,13 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
                     return Upload.LIST_IGNORE;
                   }}
                 >
-                  <Button icon={<UploadOutlined />} loading={themeAssetUploading}>Upload</Button>
+                  <Button icon={<UploadOutlined />} loading={themeAssetUploading}>
+                    Upload
+                  </Button>
                 </Upload>
-                <Button onClick={() => void onRefreshThemeAssets()} loading={themeAssetsLoading}>Refresh</Button>
+                <Button onClick={() => void onRefreshThemeAssets()} loading={themeAssetsLoading}>
+                  Refresh
+                </Button>
               </Space>
             </div>
 
@@ -413,16 +427,35 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
                   return (
                     <List.Item
                       actions={[
-                        <Button key="select" type={selected ? 'primary' : 'default'} size="small" onClick={() => onSelectThemeBackground(asset.id)}>
+                        <Button
+                          key="select"
+                          type={selected ? 'primary' : 'default'}
+                          size="small"
+                          onClick={() => onSelectThemeBackground(asset.id)}
+                        >
                           {selected ? 'Selected' : 'Select'}
                         </Button>,
-                        <Popconfirm key="delete" title="Delete this image?" onConfirm={() => void onDeleteThemeAsset(asset.id)}>
+                        <Popconfirm
+                          key="delete"
+                          title="Delete this image?"
+                          onConfirm={() => void onDeleteThemeAsset(asset.id)}
+                        >
                           <Button danger size="small" icon={<DeleteOutlined />} />
                         </Popconfirm>,
                       ]}
                     >
                       <List.Item.Meta
-                        avatar={asset.image_url ? <img src={asset.image_url} className={cx('theme-asset-thumb')} alt="theme background" /> : <PictureOutlined />}
+                        avatar={
+                          asset.image_url ? (
+                            <img
+                              src={asset.image_url}
+                              className={cx('theme-asset-thumb')}
+                              alt="theme background"
+                            />
+                          ) : (
+                            <PictureOutlined />
+                          )
+                        }
                         title={asset.object_key.split('/').pop() || asset.id}
                         description={`${formatBytes(asset.size_bytes)}${asset.width && asset.height ? ` • ${asset.width}x${asset.height}` : ''}`}
                       />
@@ -434,17 +467,35 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
 
             <div className={cx('theme-visual-slider')}>
               <Text type="secondary">Overlay opacity</Text>
-              <Slider min={0} max={1} step={0.01} value={localVisualSettings.overlayOpacity} onChange={(value) => onVisualSettingsChange({ overlayOpacity: value })} />
+              <Slider
+                min={0}
+                max={1}
+                step={0.01}
+                value={localVisualSettings.overlayOpacity}
+                onChange={(value) => onVisualSettingsChange({ overlayOpacity: value })}
+              />
             </div>
 
             <div className={cx('theme-visual-slider')}>
               <Text type="secondary">Background blur (px)</Text>
-              <Slider min={0} max={24} step={1} value={localVisualSettings.blurPx} onChange={(value) => onVisualSettingsChange({ blurPx: value })} />
+              <Slider
+                min={0}
+                max={24}
+                step={1}
+                value={localVisualSettings.blurPx}
+                onChange={(value) => onVisualSettingsChange({ blurPx: value })}
+              />
             </div>
 
             <div className={cx('theme-visual-slider')}>
               <Text type="secondary">Dim strength</Text>
-              <Slider min={0} max={1} step={0.01} value={localVisualSettings.dimStrength} onChange={(value) => onVisualSettingsChange({ dimStrength: value })} />
+              <Slider
+                min={0}
+                max={1}
+                step={0.01}
+                value={localVisualSettings.dimStrength}
+                onChange={(value) => onVisualSettingsChange({ dimStrength: value })}
+              />
             </div>
 
             <div className={cx('theme-visual-row')}>
@@ -454,7 +505,9 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
                 format="hex"
                 disabledAlpha
                 showText
-                onChangeComplete={(color) => onVisualSettingsChange({ overlayColorLight: color.toHexString() })}
+                onChangeComplete={(color) =>
+                  onVisualSettingsChange({ overlayColorLight: color.toHexString() })
+                }
               />
             </div>
 
@@ -465,7 +518,9 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
                 format="hex"
                 disabledAlpha
                 showText
-                onChangeComplete={(color) => onVisualSettingsChange({ overlayColorDark: color.toHexString() })}
+                onChangeComplete={(color) =>
+                  onVisualSettingsChange({ overlayColorDark: color.toHexString() })
+                }
               />
             </div>
 
@@ -477,7 +532,11 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
                   { label: 'Center', value: 'center' },
                   { label: 'Top', value: 'top' },
                 ]}
-                onChange={(value) => onVisualSettingsChange({ backgroundPosition: value as ThemeVisualSettings['backgroundPosition'] })}
+                onChange={(value) =>
+                  onVisualSettingsChange({
+                    backgroundPosition: value as ThemeVisualSettings['backgroundPosition'],
+                  })
+                }
               />
             </div>
 
@@ -490,11 +549,20 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
                   { label: 'Contain', value: 'contain' },
                   { label: 'Auto', value: 'auto' },
                 ]}
-                onChange={(value) => onVisualSettingsChange({ backgroundSize: value as ThemeVisualSettings['backgroundSize'] })}
+                onChange={(value) =>
+                  onVisualSettingsChange({
+                    backgroundSize: value as ThemeVisualSettings['backgroundSize'],
+                  })
+                }
               />
             </div>
 
-            <Button type="primary" icon={<SaveOutlined />} onClick={() => void onSaveVisualSettings()} loading={themeSaving}>
+            <Button
+              type="primary"
+              icon={<SaveOutlined />}
+              onClick={() => void onSaveVisualSettings()}
+              loading={themeSaving}
+            >
               Save Visual Settings
             </Button>
           </Space>
@@ -509,9 +577,7 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
             ]}
             onChange={(value) => onEditingThemeModeChange(value as ThemeMode)}
           />
-          <Button onClick={onResetCurrentPalette}>
-            Reset Selected Theme
-          </Button>
+          <Button onClick={onResetCurrentPalette}>Reset Selected Theme</Button>
         </div>
 
         <Text type="secondary" className={cx('theme-settings-hint')}>
@@ -532,10 +598,14 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = ({
                   disabledAlpha
                   showText
                   onChange={(color) =>
-                    onThemeColorChange(editingThemeMode, cssVar, color.toHexString(), { syncApp: false })
+                    onThemeColorChange(editingThemeMode, cssVar, color.toHexString(), {
+                      syncApp: false,
+                    })
                   }
                   onChangeComplete={(color) =>
-                    onThemeColorChange(editingThemeMode, cssVar, color.toHexString(), { syncApp: true })
+                    onThemeColorChange(editingThemeMode, cssVar, color.toHexString(), {
+                      syncApp: true,
+                    })
                   }
                 />
                 <Input

@@ -1,6 +1,9 @@
-import React from 'react';
 import { Checkbox, Form } from 'antd';
-import type { UnattendProfileConfig, UnattendWindowsSettings } from '../../../../services/unattendProfileService';
+import type React from 'react';
+import type {
+  UnattendProfileConfig,
+  UnattendWindowsSettings,
+} from '../../../../entities/vm/model/unattend';
 
 const TOGGLE_LABELS: Record<keyof UnattendWindowsSettings, string> = {
   disableDefender: 'Disable Windows Defender',
@@ -19,10 +22,16 @@ const TOGGLE_LABELS: Record<keyof UnattendWindowsSettings, string> = {
 
 interface WindowsSettingsSectionProps {
   config: UnattendProfileConfig;
-  updateConfig: <K extends keyof UnattendProfileConfig>(section: K, patch: Partial<UnattendProfileConfig[K]>) => void;
+  updateConfig: <K extends keyof UnattendProfileConfig>(
+    section: K,
+    patch: Partial<UnattendProfileConfig[K]>,
+  ) => void;
 }
 
-export const WindowsSettingsSection: React.FC<WindowsSettingsSectionProps> = ({ config, updateConfig }) => (
+export const WindowsSettingsSection: React.FC<WindowsSettingsSectionProps> = ({
+  config,
+  updateConfig,
+}) => (
   <Form layout="vertical" size="small">
     {(Object.keys(TOGGLE_LABELS) as Array<keyof UnattendWindowsSettings>).map((key) => (
       <Form.Item key={key} style={{ marginBottom: 4 }}>

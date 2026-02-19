@@ -1,5 +1,12 @@
 import type { Bot } from '../types';
-import { ApiClientError, apiDelete, apiGet, buildQueryString, createPollingSubscription } from './apiClient';
+import {
+  ApiClientError,
+  apiDelete,
+  apiGet,
+  apiPatch,
+  buildQueryString,
+  createPollingSubscription,
+} from './apiClient';
 
 const PAGE_LIMIT = 200;
 const MAX_PAGE_COUNT = 100;
@@ -38,7 +45,9 @@ async function fetchBotsPage(page: number): Promise<{ items: BotRecord[]; total:
   });
   const payload = await apiGet<BotRecord[]>(`/api/v1/bots${query}`);
   const items = Array.isArray(payload.data)
-    ? payload.data.map((item) => toBotRecord(item)).filter((item): item is BotRecord => item !== null)
+    ? payload.data
+        .map((item) => toBotRecord(item))
+        .filter((item): item is BotRecord => item !== null)
     : [];
   const total = Number(payload.meta?.total ?? items.length);
   return { items, total: Number.isFinite(total) ? total : items.length };
@@ -92,6 +101,15 @@ export async function deleteBot(botId: string): Promise<void> {
   await apiDelete(`/api/v1/bots/${encodeURIComponent(id)}`);
 }
 
+export async function patchBot(botId: string, payload: Record<string, unknown>): Promise<void> {
+  const id = String(botId || '').trim();
+  if (!id) {
+    throw new Error('botId is required');
+  }
+
+  await apiPatch(`/api/v1/bots/${encodeURIComponent(id)}`, payload);
+}
+
 interface SubscribeOptions {
   intervalMs?: number;
 }
@@ -99,7 +117,7 @@ interface SubscribeOptions {
 export function subscribeBotsList(
   onData: (bots: BotRecord[]) => void,
   onError?: (error: Error) => void,
-  options: SubscribeOptions = {}
+  options: SubscribeOptions = {},
 ): () => void {
   return createPollingSubscription(fetchBotsList, onData, onError, {
     key: 'bots:list',
@@ -111,7 +129,7 @@ export function subscribeBotsList(
 export function subscribeBotsMap(
   onData: (bots: Record<string, BotRecord>) => void,
   onError?: (error: Error) => void,
-  options: SubscribeOptions = {}
+  options: SubscribeOptions = {},
 ): () => void {
   return createPollingSubscription(fetchBotsMap, onData, onError, {
     key: 'bots:map',
@@ -124,7 +142,7 @@ export function subscribeBotById(
   botId: string,
   onData: (bot: BotRecord | null) => void,
   onError?: (error: Error) => void,
-  options: SubscribeOptions = {}
+  options: SubscribeOptions = {},
 ): () => void {
   const id = String(botId || '').trim();
   if (!id) {

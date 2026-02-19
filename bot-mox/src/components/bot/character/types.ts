@@ -1,4 +1,11 @@
-import type { Bot, FactionType, GameClass, GameFaction, GameRace, GameServer } from '../../../types';
+import type {
+  Bot,
+  FactionType,
+  GameClass,
+  GameFaction,
+  GameRace,
+  GameServer,
+} from '../../../types';
 
 export interface BotCharacterProps {
   bot: Bot;

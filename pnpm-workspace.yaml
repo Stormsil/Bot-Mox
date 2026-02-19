@@ -1,0 +1,7 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "bot-mox"
+  - "proxy-server"
+  - "agent"
+  - "scripts"

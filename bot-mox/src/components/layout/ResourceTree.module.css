@@ -89,6 +89,10 @@
 }
 
 .resource-tree-resizer {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
   position: absolute;
   top: 0;
   right: -2px;

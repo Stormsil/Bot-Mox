@@ -1,7 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { ProxmoxVM, VMQueueItem, VMUiState } from '../../types';
-import type { AddDeleteTaskOverrides, AddToQueueOverrides, UseVMQueueParams } from './queue/types';
 import { processVmQueue } from './queue/processor';
+import type { AddDeleteTaskOverrides, AddToQueueOverrides, UseVMQueueParams } from './queue/types';
 import { generateNextVmName, normalizeVmId } from './queue/utils';
 export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) {
   const [queue, setQueue] = useState<VMQueueItem[]>([]);
@@ -14,92 +14,109 @@ export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) 
   const processLockRef = useRef(false);
 
   const syncQueue = useCallback((updater: (prev: VMQueueItem[]) => VMQueueItem[]) => {
-    setQueue(prev => {
+    setQueue((prev) => {
       const next = updater(prev);
       queueRef.current = next;
       return next;
     });
   }, []);
 
-  const addToQueue = useCallback((overrides?: AddToQueueOverrides) => {
-    const prefix = overrides?.prefix || 'WoW';
-    const queueNames = queueRef.current.map(i => i.name);
-    const generated = generateNextVmName(prefix, usedIds, usedNames, queueNames);
-    const name = String(overrides?.name || '').trim() || generated.name;
+  const addToQueue = useCallback(
+    (overrides?: AddToQueueOverrides) => {
+      const prefix = overrides?.prefix || 'WoW';
+      const queueNames = queueRef.current.map((i) => i.name);
+      const generated = generateNextVmName(prefix, usedIds, usedNames, queueNames);
+      const name = String(overrides?.name || '').trim() || generated.name;
 
-    const newItem: VMQueueItem = {
-      id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-      name,
-      storage: overrides?.storage || 'data',
-      storageMode: overrides?.storageMode || 'manual',
-      format: overrides?.format || 'raw',
-      resourceMode: overrides?.resourceMode || 'project',
-      cores: overrides?.cores,
-      memory: overrides?.memory,
-      diskGiB: overrides?.diskGiB,
-      projectId: overrides?.projectId || 'wow_tbc',
-      unattendProfileId: overrides?.unattendProfileId,
-      unattendXmlOverride: overrides?.unattendXmlOverride,
-      playbookId: overrides?.playbookId,
-      status: 'pending',
-    };
-    syncQueue(prev => [...prev, newItem]);
-    return newItem;
-  }, [usedIds, usedNames, syncQueue]);
+      const newItem: VMQueueItem = {
+        id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        name,
+        storage: overrides?.storage || 'data',
+        storageMode: overrides?.storageMode || 'manual',
+        format: overrides?.format || 'raw',
+        resourceMode: overrides?.resourceMode || 'project',
+        cores: overrides?.cores,
+        memory: overrides?.memory,
+        diskGiB: overrides?.diskGiB,
+        projectId: overrides?.projectId || 'wow_tbc',
+        unattendProfileId: overrides?.unattendProfileId,
+        unattendXmlOverride: overrides?.unattendXmlOverride,
+        playbookId: overrides?.playbookId,
+        status: 'pending',
+      };
+      syncQueue((prev) => [...prev, newItem]);
+      return newItem;
+    },
+    [usedIds, usedNames, syncQueue],
+  );
 
-  const addDeleteToQueue = useCallback((overrides: AddDeleteTaskOverrides) => {
-    const vmid = normalizeVmId(overrides.vmid);
-    if (!vmid) return null;
+  const addDeleteToQueue = useCallback(
+    (overrides: AddDeleteTaskOverrides) => {
+      const vmid = normalizeVmId(overrides.vmid);
+      if (!vmid) return null;
 
-    const rawName = String(overrides.name || '').trim();
-    const name = rawName || `VM ${vmid}`;
-    const existingDeleteTask = queueRef.current.some(item =>
-      (item.action || 'create') === 'delete' && normalizeVmId(item.targetVmId ?? item.vmId) === vmid
-    );
-    if (existingDeleteTask) return null;
+      const rawName = String(overrides.name || '').trim();
+      const name = rawName || `VM ${vmid}`;
+      const existingDeleteTask = queueRef.current.some(
+        (item) =>
+          (item.action || 'create') === 'delete' &&
+          normalizeVmId(item.targetVmId ?? item.vmId) === vmid,
+      );
+      if (existingDeleteTask) return null;
 
-    const newItem: VMQueueItem = {
-      id: `q_del_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-      action: 'delete',
-      name,
-      storage: '',
-      format: '',
-      resourceMode: 'project',
-      cores: undefined,
-      memory: undefined,
-      projectId: overrides.projectId || 'wow_tbc',
-      status: 'pending',
-      targetVmId: vmid,
-      vmId: vmid,
-    };
-    syncQueue(prev => [...prev, newItem]);
-    return newItem;
-  }, [syncQueue]);
+      const newItem: VMQueueItem = {
+        id: `q_del_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        action: 'delete',
+        name,
+        storage: '',
+        format: '',
+        resourceMode: 'project',
+        cores: undefined,
+        memory: undefined,
+        projectId: overrides.projectId || 'wow_tbc',
+        status: 'pending',
+        targetVmId: vmid,
+        vmId: vmid,
+      };
+      syncQueue((prev) => [...prev, newItem]);
+      return newItem;
+    },
+    [syncQueue],
+  );
 
-  const addDeleteTasks = useCallback((vms: Array<Pick<ProxmoxVM, 'vmid' | 'name'>>): number => {
-    let added = 0;
-    for (const vm of vms) {
-      const created = addDeleteToQueue({
-        vmid: vm.vmid,
-        name: vm.name || `VM ${vm.vmid}`,
-      });
-      if (created) added += 1;
-    }
-    return added;
-  }, [addDeleteToQueue]);
+  const addDeleteTasks = useCallback(
+    (vms: Array<Pick<ProxmoxVM, 'vmid' | 'name'>>): number => {
+      let added = 0;
+      for (const vm of vms) {
+        const created = addDeleteToQueue({
+          vmid: vm.vmid,
+          name: vm.name || `VM ${vm.vmid}`,
+        });
+        if (created) added += 1;
+      }
+      return added;
+    },
+    [addDeleteToQueue],
+  );
 
-  const removeFromQueue = useCallback((id: string) => {
-    syncQueue(prev => prev.filter(item => item.id !== id));
-  }, [syncQueue]);
+  const removeFromQueue = useCallback(
+    (id: string) => {
+      syncQueue((prev) => prev.filter((item) => item.id !== id));
+    },
+    [syncQueue],
+  );
 
   const clearQueue = useCallback(() => {
     syncQueue(() => []);
     setReadyVmIds([]);
   }, [syncQueue]);
 
-  const updateQueueItem = useCallback((id: string, updates: Partial<VMQueueItem>) => {
-    syncQueue(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
-  }, [syncQueue]);
+  const updateQueueItem = useCallback(
+    (id: string, updates: Partial<VMQueueItem>) => {
+      syncQueue((prev) => prev.map((item) => (item.id === id ? { ...item, ...updates } : item)));
+    },
+    [syncQueue],
+  );
 
   const cancelProcessing = useCallback(() => {
     cancelRef.current = true;
@@ -151,4 +168,3 @@ export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) 
     cancelProcessing,
   };
 }
-

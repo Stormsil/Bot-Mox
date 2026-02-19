@@ -1,4 +1,3 @@
-import React from 'react';
 import { DeleteOutlined, EditOutlined, RobotOutlined } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
 import { Space, Tag, Typography } from 'antd';
@@ -83,7 +82,9 @@ export const buildSubscriptionColumns = ({
     width: 100,
     ...(cellClassName ? { className: cellClassName } : {}),
     ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
-    render: (createdAt: number) => <Text style={{ fontSize: '12px' }}>{dayjs(createdAt).format('DD.MM.YYYY')}</Text>,
+    render: (createdAt: number) => (
+      <Text style={{ fontSize: '12px' }}>{dayjs(createdAt).format('DD.MM.YYYY')}</Text>
+    ),
   },
   {
     title: 'Days Left',
@@ -93,11 +94,7 @@ export const buildSubscriptionColumns = ({
     ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (_value: unknown, record) => {
       if (record.isExpired) {
-        return (
-          <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>
-            0
-          </Text>
-        );
+        return <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>0</Text>;
       }
 
       let color = '#52c41a';
@@ -129,7 +126,12 @@ export const buildSubscriptionColumns = ({
     render: (_value: unknown, record) => (
       <TableActionGroup>
         <TableActionButton icon={<EditOutlined />} onClick={() => onEdit(record)} tooltip="Edit" />
-        <TableActionButton danger icon={<DeleteOutlined />} onClick={() => onDelete(record)} tooltip="Delete" />
+        <TableActionButton
+          danger
+          icon={<DeleteOutlined />}
+          onClick={() => onDelete(record)}
+          tooltip="Delete"
+        />
       </TableActionGroup>
     ),
   },
