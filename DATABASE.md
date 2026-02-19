@@ -1,21 +1,15 @@
 # Database Index
 
-Краткий индекс документации по хранилищам данных Bot-Mox.
+Status: Active  
+Owner: Data Platform  
+Last Updated: 2026-02-19  
+Applies To: Supabase/Postgres runtime  
+Non-goals: Legacy data backends  
+Related Checks: `db:types:check`, `contract:check`
 
-## Актуальные документы
+Use canonical database documentation:
+1. `docs/DATABASE.md`
+2. `packages/database-schema/`
+3. `supabase/migrations/`
 
-- `docs/DATABASE.md` — текущее описание модели хранения и доступа
-- `docs/plans/supabase-saas-agent-mvp.md` — исходный staged migration plan
-- `docs/audits/firebase-decommission-audit.md` — live audit статуса полного удаления Firebase/RTDB
-
-## Legacy References
-
-- `docs/history/database/DATABASE_SCHEMA.json` — legacy RTDB schema snapshot (historical reference)
-- `docs/history/runbooks/rtdb-supabase-cutover.md` — archived cutover runbook
-- `docs/history/architecture/firebase-rules-policy.md` — archived Firebase rules policy
-- `docs/history/firebase-config/` — archived Firebase project config + rules/indexes files
-
-## История
-
-- `docs/history/architecture/refactor-baseline.md`
-- `docs/history/architecture/refactor-handoff-2026-02-10.md`
+Historical migration artifacts are archived in `docs/history/**`.

@@ -1,0 +1,63 @@
+# Frontend Architecture Canonical
+
+Status: Active  
+Owner: Frontend Platform  
+Last Updated: 2026-02-19  
+Applies To: `apps/frontend`  
+Non-goals: Pixel-level design specs  
+Related Checks: `check:ui:boundaries`, `check:entities:service-boundary`, `check:vm:provider-boundary`, `check:file-size:budgets`
+
+## Stack
+
+1. React 19
+2. Vite 7
+3. Refine 5
+4. Ant Design 5
+5. TanStack Query 5
+
+## Structural Target
+
+Use FSD-oriented boundaries:
+1. `app`
+2. `pages`
+3. `widgets`
+4. `features`
+5. `entities`
+6. `shared`
+
+Current repository still contains transitional folders (`components`, `hooks`, `services`, `utils`) that are being reduced by grooming waves.
+
+## Hard Rules
+
+1. UI presentation components must not call transport/service layers directly.
+2. Server-state lives in query/model/api hooks under entities/features.
+3. Contract DTOs and schemas come from `@botmox/api-contract`.
+4. Styling is AntD-token-first and CSS Modules scoped.
+5. New global CSS or raw palette literals require explicit approval.
+6. New large files require decomposition plan if over budget.
+
+## Styling Rules
+
+1. Prefer AntD tokens + ConfigProvider component tokens.
+2. Prefer CSS Modules for local layout/styling.
+3. No `.ant-*` overrides in CSS Modules.
+4. No `!important` in frontend CSS.
+5. Maintain keyboard focus visibility (`:focus-visible`, `:focus-within`).
+
+See `docs/frontend/STYLING.md` for detailed checklist.
+
+## Hotspot Grooming Priority
+
+1. `src/hooks/vm/queue/processor.ts`
+2. `src/components/vm/VMQueuePanel.tsx`
+3. `src/pages/vms/VMsPage.tsx`
+4. `src/services/apiClient.ts`
+5. `src/services/vmService.ts`
+6. `src/services/vmOpsService.ts`
+
+Each hotspot must be split into model/api/ui composition and moved toward FSD boundaries.
+
+## RU Notes
+
+1. Прямые API-вызовы из UI-компонентов запрещены.
+2. CSS пишем через AntD токены и CSS Modules, не через глобальные хаки.

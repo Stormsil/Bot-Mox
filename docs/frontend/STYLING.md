@@ -1,5 +1,12 @@
 # Frontend Styling Conventions (Bot-Mox)
 
+Status: Active
+Owner: Frontend Platform
+Last Updated: 2026-02-19
+Applies To: `apps/frontend/src`
+Non-goals: Raw CSS experimentation outside design system
+Related Checks: `check:styles:guardrails`, `check:style:token-usage`, `check:theme:contrast`
+
 This doc defines the expected styling approach for Bot-Mox so new UI can be added quickly without accumulating tech debt.
 
 ## Principles (Non-Negotiable)
@@ -12,7 +19,7 @@ This doc defines the expected styling approach for Bot-Mox so new UI can be adde
 4. **No `!important`** in frontend CSS.
 5. **Accessible focus**: do not remove focus styles without replacing them with `:focus-visible` / `:focus-within` indicators.
 
-Guardrails are enforced by `scripts/check-style-guardrails.js` and run via `npm run check:styles:guardrails` (also included in `npm run check:all`).
+Guardrails are enforced by `scripts/check-style-guardrails.js` and run via `pnpm run check:styles:guardrails` (also included in `pnpm run check:all`).
 
 ## What Goes Where
 
@@ -71,8 +78,8 @@ Example:
 7. For all native `<button>` elements:
    - set `type="button"` unless you intentionally need `type="submit"` inside a `<form>`.
 8. Run:
-   - `npm run check:styles:guardrails`
-   - `npm run check:all` before committing.
+   - `pnpm run check:styles:guardrails`
+   - `pnpm run check:all` before committing.
 
 ## New Page Skeleton (Recommended)
 
@@ -139,3 +146,4 @@ Preferred flow:
 1. First try existing semantic vars (examples earlier in this doc).
 2. If semantics are missing, extend the token mapping in `apps/frontend/src/theme/themeRuntime.tsx` (antd tokens/components) and, only if needed, the legacy CSS vars bridge.
 3. Document the new semantic token name in this file (so future pages reuse it).
+

@@ -1,22 +1,27 @@
 # Bot-Mox
 
-Bot-Mox is a SaaS control-plane and automation toolkit for managing bot infrastructure.
+Bot-Mox is a SaaS control-plane and automation toolkit for bot infrastructure.
 
-Current stack:
-1. Frontend: React + TypeScript + Vite (`apps/frontend/`)
-2. Backend: NestJS API (`apps/backend/`)
-3. Data: Supabase/Postgres (primary runtime)
-4. Infra runtime: Docker Compose + Caddy + MinIO (production-like stack)
+## Active Stack (Canonical)
+
+1. Frontend: React 19 + Vite 7 + Refine 5 + Ant Design 5 + TanStack Query 5 (`apps/frontend`)
+2. Backend: NestJS 11 modular monolith (`apps/backend`)
+3. Agent: Electron + TypeScript (`apps/agent`)
+4. Data: Supabase/Postgres + shared DB types (`packages/database-schema`)
+5. Contract + validation: `@botmox/api-contract` + Zod
+6. Monorepo tooling: pnpm + turbo
 
 ## Repository Layout
 
-1. `apps/frontend/` - frontend application
-2. `apps/backend/` - main backend API and infra gateway modules
-3. `docs/` - architecture, API contract, plans, rollout docs
-4. `deploy/` - production-like compose stack, Caddy config, env templates
-5. `scripts/` - operational scripts (stack up/down, deploy, rollback, backups)
+1. `apps/frontend` - web admin/control UI
+2. `apps/backend` - API + infra gateway + domain modules
+3. `apps/agent` - desktop execution agent
+4. `packages/*` - shared contracts/types/utils/ui-kit
+5. `docs` - canonical architecture/workflow/standards and audits
+6. `deploy` - production-like compose stack + Caddy
+7. `scripts` - checks, stack commands, operational tooling
 
-## Quick Start (Development)
+## Quick Start
 
 Prerequisites:
 1. Node.js 20+
@@ -27,127 +32,37 @@ Install:
 
 ```bash
 pnpm install --frozen-lockfile
-cd apps/frontend && pnpm install --frozen-lockfile
-cd ../apps/backend && pnpm install --frozen-lockfile
-cd ..
 ```
 
-Run local app (non-container):
+Start production-like localhost stack:
 
 ```bash
-pnpm run dev
+pnpm run dev:prodlike:up
 ```
 
-Run Docker dev stack (hot reload):
+Stop:
 
 ```bash
-pnpm run stack:dev:up
+pnpm run dev:prodlike:down
 ```
 
-Run production-like local stack:
+## Required Quality Gates
 
 ```bash
-pnpm run stack:prod-sim:up
-```
-
-## Quality Gates
-
-Run full local checks:
-
-```bash
-pnpm run check:all
-```
-
-Enterprise migration checks (pnpm/turbo):
-
-```bash
-pnpm run db:types:check
-pnpm run contract:check
+pnpm run docs:check
 pnpm run check:all:mono
 ```
 
-CI workflow: `.github/workflows/ci.yml`
+## Canonical Documentation
 
-## AI Debugging & Testing
+1. Start here: `docs/workflow/START_HERE_FOR_DEVS_AND_AGENTS.md`
+2. Workflow: `docs/workflow/DEV_WORKFLOW_CANONICAL.md`
+3. Architecture: `docs/architecture/ARCHITECTURE_CANONICAL.md`
+4. Frontend architecture: `docs/frontend/FRONTEND_ARCHITECTURE_CANONICAL.md`
+5. Backend architecture: `docs/backend/BACKEND_ARCHITECTURE_CANONICAL.md`
+6. Agent architecture: `docs/agent/AGENT_ARCHITECTURE_CANONICAL.md`
+7. Quality constitution: `docs/standards/CODE_QUALITY_CONSTITUTION.md`
+8. AI development rules: `docs/standards/AI_AGENT_DEVELOPMENT_RULES.md`
+9. Docs index: `docs/README.md`
 
-Stack:
-- Observability: OpenTelemetry (frontend + backend) + JSON logs (pino) + Jaeger (OTLP)
-- E2E: Playwright with `trace.zip` artifacts on failures
-- Frontend incident ingest: `uiLogger` -> `POST /api/v1/client-logs` -> backend pino stream (`scope=client_log`)
-
-Quick start (local):
-
-```bash
-# 1) Start Jaeger UI (OTLP receiver + trace viewer)
-pnpm run obs:up
-
-# 2) Start app with tracing enabled (backend + frontend propagation)
-pnpm run dev:trace
-
-# 3) Fast sanity check (no scenarios)
-pnpm run doctor
-
-# 4) Run E2E smoke
-pnpm run test:e2e
-
-# If you already run the prod-like stack on http://localhost (Caddy) and don't want Playwright to start webServer:
-pnpm run test:e2e:prodlike
-
-# Combined quick check (doctor + Playwright smoke against http://localhost):
-pnpm run smoke:prodlike
-```
-
-Where to find debugging artifacts:
-- Playwright results: `apps/frontend/test-results/`
-- Playwright HTML report: `apps/frontend/playwright-report/`
-- AI-native debug runbook + env vars: `docs/plans/ai-native-observability-testing.md`
-- Frontend incident logs: backend JSON stream (`scope=client_log`, `source=frontend`)
-
-How to analyze failures (AI agent flow):
-1. Open Playwright report and trace (`trace.zip`) for the failing test.
-2. Read `x-trace-id` (or request `traceparent`) for the failing network request.
-3. Find backend JSON request logs by `trace_id` to reconstruct the server-side flow.
-4. Find frontend ingest logs by `scope=client_log` + same `trace_id` (or `correlation_id`) to connect UI errors with backend flow.
-5. (If enabled) Open Jaeger UI and inspect spans for that Trace ID.
-
-Guardrails:
-- `pnpm run check:frontend:logging` blocks new `console.*` in critical frontend layers (`services/hooks/pages/observability/ErrorBoundary`).
-- `pnpm run check:backend:logging` blocks new `console.*` in backend (allowlist-based).
-
-## API Contract and Architecture
-
-1. API contract: `docs/api/openapi.yaml`
-2. Architecture baseline: `docs/ARCHITECTURE.md`
-3. Execution roadmap: `docs/plans/green-implementation-roadmap.md`
-4. Tracker-ready backlog: `docs/plans/green-issue-backlog.md`
-5. Enterprise migration roadmap: `docs/plans/enterprise-migration-2026-roadmap.md`
-6. Enterprise migration audit: `docs/audits/enterprise-migration-2026-audit.md`
-7. Dev workflow (prod-like localhost): `docs/runbooks/dev-workflow.md`
-
-## Deployment
-
-1. Build/publish images: `.github/workflows/images.yml`
-2. Manual deploy: `.github/workflows/deploy-prod.yml`
-3. Manual rollback: `.github/workflows/rollback-prod.yml`
-
-VPS scripts:
-1. `scripts/deploy-vps.sh`
-2. `scripts/rollback-vps.sh`
-3. `scripts/backup-postgres.sh`
-4. `scripts/backup-minio.sh`
-
-## Publish to GitHub
-
-If repository is not connected yet:
-
-```bash
-git remote add origin https://github.com/<owner>/<repo>.git
-git push -u origin main
-```
-
-If you use SSH:
-
-```bash
-git remote add origin git@github.com:<owner>/<repo>.git
-git push -u origin main
-```
+Historical materials are archived in `docs/history/**`.
