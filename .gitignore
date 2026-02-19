@@ -1,12 +1,14 @@
 # Dependencies
 node_modules/
 **/node_modules/
+**/package-lock.json
 
 # Build artifacts
 dist/
 build/
 coverage/
 .cache/
+.turbo/
 *.tsbuildinfo
 apps/frontend/test-results/
 apps/frontend/playwright-report/
@@ -58,6 +60,6 @@ tmp/
 temp/
 backups/
 
-# Local caches / generated docs
-.turbo/
+# Generated documentation artifacts
 docs/_generated/
+docs/**/_generated/

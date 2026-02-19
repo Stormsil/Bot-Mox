@@ -71,10 +71,7 @@ export const ResourceTree: React.FC = () => {
       Object.fromEntries(
         Object.entries(projectSettingsQuery.data || {}).map(([projectId, project]) => [
           projectId,
-          {
-            id: projectId,
-            name: (project.name || projectId).trim(),
-          },
+          { id: projectId, name: (project.name || projectId).trim() },
         ]),
       ),
     [projectSettingsQuery.data],

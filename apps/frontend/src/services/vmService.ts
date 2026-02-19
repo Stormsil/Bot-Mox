@@ -4,11 +4,30 @@ import type {
   ProxmoxTaskStatus,
   ProxmoxVM,
   ProxmoxVMConfig,
-  SSHResult,
   VMConfigUpdateParams,
 } from '../types';
 import { ApiClientError, apiPost } from './apiClient';
 import { executeVmOps } from './vmOpsService';
+import {
+  executeSSH,
+  getSshConnectionStatus,
+  readVMConfig,
+  testSSHConnection,
+  writeVMConfig,
+} from './vmService/sshOps';
+import {
+  type StartAndSendKeyBatchResult,
+  type StartAndSendKeyOptions,
+  startAndSendKeyBatchWithDeps,
+} from './vmService/startAndSendKey';
+
+export type { SshConnectionStatus } from './vmService/sshOps';
+export type {
+  StartAndSendKeyBatchResult,
+  StartAndSendKeyOptions,
+  StartAndSendKeyResultItem,
+} from './vmService/startAndSendKey';
+export { executeSSH, getSshConnectionStatus, readVMConfig, testSSHConnection, writeVMConfig };
 
 export interface ProxmoxTargetInfo {
   id: string;
@@ -31,20 +50,6 @@ export interface ProxmoxConnectionSnapshot {
   agentOnline: boolean;
   proxmoxConnected: boolean;
 }
-
-export interface SshConnectionStatus {
-  connected: boolean;
-  configured: boolean;
-  code?: string;
-  message?: string;
-  mode?: string;
-  host?: string;
-  port?: number;
-  username?: string;
-}
-
-const SSH_STATUS_CACHE_TTL_MS = 3_000;
-let cachedSshStatus: { expiresAtMs: number; value: SshConnectionStatus } | null = null;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -350,213 +355,19 @@ export async function sendVMKey(vmid: number, key: string, node = 'h1'): Promise
   });
 }
 
-export interface StartAndSendKeyOptions {
-  node?: string;
-  key?: string;
-  repeatCount?: number;
-  intervalMs?: number;
-  startupDelayMs?: number;
-  waitTimeoutMs?: number;
-  pollIntervalMs?: number;
-}
-
-export interface StartAndSendKeyResultItem {
-  vmid: number;
-  success: boolean;
-  error?: string;
-}
-
-export interface StartAndSendKeyBatchResult {
-  total: number;
-  ok: number;
-  failed: number;
-  results: StartAndSendKeyResultItem[];
-}
-
-interface SendKeySpamResult {
-  attempts: number;
-  sent: number;
-  lastError: string | null;
-}
-
-async function waitUntilVmRunning(
-  vmid: number,
-  node: string,
-  timeoutMs: number,
-  pollIntervalMs: number,
-): Promise<void> {
-  const status = await waitForVmStatus(vmid, node, 'running', {
-    timeoutMs,
-    intervalMs: pollIntervalMs,
-  });
-  if (!isRunningStatus(status.status)) {
-    throw new Error(
-      `VM ${vmid} did not reach running state within ${Math.ceil(timeoutMs / 1000)}s`,
-    );
-  }
-}
-
-async function waitForTaskCompletion(
-  upid: string,
-  node: string,
-  timeoutMs: number,
-  pollIntervalMs: number,
-  taskLabel: string,
-): Promise<void> {
-  const status = await waitForTask(upid, node, {
-    timeoutMs,
-    intervalMs: pollIntervalMs,
-  });
-  const exitStatus = String(status?.exitstatus || '').trim();
-  if (exitStatus && exitStatus.toUpperCase() !== 'OK') {
-    throw new Error(`${taskLabel} failed: ${exitStatus}`);
-  }
-}
-
-async function runSendKeySpam(
-  vmid: number,
-  options: Required<
-    Pick<StartAndSendKeyOptions, 'node' | 'key' | 'repeatCount' | 'intervalMs' | 'startupDelayMs'>
-  >,
-  signal: { cancelled: boolean },
-): Promise<SendKeySpamResult> {
-  if (options.startupDelayMs > 0) {
-    await sleep(options.startupDelayMs);
-  }
-
-  let sent = 0;
-  let lastError: string | null = null;
-
-  for (let i = 0; i < options.repeatCount; i++) {
-    if (signal.cancelled) break;
-    try {
-      await sendVMKey(vmid, options.key, options.node);
-      sent += 1;
-      lastError = null;
-    } catch (error) {
-      lastError = error instanceof Error ? error.message : String(error);
-    }
-
-    if (i < options.repeatCount - 1 && options.intervalMs > 0) {
-      await sleep(options.intervalMs);
-    }
-  }
-
-  return {
-    attempts: options.repeatCount,
-    sent,
-    lastError,
-  };
-}
-
-async function runStartAndSendKeyForVm(
-  vmid: number,
-  options: Required<
-    Pick<
-      StartAndSendKeyOptions,
-      | 'node'
-      | 'key'
-      | 'repeatCount'
-      | 'intervalMs'
-      | 'startupDelayMs'
-      | 'waitTimeoutMs'
-      | 'pollIntervalMs'
-    >
-  >,
-): Promise<void> {
-  let isAlreadyRunning = false;
-  try {
-    const current = await getVMStatus(vmid, options.node);
-    isAlreadyRunning = isRunningStatus(current.status);
-  } catch {
-    // Ignore
-  }
-
-  const spamSignal = { cancelled: false };
-  const sendKeySpamPromise = runSendKeySpam(vmid, options, spamSignal);
-
-  try {
-    if (!isAlreadyRunning) {
-      let startUpid: string | null = null;
-      try {
-        startUpid = await startVM(vmid, options.node);
-      } catch (error) {
-        const msg = error instanceof Error ? error.message : String(error);
-        if (/already running|status: running|state is running|vm is running/i.test(msg)) {
-          isAlreadyRunning = true;
-        } else {
-          throw error;
-        }
-      }
-
-      if (!isAlreadyRunning && startUpid) {
-        await waitForTaskCompletion(
-          startUpid,
-          options.node,
-          Math.max(options.waitTimeoutMs, 180000),
-          options.pollIntervalMs,
-          `VM ${vmid} start task`,
-        );
-      }
-    }
-
-    await waitUntilVmRunning(vmid, options.node, options.waitTimeoutMs, options.pollIntervalMs);
-
-    const spamResult = await sendKeySpamPromise;
-    if (spamResult.sent === 0) {
-      const lastErrorSuffix = spamResult.lastError ? ` Last error: ${spamResult.lastError}` : '';
-      throw new Error(
-        `VM ${vmid} did not accept key "${options.key}" during ${spamResult.attempts} attempts.${lastErrorSuffix}`,
-      );
-    }
-  } catch (error) {
-    spamSignal.cancelled = true;
-    await sendKeySpamPromise;
-    throw error;
-  }
-}
-
 export async function startAndSendKeyBatch(
   vmIds: number[],
   options: StartAndSendKeyOptions = {},
 ): Promise<StartAndSendKeyBatchResult> {
-  const normalizedVmIds = Array.from(
-    new Set((vmIds || []).map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0)),
-  );
-
-  if (normalizedVmIds.length === 0) {
-    throw new Error('No VM IDs provided');
-  }
-
-  const effectiveOptions = {
-    node: options.node || 'h1',
-    key: (options.key || 'a').trim() || 'a',
-    repeatCount: Math.max(1, Math.trunc(options.repeatCount ?? 10)),
-    intervalMs: Math.max(0, Math.trunc(options.intervalMs ?? 1000)),
-    startupDelayMs: Math.max(0, Math.trunc(options.startupDelayMs ?? 3000)),
-    waitTimeoutMs: Math.max(1000, Math.trunc(options.waitTimeoutMs ?? 120000)),
-    pollIntervalMs: Math.max(250, Math.trunc(options.pollIntervalMs ?? 1000)),
-  };
-
-  const results = await Promise.all(
-    normalizedVmIds.map(async (vmid): Promise<StartAndSendKeyResultItem> => {
-      try {
-        await runStartAndSendKeyForVm(vmid, effectiveOptions);
-        return { vmid, success: true };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return { vmid, success: false, error: message };
-      }
-    }),
-  );
-
-  const ok = results.filter((item) => item.success).length;
-  return {
-    total: results.length,
-    ok,
-    failed: results.length - ok,
-    results,
-  };
+  return startAndSendKeyBatchWithDeps(vmIds, options, {
+    sleep,
+    isRunningStatus,
+    getVMStatus,
+    waitForVmStatus,
+    waitForTask,
+    startVM,
+    sendVMKey,
+  });
 }
 
 export async function getVMConfig(vmid: number, node = 'h1'): Promise<ProxmoxVMConfig> {
@@ -590,121 +401,6 @@ export async function updateVMConfig(
   });
   const upid = extractUpid(result?.upid ?? result);
   return { upid: upid || null };
-}
-
-// ============================================================
-// SSH operations (via agent command bus → /api/v1/vm-ops)
-// ============================================================
-
-export async function testSSHConnection(): Promise<boolean> {
-  const status = await getSshConnectionStatus();
-  return status.connected;
-}
-
-export async function getSshConnectionStatus(
-  options: { forceRefresh?: boolean } = {},
-): Promise<SshConnectionStatus> {
-  const forceRefresh = options.forceRefresh === true;
-  if (!forceRefresh && cachedSshStatus && cachedSshStatus.expiresAtMs > Date.now()) {
-    return cachedSshStatus.value;
-  }
-
-  try {
-    const result = await executeVmOps<Partial<SshConnectionStatus>>({
-      type: 'proxmox',
-      action: 'ssh-status',
-      timeoutMs: 15_000,
-    });
-
-    const normalized: SshConnectionStatus = {
-      connected: Boolean(result?.connected),
-      configured: Boolean(result?.configured),
-      code: typeof result?.code === 'string' ? result.code : undefined,
-      message: typeof result?.message === 'string' ? result.message : undefined,
-      mode: typeof result?.mode === 'string' ? result.mode : undefined,
-      host: typeof result?.host === 'string' ? result.host : undefined,
-      port: typeof result?.port === 'number' ? result.port : undefined,
-      username: typeof result?.username === 'string' ? result.username : undefined,
-    };
-
-    cachedSshStatus = {
-      expiresAtMs: Date.now() + SSH_STATUS_CACHE_TTL_MS,
-      value: normalized,
-    };
-    return normalized;
-  } catch {
-    const fallback: SshConnectionStatus = {
-      connected: false,
-      configured: false,
-      code: 'SSH_CHECK_FAILED',
-    };
-    cachedSshStatus = {
-      expiresAtMs: Date.now() + 1_000,
-      value: fallback,
-    };
-    return fallback;
-  }
-}
-
-async function ensureSshReadyForOperation(operation: string): Promise<void> {
-  const status = await getSshConnectionStatus({ forceRefresh: true });
-  if (!status.configured) {
-    throw new ApiClientError(
-      'SSH is not configured for the selected computer. Configure SSH to use this feature.',
-      {
-        status: 400,
-        code: 'SSH_REQUIRED',
-        details: { operation, status },
-      },
-    );
-  }
-
-  if (!status.connected) {
-    throw new ApiClientError(
-      status.message || 'SSH is currently unavailable for the selected computer.',
-      {
-        status: 409,
-        code: status.code || 'SSH_UNREACHABLE',
-        details: { operation, status },
-      },
-    );
-  }
-}
-
-export async function readVMConfig(vmid: number): Promise<string> {
-  await ensureSshReadyForOperation('read-vm-config');
-  const result = await executeVmOps<{ config?: string }>({
-    type: 'proxmox',
-    action: 'ssh-read-config',
-    params: { vmid },
-    timeoutMs: 15_000,
-  });
-  return String(result?.config || '');
-}
-
-export async function writeVMConfig(vmid: number, content: string): Promise<void> {
-  await ensureSshReadyForOperation('write-vm-config');
-  await executeVmOps({
-    type: 'proxmox',
-    action: 'ssh-write-config',
-    params: { vmid, content },
-    timeoutMs: 15_000,
-  });
-}
-
-export async function executeSSH(command: string, timeout?: number): Promise<SSHResult> {
-  await ensureSshReadyForOperation('ssh-exec');
-  const result = await executeVmOps<SSHResult>({
-    type: 'proxmox',
-    action: 'ssh-exec',
-    params: { command, timeout },
-    timeoutMs: Math.max(30_000, (timeout || 0) + 10_000),
-  });
-  return {
-    stdout: String(result?.stdout || ''),
-    stderr: String(result?.stderr || ''),
-    exitCode: Number(result?.exitCode ?? 1),
-  };
 }
 
 // ============================================================

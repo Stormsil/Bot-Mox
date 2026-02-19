@@ -1,10 +1,5 @@
 import { message } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type {
-  ThemeBackgroundAsset,
-  ThemePreset,
-  ThemeSettings,
-} from '../../entities/settings/api/themeFacade';
+import { useCallback, useMemo, useState } from 'react';
 import { useThemeAssetsQuery } from '../../entities/settings/api/useThemeAssetsQuery';
 import {
   useApplyThemePresetMutation,
@@ -22,95 +17,33 @@ import {
   sanitizeThemeShapeSettings,
   sanitizeThemeTypographySettings,
   sanitizeThemeVisualSettings,
-  type ThemeColorVariable,
-  type ThemeMode,
-  type ThemePalettes,
-  type ThemeShapeSettings,
-  type ThemeTypographySettings,
-  type ThemeVisualSettings,
 } from '../../theme/themePalette';
+import {
+  applySelectedThemePreset,
+  deleteSelectedThemePreset,
+  saveCurrentThemePreset,
+} from './themePresetActions';
+import {
+  cloneThemePalettes,
+  mapThemePresetsToList,
+  type WindowWithEyeDropper,
+} from './themeSettings.helpers';
+import type {
+  ThemeBackgroundAsset,
+  ThemeColorVariable,
+  ThemeMode,
+  ThemePalettes,
+  ThemePreset,
+  ThemeSettings,
+  ThemeShapeSettings,
+  ThemeTypographySettings,
+  ThemeVisualSettings,
+  UseThemeSettingsArgs,
+  UseThemeSettingsResult,
+} from './themeSettings.types';
+import { useThemeSettingsSync } from './useThemeSettingsSync';
 
 const DEFAULT_THEME_PALETTES = createDefaultThemePalettes();
-
-interface EyeDropperOpenResult {
-  sRGBHex: string;
-}
-
-interface EyeDropperApi {
-  open: () => Promise<EyeDropperOpenResult>;
-}
-
-interface WindowWithEyeDropper extends Window {
-  EyeDropper?: new () => EyeDropperApi;
-}
-
-interface UseThemeSettingsArgs {
-  themePalettes?: ThemePalettes;
-  onThemePalettesChange?: (palettes: ThemePalettes) => void;
-  visualSettings?: ThemeVisualSettings;
-  onVisualSettingsChange?: (visual: ThemeVisualSettings) => void;
-  typographySettings?: ThemeTypographySettings;
-  onTypographySettingsChange?: (typography: ThemeTypographySettings) => void;
-  shapeSettings?: ThemeShapeSettings;
-  onShapeSettingsChange?: (shape: ThemeShapeSettings) => void;
-}
-
-interface UseThemeSettingsResult {
-  themeSaving: boolean;
-  themePresetSaving: boolean;
-  themePresetApplying: boolean;
-  themePresetDeleting: boolean;
-  isThemeDrawerOpen: boolean;
-  setIsThemeDrawerOpen: (open: boolean) => void;
-  editingThemeMode: ThemeMode;
-  setEditingThemeMode: (mode: ThemeMode) => void;
-  themePresets: ThemePreset[];
-  selectedPresetId?: string;
-  setSelectedPresetId: (id?: string) => void;
-  activePresetId?: string;
-  newThemePresetName: string;
-  setNewThemePresetName: (name: string) => void;
-  localThemePalettes: ThemePalettes;
-  themeInputValues: ThemePalettes;
-  localVisualSettings: ThemeVisualSettings;
-  localTypographySettings: ThemeTypographySettings;
-  localShapeSettings: ThemeShapeSettings;
-  themeAssets: ThemeBackgroundAsset[];
-  themeAssetsLoading: boolean;
-  themeAssetUploading: boolean;
-  themePresetOptions: Array<{ label: string; value: string }>;
-  applyThemeSettings: (settings: ThemeSettings) => void;
-  updateThemeColor: (
-    mode: ThemeMode,
-    cssVar: ThemeColorVariable,
-    rawColor: string,
-    options?: { syncApp?: boolean },
-  ) => void;
-  handleThemeInputChange: (mode: ThemeMode, cssVar: ThemeColorVariable, value: string) => void;
-  commitThemeInput: (mode: ThemeMode, cssVar: ThemeColorVariable) => void;
-  handlePickColorFromScreen: (mode: ThemeMode, cssVar: ThemeColorVariable) => Promise<void>;
-  handleResetCurrentPalette: () => void;
-  handleSaveThemeColors: () => Promise<void>;
-  handleSaveVisualSettings: () => Promise<void>;
-  handleVisualSettingsChange: (patch: Partial<ThemeVisualSettings>) => void;
-  handleTypographySettingsChange: (patch: Partial<ThemeTypographySettings>) => void;
-  handleShapeSettingsChange: (patch: Partial<ThemeShapeSettings>) => void;
-  handleRefreshThemeAssets: () => Promise<void>;
-  handleUploadThemeAsset: (file: File) => Promise<void>;
-  handleSelectThemeBackground: (assetId?: string) => void;
-  handleDeleteThemeAsset: (assetId: string) => Promise<void>;
-  handleSaveCurrentAsPreset: () => Promise<void>;
-  handleApplySelectedPreset: () => Promise<void>;
-  handleDeleteSelectedPreset: () => Promise<void>;
-}
-
-const cloneThemePalettes = (palettes: ThemePalettes): ThemePalettes => ({
-  light: { ...palettes.light },
-  dark: { ...palettes.dark },
-});
-
-const mapThemePresetsToList = (presets: Record<string, ThemePreset>): ThemePreset[] =>
-  Object.values(presets).sort((a, b) => b.updated_at - a.updated_at);
 
 export function useThemeSettings({
   themePalettes,
@@ -156,24 +89,17 @@ export function useThemeSettings({
     sanitizeThemeShapeSettings(shapeSettings),
   );
 
-  useEffect(() => {
-    if (!themePalettes) return;
-    const cloned = cloneThemePalettes(themePalettes);
-    setLocalThemePalettes(cloned);
-    setThemeInputValues(cloned);
-  }, [themePalettes]);
-
-  useEffect(() => {
-    setLocalVisualSettings(sanitizeThemeVisualSettings(visualSettings));
-  }, [visualSettings]);
-
-  useEffect(() => {
-    setLocalTypographySettings(sanitizeThemeTypographySettings(typographySettings));
-  }, [typographySettings]);
-
-  useEffect(() => {
-    setLocalShapeSettings(sanitizeThemeShapeSettings(shapeSettings));
-  }, [shapeSettings]);
+  useThemeSettingsSync({
+    themePalettes,
+    visualSettings,
+    typographySettings,
+    shapeSettings,
+    setLocalThemePalettes,
+    setThemeInputValues,
+    setLocalVisualSettings,
+    setLocalTypographySettings,
+    setLocalShapeSettings,
+  });
 
   const themeAssets = useMemo<ThemeBackgroundAsset[]>(
     () => themeAssetsQuery.data || [],
@@ -459,67 +385,44 @@ export function useThemeSettings({
   );
 
   const handleSaveCurrentAsPreset = useCallback(async () => {
-    const presetName = newThemePresetName.trim();
-    if (!presetName) {
-      message.warning('Enter theme name first');
-      return;
-    }
-
     setThemePresetSaving(true);
     try {
-      const preset = await saveThemePresetMutation.mutateAsync({
-        name: presetName,
-        palettes: localThemePalettes,
+      await saveCurrentThemePreset({
+        newThemePresetName,
+        localThemePalettes,
+        savePreset: (payload) => saveThemePresetMutation.mutateAsync(payload),
+        setThemePresets,
+        setSelectedPresetId,
+        setActivePresetId,
+        setNewThemePresetName,
       });
-      setThemePresets((current) =>
-        mapThemePresetsToList({
-          ...Object.fromEntries(current.map((item) => [item.id, item])),
-          [preset.id]: preset,
-        }),
-      );
-      setSelectedPresetId(preset.id);
-      setActivePresetId(preset.id);
-      setNewThemePresetName('');
-      message.success(`Theme "${preset.name}" saved`);
-    } catch (error) {
-      uiLogger.error('Error saving theme preset:', error);
-      message.error('Failed to save theme preset');
     } finally {
       setThemePresetSaving(false);
     }
   }, [localThemePalettes, newThemePresetName, saveThemePresetMutation]);
 
   const handleApplySelectedPreset = useCallback(async () => {
-    if (!selectedPresetId) {
-      message.warning('Select saved theme first');
-      return;
-    }
-
     setThemePresetApplying(true);
     try {
-      const nextSettings = await applyThemePresetMutation.mutateAsync({
-        presetId: selectedPresetId,
+      await applySelectedThemePreset({
+        selectedPresetId,
+        applyPreset: ({ presetId }) => applyThemePresetMutation.mutateAsync({ presetId }),
+        sanitizeVisualSettings: sanitizeThemeVisualSettings,
+        sanitizeTypographySettings: sanitizeThemeTypographySettings,
+        sanitizeShapeSettings: sanitizeThemeShapeSettings,
+        setLocalThemePalettes,
+        setThemeInputValues,
+        setLocalVisualSettings,
+        setLocalTypographySettings,
+        setLocalShapeSettings,
+        setThemePresets,
+        setActivePresetId,
+        setSelectedPresetId,
+        onThemePalettesChange,
+        onVisualSettingsChange,
+        onTypographySettingsChange,
+        onShapeSettingsChange,
       });
-      const nextPalettes = cloneThemePalettes(nextSettings.palettes);
-      const nextVisual = sanitizeThemeVisualSettings(nextSettings.visual);
-      const nextTypography = sanitizeThemeTypographySettings(nextSettings.typography);
-      const nextShape = sanitizeThemeShapeSettings(nextSettings.shape);
-      setLocalThemePalettes(nextPalettes);
-      setThemeInputValues(nextPalettes);
-      setLocalVisualSettings(nextVisual);
-      setLocalTypographySettings(nextTypography);
-      setLocalShapeSettings(nextShape);
-      setThemePresets(mapThemePresetsToList(nextSettings.presets));
-      setActivePresetId(nextSettings.active_preset_id);
-      setSelectedPresetId(nextSettings.active_preset_id ?? selectedPresetId);
-      onThemePalettesChange?.(nextSettings.palettes);
-      onVisualSettingsChange?.(nextVisual);
-      onTypographySettingsChange?.(nextTypography);
-      onShapeSettingsChange?.(nextShape);
-      message.success('Theme applied');
-    } catch (error) {
-      uiLogger.error('Error applying theme preset:', error);
-      message.error('Failed to apply theme');
     } finally {
       setThemePresetApplying(false);
     }
@@ -533,29 +436,21 @@ export function useThemeSettings({
   ]);
 
   const handleDeleteSelectedPreset = useCallback(async () => {
-    if (!selectedPresetId) {
-      return;
-    }
-
     setThemePresetDeleting(true);
     try {
-      const nextSettings = await deleteThemePresetMutation.mutateAsync({
-        presetId: selectedPresetId,
+      await deleteSelectedThemePreset({
+        selectedPresetId,
+        deletePreset: ({ presetId }) => deleteThemePresetMutation.mutateAsync({ presetId }),
+        sanitizeTypographySettings: sanitizeThemeTypographySettings,
+        sanitizeShapeSettings: sanitizeThemeShapeSettings,
+        setThemePresets,
+        setActivePresetId,
+        setSelectedPresetId,
+        setLocalTypographySettings,
+        setLocalShapeSettings,
+        onTypographySettingsChange,
+        onShapeSettingsChange,
       });
-      const nextPresets = mapThemePresetsToList(nextSettings.presets);
-      const nextTypography = sanitizeThemeTypographySettings(nextSettings.typography);
-      const nextShape = sanitizeThemeShapeSettings(nextSettings.shape);
-      setThemePresets(nextPresets);
-      setActivePresetId(nextSettings.active_preset_id);
-      setSelectedPresetId(nextSettings.active_preset_id ?? nextPresets[0]?.id);
-      setLocalTypographySettings(nextTypography);
-      setLocalShapeSettings(nextShape);
-      onTypographySettingsChange?.(nextTypography);
-      onShapeSettingsChange?.(nextShape);
-      message.success('Theme preset deleted');
-    } catch (error) {
-      uiLogger.error('Error deleting theme preset:', error);
-      message.error('Failed to delete theme preset');
     } finally {
       setThemePresetDeleting(false);
     }
@@ -566,12 +461,14 @@ export function useThemeSettings({
     selectedPresetId,
   ]);
 
-  const themePresetOptions = useMemo(() => {
-    return themePresets.map((preset) => ({
-      label: preset.id === activePresetId ? `${preset.name} (active)` : preset.name,
-      value: preset.id,
-    }));
-  }, [activePresetId, themePresets]);
+  const themePresetOptions = useMemo(
+    () =>
+      themePresets.map((preset) => ({
+        label: preset.id === activePresetId ? `${preset.name} (active)` : preset.name,
+        value: preset.id,
+      })),
+    [activePresetId, themePresets],
+  );
 
   return {
     themeSaving,

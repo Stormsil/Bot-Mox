@@ -1,0 +1,76 @@
+import { z } from 'zod';
+import {
+  authHeaderSchema,
+  errorEnvelopeSchema,
+  infraSshExecResultSchema,
+  infraSshExecSchema,
+  infraSshVmConfigPathSchema,
+  infraVmConfigReadResultSchema,
+  infraVmConfigWriteResultSchema,
+  infraVmConfigWriteSchema,
+  successEnvelopeSchema,
+} from './schemas.js';
+
+export const contractRoutesInfraSsh = {
+  infraSshExec: {
+    method: 'POST',
+    path: '/api/v1/infra/ssh/exec',
+    headers: authHeaderSchema,
+    body: infraSshExecSchema,
+    responses: {
+      200: successEnvelopeSchema(infraSshExecResultSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+      502: errorEnvelopeSchema,
+    },
+    summary: 'Execute allowlisted SSH command',
+  },
+  infraSshReadVmConfig: {
+    method: 'GET',
+    path: '/api/v1/infra/ssh/vm-config/:vmid',
+    headers: authHeaderSchema,
+    pathParams: infraSshVmConfigPathSchema,
+    responses: {
+      200: successEnvelopeSchema(infraVmConfigReadResultSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+      502: errorEnvelopeSchema,
+    },
+    summary: 'Read raw VM config over SSH',
+  },
+  infraSshTest: {
+    method: 'POST',
+    path: '/api/v1/infra/ssh/test',
+    headers: authHeaderSchema,
+    body: z.object({}).passthrough().optional(),
+    responses: {
+      200: successEnvelopeSchema(infraSshExecResultSchema),
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+      502: errorEnvelopeSchema,
+    },
+    summary: 'Run SSH connection smoke test',
+  },
+  infraSshWriteVmConfig: {
+    method: 'PUT',
+    path: '/api/v1/infra/ssh/vm-config/:vmid',
+    headers: authHeaderSchema,
+    pathParams: infraSshVmConfigPathSchema,
+    body: infraVmConfigWriteSchema,
+    responses: {
+      200: successEnvelopeSchema(infraVmConfigWriteResultSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+      502: errorEnvelopeSchema,
+    },
+    summary: 'Write raw VM config over SSH',
+  },
+} as const;

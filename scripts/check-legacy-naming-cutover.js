@@ -27,8 +27,11 @@ const SKIP_DIRS = new Set([
   'test-results',
 ]);
 
-const SKIP_PATH_PREFIXES = ['docs/history/', 'docs/audits/artifacts/'];
-const SKIP_FILES = new Set(['scripts/check-legacy-naming-cutover.js']);
+const SKIP_PATH_PREFIXES = ['docs/history/'];
+const SKIP_FILES = new Set([
+  'scripts/check-legacy-naming-cutover.js',
+  'scripts/check-docs-legacy.js',
+]);
 const SKIP_EXTENSIONS = new Set([
   '.ico',
   '.jpg',
@@ -59,6 +62,7 @@ const LEGACY_PATTERNS = [
   { label: 'bot-mox', pattern: /\bbot-mox\b/g },
   { label: 'proxy-server', pattern: /\bproxy-server\b/g },
   { label: 'apps/api-legacy', pattern: /\bapps[\\/]+api-legacy\b/g },
+  { label: 'apps/backend-legacy', pattern: /\bapps[\\/]+backend-legacy\b/g },
   { label: 'apps/api', pattern: /\bapps[\\/]+api\b/g },
   { label: '@botmox/web', pattern: /@botmox\/web\b/g },
   { label: '@botmox/api-legacy', pattern: /@botmox\/api-legacy\b/g },
