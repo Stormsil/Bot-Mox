@@ -64,14 +64,6 @@
   border-top: 1px solid var(--boxmox-color-border-default);
 }
 
-.license-empty {
-  padding: 24px 0;
-}
-
-.empty-description {
-  margin-bottom: 16px;
-}
-
 /* Responsive */
 @media (max-width: 576px) {
   .license-row {

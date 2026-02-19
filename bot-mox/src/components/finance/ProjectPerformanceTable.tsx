@@ -90,12 +90,16 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       title: 'Project / Scope',
       dataIndex: 'project',
       key: 'project',
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (text: string) => <Text strong>{text}</Text>,
     },
     {
       title: 'Income',
       dataIndex: 'income',
       key: 'income',
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (val: number) => (
         <Text>
           ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -107,6 +111,8 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       title: 'Expenses',
       dataIndex: 'expense',
       key: 'expense',
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (val: number) => (
         <Text>
           ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -118,6 +124,8 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       title: 'Net Profit',
       dataIndex: 'profit',
       key: 'profit',
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (val: number) => (
         <Text style={{ fontWeight: 600 }}>
           {val >= 0 ? '+' : ''}$
@@ -131,6 +139,8 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       title: 'Margin',
       dataIndex: 'margin',
       key: 'margin',
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
       render: (val: number, record: ProjectStats) => {
         // If it's pure expense (Global), margin doesn't make sense
         if (record.income === 0) return <Tag className={commonStyles.financeTag}>N/A</Tag>;
@@ -142,7 +152,9 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       title: 'Gold Sold',
       dataIndex: 'goldVolume',
       key: 'goldVolume',
-      render: (val: number) => (val > 0 ? `${val.toLocaleString()} g` : '-'),
+      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+      onCell: () => ({ className: styles.tableCell }),
+      render: (val: number) => val > 0 ? `${val.toLocaleString()} g` : '-',
     },
   ];
 
@@ -159,6 +171,7 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
         columns={columns}
         pagination={false}
         size="small"
+        rowClassName={() => styles.tableRow}
       />
     </Card>
   );

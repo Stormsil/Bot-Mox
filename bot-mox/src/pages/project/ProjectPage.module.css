@@ -81,10 +81,6 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.table {
-  background: transparent;
-}
-
 .tableHeaderCell {
   background: var(--boxmox-color-surface-muted);
   color: var(--boxmox-color-text-secondary);
@@ -115,15 +111,10 @@
   cursor: pointer;
 }
 
-.cellLinkButton {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-  width: 100%;
-  text-align: left;
-  font: inherit;
-  color: inherit;
+.cellLink:focus-visible {
+  outline: 2px solid rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .cellLink:hover .secondary {
@@ -150,21 +141,20 @@
   font-size: 12px;
 }
 
-.searchInput {
+.filtersSpace {
+  width: 100%;
+}
+
+.filterSearch {
   width: 320px;
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
 }
 
-.searchInput::placeholder {
-  color: var(--boxmox-color-text-muted);
-}
-
-.statusSelect {
+.filterStatus {
   width: 160px;
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-primary);
+}
+
+.filterSearch input::placeholder {
+  color: var(--boxmox-color-text-muted);
 }
 
 .statusTag {
@@ -175,13 +165,8 @@
 }
 
 @media (max-width: 900px) {
-  .filtersRow {
-    width: 100%;
-  }
-
-  .searchInput,
-  .statusSelect,
-  .resetButton {
+  .filterSearch,
+  .filterStatus {
     width: 100%;
   }
 }

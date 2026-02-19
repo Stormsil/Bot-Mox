@@ -15,6 +15,8 @@ import { BotCharacter } from '../BotCharacter';
 import styles from '../BotSummary.module.css';
 import { SummaryStatItem } from './stat-item';
 import type { BotStatusInfo, BotSummaryBot, HealthStatus } from './types';
+import { detailCardStyles } from './summaryUi';
+import styles from '../BotSummary.module.css';
 
 interface SummaryOverviewSectionProps {
   health: HealthStatus;
@@ -145,23 +147,29 @@ export const SummaryBotInfoSection: React.FC<SummaryBotInfoSectionProps> = ({
   bot,
   statusInfo,
   formatProjectName,
-}) => {
-  const detailCardStyles = {
-    header: {
-      background: 'var(--boxmox-color-surface-muted)',
-      borderBottom: '1px solid var(--boxmox-color-border-default)',
-      padding: '12px 16px',
-      minHeight: 'auto',
-    },
-    body: { padding: 16 },
-  };
-
-  return (
-    <section id="summary-bot" className={styles['bot-section']}>
-      <Row gutter={[16, 16]} className={styles['details-row']}>
-        <Col span={24}>
-          <Card title="Bot Info" className={styles['detail-card']} styles={detailCardStyles}>
-            <div className={styles['summary-stats-grid']}>
+}) => (
+  <section id="summary-bot" className={styles['bot-section']}>
+    <Row gutter={[16, 16]} className={styles['details-row']}>
+      <Col span={24}>
+        <Card
+          title={<span className={styles['detail-card-title']}>Bot Info</span>}
+          className={styles['detail-card']}
+          styles={detailCardStyles}
+        >
+          <div className={styles['summary-stats-grid']}>
+            <SummaryStatItem
+              label="Bot ID"
+              value={bot.id}
+              icon={<IdcardOutlined />}
+              valueClassName={styles['summary-stat-mono']}
+            />
+            <SummaryStatItem
+              label="Project"
+              value={<Tag className={styles['project-tag']}>{formatProjectName(bot.project_id)}</Tag>}
+              icon={<FlagOutlined />}
+            />
+            <SummaryStatItem label="Status" value={<StatusBadge status={bot.status} size="small" />} icon={<PoweroffOutlined />} />
+            {(bot.vm?.name || bot.vm?.ip) && (
               <SummaryStatItem
                 label="Bot ID"
                 value={bot.id}

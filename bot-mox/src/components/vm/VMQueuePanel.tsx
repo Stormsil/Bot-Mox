@@ -352,15 +352,9 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
           >
             {isStartActionRunning ? 'Starting...' : 'Start all'}
           </button>
-          <button type="button" onClick={onAddDelete} disabled={isProcessing || !onAddDelete}>
-            Delete VM
-          </button>
-          <button type="button" onClick={onAdd} disabled={isProcessing}>
-            + VM
-          </button>
-          <button type="button" onClick={onClear} disabled={isProcessing || isStartActionRunning}>
-            Clear
-          </button>
+          <button type="button" onClick={onAddDelete} disabled={isProcessing || !onAddDelete}>Delete VM</button>
+          <button type="button" onClick={onAdd} disabled={isProcessing}>+ VM</button>
+          <button type="button" onClick={onClear} disabled={isProcessing || isStartActionRunning}>Clear</button>
         </div>
       </div>
 

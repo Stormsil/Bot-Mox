@@ -84,6 +84,8 @@ function buildThemeConfig(
       colorTextSecondary: palette['--boxmox-color-text-secondary'],
       colorTextPlaceholder: palette['--boxmox-color-text-muted'],
       colorBorder: palette['--boxmox-color-border-default'],
+      colorFillContent: palette['--boxmox-color-surface-muted'],
+      colorFillContentHover: palette['--boxmox-color-surface-hover'],
       controlOutline: 'rgba(var(--boxmox-color-brand-primary-rgb), 0.22)',
       borderRadius: safeShape.radiusMd,
       borderRadiusSM: safeShape.radiusSm,
@@ -103,6 +105,14 @@ function buildThemeConfig(
       Table: {
         colorBgContainer: palette['--boxmox-color-surface-panel'],
         headerBg: palette['--boxmox-color-surface-muted'],
+      },
+      Pagination: {
+        itemBg: palette['--boxmox-color-surface-muted'],
+        itemActiveBg: palette['--boxmox-color-brand-primary'],
+        itemActiveColor: palette['--boxmox-color-brand-contrast'],
+        itemActiveColorHover: palette['--boxmox-color-brand-contrast'],
+        itemLinkBg: palette['--boxmox-color-surface-muted'],
+        itemInputBg: palette['--boxmox-color-surface-muted'],
       },
       Input: {
         colorBgContainer: palette['--boxmox-color-surface-muted'],
@@ -154,6 +164,9 @@ function buildThemeConfig(
         itemActiveBg: palette['--boxmox-color-surface-muted'],
         itemSelectedBg: palette['--boxmox-color-surface-muted'],
         itemSelectedColor: palette['--boxmox-color-text-primary'],
+      },
+      Checkbox: {
+        colorBgContainer: palette['--boxmox-color-surface-muted'],
       },
       Menu: {
         itemBg: 'transparent',

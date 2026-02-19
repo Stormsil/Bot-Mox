@@ -104,6 +104,12 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .stage-content {
+    animation: none;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -139,11 +145,19 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
+.stat-title {
+  color: var(--boxmox-color-text-secondary);
+}
+
 /* Detail Cards */
 .stage-detail-card {
   margin-top: 16px;
   background: var(--boxmox-color-surface-panel);
   border: 1px solid var(--boxmox-color-border-default);
+}
+
+.detail-card-title {
+  color: var(--boxmox-color-text-primary);
 }
 
 /* XP Progress Section */
@@ -303,22 +317,23 @@
   margin-left: 8px;
 }
 
+.timeline-item-content {
+  margin-left: 16px;
+}
+
 .timeline-item.active {
   background: rgba(24, 144, 255, 0.1);
   border-radius: 4px;
   padding: 8px;
   margin-left: -8px;
 }
-.timeline-action {
+
+.timeline-action-btn {
   margin-top: 16px;
 }
 
 /* Responsive */
 @media (max-width: 1200px) {
-  .stages-content-row {
-    flex-direction: column;
-  }
-
   .timeline-card {
     margin-top: 16px;
   }

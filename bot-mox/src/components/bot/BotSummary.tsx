@@ -250,7 +250,6 @@ export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
             accountCreatedAt={accountCreatedAt}
             scheduleStats={scheduleStats}
             goToConfigure={goToConfigure}
-            onActivate={handleKeyActivate}
             formatDate={formatDate}
           />
           {statusInfo && (

@@ -15,9 +15,7 @@
 }
 
 .page-title {
-  color: var(--boxmox-color-text-primary);
-  margin-bottom: 24px;
-  font-family: "Roboto Condensed", sans-serif;
+  font-family: 'Roboto Condensed', sans-serif;
 }
 
 .metrics-row {
@@ -30,28 +28,20 @@
   border-radius: var(--radius-sm);
 }
 
-.bot-list-title {
-  color: var(--boxmox-color-text-primary);
-  font-weight: 600;
-}
-
-.bot-table {
-  background: transparent;
-}
-
-.bot-table-header-cell {
+.tableHeaderCell {
   background: var(--boxmox-color-surface-muted);
   color: var(--boxmox-color-text-primary);
   border-bottom: 2px solid var(--boxmox-color-brand-primary);
   font-weight: 600;
 }
 
-.bot-table-cell {
+.tableCell {
   border-bottom: 1px solid var(--boxmox-color-border-subtle);
   color: var(--boxmox-color-text-secondary);
+  background: transparent;
 }
 
-.bot-table-row:hover .bot-table-cell {
+.tableRow:hover .tableCell {
   background: var(--boxmox-color-surface-hover);
 }
 

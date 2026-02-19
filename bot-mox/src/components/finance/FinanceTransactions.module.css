@@ -36,7 +36,7 @@
   color: var(--boxmox-color-text-secondary);
 }
 
-.tableRow:hover .tableCell {
+.tableRow:hover td {
   background: var(--boxmox-color-surface-muted);
 }
 
@@ -51,35 +51,3 @@
   font-weight: 500;
 }
 
-.filtersRow {
-  width: auto;
-}
-
-.filterTypeSelect,
-.filterProjectSelect {
-  width: 120px;
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-primary);
-}
-
-.filterCategorySelect {
-  width: 150px;
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-primary);
-}
-
-.filterRange {
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-primary);
-}
-
-.filterSearch {
-  width: 200px;
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
-}
-
-.filterSearch::placeholder {
-  color: var(--boxmox-color-text-muted);
-}

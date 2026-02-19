@@ -74,10 +74,6 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.table {
-  background: transparent;
-}
-
 .tableHeaderCell {
   background: var(--boxmox-color-surface-muted);
   color: var(--boxmox-color-text-secondary);
@@ -88,6 +84,7 @@
 .tableCell {
   border-bottom: 1px solid var(--boxmox-color-border-default);
   color: var(--boxmox-color-text-primary);
+  background: transparent;
 }
 
 .tableRow:hover .tableCell {
@@ -103,30 +100,28 @@
   border-radius: 2px;
   font-size: 11px;
   text-transform: uppercase;
+  margin-inline-end: 0;
 }
 
-.filtersRow {
-  width: auto;
+.filtersSpace {
+  width: 100%;
 }
 
-.searchInput {
+.filterSearch {
   width: 250px;
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
 }
 
-.searchInput::placeholder {
+.filterSelect {
+  width: 120px;
+}
+
+.filterSearch input::placeholder {
   color: var(--boxmox-color-text-muted);
 }
 
-.statusSelect,
-.typeSelect {
-  width: 120px;
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-primary);
-}
-
-.resetButton {
-  width: auto;
+@media (max-width: 900px) {
+  .filterSearch,
+  .filterSelect {
+    width: 100%;
+  }
 }

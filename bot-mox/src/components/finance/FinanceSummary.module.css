@@ -8,6 +8,10 @@
   position: relative;
   min-height: 96px;
   padding: 4px 2px;
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .metricHeader {
@@ -123,20 +127,16 @@
   box-shadow: none;
 }
 
-.projectPerformanceTable {
-  background: transparent;
-}
-
-.projectPerformanceTable tbody td {
+.tableCell {
   border-bottom: 1px solid var(--boxmox-color-border-default);
   color: var(--boxmox-color-text-secondary);
 }
 
-.projectPerformanceTable tbody tr:hover td {
+.tableRow:hover td {
   background: var(--boxmox-color-surface-muted);
 }
 
-.projectPerformanceTable thead th {
+.tableHeaderCell {
   background: var(--boxmox-color-surface-muted);
   color: var(--boxmox-color-text-primary);
   font-weight: 600;

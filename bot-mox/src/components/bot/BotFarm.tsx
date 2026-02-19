@@ -76,7 +76,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
         <Col span={8}>
           <Card className={styles['farm-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title={<span className={styles['farm-stat-card-title']}>Total Gold</span>}
+              title={<span className={styles.farmStatTitle}>Total Gold</span>}
               value={farmStats.total_gold.toLocaleString()}
               suffix="g"
               prefix={<DollarOutlined />}
@@ -87,7 +87,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
         <Col span={8}>
           <Card className={styles['farm-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title={<span className={styles['farm-stat-card-title']}>Gold per Hour</span>}
+              title={<span className={styles.farmStatTitle}>Gold per Hour</span>}
               value={farmStats.gold_per_hour.toFixed(1)}
               suffix="g/h"
               prefix={<ThunderboltOutlined />}
@@ -98,7 +98,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
         <Col span={8}>
           <Card className={styles['farm-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title={<span className={styles['farm-stat-card-title']}>Session Time</span>}
+              title={<span className={styles.farmStatTitle}>Session Time</span>}
               value={formatDuration(sessionDuration)}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#1890ff', fontSize: 'var(--text-xl)', fontWeight: 600 }}
@@ -109,11 +109,16 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
 
       <Card
         className={styles['inventory-card']}
-        title={<span className={styles['inventory-card-title']}>Inventory</span>}
+        title="Inventory"
         styles={{
           header: {
             background: 'var(--boxmox-color-surface-muted)',
             borderColor: 'var(--boxmox-color-border-default)',
+          },
+          title: {
+            color: 'var(--boxmox-color-text-primary)',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 600,
           },
         }}
       >

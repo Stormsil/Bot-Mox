@@ -11,16 +11,7 @@ import type {
   ExpiringItem,
   NavPropsFactory,
 } from './content-map-types';
-
-import styles from './DatacenterPage.module.css';
-
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+import { cx } from './datacenterUi';
 
 const { Title, Text } = Typography;
 
@@ -74,7 +65,7 @@ export const DatacenterContentMap: React.FC<DatacenterContentMapProps> = ({
     <div className={cx('content-map')}>
       <div className={cx('content-map-header')}>
         <div>
-          <Title level={4} className={cx('content-map-title')}>
+          <Title level={4} style={{ margin: 0 }} className={cx('content-map-title')}>
             Content Map
           </Title>
           <Text type="secondary" className={cx('content-map-subtitle')}>

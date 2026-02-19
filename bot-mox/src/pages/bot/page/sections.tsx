@@ -1,4 +1,5 @@
-import { CheckOutlined, ExclamationOutlined } from '@ant-design/icons';
+import React from 'react';
+import { CheckOutlined, ExclamationOutlined, RightOutlined } from '@ant-design/icons';
 import { Collapse } from 'antd';
 import {
   BotAccount,
@@ -116,52 +117,54 @@ export const renderTabContent = ({
               onConfigureTabChange(tabKey);
             }
           }}
-          items={configureSections.map((section, index) => ({
-            key: `configure-${section.key}`,
-            className: [
-              styles.configureCollapseItem,
-              index === configureSections.length - 1 ? styles.configureCollapseItemLast : '',
-            ]
-              .filter(Boolean)
-              .join(' '),
-            styles: {
-              header: {
-                background: 'var(--boxmox-color-surface-muted)',
-                padding: '12px 16px',
-              },
-              body: {
-                background: 'var(--boxmox-color-surface-panel)',
-                borderTop: '1px solid var(--boxmox-color-border-default)',
-              },
-            },
-            label: (
-              <div className={styles.configurePanelHeader}>
-                <div className={styles.configurePanelTitle}>
-                  {section.complete ? (
-                    <span
-                      className={`${styles.configurePanelIcon} ${styles.configurePanelIconComplete}`}
-                    >
-                      <CheckOutlined />
-                    </span>
-                  ) : (
-                    <span
-                      className={`${styles.configurePanelIcon} ${styles.configurePanelIconWarning}`}
-                    >
-                      <ExclamationOutlined />
-                    </span>
-                  )}
-                  <span className={styles.configurePanelIndex}>{index + 1}.</span>
-                  <span className={styles.configurePanelLabel}>{section.label}</span>
+          items={configureSections.map((section, index) => {
+            const key = `configure-${section.key}`;
+            const isOpen = openConfigureKey === key;
+            const isLast = index === configureSections.length - 1;
+
+            return {
+              key,
+              showArrow: false,
+              className: [
+                styles.configureItem,
+                isLast ? styles.configureItemLast : '',
+              ].filter(Boolean).join(' '),
+              label: (
+                <div className={styles.configureHeader}>
+                  <div className={styles.configurePanelHeader}>
+                    <div className={styles.configurePanelTitle}>
+                      {section.complete ? (
+                        <span className={`${styles.configurePanelIcon} ${styles.configurePanelIconComplete}`}>
+                          <CheckOutlined />
+                        </span>
+                      ) : (
+                        <span className={`${styles.configurePanelIcon} ${styles.configurePanelIconWarning}`}>
+                          <ExclamationOutlined />
+                        </span>
+                      )}
+                      <span className={styles.configurePanelIndex}>{index + 1}.</span>
+                      <span className={styles.configurePanelLabel}>{section.label}</span>
+                    </div>
+                    <div className={styles.configurePanelDesc}>{section.description}</div>
+                  </div>
+                  <RightOutlined
+                    className={[
+                      styles.configureHeaderArrow,
+                      isOpen ? styles.configureHeaderArrowOpen : '',
+                    ].filter(Boolean).join(' ')}
+                    aria-hidden
+                  />
                 </div>
-                <div className={styles.configurePanelDesc}>{section.description}</div>
-              </div>
-            ),
-            children: (
-              <section id={`configure-${section.key}`} className={styles.section}>
-                {section.content}
-              </section>
-            ),
-          }))}
+              ),
+              children: (
+                <div className={styles.configureBody}>
+                  <section id={key} className={styles.section}>
+                    {section.content}
+                  </section>
+                </div>
+              ),
+            };
+          })}
         />
       </div>
     );

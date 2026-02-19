@@ -8,6 +8,7 @@ const MAIN_MIN_HEIGHT = 220;
 const WORKSPACE_SPLIT_KEY = 'vmGeneratorWorkspaceSplitRatio';
 const WORKSPACE_DEFAULT_SPLIT_RATIO = 0.58;
 const WORKSPACE_RESIZER_WIDTH_PX = 10;
+const WORKSPACE_STACK_BREAKPOINT_PX = 1240;
 const WORKSPACE_MIN_LEFT_PX = 1;
 const WORKSPACE_MIN_RIGHT_PX = 1;
 const RIGHT_PANEL_SIDE_PADDING_PX = 5;
@@ -69,6 +70,7 @@ export const useVmWorkspaceLayout = ({
   const [isWorkspaceResizing, setIsWorkspaceResizing] = useState(false);
   const [logHeight, setLogHeight] = useState<number>(getInitialLogHeight);
   const [isLogResizing, setIsLogResizing] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState<number>(() => (typeof window === 'undefined' ? 9999 : window.innerWidth));
 
   const getPreferredRightPanelWidth = useCallback((): number => {
     const queuePanel = workspaceRef.current?.querySelector('.vm-queue-panel') as HTMLElement | null;
@@ -158,6 +160,7 @@ export const useVmWorkspaceLayout = ({
 
   useEffect(() => {
     const handleResize = () => {
+      setViewportWidth(typeof window === 'undefined' ? 9999 : window.innerWidth);
       setLogHeight((prev) => clampLogHeight(prev));
       setWorkspaceSplitRatio((prev) => clampWorkspaceSplitRatio(prev));
     };
@@ -246,9 +249,12 @@ export const useVmWorkspaceLayout = ({
   );
 
   const workspaceGridTemplateColumns = useMemo(() => {
+    if (viewportWidth <= WORKSPACE_STACK_BREAKPOINT_PX) {
+      return '1fr';
+    }
     const splitPercent = Math.max(0, Math.min(100, workspaceSplitRatio * 100));
     return `minmax(${WORKSPACE_MIN_LEFT_PX}px, ${splitPercent}%) ${WORKSPACE_RESIZER_WIDTH_PX}px minmax(${WORKSPACE_MIN_RIGHT_PX}px, 1fr)`;
-  }, [workspaceSplitRatio]);
+  }, [workspaceSplitRatio, viewportWidth]);
 
   return {
     workspaceSplitRatio,

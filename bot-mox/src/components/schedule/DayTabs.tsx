@@ -75,7 +75,7 @@ export const DayTabs: React.FC<DayTabsProps> = ({ selectedDay, onDayChange, days
 
           return (
             <button
-              key={date.toISOString()}
+              key={index}
               type="button"
               className={[
                 styles['day-tab'],

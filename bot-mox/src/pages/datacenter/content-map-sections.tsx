@@ -1,7 +1,8 @@
+import React from 'react';
+import { Card, Tag } from 'antd';
 import {
   CreditCardOutlined,
   DesktopOutlined,
-  DownOutlined,
   GlobalOutlined,
   KeyOutlined,
   RightOutlined,
@@ -16,42 +17,8 @@ import type {
   DatacenterResourceStats,
   NavPropsFactory,
 } from './content-map-types';
-import styles from './DatacenterPage.module.css';
-
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
-
-const mapCardStyles = {
-  body: { padding: '14px 16px' },
-};
-
-function SectionToggle({
-  section,
-  collapsedSections,
-  onToggle,
-}: {
-  section: ContentMapSection;
-  collapsedSections: Record<ContentMapSection, boolean>;
-  onToggle: (section: ContentMapSection) => void;
-}) {
-  const collapsed = collapsedSections[section];
-  const readable = section.replace('_', ' ');
-  return (
-    <Button
-      type="text"
-      size="small"
-      className={cx('content-map-toggle')}
-      onClick={() => onToggle(section)}
-      icon={collapsed ? <RightOutlined /> : <DownOutlined />}
-      aria-label={collapsed ? `Expand ${readable}` : `Collapse ${readable}`}
-    />
-  );
-}
+import { SectionToggle } from './content-map-toggle';
+import { cx, mapCardStyles } from './datacenterUi';
 
 export function ProjectsSection({
   collapsedSections,

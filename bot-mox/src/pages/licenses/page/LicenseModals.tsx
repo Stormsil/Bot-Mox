@@ -37,7 +37,10 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
         label="License Key"
         rules={[{ required: true, message: 'Please enter license key' }]}
       >
-        <Input placeholder="Enter license key (e.g., SIN-ABC123-DEF456)" />
+        <Input
+          placeholder="Enter license key (e.g., SIN-ABC123-DEF456)"
+          variant="filled"
+        />
       </Form.Item>
 
       <Form.Item
@@ -47,12 +50,11 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
       >
         <AutoComplete
           placeholder="Enter type (e.g., SIN, Baneto)"
-          options={Array.from(new Set(licenses.map((license) => license.type).filter(Boolean))).map(
-            (type) => ({
-              value: type,
-              label: type,
-            }),
-          )}
+          variant="filled"
+          options={Array.from(new Set(licenses.map((license) => license.type).filter(Boolean))).map((type) => ({
+            value: type,
+            label: type,
+          }))}
           filterOption={(inputValue, option) =>
             option?.value?.toLowerCase().includes(inputValue.toLowerCase()) ?? false
           }
@@ -65,7 +67,12 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
         rules={[{ required: true, message: 'Please select expiration date' }]}
         tooltip="Format: DD.MM.YYYY"
       >
-        <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" placeholder="DD.MM.YYYY" />
+        <DatePicker
+          style={{ width: '100%' }}
+          format="DD.MM.YYYY"
+          placeholder="DD.MM.YYYY"
+          variant="filled"
+        />
       </Form.Item>
     </Form>
   </Modal>
@@ -94,7 +101,7 @@ export const AddBotModal: React.FC<AddBotModalProps> = ({ open, bots, form, onCa
         label="Select Bot"
         rules={[{ required: true, message: 'Please select a bot' }]}
       >
-        <Select placeholder="Select bot from list">
+        <Select placeholder="Select bot from list" variant="filled">
           {Object.entries(bots).map(([id, bot]) => {
             const characterName = bot.character?.name;
             const vmName = bot.vm?.name;

@@ -1,7 +1,4 @@
 .metricCard {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-  border-radius: var(--radius-sm);
   height: 100%;
 }
 
@@ -19,7 +16,6 @@
 .label {
   font-size: 11px;
   text-transform: uppercase;
-  color: var(--boxmox-color-text-muted);
   letter-spacing: 0.5px;
 }
 
@@ -36,5 +32,4 @@
 
 .subtext {
   font-size: 12px;
-  color: var(--boxmox-color-text-muted);
 }

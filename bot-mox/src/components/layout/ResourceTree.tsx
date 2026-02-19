@@ -404,6 +404,36 @@ export const ResourceTree: React.FC = () => {
     document.body.style.userSelect = 'none';
   };
 
+  const resizeByDelta = useCallback((delta: number) => {
+    if (isCollapsed) return;
+    setTreeWidth((prev) => Math.min(MAX_TREE_WIDTH, Math.max(MIN_TREE_WIDTH, prev + delta)));
+  }, [isCollapsed]);
+
+  const handleResizerKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isCollapsed) return;
+
+    switch (event.key) {
+      case 'ArrowLeft':
+        event.preventDefault();
+        resizeByDelta(-16);
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+        resizeByDelta(16);
+        break;
+      case 'Home':
+        event.preventDefault();
+        setTreeWidth(MIN_TREE_WIDTH);
+        break;
+      case 'End':
+        event.preventDefault();
+        setTreeWidth(MAX_TREE_WIDTH);
+        break;
+      default:
+        break;
+    }
+  }, [isCollapsed, resizeByDelta]);
+
   return (
     <div
       ref={containerRef}
@@ -421,11 +451,18 @@ export const ResourceTree: React.FC = () => {
         onToggleExpandAll={() => setExpandedKeys(isAllExpanded ? [] : expandableKeys)}
       />
 
-      <button
-        type="button"
+      <div
         className={cx('resource-tree-resizer')}
         onMouseDown={handleResizeStart}
-        aria-label="Resize resource tree"
+        onKeyDown={handleResizerKeyDown}
+        onDoubleClick={() => setTreeWidth(DEFAULT_TREE_WIDTH)}
+        role="separator"
+        tabIndex={isCollapsed ? -1 : 0}
+        aria-label="Resize resource tree panel"
+        aria-orientation="vertical"
+        aria-valuemin={MIN_TREE_WIDTH}
+        aria-valuemax={MAX_TREE_WIDTH}
+        aria-valuenow={treeWidth}
       />
 
       <ResourceTreeFilters

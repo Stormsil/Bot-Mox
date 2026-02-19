@@ -3,6 +3,8 @@
  * Отображает список заметок, поиск и кнопку создания новой заметки
  */
 
+import React, { useState, useEffect, useCallback } from 'react';
+import { Input, Button, Tag, Empty, Spin, Tooltip, Popconfirm, message, Card } from 'antd';
 import {
   DeleteOutlined,
   MenuFoldOutlined,
@@ -224,6 +226,10 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
             onChange={handleSearchChange}
             allowClear
             onClear={handleClearSearch}
+            rootClassName={styles['note-sidebar-search-affix']}
+            classNames={{
+              input: styles['note-sidebar-search-input'],
+            }}
           />
         </div>
       )}
@@ -254,12 +260,14 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
             </Empty>
           )
         ) : (
-          <List
-            dataSource={sortedNotes}
-            renderItem={(note) => (
-              <List.Item style={{ padding: 0, border: 'none', marginBottom: collapsed ? 4 : 8 }}>
+          <div className={styles['note-sidebar-list-items']}>
+            {sortedNotes.map(note => (
+              <div
+                key={note.id}
+                className={styles['note-sidebar-list-row']}
+                style={{ marginBottom: collapsed ? 4 : 8 }}
+              >
                 <Card
-                  key={note.id}
                   className={cx(
                     styles['note-list-item'],
                     selectedNoteId === note.id && styles.selected,
@@ -271,17 +279,17 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                     body: {
                       padding: collapsed ? '8px' : '12px 16px',
                       display: 'flex',
+                      alignItems: collapsed ? 'center' : 'flex-start',
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      gap: collapsed ? 0 : 8,
                       overflow: 'hidden',
                       width: '100%',
                       boxSizing: 'border-box',
-                      justifyContent: collapsed ? 'center' : undefined,
-                      alignItems: collapsed ? 'center' : undefined,
                     },
                   }}
                   style={{ borderRadius: collapsed ? 4 : 8, width: '100%' }}
                 >
                   {collapsed ? (
-                    // Collapsed view - только иконка/индикатор
                     <div className={styles['note-list-item-collapsed']}>
                       {note.is_pinned ? (
                         <PushpinFilled className={styles['note-list-item-pin-icon']} />
@@ -295,7 +303,6 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                       )}
                     </div>
                   ) : (
-                    // Full view
                     <>
                       <div className={styles['note-list-item-content']}>
                         <div className={styles['note-list-item-header']}>
@@ -336,7 +343,6 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                         </div>
                       </div>
 
-                      {/* Hover actions */}
                       <div className={styles['note-list-item-actions']}>
                         <TableActionButton
                           icon={note.is_pinned ? <PushpinFilled /> : <PushpinOutlined />}
@@ -370,9 +376,9 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                     </>
                   )}
                 </Card>
-              </List.Item>
-            )}
-          />
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

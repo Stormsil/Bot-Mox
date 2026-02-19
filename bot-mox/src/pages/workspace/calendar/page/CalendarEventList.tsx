@@ -36,7 +36,7 @@ const renderSingleEventItem = (
 
   return (
     <List.Item
-      className={styles.eventListItem}
+      className={styles.sidebarListItem}
       actions={[
         event.linked_note_id ? (
           <TableActionButton
@@ -144,7 +144,7 @@ export const CalendarEventList: React.FC<CalendarEventListProps> = ({
         </div>
         {renderEventsList(overdueEvents, 'No missed events', noteTitleById, handlers)}
       </div>
-      <Divider style={{ margin: '10px 0' }} />
+      <Divider className={styles.timelineDivider} />
       <div>
         <div className={styles.sectionTitle}>
           <ClockCircleOutlined /> Upcoming ({upcomingEvents.length})

@@ -16,7 +16,13 @@
   align-items: center;
 }
 
-.headerHeading {
+.headerTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.headerMainTitle {
   margin: 0;
   color: var(--boxmox-color-text-primary);
 }
@@ -70,6 +76,19 @@
   box-shadow: 0 0 0 1px rgba(250, 173, 20, 0.15);
 }
 
+.expiringAlertMessage {
+  color: #faad14;
+  font-weight: 600;
+}
+
+.expiringAlertDescription {
+  color: var(--boxmox-color-text-secondary);
+}
+
+.expiringAlertIcon {
+  color: #faad14;
+}
+
 .expiringList {
   margin: 8px 0 0 0;
   padding-left: 20px;
@@ -91,15 +110,14 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.table {
-  background: transparent;
-}
-
 .tableHeaderCell {
   background: var(--boxmox-color-surface-muted);
   color: var(--boxmox-color-text-secondary);
   border-bottom: 1px solid var(--boxmox-color-border-default);
   font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .tableCell {

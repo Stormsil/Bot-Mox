@@ -154,6 +154,10 @@
   border-color: var(--vmx-accent, var(--boxmox-color-brand-primary));
 }
 
+.vm-queue-item-input:focus-visible {
+  box-shadow: 0 0 0 2px rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.15);
+}
+
 .vm-queue-item-placeholder {
   display: flex;
   align-items: center;

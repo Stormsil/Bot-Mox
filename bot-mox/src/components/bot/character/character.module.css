@@ -111,16 +111,6 @@
   text-transform: capitalize;
 }
 
-.edit-button {
-  background: var(--boxmox-color-brand-primary);
-  border-color: var(--boxmox-color-brand-primary);
-}
-
-.edit-button:hover {
-  background: var(--boxmox-color-brand-primary-hover);
-  border-color: var(--boxmox-color-brand-primary-hover);
-}
-
 /* Stats Grid */
 .character-stats-grid {
   display: grid;
@@ -166,23 +156,6 @@
 
 .capitalize {
   text-transform: capitalize;
-}
-
-/* Race display with icon */
-.race-value {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.race-display-icon {
-  font-size: 18px;
-  line-height: 1;
-}
-
-.race-icon {
-  font-size: 16px;
-  line-height: 1;
 }
 
 /* Level display (read-only) */

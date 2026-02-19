@@ -20,34 +20,26 @@ interface StageTimelineProps {
 export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) => (
   <div className={styles['stage-timeline']}>
     <Timeline
+      style={{ paddingLeft: 8 }}
       items={[
         {
           dot: currentStage === 'prepare' ? <LoadingOutlined /> : <CheckCircleOutlined />,
           color: currentStage === 'prepare' ? 'blue' : 'green',
           children: (
             <div
-              className={[styles['timeline-item'], currentStage === 'prepare' ? styles.active : '']
-                .filter(Boolean)
-                .join(' ')}
+              className={[
+                styles['timeline-item'],
+                styles['timeline-item-content'],
+                currentStage === 'prepare' ? styles.active : '',
+              ].filter(Boolean).join(' ')}
             >
-              <Text
-                strong
-                style={
-                  currentStage === 'prepare'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
-                    : undefined
-                }
-              >
+              <Text strong style={currentStage === 'prepare' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>
                 Preparation
               </Text>
               <br />
               <Text
                 type="secondary"
-                style={
-                  currentStage === 'prepare'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
-                    : undefined
-                }
+                style={currentStage === 'prepare' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}
               >
                 Initial setup
               </Text>
@@ -69,28 +61,19 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 : 'gray',
           children: (
             <div
-              className={[styles['timeline-item'], currentStage === 'leveling' ? styles.active : '']
-                .filter(Boolean)
-                .join(' ')}
+              className={[
+                styles['timeline-item'],
+                styles['timeline-item-content'],
+                currentStage === 'leveling' ? styles.active : '',
+              ].filter(Boolean).join(' ')}
             >
-              <Text
-                strong
-                style={
-                  currentStage === 'leveling'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
-                    : undefined
-                }
-              >
+              <Text strong style={currentStage === 'leveling' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>
                 Leveling
               </Text>
               <br />
               <Text
                 type="secondary"
-                style={
-                  currentStage === 'leveling'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
-                    : undefined
-                }
+                style={currentStage === 'leveling' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}
               >
                 Level 1-70
               </Text>
@@ -114,29 +97,19 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
             <div
               className={[
                 styles['timeline-item'],
+                styles['timeline-item-content'],
                 currentStage === 'professions' ? styles.active : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
             >
-              <Text
-                strong
-                style={
-                  currentStage === 'professions'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
-                    : undefined
-                }
-              >
+              <Text strong style={currentStage === 'professions' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>
                 Professions
               </Text>
               <br />
               <Text
                 type="secondary"
-                style={
-                  currentStage === 'professions'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
-                    : undefined
-                }
+                style={currentStage === 'professions' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}
               >
                 Skill development
               </Text>
@@ -153,28 +126,19 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
           color: currentStage === 'farm' ? 'orange' : currentStage === 'banned' ? 'green' : 'gray',
           children: (
             <div
-              className={[styles['timeline-item'], currentStage === 'farm' ? styles.active : '']
-                .filter(Boolean)
-                .join(' ')}
+              className={[
+                styles['timeline-item'],
+                styles['timeline-item-content'],
+                currentStage === 'farm' ? styles.active : '',
+              ].filter(Boolean).join(' ')}
             >
-              <Text
-                strong
-                style={
-                  currentStage === 'farm'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
-                    : undefined
-                }
-              >
+              <Text strong style={currentStage === 'farm' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}>
                 Farm
               </Text>
               <br />
               <Text
                 type="secondary"
-                style={
-                  currentStage === 'farm'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
-                    : undefined
-                }
+                style={currentStage === 'farm' ? { color: 'var(--boxmox-color-brand-primary)' } : undefined}
               >
                 Gold earning
               </Text>
@@ -188,20 +152,15 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
             <div
               className={[
                 styles['timeline-item'],
+                styles['timeline-item-content'],
                 currentStage === 'banned' ? styles.active : '',
-                currentStage === 'banned' ? styles.banned : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
+              ].filter(Boolean).join(' ')}
             >
-              <Text strong style={{ color: currentStage === 'banned' ? '#ff4d4f' : undefined }}>
+              <Text strong style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}>
                 Banned
               </Text>
               <br />
-              <Text
-                type="secondary"
-                style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}
-              >
+              <Text type="secondary" style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}>
                 Archived
               </Text>
             </div>

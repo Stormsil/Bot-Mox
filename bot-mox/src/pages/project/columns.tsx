@@ -10,6 +10,15 @@ import { formatDaysRemaining, formatFaction, formatServerName } from './utils';
 
 const { Text } = Typography;
 
+function handleCellKeyDown(onActivate: () => void) {
+  return (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onActivate();
+    }
+  };
+}
+
 function renderStatusWithDays({
   label,
   color,
@@ -22,10 +31,12 @@ function renderStatusWithDays({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      className={`${styles.cellStack} ${styles.cellLink} ${styles.cellLinkButton}`}
+    <div
+      className={`${styles.cellStack} ${styles.cellLink}`}
+      role="link"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={handleCellKeyDown(onClick)}
     >
       <Tag color={color} className={styles.statusTag}>
         {label}
@@ -59,10 +70,12 @@ export function createProjectColumns({
       onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.idShort.localeCompare(b.idShort),
       render: (_: string, record: BotRow) => (
-        <button
-          type="button"
-          className={`${styles.cellLink} ${styles.cellLinkButton}`}
+        <div
+          className={styles.cellLink}
+          role="link"
+          tabIndex={0}
           onClick={() => goToBot(record.id, 'summary')}
+          onKeyDown={handleCellKeyDown(() => goToBot(record.id, 'summary'))}
         >
           <Tooltip title={record.id}>
             <Text className={styles.id}>{record.idShort}</Text>
@@ -80,10 +93,12 @@ export function createProjectColumns({
       sorter: (a: BotRow, b: BotRow) =>
         BOT_STATUS_ORDER[a.botStatus] - BOT_STATUS_ORDER[b.botStatus],
       render: (status: BotStatus, record: BotRow) => (
-        <button
-          type="button"
-          className={`${styles.cellLink} ${styles.cellLinkButton}`}
+        <div
+          className={styles.cellLink}
+          role="link"
+          tabIndex={0}
           onClick={() => goToBot(record.id, 'summary')}
+          onKeyDown={handleCellKeyDown(() => goToBot(record.id, 'summary'))}
         >
           <StatusBadge status={status} size="small" />
         </button>
@@ -98,10 +113,12 @@ export function createProjectColumns({
       onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => (a.vmName || '').localeCompare(b.vmName || ''),
       render: (value: string, record: BotRow) => (
-        <button
-          type="button"
-          className={`${styles.cellLink} ${styles.cellLinkButton}`}
+        <div
+          className={styles.cellLink}
+          role="link"
+          tabIndex={0}
           onClick={() => goToBot(record.id, 'vmInfo')}
+          onKeyDown={handleCellKeyDown(() => goToBot(record.id, 'vmInfo'))}
         >
           <Text>{value || '-'}</Text>
         </button>
@@ -115,10 +132,12 @@ export function createProjectColumns({
       onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => (a.email || '').localeCompare(b.email || ''),
       render: (_: unknown, record: BotRow) => (
-        <button
-          type="button"
+        <div
           className={`${styles.cellStack} ${styles.cellLink}`}
+          role="link"
+          tabIndex={0}
           onClick={() => goToBot(record.id, 'account')}
+          onKeyDown={handleCellKeyDown(() => goToBot(record.id, 'account'))}
         >
           <Text>{record.email || '-'}</Text>
           <Text type="secondary" className={styles.secondary}>
@@ -144,10 +163,12 @@ export function createProjectColumns({
           : serverLabel;
 
         return (
-          <button
-            type="button"
+          <div
             className={`${styles.cellStack} ${styles.cellLink}`}
+            role="link"
+            tabIndex={0}
             onClick={() => goToBot(record.id, 'character')}
+            onKeyDown={handleCellKeyDown(() => goToBot(record.id, 'character'))}
           >
             <Text strong>
               {record.characterName}

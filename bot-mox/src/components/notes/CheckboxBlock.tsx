@@ -97,6 +97,11 @@ export const CheckboxBlockComponent: React.FC<CheckboxBlockProps> = ({
     [onCheckedChange],
   );
 
+  // Обработка клика по чекбоксу (чтобы не терять фокус на тексте)
+  const handleCheckboxClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+  }, []);
+
   // Обработка фокуса
   const handleFocus = useCallback(() => {
     onFocus();
@@ -116,11 +121,10 @@ export const CheckboxBlockComponent: React.FC<CheckboxBlockProps> = ({
       data-block-type="checkbox"
     >
       <div className={styles['checkbox-wrapper']}>
-        <input
-          type="checkbox"
+        <Checkbox
           checked={block.checked}
-          onChange={(event) => handleCheckboxChange({ target: { checked: event.target.checked } })}
-          onClick={(event) => event.stopPropagation()}
+          onChange={handleCheckboxChange}
+          onClick={handleCheckboxClick}
           className={styles['checkbox-input']}
         />
       </div>

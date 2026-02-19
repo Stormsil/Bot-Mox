@@ -21,8 +21,12 @@
   margin-bottom: 16px;
 }
 
-.subscription-card-title {
+.card-title {
   color: var(--boxmox-color-text-primary);
+}
+
+.card-title-icon {
+  color: var(--boxmox-color-brand-primary);
 }
 
 .subscription-list {
@@ -32,7 +36,6 @@
 .subscription-item {
   padding: 12px 24px;
   border-bottom: 1px solid var(--boxmox-color-border-default);
-  margin: 0;
 }
 
 .subscription-item:last-child {

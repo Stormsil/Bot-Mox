@@ -241,19 +241,21 @@ export const LicensesPage: React.FC = () => {
       <LicensesStatsPanel stats={stats} collapsed={statsCollapsed} />
 
       <Card className={styles.filters}>
-        <Space wrap className={styles.filtersRow}>
+        <Space wrap className={styles.filtersSpace}>
           <Input
             placeholder="Search by key or bot..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
-            className={styles.searchInput}
+            className={styles.filterSearch}
+            variant="filled"
           />
           <Select
             placeholder="Status"
             value={statusFilter}
             onChange={setStatusFilter}
-            className={styles.statusSelect}
+            className={styles.filterSelect}
+            variant="filled"
           >
             <Option value="all">All Statuses</Option>
             <Option value="active">Active</Option>
@@ -264,7 +266,8 @@ export const LicensesPage: React.FC = () => {
             placeholder="Type"
             value={typeFilter}
             onChange={setTypeFilter}
-            className={styles.typeSelect}
+            className={styles.filterSelect}
+            variant="filled"
           >
             <Option value="all">All Types</Option>
             <Option value="sin">SIN</Option>
@@ -287,8 +290,13 @@ export const LicensesPage: React.FC = () => {
       <Card className={styles.tableCard}>
         <Table
           dataSource={filteredLicenses}
-          columns={columns}
+          columns={columns.map((column) => ({
+            ...column,
+            onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+            onCell: () => ({ className: styles.tableCell }),
+          }))}
           rowKey="id"
+          rowClassName={() => styles.tableRow}
           loading={loading}
           className={styles.table}
           rowClassName={() => styles.tableRow}

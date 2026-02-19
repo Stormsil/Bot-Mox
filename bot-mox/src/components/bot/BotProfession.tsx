@@ -94,10 +94,10 @@ export const BotProfession: React.FC<BotProfessionProps> = () => {
               >
                 <div className={styles['profession-progress']}>
                   <div className={styles['skill-info']}>
-                    <Text strong className={styles['skill-text']}>
+                    <Text strong style={{ color: 'var(--boxmox-color-text-primary)' }}>
                       {profession.skill_points}
                     </Text>
-                    <Text type="secondary" className={styles['skill-text']}>
+                    <Text type="secondary" style={{ color: 'var(--boxmox-color-text-primary)' }}>
                       / {profession.max_skill_points}
                     </Text>
                   </div>

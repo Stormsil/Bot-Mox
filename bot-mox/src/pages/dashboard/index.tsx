@@ -43,8 +43,8 @@ const columns: TableColumnsType<BotData> = [
     title: 'Name',
     dataIndex: 'character',
     key: 'name',
-    className: tableCellClassName,
-    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
     render: (character: BotData['character'], record: BotData) => (
       <div>
         <div className={cx('bot-name')}>{character.name}</div>
@@ -56,16 +56,16 @@ const columns: TableColumnsType<BotData> = [
     title: 'Status',
     dataIndex: 'status',
     key: 'status',
-    className: tableCellClassName,
-    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
     render: (status: Bot['status']) => <StatusBadge status={status} size="small" />,
   },
   {
     title: 'Character',
     dataIndex: 'character',
     key: 'character',
-    className: tableCellClassName,
-    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
     render: (character: BotData['character']) => (
       <div>
         <div className={cx('char-name')}>{character.name}</div>
@@ -79,23 +79,23 @@ const columns: TableColumnsType<BotData> = [
     title: 'Server',
     dataIndex: ['character', 'server'],
     key: 'server',
-    className: tableCellClassName,
-    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
   },
   {
     title: 'Project',
     dataIndex: 'project_id',
     key: 'project_id',
-    className: tableCellClassName,
-    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
-    render: (projectId: string) => (projectId === 'wow_tbc' ? 'WoW TBC' : 'WoW Midnight'),
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
+    render: (projectId: string) => projectId === 'wow_tbc' ? 'WoW TBC' : 'WoW Midnight',
   },
   {
     title: 'Last Seen',
     dataIndex: 'last_seen',
     key: 'last_seen',
-    className: tableCellClassName,
-    onHeaderCell: () => ({ className: cx('bot-table-header-cell') }),
+    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
+    onCell: () => ({ className: cx('tableCell') }),
     render: (timestamp: number) => {
       if (!timestamp) return 'Never';
       const date = new Date(timestamp);
@@ -147,7 +147,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className={cx('dashboard-page')}>
-      <Title level={2} className={cx('page-title')}>
+      <Title level={2} className={cx('page-title')} style={{ color: 'var(--boxmox-color-text-primary)', marginBottom: 24 }}>
         Dashboard
       </Title>
 
@@ -171,12 +171,18 @@ export const DashboardPage: React.FC = () => {
       </Row>
 
       <Card
-        title={<span className={cx('bot-list-title')}>{`Bot List (${bots.length})`}</span>}
+        title={`Bot List (${bots.length})`}
         className={cx('bot-list-card')}
+        style={{
+          background: 'var(--boxmox-color-surface-panel)',
+          border: '1px solid var(--boxmox-color-border-default)',
+          borderRadius: 'var(--radius-sm)',
+        }}
         styles={{
           header: {
             background: 'var(--boxmox-color-surface-muted)',
             borderBottom: '1px solid var(--boxmox-color-border-default)',
+            color: 'var(--boxmox-color-text-primary)',
           },
           body: { padding: 0 },
         }}
@@ -187,8 +193,7 @@ export const DashboardPage: React.FC = () => {
           rowKey="id"
           pagination={{ pageSize: 10 }}
           size="small"
-          className={cx('bot-table')}
-          rowClassName={() => cx('bot-table-row')}
+          rowClassName={() => cx('tableRow')}
         />
       </Card>
     </div>

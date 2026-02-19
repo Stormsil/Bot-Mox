@@ -7,12 +7,6 @@
   border-color: var(--boxmox-color-border-default);
 }
 
-.logs-card-title {
-  color: var(--boxmox-color-text-primary);
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
 .log-entry {
   display: flex;
   align-items: center;

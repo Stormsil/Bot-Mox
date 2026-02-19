@@ -314,6 +314,12 @@ gh run list --workflow CI
 gh run download <run_id> -n playwright-artifacts
 ```
 
+### Для новых/измененных frontend-страниц (обязательно)
+
+Перед коммитом пройди чеклист из `docs/frontend/STYLING.md`:
+1. `Adding A New Themed Page (Checklist)`
+2. `Regression Matrix For New/Changed Pages`
+
 ## Как работает аутентификация (dev)
 
 Dev auth bypass отключен. Локальная разработка использует тот же поток авторизации, что и прод:
@@ -442,6 +448,10 @@ Legacy заметка:
 | `pnpm run check:styles:guardrails` | Guardrails по стилям (глобальные `.ant-*`, порог `!important`) |
 | `pnpm run stack:dev:up` | Docker стек с hot-reload |
 | `pnpm run stack:prod-sim:up` | Docker стек как в продакшене |
+
+### Frontend styling
+
+Конвенции и чеклист для добавления новых страниц: `docs/frontend/STYLING.md`.
 
 ## Деплой на VPS (когда будет готово)
 

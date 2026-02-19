@@ -280,19 +280,21 @@ export const ProjectPage: React.FC = () => {
         </div>
 
         <Card className={styles.filters}>
-          <Space wrap className={styles.filtersRow}>
+          <Space wrap className={styles.filtersSpace}>
             <Input
               placeholder="Search by ID, character, email, server..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
-              className={styles.searchInput}
+              className={styles.filterSearch}
+              variant="filled"
             />
             <Select
               placeholder="Bot Status"
               value={statusFilter}
               onChange={(value) => updateStatusFilter(value as StatusFilter)}
-              className={styles.statusSelect}
+              className={styles.filterStatus}
+              variant="filled"
             >
               <Option value="all">All Statuses</Option>
               <Option value="offline">Offline</Option>
@@ -318,8 +320,13 @@ export const ProjectPage: React.FC = () => {
         <Card className={styles.tableCard}>
           <Table
             dataSource={filteredRows}
-            columns={columns}
+            columns={columns.map((column) => ({
+              ...column,
+              onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+              onCell: () => ({ className: styles.tableCell }),
+            }))}
             rowKey="id"
+            rowClassName={() => styles.tableRow}
             loading={loading}
             className={styles.table}
             rowClassName={() => styles.tableRow}

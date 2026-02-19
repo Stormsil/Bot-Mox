@@ -1,3 +1,5 @@
+import React, { Suspense, lazy, useEffect, useMemo } from 'react';
+import { Authenticated, Refine } from '@refinedev/core';
 import { useNotificationProvider } from '@refinedev/antd';
 import { Authenticated, Refine } from '@refinedev/core';
 import { App as AntdApp, ConfigProvider, Spin } from 'antd';
@@ -15,52 +17,36 @@ import shellStyles from './AppShell.module.css';
 // Layout component в стиле Proxmox
 const ProxmoxLayout: React.FC = () => {
   const { themeMode, visualSettings } = useThemeRuntime();
-  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
+  const isVisualImage = visualSettings.enabled && visualSettings.mode === 'image' && Boolean(visualSettings.backgroundImageUrl);
+  const overlayColor = themeMode === 'dark' ? visualSettings.overlayColorDark : visualSettings.overlayColorLight;
+  const isBlurred = isVisualImage && visualSettings.blurPx > 0;
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-      return undefined;
-    }
+  // Keep these memoized so React doesn't re-apply identical inline styles on unrelated renders.
+  const backgroundStyle = useMemo<React.CSSProperties>(() => {
+    if (!isVisualImage) return {};
+    return {
+      backgroundImage: `url(${visualSettings.backgroundImageUrl})`,
+      backgroundPosition: visualSettings.backgroundPosition === 'top' ? 'top center' : 'center center',
+      backgroundSize: visualSettings.backgroundSize,
+      filter: isBlurred ? `blur(${visualSettings.blurPx}px)` : undefined,
+      transform: isBlurred ? 'scale(1.02)' : undefined,
+    };
+  }, [
+    isBlurred,
+    isVisualImage,
+    visualSettings.backgroundImageUrl,
+    visualSettings.backgroundPosition,
+    visualSettings.backgroundSize,
+    visualSettings.blurPx,
+  ]);
 
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setPrefersReducedMotion(media.matches);
-    update();
-
-    if (typeof media.addEventListener === 'function') {
-      media.addEventListener('change', update);
-      return () => media.removeEventListener('change', update);
-    }
-
-    media.addListener(update);
-    return () => media.removeListener(update);
-  }, []);
-
-  const isVisualImage =
-    visualSettings.enabled &&
-    visualSettings.mode === 'image' &&
-    Boolean(visualSettings.backgroundImageUrl);
-  const overlayColor =
-    themeMode === 'dark' ? visualSettings.overlayColorDark : visualSettings.overlayColorLight;
-  const effectiveBlur = prefersReducedMotion ? 0 : visualSettings.blurPx;
-  const backgroundStyle: React.CSSProperties = isVisualImage
-    ? {
-        backgroundImage: `url(${visualSettings.backgroundImageUrl})`,
-        backgroundPosition:
-          visualSettings.backgroundPosition === 'top' ? 'top center' : 'center center',
-        backgroundSize: visualSettings.backgroundSize,
-        filter: effectiveBlur > 0 ? `blur(${effectiveBlur}px)` : undefined,
-        transform: effectiveBlur > 0 ? 'scale(1.02)' : undefined,
-      }
-    : {};
-  const overlayStyle: React.CSSProperties = isVisualImage
-    ? {
-        backgroundColor: overlayColor,
-        opacity: Math.max(
-          0,
-          Math.min(1, visualSettings.overlayOpacity + visualSettings.dimStrength),
-        ),
-      }
-    : {};
+  const overlayStyle = useMemo<React.CSSProperties>(() => {
+    if (!isVisualImage) return {};
+    return {
+      backgroundColor: overlayColor,
+      opacity: Math.max(0, Math.min(1, visualSettings.overlayOpacity + visualSettings.dimStrength)),
+    };
+  }, [isVisualImage, overlayColor, visualSettings.dimStrength, visualSettings.overlayOpacity]);
 
   return (
     <div className={shellStyles['proxmox-layout']}>
@@ -68,7 +54,10 @@ const ProxmoxLayout: React.FC = () => {
       <div className={shellStyles['proxmox-body']}>
         {isVisualImage ? (
           <div className={shellStyles['theme-visual-layer']} aria-hidden="true">
-            <div className={shellStyles['theme-visual-image']} style={backgroundStyle} />
+            <div
+              className={[shellStyles['theme-visual-image'], isBlurred ? shellStyles['theme-visual-imageBlurred'] : ''].join(' ')}
+              style={backgroundStyle}
+            />
             <div className={shellStyles['theme-visual-overlay']} style={overlayStyle} />
           </div>
         ) : null}

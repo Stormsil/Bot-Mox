@@ -1,15 +1,19 @@
-import { CalendarOutlined, ReloadOutlined, SaveOutlined, UnlockOutlined } from '@ant-design/icons';
-import { Alert, Button, Card, message, Spin } from 'antd';
-import type React from 'react';
-import { useCallback, useEffect, useState } from 'react';
-import { useUpdateBotMutation } from '../../entities/bot/api/useBotMutations';
-import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
-import type {
-  BotScheduleV2,
-  ScheduleDay,
-  ScheduleGenerationParams,
-  ScheduleSession,
-} from '../../types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, Button, Spin, Alert, message } from 'antd';
+import { SaveOutlined, ReloadOutlined, CalendarOutlined, UnlockOutlined, WarningOutlined } from '@ant-design/icons';
+import { apiPatch } from '../../services/apiClient';
+import { subscribeBotById } from '../../services/botsApiService';
+import type { BotScheduleV2, ScheduleDay, ScheduleSession, ScheduleGenerationParams } from '../../types';
+import {
+  DayTabs,
+  SessionList,
+  SessionEditor,
+  TimelineVisualizer,
+  DayStats,
+  ScheduleGenerator,
+  WeekPanel,
+  WeekOverview
+} from '../schedule';
 import {
   createEmptySchedule,
   generateSchedule,
@@ -308,17 +312,12 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
   return (
     <div className={styles['bot-schedule']}>
       <Card
-        title="Schedule"
+        title={<span className={styles['schedule-card-title']}>Schedule</span>}
         className={styles['schedule-card']}
         styles={{
           header: {
             background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
-          },
-          title: {
-            color: 'var(--boxmox-color-text-primary)',
-            fontSize: 14,
-            fontWeight: 600,
+            borderBottom: '1px solid var(--boxmox-color-border-default)',
           },
         }}
         extra={
@@ -361,10 +360,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
               size="small"
               onClick={handleSave}
               disabled={!hasChanges}
-              className={[
-                styles['schedule-action-btn'],
-                styles['schedule-action-btn-primary'],
-              ].join(' ')}
+              className={styles['schedule-action-btn-primary']}
             >
               Save
             </Button>
@@ -373,9 +369,10 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
       >
         {hasChanges && (
           <Alert
-            message="You have unsaved changes"
+            message={<span className={styles['unsaved-alert-message']}>You have unsaved changes</span>}
             type="warning"
             showIcon
+            icon={<WarningOutlined style={{ color: 'var(--boxmox-color-brand-warning)' }} />}
             className={styles['unsaved-alert']}
             closable
           />

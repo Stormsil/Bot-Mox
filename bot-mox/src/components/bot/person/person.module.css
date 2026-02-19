@@ -25,17 +25,28 @@
 
 .person-workflow-alert {
   border-left: 3px solid var(--boxmox-color-brand-primary);
-  padding: 6px 10px;
-  margin-bottom: 10px;
 }
 
 .config-incomplete-alert {
   border-color: var(--boxmox-color-brand-warning);
-  background: color-mix(
-    in srgb,
-    var(--boxmox-color-brand-warning) 10%,
-    var(--boxmox-color-surface-muted)
-  );
+  background: color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted));
+}
+
+.alert-title {
+  font-size: var(--text-xs);
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--boxmox-color-text-primary);
+}
+
+.alert-description {
+  font-size: var(--text-xs);
+  line-height: 1.2;
+  color: var(--boxmox-color-text-secondary);
+}
+
+.alert-icon {
+  font-size: 14px;
 }
 
 .person-workflow-message {

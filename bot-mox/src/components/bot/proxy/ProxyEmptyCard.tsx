@@ -20,10 +20,16 @@ export const ProxyEmptyCard: React.FC<ProxyEmptyCardProps> = ({ onAdd }) => (
     }}
     title={
       <Space>
-        <GlobalOutlined />
-        <span className={styles['proxy-card-title']}>Proxy Information</span>
+        <GlobalOutlined className={styles['card-title-icon']} />
+        <span className={styles['card-title']}>Proxy Information</span>
       </Space>
     }
+    styles={{
+      header: {
+        background: 'var(--boxmox-color-surface-muted)',
+        borderBottom: '1px solid var(--boxmox-color-border-default)',
+      },
+    }}
     extra={
       <Button type="primary" size="small" icon={<PlusOutlined />} onClick={onAdd}>
         Add
@@ -31,10 +37,9 @@ export const ProxyEmptyCard: React.FC<ProxyEmptyCardProps> = ({ onAdd }) => (
     }
   >
     <Empty
-      className={styles['proxy-empty']}
       image={Empty.PRESENTED_IMAGE_SIMPLE}
       description={
-        <span>
+        <span className={styles['empty-description']}>
           <Text type="secondary">No proxy assigned to this bot</Text>
         </span>
       }

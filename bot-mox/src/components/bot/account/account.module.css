@@ -75,13 +75,6 @@
   font-size: 14px;
 }
 
-.account-info-value {
-  color: var(--boxmox-color-text-primary);
-  font-size: var(--text-sm);
-  padding: 4px 0;
-  display: block;
-}
-
 /* Generator Options Card */
 .generator-options-card {
   margin-top: 16px;

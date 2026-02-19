@@ -35,10 +35,16 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
     }}
     title={
       <Space>
-        <GlobalOutlined />
-        <span className={styles['proxy-card-title']}>Proxy Information</span>
+        <GlobalOutlined className={styles['card-title-icon']} />
+        <span className={styles['card-title']}>Proxy Information</span>
       </Space>
     }
+    styles={{
+      header: {
+        background: 'var(--boxmox-color-surface-muted)',
+        borderBottom: '1px solid var(--boxmox-color-border-default)',
+      },
+    }}
     extra={
       <Space>
         <Button type="primary" icon={<EditOutlined />} size="small" onClick={onEdit}>

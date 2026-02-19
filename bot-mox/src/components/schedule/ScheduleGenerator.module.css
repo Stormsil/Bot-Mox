@@ -22,16 +22,16 @@
   gap: 12px;
 }
 
-.generator-row-item {
+.formItem {
+  margin-bottom: 12px;
+}
+
+.rowItem {
   flex: 1;
   margin-bottom: 8px;
 }
 
-.generator-form-item {
-  margin-bottom: 12px;
-}
-
-.generator-form-label {
+.formLabel {
   color: var(--boxmox-color-text-secondary);
   font-size: 11px;
 }
@@ -101,17 +101,26 @@
 
 .template-item {
   transition: background 0.2s;
-  padding: 10px 8px;
   border-radius: 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.template-item:last-child {
-  border-bottom: none;
 }
 
 .template-item:hover {
   background: rgba(255, 255, 255, 0.05);
+}
+
+.template-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.template-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .template-apply-btn {

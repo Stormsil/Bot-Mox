@@ -185,8 +185,15 @@ export const WorkspaceKanbanPage: React.FC = () => {
   return (
     <div className={styles.root}>
       <div className={styles.header}>
-        <Title level={4} className={styles.title}>
-          <CheckCircleOutlined className={styles.titleIcon} /> Workspace Kanban
+        <Title
+          level={4}
+          className={styles.title}
+          style={{ margin: 0, color: 'var(--boxmox-color-text-primary)' }}
+        >
+          <span className={styles.titleIcon} aria-hidden>
+            <CheckCircleOutlined />
+          </span>
+          Workspace Kanban
         </Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal('todo')}>
           Add task
@@ -200,6 +207,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
             <Card
               key={column.key}
               className={styles.column}
+              classNames={{ body: styles.columnBody }}
               title={
                 <Space>
                   <span>{column.title}</span>
@@ -218,31 +226,24 @@ export const WorkspaceKanbanPage: React.FC = () => {
               loading={loading}
               styles={{ body: { paddingTop: 12, paddingBottom: 12 } }}
             >
-              <div className={styles.columnBody}>
-                {columnTasks.length === 0 ? (
-                  <Empty
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description={<Text type="secondary">No tasks</Text>}
-                  />
-                ) : (
-                  <div className={styles.tasks}>
-                    {columnTasks.map((task) => (
-                      <Card
-                        key={task.id}
-                        className={styles.task}
-                        size="small"
-                        styles={{ body: { padding: '10px 12px' } }}
-                      >
-                        <div className={styles.taskHeader}>
-                          <Text strong>{task.title}</Text>
-                          <Space size={2}>
-                            {task.status !== 'done' && (
-                              <TableActionButton
-                                icon={<RightOutlined />}
-                                onClick={() => moveTask(task)}
-                                tooltip="Move to next column"
-                              />
-                            )}
+              {columnTasks.length === 0 ? (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={<Text type="secondary">No tasks</Text>}
+                />
+              ) : (
+                <div className={styles.tasks}>
+                  {columnTasks.map((task) => (
+                    <Card
+                      key={task.id}
+                      className={styles.task}
+                      classNames={{ body: styles.taskBody }}
+                      size="small"
+                    >
+                      <div className={styles.taskHeader}>
+                        <Text strong>{task.title}</Text>
+                        <Space size={2}>
+                          {task.status !== 'done' && (
                             <TableActionButton
                               icon={<EditOutlined />}
                               onClick={() => openEditModal(task)}

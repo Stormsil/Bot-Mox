@@ -59,7 +59,8 @@ export const CalendarMainPanel: React.FC<CalendarMainPanelProps> = ({
         className={styles.calendar}
         value={selectedDate}
         onSelect={onSelectDate}
-        fullCellRender={(current, info) => {
+        className={styles.calendar}
+        cellRender={(current, info) => {
           if (info.type !== 'date') {
             return info.originNode;
           }
@@ -68,14 +69,10 @@ export const CalendarMainPanel: React.FC<CalendarMainPanelProps> = ({
           const count = eventsByDate.get(current.format('YYYY-MM-DD'))?.length ?? 0;
 
           return (
-            <button
-              type="button"
-              className={`${styles.cell} ${isSelected ? styles.cellSelected : ''}`}
-              onClick={() => onSelectDate(current)}
-            >
-              <span className={styles.cellDate}>{current.date()}</span>
+            <div className={`${styles.cell} ${isSelected ? styles.cellSelected : ''}`}>
+              {info.originNode}
               {count > 0 && <span className={styles.cellBadge}>{count}</span>}
-            </button>
+            </div>
           );
         }}
       />

@@ -19,9 +19,13 @@ export const ExpiringSubscriptionsAlert: React.FC<ExpiringSubscriptionsAlertProp
   return (
     <Alert
       className={styles.expiringAlert}
-      message={`${subscriptions.length} subscription(s) expiring soon`}
+      message={
+        <span className={styles.expiringAlertMessage}>
+          {subscriptions.length} subscription(s) expiring soon
+        </span>
+      }
       description={
-        <ul className={styles.expiringList}>
+        <ul className={styles.expiringList + ' ' + styles.expiringAlertDescription}>
           {subscriptions.slice(0, 5).map((sub) => (
             <li key={sub.id}>
               <strong>{sub.botName || sub.bot_id}</strong> - {sub.type.toUpperCase()} expires in{' '}
@@ -33,7 +37,7 @@ export const ExpiringSubscriptionsAlert: React.FC<ExpiringSubscriptionsAlertProp
       }
       type="warning"
       showIcon
-      icon={<WarningOutlined style={{ color: '#faad14' }} />}
+      icon={<WarningOutlined className={styles.expiringAlertIcon} />}
     />
   );
 };

@@ -15,12 +15,16 @@
 }
 
 .title {
-  margin: 0;
-  color: var(--boxmox-color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .titleIcon {
   color: var(--boxmox-color-brand-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .board {
@@ -38,6 +42,12 @@
   border-color: var(--boxmox-color-border-default);
 }
 
+.columnBody {
+  min-height: 200px;
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
+}
+
 .tasks {
   display: flex;
   flex-direction: column;
@@ -49,10 +59,8 @@
   background: var(--boxmox-color-surface-panel);
 }
 
-.columnBody {
-  min-height: 200px;
-  max-height: calc(100vh - 260px);
-  overflow-y: auto;
+.taskBody {
+  padding: 10px 12px;
 }
 
 .taskHeader {

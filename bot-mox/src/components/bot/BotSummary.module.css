@@ -143,6 +143,15 @@
   border: 1px solid transparent;
 }
 
+.status-item-button {
+  width: 100%;
+  text-align: left;
+  appearance: none;
+  border: 1px solid transparent;
+  font: inherit;
+  color: inherit;
+}
+
 .clickable {
   appearance: none;
   cursor: pointer;
@@ -156,6 +165,12 @@
   border-color: var(--boxmox-color-brand-primary);
   background: rgba(240, 140, 0, 0.08);
   transform: translateY(-1px);
+}
+
+.clickable:focus-visible {
+  border-color: var(--boxmox-color-brand-primary);
+  outline: 2px solid color-mix(in srgb, var(--boxmox-color-brand-primary) 55%, transparent);
+  outline-offset: 2px;
 }
 
 .status-icon {
@@ -175,6 +190,7 @@
   border: 1px solid var(--boxmox-color-border-default);
   color: var(--boxmox-color-text-secondary);
   font-size: var(--text-xs);
+  margin-inline-end: 0;
 }
 
 .metrics-row {
@@ -189,6 +205,16 @@
   background: var(--boxmox-color-surface-panel);
   border: 1px solid var(--boxmox-color-border-default);
   height: 100%;
+}
+
+.detail-card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-condensed);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--boxmox-color-text-primary);
 }
 
 .summary-stats-grid {
@@ -251,6 +277,10 @@
   color: var(--boxmox-color-text-muted);
 }
 
+.summary-copy-icon {
+  color: var(--boxmox-color-text-muted);
+}
+
 .link-card {
   cursor: pointer;
   transition:
@@ -263,6 +293,12 @@
   border-color: var(--boxmox-color-brand-primary);
   box-shadow: 0 0 0 1px rgba(240, 140, 0, 0.25);
   transform: translateY(-1px);
+}
+
+.link-card:focus-visible {
+  border-color: var(--boxmox-color-brand-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--boxmox-color-brand-primary) 50%, transparent);
+  outline: none;
 }
 
 .link-card-title {
@@ -281,15 +317,29 @@
 
 .link-card-header {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 8px;
 }
 
-.link-card-cta {
-  display: inline-block;
-  margin-top: 12px;
-  color: var(--boxmox-color-text-muted);
+.link-card-open-btn {
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--boxmox-color-surface-panel);
+  color: var(--boxmox-color-text-secondary);
   font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.link-card-open-btn:hover {
+  border-color: var(--boxmox-color-brand-primary);
+  color: var(--boxmox-color-text-primary);
+}
+
+.link-card-open-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--boxmox-color-brand-primary) 55%, transparent);
+  outline-offset: 1px;
 }

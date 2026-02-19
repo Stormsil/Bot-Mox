@@ -30,7 +30,7 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
         <Col span={8}>
           <Card className={styles['leveling-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title={<span className={styles['leveling-stat-card-title']}>Current Level</span>}
+              title={<span className={styles['stat-title']}>Current Level</span>}
               value={leveling.current_level}
               prefix={<RiseOutlined />}
               valueStyle={{ color: '#722ed1', fontSize: 'var(--text-xl)', fontWeight: 600 }}
@@ -40,7 +40,7 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
         <Col span={8}>
           <Card className={styles['leveling-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title={<span className={styles['leveling-stat-card-title']}>XP per Hour</span>}
+              title={<span className={styles['stat-title']}>XP per Hour</span>}
               value={leveling.xp_per_hour.toLocaleString()}
               suffix="XP"
               valueStyle={{ color: '#52c41a', fontSize: 'var(--text-xl)', fontWeight: 600 }}
@@ -50,7 +50,7 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
         <Col span={8}>
           <Card className={styles['leveling-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
-              title={<span className={styles['leveling-stat-card-title']}>Time to Level</span>}
+              title={<span className={styles['stat-title']}>Time to Level</span>}
               value={leveling.estimated_time_to_level}
               suffix="h"
               prefix={<ClockCircleOutlined />}
@@ -62,11 +62,11 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
 
       <Card
         className={styles['leveling-progress-card']}
-        title={<span className={styles['leveling-progress-card-title']}>Experience Progress</span>}
+        title={<span className={styles['card-title']}>Experience Progress</span>}
         styles={{
           header: {
             background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
+            borderBottom: '1px solid var(--boxmox-color-border-default)',
           },
         }}
       >
@@ -93,7 +93,7 @@ export const BotLeveling: React.FC<BotLevelingProps> = () => {
         <div className={styles['location-info']}>
           <AimOutlined className={styles['location-icon']} />
           <div className={styles['location-details']}>
-            <Text type="secondary" className={styles['location-details-label']}>
+            <Text type="secondary" style={{ fontSize: 'var(--text-xs)' }}>
               Current Location
             </Text>
             <Tag className={styles['location-tag']}>{leveling.location}</Tag>

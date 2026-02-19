@@ -31,7 +31,7 @@ export const buildSubscriptionColumns = ({
     render: (status: SubscriptionWithDetails['computedStatus'], record) => (
       <Tag
         color={getSubscriptionStatusColor(status)}
-        style={{ fontSize: '11px', borderRadius: 2, textTransform: 'uppercase' }}
+        style={{ borderRadius: 2, fontSize: '11px', textTransform: 'uppercase' }}
       >
         {getSubscriptionStatusText(status)}
         {status === 'expiring_soon' && ` (${record.daysRemaining} days)`}

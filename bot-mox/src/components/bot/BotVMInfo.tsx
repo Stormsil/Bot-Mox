@@ -80,6 +80,9 @@ export const BotVMInfo: React.FC<BotVMInfoProps> = ({ bot }) => {
             background: 'var(--boxmox-color-surface-muted)',
             borderBottom: '1px solid var(--boxmox-color-border-default)',
           },
+          title: {
+            color: 'var(--boxmox-color-text-primary)',
+          },
         }}
         title={
           <Space>

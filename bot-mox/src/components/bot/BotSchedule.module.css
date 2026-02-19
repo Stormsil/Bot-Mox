@@ -14,6 +14,12 @@
   border-color: var(--boxmox-color-border-default);
 }
 
+.schedule-card-title {
+  color: var(--boxmox-color-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .schedule-actions {
   display: flex;
   gap: 8px;
@@ -42,8 +48,8 @@
   color: #fff;
 }
 
-.schedule-action-btn-primary:disabled,
-.schedule-action-btn:disabled {
+.schedule-action-btn:disabled,
+.schedule-action-btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -62,6 +68,10 @@
   margin-bottom: 16px;
   background: #fff4e3;
   border-color: var(--boxmox-color-brand-warning);
+}
+
+.unsaved-alert-message {
+  color: #b36200;
 }
 
 /* Main layout wrapper */
