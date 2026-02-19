@@ -57,3 +57,7 @@ deploy/compose.*.env
 tmp/
 temp/
 backups/
+
+# Local caches / generated docs
+.turbo/
+docs/_generated/
