@@ -78,6 +78,51 @@ pnpm run supabase:create-user -- --email "admin@example.com" --password "ChangeM
 node scripts/check-bundle-budgets.js
 ```
 
+## Lockfile and ingest hygiene
+
+### `check-lockfiles.js`
+
+Enforces pnpm-only lockfile policy:
+
+1. `pnpm-lock.yaml` is the only allowed active lockfile.
+2. Any `package-lock.json` outside `docs/history/**` fails the check.
+
+Run:
+
+```bash
+pnpm run check:lockfiles
+```
+
+### `generate-repo-map.js`
+
+Builds a high-level repository tree for AI/dev onboarding.
+
+Run:
+
+```bash
+pnpm run repo:map
+```
+
+### `generate-hotspots-report.js`
+
+Builds a CSV with file line/byte hotspots and inferred ownership layer.
+
+Run:
+
+```bash
+pnpm run repo:hotspots
+```
+
+### `generate-llm-ingest-profile.js`
+
+Builds a reusable external LLM ingest exclude profile.
+
+Run:
+
+```bash
+pnpm run repo:ingest:profile
+```
+
 ## `check-secrets.js`
 
 Проверяет tracked + untracked файлы (`git ls-files --cached --others --exclude-standard`) на признаки утечки секретов.
@@ -118,16 +163,6 @@ node scripts/check-style-guardrails.js
 
 ```bash
 pnpm run check:infra:gateway
-```
-
-## `generate-firebase-decommission-audit.js`
-
-Генерирует живой аудит статуса полного удаления Firebase/RTDB из активного контура проекта.
-
-Запуск:
-
-```bash
-pnpm run audit:firebase:decommission
 ```
 
 ## `artifacts-e2e-smoke.js`

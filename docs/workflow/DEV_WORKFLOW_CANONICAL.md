@@ -85,6 +85,15 @@ pnpm run repo:reports
 4. If hotspot warning appears for touched file, include split action now or create follow-up PR as the next slice.
 5. Do not defer architecture/workflow doc updates to “later cleanup”.
 
+## PR Discipline for Architecture-Impacting Work
+
+1. Any PR that touches architecture-critical paths must update at least one active doc under `docs/` (excluding `docs/history/`).
+2. Required PR notes sections:
+   - boundary impact,
+   - observability impact (logs/traces/metrics),
+   - regression guard (tests/checks added or updated).
+3. Merge is blocked if docs change policy check fails.
+
 ## Agentic Debugging Workflow (Required for Bugfixes)
 
 1. Reproduce issue with deterministic command or scenario.

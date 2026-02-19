@@ -1,0 +1,192 @@
+import { z } from 'zod';
+import {
+  authHeaderSchema,
+  botBanDetailsSchema,
+  botDeleteResultSchema,
+  botLifecycleIsBannedSchema,
+  botLifecycleSchema,
+  botLifecycleTransitionItemSchema,
+  botLifecycleTransitionSchema,
+  botListQuerySchema,
+  botMutationSchema,
+  botRecordSchema,
+  errorEnvelopeSchema,
+  successEnvelopeSchema,
+} from './schemas.js';
+
+export const contractRoutesBots = {
+  botsCreate: {
+    method: 'POST',
+    path: '/api/v1/bots',
+    headers: authHeaderSchema,
+    body: botMutationSchema,
+    responses: {
+      201: successEnvelopeSchema(botRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+    },
+    summary: 'Create bot',
+  },
+  botsDelete: {
+    method: 'DELETE',
+    path: '/api/v1/bots/:id',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().min(1),
+    }),
+    responses: {
+      200: successEnvelopeSchema(botDeleteResultSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Delete bot',
+  },
+  botsGet: {
+    method: 'GET',
+    path: '/api/v1/bots/:id',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().min(1),
+    }),
+    responses: {
+      200: successEnvelopeSchema(botRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Get bot by id',
+  },
+  botsList: {
+    method: 'GET',
+    path: '/api/v1/bots',
+    headers: authHeaderSchema,
+    query: botListQuerySchema,
+    responses: {
+      200: successEnvelopeSchema(z.array(botRecordSchema)),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+    },
+    summary: 'List bots',
+  },
+  botsLifecycleBan: {
+    method: 'POST',
+    path: '/api/v1/bots/:id/lifecycle/ban',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().min(1),
+    }),
+    body: botBanDetailsSchema,
+    responses: {
+      200: successEnvelopeSchema(botRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Ban bot via lifecycle endpoint',
+  },
+  botsLifecycleGet: {
+    method: 'GET',
+    path: '/api/v1/bots/:id/lifecycle',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().min(1),
+    }),
+    responses: {
+      200: successEnvelopeSchema(z.union([botLifecycleSchema, z.null()])),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Get bot lifecycle state',
+  },
+  botsLifecycleIsBanned: {
+    method: 'GET',
+    path: '/api/v1/bots/:id/lifecycle/is-banned',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().min(1),
+    }),
+    responses: {
+      200: successEnvelopeSchema(botLifecycleIsBannedSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Check whether bot is banned',
+  },
+  botsLifecycleTransition: {
+    method: 'POST',
+    path: '/api/v1/bots/:id/lifecycle/transition',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().min(1),
+    }),
+    body: botLifecycleTransitionSchema,
+    responses: {
+      200: successEnvelopeSchema(botRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Transition bot lifecycle status',
+  },
+  botsLifecycleTransitions: {
+    method: 'GET',
+    path: '/api/v1/bots/:id/lifecycle/transitions',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().min(1),
+    }),
+    responses: {
+      200: successEnvelopeSchema(z.array(botLifecycleTransitionItemSchema)),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Get bot lifecycle transitions',
+  },
+  botsLifecycleUnban: {
+    method: 'POST',
+    path: '/api/v1/bots/:id/lifecycle/unban',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().min(1),
+    }),
+    body: z.object({}).passthrough().optional(),
+    responses: {
+      200: successEnvelopeSchema(botRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Unban bot via lifecycle endpoint',
+  },
+  botsPatch: {
+    method: 'PATCH',
+    path: '/api/v1/bots/:id',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().min(1),
+    }),
+    body: botMutationSchema,
+    responses: {
+      200: successEnvelopeSchema(botRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Patch bot',
+  },
+} as const;
