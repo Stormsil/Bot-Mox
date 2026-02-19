@@ -1,5 +1,12 @@
 # Auth (MVP)
 
+Status: Active
+Owner: Backend Platform
+Last Updated: 2026-02-19
+Applies To: `apps/backend`, `apps/frontend`, `apps/agent`
+Non-goals: Legacy auth adapters
+Related Checks: `check:zod:boundaries`, `contract:check`
+
 Bot-Mox API uses `Authorization: Bearer <token>` for all `/api/v1/*` endpoints.
 
 ## Token Sources (Supported)

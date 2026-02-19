@@ -1,5 +1,12 @@
 # Bot-Mox Database Notes
 
+Status: Active
+Owner: Data Platform
+Last Updated: 2026-02-19
+Applies To: Supabase/Postgres runtime
+Non-goals: Firebase legacy implementation
+Related Checks: `db:types:check`, `contract:check`
+
 ## Primary Store
 
 - Supabase/Postgres is the primary runtime store.
@@ -70,4 +77,4 @@ Legacy `/api/*` adapters are removed.
 
 - `docs/history/architecture/refactor-baseline.md`
 - `docs/history/architecture/refactor-handoff-2026-02-10.md`
-- `docs/history/firebase-config/` (Firebase project config + rules/indexes archive)
+- `docs/history/` (archived legacy materials)

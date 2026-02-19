@@ -1,5 +1,12 @@
 # VPS Operations Runbook
 
+Status: Active
+Owner: Platform Operations
+Last Updated: 2026-02-19
+Applies To: VPS/prod-like operations
+Non-goals: Local feature development workflow
+Related Checks: `check:all:mono`, deploy and rollback workflows
+
 ## Local Substitute (when VPS is not ready yet)
 
 Use the local production-like Docker stack as a direct substitute for VPS deploy flow:
@@ -236,7 +243,7 @@ docker compose -f deploy/compose.stack.yml --env-file .env.prod restart backend
 30 3 * * * cd /opt/botmox && ./scripts/backup-minio.sh >> /var/log/botmox-backup.log 2>&1
 
 # Cleanup backups older than 14 days
-0 4 * * * find /opt/apps/frontend/backups -name "*.gz" -mtime +14 -delete
+0 4 * * * find /opt/botmox/backups -name "*.gz" -mtime +14 -delete
 ```
 
 ### Manual Backup
@@ -377,7 +384,7 @@ df -h
 docker image prune -a --filter "until=168h"
 
 # Clean old backups
-find /opt/apps/frontend/backups -name "*.gz" -mtime +7 -delete
+find /opt/botmox/backups -name "*.gz" -mtime +7 -delete
 ```
 
 ---
