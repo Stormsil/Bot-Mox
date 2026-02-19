@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+# Optional local map refresh for AI ingest and hotspot visibility.
+if command -v node >/dev/null 2>&1; then
+  node scripts/generate-repo-map.js >/dev/null
+  node scripts/generate-hotspots-report.js >/dev/null
+  node scripts/generate-llm-ingest-profile.js >/dev/null
+fi
+
+# Fast local guards before push.
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm run check:lockfiles >/dev/null
+  pnpm run check:file-size:budgets >/dev/null
+fi
+
+echo "Pre-push checks passed."
+echo "If this push completes a semantic slice, open a PR now (do not batch for later)."

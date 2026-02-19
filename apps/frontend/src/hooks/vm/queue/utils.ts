@@ -90,7 +90,7 @@ export function buildConfigDiffLines(
 }
 
 export function logTaskFieldChanges(
-  log: VMLog,
+  log: Pick<VMLog, 'taskLog'>,
   taskKey: string,
   title: string,
   lines: string[],

@@ -1,0 +1,97 @@
+import { z } from 'zod';
+import {
+  authHeaderSchema,
+  errorEnvelopeSchema,
+  secretBindingCreateSchema,
+  secretBindingRecordSchema,
+  secretBindingsListQuerySchema,
+  secretCreateSchema,
+  secretMetaRecordSchema,
+  secretRotateSchema,
+  successEnvelopeSchema,
+} from './schemas.js';
+
+export const contractRoutesSecrets = {
+  secretsCreate: {
+    method: 'POST',
+    path: '/api/v1/secrets',
+    headers: authHeaderSchema,
+    body: secretCreateSchema,
+    responses: {
+      201: successEnvelopeSchema(secretMetaRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+      503: errorEnvelopeSchema,
+    },
+    summary: 'Store ciphertext secret',
+  },
+  secretsCreateBinding: {
+    method: 'POST',
+    path: '/api/v1/secrets/bindings',
+    headers: authHeaderSchema,
+    body: secretBindingCreateSchema,
+    responses: {
+      201: successEnvelopeSchema(secretBindingRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+      503: errorEnvelopeSchema,
+    },
+    summary: 'Create secret binding for domain scope',
+  },
+  secretsGetMeta: {
+    method: 'GET',
+    path: '/api/v1/secrets/:id/meta',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().trim().min(1),
+    }),
+    responses: {
+      200: successEnvelopeSchema(secretMetaRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+      503: errorEnvelopeSchema,
+    },
+    summary: 'Read secret metadata without ciphertext',
+  },
+  secretsListBindings: {
+    method: 'GET',
+    path: '/api/v1/secrets/bindings',
+    headers: authHeaderSchema,
+    query: secretBindingsListQuerySchema,
+    responses: {
+      200: successEnvelopeSchema(z.array(secretBindingRecordSchema)),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+      503: errorEnvelopeSchema,
+    },
+    summary: 'List secret bindings by optional scope',
+  },
+  secretsRotate: {
+    method: 'POST',
+    path: '/api/v1/secrets/:id/rotate',
+    headers: authHeaderSchema,
+    pathParams: z.object({
+      id: z.string().trim().min(1),
+    }),
+    body: secretRotateSchema,
+    responses: {
+      200: successEnvelopeSchema(secretMetaRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+      503: errorEnvelopeSchema,
+    },
+    summary: 'Rotate secret material',
+  },
+} as const;
