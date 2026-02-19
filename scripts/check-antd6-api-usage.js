@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = process.cwd();
-const SOURCE_DIR = path.join(ROOT, 'bot-mox', 'src');
+const SOURCE_DIR = path.join(ROOT, 'apps', 'frontend', 'src');
 const SCAN_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx']);
 const STRICT = process.argv.includes('--strict');
 
@@ -89,7 +89,7 @@ function scanFile(filePath, results) {
 
 function main() {
   if (!fs.existsSync(SOURCE_DIR)) {
-    process.stderr.write('Missing bot-mox/src directory. Run from repository root.\n');
+    process.stderr.write('Missing apps/frontend/src directory. Run from repository root.\n');
     process.exit(1);
   }
 

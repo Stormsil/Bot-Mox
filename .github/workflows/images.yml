@@ -38,19 +38,19 @@ jobs:
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
-          context: ./bot-mox
-          file: ./bot-mox/Dockerfile
+          context: .
+          file: ./apps/frontend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ steps.vars.outputs.owner_lc }}/bot-mox-frontend:sha-${{ steps.vars.outputs.short_sha }}
-            ghcr.io/${{ steps.vars.outputs.owner_lc }}/bot-mox-frontend:main-latest
+            ghcr.io/${{ steps.vars.outputs.owner_lc }}/botmox-frontend:sha-${{ steps.vars.outputs.short_sha }}
+            ghcr.io/${{ steps.vars.outputs.owner_lc }}/botmox-frontend:main-latest
 
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
-          context: ./proxy-server
-          file: ./proxy-server/Dockerfile
+          context: .
+          file: ./apps/backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ steps.vars.outputs.owner_lc }}/bot-mox-backend:sha-${{ steps.vars.outputs.short_sha }}
-            ghcr.io/${{ steps.vars.outputs.owner_lc }}/bot-mox-backend:main-latest
+            ghcr.io/${{ steps.vars.outputs.owner_lc }}/botmox-backend:sha-${{ steps.vars.outputs.short_sha }}
+            ghcr.io/${{ steps.vars.outputs.owner_lc }}/botmox-backend:main-latest

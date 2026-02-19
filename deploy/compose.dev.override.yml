@@ -1,10 +1,14 @@
 services:
+  caddy:
+    environment:
+      BACKEND_INTERNAL_PORT: ${BACKEND_INTERNAL_PORT:-3002}
+
   frontend:
     image: node:20-bookworm
-    working_dir: /app
+    working_dir: /workspace
     # Dev server behind Caddy (single entrypoint: http://localhost)
     # Use port 80 inside the docker network so Caddy can keep reverse_proxy frontend:80.
-    command: sh -c "corepack enable && pnpm install --no-frozen-lockfile && pnpm run dev -- --host 0.0.0.0 --port 80 --strictPort"
+    command: sh -c "corepack enable && pnpm install --no-frozen-lockfile && pnpm --filter @botmox/frontend dev -- --host 0.0.0.0 --port 80 --strictPort"
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost}
       VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost}
@@ -12,24 +16,25 @@ services:
       VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
       # Observability (dev default ON)
       VITE_OTEL_ENABLED: ${VITE_OTEL_ENABLED:-1}
-      VITE_OTEL_SERVICE_NAME: ${VITE_OTEL_SERVICE_NAME:-bot-mox-frontend}
+      VITE_OTEL_SERVICE_NAME: ${VITE_OTEL_SERVICE_NAME:-botmox-frontend}
       VITE_OTEL_EXPORTER_OTLP_ENDPOINT: ${VITE_OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost/api/v1/otel/v1/traces}
     volumes:
-      - ../bot-mox:/app
+      - ../:/workspace
     # No host port binding: access via Caddy on http://localhost
 
   backend:
     image: node:20-bookworm
-    working_dir: /app
-    command: sh -c "corepack enable && pnpm install --no-frozen-lockfile && pnpm run dev"
+    working_dir: /workspace
+    command: sh -c "corepack enable && pnpm install --no-frozen-lockfile && pnpm --filter @botmox/backend dev"
     environment:
       NODE_ENV: development
-      PORT: ${BACKEND_PORT:-3001}
+      PORT: ${BACKEND_PORT:-3002}
+      NEST_PORT: ${BACKEND_PORT:-3002}
       # Observability (dev default ON)
       BOTMOX_OTEL_ENABLED: ${BOTMOX_OTEL_ENABLED:-1}
       BOTMOX_OTEL_PROXY_ENABLED: ${BOTMOX_OTEL_PROXY_ENABLED:-1}
       BOTMOX_DIAGNOSTICS_ENABLED: ${BOTMOX_DIAGNOSTICS_ENABLED:-1}
-      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-bot-mox-backend}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-botmox-backend}
       # Jaeger OTLP endpoint (host) - in Docker use host.docker.internal on Desktop
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318}
       DATA_BACKEND: ${DATA_BACKEND:-supabase}
@@ -46,8 +51,8 @@ services:
       INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-change-me-api-token}
       INTERNAL_INFRA_TOKEN: ${INTERNAL_INFRA_TOKEN:-change-me-infra-token}
     volumes:
-      - ../proxy-server:/app
+      - ../:/workspace
     ports:
-      - "${BACKEND_BIND_PORT:-3001}:3001"
+      - "${BACKEND_BIND_PORT:-3002}:3002"
     extra_hosts:
       - "host.docker.internal:host-gateway"

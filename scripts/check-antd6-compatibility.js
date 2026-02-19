@@ -17,9 +17,9 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-const webPackagePath = path.join(process.cwd(), 'bot-mox', 'package.json');
+const webPackagePath = path.join(process.cwd(), 'apps', 'frontend', 'package.json');
 if (!fs.existsSync(webPackagePath)) {
-  process.stderr.write('Missing bot-mox/package.json. Run from repository root.\n');
+  process.stderr.write('Missing apps/frontend/package.json. Run from repository root.\n');
   process.exit(1);
 }
 

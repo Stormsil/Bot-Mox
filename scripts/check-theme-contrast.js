@@ -3,7 +3,15 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const themePalettePath = path.join(__dirname, '..', 'bot-mox', 'src', 'theme', 'themePalette.ts');
+const themePalettePath = path.join(
+  __dirname,
+  '..',
+  'apps',
+  'frontend',
+  'src',
+  'theme',
+  'themePalette.ts',
+);
 const source = fs.readFileSync(themePalettePath, 'utf8');
 
 function extractPalette(name) {

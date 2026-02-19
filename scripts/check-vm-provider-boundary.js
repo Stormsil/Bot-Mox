@@ -5,7 +5,7 @@ const path = require('node:path');
 const ts = require('typescript');
 
 const repoRoot = process.cwd();
-const providersRoot = path.join(repoRoot, 'bot-mox', 'src', 'providers');
+const providersRoot = path.join(repoRoot, 'apps', 'frontend', 'src', 'providers');
 
 const sourceExtensions = new Set(['.ts', '.tsx']);
 const vmProviderFilePattern = /(vm-|unattend-profile-client)/i;

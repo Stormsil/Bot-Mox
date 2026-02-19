@@ -30,8 +30,8 @@ const automationSources = [
   'deploy/compose.prod-sim.env.example',
   'scripts/bootstrap-supabase-env.ps1',
   'scripts/check-antd6-compatibility.js',
-  'bot-mox/Dockerfile',
-  'proxy-server/Dockerfile',
+  'apps/frontend/Dockerfile',
+  'apps/backend/Dockerfile',
   'packages/database-schema/scripts/generate-supabase-types.mjs',
   'packages/database-schema/scripts/check-generated-types.mjs',
 ];

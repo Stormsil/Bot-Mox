@@ -1,0 +1,66 @@
+.dashboard-page {
+  padding: 24px;
+  min-height: calc(100vh - 45px);
+  background: var(--boxmox-color-surface-base);
+}
+
+.dashboard-loading {
+  min-height: calc(100vh - 45px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--boxmox-color-text-secondary);
+}
+
+.page-title {
+  font-family: "Roboto Condensed", sans-serif;
+}
+
+.metrics-row {
+  margin-bottom: 24px;
+}
+
+.bot-list-card {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: var(--radius-sm);
+}
+
+.tableHeaderCell {
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-primary);
+  border-bottom: 2px solid var(--boxmox-color-brand-primary);
+  font-weight: 600;
+}
+
+.tableCell {
+  border-bottom: 1px solid var(--boxmox-color-border-subtle);
+  color: var(--boxmox-color-text-secondary);
+  background: transparent;
+}
+
+.tableRow:hover .tableCell {
+  background: var(--boxmox-color-surface-hover);
+}
+
+.bot-name {
+  font-weight: 500;
+  color: var(--boxmox-color-text-primary);
+}
+
+.bot-id {
+  font-size: 11px;
+  color: var(--boxmox-color-text-muted);
+}
+
+.char-name {
+  font-weight: 500;
+  color: var(--boxmox-color-text-primary);
+}
+
+.char-info {
+  font-size: 11px;
+  color: var(--boxmox-color-text-muted);
+}

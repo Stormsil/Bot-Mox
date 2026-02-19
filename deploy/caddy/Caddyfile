@@ -7,7 +7,7 @@
 }
 
 {$API_DOMAIN:api.localhost} {
-	reverse_proxy backend:3001
+	reverse_proxy backend:{$BACKEND_INTERNAL_PORT:3002}
 }
 
 {$S3_DOMAIN:s3.localhost} {
@@ -21,7 +21,7 @@
 :80 {
 	@api path /api/* /ws/* /ws/v1/*
 	handle @api {
-		reverse_proxy backend:3001
+		reverse_proxy backend:{$BACKEND_INTERNAL_PORT:3002}
 	}
 
 	handle_path /s3/* {

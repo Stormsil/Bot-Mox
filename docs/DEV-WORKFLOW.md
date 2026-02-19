@@ -1,4 +1,4 @@
-# Руководство разработчика Bot-Mox
+# Руководство разработчика BotMox
 
 ## Что нужно установить (один раз)
 
@@ -10,9 +10,9 @@
 ## Структура проекта
 
 ```
-Bot-Mox/
-  bot-mox/          — React фронтенд (Vite + Ant Design)
-  proxy-server/     — Express бэкенд (API)
+BotMox/
+  apps/frontend/          — React фронтенд (Vite + Ant Design)
+  apps/backend/            — NestJS бэкенд (API)
   supabase/         — Миграции БД + конфиг Supabase
   deploy/           — Docker Compose для полного стека
   scripts/          — Утилиты (бэкапы, миграции, проверки)
@@ -30,19 +30,17 @@ MinIO (S3) не нужен если не работаешь с артефакт�
 # Терминал 1 — БД (Supabase: Postgres + Auth + REST API + Studio)
 corepack pnpm exec supabase start
 
-# Терминал 2 — Бэкенд (Express, порт 3001)
-cd proxy-server
-pnpm run dev
+# Терминал 2 — Бэкенд (Nest, порт 3002)
+pnpm run dev:backend
 
 # Терминал 3 — Фронтенд (Vite, порт 5173)
-cd bot-mox
-pnpm run dev
+pnpm run dev:frontend
 ```
 
 Открыть:
 - **Приложение**: http://localhost:5173
 - **Supabase Studio** (БД в браузере): http://localhost:54323
-- **API напрямую**: http://localhost:3001/api/v1/health
+- **API напрямую**: http://localhost:3002/api/v1/health
 
 ### Режим 2: Полный стек (Docker Compose, имитация продакшена)
 
@@ -76,7 +74,7 @@ pnpm run deploy:local:down
 
 Есть два источника Supabase:
 
-- Supabase CLI (`corepack pnpm exec supabase start`) поднимает контейнеры вида `supabase_*_bot-mox-local`
+- Supabase CLI (`corepack pnpm exec supabase start`) поднимает контейнеры вида `supabase_*_botmox-local`
 - Docker Compose стек приложения (`deploy/compose.stack.yml`) поднимает `botmox-stack-*`
 
 Одновременно держать оба стека часто приводит к путанице (пользователи/таблицы/ключи в разных БД).
@@ -88,9 +86,9 @@ corepack pnpm exec supabase stop
 
 ### URLs и порты (чтобы не путаться)
 
-- Dev (Vite + node напрямую): UI `http://localhost:5173`, API `http://localhost:3001`
+- Dev (Vite + node напрямую): UI `http://localhost:5173`, API `http://localhost:3002`
 - Prod-sim (всё через Caddy): UI `http://localhost`, API тоже через `http://localhost/api/*`
-  - `http://localhost:3001` в этом режиме не опубликован на хост и может быть `connection refused`.
+  - `http://localhost:3002` в этом режиме не опубликован на хост и может быть `connection refused`.
 
 Домены `app.localhost/api.localhost/...` из Caddyfile не будут открываться без записи в hosts/DNS.
 Для локалки всегда можно использовать `http://localhost`.
@@ -209,15 +207,15 @@ pnpm run dev:trace
 ```
 
 `dev:trace` автоматически выставляет переменные окружения для OTel и запускает `start-dev.js` (backend + Vite).
-Если порт `3001` занят:
+Если порт `3002` занят:
 ```powershell
-$env:BOTMOX_PROXY_PORT=3101; pnpm run dev:trace
+$env:BOTMOX_BACKEND_PORT=3102; pnpm run dev:trace
 ```
 
 ### Конфигурация (где включать/выключать)
 Dev (без Docker):
-- Backend env: `proxy-server/.env` (см. `proxy-server/.env.example`)
-- Frontend env: `bot-mox/.env` (см. `bot-mox/.env.example`)
+- Backend env: `apps/backend/.env`
+- Frontend env: `apps/frontend/.env` (см. `apps/frontend/.env.example`)
 - Быстро включить без правки файлов: `pnpm run dev:trace`
 
 Prod-like / Docker (Caddy на `http://localhost/`):
@@ -265,7 +263,7 @@ pnpm run test:e2e
 pnpm run test:e2e:prodlike
 ```
 
-Если порт `3001` занят, E2E webServer по умолчанию использует `BOTMOX_PROXY_PORT=3101` (см. `bot-mox/playwright.config.ts`).
+Если порт `3002` занят, E2E webServer по умолчанию использует `BOTMOX_BACKEND_PORT=3102` (см. `apps/frontend/playwright.config.ts`).
 
 Отчет:
 ```powershell
@@ -273,23 +271,23 @@ pnpm run test:e2e:report
 ```
 
 Артефакты:
-- `bot-mox/test-results/` (включая `trace.zip` на падениях)
-- `bot-mox/playwright-report/`
+- `apps/frontend/test-results/` (включая `trace.zip` на падениях)
+- `apps/frontend/playwright-report/`
 
 ### Локальные quality-gates (чтобы быстро понять что сломалось)
 ```powershell
 pnpm run check:all
 ```
 
-Важный guardrail: `pnpm run check:backend:logging` валит сборку, если в `proxy-server/src` появился `console.*`
+Важный guardrail: `pnpm run check:backend:logging` валит сборку, если в `apps/backend/src` появился `console.*`
 (кроме короткого allowlist). Это защищает структурированное логирование.
 
 Дополнительно: `pnpm run check:frontend:logging` валит сборку, если `console.*` появился в критичных frontend-слоях:
-- `bot-mox/src/services/**`
-- `bot-mox/src/hooks/**`
-- `bot-mox/src/pages/**`
-- `bot-mox/src/observability/**`
-- `bot-mox/src/components/ui/ErrorBoundary.tsx`
+- `apps/frontend/src/services/**`
+- `apps/frontend/src/hooks/**`
+- `apps/frontend/src/pages/**`
+- `apps/frontend/src/observability/**`
+- `apps/frontend/src/components/ui/ErrorBoundary.tsx`
 
 ### Как расследовать баг/падение (для ИИ-агентов)
 1. Открой Playwright отчет и trace (`trace.zip`) и найди failing request.
@@ -369,7 +367,7 @@ pnpm run agent:dev
 - В агенте используется только quick-pair по логину/паролю Bot-Mox аккаунта (manual/advanced pairing убран).
 - URL сервера в UI не вводится: агент сам пытается определить куда стучаться.
   - в `prod-sim` это `http://localhost`
-  - в `dev` режиме без Caddy это `http://localhost:3001`
+  - в `dev` режиме без Caddy это `http://localhost:3002`
   - если нужно принудительно (например на VPS), можно задать `BOTMOX_SERVER_URL` в окружении агента.
 
 Диагностика агента:
@@ -414,7 +412,7 @@ Legacy заметка:
 
 ## Переменные окружения
 
-### Бэкенд (`proxy-server/.env`)
+### Бэкенд (`apps/backend/.env`)
 
 | Переменная | Что делает | Значение для dev |
 |------------|-----------|-----------------|
@@ -422,16 +420,16 @@ Legacy заметка:
 | `SUPABASE_URL` | Адрес Supabase | `http://127.0.0.1:54321` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Admin-ключ Supabase | (демо-ключ из `corepack pnpm exec supabase status`) |
 | `LICENSE_LEASE_SECRET` | Подпись JWT лицензий | минимум 32 символа |
-| `AGENT_PAIRING_PUBLIC_URL` | Публичный URL API для генерации pairing-link | `http://localhost:3001` |
+| `AGENT_PAIRING_PUBLIC_URL` | Публичный URL API для генерации pairing-link | `http://localhost:3002` |
 | `S3_ENDPOINT` | MinIO/S3 адрес | `http://127.0.0.1:9000` |
 | `REQUIRE_S3_READY` | Блокировать старт если S3 недоступен | `false` |
 | `REQUIRE_SUPABASE_READY` | Блокировать старт если Supabase недоступен | `true` |
 
-### Фронтенд (`bot-mox/.env`)
+### Фронтенд (`apps/frontend/.env`)
 
 | Переменная | Что делает | Значение для dev |
 |------------|-----------|-----------------|
-| `VITE_API_BASE_URL` | Адрес API | `http://localhost:3001` |
+| `VITE_API_BASE_URL` | Адрес API | `http://localhost:3002` |
 | `VITE_SUPABASE_URL` | Supabase для Auth | `http://127.0.0.1:54321` |
 | `VITE_SUPABASE_ANON_KEY` | Публичный ключ Supabase | (демо-ключ) |
 
@@ -460,4 +458,3 @@ Legacy заметка:
 3. Откат: запуск `rollback-prod.yml` с предыдущим тегом
 
 Подробности: `docs/runbooks/vps-operations.md`
-

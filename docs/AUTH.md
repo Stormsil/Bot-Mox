@@ -39,7 +39,7 @@ next to `frontend`, `backend`, `minio` and `caddy`.
 
 Key env concepts:
 1. `SUPABASE_PUBLIC_URL`: public base URL used by the browser and GoTrue for link generation (example: `https://supabase.example.com`).
-2. `SUPABASE_URL`: backend/internal base URL used by `proxy-server` to talk to Supabase (default in stack: `http://supabase-kong:8000`).
+2. `SUPABASE_URL`: backend/internal base URL used by `apps/backend` to talk to Supabase (default in stack: `http://supabase-kong:8000`).
 3. `SUPABASE_ANON_KEY`: public key (safe for frontend).
 4. `SUPABASE_SERVICE_ROLE_KEY`: server-only key (must never be exposed to frontend).
 

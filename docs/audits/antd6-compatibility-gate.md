@@ -37,10 +37,10 @@ Source:
 - `scripts/check-antd6-compatibility.js`
 
 What it checks:
-1. Current `bot-mox` dependency ranges for `antd`, `@refinedev/antd`, `react`.
+1. Current `apps/frontend` dependency ranges for `antd`, `@refinedev/antd`, `react`.
 2. Live registry metadata (via `pnpm view`) for latest `@refinedev/antd` and its peer ranges.
 3. Whether `@refinedev/antd` peer dependencies already allow `antd@6`.
-4. Static hotspot scan for common AntD migration-risk APIs in `bot-mox/src`:
+4. Static hotspot scan for common AntD migration-risk APIs in `apps/frontend/src`:
    - popup components using legacy `visible` prop
    - `Dropdown` with legacy `overlay` prop
    - legacy `dropdownClassName` prop on popup-driven inputs

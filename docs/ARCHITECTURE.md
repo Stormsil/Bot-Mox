@@ -1,239 +1,102 @@
 # Bot-Mox Architecture (Current State)
 
-This document describes the implemented architecture in the repository (not only target plans).
+This document reflects the current implemented runtime, not target-only plans.
 
-Last review date: **2026-02-15**.
+Last review date: **2026-02-19**.
 
-## 1. Development Stage Snapshot
-
-Based on `docs/plans/green-implementation-roadmap.md` and code state:
-
-1. **Phase A (platform/runtime foundation)**: `GREEN`
-   - production-like stack, Dockerfiles, CI/CD workflows, health/live/ready endpoints.
-2. **Phase B (artifacts + lease-gated delivery)**: `GREEN`
-   - MinIO/S3 adapter, artifacts API, end-to-end smoke flow.
-3. **Phase C (agents + vm-ops + secrets)**: `GREEN`
-   - pairing/register/heartbeat/revoke APIs, command bus, ciphertext-only secret vault, frontend migration to `secret_ref`.
-4. **Phase D (Supabase expansion/cutover)**: `GREEN`
-   - controlled cutover executed in runtime configuration (`DATA_BACKEND=supabase` by default),
-   - Firebase/RTDB decommission completed for active runtime and tooling, with live audit tracking.
-
-Practical meaning:
-
-1. The runtime is **Supabase-first** across business and operational domains.
-2. Firebase is no longer required for normal backend runtime.
-3. Legacy Firebase artifacts are removed from active code/docs and archived under `docs/history/*`.
-
-## 2. Runtime Topology
+## 1. Runtime Topology
 
 Core runtime components:
 
-1. **Frontend control plane**: `bot-mox/` (`React + TypeScript + Vite + Refine + Ant Design`).
-2. **Backend API**: `proxy-server/` (`Express`, canonical API namespace `/api/v1/*`).
-3. **Desktop agent**: `agent/` (`Electron + TypeScript`, Windows tray app for VM execution).
-4. **Production-like edge stack**: `deploy/compose.stack.yml` (`caddy + frontend + backend + supabase + minio`).
+1. Frontend control plane: `apps/frontend/` (`React + TypeScript + Vite + Refine + Ant Design`).
+2. Backend API: `apps/backend/` (`NestJS`, canonical API namespace `/api/v1/*`).
+3. Desktop agent: `apps/agent/` (`Electron + TypeScript`, Windows tray app for VM execution).
+4. Production-like edge stack: `deploy/compose.stack.yml` (`caddy + frontend + backend + supabase + minio`).
 
-Entry points:
+## 2. Entry Points
 
-1. Backend start path: `proxy-server/server.js` -> `proxy-server/src/index.js` -> `proxy-server/src/legacy-app.js`.
-2. Frontend entry: `bot-mox/src/main.tsx` + `bot-mox/src/App.tsx`.
-3. Agent entry: `agent/src/main/index.ts`.
+1. Backend: `apps/backend/src/main.ts`.
+2. Frontend: `apps/frontend/src/main.tsx` + `apps/frontend/src/App.tsx`.
+3. Agent: `apps/agent/src/main/index.ts`.
 
 ## 3. Backend Architecture
 
-Main wiring:
+Root module wiring: `apps/backend/src/modules/app.module.ts`.
 
-1. Router composition: `proxy-server/src/modules/v1/index.js`.
-2. Auth + tenant context: `proxy-server/src/middleware/auth.js`.
-3. Health checks: `proxy-server/src/modules/v1/health.js`.
-4. Supabase repository composition: `proxy-server/src/repositories/repository-factory.js`.
+Current modules:
 
-### 3.1 API Domains
+1. `health`
+2. `infra-gateway` (HTTP + WS proxy for infra UIs)
+3. `observability`
+4. `auth`
+5. `artifacts`
+6. `infra`
+7. `bots`
+8. `vm-ops`
+9. `agents`
+10. `resources`
+11. `secrets`
+12. `settings`
+13. `theme-assets`
+14. `vm`
+15. `workspace`
+16. `finance`
+17. `ipqs`
+18. `license`
+19. `provisioning`
+20. `playbooks`
+21. `wow-names`
 
-Main domain routes under `/api/v1`:
+## 4. Data Layer
 
-1. `auth`, `resources`, `workspace`, `settings`, `bots`, `finance`.
-2. `vm` (VM UUID registry), `license` (lease issuance/heartbeat/revoke).
-3. `artifacts` (release/assignment/resolve-download).
-4. `agents` (pairing/register/heartbeat/revoke/list).
-5. `secrets` (ciphertext-only vault + bindings).
-6. `vm-ops` (agent command dispatch/status lifecycle).
-7. `unattend-profiles` + `provisioning` (per-VM ISO generation, provisioning tokens, setup progress).
-8. `infra` remains legacy and is role-gated to `infra` only.
+1. Primary runtime data backend: Supabase/Postgres (`DATA_BACKEND=supabase`).
+2. Shared DB typing package: `packages/database-schema`.
+3. API contract and shared Zod schemas: `packages/api-contract`.
 
-### 3.2 Data Layer
+## 5. API and Validation
 
-1. Runtime repositories are Supabase-only for:
-   - `resources`, `workspace`, `bots`, `finance`, `settings`.
-2. Supabase-native operational domains:
-   - `artifact_*`, `agents`, `agent_commands`, `secrets_ciphertext`, `secret_bindings`,
-   - `vm_registry`, `execution_leases`, `tenant_licenses`, `tenant_entitlements`.
-3. Decommission status is validated continuously via `docs/audits/firebase-decommission-audit.md`.
+1. Public API base path: `/api/v1/*`.
+2. API contract source of truth: `packages/api-contract/src/contract.ts`.
+3. Boundary validation: shared Zod schemas from `@botmox/api-contract` in Nest controllers and frontend/agent contract clients.
 
-## 4. Agent and VM Operations Flow
+## 6. Agent and VM Operations
 
-Agent runtime loop (`agent/src/core/agent-loop.ts`):
+Agent loop (`apps/agent/src/core/agent-loop.ts`):
 
-0. Bootstrap pairing: one-time `pairing_code` exchange on `POST /api/v1/agents/register` returns scoped `agent_token`.
-   - `POST /api/v1/agents/pairings` additionally returns `pairing_bundle` / `pairing_uri` / `pairing_url` helpers
-     so agent onboarding can be done with a single paste (no manual URL typing in normal flow).
-   - Pairing bundle may include `proxmox_defaults` (URL/username/node hints, no password) for agent autofill.
-1. Send heartbeat every 30s (`POST /api/v1/agents/heartbeat`).
-2. Long-poll next queued command (`GET /api/v1/vm-ops/commands/next?agent_id=...&timeout_ms=...`).
-3. Mark command `running` -> execute -> mark `succeeded|failed`.
-4. Stop on revoke (`AGENT_REVOKED` / `403`).
+1. Pair/register with backend.
+2. Heartbeat.
+3. Poll queued command.
+4. Execute locally in customer network.
+5. Report status/result.
 
-Execution model:
+Command orchestration domain:
 
-1. Customer VM operations are dispatched via `/api/v1/vm-ops/*`.
-2. Backend enforces fail-fast if agent is offline (`AGENT_OFFLINE`, `409`).
-3. Dispatch is allowed only for the same `owner_user_id` user (or `admin/infra`).
-4. Agent executors call local Proxmox API from customer network.
-5. SSH-only actions (`proxmox.ssh-status`, `proxmox.ssh-read-config`, `proxmox.ssh-write-config`, `proxmox.ssh-exec`) run through agent-local SSH transport and return explicit SSH error codes (`SSH_REQUIRED`, `SSH_AUTH_FAILED`, `SSH_UNREACHABLE`) when unavailable.
+1. API routes: `/api/v1/vm-ops/*`, `/api/v1/agents/*`.
+2. Queue/events and status flows are managed from backend modules (`vm-ops`, `agents`).
 
-## 5. Security Model
+## 7. Security Model
 
-Core controls:
+1. Bearer auth for `/api/v1/*`.
+2. Token sources: Supabase Auth JWT + scoped agent tokens + internal service tokens.
+3. Tenant and role-based authorization (`api`, `admin`, `infra`) in backend auth context.
+4. Secrets policy: ciphertext-only storage path in secrets domain.
 
-1. Bearer token auth for `/api/v1/*`.
-2. Supported token sources: internal tokens + Supabase Auth JWT + scoped agent tokens.
-3. Tenant scoping (`tenant_id`) attached to auth context and propagated in service/repository queries.
-4. Role gates:
-   - `infra` role required for legacy infra routes.
-   - admin/infra requirements on agent pairing/revoke and generic command dispatch.
-5. Secrets policy:
-   - backend stores ciphertext + metadata only; plaintext is never returned by API.
+## 8. Observability
 
-Infra hardening:
+1. Backend diagnostics and client-log ingest routes in `observability` module.
+2. Frontend logs can be ingested via `/api/v1/client-logs`.
+3. Local trace/testing workflow: `docs/plans/ai-native-observability-testing.md`.
 
-1. CORS/helmet/rate-limit middleware in HTTP bootstrap.
-2. Readiness probes for Supabase and S3 dependencies.
-3. Audit logging for infra mutating endpoints.
+## 9. Development Workflow
 
-## 6. Artifacts Delivery Flow
+1. Default local workflow: `pnpm` + `turbo` commands from repo root.
+2. Recommended stack mode: prod-like localhost via Caddy (`pnpm run dev:prodlike:up`).
+3. Main quality gate: `pnpm run check:all:mono`.
 
-Lease-gated flow:
+References:
 
-1. VM register (`/api/v1/vm/register`) and license lease (`/api/v1/license/lease`).
-   - VM Generator registers infrastructure resources only (`vm_registry`), and does not create/update bot entities in `/api/v1/bots`.
-2. Resolve download (`/api/v1/artifacts/resolve-download`) validates lease token, VM UUID, module scope.
-3. Backend issues short-lived presigned URL from S3/MinIO adapter.
-4. Every resolve attempt is written into `artifact_download_audit`.
-
-Primary implementation:
-
-1. Service: `proxy-server/src/modules/artifacts/service.js`.
-2. Storage provider: `proxy-server/src/repositories/s3/storage-provider.js`.
-3. E2E smoke: `scripts/artifacts-e2e-smoke.js`.
-
-## 7. Per-VM Provisioning & Unattend Profiles
-
-Система персонализированной установки Windows на виртуальные машины.
-
-### 7.1 Обзор
-
-При создании VM генерируется уникальный маленький ISO ("config ISO"), содержащий:
-- Кастомный `autounattend.xml` (имя юзера, ПО для удаления, таймзона и т.д.)
-- `provision.json` (IP, provisioning token, S3 endpoint, VM UUID)
-- `START.ps1` (bootstrap-скрипт для первого запуска)
-
-### 7.2 Компоненты
-
-**Backend:**
-1. Миграция: `supabase/migrations/20260215001000_create_unattend_provisioning.sql`
-   - `unattend_profiles` — пользовательские шаблоны autounattend.xml
-   - `provisioning_tokens` — JWT-токены привязанные к VM (active/used/expired/revoked)
-   - `vm_setup_progress` — трекинг шагов установки
-2. Сервис: `proxy-server/src/modules/provisioning/service.js` — CRUD профилей, выдача/валидация токенов, прогресс
-3. XML-генератор: `proxy-server/src/modules/unattend/xml-builder.js` — полный autounattend.xml из профиля
-4. S3 сервис: `proxy-server/src/modules/provisioning/s3-service.js` — presigned URLs для софта
-5. Маршруты: `proxy-server/src/modules/v1/provisioning.routes.js`
-
-**API-эндпоинты:**
-
-| Метод | Путь | Аутентификация | Описание |
-|-------|------|----------------|----------|
-| GET | `/api/v1/unattend-profiles` | user | Список профилей |
-| POST | `/api/v1/unattend-profiles` | user | Создать профиль |
-| PUT | `/api/v1/unattend-profiles/:id` | user | Обновить профиль |
-| DELETE | `/api/v1/unattend-profiles/:id` | user | Удалить профиль |
-| POST | `/api/v1/provisioning/generate-iso-payload` | user | Генерация XML + provision.json |
-| POST | `/api/v1/provisioning/validate-token` | public (token в body) | VM валидирует токен |
-| POST | `/api/v1/provisioning/report-progress` | public (token в body) | VM отчитывается о прогрессе |
-| GET | `/api/v1/provisioning/progress/:vmUuid` | user | Получить прогресс установки VM |
-
-**Агент (новые команды):**
-- `proxmox.create-provision-iso` — SSH: base64-файлы → mkisofs/genisoimage → ISO в Proxmox storage
-- `proxmox.attach-cdrom` — привязка ISO к VM через Proxmox API (`qm set --ide2`)
-- `proxmox.detach-cdrom` — отвязка ISO + опциональное удаление файла
-
-**Frontend:**
-1. Сервис: `bot-mox/src/services/unattendProfileService.ts`
-2. Редактор профилей: `bot-mox/src/pages/vms/UnattendProfileEditor.tsx` (модалка с табами)
-3. Монитор прогресса: `bot-mox/src/components/vm/VMSetupProgress.tsx`
-
-### 7.3 Flow создания VM с провизионингом
-
-```
-1. Clone template VM
-2. POST /provisioning/generate-iso-payload → base64 файлы (autounattend.xml + provision.json + START.ps1)
-3. Agent: proxmox.create-provision-iso → ISO на хосте
-4. Agent: proxmox.attach-cdrom → IDE2 CD-ROM
-5. Patch VM config (cores, memory, network)
-6. Register VM + provisioning token
-7. Start VM
-8. Windows ставится с кастомным autounattend.xml
-9. START.ps1 → читает provision.json → валидирует токен → скачивает софт
-10. Приложение отчитывается → ISO отцепляется
-```
-
-### 7.4 Env-переменные
-
-```
-PROVISION_TOKEN_SECRET=        # HS256 secret (fallback: AGENT_AUTH_SECRET → LICENSE_LEASE_SECRET)
-PROVISION_TOKEN_TTL_DAYS=30    # TTL токена в днях
-S3_BUCKET_PROVISIONING=        # S3 bucket для софта (fallback: S3_BUCKET_ARTIFACTS)
-```
-
-### 7.5 Конфигурация профиля (структура config в unattend_profiles)
-
-- `user` — режим имени (random/fixed/custom), пароль, группа
-- `computerName` — режим (random/fixed/custom)
-- `locale` — язык, таймзона, раскладка, geo ID
-- `softwareRemoval` — режим (fixed/random/mixed), списки пакетов
-- `capabilityRemoval` — аналогично для Windows capabilities
-- `windowsSettings` — тогглы (Defender, UAC, SmartScreen, Update, и т.д.)
-- `visualEffects` — режим (performance/balanced/random)
-- `desktopIcons` — Recycle Bin, This PC
-
-Полная реализация плана: `docs/plans/per-vm-provisioning-iso.md`.
-
-## 8. Primary Development Workflow
-
-Daily workflow:
-
-1. Choose runtime mode:
-   - light mode (Supabase CLI + backend/frontend local hot reload),
-   - full `prod-sim` compose stack.
-2. Implement changes in affected package (`bot-mox`, `proxy-server`, `agent`).
-3. Run quality gate: `pnpm run check:all`.
-4. If DB schema changed: add migration in `supabase/migrations/*` and run `corepack pnpm exec supabase db reset`.
-5. Validate feature flow with domain-specific smoke/manual checks.
-6. Run decommission audit after architecture/dependency changes: `pnpm run audit:firebase:decommission`.
-
-Team references:
-
-1. `docs/DEV-WORKFLOW.md` (developer operations).
-2. `docs/runbooks/vps-operations.md` (deploy/rollback/backups).
-3. `docs/audits/firebase-decommission-audit.md` (decommission tracker).
-
-## 9. Source of Truth
-
-1. API contract: `docs/api/openapi.yaml`.
-2. Data model notes: `docs/DATABASE.md`.
-3. Decommission live audit: `docs/audits/firebase-decommission-audit.md`.
-4. Agent ownership policy: `docs/architecture/agent-ownership-policy.md`.
-5. Roadmap and statuses: `docs/plans/green-implementation-roadmap.md`.
-6. Issue backlog mirror: `docs/plans/green-issue-backlog.md`.
-7. Provisioning plan: `docs/plans/per-vm-provisioning-iso.md`.
-8. Deploy runtime manifests: `deploy/compose.stack.yml`, `deploy/compose.dev.override.yml`.
+1. `docs/DEV-WORKFLOW.md`
+2. `docs/runbooks/dev-workflow.md`
+3. `docs/runbooks/vps-operations.md`
+4. `docs/audits/enterprise-migration-2026-audit.md`
+5. `docs/plans/enterprise-migration-2026-roadmap.md`

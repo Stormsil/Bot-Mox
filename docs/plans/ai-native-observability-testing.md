@@ -11,7 +11,7 @@ Make Bot-Mox easy to debug (for humans and AI agents) by ensuring:
 
 ## Signals Overview
 
-### Backend (proxy-server)
+### Backend (backend-legacy)
 - **Tracing**: OpenTelemetry Node SDK + auto-instrumentation (HTTP server/client + Express + outbound HTTP used by Supabase SDK).
 - **Logs**: `pino` JSON logs, request logs via `pino-http`.
 - **Correlation**:
@@ -19,7 +19,7 @@ Make Bot-Mox easy to debug (for humans and AI agents) by ensuring:
   - `x-trace-id` / `x-span-id` attached to every HTTP response
   - existing `x-correlation-id` preserved
 
-### Frontend (bot-mox)
+### Frontend (botmox)
 - **Tracing**: OpenTelemetry Web SDK (Document Load + User Interaction + Fetch).
 - **Propagation**: fetch instrumentation injects W3C headers to backend requests.
 - **Export (optional but enabled in `pnpm run dev:trace`)**:
@@ -33,9 +33,9 @@ Make Bot-Mox easy to debug (for humans and AI agents) by ensuring:
 - `trace: 'retain-on-failure'` locally
 - `trace: 'on-first-retry'` in CI
 - report artifacts:
-  - `bot-mox/test-results/**` (includes `trace.zip`)
-  - `bot-mox/playwright-report/**`
-  - `bot-mox/test-results/playwright-report.json`
+  - `apps/frontend/test-results/**` (includes `trace.zip`)
+  - `apps/frontend/playwright-report/**`
+  - `apps/frontend/test-results/playwright-report.json`
 
 ## Local Workflow
 
@@ -95,7 +95,7 @@ To enable frontend OTel there, set these env vars for the `frontend` container (
 
 ```bash
 VITE_OTEL_ENABLED=1
-VITE_OTEL_SERVICE_NAME=bot-mox-frontend
+VITE_OTEL_SERVICE_NAME=botmox-frontend
 VITE_OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost/api/v1/otel/v1/traces
 ```
 
@@ -104,7 +104,7 @@ To enable backend tracing in the docker stack, set:
 BOTMOX_OTEL_ENABLED=1
 BOTMOX_DIAGNOSTICS_ENABLED=1
 BOTMOX_OTEL_PROXY_ENABLED=1
-OTEL_SERVICE_NAME=bot-mox-backend
+OTEL_SERVICE_NAME=botmox-backend
 ```
 
 If Jaeger is started on the host (`pnpm run obs:up`), use OTLP endpoint reachable from the container:
@@ -113,8 +113,8 @@ If Jaeger is started on the host (`pnpm run obs:up`), use OTLP endpoint reachabl
 ## Debug Runbook (Human + AI Agent)
 
 ### If an E2E test fails
-1. Open Playwright HTML report (`pnpm run test:e2e:report`) and/or `bot-mox/test-results/playwright-report.json`.
-2. Open the Playwright trace (`trace.zip`) from `bot-mox/test-results/**/trace.zip`.
+1. Open Playwright HTML report (`pnpm run test:e2e:report`) and/or `apps/frontend/test-results/playwright-report.json`.
+2. Open the Playwright trace (`trace.zip`) from `apps/frontend/test-results/**/trace.zip`.
 3. Find the failing network request and read response headers:
    - `x-trace-id`
    - `x-correlation-id`
@@ -131,7 +131,7 @@ If Jaeger is started on the host (`pnpm run obs:up`), use OTLP endpoint reachabl
 
 ### Backend
 - `BOTMOX_OTEL_ENABLED=1` enable tracing
-- `OTEL_SERVICE_NAME=bot-mox-backend`
+- `OTEL_SERVICE_NAME=botmox-backend`
 - `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`
 - `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://localhost:4318/v1/traces` (optional override)
 - `BOTMOX_OTEL_PROXY_ENABLED=1` enable `/api/v1/otel/v1/traces` proxy (dev-only by default)
@@ -139,7 +139,7 @@ If Jaeger is started on the host (`pnpm run obs:up`), use OTLP endpoint reachabl
 
 ### Frontend
 - `VITE_OTEL_ENABLED=1`
-- `VITE_OTEL_SERVICE_NAME=bot-mox-frontend`
+- `VITE_OTEL_SERVICE_NAME=botmox-frontend`
 - `VITE_OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:3001/api/v1/otel/v1/traces` (optional)
 
 ## Guardrails
@@ -148,11 +148,11 @@ If Jaeger is started on the host (`pnpm run obs:up`), use OTLP endpoint reachabl
 - Frontend (wave-1 scope): `pnpm run check:frontend:logging`
 
 Frontend guardrail fails CI on new `console.*` in:
-- `bot-mox/src/services/**`
-- `bot-mox/src/hooks/**`
-- `bot-mox/src/pages/**`
-- `bot-mox/src/observability/**`
-- `bot-mox/src/components/ui/ErrorBoundary.tsx`
+- `apps/frontend/src/services/**`
+- `apps/frontend/src/hooks/**`
+- `apps/frontend/src/pages/**`
+- `apps/frontend/src/observability/**`
+- `apps/frontend/src/components/ui/ErrorBoundary.tsx`
 
 ## CI Artifacts (Download For AI Analysis)
 Playwright artifacts are uploaded in GitHub Actions as `playwright-artifacts` (includes `trace.zip` on failures).

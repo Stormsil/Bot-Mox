@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const zlib = require('node:zlib');
 
-const distAssetsDir = path.resolve(__dirname, '..', 'bot-mox', 'dist', 'assets');
+const distAssetsDir = path.resolve(__dirname, '..', 'apps', 'frontend', 'dist', 'assets');
 
 const maxRawBytes = Number.parseInt(process.env.BUNDLE_MAX_RAW_BYTES || '2000000', 10);
 const maxGzipBytes = Number.parseInt(process.env.BUNDLE_MAX_GZIP_BYTES || '650000', 10);

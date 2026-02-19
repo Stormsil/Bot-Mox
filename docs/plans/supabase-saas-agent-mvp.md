@@ -30,8 +30,8 @@ The migration must be incremental, without breaking existing `/api/v1/*` contrac
 ## Target Runtime Topology
 
 ### VPS (Cloud)
-1. `bot-mox` frontend.
-2. `proxy-server` backend API.
+1. `apps/frontend` frontend.
+2. `apps/backend-legacy` backend API.
 3. Supabase stack (self-hosted) for cloud operational data.
 
 ### Customer Local Machine

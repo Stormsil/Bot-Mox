@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const repoRoot = path.join(__dirname, '..');
-const frontendRoot = path.join(repoRoot, 'bot-mox', 'src');
+const frontendRoot = path.join(repoRoot, 'apps', 'frontend', 'src');
 
 const targetPaths = [
   path.join(frontendRoot, 'services'),

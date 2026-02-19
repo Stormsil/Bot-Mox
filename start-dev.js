@@ -1,6 +1,6 @@
 /**
  * Development Startup Script
- * Запускает proxy-server и Vite dev server параллельно
+ * Запускает Nest backend и Vite dev server параллельно
  */
 
 const { spawn } = require('node:child_process');
@@ -62,15 +62,16 @@ function parseDotEnvFile(raw) {
   return out;
 }
 
-function resolveProxyPort() {
-  const override = Number.parseInt(String(process.env.BOTMOX_PROXY_PORT || '').trim(), 10);
+function resolveBackendPort() {
+  const explicitPort = process.env.BOTMOX_BACKEND_PORT;
+  const override = Number.parseInt(String(explicitPort || '').trim(), 10);
   if (Number.isFinite(override) && override > 0) {
     return override;
   }
 
-  const proxyPath = path.join(__dirname, 'proxy-server');
-  const envPath = path.join(proxyPath, '.env');
-  const envExamplePath = path.join(proxyPath, '.env.example');
+  const backendPath = path.join(__dirname, 'apps', 'backend');
+  const envPath = path.join(backendPath, '.env');
+  const envExamplePath = path.join(backendPath, '.env.example');
 
   try {
     const raw = fs.existsSync(envPath)
@@ -80,10 +81,10 @@ function resolveProxyPort() {
         : '';
 
     const parsed = parseDotEnvFile(raw);
-    const port = Number.parseInt(String(parsed.PORT || '').trim(), 10);
-    return Number.isFinite(port) ? port : 3001;
+    const port = Number.parseInt(String(parsed.NEST_PORT || parsed.PORT || '').trim(), 10);
+    return Number.isFinite(port) ? port : 3002;
   } catch {
-    return 3001;
+    return 3002;
   }
 }
 
@@ -116,7 +117,7 @@ function isPortAvailable(port) {
  */
 function spawnProcess(name, command, args, options = {}) {
   const colorMap = {
-    PROXY: 'cyan',
+    BACKEND: 'cyan',
     VITE: 'green',
   };
   const color = colorMap[name] || 'reset';
@@ -221,41 +222,42 @@ async function main() {
   log('╚════════════════════════════════════════════════════════════╝', 'bright');
   log('');
 
-  const proxyPort = resolveProxyPort();
-  const proxyPortAvailable = await isPortAvailable(proxyPort);
-  if (!proxyPortAvailable) {
+  const backendPort = resolveBackendPort();
+  const backendPortAvailable = await isPortAvailable(backendPort);
+  if (!backendPortAvailable) {
     log(
-      `❌ Port ${proxyPort} is already in use. Stop the running process or change PORT in proxy-server/.env.`,
+      `❌ Port ${backendPort} is already in use. Stop the running process or change NEST_PORT in apps/backend/.env.`,
       'red',
     );
     log(
-      `   Tip: check owner with \`Get-NetTCPConnection -LocalPort ${proxyPort} -State Listen\``,
+      `   Tip: check owner with \`Get-NetTCPConnection -LocalPort ${backendPort} -State Listen\``,
       'yellow',
     );
     process.exit(1);
     return;
   }
 
-  // Start proxy server first
-  const proxyPath = path.join(__dirname, 'proxy-server');
-  spawnProcess('PROXY', 'corepack', ['pnpm', 'start'], {
-    cwd: proxyPath,
+  // Start backend first
+  const backendPath = path.join(__dirname, 'apps', 'backend');
+  spawnProcess('BACKEND', 'corepack', ['pnpm', 'run', 'dev'], {
+    cwd: backendPath,
     env: {
       ...process.env,
-      PORT: String(proxyPort),
+      PORT: String(backendPort),
+      NEST_PORT: String(backendPort),
     },
   });
 
-  // Wait a bit for proxy server to initialize
+  // Wait a bit for backend to initialize
   log('');
-  log('⏳ Waiting for proxy server to initialize...', 'dim');
+  log('⏳ Waiting for backend to initialize...', 'dim');
   await new Promise((resolve) => setTimeout(resolve, 2000));
   if (isShuttingDown) {
     return;
   }
 
   // Start Vite dev server
-  const botMoxPath = path.join(__dirname, 'bot-mox');
+  const botMoxPath = path.join(__dirname, 'apps', 'frontend');
   spawnProcess('VITE', 'corepack', ['pnpm', 'run', 'dev'], {
     cwd: botMoxPath,
   });
@@ -264,7 +266,7 @@ async function main() {
   log('✅ All services started!', 'green');
   log('');
   log('📱 Available endpoints:', 'bright');
-  log(`   • Proxy Server: http://localhost:${proxyPort}`, 'cyan');
+  log(`   • Backend:      http://localhost:${backendPort}`, 'cyan');
   log('   • Vite Dev:     http://localhost:5173', 'green');
   log('');
   log('Press Ctrl+C to stop all services', 'dim');

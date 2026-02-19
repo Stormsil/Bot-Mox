@@ -33,6 +33,58 @@ export const errorEnvelopeSchema = z.object({
   }),
 });
 
+export const diagnosticsTraceResponseSchema = z.object({
+  timestamp: z.string().trim().min(1),
+  node_env: z.string().trim().min(1),
+  received: z.object({
+    traceparent: z.union([z.string().trim(), z.null()]).optional(),
+    tracestate: z.union([z.string().trim(), z.null()]).optional(),
+    baggage: z.union([z.string().trim(), z.null()]).optional(),
+    correlation_id: z.union([z.string().trim(), z.null()]).optional(),
+  }),
+  active: z.object({
+    trace_id: z.union([z.string().trim(), z.null()]),
+    span_id: z.union([z.string().trim(), z.null()]),
+  }),
+  response_headers: z.object({
+    x_trace_id: z.union([z.string().trim(), z.null()]).optional(),
+    x_span_id: z.union([z.string().trim(), z.null()]).optional(),
+    x_correlation_id: z.union([z.string().trim(), z.null()]).optional(),
+  }),
+});
+
+export const clientLogErrorSchema = z
+  .object({
+    name: z.string().trim().max(128).optional(),
+    code: z.string().trim().max(128).optional(),
+    message: z.string().trim().max(1000).optional(),
+    stack: z.string().trim().max(4000).optional(),
+  })
+  .partial();
+
+export const clientLogEventSchema = z.object({
+  ts: z.string().trim().min(1).max(64).optional(),
+  level: z.enum(['debug', 'info', 'warn', 'error']).optional().default('error'),
+  event: z.string().trim().min(1).max(200),
+  message: z.string().trim().min(1).max(1000),
+  module: z.string().trim().min(1).max(200).optional(),
+  path: z.string().trim().max(200).optional(),
+  trace_id: z.union([z.string().trim(), z.null()]).optional(),
+  span_id: z.union([z.string().trim(), z.null()]).optional(),
+  correlation_id: z.union([z.string().trim(), z.null()]).optional(),
+  error: clientLogErrorSchema.optional(),
+  extra: z.record(jsonValueSchema).optional(),
+});
+
+export const clientLogsIngestSchema = z.object({
+  events: z.array(clientLogEventSchema).min(1).max(20),
+});
+
+export const clientLogsIngestResultSchema = z.object({
+  accepted: z.coerce.number().int().min(0),
+  dropped: z.coerce.number().int().min(0),
+});
+
 export const healthSummarySchema = z.object({
   service: z.string(),
   timestamp: z.string(),
@@ -628,6 +680,18 @@ export const vmOpsCommandNextQuerySchema = z.object({
   timeout_ms: z.coerce.number().int().min(1_000).max(60_000).optional(),
 });
 
+export const vmOpsCommandCreateSchema = z.object({
+  agent_id: z.string().trim().min(1).max(200),
+  command_type: z.string().trim().min(1).max(200),
+  payload: z.record(jsonValueSchema).optional().default({}),
+  expires_in_seconds: z.coerce.number().int().min(10).max(3_600).optional().default(300),
+});
+
+export const vmOpsCommandListQuerySchema = z.object({
+  agent_id: z.string().trim().min(1).max(200).optional(),
+  status: z.string().trim().min(1).max(100).optional(),
+});
+
 export const vmOpsCommandStatusSchema = z.enum([
   'queued',
   'dispatched',
@@ -658,6 +722,292 @@ export const vmOpsCommandUpdateSchema = z.object({
   status: z.enum(['running', 'succeeded', 'failed']),
   result: jsonValueSchema.optional(),
   error_message: z.string().trim().max(2_000).optional(),
+});
+
+const vmUuidSchema = z
+  .string()
+  .trim()
+  .min(8)
+  .max(128)
+  .regex(/^[A-Za-z0-9:_-]+$/);
+
+export const vmRegisterSchema = z.object({
+  vm_uuid: vmUuidSchema,
+  user_id: z.string().trim().min(1).max(200).optional(),
+  vm_name: z.string().trim().max(200).optional(),
+  project_id: z.string().trim().max(100).optional(),
+  status: z.enum(['active', 'paused', 'revoked']).optional(),
+  metadata: z.record(jsonValueSchema).optional(),
+});
+
+export const vmResolvePathSchema = z.object({
+  uuid: z.string().trim().min(1),
+});
+
+export const vmRecordSchema = z
+  .object({
+    tenant_id: z.string().trim().min(1),
+    vm_uuid: vmUuidSchema,
+    user_id: z.string().trim().min(1),
+    vm_name: z.string().trim().optional(),
+    project_id: z.string().trim().optional(),
+    status: z.string().trim().min(1),
+    metadata: z.record(jsonValueSchema).optional(),
+    created_at: z.coerce.number().int().nonnegative(),
+    updated_at: z.coerce.number().int().nonnegative(),
+  })
+  .passthrough();
+
+export const artifactReleaseStatusSchema = z.enum(['draft', 'active', 'disabled', 'archived']);
+
+export const artifactReleaseCreateSchema = z.object({
+  module: z.string().trim().min(1).max(200),
+  platform: z.string().trim().min(1).max(100),
+  channel: z.string().trim().min(1).max(100).optional().default('stable'),
+  version: z.string().trim().min(1).max(100),
+  object_key: z.string().trim().min(1).max(1_024),
+  sha256: z
+    .string()
+    .trim()
+    .regex(/^[a-fA-F0-9]{64}$/),
+  size_bytes: z.coerce.number().int().positive(),
+  status: artifactReleaseStatusSchema.optional().default('active'),
+});
+
+export const artifactReleaseRecordSchema = z
+  .object({
+    id: z.coerce.number().int().positive(),
+    tenant_id: z.string().trim().min(1),
+    module: z.string().trim().min(1),
+    platform: z.string().trim().min(1),
+    channel: z.string().trim().min(1),
+    version: z.string().trim().min(1),
+    object_key: z.string().trim().min(1),
+    sha256: z.string().trim().min(1),
+    size_bytes: z.coerce.number().int().positive(),
+    status: artifactReleaseStatusSchema,
+  })
+  .passthrough();
+
+export const artifactAssignSchema = z.object({
+  user_id: z.string().trim().min(1).max(200).optional(),
+  module: z.string().trim().min(1).max(200),
+  platform: z.string().trim().min(1).max(100),
+  channel: z.string().trim().min(1).max(100).optional().default('stable'),
+  release_id: z.coerce.number().int().positive(),
+});
+
+export const artifactAssignmentPathSchema = z.object({
+  userId: z.string().trim().min(1).max(200),
+  module: z.string().trim().min(1).max(200),
+});
+
+export const artifactAssignmentQuerySchema = z.object({
+  platform: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(100).optional().default('windows')),
+  channel: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(100).optional().default('stable')),
+});
+
+export const artifactAssignmentRecordSchema = z
+  .object({
+    id: z.coerce.number().int().positive(),
+    tenant_id: z.string().trim().min(1),
+    module: z.string().trim().min(1),
+    platform: z.string().trim().min(1),
+    channel: z.string().trim().min(1),
+    user_id: z.string().trim().min(1).nullable().optional(),
+    release_id: z.coerce.number().int().positive(),
+    is_default: z.boolean().optional(),
+  })
+  .passthrough();
+
+export const artifactEffectiveAssignmentSchema = z.object({
+  user_assignment: z.union([artifactAssignmentRecordSchema, z.null()]).optional(),
+  default_assignment: z.union([artifactAssignmentRecordSchema, z.null()]).optional(),
+  effective_assignment: z.union([artifactAssignmentRecordSchema, z.null()]).optional(),
+});
+
+export const artifactResolveDownloadSchema = z.object({
+  lease_token: z.string().trim().min(1),
+  vm_uuid: vmUuidSchema,
+  module: z.string().trim().min(1).max(200),
+  platform: z.string().trim().min(1).max(100),
+  channel: z.string().trim().min(1).max(100).optional().default('stable'),
+});
+
+export const artifactDownloadResolutionSchema = z.object({
+  download_url: z.string().trim().min(1),
+  url_expires_at: z.coerce.number().int().positive(),
+  release_id: z.coerce.number().int().positive(),
+  version: z.string().trim().min(1),
+  sha256: z.string().trim().min(1),
+  size_bytes: z.coerce.number().int().positive(),
+});
+
+export const secretScopeTypeSchema = z.enum(['bot', 'vm', 'agent', 'tenant']);
+
+export const secretCreateSchema = z.object({
+  label: z.string().trim().min(1).max(200),
+  ciphertext: z.string().trim().min(1),
+  alg: z.string().trim().min(1).max(50).optional().default('AES-256-GCM'),
+  key_id: z.string().trim().min(1).max(200),
+  nonce: z.string().trim().min(1).max(200),
+  aad_meta: z.record(jsonValueSchema).optional().default({}),
+});
+
+export const secretRotateSchema = z.object({
+  ciphertext: z.string().trim().min(1),
+  alg: z.string().trim().min(1).max(50).optional(),
+  key_id: z.string().trim().min(1).max(200),
+  nonce: z.string().trim().min(1).max(200),
+  aad_meta: z.record(jsonValueSchema).optional(),
+});
+
+export const secretBindingCreateSchema = z.object({
+  scope_type: secretScopeTypeSchema,
+  scope_id: z.string().trim().min(1).max(200),
+  secret_ref: z.string().trim().min(1).max(200),
+  field_name: z.string().trim().min(1).max(200),
+});
+
+export const secretBindingsListQuerySchema = z.object({
+  scope_type: secretScopeTypeSchema.optional(),
+  scope_id: z.preprocess((value) => {
+    const normalized = String(value ?? '').trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }, z.string().trim().min(1).max(200).optional()),
+});
+
+export const secretMetaRecordSchema = z
+  .object({
+    id: z.string().trim().min(1),
+    tenant_id: z.string().trim().min(1),
+    label: z.string().trim().min(1),
+    alg: z.string().trim().min(1),
+    key_id: z.string().trim().min(1),
+    aad_meta: z.record(jsonValueSchema).optional(),
+    rotated_at: z.union([z.string().trim(), z.null()]).optional(),
+    created_at: z.string().trim().optional(),
+    updated_at: z.string().trim().optional(),
+  })
+  .passthrough();
+
+export const secretBindingRecordSchema = z
+  .object({
+    id: z.string().trim().min(1),
+    tenant_id: z.string().trim().min(1),
+    scope_type: secretScopeTypeSchema,
+    scope_id: z.string().trim().min(1),
+    secret_ref: z.string().trim().min(1),
+    field_name: z.string().trim().min(1),
+    created_at: z.string().trim().optional(),
+    updated_at: z.string().trim().optional(),
+  })
+  .passthrough();
+
+const optionalBooleanFlagSchema = z.preprocess((value) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+    return true;
+  }
+  if (['0', 'false', 'no', 'off'].includes(normalized)) {
+    return false;
+  }
+  return value;
+}, z.boolean().optional());
+
+export const infraNodePathSchema = z.object({
+  node: z.string().trim().min(1),
+});
+
+export const infraNodeVmidPathSchema = z.object({
+  node: z.string().trim().min(1),
+  vmid: z.string().trim().min(1),
+});
+
+export const infraTaskStatusPathSchema = z.object({
+  node: z.string().trim().min(1),
+  upid: z.string().trim().min(1),
+});
+
+export const infraVmActionPathSchema = z.object({
+  node: z.string().trim().min(1),
+  vmid: z.string().trim().min(1),
+  action: z.string().trim().min(1),
+});
+
+export const infraDeleteVmQuerySchema = z.object({
+  purge: optionalBooleanFlagSchema,
+  'destroy-unreferenced-disks': optionalBooleanFlagSchema,
+});
+
+export const infraSendKeyBodySchema = z.object({
+  key: z.string().trim().min(1),
+});
+
+export const infraSshVmConfigPathSchema = z.object({
+  vmid: z.string().trim().min(1),
+});
+
+export const infraCloneRequestSchema = z
+  .object({
+    newid: z.coerce.number().int().positive().optional(),
+    name: z.string().trim().min(1).optional(),
+    storage: z.string().trim().min(1).optional(),
+    format: z.string().trim().min(1).optional(),
+    full: z.union([z.boolean(), z.number().int().min(0).max(1)]).optional(),
+  })
+  .passthrough();
+
+export const infraVmConfigUpdateSchema = z
+  .record(jsonValueSchema)
+  .refine(
+    (payload) => Object.keys(payload || {}).length > 0,
+    'Payload must contain at least one field',
+  );
+
+export const infraUpidResponseSchema = z.object({
+  upid: z.union([z.string().trim(), z.null()]),
+});
+
+export const infraConnectionStatusSchema = z.object({
+  connected: z.boolean(),
+  version: jsonValueSchema.optional(),
+});
+
+export const infraSshExecSchema = z.object({
+  command: z.string().trim().min(1),
+  timeout: z.coerce.number().int().min(1_000).max(120_000).optional(),
+});
+
+export const infraSshExecResultSchema = z.object({
+  stdout: z.string(),
+  stderr: z.string(),
+  exitCode: z.coerce.number().int(),
+  allowlisted: z.boolean().optional(),
+});
+
+export const infraVmConfigWriteSchema = z.object({
+  content: z.string().min(1),
+});
+
+export const infraVmConfigReadResultSchema = z.object({
+  config: z.string(),
+});
+
+export const infraVmConfigWriteResultSchema = z.object({
+  written: z.boolean(),
 });
 
 export const licenseLeaseRequestSchema = z.object({

@@ -1,0 +1,151 @@
+.root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.root :global(.content-body) {
+  padding: 12px;
+}
+
+.root :global(.bot-summary),
+.root :global(.bot-character),
+.root :global(.bot-account),
+.root :global(.bot-person),
+.root :global(.bot-life-stages),
+.root :global(.bot-vm-info),
+.root :global(.bot-proxy),
+.root :global(.bot-license),
+.root :global(.bot-subscription),
+.root :global(.bot-schedule),
+.root :global(.bot-schedule-loading),
+.root :global(.bot-schedule-error) {
+  padding: 0;
+}
+
+.loading {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  color: var(--boxmox-color-text-secondary);
+}
+
+.subtabsContent {
+  min-width: 0;
+}
+
+.section {
+  margin-bottom: 16px;
+  scroll-margin-top: 12px;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.configure {
+  min-width: 0;
+}
+
+.configureCollapse {
+  background: transparent;
+}
+
+.configureItem {
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.configureItemLast {
+  margin-bottom: 0;
+}
+
+.configureHeader {
+  background: var(--boxmox-color-surface-muted);
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  /* Ant Collapse header has internal padding; cancel it so our background reaches the edges. */
+  margin: -12px -16px;
+}
+
+.configureHeaderArrow {
+  margin-top: 2px;
+  color: var(--boxmox-color-text-muted);
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.configureHeaderArrowOpen {
+  transform: rotate(90deg);
+  color: var(--boxmox-color-text-secondary);
+}
+
+.configurePanelHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.configurePanelTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: var(--boxmox-color-text-primary);
+}
+
+.configurePanelIndex {
+  color: var(--boxmox-color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.configurePanelLabel {
+  font-size: var(--text-md);
+}
+
+.configurePanelDesc {
+  color: var(--boxmox-color-text-secondary);
+  font-size: var(--text-sm);
+  padding-left: 26px;
+}
+
+.configurePanelIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.configurePanelIconComplete {
+  background: var(--boxmox-color-status-success);
+}
+
+.configurePanelIconWarning {
+  background: #f59a23;
+  font-size: 16px;
+}
+
+.configureBody {
+  background: var(--boxmox-color-surface-panel);
+  border-top: 1px solid var(--boxmox-color-border-default);
+  padding: 16px;
+  /* Ant Collapse content box has internal padding; cancel it so our background reaches the edges. */
+  margin: -16px;
+}

@@ -3,11 +3,11 @@
 Last updated: 2026-02-10 (session continuation)
 
 ## Current State Snapshot
-1. Backend entrypoint is thin (`proxy-server/server.js`), runtime wired through `proxy-server/src/index.js`.
-2. Canonical API v1 is mounted at `/api/v1/*` (`proxy-server/src/modules/v1/index.js`).
-3. Frontend auth is real (`/login`, `Authenticated`, backend token verification) in `bot-mox/src/App.tsx` and `bot-mox/src/providers/auth-provider.ts`.
-4. Refine data provider is API-first via `/api/v1/*` (`bot-mox/src/providers/data-provider.ts`).
-5. Direct `firebase/database` imports in `bot-mox/src` are removed.
+1. Backend entrypoint is thin (`apps/backend-legacy/server.js`), runtime wired through `apps/backend-legacy/src/index.js`.
+2. Canonical API v1 is mounted at `/api/v1/*` (`apps/backend-legacy/src/modules/v1/index.js`).
+3. Frontend auth is real (`/login`, `Authenticated`, backend token verification) in `apps/frontend/src/App.tsx` and `apps/frontend/src/providers/auth-provider.ts`.
+4. Refine data provider is API-first via `/api/v1/*` (`apps/frontend/src/providers/data-provider.ts`).
+5. Direct `firebase/database` imports in `apps/frontend/src` are removed.
 6. Frontend lint/build are green (`npm run lint`, `npm run build` in `bot-mox`).
 7. Bundle still has heavy chunks (~1.56 MB / ~1.10 MB raw JS).
 8. Repository worktree remains heavily dirty, but tracked dependency/secrets artifacts were removed from git index (`scripts/node_modules`, `Assets/firebase-key.json`).
@@ -57,7 +57,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
    - done criterion: no dependency trees/secrets tracked.
 
 2. Complete backend split:
-   - move monolith logic from `proxy-server/src/legacy-app.js` into `proxy-server/src/modules/*`.
+   - move monolith logic from `apps/backend-legacy/src/legacy-app.js` into `apps/backend-legacy/src/modules/*`.
    - keep `legacy-app.js` as compatibility wiring only.
 
 3. Unify service layer:
@@ -81,7 +81,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
    - verify `npm ls` is clean.
 
 8. Optimize bundle:
-   - introduce `manualChunks` in `bot-mox/vite.config.ts`.
+   - introduce `manualChunks` in `apps/frontend/vite.config.ts`.
    - isolate heavy vendors (react/antd/charts/editor/firebase).
 
 9. Gate with CI/hooks:
@@ -127,7 +127,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 2 (completed)
 - IPQS domain extracted from monolith into shared module:
-  - `proxy-server/src/modules/ipqs/service.js`.
+  - `apps/backend-legacy/src/modules/ipqs/service.js`.
 - Added canonical v1 IPQS routes:
   - `/api/v1/ipqs/status`
   - `/api/v1/ipqs/check`
@@ -140,7 +140,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 3 (completed)
 - WoW names domain extracted from monolith into shared module:
-  - `proxy-server/src/modules/wow-names/service.js`.
+  - `apps/backend-legacy/src/modules/wow-names/service.js`.
 - Added canonical v1 wow-names route:
   - `/api/v1/wow-names`.
 - Switched legacy wow-names route to shared service:
@@ -153,11 +153,11 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 4 (completed)
 - Frontend hotspot decomposition executed for bot lifecycle UI:
-  - `bot-mox/src/components/bot/BotLifeStages.tsx` refactored into controller-only component.
+  - `apps/frontend/src/components/bot/BotLifeStages.tsx` refactored into controller-only component.
   - new submodules:
-    - `bot-mox/src/components/bot/lifeStages/config.tsx`
-    - `bot-mox/src/components/bot/lifeStages/StagePanels.tsx`
-    - `bot-mox/src/components/bot/lifeStages/StageTimeline.tsx`
+    - `apps/frontend/src/components/bot/lifeStages/config.tsx`
+    - `apps/frontend/src/components/bot/lifeStages/StagePanels.tsx`
+    - `apps/frontend/src/components/bot/lifeStages/StageTimeline.tsx`
 - Hotspot file-size target progress:
   - `BotLifeStages.tsx`: `832 -> 270` lines (target achieved for this file).
 - Validation:
@@ -165,22 +165,22 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 5 (completed)
 - Infra domain unified into shared service layer:
-  - added `proxy-server/src/modules/infra/service.js` (shared proxmox/ssh business logic).
-  - added `proxy-server/src/modules/infra/legacy-routes.js` (legacy compatibility adapter).
+  - added `apps/backend-legacy/src/modules/infra/service.js` (shared proxmox/ssh business logic).
+  - added `apps/backend-legacy/src/modules/infra/legacy-routes.js` (legacy compatibility adapter).
 - Canonical v1 infra routes now call shared service:
-  - `proxy-server/src/modules/v1/infra.routes.js`.
+  - `apps/backend-legacy/src/modules/v1/infra.routes.js`.
 - Legacy infra routes now delegate to shared adapter:
-  - `proxy-server/src/legacy-app.js` mounts `createLegacyInfraRoutes(...)` and no longer keeps inline proxmox/ssh HTTP handlers.
+  - `apps/backend-legacy/src/legacy-app.js` mounts `createLegacyInfraRoutes(...)` and no longer keeps inline proxmox/ssh HTTP handlers.
 - Monolith size reduction:
-  - `proxy-server/src/legacy-app.js`: `1924 -> 1576` lines.
+  - `apps/backend-legacy/src/legacy-app.js`: `1924 -> 1576` lines.
 - Validation:
   - syntax checks passed:
-    - `node --check proxy-server/src/modules/infra/service.js`
-    - `node --check proxy-server/src/modules/infra/legacy-routes.js`
-    - `node --check proxy-server/src/modules/v1/infra.routes.js`
-    - `node --check proxy-server/src/legacy-app.js`
+    - `node --check apps/backend-legacy/src/modules/infra/service.js`
+    - `node --check apps/backend-legacy/src/modules/infra/legacy-routes.js`
+    - `node --check apps/backend-legacy/src/modules/v1/infra.routes.js`
+    - `node --check apps/backend-legacy/src/legacy-app.js`
   - module load smoke passed:
-    - `node -e "require('./proxy-server/src/modules/infra/service'); require('./proxy-server/src/modules/infra/legacy-routes'); require('./proxy-server/src/modules/v1/infra.routes');"`
+    - `node -e "require('./apps/backend-legacy/src/modules/infra/service'); require('./apps/backend-legacy/src/modules/infra/legacy-routes'); require('./apps/backend-legacy/src/modules/v1/infra.routes');"`
 
 ### Iteration 6 (completed)
 - Added backend smoke/coverage checks for refactored v1 + shared modules in root scripts:
@@ -195,12 +195,12 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 7 (completed)
 - Frontend hotspot decomposition executed for layout tree:
-  - split `bot-mox/src/components/layout/ResourceTree.tsx` into modular sub-files:
-    - `bot-mox/src/components/layout/resourceTree/types.ts`
-    - `bot-mox/src/components/layout/resourceTree/tree-utils.tsx`
-    - `bot-mox/src/components/layout/resourceTree/builders.ts`
-    - `bot-mox/src/components/layout/resourceTree/parts.tsx`
-    - `bot-mox/src/components/layout/resourceTree/navigation.ts`
+  - split `apps/frontend/src/components/layout/ResourceTree.tsx` into modular sub-files:
+    - `apps/frontend/src/components/layout/resourceTree/types.ts`
+    - `apps/frontend/src/components/layout/resourceTree/tree-utils.tsx`
+    - `apps/frontend/src/components/layout/resourceTree/builders.ts`
+    - `apps/frontend/src/components/layout/resourceTree/parts.tsx`
+    - `apps/frontend/src/components/layout/resourceTree/navigation.ts`
 - `ResourceTree.tsx` converted to container-only composition with shared builders/utilities.
 - File-size gate progress:
   - `ResourceTree.tsx`: `982 -> 399` lines (target achieved).
@@ -213,13 +213,13 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 8 (completed)
 - Frontend hotspot decomposition executed for bot account domain:
-  - `bot-mox/src/components/bot/BotAccount.tsx` converted to container-focused component.
+  - `apps/frontend/src/components/bot/BotAccount.tsx` converted to container-focused component.
   - extracted account domain modules:
-    - `bot-mox/src/components/bot/account/types.ts`
-    - `bot-mox/src/components/bot/account/settings-storage.ts`
-    - `bot-mox/src/components/bot/account/use-account-generator-state.ts`
-    - `bot-mox/src/components/bot/account/use-bot-account-subscription.ts`
-    - `bot-mox/src/components/bot/account/sections.tsx`
+    - `apps/frontend/src/components/bot/account/types.ts`
+    - `apps/frontend/src/components/bot/account/settings-storage.ts`
+    - `apps/frontend/src/components/bot/account/use-account-generator-state.ts`
+    - `apps/frontend/src/components/bot/account/use-bot-account-subscription.ts`
+    - `apps/frontend/src/components/bot/account/sections.tsx`
 - File-size gate progress:
   - `BotAccount.tsx`: `1193 -> 384` lines (target achieved).
 - Behavior parity preserved:
@@ -241,7 +241,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
   - `npm run -s check:all` passes.
 
 ### Iteration 10 (completed)
-  - `proxy-server/src/legacy-app.js`:
+  - `apps/backend-legacy/src/legacy-app.js`:
 - Backend quality gates updated:
 - Validation:
   - `npm run -s check:all` passes.
@@ -249,13 +249,13 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 11 (completed)
 - VM operations WebSocket handling extracted from monolith:
-  - added `proxy-server/src/modules/infra/vm-operations-ws.js`.
+  - added `apps/backend-legacy/src/modules/infra/vm-operations-ws.js`.
   - `legacy-app.js` now delegates ws channels:
     - `/ws/vm-operations`
     - `/ws/v1/vm-operations`
     through `attachVmOperationsWebSocket(...)`.
 - Monolith size reduction:
-  - `proxy-server/src/legacy-app.js`: `1576 -> 1431` lines.
+  - `apps/backend-legacy/src/legacy-app.js`: `1576 -> 1431` lines.
 - Backend quality gates extended:
   - `check:backend:syntax` includes `src/modules/infra/vm-operations-ws.js`.
   - `check:backend:smoke` includes module load for ws module.
@@ -265,12 +265,12 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 12 (completed)
 - UI proxy websocket upgrade handling extracted from monolith:
-  - added `proxy-server/src/modules/infra/ui-proxy-upgrade.js`.
+  - added `apps/backend-legacy/src/modules/infra/ui-proxy-upgrade.js`.
   - `legacy-app.js` now delegates `server.on('upgrade')` via:
     - `attachUiProxyUpgradeHandler(...)`.
     - status/settings/connect/enable/disable/auth/monitored-topics/whitelist/topic-mappings/costs/source-groups.
 - Monolith size reduction:
-  - `proxy-server/src/legacy-app.js`: `1431 -> 1269` lines.
+  - `apps/backend-legacy/src/legacy-app.js`: `1431 -> 1269` lines.
 - Backend quality gates updated:
   - `check:backend:syntax` includes `src/modules/infra/ui-proxy-upgrade.js`.
   - `check:backend:smoke` includes module load check for `ui-proxy-upgrade`.
@@ -279,7 +279,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 13 (completed)
 - UI proxy HTTP fallback middleware extracted from monolith:
-  - added `proxy-server/src/modules/infra/ui-fallback-middleware.js`.
+  - added `apps/backend-legacy/src/modules/infra/ui-fallback-middleware.js`.
   - `legacy-app.js` now delegates:
     - service-aware iframe fallback middleware via `createUiServiceFallbackMiddleware(...)`.
     - non-API proxmox catch-all via `createProxmoxUiCatchAllMiddleware(...)`.
@@ -287,13 +287,13 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
   - `check:backend:syntax` includes `src/modules/infra/ui-fallback-middleware.js`.
   - `check:backend:smoke` includes module load check for `ui-fallback-middleware`.
 - Monolith size reduction:
-  - `proxy-server/src/legacy-app.js`: `1269 -> 1258` lines.
+  - `apps/backend-legacy/src/legacy-app.js`: `1269 -> 1258` lines.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 14 (completed)
 - Pre-body UI proxy route wiring extracted from monolith:
-  - added `proxy-server/src/modules/infra/ui-proxy-routes.js`.
+  - added `apps/backend-legacy/src/modules/infra/ui-proxy-routes.js`.
   - `legacy-app.js` now delegates:
     - proxmox UI paths (`/proxmox-ui`, `/pve2`, `/api2`, `/novnc`, etc.)
     - `/tinyfm-ui`
@@ -303,20 +303,20 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
   - `check:backend:syntax` includes `src/modules/infra/ui-proxy-routes.js`.
   - `check:backend:smoke` includes module load for `ui-proxy-routes`.
 - Monolith size reduction:
-  - `proxy-server/src/legacy-app.js`: `1258 -> 1173` lines.
+  - `apps/backend-legacy/src/legacy-app.js`: `1258 -> 1173` lines.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 15 (completed)
 - Frontend hotspot decomposition for project page:
-  - refactored `bot-mox/src/pages/project/index.tsx` into container-focused component.
+  - refactored `apps/frontend/src/pages/project/index.tsx` into container-focused component.
   - extracted project domain modules:
-    - `bot-mox/src/pages/project/types.ts`
-    - `bot-mox/src/pages/project/utils.ts`
-    - `bot-mox/src/pages/project/selectors.ts`
-    - `bot-mox/src/pages/project/columns.tsx`
+    - `apps/frontend/src/pages/project/types.ts`
+    - `apps/frontend/src/pages/project/utils.ts`
+    - `apps/frontend/src/pages/project/selectors.ts`
+    - `apps/frontend/src/pages/project/columns.tsx`
 - File-size gate progress:
-  - `bot-mox/src/pages/project/index.tsx`: `820 -> 298` lines (target achieved).
+  - `apps/frontend/src/pages/project/index.tsx`: `820 -> 298` lines (target achieved).
 - Behavior parity preserved:
   - same subscriptions polling cadence;
   - same search/filter/query-param sync;
@@ -326,7 +326,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 16 (completed)
 - VM service auth/settings helper block extracted from monolith:
-  - added `proxy-server/src/modules/infra/ui-service-auth.js`.
+  - added `apps/backend-legacy/src/modules/infra/ui-service-auth.js`.
   - `legacy-app.js` now consumes `createUiServiceAuth(...)` for:
     - VM service settings resolution
     - TinyFM session login bootstrap
@@ -337,17 +337,17 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
   - `check:backend:syntax` includes `src/modules/infra/ui-service-auth.js`.
   - `check:backend:smoke` includes module load for `ui-service-auth`.
 - Monolith size reduction:
-  - `proxy-server/src/legacy-app.js`: `1173 -> 786` lines.
+  - `apps/backend-legacy/src/legacy-app.js`: `1173 -> 786` lines.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 17 (completed)
 - Frontend hotspot decomposition for datacenter page:
-  - `bot-mox/src/pages/datacenter/index.tsx` converted to container-focused component.
+  - `apps/frontend/src/pages/datacenter/index.tsx` converted to container-focused component.
   - extracted presentational module:
-    - `bot-mox/src/pages/datacenter/content-map.tsx`.
+    - `apps/frontend/src/pages/datacenter/content-map.tsx`.
 - File-size gate progress:
-  - `bot-mox/src/pages/datacenter/index.tsx`: `769 -> 375` lines (target achieved).
+  - `apps/frontend/src/pages/datacenter/index.tsx`: `769 -> 375` lines (target achieved).
 - Behavior parity preserved:
   - same polling cadence for bots/resources/notes/finance;
   - same collapse-state persistence in `localStorage`;
@@ -357,10 +357,10 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 18 (completed)
 - Datacenter presentational layer additionally decomposed into section modules:
-  - `bot-mox/src/pages/datacenter/content-map.tsx` (wrapper/composition).
-  - `bot-mox/src/pages/datacenter/content-map-types.ts` (shared section contracts).
-  - `bot-mox/src/pages/datacenter/content-map-sections.tsx` (Projects/Resources blocks).
-  - `bot-mox/src/pages/datacenter/content-map-sections-secondary.tsx` (Finance+Notes/Expiring blocks).
+  - `apps/frontend/src/pages/datacenter/content-map.tsx` (wrapper/composition).
+  - `apps/frontend/src/pages/datacenter/content-map-types.ts` (shared section contracts).
+  - `apps/frontend/src/pages/datacenter/content-map-sections.tsx` (Projects/Resources blocks).
+  - `apps/frontend/src/pages/datacenter/content-map-sections-secondary.tsx` (Finance+Notes/Expiring blocks).
 - File-size control result:
   - `content-map.tsx`: `471 -> 115`.
   - section modules stay below 400 lines each.
@@ -369,7 +369,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 19 (completed)
 - Bot account sections hotspot decomposed into dedicated modules:
-  - `bot-mox/src/components/bot/account/sections.tsx` reduced to barrel exports.
+  - `apps/frontend/src/components/bot/account/sections.tsx` reduced to barrel exports.
   - extracted:
     - `credentials-sections.tsx`
     - `generator-sections.tsx`
@@ -385,14 +385,14 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 20 (completed)
 - Infra connectors + proxy stack extracted from monolith:
-  - added `proxy-server/src/modules/infra/connectors.js`.
-  - added `proxy-server/src/modules/infra/ui-proxy-stack.js`.
+  - added `apps/backend-legacy/src/modules/infra/connectors.js`.
+  - added `apps/backend-legacy/src/modules/infra/ui-proxy-stack.js`.
   - `legacy-app.js` now consumes shared factories for:
     - Proxmox auth/request/session
     - SSH exec transport
     - UI proxy instances/cookie helpers.
 - Monolith reduction metric:
-  - `proxy-server/src/legacy-app.js`: `786 -> 502` lines.
+  - `apps/backend-legacy/src/legacy-app.js`: `786 -> 502` lines.
 - Quality gates:
   - `check:backend:syntax` and `check:backend:smoke` extended with both modules.
 - Validation:
@@ -400,14 +400,14 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 21 (completed)
 - Legacy public routes + runtime bootstrap extracted:
-  - added `proxy-server/src/modules/system/legacy-public-routes.js`.
-  - added `proxy-server/src/bootstrap/firebase-admin.js`.
-  - added `proxy-server/src/bootstrap/runtime.js`.
+  - added `apps/backend-legacy/src/modules/system/legacy-public-routes.js`.
+  - added `apps/backend-legacy/src/bootstrap/firebase-admin.js`.
+  - added `apps/backend-legacy/src/bootstrap/runtime.js`.
   - `legacy-app.js` now delegates:
     - `/api/status`, `/api/wow-names`, `/api/check-ip`, `/api/check-ip-batch`
     - Firebase Admin init
 - Monolith reduction metric:
-  - `proxy-server/src/legacy-app.js`: `502 -> 320` lines.
+  - `apps/backend-legacy/src/legacy-app.js`: `502 -> 320` lines.
 - Quality gates:
   - `check:backend:syntax` and `check:backend:smoke` updated for new bootstrap/system modules.
 - Validation:
@@ -415,15 +415,15 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 22 (completed)
 - HTTP middleware + UI target state extracted:
-  - added `proxy-server/src/bootstrap/http-middleware.js`.
-  - added `proxy-server/src/bootstrap/ui-targets.js`.
+  - added `apps/backend-legacy/src/bootstrap/http-middleware.js`.
+  - added `apps/backend-legacy/src/bootstrap/ui-targets.js`.
   - `legacy-app.js` now delegates:
     - CORS config
     - core middleware wiring (correlation-id, helmet, cors, json, rate-limit, request logger)
     - 404/error handlers
     - proxmox/tinyfm/syncthing UI target getters/setters.
 - Monolith reduction metric:
-  - `proxy-server/src/legacy-app.js`: `320 -> 256` lines.
+  - `apps/backend-legacy/src/legacy-app.js`: `320 -> 256` lines.
 - Quality gates:
   - `check:backend:syntax` and `check:backend:smoke` include both new bootstrap modules.
 - Validation:
@@ -431,9 +431,9 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 23 (completed)
 - Domain service composition extracted from monolith:
-  - added `proxy-server/src/bootstrap/domain-services.js`.
+  - added `apps/backend-legacy/src/bootstrap/domain-services.js`.
 - Monolith reduction metric:
-  - `proxy-server/src/legacy-app.js`: `256 -> 249` lines (target `< 250` achieved).
+  - `apps/backend-legacy/src/legacy-app.js`: `256 -> 249` lines (target `< 250` achieved).
 - Quality gates:
   - `check:backend:syntax` and `check:backend:smoke` include `bootstrap/domain-services`.
 - Validation:
@@ -441,24 +441,24 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 24 (completed)
 - Frontend UI duplication reduced via shared table action primitives:
-  - added `bot-mox/src/components/ui/TableActionButton.tsx`.
-  - added `bot-mox/src/components/ui/TableActionButton.css`.
+  - added `apps/frontend/src/components/ui/TableActionButton.tsx`.
+  - added `apps/frontend/src/components/ui/TableActionButton.css`.
   - introduced reusable:
     - `TableActionButton` (normalized `type="text" size="small"` action button)
     - `TableActionGroup` (normalized action spacing/group wrapper).
 - Migrated existing duplicated row-actions to shared primitives:
-  - `bot-mox/src/components/finance/FinanceTransactions.tsx`
-  - `bot-mox/src/pages/subscriptions/index.tsx`
-  - `bot-mox/src/pages/proxies/proxyColumns.tsx`
+  - `apps/frontend/src/components/finance/FinanceTransactions.tsx`
+  - `apps/frontend/src/pages/subscriptions/index.tsx`
+  - `apps/frontend/src/pages/proxies/proxyColumns.tsx`
 - Removed now-redundant local finance action button styles:
-  - `bot-mox/src/components/finance/FinanceTransactions.css` (`.action-btn*` removed).
+  - `apps/frontend/src/components/finance/FinanceTransactions.css` (`.action-btn*` removed).
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 25 (completed)
   - migrated to shared `TableActionButton` in:
-    - `bot-mox/src/pages/workspace/calendar/index.tsx`
-    - `bot-mox/src/pages/workspace/kanban/index.tsx`
+    - `apps/frontend/src/pages/workspace/calendar/index.tsx`
+    - `apps/frontend/src/pages/workspace/kanban/index.tsx`
 - Result:
   - removed repeated inline `type="text" size="small"` icon-button implementations in these modules.
   - delete/edit/reload-adjacent row actions now reuse one shared component contract.
@@ -468,8 +468,8 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 26 (completed)
 - Frontend unification wave #3 applied for remaining shared row-action patterns:
   - migrated to shared `TableActionButton` in:
-    - `bot-mox/src/pages/project/columns.tsx`
-    - `bot-mox/src/components/schedule/SessionList.tsx`
+    - `apps/frontend/src/pages/project/columns.tsx`
+    - `apps/frontend/src/components/schedule/SessionList.tsx`
 - Result:
   - removed duplicated inline action button variants for edit/delete in project and schedule modules.
   - row-action button behavior remains standardized across migrated pages/components.
@@ -479,10 +479,10 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 27 (completed)
 - Frontend unification wave #4 applied for additional duplicated actions:
   - migrated to shared `TableActionButton` / `TableActionGroup` in:
-    - `bot-mox/src/pages/licenses/index.tsx` (table row actions)
-    - `bot-mox/src/components/bot/BotSubscription.tsx` (subscription item actions)
-    - `bot-mox/src/components/notes/NoteSidebar.tsx` (pin/delete note hover actions)
-    - `bot-mox/src/components/notes/NoteEditor.tsx` (save/delete editor actions)
+    - `apps/frontend/src/pages/licenses/index.tsx` (table row actions)
+    - `apps/frontend/src/components/bot/BotSubscription.tsx` (subscription item actions)
+    - `apps/frontend/src/components/notes/NoteSidebar.tsx` (pin/delete note hover actions)
+    - `apps/frontend/src/components/notes/NoteEditor.tsx` (save/delete editor actions)
 - Result:
   - further reduced repeated inline `type="text" size="small"` action buttons in list/table/item controls.
   - action behavior remains centralized through one shared component contract.
@@ -492,7 +492,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 28 (completed)
 - Frontend unification wave #5 applied for bot license controls:
   - migrated to shared `TableActionButton` in:
-    - `bot-mox/src/components/bot/BotLicense.tsx`
+    - `apps/frontend/src/components/bot/BotLicense.tsx`
       - header actions (`Edit`, `Unassign`)
       - key copy action (`Copy`)
 - Result:
@@ -504,7 +504,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 29 (completed)
 - Frontend unification wave #6 applied for schedule template actions:
   - migrated duplicated template row icon actions in:
-    - `bot-mox/src/components/schedule/ScheduleGenerator.tsx`
+    - `apps/frontend/src/components/schedule/ScheduleGenerator.tsx`
       - load template action
       - delete template action
   - now uses shared `TableActionButton`.
@@ -516,13 +516,13 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 30 (completed)
 - Shared action component generalized beyond table-only usage:
-  - upgraded `bot-mox/src/components/ui/TableActionButton.tsx`:
+  - upgraded `apps/frontend/src/components/ui/TableActionButton.tsx`:
     - added optional `buttonType` and `buttonSize` overrides while preserving defaults (`text` + `small`).
-  - updated `bot-mox/src/components/ui/TableActionButton.css`:
+  - updated `apps/frontend/src/components/ui/TableActionButton.css`:
     - style rules now scoped to text-variant buttons only.
 - Applied shared action button to non-table duplicate controls:
-  - `bot-mox/src/pages/settings/ThemeSettingsPanel.tsx` (delete selected theme action)
-  - `bot-mox/src/components/bot/account/generator-sections.tsx` (delete generator preset action)
+  - `apps/frontend/src/pages/settings/ThemeSettingsPanel.tsx` (delete selected theme action)
+  - `apps/frontend/src/components/bot/account/generator-sections.tsx` (delete generator preset action)
 - Result:
   - unified action-button implementation now covers both row-actions and selected form/preset control actions.
 - Validation:
@@ -531,11 +531,11 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 31 (completed)
 - Bot summary decomposition stabilization completed:
   - fixed post-split lint/type regressions in:
-    - `bot-mox/src/components/bot/summary/sections-overview.tsx`
-    - `bot-mox/src/components/bot/summary/sections-details.tsx`
+    - `apps/frontend/src/components/bot/summary/sections-overview.tsx`
+    - `apps/frontend/src/components/bot/summary/sections-details.tsx`
   - validated container + section split wiring for:
-    - `bot-mox/src/components/bot/BotSummary.tsx`
-    - `bot-mox/src/components/bot/summary/{helpers,types,sections,stat-item}.tsx`
+    - `apps/frontend/src/components/bot/BotSummary.tsx`
+    - `apps/frontend/src/components/bot/summary/{helpers,types,sections,stat-item}.tsx`
 - File-size control result:
   - `BotSummary.tsx`: `> 400 -> 236` lines (target achieved and verified).
 - Validation:
@@ -543,23 +543,23 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 32 (completed)
 - Frontend hotspot decomposition wave completed for subscriptions page:
-  - decomposed `bot-mox/src/pages/subscriptions/index.tsx` into focused modules:
-    - `bot-mox/src/pages/subscriptions/subscription-status.ts`
-    - `bot-mox/src/pages/subscriptions/subscription-columns.tsx`
-    - `bot-mox/src/pages/subscriptions/ExpiringSubscriptionsAlert.tsx`
-    - `bot-mox/src/pages/subscriptions/SubscriptionsStats.tsx`
+  - decomposed `apps/frontend/src/pages/subscriptions/index.tsx` into focused modules:
+    - `apps/frontend/src/pages/subscriptions/subscription-status.ts`
+    - `apps/frontend/src/pages/subscriptions/subscription-columns.tsx`
+    - `apps/frontend/src/pages/subscriptions/ExpiringSubscriptionsAlert.tsx`
+    - `apps/frontend/src/pages/subscriptions/SubscriptionsStats.tsx`
 - File-size control result:
-  - `bot-mox/src/pages/subscriptions/index.tsx`: `457 -> 242` lines (target achieved).
+  - `apps/frontend/src/pages/subscriptions/index.tsx`: `457 -> 242` lines (target achieved).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src`: `25 -> 14`.
-  - `proxy-server/src/legacy-app.js`: `224` lines.
-  - direct `firebase/database` imports in `bot-mox/src`: `0`.
+  - files over 400 lines in `apps/frontend/src`: `25 -> 14`.
+  - `apps/backend-legacy/src/legacy-app.js`: `224` lines.
+  - direct `firebase/database` imports in `apps/frontend/src`: `0`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 33 (completed)
 - Frontend unification wave completed for VM row actions:
-  - migrated `bot-mox/src/components/vm/VMList.tsx` start/stop table actions to shared:
+  - migrated `apps/frontend/src/components/vm/VMList.tsx` start/stop table actions to shared:
     - `TableActionButton`
     - `TableActionGroup`
 - Result:
@@ -570,99 +570,99 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 34 (completed)
 - Frontend hotspot decomposition completed for bot proxy domain:
-  - refactored `bot-mox/src/components/bot/BotProxy.tsx` into container-focused component.
+  - refactored `apps/frontend/src/components/bot/BotProxy.tsx` into container-focused component.
   - extracted proxy domain modules:
-    - `bot-mox/src/components/bot/proxy/types.ts`
-    - `bot-mox/src/components/bot/proxy/helpers.tsx`
-    - `bot-mox/src/components/bot/proxy/ProxyEditorModal.tsx`
-    - `bot-mox/src/components/bot/proxy/ProxyDetailsCard.tsx`
-    - `bot-mox/src/components/bot/proxy/ProxyEmptyCard.tsx`
-    - `bot-mox/src/components/bot/proxy/ProxyStatusAlert.tsx`
-    - `bot-mox/src/components/bot/proxy/ProxyIpqsResults.tsx`
-    - `bot-mox/src/components/bot/proxy/ProxyParsedAlert.tsx`
-    - `bot-mox/src/components/bot/proxy/index.ts`
+    - `apps/frontend/src/components/bot/proxy/types.ts`
+    - `apps/frontend/src/components/bot/proxy/helpers.tsx`
+    - `apps/frontend/src/components/bot/proxy/ProxyEditorModal.tsx`
+    - `apps/frontend/src/components/bot/proxy/ProxyDetailsCard.tsx`
+    - `apps/frontend/src/components/bot/proxy/ProxyEmptyCard.tsx`
+    - `apps/frontend/src/components/bot/proxy/ProxyStatusAlert.tsx`
+    - `apps/frontend/src/components/bot/proxy/ProxyIpqsResults.tsx`
+    - `apps/frontend/src/components/bot/proxy/ProxyParsedAlert.tsx`
+    - `apps/frontend/src/components/bot/proxy/index.ts`
 - File-size control result:
-  - `bot-mox/src/components/bot/BotProxy.tsx`: `587 -> 232` lines (target achieved).
+  - `apps/frontend/src/components/bot/BotProxy.tsx`: `587 -> 232` lines (target achieved).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src`: `14 -> 13`.
-  - `TableActionButton/TableActionGroup` references in `bot-mox/src`: `80`.
+  - files over 400 lines in `apps/frontend/src`: `14 -> 13`.
+  - `TableActionButton/TableActionGroup` references in `apps/frontend/src`: `80`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 35 (completed)
 - Frontend hotspot decomposition completed for schedule timeline module:
-  - refactored `bot-mox/src/components/schedule/TimelineVisualizer.tsx` by extracting repeated view blocks into:
-    - `bot-mox/src/components/schedule/timeline/TimelineHeader.tsx`
-    - `bot-mox/src/components/schedule/timeline/TimelineScale.tsx`
+  - refactored `apps/frontend/src/components/schedule/TimelineVisualizer.tsx` by extracting repeated view blocks into:
+    - `apps/frontend/src/components/schedule/timeline/TimelineHeader.tsx`
+    - `apps/frontend/src/components/schedule/timeline/TimelineScale.tsx`
 - File-size control result:
-  - `bot-mox/src/components/schedule/TimelineVisualizer.tsx`: `422 -> 359` lines (target achieved).
+  - `apps/frontend/src/components/schedule/TimelineVisualizer.tsx`: `422 -> 359` lines (target achieved).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src`: `13 -> 12`.
+  - files over 400 lines in `apps/frontend/src`: `13 -> 12`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 36 (completed)
 - Large-batch frontend decomposition completed for two major hotspots in one pass:
-  - `bot-mox/src/components/bot/BotCharacter.tsx` refactored into container-focused module set:
-    - `bot-mox/src/components/bot/character/types.ts`
-    - `bot-mox/src/components/bot/character/constants.ts`
-    - `bot-mox/src/components/bot/character/helpers.ts`
-    - `bot-mox/src/components/bot/character/CharacterViewMode.tsx`
-    - `bot-mox/src/components/bot/character/CharacterEditForm.tsx`
-    - `bot-mox/src/components/bot/character/CharacterStateCards.tsx`
-    - `bot-mox/src/components/bot/character/index.ts`
-  - `bot-mox/src/pages/bot/index.tsx` refactored into page composition modules:
-    - `bot-mox/src/pages/bot/page/types.ts`
-    - `bot-mox/src/pages/bot/page/tab-utils.ts`
-    - `bot-mox/src/pages/bot/page/completeness.ts`
-    - `bot-mox/src/pages/bot/page/sections.tsx`
-    - `bot-mox/src/pages/bot/page/states.tsx`
-    - `bot-mox/src/pages/bot/page/index.ts`
+  - `apps/frontend/src/components/bot/BotCharacter.tsx` refactored into container-focused module set:
+    - `apps/frontend/src/components/bot/character/types.ts`
+    - `apps/frontend/src/components/bot/character/constants.ts`
+    - `apps/frontend/src/components/bot/character/helpers.ts`
+    - `apps/frontend/src/components/bot/character/CharacterViewMode.tsx`
+    - `apps/frontend/src/components/bot/character/CharacterEditForm.tsx`
+    - `apps/frontend/src/components/bot/character/CharacterStateCards.tsx`
+    - `apps/frontend/src/components/bot/character/index.ts`
+  - `apps/frontend/src/pages/bot/index.tsx` refactored into page composition modules:
+    - `apps/frontend/src/pages/bot/page/types.ts`
+    - `apps/frontend/src/pages/bot/page/tab-utils.ts`
+    - `apps/frontend/src/pages/bot/page/completeness.ts`
+    - `apps/frontend/src/pages/bot/page/sections.tsx`
+    - `apps/frontend/src/pages/bot/page/states.tsx`
+    - `apps/frontend/src/pages/bot/page/index.ts`
 - File-size control result:
-  - `bot-mox/src/components/bot/BotCharacter.tsx`: `700 -> 299` lines (target achieved).
-  - `bot-mox/src/pages/bot/index.tsx`: `482 -> 163` lines (target achieved).
+  - `apps/frontend/src/components/bot/BotCharacter.tsx`: `700 -> 299` lines (target achieved).
+  - `apps/frontend/src/pages/bot/index.tsx`: `482 -> 163` lines (target achieved).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src`: `12 -> 10`.
+  - files over 400 lines in `apps/frontend/src`: `12 -> 10`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 37 (completed)
 - Large-batch frontend decomposition completed for page-level hotspots:
-  - `bot-mox/src/pages/licenses/index.tsx` refactored into container-focused page modules:
-    - `bot-mox/src/pages/licenses/page/types.ts`
-    - `bot-mox/src/pages/licenses/page/helpers.ts`
-    - `bot-mox/src/pages/licenses/page/LicensesStats.tsx`
-    - `bot-mox/src/pages/licenses/page/LicenseColumns.tsx`
-    - `bot-mox/src/pages/licenses/page/LicenseModals.tsx`
-    - `bot-mox/src/pages/licenses/page/modal-helpers.ts`
-    - `bot-mox/src/pages/licenses/page/index.ts`
-  - `bot-mox/src/pages/workspace/calendar/index.tsx` refactored into container-focused page modules:
-    - `bot-mox/src/pages/workspace/calendar/page/types.ts`
-    - `bot-mox/src/pages/workspace/calendar/page/helpers.ts`
-    - `bot-mox/src/pages/workspace/calendar/page/CalendarMainPanel.tsx`
-    - `bot-mox/src/pages/workspace/calendar/page/CalendarEventList.tsx`
-    - `bot-mox/src/pages/workspace/calendar/page/CalendarEventModal.tsx`
-    - `bot-mox/src/pages/workspace/calendar/page/index.ts`
+  - `apps/frontend/src/pages/licenses/index.tsx` refactored into container-focused page modules:
+    - `apps/frontend/src/pages/licenses/page/types.ts`
+    - `apps/frontend/src/pages/licenses/page/helpers.ts`
+    - `apps/frontend/src/pages/licenses/page/LicensesStats.tsx`
+    - `apps/frontend/src/pages/licenses/page/LicenseColumns.tsx`
+    - `apps/frontend/src/pages/licenses/page/LicenseModals.tsx`
+    - `apps/frontend/src/pages/licenses/page/modal-helpers.ts`
+    - `apps/frontend/src/pages/licenses/page/index.ts`
+  - `apps/frontend/src/pages/workspace/calendar/index.tsx` refactored into container-focused page modules:
+    - `apps/frontend/src/pages/workspace/calendar/page/types.ts`
+    - `apps/frontend/src/pages/workspace/calendar/page/helpers.ts`
+    - `apps/frontend/src/pages/workspace/calendar/page/CalendarMainPanel.tsx`
+    - `apps/frontend/src/pages/workspace/calendar/page/CalendarEventList.tsx`
+    - `apps/frontend/src/pages/workspace/calendar/page/CalendarEventModal.tsx`
+    - `apps/frontend/src/pages/workspace/calendar/page/index.ts`
 - File-size control result:
-  - `bot-mox/src/pages/licenses/index.tsx`: `704 -> 273` lines (target achieved).
-  - `bot-mox/src/pages/workspace/calendar/index.tsx`: `488 -> 255` lines (target achieved).
+  - `apps/frontend/src/pages/licenses/index.tsx`: `704 -> 273` lines (target achieved).
+  - `apps/frontend/src/pages/workspace/calendar/index.tsx`: `488 -> 255` lines (target achieved).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src`: `10 -> 8`.
-  - `TableActionButton/TableActionGroup` references in `bot-mox/src`: `84`.
+  - files over 400 lines in `apps/frontend/src`: `10 -> 8`.
+  - `TableActionButton/TableActionGroup` references in `apps/frontend/src`: `84`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 38 (completed)
 - Frontend hotspot decomposition completed for bot person domain:
-  - `bot-mox/src/components/bot/BotPerson.tsx` refactored into container-focused composition.
+  - `apps/frontend/src/components/bot/BotPerson.tsx` refactored into container-focused composition.
   - extracted person domain modules:
-    - `bot-mox/src/components/bot/person/types.ts`
-    - `bot-mox/src/components/bot/person/helpers.ts`
-    - `bot-mox/src/components/bot/person/PersonCardStates.tsx`
-    - `bot-mox/src/components/bot/person/PersonFormFields.tsx`
-    - `bot-mox/src/components/bot/person/index.ts`
+    - `apps/frontend/src/components/bot/person/types.ts`
+    - `apps/frontend/src/components/bot/person/helpers.ts`
+    - `apps/frontend/src/components/bot/person/PersonCardStates.tsx`
+    - `apps/frontend/src/components/bot/person/PersonFormFields.tsx`
+    - `apps/frontend/src/components/bot/person/index.ts`
 - File-size control result:
-  - `bot-mox/src/components/bot/BotPerson.tsx`: `573 -> 178` lines (target achieved).
+  - `apps/frontend/src/components/bot/BotPerson.tsx`: `573 -> 178` lines (target achieved).
 - Notes:
   - removed debug-heavy local form/init logic from container into reusable person helpers/UI blocks.
   - fixed lint blocker in person typings (`no-empty-object-type`).
@@ -671,37 +671,37 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 
 ### Iteration 39 (completed)
 - Frontend hotspot decomposition completed for bot subscription domain:
-  - `bot-mox/src/components/bot/BotSubscription.tsx` refactored into container-focused composition.
+  - `apps/frontend/src/components/bot/BotSubscription.tsx` refactored into container-focused composition.
   - extracted subscription domain modules:
-    - `bot-mox/src/components/bot/subscription/types.ts`
-    - `bot-mox/src/components/bot/subscription/helpers.tsx`
-    - `bot-mox/src/components/bot/subscription/SubscriptionAlerts.tsx`
-    - `bot-mox/src/components/bot/subscription/SubscriptionListItem.tsx`
-    - `bot-mox/src/components/bot/subscription/SubscriptionModal.tsx`
-    - `bot-mox/src/components/bot/subscription/index.ts`
+    - `apps/frontend/src/components/bot/subscription/types.ts`
+    - `apps/frontend/src/components/bot/subscription/helpers.tsx`
+    - `apps/frontend/src/components/bot/subscription/SubscriptionAlerts.tsx`
+    - `apps/frontend/src/components/bot/subscription/SubscriptionListItem.tsx`
+    - `apps/frontend/src/components/bot/subscription/SubscriptionModal.tsx`
+    - `apps/frontend/src/components/bot/subscription/index.ts`
 - File-size control result:
-  - `bot-mox/src/components/bot/BotSubscription.tsx`: `405 -> 172` lines (target achieved).
+  - `apps/frontend/src/components/bot/BotSubscription.tsx`: `405 -> 172` lines (target achieved).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src/components + bot-mox/src/pages`: `9 -> 8`.
-  - `TableActionButton/TableActionGroup` references in `bot-mox/src`: `84`.
+  - files over 400 lines in `apps/frontend/src/components + apps/frontend/src/pages`: `9 -> 8`.
+  - `TableActionButton/TableActionGroup` references in `apps/frontend/src`: `84`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 40 (completed)
 - Frontend hotspot decomposition completed for VM settings form domain:
-  - `bot-mox/src/components/vm/VMSettingsForm.tsx` refactored into container-focused composition.
+  - `apps/frontend/src/components/vm/VMSettingsForm.tsx` refactored into container-focused composition.
   - extracted VM settings modules:
-    - `bot-mox/src/components/vm/settingsForm/types.ts`
-    - `bot-mox/src/components/vm/settingsForm/helpers.ts`
-    - `bot-mox/src/components/vm/settingsForm/ProxmoxSection.tsx`
-    - `bot-mox/src/components/vm/settingsForm/SshSection.tsx`
-    - `bot-mox/src/components/vm/settingsForm/TemplateStorageSection.tsx`
-    - `bot-mox/src/components/vm/settingsForm/ProjectResourcesSection.tsx`
-    - `bot-mox/src/components/vm/settingsForm/ServiceUrlsSection.tsx`
-    - `bot-mox/src/components/vm/settingsForm/SettingsActions.tsx`
-    - `bot-mox/src/components/vm/settingsForm/index.ts`
+    - `apps/frontend/src/components/vm/settingsForm/types.ts`
+    - `apps/frontend/src/components/vm/settingsForm/helpers.ts`
+    - `apps/frontend/src/components/vm/settingsForm/ProxmoxSection.tsx`
+    - `apps/frontend/src/components/vm/settingsForm/SshSection.tsx`
+    - `apps/frontend/src/components/vm/settingsForm/TemplateStorageSection.tsx`
+    - `apps/frontend/src/components/vm/settingsForm/ProjectResourcesSection.tsx`
+    - `apps/frontend/src/components/vm/settingsForm/ServiceUrlsSection.tsx`
+    - `apps/frontend/src/components/vm/settingsForm/SettingsActions.tsx`
+    - `apps/frontend/src/components/vm/settingsForm/index.ts`
 - File-size control result:
-  - `bot-mox/src/components/vm/VMSettingsForm.tsx`: `511 -> 162` lines (target achieved).
+  - `apps/frontend/src/components/vm/VMSettingsForm.tsx`: `511 -> 162` lines (target achieved).
 - Notes:
   - preserved existing template auto-sync behavior; moved field update logic to reusable helper.
 - Validation:
@@ -710,34 +710,34 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 41 (completed)
 - Frontend hotspot decomposition completed for life stages chart block:
   - extracted `SimpleBarChart` from stage panel:
-    - `bot-mox/src/components/bot/lifeStages/SimpleBarChart.tsx`
+    - `apps/frontend/src/components/bot/lifeStages/SimpleBarChart.tsx`
   - wired into:
-    - `bot-mox/src/components/bot/lifeStages/StagePanels.tsx`
+    - `apps/frontend/src/components/bot/lifeStages/StagePanels.tsx`
 - File-size control result:
-  - `bot-mox/src/components/bot/lifeStages/StagePanels.tsx`: `406 -> 379` lines (target achieved).
+  - `apps/frontend/src/components/bot/lifeStages/StagePanels.tsx`: `406 -> 379` lines (target achieved).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src/components + bot-mox/src/pages`: `8 -> 6`.
+  - files over 400 lines in `apps/frontend/src/components + apps/frontend/src/pages`: `8 -> 6`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 42 (completed)
 - Frontend file-size gate cleanup completed for bot schedule module:
-  - `bot-mox/src/components/bot/BotSchedule.tsx` reduced below hotspot threshold.
+  - `apps/frontend/src/components/bot/BotSchedule.tsx` reduced below hotspot threshold.
 - File-size control result:
-  - `bot-mox/src/components/bot/BotSchedule.tsx`: `403 -> 399` lines (threshold achieved).
+  - `apps/frontend/src/components/bot/BotSchedule.tsx`: `403 -> 399` lines (threshold achieved).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src/components + bot-mox/src/pages`: `6 -> 5`.
+  - files over 400 lines in `apps/frontend/src/components + apps/frontend/src/pages`: `6 -> 5`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 43 (completed)
 - Frontend decomposition completed for VM delete workflow hook:
   - extracted hook contracts into:
-    - `bot-mox/src/pages/vms/hooks/deleteVmWorkflow.types.ts`
+    - `apps/frontend/src/pages/vms/hooks/deleteVmWorkflow.types.ts`
   - updated:
-    - `bot-mox/src/pages/vms/hooks/useDeleteVmWorkflow.ts` to consume shared contracts.
+    - `apps/frontend/src/pages/vms/hooks/useDeleteVmWorkflow.ts` to consume shared contracts.
 - File-size control result:
-  - `bot-mox/src/pages/vms/hooks/useDeleteVmWorkflow.ts`: `408 -> 371` lines (target achieved).
+  - `apps/frontend/src/pages/vms/hooks/useDeleteVmWorkflow.ts`: `408 -> 371` lines (target achieved).
 - Notes:
   - hook behavior preserved; split focused on interface/type ownership to reduce coupling and complexity.
 - Validation:
@@ -746,62 +746,62 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 44 (completed)
 - Frontend decomposition completed for VM page modal orchestration:
   - extracted modal composition from page container into:
-    - `bot-mox/src/pages/vms/page/VMPageModals.tsx`
+    - `apps/frontend/src/pages/vms/page/VMPageModals.tsx`
   - updated:
-    - `bot-mox/src/pages/vms/VMsPage.tsx` to use extracted modal component.
+    - `apps/frontend/src/pages/vms/VMsPage.tsx` to use extracted modal component.
 - File-size control result:
-  - `bot-mox/src/pages/vms/VMsPage.tsx`: `447 -> 400` lines (hotspot threshold removed).
+  - `apps/frontend/src/pages/vms/VMsPage.tsx`: `447 -> 400` lines (hotspot threshold removed).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src/components + bot-mox/src/pages`: `5 -> 3`.
+  - files over 400 lines in `apps/frontend/src/components + apps/frontend/src/pages`: `5 -> 3`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 45 (completed)
 - Frontend decomposition completed for datacenter page helpers:
   - extracted datacenter constants and project status calculators into:
-    - `bot-mox/src/pages/datacenter/page-helpers.ts`
+    - `apps/frontend/src/pages/datacenter/page-helpers.ts`
   - updated:
-    - `bot-mox/src/pages/datacenter/index.tsx` to consume helper module.
+    - `apps/frontend/src/pages/datacenter/index.tsx` to consume helper module.
 - File-size control result:
-  - `bot-mox/src/pages/datacenter/index.tsx`: `430 -> 396` lines (target achieved).
+  - `apps/frontend/src/pages/datacenter/index.tsx`: `430 -> 396` lines (target achieved).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src/components + bot-mox/src/pages`: `3 -> 2`.
+  - files over 400 lines in `apps/frontend/src/components + apps/frontend/src/pages`: `3 -> 2`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 46 (completed)
 - Frontend decomposition completed for schedule generator configuration layer:
   - extracted generator defaults/constraints/template normalization into:
-    - `bot-mox/src/components/schedule/generator-config.ts`
+    - `apps/frontend/src/components/schedule/generator-config.ts`
   - updated:
-    - `bot-mox/src/components/schedule/ScheduleGenerator.tsx`.
+    - `apps/frontend/src/components/schedule/ScheduleGenerator.tsx`.
 - File-size control result:
-  - `bot-mox/src/components/schedule/ScheduleGenerator.tsx`: `417 -> 384` lines (target achieved).
+  - `apps/frontend/src/components/schedule/ScheduleGenerator.tsx`: `417 -> 384` lines (target achieved).
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 47 (completed)
 - Frontend decomposition completed for timeline math/helper layer:
   - extracted timeline segment/restricted-zone calculations into:
-    - `bot-mox/src/components/schedule/timeline/helpers.ts`
+    - `apps/frontend/src/components/schedule/timeline/helpers.ts`
   - updated:
-    - `bot-mox/src/components/schedule/TimelineVisualizer.tsx` (with memo-safe segment derivation).
+    - `apps/frontend/src/components/schedule/TimelineVisualizer.tsx` (with memo-safe segment derivation).
 - File-size control result:
-  - `bot-mox/src/components/schedule/TimelineVisualizer.tsx`: `410 -> 308` lines (target achieved).
+  - `apps/frontend/src/components/schedule/TimelineVisualizer.tsx`: `410 -> 308` lines (target achieved).
 - Additional progress metrics:
-  - files over 400 lines in `bot-mox/src/components + bot-mox/src/pages`: `2 -> 0`.
+  - files over 400 lines in `apps/frontend/src/components + apps/frontend/src/pages`: `2 -> 0`.
 - Validation:
   - `npm run -s check:all` passes.
 
 ### Iteration 48 (completed)
 - Backend contracts/security hardening executed for canonical `v1` API routes:
   - `resources` and `workspace` routes switched from generic payload schemas to kind-aware schema selectors:
-    - `proxy-server/src/modules/v1/resources.routes.js` now uses `getResourceCreateSchema(kind)` / `getResourcePatchSchema(kind)`.
-    - `proxy-server/src/modules/v1/workspace.routes.js` now uses `getWorkspaceCreateSchema(kind)` / `getWorkspacePatchSchema(kind)`.
+    - `apps/backend-legacy/src/modules/v1/resources.routes.js` now uses `getResourceCreateSchema(kind)` / `getResourcePatchSchema(kind)`.
+    - `apps/backend-legacy/src/modules/v1/workspace.routes.js` now uses `getWorkspaceCreateSchema(kind)` / `getWorkspacePatchSchema(kind)`.
   - `settings` route hardened with path parsing + segment validation + path-aware mutation schema:
-    - `proxy-server/src/modules/v1/settings.routes.js`
+    - `apps/backend-legacy/src/modules/v1/settings.routes.js`
   - contracts expanded with typed settings schemas and missing schedule template schema fixed:
-    - `proxy-server/src/contracts/schemas.js`
+    - `apps/backend-legacy/src/contracts/schemas.js`
     - fixed undefined `scheduleTemplateEntryMutationSchema` risk in resolver flow.
 - Behavioral intent:
   - preserve existing endpoints and envelope while reducing invalid payload/path acceptance on mutating routes.
@@ -812,12 +812,12 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 49 (completed)
 - Baseline re-validation pass executed after contracts hardening:
   - verified lifecycle client already API-first:
-    - `bot-mox/src/services/botLifecycleService.ts` uses `/api/v1/bots/:id/lifecycle/*` and has no Firestore dependency.
+    - `apps/frontend/src/services/botLifecycleService.ts` uses `/api/v1/bots/:id/lifecycle/*` and has no Firestore dependency.
   - verified no direct Firebase Realtime Database imports in UI layers:
-    - `rg "firebase/database" bot-mox/src/pages bot-mox/src/components` returns no matches.
+    - `rg "firebase/database" apps/frontend/src/pages apps/frontend/src/components` returns no matches.
   - verified backend thin-entry target remains satisfied:
-    - `proxy-server/server.js` stays at 3 lines.
-    - `proxy-server/src/legacy-app.js` currently 224 lines (below legacy size gate target).
+    - `apps/backend-legacy/server.js` stays at 3 lines.
+    - `apps/backend-legacy/src/legacy-app.js` currently 224 lines (below legacy size gate target).
   - verified dependency-health drift is currently cleared:
     - `npm ls` in `bot-mox` is clean (no `ELSPROBLEMS`).
 - Performance verification:
@@ -871,18 +871,18 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 51 (completed)
 - Security/access-control parity and API-first unification completed for legacy public IPQS/WoW flows:
   - added centralized audit middleware:
-    - `proxy-server/src/middleware/audit-log.js`
+    - `apps/backend-legacy/src/middleware/audit-log.js`
   - enabled audit logging for infra write paths:
-    - `/api/v1/infra/*` in `proxy-server/src/modules/v1/index.js`
-    - legacy `/api/proxmox/*` and `/api/ssh/*` in `proxy-server/src/legacy-app.js`
+    - `/api/v1/infra/*` in `apps/backend-legacy/src/modules/v1/index.js`
+    - legacy `/api/proxmox/*` and `/api/ssh/*` in `apps/backend-legacy/src/legacy-app.js`
   - hardened legacy public endpoints by requiring auth + audit:
     - `/api/wow-names`, `/api/check-ip`, `/api/check-ip-batch`
-    - `proxy-server/src/modules/system/legacy-public-routes.js`
+    - `apps/backend-legacy/src/modules/system/legacy-public-routes.js`
   - migrated frontend name generation from legacy to canonical v1:
-    - `bot-mox/src/components/bot/BotCharacter.tsx` now uses `bot-mox/src/services/wowNamesService.ts`
-    - new API-first service: `bot-mox/src/services/wowNamesService.ts` (`/api/v1/wow-names`)
+    - `apps/frontend/src/components/bot/BotCharacter.tsx` now uses `apps/frontend/src/services/wowNamesService.ts`
+    - new API-first service: `apps/frontend/src/services/wowNamesService.ts` (`/api/v1/wow-names`)
   - migrated frontend IPQS service to canonical v1 API:
-    - `bot-mox/src/services/ipqsService.ts` now uses `/api/v1/ipqs/status|check` via `apiClient`
+    - `apps/frontend/src/services/ipqsService.ts` now uses `/api/v1/ipqs/status|check` via `apiClient`
     - removed Cloud Functions callable dependency and direct legacy `/api/check-ip` usage.
 - Validation:
   - root `npm run -s check:all` passes.
@@ -894,30 +894,30 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 - Approximate remaining effort: **~2%**.
 - Remaining buckets (highest impact first):
   1. Final docs/runtime parity cleanup:
-     - align remaining legacy references in `proxy-server/README.md` and startup banner text (`/api/status`) to canonical docs strategy.
+     - align remaining legacy references in `apps/backend-legacy/README.md` and startup banner text (`/api/status`) to canonical docs strategy.
   2. Security production posture:
      - finalize production-grade Firebase rules profile and document env-specific rule policy (internal/dev vs production).
   4. Perf/dependency closeout:
      - optional but planned: reduce `vendor-misc`/`vendor-antd` initial load footprint while staying inside bundle gates.
   5. Final micro-hotspot cleanup:
      - one file still above target by 1 line:
-       - `bot-mox/src/pages/vms/VMsPage.tsx` = 401 lines (target `<= 400`).
+       - `apps/frontend/src/pages/vms/VMsPage.tsx` = 401 lines (target `<= 400`).
 
 ### Iteration 52 (completed)
   - verification:
 - Docs/runtime parity pass completed:
   - startup banner updated in:
-    - `proxy-server/src/bootstrap/runtime.js`
+    - `apps/backend-legacy/src/bootstrap/runtime.js`
     - canonical health endpoint now shown as `/api/v1/health`.
   - API docs wording aligned in:
-    - `proxy-server/README.md`
+    - `apps/backend-legacy/README.md`
     - canonical endpoints documented first (`/api/v1/ipqs/*`, `/api/v1/wow-names`, `/api/v1/health`) with explicit legacy compatibility note.
 - Security policy documentation finalized for Firebase rules:
   - added:
     - `docs/architecture/firebase-rules-policy.md`
   - policy captures current enforced baseline (Firestore closed, RTDB admin-write) and environment-specific change control.
 - Micro-hotspot gate fully closed:
-  - `bot-mox/src/pages/vms/VMsPage.tsx`: `401 -> 400` lines.
+  - `apps/frontend/src/pages/vms/VMsPage.tsx`: `401 -> 400` lines.
 - Validation:
   - root `npm run -s check:all` passes.
   - bundle budget gate remains green.
@@ -948,7 +948,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
   1. Optional performance refinement of heavy vendor chunks (`vendor-misc`, `vendor-antd`) under existing budget gates.
 
 ### Iteration 54 (completed)
-- Performance refinement pass executed in `bot-mox/vite.config.ts`:
+- Performance refinement pass executed in `apps/frontend/vite.config.ts`:
   - evaluated additional manual chunking for heavy deps.
   - kept only safe split logic (`vendor-codemirror`) and reverted chunking variants that introduced circular chunk warnings.
 - Build quality result:
@@ -986,7 +986,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 56 (completed)
 - Performance closeout (safe chunking strategy):
   - updated:
-    - `bot-mox/vite.config.ts`
+    - `apps/frontend/vite.config.ts`
   - change:
     - removed forced fallback bucket (`vendor-misc`) by returning `undefined` for unmatched `node_modules` in `manualChunks`,
     - retained explicit chunk groups for core stacks (`react/router/antd/charts/firebase/refine/editor`).
@@ -1012,7 +1012,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 57 (completed)
 - Notes editor heavy dependency isolation improved:
   - updated:
-    - `bot-mox/src/pages/notes/index.tsx`
+    - `apps/frontend/src/pages/notes/index.tsx`
   - change:
     - `NoteEditor` switched to lazy import with `Suspense` fallback,
     - markdown/editor stack now loads only when a note is actually opened.
@@ -1039,20 +1039,20 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
     - Vite is not started when proxy preflight fails.
 - Firebase bootstrap path resolution hardened:
   - updated:
-    - `proxy-server/src/bootstrap/firebase-admin.js`
-    - `proxy-server/.env.example`
+    - `apps/backend-legacy/src/bootstrap/firebase-admin.js`
+    - `apps/backend-legacy/.env.example`
   - changes:
     - service-account discovery now supports repo-root `firebase-key.json` and legacy `Assets/firebase-key.json`;
     - relative `FIREBASE_SERVICE_ACCOUNT_PATH` values are resolved against multiple roots (`cwd`, `proxy-server`, repo root).
 - Local machine operational note:
   - current listener on `3001` is external process `Dolphin Anty` (`PID 32468`).
-  - before running `node start-dev.js`, stop that process or set `PORT` in `proxy-server/.env`.
+  - before running `node start-dev.js`, stop that process or set `PORT` in `apps/backend-legacy/.env`.
 
 ### Iteration 59 (completed)
 - Firebase client bootstrap is now safe when `.env` is incomplete:
   - updated:
-    - `bot-mox/src/utils/firebase.ts`
-    - `bot-mox/src/providers/auth-provider.ts`
+    - `apps/frontend/src/utils/firebase.ts`
+    - `apps/frontend/src/providers/auth-provider.ts`
   - changes:
     - Firebase app/auth are initialized only when all required `VITE_FIREBASE_*` keys exist;
     - no runtime `auth/invalid-api-key` crash when env is missing;
@@ -1067,8 +1067,8 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 60 (completed)
 - Temporary dev auth bypass enabled to remove login screen friction during local refactor runs:
   - updated:
-    - `bot-mox/src/providers/auth-provider.ts`
-    - `bot-mox/.env.example`
+    - `apps/frontend/src/providers/auth-provider.ts`
+    - `apps/frontend/.env.example`
   - behavior:
     - in Vite `DEV` mode, auth check is bypassed by default (`VITE_DEV_BYPASS_AUTH=true` implicit default),
     - `/login` is no longer required for local development flow,
@@ -1083,9 +1083,9 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 61 (completed)
 - 401 storm fix for local dev without `.env` completed:
   - updated:
-    - `proxy-server/src/config/env.js`
-    - `bot-mox/src/providers/auth-provider.ts`
-    - `bot-mox/.env.example`
+    - `apps/backend-legacy/src/config/env.js`
+    - `apps/frontend/src/providers/auth-provider.ts`
+    - `apps/frontend/.env.example`
   - backend behavior:
     - in `development`, when `INTERNAL_API_TOKEN`/`INTERNAL_INFRA_TOKEN` are not set, server now falls back to:
       - `change-me-api-token`
@@ -1103,7 +1103,7 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
 ### Iteration 62 (completed)
 - Early-request auth header race fixed in frontend API client:
   - updated:
-    - `bot-mox/src/services/authFetch.ts`
+    - `apps/frontend/src/services/authFetch.ts`
   - behavior:
     - in dev bypass mode, if no token is present yet in `localStorage`, `authFetch` now injects fallback token automatically (`VITE_INTERNAL_API_TOKEN` or `change-me-api-token`),
     - legacy stale token (`dev-bypass-token`) is auto-upgraded to current fallback token.
@@ -1119,32 +1119,32 @@ Remaining: CI workflow, enforced hooks path, and docs parity updates.
     - root service account: `firebase-key.json` (admin SDK)
     - RTDB URL: `Ссылка.txt`
   - created:
-    - `proxy-server/.env` (gitignored): includes Firebase Admin config + internal tokens.
-    - `bot-mox/.env` (gitignored): includes API base URLs + internal token for auth header injection.
+    - `apps/backend-legacy/.env` (gitignored): includes Firebase Admin config + internal tokens.
+    - `apps/frontend/.env` (gitignored): includes API base URLs + internal token for auth header injection.
   - backend boot fix:
-    - updated `proxy-server/src/legacy-app.js` to load `.env` *before* importing `./config/env` (env snapshot fix).
+    - updated `apps/backend-legacy/src/legacy-app.js` to load `.env` *before* importing `./config/env` (env snapshot fix).
   - Firebase web app:
     - created Firebase Web App in project `botfarm-d69b7`: `Bot-Mox Web`
-    - SDK config fetched and written into `bot-mox/.env` (so Firebase login can be enabled later by flipping flags).
+    - SDK config fetched and written into `apps/frontend/.env` (so Firebase login can be enabled later by flipping flags).
 - Verification (smoke):
   - `GET /api/v1/health` returns `success: true` with `firebase: true`.
-  - `GET /api/v1/auth/verify` succeeds with internal token from `proxy-server/.env` (`uid=internal-api`, `source=internal`).
+  - `GET /api/v1/auth/verify` succeeds with internal token from `apps/backend-legacy/.env` (`uid=internal-api`, `source=internal`).
 
 ### Iteration 64 (completed)
 - Dev runner improved to respect configured proxy port:
   - updated:
     - `start-dev.js`
   - behavior:
-    - reads `PORT` from `proxy-server/.env` (or `.env.example`) and preflights the correct port,
+    - reads `PORT` from `apps/backend-legacy/.env` (or `.env.example`) and preflights the correct port,
     - spawns proxy with `PORT` explicitly set (Windows-friendly),
     - startup banner now prints the configured proxy URL instead of hardcoded `3001`.
   - reason:
-    - avoids misleading “set PORT in proxy-server/.env” instructions when the runner was still hardcoded to `3001`.
+    - avoids misleading “set PORT in apps/backend-legacy/.env” instructions when the runner was still hardcoded to `3001`.
 
 ### Iteration 65 (completed)
 - Dev CORS hardened for Vite port fallback (`5174`) without loosening production:
   - updated:
-    - `proxy-server/src/bootstrap/http-middleware.js`
+    - `apps/backend-legacy/src/bootstrap/http-middleware.js`
   - behavior:
     - in `development`, backend now always allows localhost origins for `5173` and `5174` (plus `3000`) even if `CORS_ORIGIN` is set to `5173` only,
     - internal-network regex origins (`192.168.*` / `10.*`) also accept `5174` in development.

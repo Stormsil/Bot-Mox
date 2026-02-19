@@ -72,11 +72,11 @@ CREATE INDEX idx_vm_setup_progress_vm ON vm_setup_progress(tenant_id, vm_uuid);
 
 ### 1.2 Unattend Profile Config Schema (Zod)
 
-Added to `proxy-server/src/contracts/schemas.js`
+Added to `apps/backend-legacy/src/contracts/schemas.js`
 
 ### 1.3 Unattend XML Template Engine
 
-**File:** `proxy-server/src/modules/unattend/xml-builder.js`
+**File:** `apps/backend-legacy/src/modules/unattend/xml-builder.js`
 
 - Принимает `unattendProfileConfig` + `provisionConfig` (IP, token, S3 endpoint)
 - Генерирует полный XML из шаблонного XML
@@ -84,7 +84,7 @@ Added to `proxy-server/src/contracts/schemas.js`
 
 ### 1.4 Provisioning Token Service
 
-**File:** `proxy-server/src/modules/provisioning/service.js`
+**File:** `apps/backend-legacy/src/modules/provisioning/service.js`
 
 - `issueToken({ tenantId, userId, vmUuid, expiresInDays })`
 - `validateToken(token, vmUuid)`
@@ -94,7 +94,7 @@ Added to `proxy-server/src/contracts/schemas.js`
 
 ### 1.5 API Routes
 
-**File:** `proxy-server/src/modules/v1/provisioning.routes.js`
+**File:** `apps/backend-legacy/src/modules/v1/provisioning.routes.js`
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
@@ -121,7 +121,7 @@ Added to `proxy-server/src/contracts/schemas.js`
 
 ### 2.2 Обновлённый flow создания VM
 
-**File:** `bot-mox/src/hooks/vm/queue/processor.ts`
+**File:** `apps/frontend/src/hooks/vm/queue/processor.ts`
 
 1. Clone template VM
 2. Server: `POST /provisioning/generate-iso-payload`
@@ -147,7 +147,7 @@ botmox-provisioning/
 
 ### 3.2 S3 Presigned URL Service
 
-**File:** `proxy-server/src/modules/provisioning/s3-service.js`
+**File:** `apps/backend-legacy/src/modules/provisioning/s3-service.js`
 
 ### 3.3 Env Variables
 
@@ -163,7 +163,7 @@ PROVISION_TOKEN_TTL_DAYS=30
 
 ### 4.1 Unattend Profile Editor
 
-**File:** `bot-mox/src/pages/vms/UnattendProfileEditor.tsx`
+**File:** `apps/frontend/src/pages/vms/UnattendProfileEditor.tsx`
 
 Секции: Account, Computer Name, Locale, Software Removal, Windows Settings, Visual Effects, Save as Template
 
@@ -174,11 +174,11 @@ PROVISION_TOKEN_TTL_DAYS=30
 
 ### 4.3 Setup Progress Monitor
 
-**File:** `bot-mox/src/components/vm/VMSetupProgress.tsx`
+**File:** `apps/frontend/src/components/vm/VMSetupProgress.tsx`
 
 ### 4.4 Frontend Service
 
-**File:** `bot-mox/src/services/unattendProfileService.ts`
+**File:** `apps/frontend/src/services/unattendProfileService.ts`
 
 ---
 

@@ -3,8 +3,8 @@ const path = require('node:path');
 
 const repoRoot = path.join(__dirname, '..');
 const uiRoots = [
-  path.join(repoRoot, 'bot-mox', 'src', 'components'),
-  path.join(repoRoot, 'bot-mox', 'src', 'pages'),
+  path.join(repoRoot, 'apps', 'frontend', 'src', 'components'),
+  path.join(repoRoot, 'apps', 'frontend', 'src', 'pages'),
 ];
 
 const fileExtensions = new Set(['.ts', '.tsx']);

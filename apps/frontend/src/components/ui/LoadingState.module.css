@@ -1,0 +1,44 @@
+.loadingState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.spinner {
+  min-height: 200px;
+}
+
+.skeleton {
+  padding: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.loadingCard {
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+}
+
+.tableLoadingState {
+  padding: 24px;
+}
+
+.listLoadingState {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.listLoadingItem {
+  padding: 12px;
+  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--boxmox-color-border-default);
+  border-radius: 4px;
+}

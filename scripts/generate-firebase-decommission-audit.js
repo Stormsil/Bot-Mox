@@ -31,15 +31,11 @@ const SCAN_EXTENSIONS = new Set([
   '.txt',
 ]);
 
-const RUNTIME_DIRS = ['proxy-server/src', 'bot-mox/src', 'agent/src'];
+const RUNTIME_DIRS = ['apps/backend/src', 'apps/frontend/src', 'apps/agent/src'];
 const DOC_SCAN_DIRS = ['docs'];
 const DOC_SCAN_FILES = ['ARCHITECTURE.md', 'DATABASE.md', 'README.md'];
 
 const LEGACY_FILE_PATHS = [
-  'proxy-server/src/bootstrap/firebase-admin.js',
-  'proxy-server/src/repositories/rtdb/paths.js',
-  'proxy-server/src/repositories/rtdb/rtdb-repository.js',
-  'proxy-server/src/repositories/rtdb/tenant-paths.js',
   'scripts/migrate-rtdb-to-supabase.js',
   'scripts/verify-migration-parity.js',
   'scripts/cleanup-database.js',
@@ -58,10 +54,10 @@ const FIREBASE_CONFIG_PATHS = [
 
 const PACKAGE_PATHS = [
   'package.json',
-  'proxy-server/package.json',
-  'bot-mox/package.json',
+  'apps/backend/package.json',
+  'apps/frontend/package.json',
   'scripts/package.json',
-  'agent/package.json',
+  'apps/agent/package.json',
 ];
 
 const DOC_RISK_PATTERNS = [
@@ -70,8 +66,6 @@ const DOC_RISK_PATTERNS = [
   /scripts\/migrate-rtdb-to-supabase\.js/i,
   /scripts\/verify-migration-parity\.js/i,
   /scripts\/cleanup-database\.js/i,
-  /proxy-server\/src\/bootstrap\/firebase-admin\.js/i,
-  /proxy-server\/src\/repositories\/rtdb\//i,
   /DATA_BACKEND\s*=\s*rtdb/i,
   /\brtdb\b\s+mode/i,
   /rollback:.*rtdb/i,
@@ -322,7 +316,7 @@ function main() {
   lines.push('## Snapshot');
   lines.push('');
   lines.push(
-    `- Runtime refs (proxy-server/src + bot-mox/src + agent/src): **${runtimeHits.length}**`,
+    `- Runtime refs (apps/backend/src + apps/frontend/src + apps/agent/src): **${runtimeHits.length}**`,
   );
   lines.push(`- Legacy files still present: **${legacyFilesPresent.length}**`);
   lines.push(`- Package manifests with firebase deps: **${packagesWithFirebaseDeps.length}**`);

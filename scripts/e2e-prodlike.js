@@ -5,7 +5,7 @@ const { spawn } = require('node:child_process');
 const path = require('node:path');
 
 const rootDir = path.join(__dirname, '..');
-const botMoxDir = path.join(rootDir, 'bot-mox');
+const botMoxDir = path.join(rootDir, 'apps', 'frontend');
 
 const env = {
   ...process.env,

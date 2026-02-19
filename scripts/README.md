@@ -18,8 +18,8 @@
 
 Скрипт `up` собирает локальные образы:
 
-- `bot-mox/frontend:prod-sim`
-- `bot-mox/backend:prod-sim`
+- `botmox/frontend:prod-sim`
+- `botmox/backend:prod-sim`
 
 и поднимает стек по `deploy/compose.stack.yml`.
 
@@ -102,6 +102,24 @@ node scripts/check-secrets.js
 node scripts/check-style-guardrails.js
 ```
 
+## `check-infra-gateway.cjs`
+
+Проверяет Nest `infra-gateway` cutover для UI proxy:
+
+1. HTTP reverse-proxy для `/proxmox-ui`, `/api2`, `/tinyfm-ui`, `/syncthing-ui`.
+2. WebSocket upgrade proxy для `/proxmox-ui/*` и service-hint fallback (через `Referer`/`Origin`) для TinyFM.
+
+Скрипт автоматически:
+- билдит `@botmox/backend`,
+- поднимает локальные mock upstream-сервисы,
+- выполняет HTTP + WS smoke/parity проверки.
+
+Запуск:
+
+```bash
+pnpm run check:infra:gateway
+```
+
 ## `generate-firebase-decommission-audit.js`
 
 Генерирует живой аудит статуса полного удаления Firebase/RTDB из активного контура проекта.
@@ -135,7 +153,7 @@ E2E_USER_ID=<user-id>
 Опциональные env:
 
 - `ADMIN_BEARER_TOKEN` (нужен для `artifacts/assign` и `license/revoke` в smoke-сценарии)
-- `API_BASE_URL` (default: `http://localhost:3001`)
+- `API_BASE_URL` (default: `http://localhost:3002`)
 - `E2E_VM_UUID` (default: random generated)
 - `E2E_MODULE` (default: `runner-installer`)
 - `E2E_PLATFORM` (default: `windows`)

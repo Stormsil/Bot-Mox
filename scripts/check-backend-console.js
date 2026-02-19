@@ -1,18 +1,12 @@
-// Fail the build if proxy-server/src contains console.* usage (enforce structured logging).
-// Allow a small, explicit allowlist for bootstrap fallbacks.
+// Fail the build if apps/backend/src contains console.* usage (enforce structured logging).
+// Nest backend should use framework logger abstractions or structured logging services.
 
 const fs = require('node:fs');
 const path = require('node:path');
 
 const repoRoot = path.join(__dirname, '..');
-const backendRoot = path.join(repoRoot, 'proxy-server', 'src');
-
-const allowlist = new Set([
-  // OTel bootstrap must stay resilient even if logger deps are missing.
-  path.join(backendRoot, 'observability', 'tracing.js'),
-  // Runtime banner fallback uses console when logger isn't available.
-  path.join(backendRoot, 'bootstrap', 'runtime.js'),
-]);
+const backendRoot = path.join(repoRoot, 'apps', 'backend', 'src');
+const allowlist = new Set();
 
 function listJsFiles(dir) {
   const out = [];
@@ -23,7 +17,7 @@ function listJsFiles(dir) {
     for (const e of entries) {
       const p = path.join(current, e.name);
       if (e.isDirectory()) stack.push(p);
-      else if (e.isFile() && p.endsWith('.js')) out.push(p);
+      else if (e.isFile() && (p.endsWith('.js') || p.endsWith('.ts'))) out.push(p);
     }
   }
   return out;

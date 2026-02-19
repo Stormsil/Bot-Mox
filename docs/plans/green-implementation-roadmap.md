@@ -38,8 +38,8 @@ Reasoning: this order gives deploy safety first, then one vertical business flow
 
 ### A-01 `GREEN` Add production Dockerfiles
 Scope:
-1. `bot-mox/Dockerfile` (multi-stage frontend build + static serving image).
-2. `proxy-server/Dockerfile` (production Node runtime).
+1. `apps/frontend/Dockerfile` (multi-stage frontend build + static serving image).
+2. `apps/backend-legacy/Dockerfile` (production Node runtime).
 3. Frontend runtime env injection (`runtime-config.js`) for production-like deployments.
 
 Green checks:
@@ -47,9 +47,9 @@ Green checks:
 2. CI can reuse the same Dockerfiles for image workflow.
 
 Evidence:
-1. `bot-mox/Dockerfile`
-2. `bot-mox/docker-entrypoint.sh`
-3. `proxy-server/Dockerfile`
+1. `apps/frontend/Dockerfile`
+2. `apps/frontend/docker-entrypoint.sh`
+3. `apps/backend-legacy/Dockerfile`
 
 ### A-02 `GREEN` Add deploy stack manifests
 Scope:
@@ -122,9 +122,9 @@ Green checks:
 2. Readiness fails when required deps are down.
 
 Evidence:
-1. `proxy-server/src/modules/v1/health.js`
-2. `proxy-server/src/modules/v1/index.js`
-3. `proxy-server/src/config/env.js`
+1. `apps/backend-legacy/src/modules/v1/health.js`
+2. `apps/backend-legacy/src/modules/v1/index.js`
+3. `apps/backend-legacy/src/config/env.js`
 4. `docs/api/openapi.yaml`
 
 ### A-06 `GREEN` Document VPS operational runbook
@@ -172,10 +172,10 @@ Green checks:
 2. No public object listing/anonymous read.
 
 Evidence:
-1. `proxy-server/src/repositories/s3/storage-provider.js`
-2. `proxy-server/src/modules/v1/health.js`
-3. `proxy-server/src/config/env.js`
-4. `proxy-server/.env.example`
+1. `apps/backend-legacy/src/repositories/s3/storage-provider.js`
+2. `apps/backend-legacy/src/modules/v1/health.js`
+3. `apps/backend-legacy/src/config/env.js`
+4. `apps/backend-legacy/.env.example`
 
 ### B-03 `GREEN` Implement artifacts API module
 Scope:
@@ -191,11 +191,11 @@ Green checks:
 4. Audit entry created on each resolve attempt.
 
 Evidence:
-1. `proxy-server/src/modules/artifacts/service.js`
-2. `proxy-server/src/modules/v1/artifacts.routes.js`
-3. `proxy-server/src/modules/license/service.js`
-4. `proxy-server/src/contracts/schemas.js`
-5. `proxy-server/src/modules/v1/index.js`
+1. `apps/backend-legacy/src/modules/artifacts/service.js`
+2. `apps/backend-legacy/src/modules/v1/artifacts.routes.js`
+3. `apps/backend-legacy/src/modules/license/service.js`
+4. `apps/backend-legacy/src/contracts/schemas.js`
+5. `apps/backend-legacy/src/modules/v1/index.js`
 6. `docs/api/openapi.yaml`
 
 Validation:
@@ -237,9 +237,9 @@ Green checks:
 2. Revoked agent can no longer execute commands.
 
 Evidence:
-1. `proxy-server/src/modules/agents/service.js`
-2. `proxy-server/src/modules/v1/agents.routes.js`
-3. `proxy-server/src/contracts/schemas.js` (agent schemas)
+1. `apps/backend-legacy/src/modules/agents/service.js`
+2. `apps/backend-legacy/src/modules/v1/agents.routes.js`
+3. `apps/backend-legacy/src/contracts/schemas.js` (agent schemas)
 4. `supabase/migrations/20260212000400_create_agents_domain.sql`
 
 Validation:
@@ -263,8 +263,8 @@ Green checks:
 2. Offline agent returns deterministic API error (`AGENT_OFFLINE`, 409).
 
 Evidence:
-1. `proxy-server/src/modules/vm-ops/service.js`
-2. `proxy-server/src/modules/v1/vm-ops.routes.js`
+1. `apps/backend-legacy/src/modules/vm-ops/service.js`
+2. `apps/backend-legacy/src/modules/v1/vm-ops.routes.js`
 3. `supabase/migrations/20260212000400_create_agents_domain.sql` (`agent_commands` table)
 
 Validation:
@@ -284,9 +284,9 @@ Green checks:
 2. Ciphertext and nonce are never included in API responses.
 
 Evidence:
-1. `proxy-server/src/modules/secrets/service.js`
-2. `proxy-server/src/modules/v1/secrets.routes.js`
-3. `proxy-server/src/contracts/schemas.js` (secret schemas)
+1. `apps/backend-legacy/src/modules/secrets/service.js`
+2. `apps/backend-legacy/src/modules/v1/secrets.routes.js`
+3. `apps/backend-legacy/src/contracts/schemas.js` (secret schemas)
 4. `supabase/migrations/20260212000400_create_agents_domain.sql` (`secrets_ciphertext`, `secret_bindings` tables)
 
 Validation:
@@ -305,9 +305,9 @@ Green checks:
 2. VM operations succeed only through online agent path (fail-fast with `AGENT_OFFLINE`).
 
 Evidence:
-1. `proxy-server/src/modules/v1/vm-ops.routes.js`
-2. `proxy-server/src/modules/vm-ops/service.js`
-3. `proxy-server/src/modules/v1/index.js` (infra requires 'infra' role)
+1. `apps/backend-legacy/src/modules/v1/vm-ops.routes.js`
+2. `apps/backend-legacy/src/modules/vm-ops/service.js`
+3. `apps/backend-legacy/src/modules/v1/index.js` (infra requires 'infra' role)
 
 Validation:
 1. `npm run check:backend:syntax`
@@ -324,15 +324,15 @@ Green checks:
 2. Existing UI flows remain functional.
 
 Evidence:
-1. `bot-mox/src/components/vm/settingsForm/SecretField.tsx` (reusable secret binding UI)
-2. `bot-mox/src/components/vm/settingsForm/ProxmoxSection.tsx` (password → SecretField)
-3. `bot-mox/src/components/vm/settingsForm/SshSection.tsx` (password → SecretField)
-4. `bot-mox/src/components/vm/settingsForm/ServiceUrlsSection.tsx` (tinyFm/syncThing passwords → SecretField)
-5. `bot-mox/src/services/secretsService.ts` (E2E encryption + secrets/bindings API client)
-6. `bot-mox/src/services/vmOpsService.ts` (command bus dispatch + poll client)
-7. `bot-mox/src/services/vmService.ts` (switched from /api/v1/infra to /api/v1/vm-ops)
-8. `bot-mox/src/services/vmSettingsService.ts` (stripPasswords before save)
-9. `bot-mox/src/types/secrets.ts` (SecretMeta, SecretBinding, SecretBindingsMap)
+1. `apps/frontend/src/components/vm/settingsForm/SecretField.tsx` (reusable secret binding UI)
+2. `apps/frontend/src/components/vm/settingsForm/ProxmoxSection.tsx` (password → SecretField)
+3. `apps/frontend/src/components/vm/settingsForm/SshSection.tsx` (password → SecretField)
+4. `apps/frontend/src/components/vm/settingsForm/ServiceUrlsSection.tsx` (tinyFm/syncThing passwords → SecretField)
+5. `apps/frontend/src/services/secretsService.ts` (E2E encryption + secrets/bindings API client)
+6. `apps/frontend/src/services/vmOpsService.ts` (command bus dispatch + poll client)
+7. `apps/frontend/src/services/vmService.ts` (switched from /api/v1/infra to /api/v1/vm-ops)
+8. `apps/frontend/src/services/vmSettingsService.ts` (stripPasswords before save)
+9. `apps/frontend/src/types/secrets.ts` (SecretMeta, SecretBinding, SecretBindingsMap)
 
 Validation:
 1. `npm run lint`
@@ -359,13 +359,13 @@ Green checks:
 2. Domain behavior parity is validated on agreed sample set.
 
 Evidence:
-1. `proxy-server/src/repositories/repository-factory.js` (factory creating domain repos)
-2. `proxy-server/src/modules/v1/resources.routes.js` (accepts `{ repositories }`)
-3. `proxy-server/src/modules/v1/workspace.routes.js` (accepts `{ repositories }`)
-4. `proxy-server/src/modules/v1/bots.routes.js` (accepts `{ repo }`, uses repo.writeLifecycleLog/writeArchiveEntry)
-5. `proxy-server/src/modules/v1/finance.routes.js` (accepts `{ repo }`, uses repo.getDailyStats/getGoldPriceHistory)
-6. `proxy-server/src/modules/v1/settings.routes.js` (accepts `{ repo }`, uses repo.read/write)
-7. `proxy-server/src/modules/v1/index.js` (creates repos via factory, injects into routes)
+1. `apps/backend-legacy/src/repositories/repository-factory.js` (factory creating domain repos)
+2. `apps/backend-legacy/src/modules/v1/resources.routes.js` (accepts `{ repositories }`)
+3. `apps/backend-legacy/src/modules/v1/workspace.routes.js` (accepts `{ repositories }`)
+4. `apps/backend-legacy/src/modules/v1/bots.routes.js` (accepts `{ repo }`, uses repo.writeLifecycleLog/writeArchiveEntry)
+5. `apps/backend-legacy/src/modules/v1/finance.routes.js` (accepts `{ repo }`, uses repo.getDailyStats/getGoldPriceHistory)
+6. `apps/backend-legacy/src/modules/v1/settings.routes.js` (accepts `{ repo }`, uses repo.read/write)
+7. `apps/backend-legacy/src/modules/v1/index.js` (creates repos via factory, injects into routes)
 
 Validation:
 1. `npm run check:backend:syntax`
@@ -383,9 +383,9 @@ Green checks:
 
 Evidence:
 1. `supabase/migrations/20260212000500_create_domain_entities.sql` (12 tables for all domains)
-2. `proxy-server/src/repositories/supabase/supabase-collection-repository.js` (generic CRUD with JSONB data)
-3. `proxy-server/src/repositories/repository-factory.js` (DATA_BACKEND routing: rtdb/supabase)
-4. `proxy-server/src/modules/v1/index.js` (passes `env` to factory)
+2. `apps/backend-legacy/src/repositories/supabase/supabase-collection-repository.js` (generic CRUD with JSONB data)
+3. `apps/backend-legacy/src/repositories/repository-factory.js` (DATA_BACKEND routing: rtdb/supabase)
+4. `apps/backend-legacy/src/modules/v1/index.js` (passes `env` to factory)
 
 Validation:
 1. `npm run check:backend:syntax`

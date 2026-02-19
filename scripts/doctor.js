@@ -94,8 +94,9 @@ async function detectMode() {
   const retryDelayMs = Math.max(0, toInt(process.env.BOTMOX_DOCTOR_RETRY_DELAY_MS, 2000));
 
   const prodLike = 'http://localhost';
-  const proxyPort = Number.parseInt(toText(process.env.BOTMOX_PROXY_PORT || '3001'), 10) || 3001;
-  const devLike = `http://localhost:${proxyPort}`;
+  const backendPort =
+    Number.parseInt(toText(process.env.BOTMOX_BACKEND_PORT || '3002'), 10) || 3002;
+  const devLike = `http://localhost:${backendPort}`;
 
   for (let attempt = 0; attempt < retries; attempt += 1) {
     const prodProbe = await probeBaseUrl(prodLike);

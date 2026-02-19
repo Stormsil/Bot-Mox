@@ -21,8 +21,8 @@ Estimate: `1-2d`
 Status: `GREEN`
 
 Scope:
-1. Add `bot-mox/Dockerfile` (multi-stage build + static runtime).
-2. Add `proxy-server/Dockerfile` (production Node runtime).
+1. Add `apps/frontend/Dockerfile` (multi-stage build + static runtime).
+2. Add `apps/backend-legacy/Dockerfile` (production Node runtime).
 3. Add frontend runtime-config injection (`runtime-config.js`) for Docker deployments.
 
 DoD:
@@ -32,8 +32,8 @@ DoD:
 4. Build args/env are documented.
 
 Validation:
-1. `docker build -f bot-mox/Dockerfile .`
-2. `docker build -f proxy-server/Dockerfile .`
+1. `docker build -f apps/frontend/Dockerfile .`
+2. `docker build -f apps/backend-legacy/Dockerfile .`
 
 ### Issue A-02: Deploy stack manifests + Caddy routing
 Type: `infra`  
@@ -265,8 +265,8 @@ Validation:
 3. `npm run check:secrets`
 
 Evidence:
-1. `proxy-server/src/modules/agents/service.js`
-2. `proxy-server/src/modules/v1/agents.routes.js`
+1. `apps/backend-legacy/src/modules/agents/service.js`
+2. `apps/backend-legacy/src/modules/v1/agents.routes.js`
 3. `supabase/migrations/20260212000400_create_agents_domain.sql`
 
 ### Issue C-02: Agent command bus + command lifecycle
@@ -291,8 +291,8 @@ Validation:
 2. `npm run check:backend:smoke`
 
 Evidence:
-1. `proxy-server/src/modules/vm-ops/service.js`
-2. `proxy-server/src/modules/v1/vm-ops.routes.js`
+1. `apps/backend-legacy/src/modules/vm-ops/service.js`
+2. `apps/backend-legacy/src/modules/v1/vm-ops.routes.js`
 3. `supabase/migrations/20260212000400_create_agents_domain.sql` (`agent_commands` table)
 
 ### Issue C-03: Ciphertext-only secrets APIs + bindings
@@ -319,8 +319,8 @@ Validation:
 3. `npm run check:secrets`
 
 Evidence:
-1. `proxy-server/src/modules/secrets/service.js`
-2. `proxy-server/src/modules/v1/secrets.routes.js`
+1. `apps/backend-legacy/src/modules/secrets/service.js`
+2. `apps/backend-legacy/src/modules/v1/secrets.routes.js`
 3. `supabase/migrations/20260212000400_create_agents_domain.sql` (`secrets_ciphertext`, `secret_bindings`)
 
 ### Issue C-04: VM ops migration to agent command bus
@@ -344,9 +344,9 @@ Validation:
 2. `npm run check:backend:smoke`
 
 Evidence:
-1. `proxy-server/src/modules/v1/vm-ops.routes.js`
-2. `proxy-server/src/modules/vm-ops/service.js`
-3. `proxy-server/src/modules/v1/index.js` (infra requires 'infra' role)
+1. `apps/backend-legacy/src/modules/v1/vm-ops.routes.js`
+2. `apps/backend-legacy/src/modules/vm-ops/service.js`
+3. `apps/backend-legacy/src/modules/v1/index.js` (infra requires 'infra' role)
 
 ### Issue C-05: Frontend migration from plaintext passwords to `secret_ref`
 Type: `frontend`
@@ -370,12 +370,12 @@ Validation:
 4. `npm run check:bundle:budgets`
 
 Evidence:
-1. `bot-mox/src/components/vm/settingsForm/SecretField.tsx`
-2. `bot-mox/src/services/secretsService.ts`
-3. `bot-mox/src/services/vmOpsService.ts`
-4. `bot-mox/src/services/vmService.ts` (switched to vm-ops command bus)
-5. `bot-mox/src/services/vmSettingsService.ts` (stripPasswords)
-6. `bot-mox/src/types/secrets.ts`
+1. `apps/frontend/src/components/vm/settingsForm/SecretField.tsx`
+2. `apps/frontend/src/services/secretsService.ts`
+3. `apps/frontend/src/services/vmOpsService.ts`
+4. `apps/frontend/src/services/vmService.ts` (switched to vm-ops command bus)
+5. `apps/frontend/src/services/vmSettingsService.ts` (stripPasswords)
+6. `apps/frontend/src/types/secrets.ts`
 
 ## Phase D (P1): Supabase Expansion + RTDB Cutover
 
@@ -400,8 +400,8 @@ Validation:
 3. `npm run check:secrets`
 
 Evidence:
-1. `proxy-server/src/repositories/repository-factory.js`
-2. `proxy-server/src/modules/v1/index.js` (wires factory into routes)
+1. `apps/backend-legacy/src/repositories/repository-factory.js`
+2. `apps/backend-legacy/src/modules/v1/index.js` (wires factory into routes)
 
 ### Issue D-02: Supabase repositories for remaining domains
 Type: `backend`
@@ -427,8 +427,8 @@ Validation:
 
 Evidence:
 1. `supabase/migrations/20260212000500_create_domain_entities.sql`
-2. `proxy-server/src/repositories/supabase/supabase-collection-repository.js`
-3. `proxy-server/src/repositories/repository-factory.js` (DATA_BACKEND routing)
+2. `apps/backend-legacy/src/repositories/supabase/supabase-collection-repository.js`
+3. `apps/backend-legacy/src/repositories/repository-factory.js` (DATA_BACKEND routing)
 
 ### Issue D-03: RTDB -> Supabase migration toolkit
 Type: `data`

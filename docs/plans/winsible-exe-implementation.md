@@ -352,7 +352,7 @@ Same isolation pattern as `unattend_profiles`. The `provisioning_tokens.playbook
 
 ### 2.1 Zod schemas
 
-**Modify:** `proxy-server/src/contracts/schemas.js`
+**Modify:** `apps/backend-legacy/src/contracts/schemas.js`
 
 Add playbook validation schemas:
 - `playbookRoleEntrySchema` — `{ role, when?, tags?, vars? }`
@@ -362,9 +362,9 @@ Add playbook validation schemas:
 
 ### 2.2 Playbook service
 
-**New file:** `proxy-server/src/modules/playbooks/service.js`
+**New file:** `apps/backend-legacy/src/modules/playbooks/service.js`
 
-Pattern: same as `proxy-server/src/modules/provisioning/service.js`
+Pattern: same as `apps/backend-legacy/src/modules/provisioning/service.js`
 
 Methods:
 - `listPlaybooks({ tenantId, userId })`
@@ -375,11 +375,11 @@ Methods:
 - `deletePlaybook({ tenantId, userId, playbookId })`
 - `validatePlaybookContent(yamlString)` — parse YAML with `js-yaml`, validate against Zod schema, warn on unknown role names
 
-**New dep:** `js-yaml` in `proxy-server/package.json`
+**New dep:** `js-yaml` in `apps/backend-legacy/package.json`
 
 ### 2.3 Playbook routes
 
-**New file:** `proxy-server/src/modules/v1/playbooks.routes.js`
+**New file:** `apps/backend-legacy/src/modules/v1/playbooks.routes.js`
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -392,13 +392,13 @@ Methods:
 
 ### 2.4 Register routes
 
-**Modify:** `proxy-server/src/modules/v1/index.js`
+**Modify:** `apps/backend-legacy/src/modules/v1/index.js`
 
 Import + register `createPlaybookRoutes` after provisioning routes (~line 133).
 
 ### 2.5 Update ISO generation to include playbook
 
-**Modify:** `proxy-server/src/modules/v1/provisioning.routes.js`
+**Modify:** `apps/backend-legacy/src/modules/v1/provisioning.routes.js`
 
 In `POST /provisioning/generate-iso-payload`:
 1. Accept optional `playbook_id` in request body
@@ -406,11 +406,11 @@ In `POST /provisioning/generate-iso-payload`:
 3. Add `'playbook.yml': Buffer.from(content).toString('base64')` to response `files`
 4. Store `playbook_id` on the provisioning token record
 
-**Modify:** `proxy-server/src/contracts/schemas.js` — add `playbook_id` to `generateIsoPayloadSchema`
+**Modify:** `apps/backend-legacy/src/contracts/schemas.js` — add `playbook_id` to `generateIsoPayloadSchema`
 
 ### 2.6 Token changes
 
-**Modify:** `proxy-server/src/modules/provisioning/service.js`
+**Modify:** `apps/backend-legacy/src/modules/provisioning/service.js`
 - Change default `expiresInDays` to `3650` (10 years ≈ permanent)
 - In `validateToken()`: add subscription status check before approving
 
@@ -435,7 +435,7 @@ When the backend adds `playbook.yml` to the files map, the agent writes it into 
 
 ### 4.1 Wire ISO creation into queue processor (NEW Phase 3 in processor)
 
-**Modify:** `bot-mox/src/hooks/vm/queue/processor.ts`
+**Modify:** `apps/frontend/src/hooks/vm/queue/processor.ts`
 
 After the existing Phase 2 (Configuration), add **Phase 3 — Provisioning ISO**:
 
@@ -451,18 +451,18 @@ For each successfully configured VM:
 
 Update queue item statuses: add `'provisioning'` state between `'configuring'` and `'done'`.
 
-**Modify:** `bot-mox/src/hooks/vm/queue/types.ts` — add `playbookId` to `AddToQueueOverrides`
+**Modify:** `apps/frontend/src/hooks/vm/queue/types.ts` — add `playbookId` to `AddToQueueOverrides`
 
-**Modify:** `bot-mox/src/types/vm.ts`:
+**Modify:** `apps/frontend/src/types/vm.ts`:
 - Add `playbookId?: string` to `VMQueueItem`
 - Add `'provisioning'` to `VMQueueItemStatus` if not present
 
-**Modify:** `bot-mox/src/services/unattendProfileService.ts`:
+**Modify:** `apps/frontend/src/services/unattendProfileService.ts`:
 - Add `playbook_id?: string` to `GenerateIsoPayloadRequest`
 
 ### 4.2 Playbook service (frontend)
 
-**New file:** `bot-mox/src/services/playbookService.ts`
+**New file:** `apps/frontend/src/services/playbookService.ts`
 
 Pattern: same as `unattendProfileService.ts`
 
@@ -479,7 +479,7 @@ export interface Playbook {
 
 ### 4.3 PlaybookTab component
 
-**New file:** `bot-mox/src/components/vm/settingsForm/PlaybookTab.tsx`
+**New file:** `apps/frontend/src/components/vm/settingsForm/PlaybookTab.tsx`
 
 Layout mirrors `UnattendTab.tsx`:
 
@@ -506,25 +506,25 @@ Uses `@monaco-editor/react` (already in dependencies) with `language="yaml"`.
 
 ### 4.4 Register tab in VMSettingsForm
 
-**Modify:** `bot-mox/src/components/vm/VMSettingsForm.tsx`
+**Modify:** `apps/frontend/src/components/vm/VMSettingsForm.tsx`
 
 Add 4th tab `{ key: 'playbooks', label: 'Playbooks', children: <PlaybookTab /> }`
 
-**Modify:** `bot-mox/src/components/vm/settingsForm/index.ts` — export PlaybookTab
+**Modify:** `apps/frontend/src/components/vm/settingsForm/index.ts` — export PlaybookTab
 
 ### 4.5 Playbook selector in VM queue
 
-**Modify:** `bot-mox/src/pages/vms/VMsPage.tsx` (or queue panel)
+**Modify:** `apps/frontend/src/pages/vms/VMsPage.tsx` (or queue panel)
 
 Add a `<Select>` dropdown for playbook when adding VMs to queue. Pre-selects the user's default playbook. Selected ID flows into `VMQueueItem.playbookId`.
 
-**Modify:** `bot-mox/src/pages/vms/hooks/useVmStartAndQueueActions.ts` — pass `playbookId` through.
+**Modify:** `apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts` — pass `playbookId` through.
 
 ---
 
 ## Phase 5: Default Playbook Content
 
-**New file:** `bot-mox/src/data/default-playbook.ts` (exported as string constant)
+**New file:** `apps/frontend/src/data/default-playbook.ts` (exported as string constant)
 
 YAML that replicates the current Winsible `Main.ps1` + `setup_config.json` workflow:
 
@@ -579,27 +579,27 @@ Offered as template when creating first playbook.
 | File | Description |
 |------|-------------|
 | `supabase/migrations/20260216001000_create_playbooks.sql` | DB migration |
-| `proxy-server/src/modules/playbooks/service.js` | Playbook CRUD + YAML validation |
-| `proxy-server/src/modules/v1/playbooks.routes.js` | REST endpoints |
-| `bot-mox/src/services/playbookService.ts` | Frontend API service |
-| `bot-mox/src/components/vm/settingsForm/PlaybookTab.tsx` | YAML editor tab |
-| `bot-mox/src/data/default-playbook.ts` | Default playbook template |
+| `apps/backend-legacy/src/modules/playbooks/service.js` | Playbook CRUD + YAML validation |
+| `apps/backend-legacy/src/modules/v1/playbooks.routes.js` | REST endpoints |
+| `apps/frontend/src/services/playbookService.ts` | Frontend API service |
+| `apps/frontend/src/components/vm/settingsForm/PlaybookTab.tsx` | YAML editor tab |
+| `apps/frontend/src/data/default-playbook.ts` | Default playbook template |
 
 ### Modified files (12):
 | File | Change |
 |------|--------|
-| `proxy-server/src/contracts/schemas.js` | Add playbook Zod schemas + `playbook_id` to ISO schema |
-| `proxy-server/src/modules/v1/index.js` | Register playbook routes |
-| `proxy-server/src/modules/v1/provisioning.routes.js` | Include playbook in ISO payload |
-| `proxy-server/src/modules/provisioning/service.js` | 10yr token expiry + subscription check |
-| `proxy-server/package.json` | Add `js-yaml` dependency |
-| `bot-mox/src/components/vm/VMSettingsForm.tsx` | Add Playbooks tab |
-| `bot-mox/src/components/vm/settingsForm/index.ts` | Export PlaybookTab |
-| `bot-mox/src/types/vm.ts` | Add `playbookId` + `'provisioning'` status |
-| `bot-mox/src/hooks/vm/queue/types.ts` | Add `playbookId` to overrides |
-| `bot-mox/src/hooks/vm/queue/processor.ts` | Add Phase 3: ISO creation + attachment |
-| `bot-mox/src/services/unattendProfileService.ts` | Add `playbook_id` to request type |
-| `bot-mox/src/pages/vms/VMsPage.tsx` | Playbook selector dropdown in queue |
+| `apps/backend-legacy/src/contracts/schemas.js` | Add playbook Zod schemas + `playbook_id` to ISO schema |
+| `apps/backend-legacy/src/modules/v1/index.js` | Register playbook routes |
+| `apps/backend-legacy/src/modules/v1/provisioning.routes.js` | Include playbook in ISO payload |
+| `apps/backend-legacy/src/modules/provisioning/service.js` | 10yr token expiry + subscription check |
+| `apps/backend-legacy/package.json` | Add `js-yaml` dependency |
+| `apps/frontend/src/components/vm/VMSettingsForm.tsx` | Add Playbooks tab |
+| `apps/frontend/src/components/vm/settingsForm/index.ts` | Export PlaybookTab |
+| `apps/frontend/src/types/vm.ts` | Add `playbookId` + `'provisioning'` status |
+| `apps/frontend/src/hooks/vm/queue/types.ts` | Add `playbookId` to overrides |
+| `apps/frontend/src/hooks/vm/queue/processor.ts` | Add Phase 3: ISO creation + attachment |
+| `apps/frontend/src/services/unattendProfileService.ts` | Add `playbook_id` to request type |
+| `apps/frontend/src/pages/vms/VMsPage.tsx` | Playbook selector dropdown in queue |
 
 ### No changes needed:
 - `agent/src/executors/proxmox.ts` — already handles dynamic file lists

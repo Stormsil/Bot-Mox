@@ -3,15 +3,15 @@
 Bot-Mox is a SaaS control-plane and automation toolkit for managing bot infrastructure.
 
 Current stack:
-1. Frontend: React + TypeScript + Vite (`bot-mox/`)
-2. Backend: Express API (`proxy-server/`)
+1. Frontend: React + TypeScript + Vite (`apps/frontend/`)
+2. Backend: NestJS API (`apps/backend/`)
 3. Data: Supabase/Postgres (primary runtime)
 4. Infra runtime: Docker Compose + Caddy + MinIO (production-like stack)
 
 ## Repository Layout
 
-1. `bot-mox/` - frontend application
-2. `proxy-server/` - backend API and infra connectors
+1. `apps/frontend/` - frontend application
+2. `apps/backend/` - main backend API and infra gateway modules
 3. `docs/` - architecture, API contract, plans, rollout docs
 4. `deploy/` - production-like compose stack, Caddy config, env templates
 5. `scripts/` - operational scripts (stack up/down, deploy, rollback, backups)
@@ -27,8 +27,8 @@ Install:
 
 ```bash
 pnpm install --frozen-lockfile
-cd bot-mox && pnpm install --frozen-lockfile
-cd ../proxy-server && pnpm install --frozen-lockfile
+cd apps/frontend && pnpm install --frozen-lockfile
+cd ../apps/backend && pnpm install --frozen-lockfile
 cd ..
 ```
 
@@ -98,8 +98,8 @@ pnpm run smoke:prodlike
 ```
 
 Where to find debugging artifacts:
-- Playwright results: `bot-mox/test-results/`
-- Playwright HTML report: `bot-mox/playwright-report/`
+- Playwright results: `apps/frontend/test-results/`
+- Playwright HTML report: `apps/frontend/playwright-report/`
 - AI-native debug runbook + env vars: `docs/plans/ai-native-observability-testing.md`
 - Frontend incident logs: backend JSON stream (`scope=client_log`, `source=frontend`)
 

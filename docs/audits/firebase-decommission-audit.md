@@ -2,7 +2,7 @@
 
 Auto-generated file. Do not edit manually.
 
-Last updated (UTC): **2026-02-18T01:03:50.954Z**
+Last updated (UTC): **2026-02-19T18:16:56.524Z**
 
 ## Scope
 
@@ -12,7 +12,7 @@ Last updated (UTC): **2026-02-18T01:03:50.954Z**
 
 ## Snapshot
 
-- Runtime refs (proxy-server/src + bot-mox/src + agent/src): **0**
+- Runtime refs (apps/backend/src + apps/frontend/src + apps/agent/src): **0**
 - Legacy files still present: **0**
 - Package manifests with firebase deps: **0**
 - Firebase root config files present: **0**
@@ -55,6 +55,6 @@ Last updated (UTC): **2026-02-18T01:03:50.954Z**
 Run after every architecture or dependency change:
 
 ```bash
-npm run audit:firebase:decommission
+pnpm run audit:firebase:decommission
 ```
 

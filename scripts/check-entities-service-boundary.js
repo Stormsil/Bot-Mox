@@ -5,7 +5,7 @@ const path = require('node:path');
 const ts = require('typescript');
 
 const repoRoot = process.cwd();
-const entitiesRoot = path.join(repoRoot, 'bot-mox', 'src', 'entities');
+const entitiesRoot = path.join(repoRoot, 'apps', 'frontend', 'src', 'entities');
 const baselineFile = path.join(repoRoot, 'configs', 'entities-service-import-baseline.json');
 const writeBaseline = process.argv.includes('--write-baseline');
 

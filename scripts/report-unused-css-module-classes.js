@@ -1,15 +1,15 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // Report-only helper to find obviously-unused CSS module class names.
 //
 // Notes:
 // - Conservative by design (prefers false negatives over false positives).
-// - A class is considered "used" if its token appears anywhere in TS/TSX under bot-mox/src.
+// - A class is considered "used" if its token appears anywhere in TS/TSX under apps/frontend/src.
 // - This intentionally does NOT fail CI; it prints a report for manual cleanup work.
 
 const ROOT = process.cwd();
-const FRONTEND_SRC = path.join(ROOT, 'bot-mox', 'src');
+const FRONTEND_SRC = path.join(ROOT, 'apps', 'frontend', 'src');
 
 function collectFiles(dir, matcher, bucket = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -41,10 +41,12 @@ function buildTokenRegex(token) {
   return new RegExp(`(^|[^a-zA-Z0-9_-])${escaped}([^a-zA-Z0-9_-]|$)`, 'm');
 }
 
-const moduleCssFiles = collectFiles(FRONTEND_SRC, (file) => file.toLowerCase().endsWith('.module.css'));
+const moduleCssFiles = collectFiles(FRONTEND_SRC, (file) =>
+  file.toLowerCase().endsWith('.module.css'),
+);
 const codeFiles = collectFiles(
   FRONTEND_SRC,
-  (file) => file.toLowerCase().endsWith('.ts') || file.toLowerCase().endsWith('.tsx')
+  (file) => file.toLowerCase().endsWith('.ts') || file.toLowerCase().endsWith('.tsx'),
 );
 
 let codeBlob = '';
@@ -60,9 +62,10 @@ for (const file of codeFiles) {
 // class starting with `foo--` is treated as potentially used.
 const dynamicModifierPrefixes = new Set();
 const dynamicModifierPattern = /([a-zA-Z0-9_-]+--)\$\{/g;
-let dynamicMatch;
-while ((dynamicMatch = dynamicModifierPattern.exec(codeBlob)) !== null) {
+let dynamicMatch = dynamicModifierPattern.exec(codeBlob);
+while (dynamicMatch !== null) {
   dynamicModifierPrefixes.add(dynamicMatch[1]);
+  dynamicMatch = dynamicModifierPattern.exec(codeBlob);
 }
 
 const classNamePattern = /\.([_a-zA-Z][-_a-zA-Z0-9]*)/g;
@@ -73,9 +76,9 @@ const reports = [];
 for (const cssFile of moduleCssFiles) {
   const cssText = fs.readFileSync(cssFile, 'utf8');
   const classNames = new Set();
-  let match;
+  let match = classNamePattern.exec(cssText);
 
-  while ((match = classNamePattern.exec(cssText)) !== null) {
+  while (match !== null) {
     const startIndex = match.index;
 
     // Ignore global selector references like :global(.wmde-markdown) which are applied
@@ -86,6 +89,7 @@ for (const cssFile of moduleCssFiles) {
     }
 
     classNames.add(match[1]);
+    match = classNamePattern.exec(cssText);
   }
 
   const unused = [];

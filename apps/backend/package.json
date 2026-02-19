@@ -1,0 +1,40 @@
+{
+  "name": "@botmox/backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node dist/main.js",
+    "predev": "pnpm --filter @botmox/api-contract build",
+    "dev": "nest start --watch",
+    "prebuild": "pnpm --filter @botmox/api-contract build",
+    "build": "tsc -p tsconfig.json",
+    "lint": "pnpm --dir ../.. exec biome check apps/backend/src",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "contract:check": "pnpm run typecheck",
+    "check": "pnpm run typecheck && pnpm run build"
+  },
+  "dependencies": {
+    "@botmox/api-contract": "workspace:*",
+    "@botmox/database-schema": "workspace:*",
+    "@botmox/shared-types": "workspace:*",
+    "@nestjs/common": "^11.1.14",
+    "@nestjs/core": "^11.1.14",
+    "@nestjs/platform-express": "^11.1.14",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "http-proxy": "1.18.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.10",
+    "@nestjs/schematics": "^11.0.7",
+    "@types/express": "^5.0.1",
+    "@types/http-proxy": "1.17.16",
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

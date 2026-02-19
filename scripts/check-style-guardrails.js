@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = process.cwd();
-const FRONTEND_SRC = path.join(ROOT, 'bot-mox', 'src');
+const FRONTEND_SRC = path.join(ROOT, 'apps', 'frontend', 'src');
 const GLOBAL_STYLES = [
   path.join(FRONTEND_SRC, 'styles', 'global.css'),
   path.join(FRONTEND_SRC, 'index.css'),
@@ -79,10 +79,10 @@ if (antViolations.length > 0) {
 }
 if (antSelectorOccurrencesInModules > MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES) {
   errors.push(
-    `.ant-* selector occurrences in CSS Modules exceeded: ${antSelectorOccurrencesInModules} > ${MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES}`
+    `.ant-* selector occurrences in CSS Modules exceeded: ${antSelectorOccurrencesInModules} > ${MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES}`,
   );
   errors.push(
-    `Files with .ant-* selectors in CSS Modules: ${antSelectorFilesInModules.size} (run rg \"\\\\.ant-\" bot-mox/src --glob \"*.module.css\" for details)`
+    `Files with .ant-* selectors in CSS Modules: ${antSelectorFilesInModules.size} (run rg "\\\\.ant-" apps/frontend/src --glob "*.module.css" for details)`,
   );
 }
 
@@ -95,5 +95,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Style guardrails passed (!important=${importantCount}, max=${MAX_IMPORTANT_COUNT}; antSelectorsInModules=${antSelectorOccurrencesInModules}, max=${MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES})`
+  `Style guardrails passed (!important=${importantCount}, max=${MAX_IMPORTANT_COUNT}; antSelectorsInModules=${antSelectorOccurrencesInModules}, max=${MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES})`,
 );

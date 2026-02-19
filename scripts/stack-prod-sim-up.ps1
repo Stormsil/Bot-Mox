@@ -9,8 +9,8 @@ if (!(Test-Path $envFile)) {
 
 Push-Location $repoRoot
 try {
-  docker build -t bot-mox/frontend:prod-sim ./bot-mox
-  docker build -t bot-mox/backend:prod-sim ./proxy-server
+  docker build -f apps/frontend/Dockerfile -t botmox/frontend:prod-sim .
+  docker build -f apps/backend/Dockerfile -t botmox/backend:prod-sim .
 
   docker compose `
     -f deploy/compose.stack.yml `

@@ -33,8 +33,8 @@
    - `api.<domain>` -> backend
    - `s3.<domain>` -> minio API
 5. Добавить Dockerfile:
-   - `bot-mox/Dockerfile` (multi-stage build + static runtime)
-   - `proxy-server/Dockerfile` (production node runtime)
+   - `apps/frontend/Dockerfile` (multi-stage build + static runtime)
+   - `apps/backend-legacy/Dockerfile` (production node runtime)
 6. Добавить scripts:
    - `scripts/stack-dev-up.(ps1|sh)`, `stack-dev-down.(ps1|sh)`
    - `scripts/stack-prod-sim-up.(ps1|sh)`, `stack-prod-sim-down.(ps1|sh)`
@@ -65,7 +65,7 @@
    - `GHCR_PAT` (если нужен отдельный token), либо `GITHUB_TOKEN` c packages write/read.
 
 ## VPS deployment layout
-1. Каталог: `/opt/bot-mox`.
+1. Каталог: `/opt/botmox`.
 2. Файлы на VPS:
    - `compose.stack.yml`
    - `.env.prod` (только на сервере, вне git)

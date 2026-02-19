@@ -1,5 +1,5 @@
 {
-  "name": "bot-mox-scripts",
+  "name": "botmox-scripts",
   "version": "1.0.0",
   "description": "Maintenance scripts for Bot-Mox",
   "main": "generate-firebase-decommission-audit.js",

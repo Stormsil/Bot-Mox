@@ -76,7 +76,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm --filter @botmox/web exec playwright install --with-deps chromium
+        run: pnpm --filter @botmox/frontend exec playwright install --with-deps chromium
 
       - name: Run E2E (Playwright)
         env:
@@ -89,5 +89,5 @@ jobs:
         with:
           name: playwright-artifacts
           path: |
-            bot-mox/test-results/**
-            bot-mox/playwright-report/**
+            apps/frontend/test-results/**
+            apps/frontend/playwright-report/**

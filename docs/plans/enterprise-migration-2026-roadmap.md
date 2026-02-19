@@ -1,7 +1,9 @@
 # Enterprise Migration 2026 Roadmap
 
-Last updated (UTC): **2026-02-19T11:15:00Z**
+Last updated (UTC): **2026-02-19T18:23:56Z**
 Owner: Platform / Architecture
+
+Note: historical entries below may reference legacy paths (`apps/backend-legacy`) as archival evidence of completed migration steps.
 
 ## Target
 
@@ -34,11 +36,10 @@ Move Bot-Mox from multi-app npm scripts to an enterprise-grade monorepo platform
 - root `biome.json`
 - shared TS base config in `configs/tsconfig.base.json`
 
-2. Monorepo app wrappers:
-- `apps/web`
-- `apps/api-legacy`
+2. Monorepo active apps:
+- `apps/frontend`
+- `apps/backend`
 - `apps/agent`
-- `apps/api` (Nest skeleton)
 
 3. Shared package scaffolding:
 - `packages/shared-types`
@@ -47,10 +48,10 @@ Move Bot-Mox from multi-app npm scripts to an enterprise-grade monorepo platform
 - `packages/ui-kit`
 - `packages/utils`
 
-4. Strangler cutover baseline:
-- route switch middleware in `proxy-server/src/bootstrap/nest-strangler.js`
-- env gates in `proxy-server/src/config/env.js`
-- middleware mount in `proxy-server/src/legacy-app.js`
+4. De-legacy cutover baseline:
+- legacy backend runtime removed from active workspace/runtime graph
+- strangler parity scripts removed from active tooling surface
+- infra proxy/ws behavior validated via Nest-only gate (`check:infra:gateway`)
 
 5. Agent observability hardening:
 - JSON structured logger in `agent/src/core/logger.ts`
@@ -117,35 +118,35 @@ Move Bot-Mox from multi-app npm scripts to an enterprise-grade monorepo platform
 - VM providers were deepened by inlining runtime logic for secrets and vm-ops events (`vm-secrets-client`, `vm-ops-events-client`) instead of proxying through legacy `services/*` re-exports
 - VM settings provider was deepened by inlining normalization/defaults/update runtime in `vm-settings-client`
 - VM read/unattend providers now run provider-native runtime (`vm-read-client`, `unattend-profile-client`) and no longer proxy through legacy `services/vmService` pass-through adapters
-- VM provider boundary guard added to mono gate (`check:vm:provider-boundary`) to block regressions back to legacy VM services/bridges in `bot-mox/src/providers`
+- VM provider boundary guard added to mono gate (`check:vm:provider-boundary`) to block regressions back to legacy VM services/bridges in `apps/frontend/src/providers`
 - finance entities runtime (`entities/finance/lib/analytics.ts`) now validates record normalization and create/patch payloads with shared contract Zod schemas (`financeOperationRecord/Create/PatchSchema`) before contract calls
 - finance provider boundary hardened: `providers/finance-contract-client.ts` now validates create/patch payloads and normalizes all finance response payloads (`operations list/get/create/patch`, `daily-stats`, `gold-price-history`) via shared contract schemas instead of permissive `Record<string, unknown>` casts
 - finance domain import surface normalized: finance UI/hooks/query layers now consume canonical `entities/finance/model/types` exports (instead of direct `src/types` imports), and `FinancePage` filtering branch was simplified by removing duplicate project-filter path/comments without changing behavior
 - frontend app typecheck restored to green after legacy typing compatibility fix in `unattendProfileService`
-- React 19 dependency upgrade applied in `bot-mox` (`react`/`react-dom`/`@types`), with lint + app typecheck + production build + Playwright smoke gate green
+- React 19 dependency upgrade applied in `apps/frontend` (`react`/`react-dom`/`@types`), with lint + app typecheck + production build + Playwright smoke gate green
 - Biome 2.x config aligned for Nest + monorepo scripts added (`biome:check:mono`, `biome:write:mono`); `apps/packages/configs` scope now checks cleanly
 - Biome monorepo gate expanded to include `agent/src`; agent sources were normalized to pass formatter/import/style checks in safe mode
-- Biome monorepo gate expanded to include frontend FSD core slices (`bot-mox/src/app`, `bot-mox/src/entities`, `bot-mox/src/features`, `bot-mox/src/shared`) with normalized imports/formatting and restricted-name cleanup (`Proxy` type aliasing in resources entities API)
-- Biome monorepo gate expanded further to frontend runtime/support slices (`bot-mox/src/providers`, `bot-mox/src/observability`, `bot-mox/src/theme`, `bot-mox/src/contexts`, `bot-mox/src/config`, `bot-mox/src/data`, `bot-mox/src/utils`) with formatter/import drift normalized
+- Biome monorepo gate expanded to include frontend FSD core slices (`apps/frontend/src/app`, `apps/frontend/src/entities`, `apps/frontend/src/features`, `apps/frontend/src/shared`) with normalized imports/formatting and restricted-name cleanup (`Proxy` type aliasing in resources entities API)
+- Biome monorepo gate expanded further to frontend runtime/support slices (`apps/frontend/src/providers`, `apps/frontend/src/observability`, `apps/frontend/src/theme`, `apps/frontend/src/contexts`, `apps/frontend/src/config`, `apps/frontend/src/data`, `apps/frontend/src/utils`) with formatter/import drift normalized
 - expanded frontend Biome scope now checks cleanly without warnings in mono gate after targeted safe fixes (`uiLogger` overload adjacency, literal key access in schedule utils, optional-chain cleanup in theme runtime, `Number.isNaN` in VM patcher)
-- frontend Biome mono scope expanded to include `bot-mox/src/hooks` and `bot-mox/src/services`, with remaining warnings removed via safe style fixes (`Number.isNaN`, nullable tag filter, non-returning `forEach` callbacks, and `Proxy` type alias cleanup)
+- frontend Biome mono scope expanded to include `apps/frontend/src/hooks` and `apps/frontend/src/services`, with remaining warnings removed via safe style fixes (`Number.isNaN`, nullable tag filter, non-returning `forEach` callbacks, and `Proxy` type alias cleanup)
 - frontend `components/pages` Biome wave started: safe auto-fix pass applied to 229 files (`--write`), reducing residual diagnostics from `488 errors / 157 warnings` to `118 errors / 20 warnings` while keeping frontend lint + typecheck green
-- frontend `components/pages` Biome wave closed to zero diagnostics, then extended to full `bot-mox/src` shell/types/styles baseline (remaining parse/import/format/non-null issues fixed; `biome check bot-mox/src` now clean)
-- mono Biome gate coverage hardened: `biome:check:mono` / `biome:write:mono` now target full `bot-mox/src` instead of selected slices, and `check:all:mono` re-verified green with expanded scope
-- mono Biome gate expanded to legacy backend source (`proxy-server/src`) with formatting/lint cleanup and runtime-safe fix for async promise executor in SSH connector path
-- temporary Biome panic workaround applied via explicit ignore list for 7 known-crashing backend files; remaining `proxy-server/src` scope is enforced in mono gate and checks clean
+- frontend `components/pages` Biome wave closed to zero diagnostics, then extended to full `apps/frontend/src` shell/types/styles baseline (remaining parse/import/format/non-null issues fixed; `biome check apps/frontend/src` now clean)
+- mono Biome gate coverage hardened: `biome:check:mono` / `biome:write:mono` now target full `apps/frontend/src` instead of selected slices, and `check:all:mono` re-verified green with expanded scope
+- mono Biome gate expanded to legacy backend source (`apps/backend-legacy/src`) with formatting/lint cleanup and runtime-safe fix for async promise executor in SSH connector path
+- temporary Biome panic workaround applied via explicit ignore list for 7 known-crashing backend files; remaining `apps/backend-legacy/src` scope is enforced in mono gate and checks clean
 - mono Biome gate expanded to local orchestration scripts (`scripts/*`) and `start-dev.js`, with safe formatter/style normalization and Node import-protocol cleanup
 - temporary Biome panic workaround expanded with 5 script files (`check-antd6-compatibility.js`, `check-no-any-mono.js`, `check-pnpm-first.js`, `generate-firebase-decommission-audit.js`, `setup-mcp-antd-docs.js`) so expanded gate remains executable
 - Biome workaround scope reduced: script panic excludes and backend route excludes (`v1/playbooks.routes.js`, `v1/provisioning.routes.js`) were removed after normalization; mono gate remains green with only core backend formatter-crash excludes
 - final backend workaround excludes removed after targeted normalization of remaining files (`playbooks/service.js`, `provisioning/s3-service.js`, `provisioning/service.js`, `unattend/xml-builder.js`, `utils/agent-token.js`); `biome.json` has no temporary panic excludes and `biome:check:mono` stays green
 - root monorepo now has `pnpm-lock.yaml`; `check:all:mono` runs full turbo graph and reaches functional gates
 - primary developer docs (`README`, `docs/DEV-WORKFLOW.md`, `docs/runbooks/dev-workflow.md`) now use `pnpm run` as default command path
-- secondary app docs aligned to `pnpm` command path (`proxy-server/README.md`, `bot-mox/README.md`)
+- secondary app docs aligned to `pnpm` command path (`apps/frontend/README.md`)
 - contributor and local env docs aligned to `pnpm` command path (`CONTRIBUTING.md`, `deploy/compose.prod-sim.env.example`)
 - local compose dev flows moved from `npm` to `corepack pnpm` (`docker-compose.local.yml`, `deploy/compose.dev.override.yml`)
 - local orchestration scripts moved to `pnpm/corepack` execution path (`start-dev.js`, Supabase bootstrap, DB type generation checks, AntD compatibility gate registry read)
 - local MCP setup flow moved to `pnpm`-first script (`mcp:antd:setup` -> `scripts/setup-mcp-antd-docs.js`)
-- `apps/api` strict typecheck fixed (`moduleResolution` + null-safe `ResourcesService` store access)
+- `apps/backend` strict typecheck fixed (`moduleResolution` + null-safe `ResourcesService` store access)
 - `db:types` scripts now execute correctly on Windows (removed `npx.cmd` spawn issues); current blocking condition is unavailable running Supabase target for type generation
 - `db:types:check` moved to deterministic migration-hash gate (`supabase.types.meta.json`) and no longer requires running Supabase stack on every check
 - DB normalization wave 1 started for `resources_subscriptions`: generated typed projection columns (`subscription_type`, `subscription_status`, `expires_at_ms`, `bot_id_ref`, etc.), domain constraints, and query indexes were added while preserving JSONB-compatible write-paths
@@ -176,29 +177,61 @@ Move Bot-Mox from multi-app npm scripts to an enterprise-grade monorepo platform
 - frontend settings backend service now uses contract runtime client (`settings-contract-client`) for `api_keys`/`proxy`/`notifications/events` instead of direct `apiClient` calls
 - `packages/api-contract` theme-assets slice expanded with typed routes (`GET /api/v1/theme-assets`, `POST /presign-upload`, `POST /complete`, `DELETE /:id`) and Zod envelopes
 - frontend theme assets service now uses contract runtime client (`theme-assets-contract-client`) for list/presign/complete/delete flow
-- `apps/api` workspace module added with contract-schema validation and REST parity for `notes/calendar/kanban` (`GET/POST/PATCH/DELETE` + list query/meta)
-- `apps/api` finance module added with contract-schema validation and REST parity for operations + `daily-stats` + `gold-price-history`
-- `apps/api` bots module added with contract-schema validation and REST parity for `bots` CRUD + lifecycle routes
-- `apps/api` playbooks module added with contract-schema validation and REST parity for `playbooks` (`GET/POST/PUT/DELETE` + `POST validate`)
-- `apps/api` wow-names module added with contract-schema validation and legacy-compatible response shapes (`count` and `batches` modes)
-- `apps/api` ipqs module added with contract-schema validation and legacy-compatible responses for `status`, `check`, and `check-batch`
-- `apps/api` settings module added with contract-schema validation and legacy-compatible responses for `api_keys`, `proxy`, and `notifications/events`
-- `apps/api` license module added with contract-schema validation and runtime parity for `POST /api/v1/license/lease|heartbeat|revoke`
-- `apps/api` theme-assets module added with contract-schema validation and runtime parity for `GET /api/v1/theme-assets`, `POST /presign-upload`, `POST /complete`, `DELETE /:id`
-- `apps/api` provisioning module expanded with contract-schema validation and runtime parity for `unattend-profiles` CRUD and provisioning bootstrap routes (`generate-iso-payload`, `validate-token`, `report-progress`, `progress/:vmUuid`)
+- `packages/api-contract` observability slice expanded for legacy parity (`GET /api/v1/diag/trace`, `POST /api/v1/client-logs`) with shared Zod schemas for diagnostics payloads and frontend log intake batches
+- `packages/api-contract` Wave-2 legacy parity slice expanded for `vm` (`register`, `resolve`), `secrets` (`create/meta/rotate/bindings`), `artifacts` (`releases/assign/get-assignment/resolve-download`), `infra` (proxmox+ssh operations), and `vm-ops` command `create/list`
+- strangler parity gate now validates new Wave-2 legacy domains (`vm`, `secrets`, `artifacts`, `infra`) and `vm-ops` command `create/list` routes against shared contract schemas
+- `apps/backend` workspace module added with contract-schema validation and REST parity for `notes/calendar/kanban` (`GET/POST/PATCH/DELETE` + list query/meta)
+- `apps/backend` finance module added with contract-schema validation and REST parity for operations + `daily-stats` + `gold-price-history`
+- `apps/backend` bots module added with contract-schema validation and REST parity for `bots` CRUD + lifecycle routes
+- `apps/backend` playbooks module added with contract-schema validation and REST parity for `playbooks` (`GET/POST/PUT/DELETE` + `POST validate`)
+- `apps/backend` wow-names module added with contract-schema validation and legacy-compatible response shapes (`count` and `batches` modes)
+- `apps/backend` ipqs module added with contract-schema validation and legacy-compatible responses for `status`, `check`, and `check-batch`
+- `apps/backend` settings module added with contract-schema validation and legacy-compatible responses for `api_keys`, `proxy`, and `notifications/events`
+- `apps/backend` license module added with contract-schema validation and runtime parity for `POST /api/v1/license/lease|heartbeat|revoke`
+- `apps/backend` theme-assets module added with contract-schema validation and runtime parity for `GET /api/v1/theme-assets`, `POST /presign-upload`, `POST /complete`, `DELETE /:id`
+- `apps/backend` provisioning module expanded with contract-schema validation and runtime parity for `unattend-profiles` CRUD and provisioning bootstrap routes (`generate-iso-payload`, `validate-token`, `report-progress`, `progress/:vmUuid`)
+- `apps/backend` vm module added with contract-schema validation and runtime parity for `POST /api/v1/vm/register` and `GET /api/v1/vm/:uuid/resolve`
+- `apps/backend` secrets module added with contract-schema validation and runtime parity for `POST /api/v1/secrets`, `GET /api/v1/secrets/:id/meta`, `POST /api/v1/secrets/:id/rotate`, `POST/GET /api/v1/secrets/bindings`
+- `apps/backend` infra module added with contract-schema validation and runtime parity for proxmox/ssh routes (`POST /api/v1/infra/proxmox/login`, `GET /api/v1/infra/proxmox/status`, node VM/config/action routes, and ssh exec/vm-config routes)
+- `apps/backend` infra-gateway middleware module added for HTTP reverse-proxy cutover of infra UI prefixes (`/proxmox-ui`, `/api2`, `/pve2`, `/novnc`, `/xtermjs`, `/tinyfm-ui`, `/syncthing-ui`) with location rewrite + frame-header normalization
+- `apps/backend` infra-gateway upgrade handler added in Nest bootstrap for websocket proxy routing on `/proxmox-ui`, `/tinyfm-ui`, `/syncthing-ui` (+ referer/origin service hint fallback)
+- dedicated infra-gateway parity/smoke gate added (`check:infra:gateway` -> `scripts/check-infra-gateway.cjs`) and integrated into `check:all:mono` (HTTP + websocket checks)
+- `apps/backend` observability module expanded with OTLP proxy compatibility endpoint (`POST /api/v1/otel/v1/traces`) behind `BOTMOX_OTEL_PROXY_ENABLED` to preserve legacy browser-trace export flow
+- `apps/backend` artifacts module added with contract-schema validation and runtime parity for `POST /api/v1/artifacts/releases`, `POST /api/v1/artifacts/assign`, `GET /api/v1/artifacts/assign/:userId/:module`, `POST /api/v1/artifacts/resolve-download`
+- `apps/backend` observability module added with contract-schema validation and runtime parity for `GET /api/v1/diag/trace` and `POST /api/v1/client-logs`
 - `packages/api-contract` agents/vm-ops slice expanded to real route behavior (`agents list query`, `pairings create`, `vm-ops dispatch 202`, `syncthing dispatch`)
 - `packages/api-contract` vm-ops slice expanded with typed command-agent routes (`GET /api/v1/vm-ops/commands/next`, `PATCH /api/v1/vm-ops/commands/:id`)
+- `apps/backend` vm-ops module expanded to command lifecycle parity (`POST/GET /commands`, `GET /commands/next`, `GET/PATCH /commands/:id`) with SSE endpoint parity for `GET /api/v1/vm-ops/events`
+- local dev default cutover advanced: `start-dev.js` now starts `apps/backend` (Nest) and frontend runtime fallbacks/defaults now target `http://localhost:3002` (`ws://localhost:3002`) instead of legacy `3001`
+- mono default quality gates are now Nest-first: `check:backend:syntax/smoke` validate `@botmox/backend`, `biome:check:mono` targets `apps/backend/src`, and root legacy runtime scripts were removed from active command surface
+- Zod boundary mono gate is now Nest/agent-only and no longer includes legacy Express route validation paths
+- Supabase bootstrap helper now writes runtime credentials into `apps/backend/.env` for Nest-first local startup
+- frontend/agent local and Playwright runtime defaults now prioritize Nest `3002` (`BOTMOX_BACKEND_PORT`) with backward-compatible fallback to `BOTMOX_PROXY_PORT`
+- contract runtime path stabilized for Nest dist startup: `@botmox/api-contract` now exports runtime from `dist` and backend/frontend scripts explicitly prebuild contract package before `dev/build`
+- Nest migrated-module runtime hardening completed: DI metadata regressions from type-only service imports fixed; backend runtime dependencies include `class-validator` and `class-transformer`
+- prod-like container path moved to Nest backend: new `apps/backend/Dockerfile`, stack prod-sim build scripts and GHCR image workflow now build backend image from `apps/backend` (root context)
+- prod-like routing/runtime defaults aligned to backend `3002` (`deploy/compose.stack.yml`, `deploy/caddy/Caddyfile`, env examples, `start-dev.js`, `scripts/dev-trace.js`, `scripts/doctor.js`)
+- prod-sim local runtime defaults completed for Nest path (`deploy/compose.prod-sim.env` image names + `BACKEND_PORT=3002`, `scripts/artifacts-e2e-smoke.js` default API base switched to `3002`)
+- active frontend/e2e tooling/docs cleaned from proxy-era defaults (`apps/frontend/playwright.config.ts` no `BOTMOX_PROXY_PORT`, `apps/frontend/README.md` + `scripts/README.md` updated, pnpm-first automation source list points to `apps/backend/Dockerfile`)
+- agent local pairing auto-detect no longer falls back to legacy `:3001` endpoints (`apps/agent/src/main/pairing-window.ts` now probes localhost/127.0.0.1 + `:3002` only)
+- active architecture and auth/runbook docs aligned to Nest-first topology and port defaults (`README.md`, `docs/ARCHITECTURE.md`, `docs/AUTH.md`, `docs/runbooks/dev-workflow.md`, `docs/api/openapi.yaml`)
+- root scripts de-legacy cleanup completed: removed `dev:backend:legacy`, `dev:mono:with-legacy`, legacy syntax/smoke gates, and explicit legacy mono aggregate from `package.json`
+- default mono gate now enforces Nest-first scope (`pnpm turbo run check db:types:check contract:check`)
+- firebase decommission audit scope now tracks active runtime apps (`apps/backend/src`, `apps/frontend/src`, `apps/agent/src`) instead of legacy backend runtime paths
+- active architecture/workflow docs now describe only Nest-first runtime (`README.md`, `docs/ARCHITECTURE.md`, `docs/runbooks/dev-workflow.md`); legacy fallback instructions removed from default runbook
+- workspace scope is now active-app-only (`pnpm-workspace.yaml`: `apps/frontend`, `apps/backend`, `apps/agent`)
+- pnpm-first guard scope is aligned to active workspace manifests only
 - `packages/api-contract` license slice expanded with typed runtime routes (`POST /api/v1/license/lease`, `POST /api/v1/license/heartbeat`, `POST /api/v1/license/revoke`)
 - `packages/api-contract` provisioning slice expanded with typed routes for `unattend-profiles` CRUD and `POST /api/v1/provisioning/generate-iso-payload`
 - frontend VM operations service now uses contract runtime client for `agents list`, `pairings create`, `vm-ops dispatch`, and `command status`
-- `apps/api` resources module aligned with legacy REST parity (`GET/POST/PATCH/DELETE` + paged/sorted/query list meta), keeping `PUT` as compatibility alias
-- `apps/api` `agents`/`vm-ops`/`resources` controllers now consume schemas from `@botmox/api-contract` (shared validation source, no local schema copies)
+- `apps/backend` resources module aligned with legacy REST parity (`GET/POST/PATCH/DELETE` + paged/sorted/query list meta), keeping `PUT` as compatibility alias
+- `apps/backend` `agents`/`vm-ops`/`resources` controllers now consume schemas from `@botmox/api-contract` (shared validation source, no local schema copies)
 - `packages/api-contract` hardened with shared `agentHeartbeatSchema` and non-empty `resourceMutationSchema` to match runtime boundary rules
 - `packages/api-contract` ESM runtime build is now Node-compatible (`.js` relative imports in emitted `dist`), unblocking contract runtime checks in CI scripts
 - mono gate now includes explicit `any` policy for `apps/*` + `packages/*` (`check:no-any:mono`)
-- `check:no-any:mono` expanded to frontend/agent TS scopes with explicit-type patterns (`apps`, `packages`, `bot-mox/src`, `agent/src`) to avoid comment-text false positives
-- frontend/app lint path unified on Biome for `@botmox/web` (`apps/web` lint now runs Biome over `bot-mox/src`), and UI-layer service boundaries are enforced via dedicated static gate (`check:ui:boundaries`) wired into `check:all:mono`
-- entities-layer legacy service imports are now frozen by dedicated baseline gate (`check:entities:service-boundary` + `configs/entities-service-import-baseline.json`), preventing new `services/*` coupling in `bot-mox/src/entities`; latest migration waves lowered residual observed imports from `49` to `0` and baseline allowlist entries to `0`
+- `check:no-any:mono` expanded to frontend/agent TS scopes with explicit-type patterns (`apps`, `packages`, `apps/frontend/src`, `agent/src`) to avoid comment-text false positives
+- frontend/app lint path unified on Biome for `@botmox/frontend` (`apps/frontend` lint now runs Biome over `apps/frontend/src`), and UI-layer service boundaries are enforced via dedicated static gate (`check:ui:boundaries`) wired into `check:all:mono`
+- entities-layer legacy service imports are now frozen by dedicated baseline gate (`check:entities:service-boundary` + `configs/entities-service-import-baseline.json`), preventing new `services/*` coupling in `apps/frontend/src/entities`; latest migration waves lowered residual observed imports from `49` to `0` and baseline allowlist entries to `0`
 - agent runtime boundary validation hardened with Zod: API envelopes are validated in `ApiClient`, and `/vm-ops/commands/next` payload is schema-checked before command execution
 - automated Zod boundary gate added to mono checks (`check:zod:boundaries`): validates boundary parsing coverage in legacy `v1` routes, migrated Nest controllers, and agent runtime boundary files
 - legacy vm-ops query boundary hardened with Zod (`/api/v1/vm-ops/commands/next` now validates query via `vmOpsCommandNextQuerySchema` while preserving timeout fallback semantics for invalid numeric input)
@@ -234,14 +267,20 @@ Move Bot-Mox from multi-app npm scripts to an enterprise-grade monorepo platform
 - strangler routing gate expanded with `theme-assets` module coverage (`GET /api/v1/theme-assets`) across proxy, fallback, and no-fallback scenarios
 - strangler routing gate expanded with `ipqs` and `workspace` module coverage (`GET /api/v1/ipqs/status`, `GET /api/v1/workspace/notes`) across proxy, fallback, and no-fallback scenarios
 - strangler routing gate expanded with `auth`, `agents`, `resources`, `finance`, `playbooks`, and `vm-ops` module coverage (`GET /api/v1/auth/whoami`, `GET /api/v1/agents`, `GET /api/v1/resources/licenses`, `GET /api/v1/finance/operations`, `GET /api/v1/playbooks`, `GET /api/v1/vm-ops/commands`) across proxy, fallback, and no-fallback scenarios
+- strangler routing gate expanded with `secrets` module coverage (`GET /api/v1/secrets/bindings`) across proxy, fallback, and no-fallback scenarios
+- strangler routing gate expanded with `infra` module coverage (`GET /api/v1/infra/proxmox/status`) across proxy, fallback, and no-fallback scenarios
+- strangler routing gate expanded with `artifacts` module coverage (`GET /api/v1/artifacts/assign/:userId/:module`) across proxy, fallback, and no-fallback scenarios
+- strangler routing gate expanded with `diag` and `client-logs` module coverage (`GET /api/v1/diag/trace`, `POST /api/v1/client-logs`) across proxy, fallback, and no-fallback scenarios
 - strangler routing gate expanded with `wow-names` module coverage (`GET /api/v1/wow-names`) across proxy, fallback, and no-fallback scenarios
 - strangler routing gate expanded with provisioning coverage for both route prefixes (`GET /api/v1/unattend-profiles`, `POST /api/v1/provisioning/generate-iso-payload`, `POST /api/v1/provisioning/validate-token`) across proxy, fallback, and no-fallback scenarios
 - provisioning routing gate coverage expanded with VM bootstrap progress endpoints (`POST /api/v1/provisioning/report-progress`, `GET /api/v1/provisioning/progress/:vmUuid`) across proxy, fallback, and no-fallback scenarios
 - strangler resolver now aliases `/api/v1/unattend-profiles` to `provisioning` module for route-switch consistency
-- strangler parity + routing checks now cover every currently migrated Nest domain (`auth`, `agents`, `resources`, `workspace`, `finance`, `bots`, `playbooks`, `wow-names`, `ipqs`, `settings`, `theme-assets`, `license`, `vm-ops`, `provisioning`)
-- legacy contract-adapter gate added (`check:legacy:contract-adapters`) to verify boundary routes in `api-legacy` are wired to centralized contract schemas; wired into `check:all:mono`
+- strangler parity + routing checks now cover every currently migrated Nest domain (`auth`, `agents`, `resources`, `workspace`, `finance`, `bots`, `playbooks`, `wow-names`, `ipqs`, `settings`, `theme-assets`, `license`, `vm`, `secrets`, `infra`, `artifacts`, `diag`, `client-logs`, `vm-ops`, `provisioning`)
+- Wave-4 infra UI cutover is advanced in Nest (HTTP + websocket proxy path moved + parity/smoke gate integrated); remaining work is final legacy UI proxy bootstrap removal
+- legacy contract-adapter gate remains available as standalone script (`scripts/check-legacy-contract-adapters.js`) for archival validation, but it is no longer part of default mono checks
 - runbook/env strangler module examples now include `license` in the recommended migrated module set
 - runbook/env strangler module examples now include `theme-assets` in the recommended migrated module set
+- runbook/env strangler module examples now include `infra` in the recommended migrated module set
 - `agentsList` contract now explicitly includes `400` response to match legacy/Nest runtime validation behavior
 - auth contract/runtime alignment fixed for strangler safety: legacy `GET /api/v1/auth/verify` now matches contract (`{ valid: true }`), while frontend session identity now resolves through `GET /api/v1/auth/whoami`
 - strangler parity gate now also validates `auth` routes (`verify/whoami` + `401` branch), reducing drift risk for `auth` cutover

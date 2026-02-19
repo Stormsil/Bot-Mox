@@ -21,8 +21,8 @@ Create a professional, maintainable frontend architecture where:
 ## Current Baseline (Measured)
 
 1. Frontend files:
-- `66` CSS files in `bot-mox/src`.
-- `151` TSX files in `bot-mox/src`.
+- `66` CSS files in `apps/frontend/src`.
+- `151` TSX files in `apps/frontend/src`.
 
 2. Styling debt:
 - `242` usages of `!important`.
@@ -30,8 +30,8 @@ Create a professional, maintainable frontend architecture where:
 - `1772` usages of CSS vars like `var(--boxmox-*)`, `var(--proxmox-*)`, spacing/font vars.
 
 3. Architectural hotspots:
-- `bot-mox/src/styles/global.css` contains broad `.ant-*` overrides.
-- `bot-mox/src/styles/variables.css` is a major source of global theme variables.
+- `apps/frontend/src/styles/global.css` contains broad `.ant-*` overrides.
+- `apps/frontend/src/styles/variables.css` is a major source of global theme variables.
 - Theme editor exists (`SettingsPage` + `ThemeSettingsPanel` + `themeService`) but propagation is mixed: tokens + global CSS vars.
 
 ## Target Architecture
@@ -81,9 +81,9 @@ Out of scope for this wave:
 ## Frontend type additions
 
 File candidates:
-- `bot-mox/src/theme/themePalette.ts`
-- `bot-mox/src/services/themeService.ts`
-- new `bot-mox/src/theme/theme.types.ts`
+- `apps/frontend/src/theme/themePalette.ts`
+- `apps/frontend/src/services/themeService.ts`
+- new `apps/frontend/src/theme/theme.types.ts`
 
 Planned structures:
 1. `ThemeVisualSettings`:
@@ -106,8 +106,8 @@ Planned structures:
 ## Backend contract additions
 
 Files:
-- `proxy-server/src/contracts/schemas.js`
-- `proxy-server/src/modules/v1/settings.routes.js`
+- `apps/backend-legacy/src/contracts/schemas.js`
+- `apps/backend-legacy/src/modules/v1/settings.routes.js`
 
 Planned:
 1. Extend `themeSettingsMutationSchema` with strict `visual` schema.
@@ -197,7 +197,7 @@ Goals:
 2. Replace with token config + scoped styles.
 
 Tasks:
-1. Refactor `bot-mox/src/styles/global.css`:
+1. Refactor `apps/frontend/src/styles/global.css`:
 - keep reset/layout shell only,
 - remove global ant component skinning.
 2. Introduce `components` token config in `ConfigProvider` for Button/Table/Input/Card/etc.
@@ -272,9 +272,9 @@ Exit criteria:
 ## Automated
 
 1. Type checks and build:
-- `npm --prefix bot-mox run build`
+- `npm --prefix botmox run build`
 2. Lint:
-- `npm --prefix bot-mox run lint`
+- `npm --prefix botmox run lint`
 3. Backend syntax/smoke after API changes:
 - `npm run check:backend:syntax`
 - `npm run check:backend:smoke`
@@ -312,10 +312,10 @@ Exit criteria:
 
 1. `docs/audits/frontend-refactor-audit.md`
 2. `docs/DEV-WORKFLOW.md`
-3. `bot-mox/src/App.tsx`
-4. `bot-mox/src/styles/global.css`
-5. `bot-mox/src/styles/variables.css`
-6. `bot-mox/src/pages/settings/ThemeSettingsPanel.tsx`
-7. `bot-mox/src/services/themeService.ts`
-8. `proxy-server/src/contracts/schemas.js`
-9. `proxy-server/src/modules/v1/settings.routes.js`
+3. `apps/frontend/src/App.tsx`
+4. `apps/frontend/src/styles/global.css`
+5. `apps/frontend/src/styles/variables.css`
+6. `apps/frontend/src/pages/settings/ThemeSettingsPanel.tsx`
+7. `apps/frontend/src/services/themeService.ts`
+8. `apps/backend-legacy/src/contracts/schemas.js`
+9. `apps/backend-legacy/src/modules/v1/settings.routes.js`

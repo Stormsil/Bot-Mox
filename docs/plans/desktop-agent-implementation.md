@@ -117,7 +117,7 @@ class ApiClient {
 }
 ```
 
-**Проверка:** запустить бэкенд (`npm run stack:dev:up` или `cd proxy-server && npm run dev`), создать pairing через curl, ввести в агенте → агент привязан.
+**Проверка:** запустить бэкенд (`npm run stack:dev:up` или `cd backend-legacy && npm run dev`), создать pairing через curl, ввести в агенте → агент привязан.
 
 ---
 
@@ -146,7 +146,7 @@ Tray-иконка меняется:
 
 **Файлы:** `src/executors/proxmox.ts`, `src/executors/index.ts`
 
-Порт `proxy-server/src/modules/infra/connectors.js` (строки 74-145) в TypeScript:
+Порт `apps/backend-legacy/src/modules/infra/connectors.js` (строки 74-145) в TypeScript:
 - `proxmoxLogin()` — POST `/api2/json/access/ticket` с `rejectUnauthorized: false`
 - `proxmoxRequest(method, path, data)` — Cookie auth + CSRF token
 - Кэш сессии на 90 минут
@@ -216,8 +216,8 @@ npm run agent:dev
 Или лёгкий режим:
 ```powershell
 npx supabase start           # БД
-cd proxy-server && npm run dev  # Бэкенд
-cd bot-mox && npm run dev       # Фронт
+cd backend-legacy && npm run dev  # Бэкенд
+cd botmox && npm run dev       # Фронт
 npm run agent:dev               # Агент
 ```
 
@@ -227,11 +227,11 @@ npm run agent:dev               # Агент
 
 | Назначение | Файл |
 |-----------|------|
-| Proxmox-клиент для порта | `proxy-server/src/modules/infra/connectors.js:74-145` |
-| Agent API contract | `proxy-server/src/modules/agents/service.js` |
-| VM-Ops command contract | `proxy-server/src/modules/vm-ops/service.js` |
-| Zod-схемы для payload | `proxy-server/src/contracts/schemas.js` |
-| Frontend dispatch pattern | `bot-mox/src/services/vmOpsService.ts` |
+| Proxmox-клиент для порта | `apps/backend-legacy/src/modules/infra/connectors.js:74-145` |
+| Agent API contract | `apps/backend-legacy/src/modules/agents/service.js` |
+| VM-Ops command contract | `apps/backend-legacy/src/modules/vm-ops/service.js` |
+| Zod-схемы для payload | `apps/backend-legacy/src/contracts/schemas.js` |
+| Frontend dispatch pattern | `apps/frontend/src/services/vmOpsService.ts` |
 | Оригинальный план агента | `docs/plans/saas-control-plane-agent-e2e.md` |
 
 ---

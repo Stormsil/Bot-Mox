@@ -144,7 +144,7 @@ function computeSha256(filePath) {
 }
 
 async function run() {
-  const baseUrl = normalizeBaseUrl(readEnv('API_BASE_URL', 'http://localhost:3001'));
+  const baseUrl = normalizeBaseUrl(readEnv('API_BASE_URL', 'http://localhost:3002'));
   const runnerToken = readEnv('RUNNER_BEARER_TOKEN', readEnv('API_BEARER_TOKEN', ''));
   if (!runnerToken) {
     throw new Error('Missing required env: RUNNER_BEARER_TOKEN (or legacy API_BEARER_TOKEN)');
@@ -247,7 +247,7 @@ async function run() {
     `[artifacts-e2e] artifacts/resolve-download OK (release_id=${resolved.release_id}, version=${resolved.version})`,
   );
 
-  const tempFile = path.join(os.tmpdir(), `bot-mox-artifact-${Date.now()}.bin`);
+  const tempFile = path.join(os.tmpdir(), `botmox-artifact-${Date.now()}.bin`);
   try {
     const bytes = await downloadToFile(resolved.download_url, tempFile);
     const actualSha = computeSha256(tempFile);
@@ -346,7 +346,7 @@ async function run() {
   // We build a minimal JWT with exp in the past. The backend's verifyJwtHs256
   // rejects it before hitting the DB, returning 409 LEASE_EXPIRED.
   const expiredPayload = {
-    iss: 'bot-mox-license',
+    iss: 'botmox-license',
     sub: runnerId,
     jti: crypto.randomUUID(),
     iat: Math.floor(Date.now() / 1000) - 600,

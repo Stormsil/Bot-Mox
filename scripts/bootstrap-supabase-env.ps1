@@ -40,7 +40,7 @@ function Set-Or-AppendEnv([string]$FilePath, [string]$Key, [string]$Value) {
 }
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-$envPath = Join-Path $repoRoot 'proxy-server/.env'
+$envPath = Join-Path $repoRoot 'apps/backend/.env'
 
 Write-Step 'Ensuring Supabase stack is running...'
 Push-Location $repoRoot

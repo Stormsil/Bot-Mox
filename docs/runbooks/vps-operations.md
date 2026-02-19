@@ -24,7 +24,7 @@ pnpm run deploy:local:down
 This mode uses:
 - `deploy/compose.stack.yml`
 - `deploy/compose.prod-sim.env.example`
-- local images `bot-mox/frontend:prod-sim` and `bot-mox/backend:prod-sim`
+- local images `apps/frontend/frontend:prod-sim` and `apps/frontend/backend:prod-sim`
 
 So you can validate full-stack behavior before real VPS appears.
 
@@ -37,7 +37,7 @@ So you can validate full-stack behavior before real VPS appears.
 | `VPS_HOST` | VPS IP or hostname | `203.0.113.10` |
 | `VPS_USER` | SSH user for deploy | `deploy` |
 | `VPS_SSH_KEY` | SSH private key (ed25519 recommended) | PEM-encoded private key |
-| `VPS_DEPLOY_PATH` | Absolute path to project on VPS | `/opt/bot-mox` |
+| `VPS_DEPLOY_PATH` | Absolute path to project on VPS | `/opt/botmox` |
 | `API_HEALTHCHECK_URL` | Post-deploy health URL | `https://api.example.com/api/v1/health` |
 
 ### VPS-only Secrets (`.env.prod` on server, never in git)
@@ -68,7 +68,7 @@ openssl rand -hex 32
 openssl rand -base64 48
 
 # Generate SSH key for deploy user
-ssh-keygen -t ed25519 -C "bot-mox-deploy" -f ~/.ssh/bot-mox-deploy
+ssh-keygen -t ed25519 -C "botmox-deploy" -f ~/.ssh/botmox-deploy
 ```
 
 ### Storage Policy
@@ -93,11 +93,11 @@ ssh-keygen -t ed25519 -C "bot-mox-deploy" -f ~/.ssh/bot-mox-deploy
 
 ```bash
 # 1. Create deploy directory
-sudo mkdir -p /opt/bot-mox
-sudo chown deploy:deploy /opt/bot-mox
+sudo mkdir -p /opt/botmox
+sudo chown deploy:deploy /opt/botmox
 
 # 2. Clone or copy repository files
-cd /opt/bot-mox
+cd /opt/botmox
 git clone <repo-url> .
 # Or scp the required files (compose, scripts, deploy config)
 
@@ -148,7 +148,7 @@ What is now automated:
 ### Manual Deploy (from VPS)
 
 ```bash
-cd /opt/bot-mox
+cd /opt/botmox
 
 # Pull latest code changes
 git pull origin main
@@ -199,7 +199,7 @@ docker compose -f deploy/compose.stack.yml --env-file .env.prod logs --tail=50 f
 ### Manual Rollback (from VPS)
 
 ```bash
-cd /opt/bot-mox
+cd /opt/botmox
 
 PREVIOUS_TAG=sha-prev123 \
 API_HEALTHCHECK_URL=https://api.example.com/api/v1/health \
@@ -230,19 +230,19 @@ docker compose -f deploy/compose.stack.yml --env-file .env.prod restart backend
 ```bash
 # Add to crontab on VPS (crontab -e)
 # PostgreSQL backup daily at 03:00
-0 3 * * * cd /opt/bot-mox && ./scripts/backup-postgres.sh >> /var/log/bot-mox-backup.log 2>&1
+0 3 * * * cd /opt/botmox && ./scripts/backup-postgres.sh >> /var/log/botmox-backup.log 2>&1
 
 # MinIO backup daily at 03:30
-30 3 * * * cd /opt/bot-mox && ./scripts/backup-minio.sh >> /var/log/bot-mox-backup.log 2>&1
+30 3 * * * cd /opt/botmox && ./scripts/backup-minio.sh >> /var/log/botmox-backup.log 2>&1
 
 # Cleanup backups older than 14 days
-0 4 * * * find /opt/bot-mox/backups -name "*.gz" -mtime +14 -delete
+0 4 * * * find /opt/apps/frontend/backups -name "*.gz" -mtime +14 -delete
 ```
 
 ### Manual Backup
 
 ```bash
-cd /opt/bot-mox
+cd /opt/botmox
 
 # PostgreSQL
 ./scripts/backup-postgres.sh
@@ -260,7 +260,7 @@ cd /opt/bot-mox
 #### PostgreSQL Restore
 
 ```bash
-cd /opt/bot-mox
+cd /opt/botmox
 
 # 1. Create a safety backup first
 ./scripts/backup-postgres.sh
@@ -282,7 +282,7 @@ curl -sf https://api.example.com/api/v1/health/ready | jq .
 #### MinIO Restore
 
 ```bash
-cd /opt/bot-mox
+cd /opt/botmox
 
 # 1. Create a safety backup first
 ./scripts/backup-minio.sh
@@ -308,7 +308,7 @@ curl -sf https://api.example.com/api/v1/health/ready | jq .
 ## 6. Service Management
 
 ```bash
-cd /opt/bot-mox
+cd /opt/botmox
 COMPOSE="docker compose -f deploy/compose.stack.yml --env-file .env.prod"
 
 # View running services
@@ -364,7 +364,7 @@ docker compose -f deploy/compose.stack.yml --env-file .env.prod restart minio
 echo "<GHCR_PAT>" | docker login ghcr.io -u <username> --password-stdin
 
 # Verify image exists
-docker pull ghcr.io/<org>/bot-mox-backend:sha-abc1234
+docker pull ghcr.io/<org>/botmox-backend:sha-abc1234
 ```
 
 ### Disk space low
@@ -377,7 +377,7 @@ df -h
 docker image prune -a --filter "until=168h"
 
 # Clean old backups
-find /opt/bot-mox/backups -name "*.gz" -mtime +7 -delete
+find /opt/apps/frontend/backups -name "*.gz" -mtime +7 -delete
 ```
 
 ---

@@ -43,8 +43,8 @@ Expected:
 
 ## API-Level Enforcement Points
 
-- `proxy-server/src/modules/v1/agents.routes.js`
-- `proxy-server/src/modules/agents/service.js`
-- `proxy-server/src/modules/vm-ops/service.js`
+- `apps/backend-legacy/src/modules/v1/agents.routes.js`
+- `apps/backend-legacy/src/modules/agents/service.js`
+- `apps/backend-legacy/src/modules/vm-ops/service.js`
 - `docs/api/openapi.yaml`
 

@@ -17,14 +17,14 @@ Guardrails are enforced by `scripts/check-style-guardrails.js` and run via `npm 
 ## What Goes Where
 
 1. **Ant Design component skinning**:
-   - use `ConfigProvider theme={{ token, components }}` (see `bot-mox/src/theme/themeRuntime.tsx`).
+   - use `ConfigProvider theme={{ token, components }}` (see `apps/frontend/src/theme/themeRuntime.tsx`).
    - for one-off adjustments, use component props (`styles`, `className`, `rootClassName`) rather than global CSS selectors.
 
 2. **Layout and structure**:
    - use `*.module.css` for grids, spacing, flex, containers, and domain-specific visuals.
 
 3. **Global CSS**:
-   - keep `bot-mox/src/styles/global.css` small: reset + app shell primitives only.
+   - keep `apps/frontend/src/styles/global.css` small: reset + app shell primitives only.
    - no app-wide component skinning via `.ant-*`.
 
 ## Token Usage
@@ -137,5 +137,5 @@ Quick manual QA:
 
 Preferred flow:
 1. First try existing semantic vars (examples earlier in this doc).
-2. If semantics are missing, extend the token mapping in `bot-mox/src/theme/themeRuntime.tsx` (antd tokens/components) and, only if needed, the legacy CSS vars bridge.
+2. If semantics are missing, extend the token mapping in `apps/frontend/src/theme/themeRuntime.tsx` (antd tokens/components) and, only if needed, the legacy CSS vars bridge.
 3. Document the new semantic token name in this file (so future pages reuse it).

@@ -25,8 +25,8 @@ jobs:
         shell: bash
         run: |
           OWNER_LC="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
-          echo "frontend_repo=ghcr.io/${OWNER_LC}/bot-mox-frontend" >> "$GITHUB_OUTPUT"
-          echo "backend_repo=ghcr.io/${OWNER_LC}/bot-mox-backend" >> "$GITHUB_OUTPUT"
+          echo "frontend_repo=ghcr.io/${OWNER_LC}/botmox-frontend" >> "$GITHUB_OUTPUT"
+          echo "backend_repo=ghcr.io/${OWNER_LC}/botmox-backend" >> "$GITHUB_OUTPUT"
 
       - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.9.0
