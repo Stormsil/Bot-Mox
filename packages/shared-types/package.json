@@ -12,5 +12,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check": "pnpm run typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
   }
 }

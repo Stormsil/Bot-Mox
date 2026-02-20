@@ -74,6 +74,8 @@ Strict CI profile uses `pnpm run migration:check:strict` with enforced baseline:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `SUPABASE_VAULT_RPC_NAME`
+5. GitHub Actions setup order is mandatory:
+   - run `pnpm/action-setup` before `actions/setup-node` when using `cache: pnpm`.
 
 ## Database and Contract Flow
 
