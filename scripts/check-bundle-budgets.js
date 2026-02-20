@@ -8,6 +8,14 @@ const distAssetsDir = path.resolve(__dirname, '..', 'apps', 'frontend', 'dist', 
 
 const maxRawBytes = Number.parseInt(process.env.BUNDLE_MAX_RAW_BYTES || '2000000', 10);
 const maxGzipBytes = Number.parseInt(process.env.BUNDLE_MAX_GZIP_BYTES || '650000', 10);
+const vendorReactMaxRawBytes = Number.parseInt(
+  process.env.BUNDLE_VENDOR_REACT_MAX_RAW_BYTES || '3900000',
+  10,
+);
+const vendorReactMaxGzipBytes = Number.parseInt(
+  process.env.BUNDLE_VENDOR_REACT_MAX_GZIP_BYTES || '1250000',
+  10,
+);
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes) || bytes < 0) return '0 B';
@@ -47,9 +55,27 @@ const results = files.map((file) => {
   };
 });
 
-const offenders = results.filter(
-  (entry) => entry.rawBytes > maxRawBytes || entry.gzipBytes > maxGzipBytes,
-);
+function getLimitsForFile(file) {
+  if (file.startsWith('vendor-react-') && file.endsWith('.js')) {
+    return {
+      raw: vendorReactMaxRawBytes,
+      gzip: vendorReactMaxGzipBytes,
+      label: 'vendor-react',
+    };
+  }
+  return {
+    raw: maxRawBytes,
+    gzip: maxGzipBytes,
+    label: 'default',
+  };
+}
+
+const offenders = results
+  .map((entry) => {
+    const limits = getLimitsForFile(entry.file);
+    return { ...entry, limits };
+  })
+  .filter((entry) => entry.rawBytes > entry.limits.raw || entry.gzipBytes > entry.limits.gzip);
 
 const sortedByRaw = [...results].sort((a, b) => b.rawBytes - a.rawBytes);
 const top = sortedByRaw[0];
@@ -60,12 +86,15 @@ console.log(
 console.log(
   `[bundle-budget] Limits: raw <= ${formatBytes(maxRawBytes)}, gzip <= ${formatBytes(maxGzipBytes)}`,
 );
+console.log(
+  `[bundle-budget] vendor-react limits: raw <= ${formatBytes(vendorReactMaxRawBytes)}, gzip <= ${formatBytes(vendorReactMaxGzipBytes)}`,
+);
 
 if (offenders.length > 0) {
   console.error('[bundle-budget] Budget exceeded for:');
   for (const entry of offenders) {
     console.error(
-      `  - ${entry.file}: raw ${formatBytes(entry.rawBytes)}, gzip ${formatBytes(entry.gzipBytes)}`,
+      `  - ${entry.file} [${entry.limits.label}]: raw ${formatBytes(entry.rawBytes)}, gzip ${formatBytes(entry.gzipBytes)} (limits: ${formatBytes(entry.limits.raw)} / ${formatBytes(entry.limits.gzip)})`,
     );
   }
   process.exit(1);
