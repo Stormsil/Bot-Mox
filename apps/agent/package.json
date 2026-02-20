@@ -10,7 +10,7 @@
     "lint": "pnpm --dir ../.. exec biome check apps/agent/src",
     "typecheck": "tsc --noEmit",
     "contract:check": "pnpm --filter @botmox/api-contract contract:check",
-    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\" && pnpm run typecheck",
+    "test": "node --test --experimental-strip-types src/**/*.test.ts && pnpm run typecheck",
     "check": "pnpm run typecheck",
     "clean": "rimraf dist"
   },
