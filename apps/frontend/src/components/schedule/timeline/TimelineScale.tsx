@@ -1,5 +1,5 @@
 import type React from 'react';
-import styles from '../TimelineVisualizer.module.css';
+import { timelineStyles as styles } from '../timelineStyles';
 
 interface TimelineScaleProps {
   hours: number[];

@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { NoteBlockType } from '../../entities/notes/model/types';
-import styles from './NotesComponents.module.css';
+import styles from './SlashCommandMenu.module.css';
 
 const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 

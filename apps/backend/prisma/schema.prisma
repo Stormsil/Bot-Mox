@@ -1,0 +1,281 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Agent {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String   @map("tenant_id")
+  name             String   @default("")
+  status           String   @default("pending")
+  version          String?
+  platform         String?
+  capabilities     Json     @default("[]")
+  pairingCode      String?  @map("pairing_code")
+  pairingExpiresAt DateTime? @map("pairing_expires_at") @db.Timestamptz(6)
+  pairedAt         DateTime? @map("paired_at") @db.Timestamptz(6)
+  pairedBy         String?  @map("paired_by")
+  lastSeenAt       DateTime? @map("last_seen_at") @db.Timestamptz(6)
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz(6)
+  revokedBy        String?  @map("revoked_by")
+  revokeReason     String?  @map("revoke_reason")
+  metadata         Json     @default("{}")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  commands AgentCommand[]
+
+  @@index([tenantId, status], map: "idx_agents_tenant_status")
+  @@index([tenantId, createdAt(sort: Desc)], map: "idx_agents_tenant_created")
+  @@map("agents")
+}
+
+model AgentCommand {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String    @map("tenant_id")
+  agentId      String    @map("agent_id") @db.Uuid
+  commandType  String    @map("command_type")
+  payload      Json      @default("{}")
+  status       String    @default("queued")
+  result       Json?
+  errorMessage String?   @map("error_message")
+  queuedAt     DateTime  @default(now()) @map("queued_at") @db.Timestamptz(6)
+  startedAt    DateTime? @map("started_at") @db.Timestamptz(6)
+  completedAt  DateTime? @map("completed_at") @db.Timestamptz(6)
+  expiresAt    DateTime? @map("expires_at") @db.Timestamptz(6)
+  createdBy    String?   @map("created_by")
+  updatedAt    DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId, status, queuedAt], map: "idx_agent_commands_agent_status")
+  @@index([tenantId, queuedAt(sort: Desc)], map: "idx_agent_commands_tenant_created")
+  @@map("agent_commands")
+}
+
+model ResourceItem {
+  id        String
+  tenantId  String   @map("tenant_id")
+  kind      String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, kind, id])
+  @@index([tenantId, kind, updatedAt(sort: Desc)], map: "idx_resource_items_tenant_kind_updated")
+  @@map("resource_items")
+}
+
+model WorkspaceItem {
+  id        String
+  tenantId  String   @map("tenant_id")
+  kind      String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, kind, id])
+  @@index([tenantId, kind, updatedAt(sort: Desc)], map: "idx_workspace_items_tenant_kind_updated")
+  @@map("workspace_items")
+}
+
+model FinanceOperation {
+  id        String
+  tenantId  String   @map("tenant_id")
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_finance_operations_tenant_updated")
+  @@map("finance_operations")
+}
+
+model SecretMeta {
+  id        String
+  tenantId  String   @map("tenant_id")
+  label     String
+  alg       String
+  keyId     String   @map("key_id")
+  vaultRef  String?  @map("vault_ref")
+  materialVersion Int @default(1) @map("material_version")
+  aadMeta   Json     @map("aad_meta")
+  rotatedAt DateTime? @map("rotated_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_secret_meta_tenant_updated")
+  @@map("secret_meta")
+}
+
+model SecretBinding {
+  id        String
+  tenantId  String   @map("tenant_id")
+  scopeType String   @map("scope_type")
+  scopeId   String   @map("scope_id")
+  secretRef String   @map("secret_ref")
+  fieldName String   @map("field_name")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, scopeType, scopeId, fieldName], map: "ux_secret_binding_scope_field")
+  @@index([tenantId, scopeType, scopeId], map: "idx_secret_binding_scope")
+  @@map("secret_bindings")
+}
+
+model BotEntity {
+  id        String
+  tenantId  String   @map("tenant_id")
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_bot_entities_tenant_updated")
+  @@map("bot_entities")
+}
+
+model PlaybookItem {
+  id        String
+  tenantId  String   @map("tenant_id")
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_playbook_items_tenant_updated")
+  @@map("playbook_items")
+}
+
+model SettingsItem {
+  tenantId  String   @map("tenant_id")
+  path      String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, path])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_settings_items_tenant_updated")
+  @@map("settings_items")
+}
+
+model ThemeAssetItem {
+  id        String
+  tenantId  String   @map("tenant_id")
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_theme_asset_items_tenant_updated")
+  @@map("theme_asset_items")
+}
+
+model LicenseLeaseItem {
+  id        String
+  tenantId  String   @map("tenant_id")
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_license_lease_items_tenant_updated")
+  @@map("license_lease_items")
+}
+
+model ArtifactReleaseItem {
+  tenantId  String   @map("tenant_id")
+  id        Int
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_artifact_release_items_tenant_updated")
+  @@map("artifact_release_items")
+}
+
+model ArtifactAssignmentItem {
+  tenantId  String   @map("tenant_id")
+  id        Int
+  module    String
+  platform  String
+  channel   String
+  userKey   String   @map("user_key")
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, module, platform, channel, userKey], map: "ux_artifact_assignment_scope")
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_artifact_assignment_items_tenant_updated")
+  @@map("artifact_assignment_items")
+}
+
+model InfraVmItem {
+  tenantId  String   @map("tenant_id")
+  node      String
+  vmid      String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, node, vmid])
+  @@index([tenantId, node, updatedAt(sort: Desc)], map: "idx_infra_vm_items_tenant_node_updated")
+  @@map("infra_vm_items")
+}
+
+model InfraVmConfigItem {
+  tenantId  String   @map("tenant_id")
+  vmid      String
+  content   String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, vmid])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_infra_vm_config_items_tenant_updated")
+  @@map("infra_vm_config_items")
+}
+
+model ProvisioningProfileItem {
+  tenantId  String   @map("tenant_id")
+  id        String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_provisioning_profile_items_tenant_updated")
+  @@map("provisioning_profile_items")
+}
+
+model ProvisioningTokenItem {
+  token     String   @id
+  tenantId  String   @map("tenant_id")
+  payload   Json
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_provisioning_token_items_tenant_updated")
+  @@map("provisioning_token_items")
+}
+
+model ProvisioningProgressItem {
+  tenantId  String   @map("tenant_id")
+  id        String
+  vmUuid    String   @map("vm_uuid")
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, vmUuid, updatedAt(sort: Desc)], map: "idx_provisioning_progress_items_scope")
+  @@map("provisioning_progress_items")
+}

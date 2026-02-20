@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: Platform + DX  
-Last Updated: 2026-02-19  
+Last Updated: 2026-02-20  
 Applies To: Developers and AI agents  
 Non-goals: Production runbook  
 Related Checks: `docs:check`, `check:all:mono`
@@ -43,15 +43,37 @@ pnpm run agent:dev
 ## Required Quality Gates Before Merge
 
 1. `pnpm run check:all:mono`
+This gate includes `backend:test` and `agent:test` as mandatory sub-steps.
 2. `pnpm run docs:check`
 3. `pnpm run contract:check`
-4. `pnpm turbo run typecheck`
-5. `pnpm turbo run build`
-6. `pnpm run check:lockfiles`
-7. `pnpm run smoke:prodlike` for cross-app/runtime changes (frontend/backend/infra/auth flows).
+4. `pnpm run migration:check`
+5. `pnpm run backend:test`
+6. `pnpm run agent:test`
+7. `pnpm turbo run typecheck`
+8. `pnpm turbo run build`
+9. `pnpm run check:lockfiles`
+10. `pnpm run smoke:prodlike` for cross-app/runtime changes (frontend/backend/infra/auth flows).
 
 Documentation must be updated in the same PR for architecture/workflow-critical changes.
 This is enforced by `pnpm run docs:change:policy`.
+
+## Runtime Migration Flags (Hardening Waves)
+
+Use only allowed values validated by `pnpm run migration:check`:
+
+1. `AUTH_MODE=shadow|enforced`
+2. `AGENT_TRANSPORT=longpoll|ws|hybrid`
+3. `SECRETS_VAULT_MODE=shadow|enforced`
+
+Strict CI profile uses `pnpm run migration:check:strict` with enforced baseline:
+
+1. `AUTH_MODE=enforced`
+2. `AGENT_TRANSPORT=hybrid` (or `ws`)
+3. `SECRETS_VAULT_MODE=enforced`
+4. Vault env must be present:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_VAULT_RPC_NAME`
 
 ## Database and Contract Flow
 
@@ -107,6 +129,9 @@ pnpm run repo:reports
 ## Suggested Pre-Push Routine
 
 ```bash
+pnpm run migration:check
+pnpm run backend:test
+pnpm run agent:test
 pnpm run check:lockfiles
 pnpm run check:file-size:budgets
 pnpm run docs:check

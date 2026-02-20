@@ -21,7 +21,11 @@ export class ObservabilityController {
     const snapshot = this.observabilityService.getTraceSnapshot(headers);
     const parsed = diagnosticsTraceResponseSchema.safeParse(snapshot);
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'OBSERVABILITY_INVALID_TRACE_RESPONSE',
+        message: 'Invalid diagnostics trace response payload',
+        details: parsed.error.flatten(),
+      });
     }
     return {
       success: true,
@@ -33,7 +37,11 @@ export class ObservabilityController {
   ingestClientLogs(@Body() body: unknown): { success: true; data: unknown } {
     const parsed = clientLogsIngestSchema.safeParse(body ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'OBSERVABILITY_INVALID_CLIENT_LOGS_BODY',
+        message: 'Invalid client logs ingest payload',
+        details: parsed.error.flatten(),
+      });
     }
     const result = this.observabilityService.ingestClientLogs(parsed.data);
     return {

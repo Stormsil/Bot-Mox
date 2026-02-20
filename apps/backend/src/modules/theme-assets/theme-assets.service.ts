@@ -8,7 +8,9 @@ import type {
   themeAssetsListSchema,
 } from '@botmox/api-contract';
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import type { z } from 'zod';
+import { ThemeAssetsRepository } from './theme-assets.repository';
 
 type ThemeAsset = z.infer<typeof themeAssetSchema>;
 type ThemeAssetsList = z.infer<typeof themeAssetsListSchema>;
@@ -19,8 +21,17 @@ type ThemeAssetDeleteResult = z.infer<typeof themeAssetDeleteResultSchema>;
 
 @Injectable()
 export class ThemeAssetsService {
-  private readonly store = new Map<string, ThemeAsset>();
-  private readonly defaultTenantId = 'default';
+  constructor(private readonly repository: ThemeAssetsRepository) {}
+
+  private normalizeTenantId(tenantId: string): string {
+    const normalized = String(tenantId || '')
+      .trim()
+      .toLowerCase();
+    if (!normalized) {
+      throw new Error('tenantId is required');
+    }
+    return normalized;
+  }
 
   private makeAssetId(): string {
     return randomUUID();
@@ -41,19 +52,38 @@ export class ThemeAssetsService {
     return compact || 'background.png';
   }
 
-  listAssets(): ThemeAssetsList {
+  private clone<T>(value: T): T {
+    if (value === null || value === undefined) {
+      return value;
+    }
+    return JSON.parse(JSON.stringify(value)) as T;
+  }
+
+  private mapDbRowPayload(row: Record<string, unknown>): ThemeAsset {
+    return this.clone(row.payload as ThemeAsset);
+  }
+
+  async listAssets(tenantId: string): Promise<ThemeAssetsList> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const rows = await this.repository.listByTenant(normalizedTenantId);
     return {
       generated_at_ms: Date.now(),
-      items: [...this.store.values()].filter((item) => item.status !== 'deleted'),
+      items: rows
+        .map((row) => this.mapDbRowPayload(row))
+        .filter((item) => item.status !== 'deleted'),
     };
   }
 
-  createPresignedUpload(payload: ThemeAssetPresignUploadInput): ThemeAssetPresignUploadResponse {
+  async createPresignedUpload(
+    payload: ThemeAssetPresignUploadInput,
+    tenantId: string,
+  ): Promise<ThemeAssetPresignUploadResponse> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
     const now = Date.now();
     const nowIso = this.nowIso();
     const assetId = this.makeAssetId();
     const fileName = this.normalizeFileName(payload.filename);
-    const objectKey = `theme-assets/${this.defaultTenantId}/${assetId}-${fileName}`;
+    const objectKey = `theme-assets/${normalizedTenantId}/${assetId}-${fileName}`;
 
     const pending: ThemeAsset = {
       id: assetId,
@@ -68,7 +98,12 @@ export class ThemeAssetsService {
       created_at: nowIso,
       updated_at: nowIso,
     };
-    this.store.set(assetId, pending);
+
+    await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id: assetId,
+      payload: this.clone(pending) as Prisma.InputJsonValue,
+    });
 
     return {
       asset_id: assetId,
@@ -79,13 +114,13 @@ export class ThemeAssetsService {
     };
   }
 
-  completeUpload(payload: ThemeAssetCompleteInput): ThemeAsset | null {
-    const existing = this.store.get(payload.asset_id);
-    if (!existing || existing.status === 'deleted') {
-      return null;
-    }
+  async completeUpload(
+    payload: ThemeAssetCompleteInput,
+    tenantId: string,
+  ): Promise<ThemeAsset | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
 
-    const next: ThemeAsset = {
+    const buildNext = (existing: ThemeAsset): ThemeAsset => ({
       ...existing,
       status: 'ready',
       width: Number.isFinite(payload.width) ? Number(payload.width) : (existing.width ?? null),
@@ -93,32 +128,55 @@ export class ThemeAssetsService {
       image_url: `https://example.local/theme-assets/${existing.id}`,
       image_url_expires_at_ms: Date.now() + 300_000,
       updated_at: this.nowIso(),
-    };
-    this.store.set(existing.id, next);
+    });
+
+    const row = await this.repository.findById(normalizedTenantId, payload.asset_id);
+    if (!row) {
+      return null;
+    }
+    const existing = this.mapDbRowPayload(row);
+    if (!existing || existing.status === 'deleted') {
+      return null;
+    }
+    const next = buildNext(existing);
+    await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id: payload.asset_id,
+      payload: this.clone(next) as Prisma.InputJsonValue,
+    });
     return next;
   }
 
-  deleteAsset(assetId: string): ThemeAssetDeleteResult | null {
+  async deleteAsset(assetId: string, tenantId: string): Promise<ThemeAssetDeleteResult | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
     const normalizedId = String(assetId || '').trim();
     if (!normalizedId) {
       return null;
     }
 
-    const existing = this.store.get(normalizedId);
-    if (!existing || existing.status === 'deleted') {
-      return null;
-    }
-
-    const next: ThemeAsset = {
+    const buildNext = (existing: ThemeAsset): ThemeAsset => ({
       ...existing,
       status: 'deleted',
       updated_at: this.nowIso(),
-    };
-    this.store.set(normalizedId, next);
+    });
 
+    const row = await this.repository.findById(normalizedTenantId, normalizedId);
+    if (!row) {
+      return null;
+    }
+    const existing = this.mapDbRowPayload(row);
+    if (!existing || existing.status === 'deleted') {
+      return null;
+    }
+    const next = buildNext(existing);
+    await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id: normalizedId,
+      payload: this.clone(next) as Prisma.InputJsonValue,
+    });
     return {
       id: normalizedId,
-      status: 'deleted',
+      status: 'deleted' as const,
     };
   }
 }

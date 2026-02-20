@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import type { LicenseRepository } from '../license/license.repository';
+import { ArtifactsRepository } from './artifacts.repository';
 
 export interface ArtifactReleaseCreateInput {
   tenantId: string;
@@ -84,40 +86,32 @@ export class ArtifactsServiceError extends Error {
 
 @Injectable()
 export class ArtifactsService {
-  private readonly defaultTenantId = 'default';
-  private readonly releaseStore = new Map<number, ArtifactReleaseRecord>();
-  private readonly assignmentStore = new Map<string, ArtifactAssignmentRecord>();
-  private releaseIdSeq = 0;
-  private assignmentIdSeq = 0;
+  constructor(
+    private readonly repository: ArtifactsRepository,
+    private readonly licenseRepository: Pick<LicenseRepository, 'findActiveByToken'>,
+  ) {}
 
   private normalizeTenantId(tenantId: string | undefined): string {
-    return String(tenantId || this.defaultTenantId).trim() || this.defaultTenantId;
+    const normalized = String(tenantId || '')
+      .trim()
+      .toLowerCase();
+    if (!normalized) {
+      throw new Error('tenantId is required');
+    }
+    return normalized;
   }
 
   private normalizeString(value: string | undefined, fallback = ''): string {
     return String(value || fallback).trim();
   }
 
-  private assignmentKey(input: {
+  private buildRelease(input: {
     tenantId: string;
-    module: string;
-    platform: string;
-    channel: string;
-    userId: string | null;
-  }): string {
-    return [
-      this.normalizeTenantId(input.tenantId),
-      this.normalizeString(input.module).toLowerCase(),
-      this.normalizeString(input.platform).toLowerCase(),
-      this.normalizeString(input.channel).toLowerCase(),
-      this.normalizeString(input.userId || '__default__').toLowerCase(),
-    ].join(':');
-  }
-
-  createRelease(input: ArtifactReleaseCreateInput): ArtifactReleaseRecord {
-    this.releaseIdSeq += 1;
-    const release: ArtifactReleaseRecord = {
-      id: this.releaseIdSeq,
+    id: number;
+    payload: ArtifactReleaseCreateInput['payload'];
+  }) {
+    return {
+      id: input.id,
       tenant_id: this.normalizeTenantId(input.tenantId),
       module: this.normalizeString(input.payload.module),
       platform: this.normalizeString(input.payload.platform).toLowerCase(),
@@ -127,22 +121,37 @@ export class ArtifactsService {
       sha256: this.normalizeString(input.payload.sha256).toLowerCase(),
       size_bytes: Number(input.payload.size_bytes),
       status: input.payload.status,
-    };
-    this.releaseStore.set(release.id, release);
-    return release;
+    } satisfies ArtifactReleaseRecord;
   }
 
-  assignRelease(input: ArtifactAssignInput): ArtifactAssignmentRecord {
-    const releaseId = Number(input.payload.release_id);
-    const release = this.releaseStore.get(releaseId);
-    if (!release || release.tenant_id !== this.normalizeTenantId(input.tenantId)) {
+  async createRelease(input: ArtifactReleaseCreateInput): Promise<ArtifactReleaseRecord> {
+    const normalizedTenantId = this.normalizeTenantId(input.tenantId);
+    const nextId = await this.repository.getNextReleaseId(normalizedTenantId);
+    const release = this.buildRelease({
+      tenantId: normalizedTenantId,
+      id: nextId,
+      payload: input.payload,
+    });
+    return this.repository.upsertRelease({
+      tenantId: normalizedTenantId,
+      id: nextId,
+      payload: release,
+    });
+  }
+
+  async assignRelease(input: ArtifactAssignInput): Promise<ArtifactAssignmentRecord> {
+    const normalizedTenantId = this.normalizeTenantId(input.tenantId);
+    const release = await this.repository.findReleaseById(
+      normalizedTenantId,
+      Number(input.payload.release_id),
+    );
+    if (!release || release.tenant_id !== normalizedTenantId) {
       throw new ArtifactsServiceError(404, 'Artifact release not found');
     }
 
     const normalizedModule = this.normalizeString(input.payload.module);
     const normalizedPlatform = this.normalizeString(input.payload.platform).toLowerCase();
     const normalizedChannel = this.normalizeString(input.payload.channel, 'stable').toLowerCase();
-
     if (
       release.module.toLowerCase() !== normalizedModule.toLowerCase() ||
       release.platform.toLowerCase() !== normalizedPlatform ||
@@ -152,57 +161,61 @@ export class ArtifactsService {
     }
 
     const userId = this.normalizeString(input.payload.user_id || '') || null;
-    const key = this.assignmentKey({
-      tenantId: input.tenantId,
+    const userKey = this.normalizeString(userId || '__default__').toLowerCase();
+    const existing = await this.repository.findAssignmentByScope({
+      tenantId: normalizedTenantId,
       module: normalizedModule,
       platform: normalizedPlatform,
       channel: normalizedChannel,
-      userId,
+      userKey,
     });
-    const existing = this.assignmentStore.get(key);
+    const id = existing?.id ?? (await this.repository.getNextAssignmentId(normalizedTenantId));
     const record: ArtifactAssignmentRecord = {
-      id: existing?.id || ++this.assignmentIdSeq,
-      tenant_id: this.normalizeTenantId(input.tenantId),
+      id,
+      tenant_id: normalizedTenantId,
       module: normalizedModule,
       platform: normalizedPlatform,
       channel: normalizedChannel,
       user_id: userId,
-      release_id: releaseId,
+      release_id: Number(input.payload.release_id),
       is_default: !userId,
     };
-    this.assignmentStore.set(key, record);
-    return record;
+    return this.repository.upsertAssignmentByScope({
+      tenantId: normalizedTenantId,
+      id,
+      module: normalizedModule,
+      platform: normalizedPlatform,
+      channel: normalizedChannel,
+      userKey,
+      payload: record,
+    });
   }
 
-  getEffectiveAssignment(input: ArtifactAssignmentLookupInput): ArtifactEffectiveAssignment {
+  async getEffectiveAssignment(
+    input: ArtifactAssignmentLookupInput,
+  ): Promise<ArtifactEffectiveAssignment> {
     const normalizedTenantId = this.normalizeTenantId(input.tenantId);
     const normalizedModule = this.normalizeString(input.module);
     const normalizedPlatform = this.normalizeString(input.platform, 'windows').toLowerCase();
     const normalizedChannel = this.normalizeString(input.channel, 'stable').toLowerCase();
-    const normalizedUserId = this.normalizeString(input.userId) || null;
+    const normalizedUserKey = this.normalizeString(input.userId || '').toLowerCase();
 
-    const userAssignment = normalizedUserId
-      ? this.assignmentStore.get(
-          this.assignmentKey({
-            tenantId: normalizedTenantId,
-            module: normalizedModule,
-            platform: normalizedPlatform,
-            channel: normalizedChannel,
-            userId: normalizedUserId,
-          }),
-        ) || null
-      : null;
-
-    const defaultAssignment =
-      this.assignmentStore.get(
-        this.assignmentKey({
-          tenantId: normalizedTenantId,
-          module: normalizedModule,
-          platform: normalizedPlatform,
-          channel: normalizedChannel,
-          userId: null,
-        }),
-      ) || null;
+    const [userAssignment, defaultAssignment] = await Promise.all([
+      this.repository.findAssignmentByScope({
+        tenantId: normalizedTenantId,
+        module: normalizedModule,
+        platform: normalizedPlatform,
+        channel: normalizedChannel,
+        userKey: normalizedUserKey,
+      }),
+      this.repository.findAssignmentByScope({
+        tenantId: normalizedTenantId,
+        module: normalizedModule,
+        platform: normalizedPlatform,
+        channel: normalizedChannel,
+        userKey: '__default__',
+      }),
+    ]);
 
     return {
       user_assignment: userAssignment,
@@ -211,26 +224,49 @@ export class ArtifactsService {
     };
   }
 
-  resolveDownload(input: ArtifactResolveDownloadInput): {
+  async resolveDownload(input: ArtifactResolveDownloadInput): Promise<{
     download_url: string;
     url_expires_at: number;
     release_id: number;
     version: string;
     sha256: string;
     size_bytes: number;
-  } | null {
-    const assignment = this.getEffectiveAssignment({
-      tenantId: input.tenantId,
-      userId: 'lease-user',
-      module: input.module,
-      platform: input.platform,
-      channel: input.channel,
-    }).effective_assignment;
+  } | null> {
+    const normalizedTenantId = this.normalizeTenantId(input.tenantId);
+    const normalizedModule = this.normalizeString(input.module);
+    const normalizedPlatform = this.normalizeString(input.platform, 'windows').toLowerCase();
+    const normalizedChannel = this.normalizeString(input.channel, 'stable').toLowerCase();
+
+    const lease = await this.licenseRepository.findActiveByToken({
+      tenantId: normalizedTenantId,
+      token: this.normalizeString(input.leaseToken),
+      vmUuid: this.normalizeString(input.vmUuid),
+      module: normalizedModule,
+    });
+    if (!lease) {
+      return null;
+    }
+
+    const assignment =
+      (
+        await this.getEffectiveAssignment({
+          tenantId: normalizedTenantId,
+          userId: 'lease-user',
+          module: normalizedModule,
+          platform: normalizedPlatform,
+          channel: normalizedChannel,
+        })
+      ).effective_assignment ?? null;
 
     if (!assignment) {
       return null;
     }
-    const release = this.releaseStore.get(assignment.release_id);
+
+    const release = await this.repository.findReleaseById(
+      normalizedTenantId,
+      assignment.release_id,
+    );
+
     if (!release || release.status !== 'active') {
       return null;
     }

@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
+import { PlaybooksRepository } from './playbooks.repository';
 
 type PlaybookRecord = Record<string, unknown>;
 
@@ -19,7 +21,17 @@ export interface PlaybookValidationResult {
 
 @Injectable()
 export class PlaybooksService {
-  private readonly store = new Map<string, PlaybookRecord>();
+  constructor(private readonly repository: PlaybooksRepository) {}
+
+  private normalizeTenantId(tenantId: string): string {
+    const normalized = String(tenantId || '')
+      .trim()
+      .toLowerCase();
+    if (!normalized) {
+      throw new Error('tenantId is required');
+    }
+    return normalized;
+  }
 
   private makeId(): string {
     const stamp = Date.now().toString(36);
@@ -27,32 +39,58 @@ export class PlaybooksService {
     return `playbook-${stamp}-${random}`;
   }
 
-  private unsetExistingDefault(): void {
-    for (const [id, record] of this.store.entries()) {
-      if (record.is_default !== true) continue;
-      this.store.set(id, {
-        ...record,
-        is_default: false,
+  private async unsetExistingDefault(tenantId: string, exceptId?: string): Promise<void> {
+    const rows = await this.repository.list(tenantId);
+    for (const row of rows) {
+      const record = this.mapDbRow(row);
+      const id = String(record.id || '').trim();
+      if (!id || id === exceptId || record.is_default !== true) {
+        continue;
+      }
+      await this.repository.upsert({
+        tenantId,
+        id,
+        payload: {
+          ...record,
+          is_default: false,
+          updated_at: new Date().toISOString(),
+        } as Prisma.InputJsonValue,
       });
     }
   }
 
-  list(): PlaybookRecord[] {
-    return [...this.store.values()];
+  private mapDbRow(row: Record<string, unknown>): PlaybookRecord {
+    const id = String(row.id || '').trim();
+    const payload = row.payload;
+    if (payload && typeof payload === 'object') {
+      return { ...(payload as PlaybookRecord), ...(id ? { id } : {}) };
+    }
+    return id ? { id } : {};
   }
 
-  getById(id: string): PlaybookRecord | null {
-    return this.store.get(id) ?? null;
+  async list(tenantId: string): Promise<PlaybookRecord[]> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const rows = await this.repository.list(normalizedTenantId);
+    return rows.map((row) => this.mapDbRow(row));
   }
 
-  create(payload: PlaybookRecord): PlaybookRecord {
+  async getById(id: string, tenantId: string): Promise<PlaybookRecord | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const normalizedId = String(id || '').trim();
+
+    const row = await this.repository.findById(normalizedTenantId, normalizedId);
+    return row ? this.mapDbRow(row) : null;
+  }
+
+  async create(payload: PlaybookRecord, tenantId: string): Promise<PlaybookRecord> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
     const rawId = typeof payload.id === 'string' ? payload.id.trim() : '';
     const id = rawId || this.makeId();
     const isDefault = payload.is_default === true;
     const now = new Date().toISOString();
 
     if (isDefault) {
-      this.unsetExistingDefault();
+      await this.unsetExistingDefault(normalizedTenantId, id);
     }
 
     const next: PlaybookRecord = {
@@ -62,32 +100,50 @@ export class PlaybooksService {
       created_at: payload.created_at ?? now,
       updated_at: now,
     };
-    this.store.set(id, next);
-    return next;
+    const row = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id,
+      payload: next as Prisma.InputJsonValue,
+    });
+    return this.mapDbRow(row);
   }
 
-  update(id: string, payload: PlaybookRecord): PlaybookRecord | null {
-    const current = this.store.get(id);
+  async update(
+    id: string,
+    payload: PlaybookRecord,
+    tenantId: string,
+  ): Promise<PlaybookRecord | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const normalizedId = String(id || '').trim();
+    const row = await this.repository.findById(normalizedTenantId, normalizedId);
+    const current = row ? this.mapDbRow(row) : null;
+
     if (!current) return null;
 
     const nextIsDefault = payload.is_default === true;
     if (nextIsDefault) {
-      this.unsetExistingDefault();
+      await this.unsetExistingDefault(normalizedTenantId, normalizedId);
     }
 
     const next: PlaybookRecord = {
       ...current,
       ...payload,
-      id,
+      id: normalizedId,
       is_default: nextIsDefault ? true : current.is_default,
       updated_at: new Date().toISOString(),
     };
-    this.store.set(id, next);
-    return next;
+    const updatedRow = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id: normalizedId,
+      payload: next as Prisma.InputJsonValue,
+    });
+    return this.mapDbRow(updatedRow);
   }
 
-  remove(id: string): boolean {
-    return this.store.delete(id);
+  async remove(id: string, tenantId: string): Promise<boolean> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const normalizedId = String(id || '').trim();
+    return this.repository.delete(normalizedTenantId, normalizedId);
   }
 
   validate(content: string): PlaybookValidationResult {

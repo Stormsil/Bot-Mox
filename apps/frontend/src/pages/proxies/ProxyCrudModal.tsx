@@ -1,23 +1,4 @@
-import {
-  CheckCircleOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined,
-  SafetyOutlined,
-} from '@ant-design/icons';
-import {
-  Alert,
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  Modal,
-  message,
-  Select,
-  Space,
-  Spin,
-  Tag,
-  Typography,
-} from 'antd';
+import { DatePicker, Form, Input, Modal, message, Select } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -31,12 +12,12 @@ import {
   useUpdateProxyMutation,
 } from '../../entities/resources/api/useProxyMutations';
 import type { IPQSResponse, Proxy as ProxyResource } from '../../types';
-import { getCountryFlag, parseProxyString } from '../../utils/proxyUtils';
+import { parseProxyString } from '../../utils/proxyUtils';
 import type { ProxyWithBot } from './proxyColumns';
+import { ParsedProxyAlert, ProxyIpqsLoadingAlert, ProxyIpqsResultAlert } from './proxyCrudAlerts';
 
 const { Option } = Select;
 const { TextArea } = Input;
-const { Text } = Typography;
 
 interface ProxyCrudModalProps {
   open: boolean;
@@ -297,82 +278,16 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
         </Form.Item>
 
         {parsedProxy && (
-          <Alert
-            message="Proxy Parsed Successfully"
-            description={
-              <Space direction="vertical" size={4}>
-                <Text>
-                  <strong>IP:</strong> {parsedProxy.ip}
-                </Text>
-                <Text>
-                  <strong>Port:</strong> {parsedProxy.port}
-                </Text>
-                <Text>
-                  <strong>Login:</strong> {parsedProxy.login}
-                </Text>
-                <Text>
-                  <strong>Password:</strong>{' '}
-                  {showPassword ? parsedProxy.password : '•'.repeat(parsedProxy.password.length)}
-                </Text>
-                <Text>
-                  <strong>Type:</strong> {parsedProxy.type.toUpperCase()}
-                </Text>
-              </Space>
-            }
-            type="success"
-            showIcon
-            icon={<CheckCircleOutlined />}
-            style={{ marginBottom: 16 }}
-            action={
-              <Button
-                size="small"
-                type="text"
-                icon={showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                onClick={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </Button>
-            }
+          <ParsedProxyAlert
+            parsedProxy={parsedProxy}
+            showPassword={showPassword}
+            onTogglePassword={() => setShowPassword((prev) => !prev)}
           />
         )}
 
-        {!editingProxy && checkingIPQS && (
-          <Alert
-            message="Checking IP Quality..."
-            description={<Spin size="small" />}
-            type="info"
-            style={{ marginBottom: 16 }}
-          />
-        )}
+        {!editingProxy && checkingIPQS && <ProxyIpqsLoadingAlert />}
 
-        {!editingProxy && ipqsData && (
-          <Alert
-            message={`IP Quality Check - Score: ${ipqsData.fraud_score}`}
-            description={
-              <Space direction="vertical" size={4}>
-                <Space>
-                  <span style={{ fontSize: '20px' }}>{getCountryFlag(ipqsData.country_code)}</span>
-                  <Text>
-                    <strong>Country:</strong> {ipqsData.country_code}
-                  </Text>
-                </Space>
-                <Text>
-                  <strong>City:</strong> {ipqsData.city}, {ipqsData.region}
-                </Text>
-                <Space size={8}>
-                  {ipqsData.vpn && <Tag color="orange">VPN</Tag>}
-                  {ipqsData.proxy && <Tag color="blue">Proxy</Tag>}
-                  {ipqsData.tor && <Tag color="red">TOR</Tag>}
-                  {ipqsData.bot_status && <Tag color="purple">Bot</Tag>}
-                </Space>
-              </Space>
-            }
-            type={ipqsData.fraud_score > 50 ? 'warning' : 'success'}
-            showIcon
-            icon={<SafetyOutlined />}
-            style={{ marginBottom: 16 }}
-          />
-        )}
+        {!editingProxy && ipqsData && <ProxyIpqsResultAlert ipqsData={ipqsData} />}
 
         <Form.Item
           name="bot_id"

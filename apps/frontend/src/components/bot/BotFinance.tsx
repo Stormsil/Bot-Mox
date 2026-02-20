@@ -22,6 +22,7 @@ import type React from 'react';
 import { useState } from 'react';
 import type { Bot } from '../../types';
 import styles from './BotFinance.module.css';
+import { mockTransactions } from './botFinanceData';
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -29,92 +30,6 @@ const { RangePicker } = DatePicker;
 interface BotFinanceProps {
   bot: Bot;
 }
-
-interface TransactionRecord {
-  id: string;
-  date: string;
-  type: 'income' | 'expense';
-  category: string;
-  description: string;
-  amount: number;
-  currency: string;
-}
-
-// Моковые данные транзакций
-const mockTransactions: TransactionRecord[] = [
-  {
-    id: '1',
-    date: '2024-01-28',
-    type: 'income',
-    category: 'Farming',
-    description: 'Gold farmed - Shadowmoon Valley',
-    amount: 1250,
-    currency: 'gold',
-  },
-  {
-    id: '2',
-    date: '2024-01-28',
-    type: 'expense',
-    category: 'Proxy',
-    description: 'Proxy renewal',
-    amount: 5,
-    currency: 'USD',
-  },
-  {
-    id: '3',
-    date: '2024-01-27',
-    type: 'income',
-    category: 'Farming',
-    description: 'Gold farmed - Nagrand',
-    amount: 980,
-    currency: 'gold',
-  },
-  {
-    id: '4',
-    date: '2024-01-27',
-    type: 'expense',
-    category: 'Subscription',
-    description: 'Bot subscription',
-    amount: 25,
-    currency: 'USD',
-  },
-  {
-    id: '5',
-    date: '2024-01-26',
-    type: 'income',
-    category: 'Farming',
-    description: 'Gold farmed - Netherstorm',
-    amount: 1450,
-    currency: 'gold',
-  },
-  {
-    id: '6',
-    date: '2024-01-26',
-    type: 'expense',
-    category: 'Session',
-    description: 'Game time',
-    amount: 2,
-    currency: 'USD',
-  },
-  {
-    id: '7',
-    date: '2024-01-25',
-    type: 'income',
-    category: 'Farming',
-    description: 'Gold farmed - Terokkar',
-    amount: 1100,
-    currency: 'gold',
-  },
-  {
-    id: '8',
-    date: '2024-01-25',
-    type: 'expense',
-    category: 'Proxy',
-    description: 'Proxy renewal',
-    amount: 5,
-    currency: 'USD',
-  },
-];
 
 type Transaction = (typeof mockTransactions)[number];
 
@@ -189,7 +104,6 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
 
   return (
     <div className={styles['bot-finance']}>
-      {/* Финансовая сводка */}
       <Row gutter={[16, 16]} className={styles['finance-summary']}>
         <Col span={8}>
           <Card className={styles['finance-stat-card']} styles={{ body: { padding: 20 } }}>
@@ -256,7 +170,6 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
         </Col>
       </Row>
 
-      {/* Детализация затрат */}
       <Row gutter={[16, 16]} className={styles['costs-breakdown']}>
         <Col span={12}>
           <Card
@@ -320,7 +233,6 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
         </Col>
       </Row>
 
-      {/* Таблица транзакций */}
       <Card
         className={styles['transactions-card']}
         styles={{

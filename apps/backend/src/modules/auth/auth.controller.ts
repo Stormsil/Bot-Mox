@@ -5,24 +5,28 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  private resolveIdentity(authorization: string | undefined): {
+  private async resolveIdentity(authorization: string | undefined): Promise<{
     uid: string;
     email: string;
     roles: string[];
-  } {
-    const identity = this.authService.verifyBearerToken(authorization);
+    tenantId: string;
+  }> {
+    const identity = await this.authService.verifyBearerToken(authorization);
     if (!identity) {
-      throw new UnauthorizedException('Missing bearer token');
+      throw new UnauthorizedException({
+        code: 'MISSING_BEARER_TOKEN',
+        message: 'Missing bearer token',
+      });
     }
     return identity;
   }
 
   @Get('verify')
-  verify(@Headers('authorization') authorization: string | undefined): {
+  async verify(@Headers('authorization') authorization: string | undefined): Promise<{
     success: true;
     data: { valid: true };
-  } {
-    this.resolveIdentity(authorization);
+  }> {
+    await this.resolveIdentity(authorization);
     return {
       success: true,
       data: { valid: true },
@@ -30,14 +34,19 @@ export class AuthController {
   }
 
   @Get('whoami')
-  whoami(@Headers('authorization') authorization: string | undefined): {
+  async whoami(@Headers('authorization') authorization: string | undefined): Promise<{
     success: true;
-    data: { uid: string; email: string; roles: string[] };
-  } {
-    const identity = this.resolveIdentity(authorization);
+    data: { uid: string; email: string; roles: string[]; tenant_id: string };
+  }> {
+    const identity = await this.resolveIdentity(authorization);
     return {
       success: true,
-      data: identity,
+      data: {
+        uid: identity.uid,
+        email: identity.email,
+        roles: identity.roles,
+        tenant_id: identity.tenantId,
+      },
     };
   }
 }

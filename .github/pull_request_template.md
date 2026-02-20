@@ -4,6 +4,13 @@
 
 ## Architecture Impact
 
+## Observability Impact
+
+## Regression Guard
+
+- Tests/checks added or updated:
+- Incident prevention note:
+
 ## Documentation Impact
 
 ## Hotspot Impact
@@ -17,6 +24,8 @@
 - [ ] `pnpm run check:all:mono`
 - [ ] `pnpm run docs:check`
 - [ ] `pnpm run check:lockfiles`
+- [ ] `pnpm run backend:test`
+- [ ] `pnpm run agent:test`
 
 ## Risks and Rollback
 

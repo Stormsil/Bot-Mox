@@ -16,9 +16,12 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UnauthorizedException,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { z } from 'zod';
+import { getRequestIdentity } from '../auth/request-identity.util';
 import { type BotsListQuery, BotsService, BotsServiceValidationError } from './bots.service';
 
 const botIdSchema = z
@@ -33,14 +36,21 @@ export class BotsController {
 
   private ensureAuthHeader(authorization: string | undefined): void {
     if (!authorization) {
-      throw new UnauthorizedException('Missing bearer token');
+      throw new UnauthorizedException({
+        code: 'MISSING_BEARER_TOKEN',
+        message: 'Missing bearer token',
+      });
     }
   }
 
   private parseId(id: string): string {
     const parsed = botIdSchema.safeParse(String(id || ''));
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'BOTS_INVALID_ID',
+        message: 'Invalid bot id',
+        details: parsed.error.flatten(),
+      });
     }
     return parsed.data;
   }
@@ -48,7 +58,11 @@ export class BotsController {
   private parseListQuery(query: Record<string, unknown>): BotsListQuery {
     const parsed = botListQuerySchema.safeParse(query ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'BOTS_INVALID_LIST_QUERY',
+        message: 'Invalid bots list query payload',
+        details: parsed.error.flatten(),
+      });
     }
     return parsed.data;
   }
@@ -56,7 +70,11 @@ export class BotsController {
   private parseMutationBody(body: unknown): Record<string, unknown> {
     const parsed = botMutationSchema.safeParse(body ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'BOTS_INVALID_MUTATION_BODY',
+        message: 'Invalid bot mutation payload',
+        details: parsed.error.flatten(),
+      });
     }
     return parsed.data;
   }
@@ -66,7 +84,11 @@ export class BotsController {
   } {
     const parsed = botLifecycleTransitionSchema.safeParse(body ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'BOTS_INVALID_TRANSITION_BODY',
+        message: 'Invalid bot transition payload',
+        details: parsed.error.flatten(),
+      });
     }
     return parsed.data;
   }
@@ -74,19 +96,29 @@ export class BotsController {
   private parseBanBody(body: unknown): Record<string, unknown> {
     const parsed = botBanDetailsSchema.safeParse(body ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'BOTS_INVALID_BAN_BODY',
+        message: 'Invalid bot ban payload',
+        details: parsed.error.flatten(),
+      });
     }
     return parsed.data;
   }
 
   @Get()
-  list(
+  async list(
     @Headers('authorization') authorization: string | undefined,
     @Query() query: Record<string, unknown>,
-  ): { success: true; data: unknown[]; meta: { total: number; page: number; limit: number } } {
+    @Req() req: Request,
+  ): Promise<{
+    success: true;
+    data: unknown[];
+    meta: { total: number; page: number; limit: number };
+  }> {
     this.ensureAuthHeader(authorization);
     const parsedQuery = this.parseListQuery(query);
-    const result = this.botsService.list(parsedQuery);
+    const identity = getRequestIdentity(req);
+    const result = await this.botsService.list(parsedQuery, identity.tenantId);
     return {
       success: true,
       data: result.items,
@@ -99,15 +131,20 @@ export class BotsController {
   }
 
   @Get(':id')
-  getOne(
+  async getOne(
     @Headers('authorization') authorization: string | undefined,
     @Param('id') id: string,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
-    const entity = this.botsService.getById(parsedId);
+    const identity = getRequestIdentity(req);
+    const entity = await this.botsService.getById(parsedId, identity.tenantId);
     if (!entity) {
-      throw new NotFoundException('Bot not found');
+      throw new NotFoundException({
+        code: 'BOT_NOT_FOUND',
+        message: 'Bot not found',
+      });
     }
     return {
       success: true,
@@ -116,31 +153,38 @@ export class BotsController {
   }
 
   @Post()
-  create(
+  async create(
     @Headers('authorization') authorization: string | undefined,
     @Body() body: unknown,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
     const parsedBody = this.parseMutationBody(body);
     const explicitId = typeof parsedBody.id === 'string' ? parsedBody.id.trim() : undefined;
+    const identity = getRequestIdentity(req);
     return {
       success: true,
-      data: this.botsService.create(parsedBody, explicitId),
+      data: await this.botsService.create(parsedBody, explicitId, identity.tenantId),
     };
   }
 
   @Patch(':id')
-  patch(
+  async patch(
     @Headers('authorization') authorization: string | undefined,
     @Param('id') id: string,
     @Body() body: unknown,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
     const parsedBody = this.parseMutationBody(body);
-    const updated = this.botsService.patch(parsedId, parsedBody);
+    const identity = getRequestIdentity(req);
+    const updated = await this.botsService.patch(parsedId, parsedBody, identity.tenantId);
     if (!updated) {
-      throw new NotFoundException('Bot not found');
+      throw new NotFoundException({
+        code: 'BOT_NOT_FOUND',
+        message: 'Bot not found',
+      });
     }
     return {
       success: true,
@@ -149,32 +193,42 @@ export class BotsController {
   }
 
   @Get(':id/lifecycle')
-  getLifecycle(
+  async getLifecycle(
     @Headers('authorization') authorization: string | undefined,
     @Param('id') id: string,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
-    const entity = this.botsService.getById(parsedId);
+    const identity = getRequestIdentity(req);
+    const entity = await this.botsService.getById(parsedId, identity.tenantId);
     if (!entity) {
-      throw new NotFoundException('Bot not found');
+      throw new NotFoundException({
+        code: 'BOT_NOT_FOUND',
+        message: 'Bot not found',
+      });
     }
     return {
       success: true,
-      data: this.botsService.getLifecycle(parsedId),
+      data: await this.botsService.getLifecycle(parsedId, identity.tenantId),
     };
   }
 
   @Get(':id/lifecycle/transitions')
-  getLifecycleTransitions(
+  async getLifecycleTransitions(
     @Headers('authorization') authorization: string | undefined,
     @Param('id') id: string,
-  ): { success: true; data: unknown[] } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown[] }> {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
-    const transitions = this.botsService.getStageTransitions(parsedId);
+    const identity = getRequestIdentity(req);
+    const transitions = await this.botsService.getStageTransitions(parsedId, identity.tenantId);
     if (!transitions) {
-      throw new NotFoundException('Bot not found');
+      throw new NotFoundException({
+        code: 'BOT_NOT_FOUND',
+        message: 'Bot not found',
+      });
     }
     return {
       success: true,
@@ -183,15 +237,20 @@ export class BotsController {
   }
 
   @Get(':id/lifecycle/is-banned')
-  isLifecycleBanned(
+  async isLifecycleBanned(
     @Headers('authorization') authorization: string | undefined,
     @Param('id') id: string,
-  ): { success: true; data: { banned: boolean } } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: { banned: boolean } }> {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
-    const banned = this.botsService.isBanned(parsedId);
+    const identity = getRequestIdentity(req);
+    const banned = await this.botsService.isBanned(parsedId, identity.tenantId);
     if (banned === null) {
-      throw new NotFoundException('Bot not found');
+      throw new NotFoundException({
+        code: 'BOT_NOT_FOUND',
+        message: 'Bot not found',
+      });
     }
     return {
       success: true,
@@ -202,19 +261,28 @@ export class BotsController {
   }
 
   @Post(':id/lifecycle/transition')
-  transitionLifecycle(
+  async transitionLifecycle(
     @Headers('authorization') authorization: string | undefined,
     @Param('id') id: string,
     @Body() body: unknown,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
     const parsedBody = this.parseTransitionBody(body);
+    const identity = getRequestIdentity(req);
 
     try {
-      const updated = this.botsService.transition(parsedId, parsedBody.status);
+      const updated = await this.botsService.transition(
+        parsedId,
+        parsedBody.status,
+        identity.tenantId,
+      );
       if (!updated) {
-        throw new NotFoundException('Bot not found');
+        throw new NotFoundException({
+          code: 'BOT_NOT_FOUND',
+          message: 'Bot not found',
+        });
       }
       return {
         success: true,
@@ -223,24 +291,32 @@ export class BotsController {
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       if (error instanceof BotsServiceValidationError) {
-        throw new BadRequestException(error.message);
+        throw new BadRequestException({
+          code: 'BOTS_TRANSITION_VALIDATION_FAILED',
+          message: error.message,
+        });
       }
       throw error;
     }
   }
 
   @Post(':id/lifecycle/ban')
-  banLifecycle(
+  async banLifecycle(
     @Headers('authorization') authorization: string | undefined,
     @Param('id') id: string,
     @Body() body: unknown,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
     const parsedBody = this.parseBanBody(body);
-    const updated = this.botsService.ban(parsedId, parsedBody);
+    const identity = getRequestIdentity(req);
+    const updated = await this.botsService.ban(parsedId, parsedBody, identity.tenantId);
     if (!updated) {
-      throw new NotFoundException('Bot not found');
+      throw new NotFoundException({
+        code: 'BOT_NOT_FOUND',
+        message: 'Bot not found',
+      });
     }
     return {
       success: true,
@@ -249,17 +325,22 @@ export class BotsController {
   }
 
   @Post(':id/lifecycle/unban')
-  unbanLifecycle(
+  async unbanLifecycle(
     @Headers('authorization') authorization: string | undefined,
     @Param('id') id: string,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
+    const identity = getRequestIdentity(req);
 
     try {
-      const updated = this.botsService.unban(parsedId);
+      const updated = await this.botsService.unban(parsedId, identity.tenantId);
       if (!updated) {
-        throw new NotFoundException('Bot not found');
+        throw new NotFoundException({
+          code: 'BOT_NOT_FOUND',
+          message: 'Bot not found',
+        });
       }
       return {
         success: true,
@@ -268,22 +349,30 @@ export class BotsController {
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       if (error instanceof BotsServiceValidationError) {
-        throw new BadRequestException(error.message);
+        throw new BadRequestException({
+          code: 'BOTS_UNBAN_VALIDATION_FAILED',
+          message: error.message,
+        });
       }
       throw error;
     }
   }
 
   @Delete(':id')
-  remove(
+  async remove(
     @Headers('authorization') authorization: string | undefined,
     @Param('id') id: string,
-  ): { success: true; data: { id: string; deleted: boolean } } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: { id: string; deleted: boolean } }> {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
-    const deleted = this.botsService.remove(parsedId);
+    const identity = getRequestIdentity(req);
+    const deleted = await this.botsService.remove(parsedId, identity.tenantId);
     if (!deleted) {
-      throw new NotFoundException('Bot not found');
+      throw new NotFoundException({
+        code: 'BOT_NOT_FOUND',
+        message: 'Bot not found',
+      });
     }
     return {
       success: true,

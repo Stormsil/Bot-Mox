@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: Agent Platform  
-Last Updated: 2026-02-19  
+Last Updated: 2026-02-20  
 Applies To: `apps/agent`  
 Non-goals: Alternate desktop runtimes  
 Related Checks: `agent:typecheck`, `contract:check`
@@ -17,10 +17,19 @@ Related Checks: `agent:typecheck`, `contract:check`
 ## Operational Flow
 
 1. Pair/register against backend APIs.
-2. Send heartbeat.
-3. Poll command queue.
-4. Execute command locally.
-5. Report command status/result.
+2. Prefer WS channel for heartbeat/command flow (`AGENT_TRANSPORT=ws|hybrid`), fallback to HTTP in `hybrid`.
+3. Receive next command (WS-first), execute locally.
+4. Report command status/result (WS-first).
+5. Apply reconnect backoff policy for WS transport and preserve bounded fallback behavior.
+
+## WS Reliability Policy
+
+1. WS reconnect uses exponential backoff with jitter.
+2. Backoff is configurable:
+   - `BOTMOX_AGENT_WS_RECONNECT_BASE_MS`
+   - `BOTMOX_AGENT_WS_RECONNECT_MAX_MS`
+   - `BOTMOX_AGENT_WS_RECONNECT_JITTER`
+3. Agent emits structured events when WS is unavailable/recovered and when heartbeat falls back to HTTP.
 
 ## Hard Rules
 

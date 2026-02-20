@@ -17,8 +17,11 @@ import {
   Param,
   Post,
   Query,
+  Req,
   UnauthorizedException,
 } from '@nestjs/common';
+import type { Request } from 'express';
+import { getRequestIdentity } from '../auth/request-identity.util';
 import { ArtifactsService, ArtifactsServiceError } from './artifacts.service';
 
 @Controller('artifacts')
@@ -27,23 +30,32 @@ export class ArtifactsController {
 
   private ensureAuthorization(authorization: string | undefined): void {
     if (!authorization) {
-      throw new UnauthorizedException('Missing bearer token');
+      throw new UnauthorizedException({
+        code: 'MISSING_BEARER_TOKEN',
+        message: 'Missing bearer token',
+      });
     }
   }
 
   @Post('releases')
-  createRelease(
+  async createRelease(
     @Headers('authorization') authorization: string | undefined,
     @Body() body: unknown,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthorization(authorization);
+    const identity = getRequestIdentity(req);
     const parsed = artifactReleaseCreateSchema.safeParse(body ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'INVALID_REQUEST_BODY',
+        message: 'Invalid artifact release request body',
+        details: parsed.error.flatten(),
+      });
     }
 
-    const release = this.artifactsService.createRelease({
-      tenantId: 'default',
+    const release = await this.artifactsService.createRelease({
+      tenantId: identity.tenantId,
       payload: parsed.data,
     });
     return {
@@ -53,19 +65,25 @@ export class ArtifactsController {
   }
 
   @Post('assign')
-  assignRelease(
+  async assignRelease(
     @Headers('authorization') authorization: string | undefined,
     @Body() body: unknown,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthorization(authorization);
+    const identity = getRequestIdentity(req);
     const parsed = artifactAssignSchema.safeParse(body ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'INVALID_REQUEST_BODY',
+        message: 'Invalid artifact assignment request body',
+        details: parsed.error.flatten(),
+      });
     }
 
     try {
-      const assignment = this.artifactsService.assignRelease({
-        tenantId: 'default',
+      const assignment = await this.artifactsService.assignRelease({
+        tenantId: identity.tenantId,
         payload: parsed.data,
       });
       return {
@@ -74,34 +92,50 @@ export class ArtifactsController {
       };
     } catch (error) {
       if (error instanceof ArtifactsServiceError && error.status === 404) {
-        throw new NotFoundException(error.message);
+        throw new NotFoundException({
+          code: 'ARTIFACT_RELEASE_NOT_FOUND',
+          message: error.message,
+        });
       }
       if (error instanceof ArtifactsServiceError && error.status === 409) {
-        throw new ConflictException(error.message);
+        throw new ConflictException({
+          code: 'ARTIFACT_SCOPE_MISMATCH',
+          message: error.message,
+        });
       }
       throw error;
     }
   }
 
   @Get('assign/:userId/:module')
-  getEffectiveAssignment(
+  async getEffectiveAssignment(
     @Headers('authorization') authorization: string | undefined,
     @Param() pathParams: Record<string, unknown>,
     @Query() query: Record<string, unknown>,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthorization(authorization);
+    const identity = getRequestIdentity(req);
 
     const parsedPath = artifactAssignmentPathSchema.safeParse(pathParams ?? {});
     if (!parsedPath.success) {
-      throw new BadRequestException(parsedPath.error.flatten());
+      throw new BadRequestException({
+        code: 'INVALID_PATH_PARAMS',
+        message: 'Invalid artifact assignment path params',
+        details: parsedPath.error.flatten(),
+      });
     }
     const parsedQuery = artifactAssignmentQuerySchema.safeParse(query ?? {});
     if (!parsedQuery.success) {
-      throw new BadRequestException(parsedQuery.error.flatten());
+      throw new BadRequestException({
+        code: 'INVALID_QUERY_PARAMS',
+        message: 'Invalid artifact assignment query params',
+        details: parsedQuery.error.flatten(),
+      });
     }
 
-    const assignment = this.artifactsService.getEffectiveAssignment({
-      tenantId: 'default',
+    const assignment = await this.artifactsService.getEffectiveAssignment({
+      tenantId: identity.tenantId,
       userId: parsedPath.data.userId,
       module: parsedPath.data.module,
       platform: parsedQuery.data.platform,
@@ -115,18 +149,24 @@ export class ArtifactsController {
 
   @Post('resolve-download')
   @HttpCode(200)
-  resolveDownload(
+  async resolveDownload(
     @Headers('authorization') authorization: string | undefined,
     @Body() body: unknown,
-  ): { success: true; data: unknown } {
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthorization(authorization);
+    const identity = getRequestIdentity(req);
     const parsed = artifactResolveDownloadSchema.safeParse(body ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'INVALID_REQUEST_BODY',
+        message: 'Invalid artifact resolve-download request body',
+        details: parsed.error.flatten(),
+      });
     }
 
-    const resolved = this.artifactsService.resolveDownload({
-      tenantId: 'default',
+    const resolved = await this.artifactsService.resolveDownload({
+      tenantId: identity.tenantId,
       leaseToken: parsed.data.lease_token,
       vmUuid: parsed.data.vm_uuid,
       module: parsed.data.module,
@@ -134,7 +174,10 @@ export class ArtifactsController {
       channel: parsed.data.channel,
     });
     if (!resolved) {
-      throw new NotFoundException('Artifact assignment not found');
+      throw new NotFoundException({
+        code: 'ARTIFACT_RESOLUTION_NOT_FOUND',
+        message: 'Artifact assignment not found',
+      });
     }
 
     return {

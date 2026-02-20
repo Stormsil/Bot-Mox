@@ -7,6 +7,8 @@ import {
   settingsProxySchema,
 } from '@botmox/api-contract';
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
+import { SettingsRepository } from './settings.repository';
 
 type SettingsApiKeys = import('zod').infer<typeof settingsApiKeysSchema>;
 type SettingsApiKeysMutation = import('zod').infer<typeof settingsApiKeysMutationSchema>;
@@ -27,7 +29,17 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 @Injectable()
 export class SettingsService {
-  private readonly store = new Map<string, unknown>();
+  constructor(private readonly repository: SettingsRepository) {}
+
+  private normalizeTenantId(tenantId: string): string {
+    const normalized = String(tenantId || '')
+      .trim()
+      .toLowerCase();
+    if (!normalized) {
+      throw new Error('tenantId is required');
+    }
+    return normalized;
+  }
 
   private clone<T>(value: T): T {
     if (value === null || value === undefined) {
@@ -36,61 +48,90 @@ export class SettingsService {
     return JSON.parse(JSON.stringify(value)) as T;
   }
 
+  private mapDbRowPayload(row: Record<string, unknown>): unknown {
+    return this.clone(row.payload);
+  }
+
   private readPath<T>(
+    tenantId: string,
     path: string,
     schema: { safeParse: (value: unknown) => { success: true; data: T } | { success: false } },
-  ): T | null {
-    const rawValue = this.clone(this.store.get(path));
-    const parsed = schema.safeParse(rawValue);
-    if (!parsed.success) {
-      return null;
-    }
-    return parsed.data;
+  ): Promise<T | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    return this.repository.findByPath(normalizedTenantId, path).then((row) => {
+      if (!row) {
+        return null;
+      }
+      const parsed = schema.safeParse(this.mapDbRowPayload(row));
+      if (!parsed.success) {
+        return null;
+      }
+      return parsed.data;
+    });
   }
 
   private mergePath<T>(
+    tenantId: string,
     path: string,
     payload: unknown,
     schema: { safeParse: (value: unknown) => { success: true; data: T } | { success: false } },
-  ): T {
-    const current = this.store.get(path);
-    let next: unknown = payload;
-    if (isPlainObject(current) && isPlainObject(payload)) {
-      next = { ...current, ...payload };
-    }
+  ): Promise<T> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
 
-    this.store.set(path, this.clone(next));
-    const parsed = schema.safeParse(this.store.get(path));
-    if (!parsed.success) {
-      throw new Error(`Invalid settings payload for ${path}`);
-    }
-    return parsed.data;
+    const computeNext = (current: unknown): unknown => {
+      let next: unknown = payload;
+      if (isPlainObject(current) && isPlainObject(payload)) {
+        next = { ...current, ...payload };
+      }
+      return next;
+    };
+
+    return this.repository.findByPath(normalizedTenantId, path).then(async (existing) => {
+      const current = existing ? this.mapDbRowPayload(existing) : null;
+      const next = computeNext(current);
+      const row = await this.repository.upsert({
+        tenantId: normalizedTenantId,
+        path,
+        payload: this.clone(next) as Prisma.InputJsonValue,
+      });
+      const parsed = schema.safeParse(this.mapDbRowPayload(row));
+      if (!parsed.success) {
+        throw new Error(`Invalid settings payload for ${path}`);
+      }
+      return parsed.data;
+    });
   }
 
-  getApiKeys(): SettingsApiKeys | null {
-    return this.readPath(SETTINGS_API_KEYS_PATH, settingsApiKeysSchema);
+  getApiKeys(tenantId: string): Promise<SettingsApiKeys | null> {
+    return this.readPath(tenantId, SETTINGS_API_KEYS_PATH, settingsApiKeysSchema);
   }
 
-  updateApiKeys(payload: SettingsApiKeysMutation): SettingsApiKeys {
-    return this.mergePath(SETTINGS_API_KEYS_PATH, payload, settingsApiKeysSchema);
+  updateApiKeys(payload: SettingsApiKeysMutation, tenantId: string): Promise<SettingsApiKeys> {
+    return this.mergePath(tenantId, SETTINGS_API_KEYS_PATH, payload, settingsApiKeysSchema);
   }
 
-  getProxy(): SettingsProxy | null {
-    return this.readPath(SETTINGS_PROXY_PATH, settingsProxySchema);
+  getProxy(tenantId: string): Promise<SettingsProxy | null> {
+    return this.readPath(tenantId, SETTINGS_PROXY_PATH, settingsProxySchema);
   }
 
-  updateProxy(payload: SettingsProxyMutation): SettingsProxy {
-    return this.mergePath(SETTINGS_PROXY_PATH, payload, settingsProxySchema);
+  updateProxy(payload: SettingsProxyMutation, tenantId: string): Promise<SettingsProxy> {
+    return this.mergePath(tenantId, SETTINGS_PROXY_PATH, payload, settingsProxySchema);
   }
 
-  getNotificationEvents(): SettingsNotificationEvents | null {
-    return this.readPath(SETTINGS_NOTIFICATION_EVENTS_PATH, settingsNotificationEventsSchema);
+  getNotificationEvents(tenantId: string): Promise<SettingsNotificationEvents | null> {
+    return this.readPath(
+      tenantId,
+      SETTINGS_NOTIFICATION_EVENTS_PATH,
+      settingsNotificationEventsSchema,
+    );
   }
 
   updateNotificationEvents(
     payload: SettingsNotificationEventsMutation,
-  ): SettingsNotificationEvents {
+    tenantId: string,
+  ): Promise<SettingsNotificationEvents> {
     return this.mergePath(
+      tenantId,
       SETTINGS_NOTIFICATION_EVENTS_PATH,
       payload,
       settingsNotificationEventsSchema,

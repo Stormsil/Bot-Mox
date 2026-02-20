@@ -16,14 +16,21 @@ export class IpqsController {
 
   private ensureAuthHeader(authorization: string | undefined): void {
     if (!authorization) {
-      throw new UnauthorizedException('Missing bearer token');
+      throw new UnauthorizedException({
+        code: 'MISSING_BEARER_TOKEN',
+        message: 'Missing bearer token',
+      });
     }
   }
 
   private parseCheckBody(body: unknown): import('zod').infer<typeof ipqsCheckBodySchema> {
     const parsed = ipqsCheckBodySchema.safeParse(body ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'IPQS_INVALID_CHECK_BODY',
+        message: 'Invalid IPQS check payload',
+        details: parsed.error.flatten(),
+      });
     }
     return parsed.data;
   }
@@ -31,7 +38,11 @@ export class IpqsController {
   private parseBatchBody(body: unknown): import('zod').infer<typeof ipqsCheckBatchBodySchema> {
     const parsed = ipqsCheckBatchBodySchema.safeParse(body ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'IPQS_INVALID_CHECK_BATCH_BODY',
+        message: 'Invalid IPQS check-batch payload',
+        details: parsed.error.flatten(),
+      });
     }
     return parsed.data;
   }

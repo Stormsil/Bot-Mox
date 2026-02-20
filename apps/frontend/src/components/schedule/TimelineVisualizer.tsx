@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { ScheduleSession } from '../../types';
 import { minutesToTime, timeToMinutes } from '../../utils/scheduleUtils';
-import styles from './TimelineVisualizer.module.css';
 import { getRestrictedSegments, getSessionSegments, HOURS } from './timeline/helpers';
 import { TimelineHeader } from './timeline/TimelineHeader';
 import { TimelineScale } from './timeline/TimelineScale';
+import { timelineStyles as styles } from './timelineStyles';
 
 interface TimelineVisualizerProps {
   sessions: ScheduleSession[];
@@ -17,10 +17,9 @@ type DragState = {
   isDragging: boolean;
   sessionId: string | null;
   dragType: 'start' | 'end' | 'move' | null;
-  startX: number;
-  originalStartMinutes: number;
-  originalEndMinutes: number;
 };
+
+const cx = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).join(' ');
 
 export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
   sessions,
@@ -33,9 +32,6 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
     isDragging: false,
     sessionId: null,
     dragType: null,
-    startX: 0,
-    originalStartMinutes: 0,
-    originalEndMinutes: 0,
   });
   const [previewState, setPreviewState] = useState<{
     sessionId: string | null;
@@ -78,16 +74,10 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
 
       if (!onSessionChange) return;
 
-      const startMinutes = timeToMinutes(session.start);
-      const endMinutes = timeToMinutes(session.end);
-
       setDragState({
         isDragging: true,
         sessionId: session.id,
         dragType: type,
-        startX: e.clientX,
-        originalStartMinutes: startMinutes,
-        originalEndMinutes: endMinutes,
       });
     },
     [onSessionChange],
@@ -147,9 +137,6 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
         isDragging: false,
         sessionId: null,
         dragType: null,
-        startX: 0,
-        originalStartMinutes: 0,
-        originalEndMinutes: 0,
       });
       setPreviewState({ sessionId: null, newStart: null, newEnd: null });
       return;
@@ -168,9 +155,6 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
       isDragging: false,
       sessionId: null,
       dragType: null,
-      startX: 0,
-      originalStartMinutes: 0,
-      originalEndMinutes: 0,
     });
     setPreviewState({ sessionId: null, newStart: null, newEnd: null });
   }, [dragState, previewState, sessionSegments, onSessionChange]);
@@ -206,11 +190,7 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
 
   if (sortedSessions.length === 0) {
     return (
-      <div
-        className={[styles['timeline-visualizer'], variant === 'compact' ? styles.compact : '']
-          .filter(Boolean)
-          .join(' ')}
-      >
+      <div className={cx(styles['timeline-visualizer'], variant === 'compact' && styles.compact)}>
         <TimelineHeader showLegend={false} variant={variant} />
         <div className={[styles['timeline-container'], styles.disabled].join(' ')}>
           <div className={styles['timeline-line-container']} ref={timelineRef}>
@@ -226,27 +206,16 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
   }
 
   return (
-    <div
-      className={[styles['timeline-visualizer'], variant === 'compact' ? styles.compact : '']
-        .filter(Boolean)
-        .join(' ')}
-    >
+    <div className={cx(styles['timeline-visualizer'], variant === 'compact' && styles.compact)}>
       <TimelineHeader showLegend variant={variant} />
 
       <div className={styles['timeline-container']}>
         <div
-          className={[
-            styles['timeline-line-container'],
-            dragState.isDragging ? styles.dragging : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
+          className={cx(styles['timeline-line-container'], dragState.isDragging && styles.dragging)}
           ref={timelineRef}
         >
-          {/* Основная линия (фон) */}
           <div className={styles['timeline-base-line']} />
 
-          {/* Отрисовка запрещенных зон (красный поверх серого) */}
           {restrictedSegments.map((seg) => (
             <div
               key={`${seg.left}-${seg.width}`}
@@ -255,28 +224,24 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
             />
           ))}
 
-          {/* Активные сегменты сессий */}
           {sessionSegments.map((segment) => {
             const preview = getPreviewPosition(segment.session.id);
             const isDraggingThis = dragState.sessionId === segment.session.id;
 
             return (
               <div key={segment.session.id}>
-                {/* Основной бар сессии */}
                 <button
                   type="button"
-                  className={[
+                  className={cx(
                     styles['timeline-session-bar'],
-                    isDraggingThis ? styles.dragging : '',
+                    isDraggingThis && styles.dragging,
                     segment.isRestricted
                       ? styles.restricted
                       : segment.isOverlapping
                         ? styles.overlapping
-                        : '',
-                    onSessionChange ? styles.draggable : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
+                        : undefined,
+                    onSessionChange && styles.draggable,
+                  )}
                   style={{
                     left: `${segment.left}%`,
                     width: `${segment.width}%`,
@@ -286,7 +251,6 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
                     onSessionChange ? (e) => handleMouseDown(e, segment.session, 'move') : undefined
                   }
                 >
-                  {/* Подпись длительности сессии - только длительность по центру */}
                   {segment.width > 2 && (
                     <span className={styles['session-duration-label']}>
                       {preview
@@ -296,7 +260,6 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
                   )}
                 </button>
 
-                {/* Превью позиции при перетаскивании */}
                 {preview && (
                   <div
                     className={[styles['timeline-session-bar'], styles.preview].join(' ')}
@@ -312,7 +275,6 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
 
           <TimelineScale hours={HOURS} />
 
-          {/* Точки начала и конца сессий */}
           {sessionSegments.map((segment) => {
             const isDraggingThis = dragState.sessionId === segment.session.id;
             const preview = getPreviewPosition(segment.session.id);
@@ -329,14 +291,12 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
               <React.Fragment key={`${segment.session.id}-markers`}>
                 <button
                   type="button"
-                  className={[
+                  className={cx(
                     styles['timeline-marker'],
                     styles.start,
-                    isDraggingThis && dragState.dragType === 'start' ? styles.dragging : '',
-                    onSessionChange ? styles.draggable : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
+                    isDraggingThis && dragState.dragType === 'start' && styles.dragging,
+                    onSessionChange && styles.draggable,
+                  )}
                   style={{ left: `${startLeft}%` }}
                   data-time={preview?.newStart || segment.session.start}
                   onMouseDown={
@@ -347,14 +307,12 @@ export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
                 />
                 <button
                   type="button"
-                  className={[
+                  className={cx(
                     styles['timeline-marker'],
                     styles.end,
-                    isDraggingThis && dragState.dragType === 'end' ? styles.dragging : '',
-                    onSessionChange ? styles.draggable : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
+                    isDraggingThis && dragState.dragType === 'end' && styles.dragging,
+                    onSessionChange && styles.draggable,
+                  )}
                   style={{ left: `${endLeft}%` }}
                   data-time={preview?.newEnd || segment.session.end}
                   onMouseDown={

@@ -1,8 +1,8 @@
 import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 import type { VMGeneratorSettings } from '../../../types';
-import { getVmSetupProgress, type VmSetupProgressEntry } from './vmLegacyFacade';
 import { vmQueryKeys } from './vmQueryKeys';
 import { listProxmoxTargets, type ProxmoxTargetInfo } from './vmReadFacade';
+import { getVmSetupProgress, type VmSetupProgressEntry } from './vmRuntimeFacade';
 import { getVMSettings } from './vmSettingsFacade';
 
 export function useVmSettingsQuery(): UseQueryResult<VMGeneratorSettings, Error> {

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { net } from 'electron';
 import type { Logger } from './logger';
 import { apiEnvelopeSchema } from './schemas';
@@ -67,12 +68,15 @@ export class ApiClient {
         method,
         url,
       });
+      const requestId = randomUUID();
 
       if (this.token) {
         request.setHeader('Authorization', `Bearer ${this.token}`);
       }
       request.setHeader('Content-Type', 'application/json');
       request.setHeader('Accept', 'application/json');
+      request.setHeader('x-request-id', requestId);
+      request.setHeader('x-correlation-id', requestId);
 
       let responseData = '';
       let statusCode = 0;

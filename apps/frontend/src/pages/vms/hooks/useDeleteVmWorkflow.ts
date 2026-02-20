@@ -11,14 +11,17 @@ import {
 import {
   type DeleteVmCandidateRow,
   type DeleteVmFilters,
-  evaluateDeleteBot,
   normalizeDeleteVmFilters,
-  normalizeToken,
 } from '../deleteVmRules';
 import type {
   UseDeleteVmWorkflowParams,
   UseDeleteVmWorkflowResult,
 } from './deleteVmWorkflow.types';
+import {
+  buildDeleteVmCandidatesRaw,
+  collectSelectableDeleteVmIds,
+  filterDeleteVmCandidates,
+} from './deleteVmWorkflowCandidates';
 
 export const useDeleteVmWorkflow = ({
   queue,
@@ -136,83 +139,15 @@ export const useDeleteVmWorkflow = ({
   }, []);
 
   const deleteVmCandidatesRaw = useMemo<DeleteVmCandidateRow[]>(() => {
-    const botsByVmName = new Map<string, DeleteVmBotRecord[]>();
-
-    Object.values(deleteVmBots).forEach((bot) => {
-      const key = normalizeToken(bot.vmName);
-      if (!key) {
-        return;
-      }
-
-      const current = botsByVmName.get(key);
-      if (current) {
-        current.push(bot);
-      } else {
-        botsByVmName.set(key, [bot]);
-      }
+    return buildDeleteVmCandidatesRaw({
+      deleteVmBots,
+      deleteVmProxies,
+      deleteVmSubscriptions,
+      deleteVmLicenses,
+      proxmoxVms,
+      templateVmId,
+      policy: deleteVmFilters.policy,
     });
-
-    const proxiesByBotId = new Map<string, number>();
-    deleteVmProxies.forEach((record) => {
-      proxiesByBotId.set(record.botId, (proxiesByBotId.get(record.botId) || 0) + 1);
-    });
-
-    const subscriptionsByBotId = new Map<string, number>();
-    deleteVmSubscriptions.forEach((record) => {
-      subscriptionsByBotId.set(record.botId, (subscriptionsByBotId.get(record.botId) || 0) + 1);
-    });
-
-    const licensesByBotId = new Map<string, number>();
-    deleteVmLicenses.forEach((record) => {
-      record.botIds.forEach((botId) => {
-        licensesByBotId.set(botId, (licensesByBotId.get(botId) || 0) + 1);
-      });
-    });
-
-    return [...proxmoxVms]
-      .filter((vm) => !vm.template)
-      .filter((vm) => vm.vmid !== templateVmId)
-      .sort((first, second) => first.vmid - second.vmid)
-      .map((vm) => {
-        const linkedBots = botsByVmName.get(normalizeToken(vm.name)) || [];
-        const evaluations = linkedBots.map((bot) =>
-          evaluateDeleteBot(
-            bot,
-            {
-              hasProxy: (proxiesByBotId.get(bot.id) || 0) > 0,
-              hasSubscription: (subscriptionsByBotId.get(bot.id) || 0) > 0,
-              hasLicense: (licensesByBotId.get(bot.id) || 0) > 0,
-            },
-            deleteVmFilters.policy,
-          ),
-        );
-
-        let canDelete = false;
-        let decisionReason = '';
-
-        if (evaluations.length === 0) {
-          canDelete = deleteVmFilters.policy.allowOrphan;
-          decisionReason = deleteVmFilters.policy.allowOrphan
-            ? 'Orphan VM: no linked account in database'
-            : 'Orphan VM blocked by filter';
-        } else {
-          const blocked = evaluations.find((evaluation) => !evaluation.canDelete);
-          if (blocked) {
-            decisionReason = blocked.reason;
-          } else {
-            canDelete = true;
-            decisionReason = evaluations[0]?.reason || 'Eligible for deletion';
-          }
-        }
-
-        return {
-          vm,
-          linkedBots,
-          evaluations,
-          canDelete,
-          decisionReason,
-        };
-      });
   }, [
     deleteVmBots,
     deleteVmFilters.policy,
@@ -224,42 +159,11 @@ export const useDeleteVmWorkflow = ({
   ]);
 
   const deleteVmCandidates = useMemo(() => {
-    return deleteVmCandidatesRaw.filter((candidate) => {
-      const vmStatus = normalizeToken(candidate.vm.status);
-      const statusAllowed =
-        (vmStatus === 'running' && deleteVmFilters.view.showRunning) ||
-        (vmStatus === 'stopped' && deleteVmFilters.view.showStopped) ||
-        (vmStatus !== 'running' && vmStatus !== 'stopped');
-
-      if (!statusAllowed) {
-        return false;
-      }
-      if (candidate.canDelete && !deleteVmFilters.view.showAllowed) {
-        return false;
-      }
-      if (!candidate.canDelete && !deleteVmFilters.view.showLocked) {
-        return false;
-      }
-
-      return true;
-    });
+    return filterDeleteVmCandidates(deleteVmCandidatesRaw, deleteVmFilters.view);
   }, [deleteVmCandidatesRaw, deleteVmFilters.view]);
 
   const selectableDeleteVmIds = useMemo(() => {
-    const ids = new Set<number>();
-
-    deleteVmCandidates.forEach((candidate) => {
-      if (!candidate.canDelete) {
-        return;
-      }
-      if (queuedDeleteVmIds.has(candidate.vm.vmid)) {
-        return;
-      }
-
-      ids.add(candidate.vm.vmid);
-    });
-
-    return ids;
+    return collectSelectableDeleteVmIds(deleteVmCandidates, queuedDeleteVmIds);
   }, [deleteVmCandidates, queuedDeleteVmIds]);
 
   const deleteVmSelectableCount = useMemo(

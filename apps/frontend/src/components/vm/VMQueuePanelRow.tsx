@@ -10,6 +10,9 @@ import {
   getStatusDisplay,
   toMemoryMb,
 } from './queuePanelUtils';
+import { VMQueuePanelRowActions } from './VMQueuePanelRowActions';
+import { VMQueuePanelRowNameCell } from './VMQueuePanelRowNameCell';
+import { VMQueuePanelRowResourcesCell } from './VMQueuePanelRowResourcesCell';
 
 const { Text } = Typography;
 
@@ -77,8 +80,6 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({
     Number(item.vmId) > 0 &&
     typeof onStartOne === 'function';
   const isItemStarting = isStartActionRunning && startingItemId === item.id;
-  const vmInputValue =
-    isDeleteAction && hasDeleteTargetVmId ? `${item.name} [ID ${deleteTargetVmId}]` : item.name;
 
   const projectId = item.projectId as VMProjectId;
   const preset = resourcePresets[projectId] || {
@@ -106,19 +107,15 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({
 
   return (
     <div key={item.id} className={className('vm-queue-item')}>
-      <div className={className('vm-queue-item-vm')}>
-        <input
-          className={className('vm-queue-item-input vm-queue-item-input--name')}
-          value={vmInputValue}
-          onChange={(e) => {
-            if (!isDeleteAction) {
-              onUpdate(item.id, { name: e.target.value });
-            }
-          }}
-          disabled={!editableCreate}
-          placeholder="VM name"
-        />
-      </div>
+      <VMQueuePanelRowNameCell
+        item={item}
+        isDeleteAction={isDeleteAction}
+        hasDeleteTargetVmId={hasDeleteTargetVmId}
+        deleteTargetVmId={deleteTargetVmId}
+        editableCreate={editableCreate}
+        onUpdate={onUpdate}
+        className={className}
+      />
 
       <div className={className('vm-queue-item-select vm-queue-item-select--storage')}>
         {isDeleteAction ? (
@@ -263,34 +260,15 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({
         )}
       </div>
 
-      <div className={className('vm-queue-item-resources')}>
-        {isDeleteAction ? (
-          <div className={className('vm-queue-item-placeholder')}>Delete operation</div>
-        ) : (
-          <div className={className('vm-queue-item-resources-compact')}>
-            <div className={className('vm-queue-item-resources-text')}>
-              {effectiveCores} CPU · {formatMemoryGiB(effectiveMemoryMb)} · {effectiveDiskGiB} GB
-            </div>
-            {item.resourceMode === 'custom' && (
-              <Button
-                type="text"
-                size="small"
-                className={className('vm-queue-item-resource-edit')}
-                style={{
-                  height: 20,
-                  paddingInline: 6,
-                  fontSize: 10,
-                  color: 'var(--boxmox-color-brand-primary)',
-                }}
-                onClick={() => openCustomEditor(item)}
-                title="Edit Custom Resources"
-              >
-                Edit
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
+      <VMQueuePanelRowResourcesCell
+        item={item}
+        isDeleteAction={isDeleteAction}
+        effectiveCores={effectiveCores}
+        effectiveMemoryMb={effectiveMemoryMb}
+        effectiveDiskGiB={effectiveDiskGiB}
+        openCustomEditor={openCustomEditor}
+        className={className}
+      />
 
       <div className={className('vm-queue-item-unattend')}>
         {isDeleteAction ? (
@@ -352,31 +330,20 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({
         )}
       </div>
 
-      {canStartItem ? (
-        <button
-          type="button"
-          className={className('vm-queue-item-start')}
-          onClick={() => onStartOne?.(item.id)}
-          disabled={isProcessing || isStartActionRunning}
-          title={item.vmId ? `Start VM ${item.vmId}` : 'Start VM'}
-        >
-          {isItemStarting ? 'STARTING' : 'START'}
-        </button>
-      ) : (
-        <span className={className(`vm-queue-item-status vm-queue-item-status--${status.tone}`)}>
-          {status.text.toUpperCase()}
-        </span>
-      )}
-
-      <button
-        type="button"
-        className={className('vm-queue-item-remove')}
-        onClick={() => onRemove(item.id)}
-        disabled={!canRemove}
-        title="Remove"
-      >
-        ×
-      </button>
+      <VMQueuePanelRowActions
+        canStartItem={canStartItem}
+        isItemStarting={isItemStarting}
+        isProcessing={isProcessing}
+        isStartActionRunning={isStartActionRunning}
+        vmId={item.vmId}
+        itemId={item.id}
+        statusText={status.text}
+        statusTone={status.tone}
+        canRemove={canRemove}
+        onStartOne={onStartOne}
+        onRemove={onRemove}
+        className={className}
+      />
     </div>
   );
 };

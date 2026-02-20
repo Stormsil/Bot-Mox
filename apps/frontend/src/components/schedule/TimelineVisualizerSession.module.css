@@ -1,0 +1,181 @@
+.timeline-session-bar {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  position: absolute;
+  top: 15px;
+  height: 3px;
+  background: var(--boxmox-color-status-success);
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-visualizer.compact .timeline-session-bar {
+  top: 8px;
+  height: 4px;
+}
+
+.timeline-session-bar.overlapping {
+  background: var(--boxmox-color-status-warning);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--boxmox-color-status-warning) 60%, transparent);
+}
+
+.timeline-session-bar.restricted {
+  background: var(--boxmox-color-status-danger);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--boxmox-color-status-danger) 60%, transparent);
+}
+
+.timeline-session-bar.draggable {
+  cursor: grab;
+}
+
+.timeline-session-bar.draggable:hover {
+  height: 5px;
+  top: 14px;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--boxmox-color-status-success) 50%, transparent);
+}
+
+.timeline-visualizer.compact .timeline-session-bar.draggable:hover {
+  height: 6px;
+  top: 7px;
+}
+
+.timeline-session-bar.overlapping.draggable:hover {
+  box-shadow: 0 0 8px color-mix(in srgb, var(--boxmox-color-status-warning) 80%, transparent);
+}
+
+.timeline-session-bar.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.timeline-session-bar.preview {
+  background: color-mix(in srgb, var(--boxmox-color-status-success) 40%, transparent);
+  border: 1px dashed var(--boxmox-color-status-success);
+  z-index: 1;
+}
+
+.timeline-marker {
+  appearance: none;
+  padding: 0;
+  position: absolute;
+  top: 12px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid var(--boxmox-color-surface-panel);
+  transform: translateX(-50%);
+  z-index: 3;
+  transition: all 0.2s ease;
+}
+
+.timeline-visualizer.compact .timeline-marker {
+  top: 6px;
+  width: 8px;
+  height: 8px;
+}
+
+.timeline-marker.draggable {
+  cursor: grab;
+}
+
+.timeline-marker.start {
+  background: var(--boxmox-color-status-success);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--boxmox-color-status-success) 30%, transparent);
+}
+
+.timeline-marker.end {
+  background: var(--boxmox-color-text-muted);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--boxmox-color-text-muted) 30%, transparent);
+}
+
+.timeline-marker.draggable:hover {
+  transform: translateX(-50%) scale(1.3);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--boxmox-color-status-success) 20%, transparent);
+}
+
+.timeline-marker.end.draggable:hover {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--boxmox-color-text-muted) 20%, transparent);
+}
+
+.timeline-marker.dragging {
+  transform: translateX(-50%) scale(1.4);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--boxmox-color-status-success) 30%, transparent);
+  cursor: grabbing;
+}
+
+.timeline-marker.end.dragging {
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--boxmox-color-text-muted) 30%, transparent);
+}
+
+.timeline-marker::after {
+  content: attr(data-time);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  background: var(--boxmox-color-surface-muted);
+  color: var(--boxmox-color-text-primary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: "Monaco", "Consolas", monospace;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  border: 1px solid var(--boxmox-color-border-default);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.timeline-marker:hover::after,
+.timeline-marker.dragging::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.session-duration-label {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--boxmox-color-status-success);
+  white-space: nowrap;
+  font-family: "Monaco", "Consolas", monospace;
+  text-shadow: 0 1px 2px color-mix(in srgb, var(--boxmox-color-header-bg) 80%, transparent);
+  pointer-events: none;
+}
+
+.timeline-visualizer.compact .session-duration-label {
+  top: -16px;
+  font-size: 9px;
+}
+
+.timeline-session-bar.restricted .session-duration-label {
+  color: var(--boxmox-color-status-danger);
+}
+
+.timeline-session-bar.overlapping .session-duration-label {
+  color: var(--boxmox-color-status-warning);
+}
+
+:root:not([data-theme="dark"]) .session-duration-label {
+  color: var(--boxmox-color-brand-contrast);
+  text-shadow: none;
+}
+
+:root:not([data-theme="dark"]) .timeline-session-bar.overlapping .session-duration-label {
+  color: var(--boxmox-color-status-warning);
+}
+
+:root:not([data-theme="dark"]) .timeline-session-bar.restricted .session-duration-label {
+  color: var(--boxmox-color-status-danger);
+}

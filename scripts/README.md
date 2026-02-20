@@ -93,6 +93,22 @@ Run:
 pnpm run check:lockfiles
 ```
 
+### `check-backend-tenant-defaults.js`
+
+Guards backend multi-tenant hygiene by blocking runtime tenant fallback patterns:
+
+1. `?? 'default'`
+2. `|| 'default'`
+3. `tenantId: 'default'`
+
+Scope: `apps/backend/src/modules/**/*.ts` (tests excluded).  
+
+Run:
+
+```bash
+pnpm run check:backend:tenant-defaults
+```
+
 ### `generate-repo-map.js`
 
 Builds a high-level repository tree for AI/dev onboarding.
@@ -123,6 +139,41 @@ Run:
 pnpm run repo:ingest:profile
 ```
 
+## Production hardening rollout helpers
+
+### `production-hardening-rollout-readiness.js`
+
+Генерирует dated readiness snapshot по migration flags и (опционально) checks.
+
+Run:
+
+```bash
+pnpm run hardening:rollout:readiness
+pnpm run hardening:rollout:readiness:checks
+```
+
+### `production-hardening-smoke-window.js`
+
+Добавляет запись в monthly smoke-window audit.
+
+Run:
+
+```bash
+pnpm run hardening:smoke:record
+pnpm run hardening:smoke:record:checks
+```
+
+### `production-hardening-smoke-streak.js`
+
+Показывает текущий подряд strict `pass` и остаток до целевого streak (default `7`).
+
+Run:
+
+```bash
+pnpm run hardening:smoke:streak
+pnpm run hardening:smoke:streak -- --target=7
+```
+
 ## `check-secrets.js`
 
 Проверяет tracked + untracked файлы (`git ls-files --cached --others --exclude-standard`) на признаки утечки секретов.
@@ -132,6 +183,33 @@ Gitignored файлы (например, локальные `.env`/secrets) в �
 
 ```bash
 node scripts/check-secrets.js
+```
+
+## `check-migration-flags.js`
+
+Validates runtime migration flags used during hardening waves.
+
+Standard mode:
+
+- validates values only when flag is provided.
+
+Strict mode:
+
+- requires all flags and enforces non-legacy-safe values:
+  - `AUTH_MODE=enforced`
+  - `AGENT_TRANSPORT=hybrid|ws`
+  - `SECRETS_VAULT_MODE=enforced`
+- when `SECRETS_VAULT_MODE=enforced`, also requires:
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `SUPABASE_VAULT_RPC_NAME`
+
+Run:
+
+```bash
+pnpm run migration:check
+pnpm run migration:check:strict
+pnpm run migration:check:test
 ```
 
 ## `check-style-guardrails.js`
@@ -247,4 +325,4 @@ Interval: every 30-60 seconds. If no heartbeat for > 2x interval, server may con
 
 ## Removed Legacy
 
-Legacy Firebase maintenance/migration scripts удалены из активного `scripts/` набора.
+Legacy maintenance/migration scripts are removed from the active `scripts/` set.

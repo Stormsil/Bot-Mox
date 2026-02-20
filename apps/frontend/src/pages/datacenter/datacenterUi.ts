@@ -1,4 +1,7 @@
-import styles from './DatacenterPage.module.css';
+import layoutStyles from './DatacenterPageLayout.module.css';
+import metricStyles from './DatacenterPageMetrics.module.css';
+
+const styles = { ...layoutStyles, ...metricStyles };
 
 export function cx(classNames: string): string {
   return classNames

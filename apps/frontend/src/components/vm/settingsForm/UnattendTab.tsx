@@ -27,13 +27,7 @@ import {
   validateUnattendXml,
 } from '../../../utils/unattendXml';
 import styles from './UnattendTab.module.css';
-import { AccountSection } from './unattend/AccountSection';
-import { BloatwareSection } from './unattend/BloatwareSection';
-import { CustomScriptSection } from './unattend/CustomScriptSection';
-import { DesktopIconsSection } from './unattend/DesktopIconsSection';
-import { RegionLanguageSection } from './unattend/RegionLanguageSection';
-import { VisualEffectsSection } from './unattend/VisualEffectsSection';
-import { WindowsSettingsSection } from './unattend/WindowsSettingsSection';
+import { buildUnattendSectionCards } from './unattend/sectionCards';
 
 const { Text, Title } = Typography;
 
@@ -210,6 +204,11 @@ export const UnattendTab: React.FC = () => {
     triggerXmlDownload(`${profileName || 'unattend-profile'}-final.xml`, finalXml);
   }, [finalXml, profileName]);
 
+  const sectionCards = useMemo(
+    () => buildUnattendSectionCards(config, updateConfig),
+    [config, updateConfig],
+  );
+
   return (
     <div className={styles.layout}>
       <aside className={styles.sidebar}>
@@ -325,75 +324,18 @@ export const UnattendTab: React.FC = () => {
           )}
         </Card>
 
-        <Card
-          id="unattend-region"
-          size="small"
-          title="Region & Language"
-          className={styles.sectionCard}
-          style={cardRadiusStyle}
-        >
-          <RegionLanguageSection config={config} updateConfig={updateConfig} />
-        </Card>
-
-        <Card
-          id="unattend-account"
-          size="small"
-          title="Account"
-          className={styles.sectionCard}
-          style={cardRadiusStyle}
-        >
-          <AccountSection config={config} updateConfig={updateConfig} />
-        </Card>
-
-        <Card
-          id="unattend-visual"
-          size="small"
-          title="Visual Effects"
-          className={styles.sectionCard}
-          style={cardRadiusStyle}
-        >
-          <VisualEffectsSection config={config} updateConfig={updateConfig} />
-        </Card>
-
-        <Card
-          id="unattend-desktop"
-          size="small"
-          title="Desktop & Icons"
-          className={styles.sectionCard}
-          style={cardRadiusStyle}
-        >
-          <DesktopIconsSection config={config} updateConfig={updateConfig} />
-        </Card>
-
-        <Card
-          id="unattend-bloatware"
-          size="small"
-          title="Bloatware & Capabilities"
-          className={styles.sectionCard}
-          style={cardRadiusStyle}
-        >
-          <BloatwareSection config={config} updateConfig={updateConfig} />
-        </Card>
-
-        <Card
-          id="unattend-windows"
-          size="small"
-          title="Windows Settings"
-          className={styles.sectionCard}
-          style={cardRadiusStyle}
-        >
-          <WindowsSettingsSection config={config} updateConfig={updateConfig} />
-        </Card>
-
-        <Card
-          id="unattend-script"
-          size="small"
-          title="Custom Script"
-          className={styles.sectionCard}
-          style={cardRadiusStyle}
-        >
-          <CustomScriptSection config={config} updateConfig={updateConfig} />
-        </Card>
+        {sectionCards.map((section) => (
+          <Card
+            key={section.id}
+            id={section.id}
+            size="small"
+            title={section.title}
+            className={styles.sectionCard}
+            style={cardRadiusStyle}
+          >
+            {section.content}
+          </Card>
+        ))}
       </section>
     </div>
   );

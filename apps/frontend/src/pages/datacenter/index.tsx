@@ -1,6 +1,6 @@
 import { Spin } from 'antd';
 import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentPanel } from '../../components/layout/ContentPanel';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
@@ -17,19 +17,14 @@ import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSub
 import { useFinanceOperations } from '../../features/finance/model/useFinanceOperations';
 import { uiLogger } from '../../observability/uiLogger';
 import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../types';
-import { type ContentMapSection, DatacenterContentMap, type ExpiringItem } from './content-map';
+import { DatacenterContentMap, type ExpiringItem } from './content-map';
 import { cx } from './datacenterUi';
-import {
-  buildProjectStats,
-  CONTENT_MAP_COLLAPSE_KEY,
-  DEFAULT_COLLAPSED_SECTIONS,
-  FINANCE_WINDOW_DAYS,
-  MS_PER_DAY,
-} from './page-helpers';
+import { buildProjectStats, FINANCE_WINDOW_DAYS, MS_PER_DAY } from './page-helpers';
+import { useDatacenterCollapsedSections, useDatacenterCurrentTime } from './useDatacenterState';
 
 export const DatacenterPage: React.FC = () => {
   const navigate = useNavigate();
-  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const currentTime = useDatacenterCurrentTime();
   const botsMapQuery = useBotsMapQuery();
   const licensesQuery = useLicensesQuery();
   const proxiesQuery = useProxiesQuery();
@@ -37,19 +32,7 @@ export const DatacenterPage: React.FC = () => {
   const notesIndexQuery = useNotesIndexQuery();
   const subscriptionSettingsQuery = useSubscriptionSettingsQuery();
 
-  const [collapsedSections, setCollapsedSections] = useState<Record<ContentMapSection, boolean>>(
-    () => {
-      const saved = localStorage.getItem(CONTENT_MAP_COLLAPSE_KEY);
-      if (saved) {
-        try {
-          return { ...DEFAULT_COLLAPSED_SECTIONS, ...JSON.parse(saved) };
-        } catch (error) {
-          uiLogger.warn('Failed to parse content map collapse state:', error);
-        }
-      }
-      return DEFAULT_COLLAPSED_SECTIONS;
-    },
-  );
+  const { collapsedSections, toggleSection } = useDatacenterCollapsedSections();
 
   const { operations, loading: financeLoading } = useFinanceOperations();
   const bots = useMemo<Record<string, BotRecord>>(
@@ -96,27 +79,6 @@ export const DatacenterPage: React.FC = () => {
     if (!subscriptionSettingsQuery.error) return;
     uiLogger.error('Error loading subscription settings:', subscriptionSettingsQuery.error);
   }, [subscriptionSettingsQuery.error]);
-
-  useEffect(() => {
-    localStorage.setItem(CONTENT_MAP_COLLAPSE_KEY, JSON.stringify(collapsedSections));
-  }, [collapsedSections]);
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 60_000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
-
-  const toggleSection = (section: ContentMapSection) => {
-    setCollapsedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
 
   const botsList = useMemo(() => Object.values(bots), [bots]);
 

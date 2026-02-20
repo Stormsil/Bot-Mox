@@ -1,11 +1,5 @@
-import {
-  CalendarOutlined,
-  ReloadOutlined,
-  SaveOutlined,
-  UnlockOutlined,
-  WarningOutlined,
-} from '@ant-design/icons';
-import { Alert, Button, Card, message, Spin } from 'antd';
+import { WarningOutlined } from '@ant-design/icons';
+import { Alert, Card, message, Spin } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useUpdateBotMutation } from '../../entities/bot/api/useBotMutations';
@@ -22,17 +16,10 @@ import {
   migrateSchedule,
   sortSessions,
 } from '../../utils/scheduleUtils';
-import {
-  DayStats,
-  DayTabs,
-  ScheduleGenerator,
-  SessionEditor,
-  SessionList,
-  TimelineVisualizer,
-  WeekOverview,
-  WeekPanel,
-} from '../schedule';
+import { SessionEditor } from '../schedule';
 import styles from './BotSchedule.module.css';
+import { BotScheduleActions } from './BotScheduleActions';
+import { BotScheduleContent } from './BotScheduleContent';
 
 interface BotScheduleProps {
   botId: string;
@@ -43,8 +30,8 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
   const [serverSchedule, setServerSchedule] = useState<BotScheduleV2 | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDay, setSelectedDay] = useState(1); // Monday default
-  const [viewMode, setViewMode] = useState<'day' | 'week'>('day'); // 'day' or 'week' overview
+  const [selectedDay, setSelectedDay] = useState(1);
+  const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [hasChanges, setHasChanges] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingSession, setEditingSession] = useState<ScheduleSession | null>(null);
@@ -53,7 +40,6 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
   const botQuery = useBotByIdQuery(botId);
   const updateBotMutation = useUpdateBotMutation();
 
-  // Load schedule from shared query cache.
   useEffect(() => {
     if (!botId) {
       return;
@@ -89,7 +75,6 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     };
   }, [botId, botQuery.data, botQuery.error, botQuery.isLoading, hasChanges]);
 
-  // Get current day schedule
   const getCurrentDaySchedule = useCallback((): ScheduleDay => {
     if (!schedule) return { enabled: false, sessions: [] };
     return (
@@ -100,7 +85,6 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     );
   }, [schedule, selectedDay]);
 
-  // Update day in schedule
   const updateDay = useCallback((dayIndex: number, updates: Partial<ScheduleDay>) => {
     setSchedule((prev) => {
       if (!prev) return prev;
@@ -118,33 +102,26 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     setHasChanges(true);
   }, []);
 
-  // Handle schedule change from WeekOverview
   const handleScheduleChange = useCallback((newSchedule: BotScheduleV2) => {
     setSchedule(newSchedule);
     setHasChanges(true);
   }, []);
 
-  // Handle add session
   const handleAddSession = useCallback(() => {
     setEditingSession(null);
     setIsEditorOpen(true);
   }, []);
 
-  // Handle edit session
   const handleEditSession = useCallback((session: ScheduleSession) => {
     setEditingSession(session);
     setIsEditorOpen(true);
   }, []);
 
-  // Handle delete session
   const handleDeleteSession = useCallback(
     (sessionId: string) => {
       const currentDay = getCurrentDaySchedule();
-      // Defensive check: ensure sessions is an array
       const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
       const newSessions = sessionsArray.filter((s) => s.id !== sessionId);
-
-      // FIX: Update day enabled status based on whether any session remains enabled
       const hasEnabledSessions = newSessions.some((s) => s.enabled);
       updateDay(selectedDay, {
         sessions: sortSessions(newSessions),
@@ -154,15 +131,11 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     [getCurrentDaySchedule, selectedDay, updateDay],
   );
 
-  // Handle toggle session
   const handleToggleSession = useCallback(
     (sessionId: string, enabled: boolean) => {
       const currentDay = getCurrentDaySchedule();
-      // Defensive check: ensure sessions is an array
       const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
       const newSessions = sessionsArray.map((s) => (s.id === sessionId ? { ...s, enabled } : s));
-
-      // FIX: Update day enabled status based on whether any session is enabled
       const hasEnabledSessions = newSessions.some((s) => s.enabled);
       updateDay(selectedDay, {
         sessions: sortSessions(newSessions),
@@ -172,23 +145,18 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     [getCurrentDaySchedule, selectedDay, updateDay],
   );
 
-  // Handle save session
   const handleSaveSession = useCallback(
     (session: ScheduleSession) => {
       const currentDay = getCurrentDaySchedule();
-      // Defensive check: ensure sessions is an array
       const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
       let newSessions: ScheduleSession[];
 
       if (editingSession) {
-        // Update existing
         newSessions = sessionsArray.map((s) => (s.id === session.id ? session : s));
       } else {
-        // Add new
         newSessions = [...sessionsArray, session];
       }
 
-      // FIX: Also set enabled: true when adding a session to ensure day is marked as active
       const hasEnabledSessions = newSessions.some((s) => s.enabled);
       updateDay(selectedDay, {
         sessions: sortSessions(newSessions),
@@ -200,11 +168,9 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     [editingSession, getCurrentDaySchedule, selectedDay, updateDay],
   );
 
-  // Handle session change from timeline drag-and-drop
   const handleSessionChange = useCallback(
     (session: ScheduleSession) => {
       const currentDay = getCurrentDaySchedule();
-      // Defensive check: ensure sessions is an array
       const sessionsArray = Array.isArray(currentDay.sessions) ? currentDay.sessions : [];
       const newSessions = sessionsArray.map((s) => (s.id === session.id ? session : s));
 
@@ -293,21 +259,18 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     }
   }, [botId, updateBotMutation]);
 
-  if (loading) {
+  if (loading)
     return (
       <div className={styles['bot-schedule-loading']}>
         <Spin size="large" />
       </div>
     );
-  }
-
-  if (error) {
+  if (error)
     return (
       <div className={styles['bot-schedule-error']}>
         <Alert message="Error" description={error} type="error" showIcon />
       </div>
     );
-  }
 
   const currentDay = getCurrentDaySchedule();
 
@@ -323,50 +286,18 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
           },
         }}
         extra={
-          <div className={styles['schedule-actions']}>
-            <Button
-              icon={<CalendarOutlined />}
-              size="small"
-              onClick={() => setViewMode(viewMode === 'day' ? 'week' : 'day')}
-              className={styles['schedule-action-btn']}
-            >
-              {viewMode === 'day' ? 'Week Overview' : 'Day View'}
-            </Button>
-            <ScheduleGenerator
-              onGenerate={handleGenerateSchedule}
-              disabled={loading}
-              locked={scheduleLocked}
-            />
-            {(scheduleLocked || pendingScheduleLock) && (
-              <Button
-                icon={<UnlockOutlined />}
-                size="small"
-                onClick={handleUnlockGeneration}
-                className={[styles['schedule-action-btn'], styles['schedule-unlock-btn']].join(' ')}
-              >
-                Unlock
-              </Button>
-            )}
-            <Button
-              icon={<ReloadOutlined />}
-              size="small"
-              onClick={handleReset}
-              disabled={!hasChanges}
-              className={styles['schedule-action-btn']}
-            >
-              Reset
-            </Button>
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-              size="small"
-              onClick={handleSave}
-              disabled={!hasChanges}
-              className={styles['schedule-action-btn-primary']}
-            >
-              Save
-            </Button>
-          </div>
+          <BotScheduleActions
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            handleGenerateSchedule={handleGenerateSchedule}
+            loading={loading}
+            scheduleLocked={scheduleLocked}
+            pendingScheduleLock={pendingScheduleLock}
+            handleUnlockGeneration={handleUnlockGeneration}
+            handleReset={handleReset}
+            hasChanges={hasChanges}
+            handleSave={handleSave}
+          />
         }
       >
         {hasChanges && (
@@ -382,50 +313,23 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
           />
         )}
 
-        <div className={styles['schedule-content-wrapper']}>
-          <WeekPanel schedule={schedule} selectedDay={selectedDay} onDaySelect={setSelectedDay} />
-
-          <div className={styles['schedule-main-content']}>
-            <DayTabs
-              selectedDay={selectedDay}
-              onDayChange={setSelectedDay}
-              days={schedule?.days || {}}
-            />
-
-            {viewMode === 'week' ? (
-              <WeekOverview
-                schedule={schedule}
-                onScheduleChange={handleScheduleChange}
-                onSave={handleSave}
-                onReset={handleReset}
-                hasChanges={hasChanges}
-                onDaySelect={(day) => {
-                  setSelectedDay(day);
-                  setViewMode('day');
-                }}
-              />
-            ) : (
-              <>
-                <TimelineVisualizer
-                  sessions={currentDay.sessions}
-                  allowedWindows={schedule?.allowedWindows}
-                  onSessionChange={handleSessionChange}
-                />
-
-                <SessionList
-                  sessions={currentDay.sessions}
-                  onAdd={handleAddSession}
-                  onEdit={handleEditSession}
-                  onDelete={handleDeleteSession}
-                  onToggle={handleToggleSession}
-                  className={styles['panel-block']}
-                />
-
-                <DayStats sessions={currentDay.sessions} className={styles['panel-block']} />
-              </>
-            )}
-          </div>
-        </div>
+        <BotScheduleContent
+          schedule={schedule}
+          selectedDay={selectedDay}
+          setSelectedDay={setSelectedDay}
+          onSwitchToDayView={() => setViewMode('day')}
+          viewMode={viewMode}
+          handleScheduleChange={handleScheduleChange}
+          handleSave={handleSave}
+          handleReset={handleReset}
+          hasChanges={hasChanges}
+          currentDay={currentDay}
+          handleSessionChange={handleSessionChange}
+          handleAddSession={handleAddSession}
+          handleEditSession={handleEditSession}
+          handleDeleteSession={handleDeleteSession}
+          handleToggleSession={handleToggleSession}
+        />
 
         <SessionEditor
           session={editingSession}

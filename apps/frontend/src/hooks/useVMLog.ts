@@ -1,25 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { uiLogger } from '../observability/uiLogger';
-import { apiGet, apiPut, createPollingSubscription } from '../services/apiClient';
+import { apiPut } from '../services/apiClient';
 import type { VMLogEntry, VMTaskDetailLevel, VMTaskEntry, VMTaskStatus } from '../types';
 import {
   formatFullLog,
   hasTaskTimedOut,
   nextLogId,
   nextTaskId,
-  parsePersistedTasks,
   RUNNING_TASK_TIMEOUT_MS,
   taskLevelFromStatus,
 } from './vmLogUtils';
+import { useVmLogWriters } from './vmLogWriters';
+import { subscribeVmTaskHistory } from './vmTaskHistoryPersistence';
 
-const VM_LOG_TASKS_API_PATH = '/api/v1/settings/vmgenerator/task_logs';
 const LOG_PERSIST_DEBOUNCE_MS = 250;
 const RUNNING_TASK_SWEEP_INTERVAL_MS = 15_000;
-
-async function loadPersistedTasks(): Promise<VMTaskEntry[]> {
-  const response = await apiGet<unknown>(VM_LOG_TASKS_API_PATH);
-  return parsePersistedTasks(response.data);
-}
+const VM_LOG_TASKS_API_PATH = '/api/v1/settings/vmgenerator/task_logs';
 
 interface StartTaskMeta {
   node?: string;
@@ -84,15 +80,9 @@ export function useVMLog() {
       hydratedRef.current = true;
     };
 
-    const unsubscribe = createPollingSubscription(
-      async () => loadPersistedTasks(),
-      applyHydratedTasks,
-      (error) => {
-        uiLogger.error('Failed to load VM task history:', error);
-        hydratedRef.current = true;
-      },
-      { key: 'settings:vmgenerator:task_logs', intervalMs: 4000, immediate: true },
-    );
+    const unsubscribe = subscribeVmTaskHistory(applyHydratedTasks, () => {
+      hydratedRef.current = true;
+    });
 
     return () => {
       unsubscribe();
@@ -292,58 +282,7 @@ export function useVMLog() {
     persistTasks(nextTasks);
   }, [persistTasks]);
 
-  const info = useCallback(
-    (message: string, vmName?: string) => {
-      push({ id: nextLogId(), timestamp: Date.now(), level: 'info', message, vmName });
-    },
-    [push],
-  );
-
-  const warn = useCallback(
-    (message: string, vmName?: string) => {
-      push({ id: nextLogId(), timestamp: Date.now(), level: 'warn', message, vmName });
-    },
-    [push],
-  );
-
-  const error = useCallback(
-    (message: string, vmName?: string) => {
-      push({ id: nextLogId(), timestamp: Date.now(), level: 'error', message, vmName });
-    },
-    [push],
-  );
-
-  const debug = useCallback(
-    (message: string, vmName?: string) => {
-      push({ id: nextLogId(), timestamp: Date.now(), level: 'debug', message, vmName });
-    },
-    [push],
-  );
-
-  const step = useCallback(
-    (message: string, vmName?: string) => {
-      push({ id: nextLogId(), timestamp: Date.now(), level: 'step', message, vmName });
-    },
-    [push],
-  );
-
-  const table = useCallback(
-    (title: string, rows: Array<{ field: string; value: string }>, vmName?: string) => {
-      push({ id: nextLogId(), timestamp: Date.now(), level: 'table', title, rows, vmName });
-    },
-    [push],
-  );
-
-  const diffTable = useCallback(
-    (
-      title: string,
-      changes: Array<{ field: string; oldValue: string; newValue: string }>,
-      vmName?: string,
-    ) => {
-      push({ id: nextLogId(), timestamp: Date.now(), level: 'diff', title, changes, vmName });
-    },
-    [push],
-  );
+  const { info, warn, error, debug, step, table, diffTable } = useVmLogWriters({ push });
 
   const clear = useCallback(async () => {
     entriesRef.current = [];

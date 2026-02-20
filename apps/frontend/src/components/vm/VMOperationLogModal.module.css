@@ -1,0 +1,194 @@
+.vm-log-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--boxmox-color-header-bg);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.vm-task-log-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(var(--vmx-accent-rgb, var(--boxmox-color-brand-primary-rgb)), 0.08);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.vm-log-modal {
+  width: min(96vw, 1600px);
+  height: 88vh;
+  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.vm-task-log-modal {
+  width: min(92vw, 980px);
+  height: min(82vh, 720px);
+  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.vm-task-log-modal-header {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+}
+
+.vm-task-log-modal-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  letter-spacing: 0.02em;
+}
+
+.vm-task-log-modal-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vm-task-log-modal-actions button {
+  min-height: 24px;
+  min-width: 62px;
+  padding: 0 10px;
+  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vm-task-log-modal-actions button:hover {
+  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+  border-color: var(--vmx-border-strong, var(--boxmox-color-border-strong));
+}
+
+.vm-task-log-modal-actions .vm-task-log-modal-cancel-btn {
+  border-color: var(--vmx-danger, var(--boxmox-color-status-danger));
+  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+}
+
+.vm-task-log-modal-actions .vm-task-log-modal-cancel-btn:hover {
+  background: rgba(var(--vmx-danger-rgb, var(--boxmox-color-status-danger-rgb, 255, 77, 79)), 0.12);
+  border-color: var(--vmx-danger, var(--boxmox-color-status-danger));
+}
+
+.vm-task-log-modal-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 4px 10px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+  font-size: 11px;
+}
+
+.vm-task-log-modal-meta strong {
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  font-weight: 700;
+}
+
+.vm-task-log-modal-content {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 10px;
+  background: var(--vmx-bg, var(--boxmox-color-surface-base));
+  overflow: auto;
+}
+
+.vm-task-log-modal-pre {
+  margin: 0;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-primary);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+}
+
+.vm-task-log-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.vm-task-log-time {
+  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+}
+
+.vm-task-log-level {
+  color: var(--vmx-warning, var(--boxmox-color-status-warning));
+  font-weight: 700;
+}
+
+.vm-task-log-gap {
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+}
+
+.vm-task-log-message {
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+}
+
+.vm-task-log-diff-prefix {
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+}
+
+.vm-task-log-diff-old {
+  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+}
+
+.vm-task-log-diff-arrow {
+  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+}
+
+.vm-task-log-diff-new {
+  color: var(--vmx-success, var(--boxmox-color-status-success));
+}
+
+.vm-task-log-line--warn .vm-task-log-message {
+  color: var(--vmx-warning, var(--boxmox-color-status-warning));
+}
+
+.vm-task-log-line--error .vm-task-log-message {
+  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+}
+
+.vm-task-log-empty {
+  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .vm-task-log-modal {
+    width: 96vw;
+    height: 86vh;
+  }
+
+  .vm-task-log-modal-meta {
+    grid-template-columns: 1fr;
+  }
+}

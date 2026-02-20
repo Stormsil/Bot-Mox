@@ -1,16 +1,13 @@
 import { DownOutlined, FilterOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Modal, Popover, Tag } from 'antd';
+import { Button, Modal, Popover } from 'antd';
 import type React from 'react';
 import type { DeleteVmCandidateRow, DeleteVmFilters } from './deleteVmRules';
-import styles from './VMsPage.module.css';
-
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+import { cx } from './page/cx';
+import { DeleteVmCandidateItem } from './page/DeleteVmCandidateItem';
+import {
+  DeleteRulesPopoverContent,
+  ViewFiltersPopoverContent,
+} from './page/DeleteVmFilterPopovers';
 
 interface DeleteVmModalProps {
   open: boolean;
@@ -58,78 +55,6 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
     border: '1px solid var(--boxmox-color-border-default)',
     borderRadius: 'var(--radius-md)',
   };
-
-  const deleteRulesPopoverContent = (
-    <div className={cx('vm-delete-vm-filter-popover')}>
-      <div className={cx('vm-delete-vm-filter-popover-title')}>Delete rules</div>
-      <div className={cx('vm-delete-vm-filter-popover-options')}>
-        <Checkbox
-          className={cx('vm-delete-vm-filter-option')}
-          checked={filters.policy.allowBanned}
-          disabled={filtersSaving}
-          onChange={(event) => onPolicyToggle('allowBanned', event.target.checked)}
-        >
-          Allow BANNED
-        </Checkbox>
-        <Checkbox
-          className={cx('vm-delete-vm-filter-option')}
-          checked={filters.policy.allowPrepareNoResources}
-          disabled={filtersSaving}
-          onChange={(event) => onPolicyToggle('allowPrepareNoResources', event.target.checked)}
-        >
-          Allow PREPARE without resources
-        </Checkbox>
-        <Checkbox
-          className={cx('vm-delete-vm-filter-option')}
-          checked={filters.policy.allowOrphan}
-          disabled={filtersSaving}
-          onChange={(event) => onPolicyToggle('allowOrphan', event.target.checked)}
-        >
-          Allow orphan VM (no linked account)
-        </Checkbox>
-      </div>
-    </div>
-  );
-
-  const viewFiltersPopoverContent = (
-    <div className={cx('vm-delete-vm-filter-popover')}>
-      <div className={cx('vm-delete-vm-filter-popover-title')}>View filters</div>
-      <div className={cx('vm-delete-vm-filter-popover-options')}>
-        <Checkbox
-          className={cx('vm-delete-vm-filter-option')}
-          checked={filters.view.showAllowed}
-          disabled={filtersSaving}
-          onChange={(event) => onViewToggle('showAllowed', event.target.checked)}
-        >
-          Show ALLOWED
-        </Checkbox>
-        <Checkbox
-          className={cx('vm-delete-vm-filter-option')}
-          checked={filters.view.showLocked}
-          disabled={filtersSaving}
-          onChange={(event) => onViewToggle('showLocked', event.target.checked)}
-        >
-          Show LOCKED
-        </Checkbox>
-        <Checkbox
-          className={cx('vm-delete-vm-filter-option')}
-          checked={filters.view.showRunning}
-          disabled={filtersSaving}
-          onChange={(event) => onViewToggle('showRunning', event.target.checked)}
-        >
-          Show RUNNING
-        </Checkbox>
-        <Checkbox
-          className={cx('vm-delete-vm-filter-option')}
-          checked={filters.view.showStopped}
-          disabled={filtersSaving}
-          onChange={(event) => onViewToggle('showStopped', event.target.checked)}
-        >
-          Show STOPPED
-        </Checkbox>
-      </div>
-    </div>
-  );
 
   return (
     <Modal
@@ -209,7 +134,14 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
         <div className={cx('vm-delete-vm-filter-toolbar')}>
           <div className={cx('vm-delete-vm-filter-toolbar-main')}>
             <Popover
-              content={deleteRulesPopoverContent}
+              content={
+                <DeleteRulesPopoverContent
+                  filters={filters}
+                  filtersSaving={filtersSaving}
+                  onPolicyToggle={onPolicyToggle}
+                  cx={cx}
+                />
+              }
               trigger="click"
               placement="bottomLeft"
               overlayClassName={cx('vm-delete-vm-filter-popover-overlay')}
@@ -228,7 +160,14 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
               </Button>
             </Popover>
             <Popover
-              content={viewFiltersPopoverContent}
+              content={
+                <ViewFiltersPopoverContent
+                  filters={filters}
+                  filtersSaving={filtersSaving}
+                  onViewToggle={onViewToggle}
+                  cx={cx}
+                />
+              }
               trigger="click"
               placement="bottomLeft"
               overlayClassName={cx('vm-delete-vm-filter-popover-overlay')}
@@ -286,97 +225,15 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
                   <span>State</span>
                 </div>
                 {candidates.map((candidate) => {
-                  const { vm, linkedBots, evaluations, canDelete, decisionReason } = candidate;
-                  const queuedAlready = queuedDeleteVmIds.has(vm.vmid);
-                  const checked = selection.includes(vm.vmid);
-                  const disabled = queuedAlready || !canDelete;
-                  const vmStatus = String(vm.status || 'unknown').toLowerCase();
-                  const statusClass =
-                    vmStatus === 'running'
-                      ? 'is-running'
-                      : vmStatus === 'stopped'
-                        ? 'is-stopped'
-                        : 'is-neutral';
-                  const primary = evaluations[0];
-                  const primaryBotId = primary?.bot.id ? primary.bot.id.slice(0, 8) : '';
-                  const missingResources = primary
-                    ? [
-                        !primary.hasEmail ? 'email' : null,
-                        !primary.hasPassword ? 'password' : null,
-                        !primary.hasProxy ? 'proxy' : null,
-                        !primary.hasSubscription ? 'subscription' : null,
-                        !primary.hasLicense ? 'license' : null,
-                      ].filter((value): value is string => Boolean(value))
-                    : [];
-                  const accountLine = primary
-                    ? `Account ${primaryBotId} • ${String(primary.bot.status || 'unknown').toUpperCase()}${primary.isBanned ? ' • BANNED' : ''}${primary.isPrepareSeed ? ' • PREPARE' : ''}`
-                    : 'Account: not linked';
-                  const resourcesLine = primary
-                    ? missingResources.length === 0
-                      ? 'Resources: complete profile'
-                      : `Missing resources: ${missingResources.join(', ')}`
-                    : 'Resources: unavailable (no linked account)';
-                  const decisionLine = queuedAlready
-                    ? 'Already queued for deletion'
-                    : decisionReason;
-                  const decisionClass = disabled ? 'is-blocked' : 'is-allowed';
                   return (
-                    <div
-                      key={vm.vmid}
-                      className={`vm-delete-vm-modal-item ${canDelete ? 'is-allowed' : 'is-blocked'}${checked ? ' is-selected' : ''}${disabled ? ' is-disabled' : ''}`}
-                    >
-                      <Checkbox
-                        className={cx('vm-delete-vm-modal-check')}
-                        checked={checked}
-                        disabled={disabled}
-                        onChange={(event) => onToggleSelection(vm.vmid, event.target.checked)}
-                      >
-                        <div className={cx('vm-delete-vm-modal-check-content')}>
-                          <span className={cx('vm-delete-vm-modal-item-main')}>
-                            VM {vm.vmid} - {vm.name || `VM ${vm.vmid}`}
-                          </span>
-                          <span
-                            className={cx(
-                              'vm-delete-vm-modal-item-sub vm-delete-vm-modal-item-sub--account',
-                            )}
-                          >
-                            {accountLine}
-                          </span>
-                          <span
-                            className={cx(
-                              'vm-delete-vm-modal-item-sub vm-delete-vm-modal-item-sub--resources',
-                            )}
-                          >
-                            {resourcesLine}
-                          </span>
-                          {linkedBots.length > 1 && (
-                            <span className={cx('vm-delete-vm-modal-item-sub')}>
-                              Linked accounts: {linkedBots.length}
-                            </span>
-                          )}
-                          <span
-                            className={`vm-delete-vm-modal-item-sub vm-delete-vm-modal-item-sub--decision vm-delete-vm-modal-item-sub--${decisionClass}`}
-                          >
-                            Rule: {decisionLine}
-                          </span>
-                        </div>
-                      </Checkbox>
-                      <div className={cx('vm-delete-vm-modal-item-right')}>
-                        <Tag className={cx(`vm-delete-vm-status ${statusClass}`)}>
-                          {vmStatus.toUpperCase()}
-                        </Tag>
-                        <Tag
-                          className={cx(
-                            `vm-delete-vm-status ${disabled ? 'is-blocked' : 'is-allowed'}`,
-                          )}
-                        >
-                          {disabled ? 'LOCKED' : 'ALLOWED'}
-                        </Tag>
-                        {queuedAlready && (
-                          <Tag className={cx('vm-delete-vm-status is-queued')}>QUEUED</Tag>
-                        )}
-                      </div>
-                    </div>
+                    <DeleteVmCandidateItem
+                      key={candidate.vm.vmid}
+                      candidate={candidate}
+                      queuedDeleteVmIds={queuedDeleteVmIds}
+                      selection={selection}
+                      onToggleSelection={onToggleSelection}
+                      cx={cx}
+                    />
                   );
                 })}
               </>

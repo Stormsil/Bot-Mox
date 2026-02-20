@@ -3,6 +3,7 @@ import { AgentsModule } from './agents/agents.module';
 import { ArtifactsModule } from './artifacts/artifacts.module';
 import { AuthModule } from './auth/auth.module';
 import { BotsModule } from './bots/bots.module';
+import { DbModule } from './db/db.module';
 import { FinanceModule } from './finance/finance.module';
 import { HealthModule } from './health/health.module';
 import { InfraModule } from './infra/infra.module';
@@ -23,6 +24,7 @@ import { WowNamesModule } from './wow-names/wow-names.module';
 
 @Module({
   imports: [
+    DbModule,
     HealthModule,
     InfraGatewayModule,
     ObservabilityModule,
