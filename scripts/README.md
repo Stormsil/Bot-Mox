@@ -197,7 +197,7 @@ Strict mode:
 
 - requires all flags and enforces non-legacy-safe values:
   - `AUTH_MODE=enforced`
-  - `AGENT_TRANSPORT=hybrid|ws`
+  - `AGENT_TRANSPORT=ws`
   - `SECRETS_VAULT_MODE=enforced`
 - when `SECRETS_VAULT_MODE=enforced`, also requires:
   - `SUPABASE_URL`

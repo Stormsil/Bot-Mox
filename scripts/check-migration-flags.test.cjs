@@ -17,7 +17,7 @@ function runWithEnv(env) {
 test('strict mode fails when vault env is missing for enforced secrets mode', () => {
   const result = runWithEnv({
     AUTH_MODE: 'enforced',
-    AGENT_TRANSPORT: 'hybrid',
+    AGENT_TRANSPORT: 'ws',
     SECRETS_VAULT_MODE: 'enforced',
     SUPABASE_URL: '',
     SUPABASE_SERVICE_ROLE_KEY: '',
@@ -34,7 +34,7 @@ test('strict mode fails when vault env is missing for enforced secrets mode', ()
 test('strict mode passes when required vault env is present', () => {
   const result = runWithEnv({
     AUTH_MODE: 'enforced',
-    AGENT_TRANSPORT: 'hybrid',
+    AGENT_TRANSPORT: 'ws',
     SECRETS_VAULT_MODE: 'enforced',
     SUPABASE_URL: 'https://example.supabase.co',
     SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key',

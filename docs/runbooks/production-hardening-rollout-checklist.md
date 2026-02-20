@@ -26,22 +26,15 @@ This runbook defines the final rollout and stabilization loop for production-har
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `SUPABASE_VAULT_RPC_NAME`
 
-## Shadow To Enforced Sequence
+## Enforced Baseline
 
-1. Start with shadow/hybrid modes:
-   - `AUTH_MODE=shadow`
-   - `AGENT_TRANSPORT=hybrid`
-   - `SECRETS_VAULT_MODE=shadow`
-2. Observe a minimum 24h window without critical errors.
-3. Enable auth enforcement:
-   - switch to `AUTH_MODE=enforced`
-   - monitor auth failure rates and tenant-related 401/403 spikes.
-4. Enable WS-first transport:
-   - switch to `AGENT_TRANSPORT=ws`
-   - monitor reconnect rate and command latency.
-5. Enable vault enforcement:
-   - switch to `SECRETS_VAULT_MODE=enforced`
-   - verify zero local-fallback references and stable vault RPC calls.
+1. Use enforced defaults in dev/prod-like/CI:
+   - `AUTH_MODE=enforced`
+   - `AGENT_TRANSPORT=ws`
+   - `SECRETS_VAULT_MODE=enforced`
+2. Verify Vault env is present and valid in all environments.
+3. Monitor auth failure rates, WS reconnect/latency, and vault RPC errors.
+4. Any fallback profile usage is break-glass only and must be documented in the PR/runbook update.
 
 ## Observability Signals
 

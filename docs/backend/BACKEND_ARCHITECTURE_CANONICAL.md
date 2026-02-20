@@ -20,14 +20,14 @@ Related Checks: `check:zod:boundaries`, `check:infra:gateway`, `contract:check`,
 2. Controllers remain thin; business logic lives in services/use-case helpers.
 3. All request/response payload boundaries are validated through contract/shared schemas.
 4. No new Express runtime or legacy adapters in active backend runtime.
-5. Auth mode is runtime-configurable via `AUTH_MODE`:
+5. Auth mode is runtime-configurable via `AUTH_MODE` (default: `enforced`):
    - `shadow`: allow requests without hard-fail, attach shadow identity (`BOTMOX_SHADOW_TENANT_ID`, default `shadow-tenant`).
    - `enforced`: reject missing/invalid bearer token.
    - JWTs without explicit tenant claim are rejected in all modes (shadow fallback identity is applied by guard only when token verification fails).
-6. Agent transport mode is runtime-configurable via `AGENT_TRANSPORT`:
+6. Agent transport mode is runtime-configurable via `AGENT_TRANSPORT` (default: `ws`):
    - `longpoll`, `ws`, `hybrid`.
 7. Backend runtime persistence is repository-only (Prisma/Postgres). In-memory Map fallback is not allowed in active modules.
-8. Secrets material mode is runtime-configurable via `SECRETS_VAULT_MODE`:
+8. Secrets material mode is runtime-configurable via `SECRETS_VAULT_MODE` (default: `enforced`):
    - `shadow`, `enforced`.
    - Missing Vault RPC config is fail-fast (no local fallback in active runtime).
    - `local-vault://` references are forbidden.
