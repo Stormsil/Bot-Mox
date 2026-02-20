@@ -76,6 +76,7 @@ Strict CI profile uses `pnpm run migration:check:strict` with enforced baseline:
    - `SUPABASE_VAULT_RPC_NAME`
 5. GitHub Actions setup order is mandatory:
    - run `pnpm/action-setup` before `actions/setup-node` when using `cache: pnpm`.
+6. CI `quality-gates` executes `check:all:mono` in deterministic sequential mode (no turbo fan-out) to avoid runner-specific package-manager spawn instability.
 
 ## Database and Contract Flow
 
