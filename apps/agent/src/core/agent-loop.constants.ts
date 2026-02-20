@@ -17,7 +17,7 @@ export function resolveTransportMode(): AgentTransportMode {
   if (raw === 'ws' || raw === 'hybrid' || raw === 'longpoll') {
     return raw;
   }
-  return 'hybrid';
+  return 'ws';
 }
 
 export function transportModePrefersWs(mode: AgentTransportMode): boolean {

@@ -17,7 +17,7 @@ Related Checks: `agent:typecheck`, `contract:check`
 ## Operational Flow
 
 1. Pair/register against backend APIs.
-2. Prefer WS channel for heartbeat/command flow (`AGENT_TRANSPORT=ws|hybrid`), fallback to HTTP in `hybrid`.
+2. Use WS channel for heartbeat/command flow by default (`AGENT_TRANSPORT=ws`); fallback modes are migration-only.
 3. Receive next command (WS-first), execute locally.
 4. Report command status/result (WS-first).
 5. Apply reconnect backoff policy for WS transport and preserve bounded fallback behavior.

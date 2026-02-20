@@ -19,6 +19,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -26,13 +31,14 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @botmox/backend exec prisma generate
 
       - name: Lockfile policy
         run: pnpm run check:lockfiles
@@ -46,7 +52,7 @@ jobs:
       - name: Migration flags check
         env:
           AUTH_MODE: enforced
-          AGENT_TRANSPORT: hybrid
+          AGENT_TRANSPORT: ws
           SECRETS_VAULT_MODE: enforced
           SUPABASE_URL: https://example.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
@@ -95,6 +101,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -102,10 +113,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

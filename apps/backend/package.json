@@ -13,7 +13,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "contract:check": "pnpm run typecheck",
     "pretest": "pnpm --filter @botmox/api-contract build",
-    "test": "tsx --test --test-concurrency=1 \"src/**/*.test.ts\" && pnpm run typecheck",
+    "test": "node scripts/run-tests.cjs && pnpm run typecheck",
     "check": "pnpm run typecheck && pnpm run build"
   },
   "dependencies": {

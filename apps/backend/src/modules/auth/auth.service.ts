@@ -18,7 +18,7 @@ interface TenantResolutionResult {
 
 @Injectable()
 export class AuthService {
-  private readonly authMode = String(process.env.AUTH_MODE || 'shadow')
+  private readonly authMode = String(process.env.AUTH_MODE || 'enforced')
     .trim()
     .toLowerCase();
 

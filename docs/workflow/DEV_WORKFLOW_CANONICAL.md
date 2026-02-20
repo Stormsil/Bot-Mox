@@ -68,12 +68,16 @@ Use only allowed values validated by `pnpm run migration:check`:
 Strict CI profile uses `pnpm run migration:check:strict` with enforced baseline:
 
 1. `AUTH_MODE=enforced`
-2. `AGENT_TRANSPORT=hybrid` (or `ws`)
+2. `AGENT_TRANSPORT=ws`
 3. `SECRETS_VAULT_MODE=enforced`
 4. Vault env must be present:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `SUPABASE_VAULT_RPC_NAME`
+5. GitHub Actions setup order is mandatory:
+   - run `pnpm/action-setup` before `actions/setup-node` when using `cache: pnpm`.
+6. CI `quality-gates` executes `check:all:mono` in deterministic sequential mode (no turbo fan-out) to avoid runner-specific package-manager spawn instability.
+7. CI must run `pnpm --filter @botmox/backend exec prisma generate` before backend contract/type checks.
 
 ## Database and Contract Flow
 
@@ -142,3 +146,4 @@ pnpm run docs:check
 1. Каноничный режим разработки: через `pnpm` из корня монорепозитория.
 2. Все архитектурные изменения сопровождаются обновлением canonical docs.
 3. Lock policy: только `pnpm-lock.yaml`; `package-lock.json` запрещен.
+4. Базовый runtime-профиль без legacy fallback: `AUTH_MODE=enforced`, `AGENT_TRANSPORT=ws`, `SECRETS_VAULT_MODE=enforced`.

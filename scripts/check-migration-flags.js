@@ -8,7 +8,7 @@ const allowed = {
 
 const strictAllowed = {
   AUTH_MODE: new Set(['enforced']),
-  AGENT_TRANSPORT: new Set(['hybrid', 'ws']),
+  AGENT_TRANSPORT: new Set(['ws']),
   SECRETS_VAULT_MODE: new Set(['enforced']),
 };
 

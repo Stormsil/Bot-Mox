@@ -33,7 +33,7 @@ export default defineConfig({
   webServer: noWebServer
     ? undefined
     : {
-        command: 'node ../start-dev.js',
+        command: 'node ../../start-dev.js',
         url: 'http://localhost:5173',
         reuseExistingServer: !isCI,
         timeout: 120_000,

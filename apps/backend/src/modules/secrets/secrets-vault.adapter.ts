@@ -113,7 +113,7 @@ export class SecretsVaultAdapter {
   }
 
   private resolveMode(): VaultMode {
-    const mode = String(process.env.SECRETS_VAULT_MODE || 'shadow')
+    const mode = String(process.env.SECRETS_VAULT_MODE || 'enforced')
       .trim()
       .toLowerCase();
     if (mode === 'enforced') {
