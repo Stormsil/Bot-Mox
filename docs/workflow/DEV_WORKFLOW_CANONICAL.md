@@ -77,6 +77,7 @@ Strict CI profile uses `pnpm run migration:check:strict` with enforced baseline:
 5. GitHub Actions setup order is mandatory:
    - run `pnpm/action-setup` before `actions/setup-node` when using `cache: pnpm`.
 6. CI `quality-gates` executes `check:all:mono` in deterministic sequential mode (no turbo fan-out) to avoid runner-specific package-manager spawn instability.
+7. CI must run `pnpm --filter @botmox/backend exec prisma generate` before backend contract/type checks.
 
 ## Database and Contract Flow
 
