@@ -11,11 +11,13 @@ import {
   MailOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Card, Col, Row, Tag, Typography } from 'antd';
+import { Card, Row, Tag, Typography } from 'antd';
 import type React from 'react';
 import styles from '../BotSummary.module.css';
+import { ResourceStatusCard } from './ResourceStatusCard';
+import { SummaryConfigureLinkCard } from './SummaryConfigureLinkCard';
 import { SummaryStatItem } from './stat-item';
-import { detailCardStyles, statusSummaryCardStyles } from './summaryUi';
+import { statusSummaryCardStyles } from './summaryUi';
 import type {
   BotStatusInfo,
   BotSummaryBot,
@@ -27,6 +29,10 @@ import type {
 } from './types';
 
 const { Text } = Typography;
+const copyableIcons = [
+  <CopyOutlined key="copy" className={styles['summary-copy-icon']} />,
+  <CheckOutlined key="check" className={styles['summary-copy-icon']} />,
+];
 
 interface SummaryConfigureSectionProps {
   bot: BotSummaryBot;
@@ -53,184 +59,121 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
 }) => (
   <section id="summary-configure" className={styles['bot-section']}>
     <Row gutter={[16, 16]} className={styles['details-row']}>
-      <Col span={8}>
-        <Card
-          title={
-            <div className={styles['link-card-title']}>
-              <MailOutlined className={styles['link-card-icon']} />
-              <span>Account</span>
-            </div>
+      <SummaryConfigureLinkCard
+        icon={<MailOutlined />}
+        title="Account"
+        statusTag={
+          <Tag color={accountComplete ? 'success' : 'warning'}>
+            {accountComplete ? 'Complete' : 'Incomplete'}
+          </Tag>
+        }
+        onOpen={() => goToConfigure('account')}
+      >
+        <SummaryStatItem
+          label="Email"
+          value={
+            accountEmail ? (
+              <Text
+                copyable={{ text: accountEmail, icon: copyableIcons }}
+                className={styles['summary-copy-text']}
+              >
+                {accountEmail}
+              </Text>
+            ) : (
+              <span className={styles['summary-copy-empty']}>Email not set</span>
+            )
           }
-          className={[styles['detail-card'], styles['link-card']].join(' ')}
-          styles={detailCardStyles}
-          hoverable
-        >
-          <div className={styles['link-card-header']}>
-            <Tag color={accountComplete ? 'success' : 'warning'}>
-              {accountComplete ? 'Complete' : 'Incomplete'}
-            </Tag>
-            <button
-              type="button"
-              className={styles['link-card-open-btn']}
-              onClick={() => goToConfigure('account')}
-            >
-              Open
-            </button>
-          </div>
-          <div className={styles['summary-stats-list']}>
-            <SummaryStatItem
-              label="Email"
-              value={
-                accountEmail ? (
-                  <Text
-                    copyable={{
-                      text: accountEmail,
-                      icon: [
-                        <CopyOutlined key="copy" className={styles['summary-copy-icon']} />,
-                        <CheckOutlined key="check" className={styles['summary-copy-icon']} />,
-                      ],
-                    }}
-                    className={styles['summary-copy-text']}
-                  >
-                    {accountEmail}
-                  </Text>
-                ) : (
-                  <span className={styles['summary-copy-empty']}>Email not set</span>
-                )
-              }
-              icon={<MailOutlined />}
-            />
-            <SummaryStatItem
-              label="Password"
-              value={
-                accountPassword ? (
-                  <Text
-                    copyable={{
-                      text: accountPassword,
-                      icon: [
-                        <CopyOutlined key="copy" className={styles['summary-copy-icon']} />,
-                        <CheckOutlined key="check" className={styles['summary-copy-icon']} />,
-                      ],
-                    }}
-                    className={styles['summary-copy-text']}
-                  >
-                    {accountPassword}
-                  </Text>
-                ) : (
-                  <span className={styles['summary-copy-empty']}>Password not set</span>
-                )
-              }
-              icon={<KeyOutlined />}
-              valueClassName={styles['summary-stat-mono']}
-            />
-            {bot.account?.mail_provider && (
-              <SummaryStatItem
-                label="Provider"
-                value={bot.account.mail_provider}
-                icon={<GlobalOutlined />}
-              />
-            )}
-            <SummaryStatItem
-              label="Created"
-              value={accountCreatedAt ? formatDate(accountCreatedAt) : '—'}
-              icon={<CalendarOutlined />}
-            />
-          </div>
-        </Card>
-      </Col>
+          icon={<MailOutlined />}
+        />
+        <SummaryStatItem
+          label="Password"
+          value={
+            accountPassword ? (
+              <Text
+                copyable={{ text: accountPassword, icon: copyableIcons }}
+                className={styles['summary-copy-text']}
+              >
+                {accountPassword}
+              </Text>
+            ) : (
+              <span className={styles['summary-copy-empty']}>Password not set</span>
+            )
+          }
+          icon={<KeyOutlined />}
+          valueClassName={styles['summary-stat-mono']}
+        />
+        {bot.account?.mail_provider && (
+          <SummaryStatItem
+            label="Provider"
+            value={bot.account.mail_provider}
+            icon={<GlobalOutlined />}
+          />
+        )}
+        <SummaryStatItem
+          label="Created"
+          value={accountCreatedAt ? formatDate(accountCreatedAt) : '—'}
+          icon={<CalendarOutlined />}
+        />
+      </SummaryConfigureLinkCard>
 
-      <Col span={8}>
-        <Card
-          title={
-            <div className={styles['link-card-title']}>
-              <IdcardOutlined className={styles['link-card-icon']} />
-              <span>Person</span>
-            </div>
+      <SummaryConfigureLinkCard
+        icon={<IdcardOutlined />}
+        title="Person"
+        statusTag={
+          <Tag color={personComplete ? 'success' : 'warning'}>
+            {personComplete ? 'Complete' : 'Incomplete'}
+          </Tag>
+        }
+        onOpen={() => goToConfigure('person')}
+      >
+        <SummaryStatItem
+          label="Name"
+          value={
+            bot.person?.first_name || bot.person?.last_name
+              ? `${bot.person?.first_name || ''} ${bot.person?.last_name || ''}`.trim()
+              : 'Name not set'
           }
-          className={[styles['detail-card'], styles['link-card']].join(' ')}
-          styles={detailCardStyles}
-          hoverable
-        >
-          <div className={styles['link-card-header']}>
-            <Tag color={personComplete ? 'success' : 'warning'}>
-              {personComplete ? 'Complete' : 'Incomplete'}
-            </Tag>
-            <button
-              type="button"
-              className={styles['link-card-open-btn']}
-              onClick={() => goToConfigure('person')}
-            >
-              Open
-            </button>
-          </div>
-          <div className={styles['summary-stats-list']}>
-            <SummaryStatItem
-              label="Name"
-              value={
-                bot.person?.first_name || bot.person?.last_name
-                  ? `${bot.person?.first_name || ''} ${bot.person?.last_name || ''}`.trim()
-                  : 'Name not set'
-              }
-              icon={<UserOutlined />}
-            />
-            <SummaryStatItem
-              label="Location"
-              value={
-                bot.person?.country || bot.person?.city
-                  ? `${bot.person?.country || ''}${bot.person?.city ? `, ${bot.person.city}` : ''}`
-                  : 'Location not set'
-              }
-              icon={<FlagOutlined />}
-            />
-            {bot.person?.birth_date && (
-              <SummaryStatItem
-                label="Birth"
-                value={bot.person.birth_date}
-                icon={<CalendarOutlined />}
-              />
-            )}
-          </div>
-        </Card>
-      </Col>
+          icon={<UserOutlined />}
+        />
+        <SummaryStatItem
+          label="Location"
+          value={
+            bot.person?.country || bot.person?.city
+              ? `${bot.person?.country || ''}${bot.person?.city ? `, ${bot.person.city}` : ''}`
+              : 'Location not set'
+          }
+          icon={<FlagOutlined />}
+        />
+        {bot.person?.birth_date && (
+          <SummaryStatItem
+            label="Birth"
+            value={bot.person.birth_date}
+            icon={<CalendarOutlined />}
+          />
+        )}
+      </SummaryConfigureLinkCard>
 
-      <Col span={8}>
-        <Card
-          title={
-            <div className={styles['link-card-title']}>
-              <CalendarOutlined className={styles['link-card-icon']} />
-              <span>Schedule</span>
-            </div>
-          }
-          className={[styles['detail-card'], styles['link-card']].join(' ')}
-          styles={detailCardStyles}
-          hoverable
-        >
-          <div className={styles['link-card-header']}>
-            <Tag color={scheduleStats.enabledSessions > 0 ? 'success' : undefined}>
-              {scheduleStats.enabledSessions > 0 ? 'Configured' : 'Not Set'}
-            </Tag>
-            <button
-              type="button"
-              className={styles['link-card-open-btn']}
-              onClick={() => goToConfigure('schedule')}
-            >
-              Open
-            </button>
-          </div>
-          <div className={styles['summary-stats-list']}>
-            <SummaryStatItem
-              label="Active Sessions"
-              value={`${scheduleStats.enabledSessions}/${scheduleStats.totalSessions}`}
-              icon={<ClockCircleOutlined />}
-            />
-            <SummaryStatItem
-              label="Days Configured"
-              value={scheduleStats.daysConfigured}
-              icon={<CalendarOutlined />}
-            />
-          </div>
-        </Card>
-      </Col>
+      <SummaryConfigureLinkCard
+        icon={<CalendarOutlined />}
+        title="Schedule"
+        statusTag={
+          <Tag color={scheduleStats.enabledSessions > 0 ? 'success' : undefined}>
+            {scheduleStats.enabledSessions > 0 ? 'Configured' : 'Not Set'}
+          </Tag>
+        }
+        onOpen={() => goToConfigure('schedule')}
+      >
+        <SummaryStatItem
+          label="Active Sessions"
+          value={`${scheduleStats.enabledSessions}/${scheduleStats.totalSessions}`}
+          icon={<ClockCircleOutlined />}
+        />
+        <SummaryStatItem
+          label="Days Configured"
+          value={scheduleStats.daysConfigured}
+          icon={<CalendarOutlined />}
+        />
+      </SummaryConfigureLinkCard>
     </Row>
   </section>
 );
@@ -263,113 +206,107 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
       styles={statusSummaryCardStyles}
     >
       <Row gutter={[16, 16]}>
-        <Col span={8}>
-          <button
-            type="button"
-            className={[styles['status-item'], styles['status-item-button'], styles.clickable].join(
-              ' ',
-            )}
-            onClick={() => goToResources('license')}
-            onKeyDown={onActivate(() => goToResources('license'))}
-          >
-            <KeyOutlined className={styles['status-icon']} />
-            <div>
-              <Text type="secondary">License</Text>
-              <br />
-              {!linkedResources.license ? (
-                <Tag>Not Assigned</Tag>
-              ) : statusInfo.licenseExpired ? (
-                <Tag color="error">Expired</Tag>
-              ) : statusInfo.licenseExpiringSoon ? (
-                <Tag color="warning">Expiring Soon</Tag>
-              ) : (
-                <Tag color="success">Active</Tag>
-              )}
-              <div className={styles['status-meta']}>
-                <span>Key: {formatCompactKey(linkedResources.license?.key)}</span>
-              </div>
-              <div className={styles['status-meta']}>
-                <span>Expires: {formatDate(linkedResources.license?.expires_at)}</span>
-              </div>
-            </div>
-          </button>
-        </Col>
-        <Col span={8}>
-          <button
-            type="button"
-            className={[styles['status-item'], styles['status-item-button'], styles.clickable].join(
-              ' ',
-            )}
-            onClick={() => goToResources('proxy')}
-            onKeyDown={onActivate(() => goToResources('proxy'))}
-          >
-            <GlobalOutlined className={styles['status-icon']} />
-            <div>
-              <Text type="secondary">Proxy</Text>
-              <br />
-              {!linkedResources.proxy?.ip ? (
-                <Tag>Not Assigned</Tag>
-              ) : statusInfo.proxyExpired ? (
-                <Tag color="error">Expired</Tag>
-              ) : statusInfo.proxyBanned ? (
-                <Tag color="error">Banned</Tag>
-              ) : statusInfo.proxyExpiringSoon ? (
-                <Tag color="warning">Expiring Soon</Tag>
-              ) : (
-                <Tag color="success">Active</Tag>
-              )}
-              <div className={styles['status-meta']}>
+        <ResourceStatusCard
+          icon={<KeyOutlined />}
+          title="License"
+          statusTag={
+            !linkedResources.license ? (
+              <Tag>Not Assigned</Tag>
+            ) : statusInfo.licenseExpired ? (
+              <Tag color="error">Expired</Tag>
+            ) : statusInfo.licenseExpiringSoon ? (
+              <Tag color="warning">Expiring Soon</Tag>
+            ) : (
+              <Tag color="success">Active</Tag>
+            )
+          }
+          metaRows={[
+            {
+              key: 'license-key',
+              content: <span>Key: {formatCompactKey(linkedResources.license?.key)}</span>,
+            },
+            {
+              key: 'license-expires',
+              content: <span>Expires: {formatDate(linkedResources.license?.expires_at)}</span>,
+            },
+          ]}
+          onClick={() => goToResources('license')}
+          onKeyDown={onActivate(() => goToResources('license'))}
+        />
+        <ResourceStatusCard
+          icon={<GlobalOutlined />}
+          title="Proxy"
+          statusTag={
+            !linkedResources.proxy?.ip ? (
+              <Tag>Not Assigned</Tag>
+            ) : statusInfo.proxyExpired ? (
+              <Tag color="error">Expired</Tag>
+            ) : statusInfo.proxyBanned ? (
+              <Tag color="error">Banned</Tag>
+            ) : statusInfo.proxyExpiringSoon ? (
+              <Tag color="warning">Expiring Soon</Tag>
+            ) : (
+              <Tag color="success">Active</Tag>
+            )
+          }
+          metaRows={[
+            {
+              key: 'proxy-ip',
+              content: (
                 <span>
                   IP:{' '}
                   {linkedResources.proxy?.ip
                     ? `${linkedResources.proxy.ip}${linkedResources.proxy.port ? `:${linkedResources.proxy.port}` : ''}`
                     : '—'}
                 </span>
-              </div>
-              <div className={styles['status-meta']}>
-                <span>Expires: {formatDate(linkedResources.proxy?.expires_at)}</span>
-              </div>
-            </div>
-          </button>
-        </Col>
-        <Col span={8}>
-          <button
-            type="button"
-            className={[styles['status-item'], styles['status-item-button'], styles.clickable].join(
-              ' ',
-            )}
-            onClick={() => goToResources('subscription')}
-            onKeyDown={onActivate(() => goToResources('subscription'))}
-          >
-            <CreditCardOutlined className={styles['status-icon']} />
-            <div>
-              <Text type="secondary">Subscriptions</Text>
-              <br />
-              {subscriptionSummary.total === 0 ? (
-                <Tag>None</Tag>
-              ) : statusInfo.subscriptionsExpired > 0 ? (
-                <Tag color="error">{statusInfo.subscriptionsExpired} Expired</Tag>
-              ) : statusInfo.subscriptionsExpiringSoon > 0 ? (
-                <Tag color="warning">{statusInfo.subscriptionsExpiringSoon} Expiring</Tag>
-              ) : (
-                <Tag color="success">All Active</Tag>
-              )}
-              <div className={styles['status-meta']}>
+              ),
+            },
+            {
+              key: 'proxy-expires',
+              content: <span>Expires: {formatDate(linkedResources.proxy?.expires_at)}</span>,
+            },
+          ]}
+          onClick={() => goToResources('proxy')}
+          onKeyDown={onActivate(() => goToResources('proxy'))}
+        />
+        <ResourceStatusCard
+          icon={<CreditCardOutlined />}
+          title="Subscriptions"
+          statusTag={
+            subscriptionSummary.total === 0 ? (
+              <Tag>None</Tag>
+            ) : statusInfo.subscriptionsExpired > 0 ? (
+              <Tag color="error">{statusInfo.subscriptionsExpired} Expired</Tag>
+            ) : statusInfo.subscriptionsExpiringSoon > 0 ? (
+              <Tag color="warning">{statusInfo.subscriptionsExpiringSoon} Expiring</Tag>
+            ) : (
+              <Tag color="success">All Active</Tag>
+            )
+          }
+          metaRows={[
+            {
+              key: 'subscriptions-active',
+              content: (
                 <span>
                   Active: {subscriptionSummary.activeCount}/{subscriptionSummary.total}
                 </span>
-              </div>
-              <div className={styles['status-meta']}>
+              ),
+            },
+            {
+              key: 'subscriptions-next',
+              content: (
                 <span>
                   Next:{' '}
                   {subscriptionSummary.nextExpiry
                     ? `${formatDate(subscriptionSummary.nextExpiry.expires_at)} (${formatDaysLeft(subscriptionSummary.nextExpiry.expires_at)})`
                     : '—'}
                 </span>
-              </div>
-            </div>
-          </button>
-        </Col>
+              ),
+            },
+          ]}
+          onClick={() => goToResources('subscription')}
+          onKeyDown={onActivate(() => goToResources('subscription'))}
+        />
       </Row>
     </Card>
   </section>

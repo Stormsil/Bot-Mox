@@ -10,6 +10,7 @@
     "lint": "pnpm --dir ../.. exec biome check apps/agent/src",
     "typecheck": "tsc --noEmit",
     "contract:check": "pnpm --filter @botmox/api-contract contract:check",
+    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\" && pnpm run typecheck",
     "check": "pnpm run typecheck",
     "clean": "rimraf dist"
   },
@@ -17,11 +18,14 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@botmox/api-contract": "workspace:*",
     "ssh2": "^1.17.0",
+    "ws": "^8.18.3",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/ssh2": "^1.15.5",
+    "@types/ws": "^8.18.1",
     "@types/node": "^22.0.0",
     "electron": "^34.0.0",
     "electron-builder": "^25.0.0",

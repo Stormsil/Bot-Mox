@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
+import { ResourcesRepository } from './resources.repository';
 
 type ResourceKind = 'licenses' | 'proxies' | 'subscriptions';
 type ResourceRecord = Record<string, unknown>;
@@ -20,19 +22,7 @@ export interface ResourceListResult {
 
 @Injectable()
 export class ResourcesService {
-  private readonly store = new Map<ResourceKind, Map<string, ResourceRecord>>([
-    ['licenses', new Map()],
-    ['proxies', new Map()],
-    ['subscriptions', new Map()],
-  ]);
-
-  private getBucket(kind: ResourceKind): Map<string, ResourceRecord> {
-    const bucket = this.store.get(kind);
-    if (!bucket) {
-      throw new Error(`Unknown resource bucket: ${kind}`);
-    }
-    return bucket;
-  }
+  constructor(private readonly repository: ResourcesRepository) {}
 
   private normalizeSearchValue(value: unknown): string {
     if (value === null || value === undefined) {
@@ -56,7 +46,7 @@ export class ResourcesService {
     return `${kind}-${stamp}-${random}`;
   }
 
-  list(kind: ResourceKind, query: ResourceListQuery): ResourceListResult {
+  private applyListQuery(items: ResourceRecord[], query: ResourceListQuery): ResourceListResult {
     const order = query.order === 'desc' ? 'desc' : 'asc';
     const page = Number.isFinite(query.page) && (query.page ?? 0) > 0 ? Number(query.page) : 1;
     const limit = Number.isFinite(query.limit) && (query.limit ?? 0) > 0 ? Number(query.limit) : 50;
@@ -65,7 +55,7 @@ export class ResourcesService {
       .toLowerCase();
     const sort = String(query.sort || '').trim();
 
-    let data = [...this.getBucket(kind).values()];
+    let data = [...items];
 
     if (q) {
       data = data.filter((item) =>
@@ -98,11 +88,39 @@ export class ResourcesService {
     };
   }
 
-  getById(kind: ResourceKind, id: string): ResourceRecord | null {
-    return this.getBucket(kind).get(id) ?? null;
+  private mapDbRowToRecord(row: Record<string, unknown>): ResourceRecord {
+    const id = String(row.id || '').trim();
+    const payload = row.payload;
+    if (payload && typeof payload === 'object') {
+      return { ...(payload as ResourceRecord), ...(id ? { id } : {}) };
+    }
+    return id ? { id } : {};
   }
 
-  create(kind: ResourceKind, payload: ResourceRecord, explicitId?: string): ResourceRecord {
+  async list(
+    kind: ResourceKind,
+    query: ResourceListQuery,
+    tenantId: string,
+  ): Promise<ResourceListResult> {
+    const rows = await this.repository.list(tenantId, kind);
+    const mapped = rows.map((row) => this.mapDbRowToRecord(row));
+    return this.applyListQuery(mapped, query);
+  }
+
+  async getById(kind: ResourceKind, id: string, tenantId: string): Promise<ResourceRecord | null> {
+    const row = await this.repository.findById(tenantId, kind, id);
+    if (!row) {
+      return null;
+    }
+    return this.mapDbRowToRecord(row);
+  }
+
+  async create(
+    kind: ResourceKind,
+    payload: ResourceRecord,
+    explicitId: string | undefined,
+    tenantId: string,
+  ): Promise<ResourceRecord> {
     const rawId = typeof explicitId === 'string' ? explicitId.trim() : '';
     const payloadId = typeof payload.id === 'string' ? payload.id.trim() : '';
     const id = rawId || payloadId || this.makeId(kind);
@@ -114,12 +132,23 @@ export class ResourcesService {
       updated_at: new Date().toISOString(),
     };
 
-    this.getBucket(kind).set(id, nextRecord);
-    return nextRecord;
+    const row = await this.repository.upsert({
+      tenantId,
+      kind,
+      id,
+      payload: nextRecord as Prisma.InputJsonValue,
+    });
+    return this.mapDbRowToRecord(row);
   }
 
-  update(kind: ResourceKind, id: string, payload: ResourceRecord): ResourceRecord | null {
-    const current = this.getBucket(kind).get(id);
+  async update(
+    kind: ResourceKind,
+    id: string,
+    payload: ResourceRecord,
+    tenantId: string,
+  ): Promise<ResourceRecord | null> {
+    const dbCurrent = await this.repository.findById(tenantId, kind, id);
+    const current = dbCurrent ? this.mapDbRowToRecord(dbCurrent) : null;
     if (!current) {
       return null;
     }
@@ -131,11 +160,16 @@ export class ResourcesService {
       updated_at: new Date().toISOString(),
     };
 
-    this.getBucket(kind).set(id, nextRecord);
-    return nextRecord;
+    const row = await this.repository.upsert({
+      tenantId,
+      kind,
+      id,
+      payload: nextRecord as Prisma.InputJsonValue,
+    });
+    return this.mapDbRowToRecord(row);
   }
 
-  remove(kind: ResourceKind, id: string): boolean {
-    return this.getBucket(kind).delete(id);
+  async remove(kind: ResourceKind, id: string, tenantId: string): Promise<boolean> {
+    return this.repository.delete(tenantId, kind, id);
   }
 }

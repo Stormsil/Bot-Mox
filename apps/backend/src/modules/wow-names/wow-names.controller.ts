@@ -15,7 +15,10 @@ export class WowNamesController {
 
   private ensureAuthHeader(authorization: string | undefined): void {
     if (!authorization) {
-      throw new UnauthorizedException('Missing bearer token');
+      throw new UnauthorizedException({
+        code: 'MISSING_BEARER_TOKEN',
+        message: 'Missing bearer token',
+      });
     }
   }
 
@@ -24,7 +27,11 @@ export class WowNamesController {
   ): import('zod').infer<typeof wowNamesQuerySchema> {
     const parsed = wowNamesQuerySchema.safeParse(query ?? {});
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.flatten());
+      throw new BadRequestException({
+        code: 'WOW_NAMES_INVALID_QUERY',
+        message: 'Invalid wow names query',
+        details: parsed.error.flatten(),
+      });
     }
     return parsed.data;
   }

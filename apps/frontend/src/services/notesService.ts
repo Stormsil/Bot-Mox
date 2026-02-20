@@ -11,7 +11,7 @@ import {
   listWorkspaceNotesViaContract,
   patchWorkspaceNoteViaContract,
 } from '../providers/workspace-contract-client';
-import { ApiClientError, createPollingSubscription } from './apiClient';
+import { ApiClientError } from './apiClient';
 import {
   createCheckboxBlock,
   createEmptyNote,
@@ -21,7 +21,15 @@ import {
   generateListItemId,
   generateNoteId,
 } from './notes/factories';
-import { convertDbToNote, toNoteIndex } from './notes/mappers';
+import { convertDbToNote } from './notes/mappers';
+import {
+  filterNotesByBot,
+  filterNotesByProject,
+  getPinnedNotesFromCollection,
+  listNoteIndexes,
+  searchNotesInCollection,
+} from './notes/query';
+import { createNotesPollingSubscription } from './notes/subscriptions';
 import type {
   CreateNoteData,
   Note,
@@ -192,8 +200,7 @@ export async function getAllNotes(): Promise<Note[]> {
 
 export async function getNotesByBot(botId: string): Promise<Note[]> {
   try {
-    const notes = await getAllNotes();
-    return notes.filter((note) => note.bot_id === botId);
+    return filterNotesByBot(await getAllNotes(), botId);
   } catch (error) {
     uiLogger.error(`Error getting notes by bot ${botId}:`, error);
     throw normalizeApiErrorMessage(error, 'Failed to get notes by bot');
@@ -202,8 +209,7 @@ export async function getNotesByBot(botId: string): Promise<Note[]> {
 
 export async function getNotesByProject(projectId: string): Promise<Note[]> {
   try {
-    const notes = await getAllNotes();
-    return notes.filter((note) => note.project_id === projectId);
+    return filterNotesByProject(await getAllNotes(), projectId);
   } catch (error) {
     uiLogger.error(`Error getting notes by project ${projectId}:`, error);
     throw normalizeApiErrorMessage(error, 'Failed to get notes by project');
@@ -212,28 +218,7 @@ export async function getNotesByProject(projectId: string): Promise<Note[]> {
 
 export async function searchNotes(query: string): Promise<Note[]> {
   try {
-    const notes = await getAllNotes();
-    const searchLower = String(query || '').toLowerCase();
-
-    return notes.filter((note) => {
-      if (note.title.toLowerCase().includes(searchLower)) return true;
-      if (note.tags.some((tag) => tag.toLowerCase().includes(searchLower))) return true;
-      if (note.content?.toLowerCase().includes(searchLower)) return true;
-
-      if (note.blocks) {
-        return note.blocks.some((block) => {
-          if ('content' in block) {
-            return block.content.toLowerCase().includes(searchLower);
-          }
-          if ('items' in block) {
-            return block.items.some((item) => item.content.toLowerCase().includes(searchLower));
-          }
-          return false;
-        });
-      }
-
-      return false;
-    });
+    return searchNotesInCollection(await getAllNotes(), query);
   } catch (error) {
     uiLogger.error(`Error searching notes with query "${query}":`, error);
     throw normalizeApiErrorMessage(error, 'Failed to search notes');
@@ -242,8 +227,7 @@ export async function searchNotes(query: string): Promise<Note[]> {
 
 export async function getPinnedNotes(): Promise<Note[]> {
   try {
-    const notes = await getAllNotes();
-    return notes.filter((note) => note.is_pinned);
+    return getPinnedNotesFromCollection(await getAllNotes());
   } catch (error) {
     uiLogger.error('Error getting pinned notes:', error);
     throw normalizeApiErrorMessage(error, 'Failed to get pinned notes');
@@ -252,50 +236,7 @@ export async function getPinnedNotes(): Promise<Note[]> {
 
 export async function listNotes(filter?: NotesFilter, sort?: NotesSort): Promise<NoteIndex[]> {
   try {
-    let notes = (await getAllNotes()).map(toNoteIndex);
-
-    if (filter) {
-      if (filter.search) {
-        const searchLower = filter.search.toLowerCase();
-        notes = notes.filter(
-          (n) =>
-            n.title.toLowerCase().includes(searchLower) ||
-            n.preview.toLowerCase().includes(searchLower) ||
-            n.tags.some((t) => t.toLowerCase().includes(searchLower)),
-        );
-      }
-
-      if (filter.tags?.length) {
-        notes = notes.filter((n) => filter.tags?.some((t) => n.tags.includes(t)));
-      }
-
-      if (filter.bot_id !== undefined) {
-        notes = notes.filter((n) => n.bot_id === filter.bot_id);
-      }
-
-      if (filter.project_id !== undefined) {
-        notes = notes.filter((n) => n.project_id === filter.project_id);
-      }
-
-      if (filter.is_pinned !== undefined) {
-        notes = notes.filter((n) => n.is_pinned === filter.is_pinned);
-      }
-    }
-
-    const sortField = sort?.field || 'updated_at';
-    const sortDir = sort?.direction || 'desc';
-
-    notes.sort((a, b) => {
-      let comparison = 0;
-      if (sortField === 'title') {
-        comparison = a.title.localeCompare(b.title);
-      } else {
-        comparison = (a[sortField] || 0) - (b[sortField] || 0);
-      }
-      return sortDir === 'asc' ? comparison : -comparison;
-    });
-
-    return notes;
+    return listNoteIndexes(await getAllNotes(), filter, sort);
   } catch (error) {
     uiLogger.error('Error listing notes:', error);
     throw normalizeApiErrorMessage(error, 'Failed to list notes');
@@ -307,54 +248,50 @@ export async function listNotes(filter?: NotesFilter, sort?: NotesSort): Promise
 // ============================================
 
 export function subscribeToNote(id: string, callback: (note: Note | null) => void): Unsubscribe {
-  return createPollingSubscription(
-    async () => getNote(id),
+  return createNotesPollingSubscription({
+    key: `notes:${id}`,
+    intervalMs: 2000,
+    load: async () => getNote(id),
     callback,
-    (error) => {
-      uiLogger.error(`Error subscribing to note ${id}:`, error);
-      callback(null);
-    },
-    { key: `notes:${id}`, intervalMs: 2000, immediate: true },
-  );
+    fallbackValue: null,
+    errorMessage: `Error subscribing to note ${id}:`,
+  });
 }
 
 export function subscribeToAllNotes(callback: (notes: Note[]) => void): Unsubscribe {
-  return createPollingSubscription(
-    async () => getAllNotes(),
+  return createNotesPollingSubscription({
+    key: 'notes:all',
+    intervalMs: DEFAULT_POLL_INTERVAL_MS,
+    load: async () => getAllNotes(),
     callback,
-    (error) => {
-      uiLogger.error('Error subscribing to all notes:', error);
-      callback([]);
-    },
-    { key: 'notes:all', intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true },
-  );
+    fallbackValue: [],
+    errorMessage: 'Error subscribing to all notes:',
+  });
 }
 
 export function subscribeToNotesByBot(
   botId: string,
   callback: (notes: Note[]) => void,
 ): Unsubscribe {
-  return createPollingSubscription(
-    async () => getNotesByBot(botId),
+  return createNotesPollingSubscription({
+    key: `notes:bot:${botId}`,
+    intervalMs: DEFAULT_POLL_INTERVAL_MS,
+    load: async () => getNotesByBot(botId),
     callback,
-    (error) => {
-      uiLogger.error(`Error subscribing to notes by bot ${botId}:`, error);
-      callback([]);
-    },
-    { key: `notes:bot:${botId}`, intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true },
-  );
+    fallbackValue: [],
+    errorMessage: `Error subscribing to notes by bot ${botId}:`,
+  });
 }
 
 export function subscribeToNotesIndex(callback: (notes: NoteIndex[]) => void): Unsubscribe {
-  return createPollingSubscription(
-    async () => listNotes(),
+  return createNotesPollingSubscription({
+    key: 'notes:index',
+    intervalMs: DEFAULT_POLL_INTERVAL_MS,
+    load: async () => listNotes(),
     callback,
-    (error) => {
-      uiLogger.error('Error subscribing to notes index:', error);
-      callback([]);
-    },
-    { key: 'notes:index', intervalMs: DEFAULT_POLL_INTERVAL_MS, immediate: true },
-  );
+    fallbackValue: [],
+    errorMessage: 'Error subscribing to notes index:',
+  });
 }
 
 // ============================================

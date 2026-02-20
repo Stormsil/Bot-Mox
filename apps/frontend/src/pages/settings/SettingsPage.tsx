@@ -1,11 +1,8 @@
 import { ReloadOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Form, message, Row, Typography } from 'antd';
+import { Button, Form, Row, Typography } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  getDefaultSettings,
-  type ProjectSettings,
-} from '../../entities/settings/api/settingsFacade';
+import type { ProjectSettings } from '../../entities/settings/api/settingsFacade';
 import { useProjectSettingsQuery } from '../../entities/settings/api/useProjectSettingsQuery';
 import {
   useUpdateApiKeysMutation,
@@ -24,7 +21,6 @@ import { useUpdateSubscriptionSettingsMutation } from '../../entities/settings/a
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
 import { useThemeRuntime } from '../../theme/themeRuntime';
-import type { ApiKeys, NotificationEvents, ProxySettings, SubscriptionSettings } from '../../types';
 import styles from './SettingsPage.module.css';
 import {
   ApiKeysCard,
@@ -34,12 +30,7 @@ import {
   StoragePolicyCard,
 } from './SettingsSections';
 import { ThemeSettingsPanel } from './ThemeSettingsPanel';
-import type {
-  ApiKeysFormValues,
-  NotificationEventsFormValues,
-  ProxySettingsFormValues,
-  StoragePolicyFormValues,
-} from './types';
+import { useSettingsSaveHandlers } from './useSettingsSaveHandlers';
 import { useThemeSettings } from './useThemeSettings';
 
 function cx(classNames: string): string {
@@ -186,111 +177,21 @@ export const SettingsPage: React.FC = () => {
     storagePolicyQuery.isFetching ||
     subscriptionSettingsQuery.isFetching;
 
-  // Save API Keys
-  const handleSaveApiKeys = async (values: ApiKeysFormValues) => {
-    setSaving(true);
-    try {
-      const newApiKeys: ApiKeys = {
-        ipqs: {
-          api_key: values.ipqs_api_key || '',
-          enabled: Boolean(values.ipqs_enabled),
-        },
-        telegram: {
-          bot_token: values.telegram_bot_token || '',
-          chat_id: values.telegram_chat_id || '',
-          enabled: Boolean(values.telegram_enabled),
-        },
-      };
-
-      await updateApiKeysMutation.mutateAsync(newApiKeys);
-      message.success('API keys saved');
-    } catch (error) {
-      uiLogger.error('Error saving API keys:', error);
-      message.error('Failed to save API keys');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Save Proxy Settings
-  const handleSaveProxySettings = async (values: ProxySettingsFormValues) => {
-    setSaving(true);
-    try {
-      const newProxySettings: ProxySettings = {
-        auto_check_on_add: Boolean(values.auto_check_on_add),
-        fraud_score_threshold: Number(values.fraud_score_threshold || 0),
-        check_interval_hours: Number(values.check_interval_hours || 0),
-      };
-
-      await updateProxySettingsMutation.mutateAsync(newProxySettings);
-      message.success('Proxy settings saved');
-    } catch (error) {
-      uiLogger.error('Error saving proxy settings:', error);
-      message.error('Failed to save proxy settings');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Save Notification Events
-  const handleSaveNotifications = async (values: NotificationEventsFormValues) => {
-    setSaving(true);
-    try {
-      const newEvents: NotificationEvents = {
-        bot_banned: Boolean(values.bot_banned),
-        bot_offline: Boolean(values.bot_offline),
-        bot_online: Boolean(values.bot_online),
-        level_up: Boolean(values.level_up),
-        profession_maxed: Boolean(values.profession_maxed),
-        low_fraud_score: Boolean(values.low_fraud_score),
-        daily_report: Boolean(values.daily_report),
-      };
-
-      await updateNotificationEventsMutation.mutateAsync(newEvents);
-      message.success('Notification settings saved');
-    } catch (error) {
-      uiLogger.error('Error saving notification settings:', error);
-      message.error('Failed to save notification settings');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSaveGlobalAlerts = async (values: { warning_days: number }) => {
-    setSaving(true);
-    try {
-      const nextAlerts: Partial<SubscriptionSettings> = {
-        ...(subscriptionSettingsQuery.data || getDefaultSettings()),
-        warning_days: values.warning_days,
-      };
-      await updateSubscriptionSettingsMutation.mutateAsync(nextAlerts);
-      message.success('Global alert settings saved');
-    } catch (error) {
-      uiLogger.error('Error saving global alert settings:', error);
-      message.error('Failed to save global alert settings');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSaveStoragePolicy = async (values: StoragePolicyFormValues) => {
-    setSaving(true);
-    try {
-      await updateStoragePolicyMutation.mutateAsync({
-        secrets: 'local-only',
-        operational: values.operational === 'local' ? 'local' : 'cloud',
-        sync: {
-          enabled: Boolean(values.sync_enabled),
-        },
-      });
-      message.success('Storage policy saved');
-    } catch (error) {
-      uiLogger.error('Error saving storage policy:', error);
-      message.error('Failed to save storage policy');
-    } finally {
-      setSaving(false);
-    }
-  };
+  const {
+    handleSaveApiKeys,
+    handleSaveProxySettings,
+    handleSaveNotifications,
+    handleSaveGlobalAlerts,
+    handleSaveStoragePolicy,
+  } = useSettingsSaveHandlers({
+    setSaving,
+    saveApiKeys: updateApiKeysMutation.mutateAsync,
+    saveProxySettings: updateProxySettingsMutation.mutateAsync,
+    saveNotificationEvents: updateNotificationEventsMutation.mutateAsync,
+    saveSubscriptionSettings: updateSubscriptionSettingsMutation.mutateAsync,
+    saveStoragePolicy: updateStoragePolicyMutation.mutateAsync,
+    currentSubscriptionSettings: subscriptionSettingsQuery.data,
+  });
 
   const projectEntries = useMemo(() => {
     const projects: Record<string, ProjectSettings> = projectSettingsQuery.data || {};

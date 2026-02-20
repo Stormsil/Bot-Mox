@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
+import { AgentsRepository } from './agents.repository';
 
 interface AgentRecord {
   id: string;
@@ -12,29 +14,55 @@ interface AgentRecord {
 
 @Injectable()
 export class AgentsService {
-  private readonly records = new Map<string, AgentRecord>();
-  private readonly pairings = new Map<string, Record<string, unknown>>();
+  constructor(private readonly repository: AgentsRepository) {}
 
-  list(status?: string): AgentRecord[] {
+  private mapDbRecord(record: {
+    id: string;
+    tenantId: string;
+    name: string;
+    status: string;
+    lastSeenAt: Date | null;
+    metadata: Prisma.JsonValue | null;
+    updatedAt: Date;
+  }): AgentRecord {
+    return {
+      id: record.id,
+      tenant_id: record.tenantId,
+      name: record.name,
+      status: record.status,
+      last_seen_at: record.lastSeenAt ? record.lastSeenAt.toISOString() : null,
+      metadata:
+        record.metadata && typeof record.metadata === 'object'
+          ? (record.metadata as Record<string, unknown>)
+          : {},
+      updated_at: record.updatedAt.toISOString(),
+    };
+  }
+
+  private normalizeTenantId(tenantId: string): string {
+    const normalized = String(tenantId || '')
+      .trim()
+      .toLowerCase();
+    if (!normalized) {
+      throw new Error('tenantId is required');
+    }
+    return normalized;
+  }
+
+  async list(status: string | undefined, tenantId: string): Promise<AgentRecord[]> {
     const normalizedStatus = String(status || '')
       .trim()
       .toLowerCase();
-    if (!normalizedStatus) {
-      return [...this.records.values()];
-    }
-    return [...this.records.values()].filter(
-      (record) =>
-        String(record.status || '')
-          .trim()
-          .toLowerCase() === normalizedStatus,
-    );
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const rows = await this.repository.list(normalizedTenantId, normalizedStatus || undefined);
+    return rows.map((row) => this.mapDbRecord(row));
   }
 
-  createPairing(input: {
-    tenantId?: string;
+  async createPairing(input: {
+    tenantId: string;
     name?: string;
     expiresInMinutes?: number;
-  }): Record<string, unknown> {
+  }): Promise<Record<string, unknown>> {
     const now = Date.now();
     const id = `pair-${now.toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
     const code = `bmx-${Math.random().toString(36).slice(2, 10)}`.toUpperCase();
@@ -42,36 +70,46 @@ export class AgentsService {
       ? Math.max(5, Math.min(1_440, Math.trunc(input.expiresInMinutes || 15)))
       : 15;
 
+    const normalizedTenantId = this.normalizeTenantId(input.tenantId);
     const record = {
       id,
-      tenant_id: String(input.tenantId || 'default'),
+      tenant_id: normalizedTenantId,
       name: String(input.name || 'agent-pairing'),
       status: 'pending',
       pairing_code: code,
       pairing_expires_at: new Date(now + expiresInMinutes * 60_000).toISOString(),
       pairing_uri: `botmox://pair?code=${encodeURIComponent(code)}`,
     };
-    this.pairings.set(id, record);
-    return record;
+    const created = await this.repository.createPairing({
+      tenantId: normalizedTenantId,
+      name: String(input.name || 'agent-pairing'),
+      pairingCode: code,
+      pairingExpiresAt: new Date(now + expiresInMinutes * 60_000),
+      metadata: {},
+    });
+    return {
+      ...record,
+      id: created.id,
+      tenant_id: created.tenantId,
+      name: created.name,
+      status: created.status,
+      pairing_expires_at: created.pairingExpiresAt?.toISOString(),
+    };
   }
 
-  heartbeat(input: {
-    tenantId?: string;
+  async heartbeat(input: {
+    tenantId: string;
     agentId: string;
     status: string;
     metadata: Record<string, unknown>;
-  }): AgentRecord {
-    const current = this.records.get(input.agentId);
-    const nextRecord: AgentRecord = {
-      id: input.agentId,
-      tenant_id: String(input.tenantId || current?.tenant_id || 'default'),
-      name: String(current?.name || input.agentId),
+  }): Promise<AgentRecord> {
+    const normalizedTenantId = this.normalizeTenantId(input.tenantId);
+    const stored = await this.repository.heartbeat({
+      tenantId: normalizedTenantId,
+      agentId: input.agentId,
       status: input.status,
-      last_seen_at: new Date().toISOString(),
-      metadata: input.metadata,
-      updated_at: new Date().toISOString(),
-    };
-    this.records.set(input.agentId, nextRecord);
-    return nextRecord;
+      metadata: input.metadata as Prisma.InputJsonValue,
+    });
+    return this.mapDbRecord(stored);
   }
 }

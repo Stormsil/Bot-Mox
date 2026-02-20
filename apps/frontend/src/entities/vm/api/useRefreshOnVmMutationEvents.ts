@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { subscribeToVmOpsEvents } from './vmLegacyFacade';
+import { subscribeToVmOpsEvents } from './vmRuntimeFacade';
 
 type MutationRefreshOptions = {
   onMutationTerminalEvent: () => void | Promise<void>;

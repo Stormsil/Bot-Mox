@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type {
   provisioningGenerateIsoPayloadResponseSchema,
   provisioningGenerateIsoPayloadSchema,
@@ -12,20 +13,23 @@ import type {
 } from '@botmox/api-contract';
 import { Injectable } from '@nestjs/common';
 import type { z } from 'zod';
+import { ProvisioningRepository } from './provisioning.repository';
 
-type UnattendProfileRecord = z.infer<typeof unattendProfileRecordSchema>;
+export type UnattendProfileRecord = z.infer<typeof unattendProfileRecordSchema>;
 type CreateUnattendProfilePayload = z.infer<typeof unattendProfileCreateSchema>;
 type UpdateUnattendProfilePayload = z.infer<typeof unattendProfileUpdateSchema>;
 type ValidateTokenPayload = z.infer<typeof provisioningValidateTokenSchema>;
 type ValidateTokenResult = z.infer<typeof provisioningValidateTokenResponseSchema>;
 type ReportProgressPayload = z.infer<typeof provisioningReportProgressSchema>;
-type ReportProgressResult = z.infer<typeof provisioningReportProgressResponseSchema>;
+export type ReportProgressResult = z.infer<typeof provisioningReportProgressResponseSchema>;
 type ProgressResult = z.infer<typeof provisioningProgressResponseSchema>;
 type GenerateIsoPayload = z.infer<typeof provisioningGenerateIsoPayloadSchema>;
 type GenerateIsoPayloadResult = z.infer<typeof provisioningGenerateIsoPayloadResponseSchema>;
 
 interface IssueTokenInput {
   vmUuid: string;
+  tenantId: string;
+  userId: string;
 }
 
 interface IssueTokenResult {
@@ -34,26 +38,49 @@ interface IssueTokenResult {
   expiresAt: string;
 }
 
+export interface ProvisioningTokenRecord {
+  token: string;
+  tokenId: string;
+  tenantId: string;
+  userId: string;
+  vmUuid: string;
+  expiresAtMs: number;
+}
+
 @Injectable()
 export class ProvisioningService {
-  private readonly defaultTenantId = 'default';
-  private readonly defaultUserId = 'user-1';
-  private readonly progressStore = new Map<string, ReportProgressResult[]>();
-  private readonly profilesStore = new Map<string, UnattendProfileRecord>();
-  private profileSequence = 0;
   private tokenSequence = 0;
 
-  private isTokenAccepted(token: string): boolean {
-    const normalized = String(token || '')
+  constructor(private readonly repository: ProvisioningRepository) {}
+
+  private normalizeTenantId(tenantId: string): string {
+    const normalized = String(tenantId || '')
       .trim()
       .toLowerCase();
-    if (!normalized) return false;
-    return !normalized.startsWith('invalid');
+    if (!normalized) {
+      throw new Error('tenantId is required');
+    }
+    return normalized;
+  }
+
+  private normalizeUserId(userId: string): string {
+    const normalized = String(userId || '').trim();
+    if (!normalized) {
+      throw new Error('userId is required');
+    }
+    return normalized;
+  }
+
+  private normalizeVmUuid(vmUuid: string): string {
+    const normalized = String(vmUuid || '').trim();
+    if (!normalized) {
+      throw new Error('vmUuid is required');
+    }
+    return normalized;
   }
 
   private nextProfileId(): string {
-    this.profileSequence += 1;
-    return `profile-${this.profileSequence}`;
+    return `profile-${randomUUID()}`;
   }
 
   private nextTokenId(): string {
@@ -65,32 +92,61 @@ export class ProvisioningService {
     return JSON.parse(JSON.stringify(value)) as TValue;
   }
 
-  private setDefaultProfile(id: string): void {
-    for (const [profileId, profile] of this.profilesStore.entries()) {
-      if (profileId === id) {
-        continue;
-      }
+  private async getTokenRecord(token: string): Promise<ProvisioningTokenRecord | null> {
+    const normalized = String(token || '').trim();
+    if (!normalized) return null;
+
+    const record = await this.repository.findToken(normalized);
+    if (!record || record.expiresAtMs <= Date.now()) {
+      return null;
+    }
+    return record;
+  }
+
+  private async revokeToken(token: string): Promise<void> {
+    const normalized = String(token || '').trim();
+    if (!normalized) return;
+    await this.repository.deleteToken(normalized);
+  }
+
+  private async unsetDefaultProfile(tenantId: string, exceptProfileId?: string): Promise<void> {
+    const profiles = await this.repository.listProfiles(tenantId);
+    for (const profile of profiles) {
       if (!profile.is_default) {
         continue;
       }
-      this.profilesStore.set(profileId, {
-        ...profile,
-        is_default: false,
+      if (exceptProfileId && profile.id === exceptProfileId) {
+        continue;
+      }
+      await this.repository.upsertProfile({
+        tenantId,
+        id: profile.id,
+        payload: {
+          ...profile,
+          is_default: false,
+          updated_at: new Date().toISOString(),
+        },
       });
     }
   }
 
-  listProfiles(): UnattendProfileRecord[] {
-    return [...this.profilesStore.values()].map((item) => this.clone(item));
+  async listProfiles(tenantId: string): Promise<UnattendProfileRecord[]> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const items = await this.repository.listProfiles(normalizedTenantId);
+    return items.map((item) => this.clone(item));
   }
 
-  createProfile(payload: CreateUnattendProfilePayload): UnattendProfileRecord {
+  async createProfile(
+    payload: CreateUnattendProfilePayload,
+    tenantId: string,
+  ): Promise<UnattendProfileRecord> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
     const id = this.nextProfileId();
     const now = new Date().toISOString();
     const isDefault = payload.is_default === true;
 
     if (isDefault) {
-      this.setDefaultProfile(id);
+      await this.unsetDefaultProfile(normalizedTenantId);
     }
 
     const profile: UnattendProfileRecord = {
@@ -102,18 +158,27 @@ export class ProvisioningService {
       updated_at: now,
     };
 
-    this.profilesStore.set(id, profile);
-    return this.clone(profile);
+    const persisted = await this.repository.upsertProfile({
+      tenantId: normalizedTenantId,
+      id,
+      payload: profile,
+    });
+    return this.clone(persisted);
   }
 
-  updateProfile(id: string, payload: UpdateUnattendProfilePayload): UnattendProfileRecord | null {
+  async updateProfile(
+    id: string,
+    payload: UpdateUnattendProfilePayload,
+    tenantId: string,
+  ): Promise<UnattendProfileRecord | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
     const normalizedId = String(id || '').trim();
-    const current = this.profilesStore.get(normalizedId);
+    const current = await this.repository.findProfileById(normalizedTenantId, normalizedId);
     if (!current) return null;
 
     const nextIsDefault = payload.is_default === true;
     if (nextIsDefault) {
-      this.setDefaultProfile(normalizedId);
+      await this.unsetDefaultProfile(normalizedTenantId, normalizedId);
     }
 
     const updated: UnattendProfileRecord = {
@@ -125,33 +190,68 @@ export class ProvisioningService {
       updated_at: new Date().toISOString(),
     };
 
-    this.profilesStore.set(normalizedId, updated);
-    return this.clone(updated);
+    const persisted = await this.repository.upsertProfile({
+      tenantId: normalizedTenantId,
+      id: normalizedId,
+      payload: updated,
+    });
+    return this.clone(persisted);
   }
 
-  deleteProfile(id: string): boolean {
-    return this.profilesStore.delete(String(id || '').trim());
+  async deleteProfile(id: string, tenantId: string): Promise<boolean> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const normalizedId = String(id || '').trim();
+
+    const existing = await this.repository.findProfileById(normalizedTenantId, normalizedId);
+    if (!existing) {
+      return false;
+    }
+
+    await this.repository.deleteProfile(normalizedTenantId, normalizedId);
+    return true;
   }
 
-  getProfile(id: string): UnattendProfileRecord | null {
-    const profile = this.profilesStore.get(String(id || '').trim());
+  async getProfile(id: string, tenantId: string): Promise<UnattendProfileRecord | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const normalizedId = String(id || '').trim();
+    const profile = await this.repository.findProfileById(normalizedTenantId, normalizedId);
     return profile ? this.clone(profile) : null;
   }
 
-  issueToken(input: IssueTokenInput): IssueTokenResult {
+  async issueToken(input: IssueTokenInput): Promise<IssueTokenResult> {
     const tokenId = this.nextTokenId();
-    const vmUuid = String(input.vmUuid || '').trim() || 'vm';
+    const vmUuid = this.normalizeVmUuid(input.vmUuid);
+    const tenantId = this.normalizeTenantId(input.tenantId);
+    const userId = this.normalizeUserId(input.userId);
+    const expiresAtMs = Date.now() + 15 * 60_000;
+    const token = `token-${vmUuid}-${tokenId}`;
+
+    const record: ProvisioningTokenRecord = {
+      token,
+      tokenId,
+      tenantId,
+      userId,
+      vmUuid,
+      expiresAtMs,
+    };
+
+    await this.repository.upsertToken(record);
 
     return {
-      token: `token-${vmUuid}-${tokenId}`,
+      token,
       tokenId,
-      expiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),
+      expiresAt: new Date(expiresAtMs).toISOString(),
     };
   }
 
-  generateIsoPayload(payload: GenerateIsoPayload): GenerateIsoPayloadResult {
-    const token = this.issueToken({
+  async generateIsoPayload(
+    payload: GenerateIsoPayload,
+    identity: { tenantId: string; userId: string },
+  ): Promise<GenerateIsoPayloadResult> {
+    const token = await this.issueToken({
       vmUuid: payload.vm_uuid,
+      tenantId: identity.tenantId,
+      userId: identity.userId,
     });
 
     const computerName = String(payload.vm_name || `vm-${payload.vm_uuid}`)
@@ -190,43 +290,58 @@ export class ProvisioningService {
     };
   }
 
-  validateToken(payload: ValidateTokenPayload): ValidateTokenResult | null {
-    if (!this.isTokenAccepted(payload.token)) {
+  async validateToken(payload: ValidateTokenPayload): Promise<ValidateTokenResult | null> {
+    const tokenRecord = await this.getTokenRecord(payload.token);
+    if (!tokenRecord) {
       return null;
     }
 
     return {
       valid: true,
-      userId: this.defaultUserId,
-      tenantId: this.defaultTenantId,
+      userId: tokenRecord.userId,
+      tenantId: tokenRecord.tenantId,
       bootstrap_url: null,
       app_url: null,
     };
   }
 
-  reportProgress(payload: ReportProgressPayload): ReportProgressResult | null {
-    if (!this.isTokenAccepted(payload.token)) {
+  async reportProgress(payload: ReportProgressPayload): Promise<ReportProgressResult | null> {
+    const tokenRecord = await this.getTokenRecord(payload.token);
+    if (!tokenRecord) {
       return null;
     }
 
     const normalizedVmUuid = payload.vm_uuid.trim();
-    const updatedAt = new Date().toISOString();
+    if (normalizedVmUuid !== tokenRecord.vmUuid) {
+      return null;
+    }
+
     const entry: ReportProgressResult = {
       vm_uuid: normalizedVmUuid,
       step: payload.step,
       status: payload.status,
       details: payload.details,
-      updated_at: updatedAt,
+      updated_at: new Date().toISOString(),
     };
 
-    const existing = this.progressStore.get(normalizedVmUuid) ?? [];
-    this.progressStore.set(normalizedVmUuid, [...existing, entry]);
+    await this.repository.appendProgress({
+      tenantId: tokenRecord.tenantId,
+      id: randomUUID(),
+      vmUuid: normalizedVmUuid,
+      payload: entry,
+    });
+
+    if (payload.status === 'completed' || payload.status === 'failed') {
+      await this.revokeToken(payload.token);
+    }
     return entry;
   }
 
-  getProgress(vmUuid: string): ProgressResult {
+  async getProgress(vmUuid: string, tenantId: string): Promise<ProgressResult> {
     const normalizedVmUuid = String(vmUuid || '').trim();
-    const events = this.progressStore.get(normalizedVmUuid) ?? [];
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+
+    const events = await this.repository.listProgressByVm(normalizedTenantId, normalizedVmUuid);
     const updatedAt = events[events.length - 1]?.updated_at ?? new Date().toISOString();
 
     return {

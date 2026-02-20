@@ -43,6 +43,28 @@ jobs:
       - name: Monorepo hardening gates
         run: pnpm run check:all:mono
 
+      - name: Migration flags check
+        env:
+          AUTH_MODE: enforced
+          AGENT_TRANSPORT: hybrid
+          SECRETS_VAULT_MODE: enforced
+          SUPABASE_URL: https://example.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
+          SUPABASE_VAULT_RPC_NAME: vault
+        run: pnpm run migration:check:strict
+
+      - name: Migration flags test
+        run: pnpm run migration:check:test
+
+      - name: Contract test
+        run: pnpm run contract:test
+
+      - name: Backend tests
+        run: pnpm run backend:test
+
+      - name: Agent tests
+        run: pnpm run agent:test
+
       - name: Lint frontend
         run: pnpm run lint
 

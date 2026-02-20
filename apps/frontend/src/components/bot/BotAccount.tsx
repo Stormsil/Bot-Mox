@@ -1,16 +1,9 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Card, Form, message } from 'antd';
-import dayjs from 'dayjs';
 import type React from 'react';
 import { useState } from 'react';
 import { useUpdateBotMutation } from '../../entities/bot/api/useBotMutations';
-import {
-  generateEmail,
-  generatePassword,
-  isPersonDataComplete,
-  loadBackup,
-  saveBackup,
-} from '../../utils/accountGenerators';
+import { isPersonDataComplete } from '../../utils/accountGenerators';
 import styles from './account/account.module.css';
 import {
   AccountCardTitle,
@@ -26,12 +19,8 @@ import {
   PasswordSection,
   RegistrationDateSection,
 } from './account/sections';
-import type {
-  AccountFormValues,
-  AccountGenerationLocks,
-  BotAccountProps,
-  PendingGenerationState,
-} from './account/types';
+import type { AccountFormValues, AccountGenerationLocks, BotAccountProps } from './account/types';
+import { useAccountGenerationWorkflow } from './account/use-account-generation-workflow';
 import { useAccountGeneratorState } from './account/use-account-generator-state';
 import { useBotAccountSubscription } from './account/use-bot-account-subscription';
 
@@ -43,8 +32,6 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
     email: false,
     password: false,
   });
-  const [showGenerateModal, setShowGenerateModal] = useState(false);
-  const [pendingGeneration, setPendingGeneration] = useState<PendingGenerationState | null>(null);
   const updateBotMutation = useUpdateBotMutation();
 
   const {
@@ -62,12 +49,12 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
 
   const {
     passwordOptions,
-    setPasswordOptions,
     selectedDomain,
-    setSelectedDomain,
     customDomain,
-    setCustomDomain,
     useCustomDomain,
+    setPasswordOptions,
+    setSelectedDomain,
+    setCustomDomain,
     setUseCustomDomain,
     templates,
     templateName,
@@ -81,6 +68,40 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
     handleDeleteTemplate,
     handleSetDefaultTemplate,
   } = useAccountGeneratorState();
+
+  const {
+    showGenerateModal,
+    setShowGenerateModal,
+    pendingGeneration,
+    setPendingGeneration,
+    requestGeneration,
+    confirmGeneration,
+    handleUnlockGeneration,
+    handleRestore,
+    setCurrentDateTime,
+  } = useAccountGenerationWorkflow({
+    bot,
+    form,
+    setFormValues,
+    generationLocks,
+    setGenerationLocks,
+    pendingLocks,
+    setPendingLocks,
+    passwordOptions,
+    selectedDomain,
+    customDomain,
+    useCustomDomain,
+    updateBot: async (payload) => {
+      if (!bot?.id) {
+        throw new Error('Bot ID is not available');
+      }
+      await updateBotMutation.mutateAsync({
+        botId: bot.id,
+        payload,
+      });
+    },
+    setHasBackup,
+  });
 
   const handleValuesChange = (
     _changedValues: Partial<AccountFormValues>,
@@ -145,143 +166,6 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
     } finally {
       setSaving(false);
     }
-  };
-
-  const requestGeneration = (type: 'password' | 'email' | 'both') => {
-    if ((type === 'password' || type === 'both') && generationLocks.password) {
-      message.warning('Password generation is locked');
-      return;
-    }
-    if ((type === 'email' || type === 'both') && generationLocks.email) {
-      message.warning('Email generation is locked');
-      return;
-    }
-
-    const currentValues = form.getFieldsValue();
-    if (bot?.id) {
-      saveBackup(bot.id, {
-        email: currentValues.email || '',
-        password: currentValues.password || '',
-        registration_date: currentValues.registration_date
-          ? currentValues.registration_date.valueOf()
-          : 0,
-      });
-      setHasBackup(true);
-    }
-
-    setPendingGeneration({ type });
-    setShowGenerateModal(true);
-  };
-
-  const confirmGeneration = () => {
-    if (!pendingGeneration) return;
-
-    const { type } = pendingGeneration;
-
-    if (type === 'password' || type === 'both') {
-      const newPassword = generatePassword(passwordOptions);
-      form.setFieldValue('password', newPassword);
-      setFormValues((prev) => ({ ...prev, password: newPassword }));
-      setPendingLocks((prev) => ({ ...prev, password: true }));
-    }
-
-    if (type === 'email' || type === 'both') {
-      if (!isPersonDataComplete(bot.person)) {
-        message.error('Person data must be filled first (First Name, Last Name, Birth Date)');
-        setShowGenerateModal(false);
-        setPendingGeneration(null);
-        return;
-      }
-
-      const domain = useCustomDomain ? customDomain : selectedDomain;
-      if (!domain || domain === 'custom') {
-        message.error('Please select or enter a domain');
-        return;
-      }
-      const person = bot.person;
-      if (!person?.first_name || !person?.last_name || !person?.birth_date) {
-        message.error('Person data must be filled first (First Name, Last Name, Birth Date)');
-        setShowGenerateModal(false);
-        setPendingGeneration(null);
-        return;
-      }
-
-      const newEmail = generateEmail({
-        firstName: person.first_name,
-        lastName: person.last_name,
-        birthDate: person.birth_date,
-        domain,
-      });
-      form.setFieldValue('email', newEmail);
-      setFormValues((prev) => ({ ...prev, email: newEmail }));
-      setPendingLocks((prev) => ({ ...prev, email: true }));
-    }
-
-    message.success('Generated successfully');
-    setShowGenerateModal(false);
-    setPendingGeneration(null);
-  };
-
-  const handleUnlockGeneration = async () => {
-    if (!bot?.id) return;
-
-    const updates: Record<string, boolean> = {};
-    if (generationLocks.email || pendingLocks.email) {
-      updates.account_email = false;
-    }
-    if (generationLocks.password || pendingLocks.password) {
-      updates.account_password = false;
-    }
-
-    if (Object.keys(updates).length === 0) {
-      message.info('Generation is already unlocked');
-      return;
-    }
-
-    try {
-      await updateBotMutation.mutateAsync({
-        botId: bot.id,
-        payload: {
-          ...(updates.account_email !== undefined
-            ? { 'generation_locks/account_email': updates.account_email }
-            : {}),
-          ...(updates.account_password !== undefined
-            ? { 'generation_locks/account_password': updates.account_password }
-            : {}),
-        },
-      });
-      setPendingLocks({ email: false, password: false });
-      setGenerationLocks({ email: false, password: false });
-      message.success('Account generation unlocked');
-    } catch (error) {
-      console.error('Failed to unlock account generation:', error);
-      message.error('Failed to unlock generation');
-    }
-  };
-
-  const handleRestore = () => {
-    if (!bot?.id) return;
-
-    const backup = loadBackup(bot.id);
-    if (backup) {
-      const restoredValues: AccountFormValues = {
-        email: backup.email,
-        password: backup.password,
-        registration_date: backup.registration_date ? dayjs(backup.registration_date) : null,
-      };
-      form.setFieldsValue(restoredValues);
-      setFormValues(restoredValues);
-      setPendingLocks({ email: false, password: false });
-      message.success('Previous values restored from backup');
-    } else {
-      message.warning('No backup found');
-    }
-  };
-
-  const setCurrentDateTime = () => {
-    const now = dayjs();
-    form.setFieldValue('registration_date', now);
-    setFormValues((prev) => ({ ...prev, registration_date: now }));
   };
 
   const getFieldWarning = (fieldName: keyof AccountFormValues) => {

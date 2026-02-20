@@ -104,6 +104,119 @@ export const vmOpsCommandUpdateSchema = z.object({
   error_message: z.string().trim().max(2_000).optional(),
 });
 
+export const agentWsEventAssignedSchema = z.object({
+  type: z.literal('agent.command.assigned'),
+  ts: z.string().datetime(),
+  command: vmOpsCommandSchema.nullable(),
+});
+
+export const agentWsEventAckSchema = z.object({
+  type: z.literal('agent.command.ack'),
+  ts: z.string().datetime(),
+  command_id: z.string().trim().min(1),
+  agent_id: z.string().trim().min(1),
+});
+
+export const agentWsEventProgressSchema = z.object({
+  type: z.literal('agent.command.progress'),
+  ts: z.string().datetime(),
+  command_id: z.string().trim().min(1),
+  agent_id: z.string().trim().min(1),
+  progress: z.coerce.number().min(0).max(100).optional(),
+  message: z.string().trim().min(1).max(1_000).optional(),
+});
+
+export const agentWsEventResultSchema = z.object({
+  type: z.literal('agent.command.result'),
+  ts: z.string().datetime(),
+  command_id: z.string().trim().min(1),
+  agent_id: z.string().trim().min(1),
+  status: z.enum(['succeeded', 'failed', 'expired', 'cancelled']),
+  result: jsonValueSchema.optional(),
+  error_message: z.string().trim().max(2_000).optional(),
+});
+
+export const agentWsEventHeartbeatSchema = z.object({
+  type: z.literal('agent.heartbeat'),
+  ts: z.string().datetime(),
+  agent_id: z.string().trim().min(1).optional(),
+  status: z.string().trim().min(1).optional(),
+  metadata: z.record(jsonValueSchema).optional(),
+});
+
+export const agentWsEventConnectedSchema = z.object({
+  type: z.literal('connected'),
+  ts: z.string().datetime(),
+  transport: z.literal('ws'),
+});
+
+export const agentWsEventErrorSchema = z.object({
+  type: z.literal('error'),
+  code: z.string().trim().min(1).max(100),
+  message: z.string().trim().min(1).max(1_000),
+  ts: z.string().datetime().optional(),
+  request_id: z.string().trim().min(1).nullable().optional(),
+});
+
+export const agentWsEventSchema = z.discriminatedUnion('type', [
+  agentWsEventAssignedSchema,
+  agentWsEventAckSchema,
+  agentWsEventProgressSchema,
+  agentWsEventResultSchema,
+  agentWsEventHeartbeatSchema,
+  agentWsEventConnectedSchema,
+  agentWsEventErrorSchema,
+]);
+
+export const agentWsInboundNextCommandSchema = z.object({
+  type: z.literal('next_command'),
+  request_id: z.string().trim().min(1).optional(),
+  agent_id: z.string().trim().min(1).optional(),
+  timeout_ms: z.coerce.number().int().min(1_000).max(120_000).optional(),
+});
+
+export const agentWsInboundHeartbeatSchema = z.object({
+  type: z.literal('heartbeat'),
+  request_id: z.string().trim().min(1).optional(),
+  agent_id: z.string().trim().min(1).optional(),
+  status: z.string().trim().min(1).optional(),
+  metadata: z.record(jsonValueSchema).optional(),
+});
+
+export const agentWsInboundAckSchema = z.object({
+  type: z.literal('agent.command.ack'),
+  request_id: z.string().trim().min(1).optional(),
+  command_id: z.string().trim().min(1),
+  agent_id: z.string().trim().min(1),
+});
+
+export const agentWsInboundProgressSchema = z.object({
+  type: z.literal('agent.command.progress'),
+  request_id: z.string().trim().min(1).optional(),
+  command_id: z.string().trim().min(1),
+  agent_id: z.string().trim().min(1),
+  progress: z.coerce.number().min(0).max(100).optional(),
+  message: z.string().trim().min(1).max(1_000).optional(),
+});
+
+export const agentWsInboundResultSchema = z.object({
+  type: z.literal('agent.command.result'),
+  request_id: z.string().trim().min(1).optional(),
+  command_id: z.string().trim().min(1),
+  agent_id: z.string().trim().min(1),
+  status: z.enum(['succeeded', 'failed', 'expired', 'cancelled']),
+  result: jsonValueSchema.optional(),
+  error_message: z.string().trim().max(2_000).optional(),
+});
+
+export const agentWsInboundMessageSchema = z.discriminatedUnion('type', [
+  agentWsInboundNextCommandSchema,
+  agentWsInboundHeartbeatSchema,
+  agentWsInboundAckSchema,
+  agentWsInboundProgressSchema,
+  agentWsInboundResultSchema,
+]);
+
 const vmUuidSchema = z
   .string()
   .trim()

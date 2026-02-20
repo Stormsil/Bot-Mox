@@ -36,6 +36,14 @@ Applies To: `apps/frontend`, `apps/backend`, `apps/agent`, `packages/*`
 
 1. Codebase grooming waves: `docs/plans/codebase-grooming-wave-plan-2026Q1.md`
 
+## Runbooks
+
+1. Production hardening rollout checklist: `docs/runbooks/production-hardening-rollout-checklist.md`
+
+## Operational Audits
+
+1. Production hardening smoke window log: `docs/audits/production-hardening-smoke-window-YYYY-MM.md`
+
 ## Generated Maps For AI Ingest
 
 1. Repository tree: `docs/_generated/repo-map.txt` (`pnpm run repo:map`)

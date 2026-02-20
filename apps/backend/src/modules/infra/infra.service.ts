@@ -1,91 +1,55 @@
 import { Injectable } from '@nestjs/common';
-
-const ALLOWLISTED_SSH_PREFIXES = ['qm ', 'pvesh ', 'cat ', 'echo ', 'ls ', 'grep '];
-const ALLOWLISTED_SSH_EXACT = new Set(['qm list']);
-
-interface VmRecord {
-  node: string;
-  vmid: string;
-  name: string;
-  status: string;
-  config: Record<string, unknown>;
-}
-
-interface CloneVmInput {
-  node: string;
-  vmid: string;
-  body: {
-    newid?: number | undefined;
-    name?: string | undefined;
-    storage?: string | undefined;
-    format?: string | undefined;
-    full?: number | boolean | undefined;
-  };
-}
-
-interface UpdateVmConfigInput {
-  node: string;
-  vmid: string;
-  body: Record<string, unknown>;
-}
-
-interface DeleteVmInput {
-  node: string;
-  vmid: string;
-  purge?: boolean | undefined;
-  destroyUnreferencedDisks?: boolean | undefined;
-}
-
-interface ExecSshInput {
-  command: string;
-  timeout?: number | undefined;
-}
-
-interface WriteVmConfigInput {
-  vmid: string;
-  content: string;
-}
-
-export class InfraServiceError extends Error {
-  readonly status: number;
-  readonly code: string;
-  readonly details?: unknown;
-
-  constructor(status: number, code: string, message: string, details?: unknown) {
-    super(message);
-    this.name = 'InfraServiceError';
-    this.status = status;
-    this.code = code;
-    this.details = details;
-  }
-}
+import { InfraServiceError } from './infra.errors';
+import { InfraRepository } from './infra.repository';
+import type {
+  CloneVmInput,
+  DeleteVmInput,
+  ExecSshInput,
+  UpdateVmConfigInput,
+  VmRecord,
+  WriteVmConfigInput,
+} from './infra.types';
+import {
+  assertCommand,
+  assertContent,
+  assertNode,
+  assertVmid,
+  isSshCommandAllowlisted,
+  normalizeTenantId,
+  normalizeVmAction,
+  parseTimeoutMs,
+  resolveVmStatusByAction,
+} from './infra.utils';
 
 @Injectable()
 export class InfraService {
-  private readonly vmStore = new Map<string, VmRecord>();
-  private readonly vmConfigStore = new Map<string, string>();
   private taskSequence = 0;
 
-  private makeVmKey(node: string, vmid: string): string {
-    return `${String(node).trim()}:${String(vmid).trim()}`;
-  }
+  constructor(private readonly repository: InfraRepository) {}
 
   private nextUpid(): string {
     this.taskSequence += 1;
     return `UPID:nest:${Date.now().toString(16)}:${this.taskSequence}:mock-task`;
   }
 
-  private ensureVm(node: string, vmid: string): VmRecord {
-    const key = this.makeVmKey(node, vmid);
-    const existing = this.vmStore.get(key);
+  private async ensureVm(tenantId: string, node: string, vmid: string): Promise<VmRecord> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const normalizedNode = assertNode(node);
+    const normalizedVmid = String(vmid).trim();
+
+    const existing = await this.repository.findVm(
+      normalizedTenantId,
+      normalizedNode,
+      normalizedVmid,
+    );
     if (existing) {
       return existing;
     }
 
     const created: VmRecord = {
-      node: String(node).trim(),
-      vmid: String(vmid).trim(),
-      name: `vm-${String(vmid).trim()}`,
+      node: normalizedNode,
+      vmid: normalizedVmid,
+      name: `vm-${normalizedVmid}`,
       status: 'running',
       config: {
         cores: 2,
@@ -93,28 +57,21 @@ export class InfraService {
       },
     };
 
-    this.vmStore.set(key, created);
-    return created;
+    return this.repository.upsertVm({
+      tenantId: normalizedTenantId,
+      node: created.node,
+      vmid: created.vmid,
+      payload: created,
+    });
   }
 
-  private isSshCommandAllowlisted(command: string): boolean {
-    const normalized = String(command || '')
-      .trim()
-      .toLowerCase();
-    if (!normalized) {
-      return false;
-    }
-    if (ALLOWLISTED_SSH_EXACT.has(normalized)) {
-      return true;
-    }
-    return ALLOWLISTED_SSH_PREFIXES.some((prefix) => normalized.startsWith(prefix));
-  }
-
-  login(): { connected: true } {
+  async login(tenantId: string): Promise<{ connected: true }> {
+    normalizeTenantId(tenantId);
     return { connected: true };
   }
 
-  status(): { connected: true; version: Record<string, unknown> } {
+  async status(tenantId: string): Promise<{ connected: true; version: Record<string, unknown> }> {
+    normalizeTenantId(tenantId);
     return {
       connected: true,
       version: {
@@ -124,86 +81,116 @@ export class InfraService {
     };
   }
 
-  listNodeVms(node: string): Array<Record<string, unknown>> {
-    const normalizedNode = String(node).trim();
-    if (!normalizedNode) {
-      throw new InfraServiceError(400, 'BAD_REQUEST', 'node is required');
+  async listNodeVms(tenantId: string, node: string): Promise<Array<Record<string, unknown>>> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const normalizedNode = assertNode(node);
+
+    const records = await this.repository.listVmsByNode(normalizedTenantId, normalizedNode);
+    if (records.length === 0) {
+      return [
+        {
+          vmid: 100,
+          name: 'template-100',
+          status: 'stopped',
+          node: normalizedNode,
+        },
+      ];
     }
 
-    const vmList = [...this.vmStore.values()]
-      .filter((record) => record.node === normalizedNode)
-      .map((record) => ({
-        vmid: Number(record.vmid),
-        name: record.name,
-        status: record.status,
-        node: record.node,
-      }));
-
-    if (vmList.length > 0) {
-      return vmList;
-    }
-
-    return [
-      {
-        vmid: 100,
-        name: 'template-100',
-        status: 'stopped',
-        node: normalizedNode,
-      },
-    ];
+    return records.map((record) => ({
+      vmid: Number(record.vmid),
+      name: record.name,
+      status: record.status,
+      node: record.node,
+    }));
   }
 
-  cloneVm(input: CloneVmInput): { upid: string } {
-    const sourceVm = this.ensureVm(input.node, input.vmid);
-    const targetVmid = String(input.body.newid ?? '').trim();
-    const clonedVmid = targetVmid.length > 0 ? targetVmid : `${Number(sourceVm.vmid) + 1}`;
-    const targetKey = this.makeVmKey(input.node, clonedVmid);
+  async cloneVm(tenantId: string, input: CloneVmInput): Promise<{ upid: string }> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const sourceVm = await this.ensureVm(normalizedTenantId, input.node, input.vmid);
+
+    const targetVmid = String(input.body.newid || '').trim();
+    if (!targetVmid) {
+      throw new InfraServiceError(400, 'BAD_REQUEST', 'newid is required');
+    }
+
+    const targetName = String(input.body.name || `vm-${targetVmid}`).trim();
+    const targetNode = String(input.node || sourceVm.node).trim();
 
     const cloned: VmRecord = {
       ...sourceVm,
-      vmid: clonedVmid,
-      name: String(input.body.name || `${sourceVm.name}-clone`).trim(),
+      node: targetNode,
+      vmid: targetVmid,
+      name: targetName || `vm-${targetVmid}`,
       status: 'stopped',
       config: {
         ...sourceVm.config,
+        ...(input.body.storage ? { storage: String(input.body.storage).trim() } : {}),
+        ...(input.body.format ? { format: String(input.body.format).trim() } : {}),
+        ...(input.body.full !== undefined ? { full: input.body.full } : {}),
       },
     };
 
-    this.vmStore.set(targetKey, cloned);
+    await this.repository.upsertVm({
+      tenantId: normalizedTenantId,
+      node: cloned.node,
+      vmid: cloned.vmid,
+      payload: cloned,
+    });
 
     return {
       upid: this.nextUpid(),
     };
   }
 
-  getVmConfig(node: string, vmid: string): Record<string, unknown> {
-    const vm = this.ensureVm(node, vmid);
+  async getVmConfig(
+    tenantId: string,
+    node: string,
+    vmid: string,
+  ): Promise<Record<string, unknown>> {
+    const vm = await this.ensureVm(tenantId, node, vmid);
     return {
-      ...vm.config,
-      vmid: vm.vmid,
+      vmid: Number(vm.vmid),
       name: vm.name,
-      node: vm.node,
+      status: vm.status,
+      ...vm.config,
     };
   }
 
-  updateVmConfig(input: UpdateVmConfigInput): { upid: string } {
-    const vm = this.ensureVm(input.node, input.vmid);
-    vm.config = {
-      ...vm.config,
-      ...input.body,
+  async updateVmConfig(tenantId: string, input: UpdateVmConfigInput): Promise<{ upid: string }> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const vm = await this.ensureVm(normalizedTenantId, input.node, input.vmid);
+
+    const merged: VmRecord = {
+      ...vm,
+      config: {
+        ...vm.config,
+        ...(input.body || {}),
+      },
     };
-    this.vmStore.set(this.makeVmKey(input.node, input.vmid), vm);
+
+    await this.repository.upsertVm({
+      tenantId: normalizedTenantId,
+      node: merged.node,
+      vmid: merged.vmid,
+      payload: merged,
+    });
 
     return {
       upid: this.nextUpid(),
     };
   }
 
-  getTaskStatus(node: string, upid: string): Record<string, unknown> {
-    const normalizedNode = String(node).trim();
-    const normalizedUpid = String(upid).trim();
-    if (!normalizedNode || !normalizedUpid) {
-      throw new InfraServiceError(400, 'BAD_REQUEST', 'Invalid task id');
+  async getTaskStatus(
+    tenantId: string,
+    node: string,
+    upid: string,
+  ): Promise<Record<string, unknown>> {
+    normalizeTenantId(tenantId);
+    const normalizedNode = assertNode(node);
+    const normalizedUpid = String(upid || '').trim();
+    if (!normalizedUpid) {
+      throw new InfraServiceError(400, 'BAD_REQUEST', 'upid is required');
     }
 
     return {
@@ -214,42 +201,52 @@ export class InfraService {
     };
   }
 
-  vmAction(node: string, vmid: string, action: string): { upid: string } {
-    const normalizedAction = String(action).trim().toLowerCase();
-    const allowed = new Set(['start', 'stop', 'shutdown', 'reset', 'suspend', 'resume']);
-    if (!allowed.has(normalizedAction)) {
-      throw new InfraServiceError(400, 'BAD_REQUEST', `Invalid action: ${normalizedAction}`);
-    }
+  async vmAction(
+    tenantId: string,
+    node: string,
+    vmid: string,
+    action: string,
+  ): Promise<{ upid: string }> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const normalizedAction = normalizeVmAction(action);
 
-    const vm = this.ensureVm(node, vmid);
-    if (normalizedAction === 'start' || normalizedAction === 'resume') {
-      vm.status = 'running';
-    }
-    if (
-      normalizedAction === 'stop' ||
-      normalizedAction === 'shutdown' ||
-      normalizedAction === 'suspend'
-    ) {
-      vm.status = 'stopped';
-    }
-    this.vmStore.set(this.makeVmKey(node, vmid), vm);
+    const vm = await this.ensureVm(normalizedTenantId, node, vmid);
+    const nextVm: VmRecord = {
+      ...vm,
+      status: resolveVmStatusByAction(vm.status, normalizedAction),
+    };
+
+    await this.repository.upsertVm({
+      tenantId: normalizedTenantId,
+      node: nextVm.node,
+      vmid: nextVm.vmid,
+      payload: nextVm,
+    });
 
     return {
       upid: this.nextUpid(),
     };
   }
 
-  deleteVm(input: DeleteVmInput): { upid: string } {
-    const key = this.makeVmKey(input.node, input.vmid);
-    this.vmStore.delete(key);
+  async deleteVm(tenantId: string, input: DeleteVmInput): Promise<{ upid: string }> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+
+    await this.repository
+      .deleteVm(normalizedTenantId, String(input.node).trim(), String(input.vmid).trim())
+      .catch(() => undefined);
 
     return {
       upid: this.nextUpid(),
     };
   }
 
-  sendKey(node: string, vmid: string, key: string): { transport: string; upid: string | null } {
-    this.ensureVm(node, vmid);
+  async sendKey(
+    tenantId: string,
+    node: string,
+    vmid: string,
+    key: string,
+  ): Promise<{ transport: string; upid: string | null }> {
+    await this.ensureVm(tenantId, node, vmid);
     const normalizedKey = String(key).trim();
     if (!normalizedKey) {
       throw new InfraServiceError(400, 'BAD_REQUEST', 'key is required');
@@ -261,8 +258,12 @@ export class InfraService {
     };
   }
 
-  getVmCurrentStatus(node: string, vmid: string): Record<string, unknown> {
-    const vm = this.ensureVm(node, vmid);
+  async getVmCurrentStatus(
+    tenantId: string,
+    node: string,
+    vmid: string,
+  ): Promise<Record<string, unknown>> {
+    const vm = await this.ensureVm(tenantId, node, vmid);
     return {
       vmid: Number(vm.vmid),
       status: vm.status,
@@ -272,7 +273,8 @@ export class InfraService {
     };
   }
 
-  getClusterResources(): Array<Record<string, unknown>> {
+  async getClusterResources(tenantId: string): Promise<Array<Record<string, unknown>>> {
+    normalizeTenantId(tenantId);
     return [
       {
         id: 'node/pve',
@@ -290,7 +292,8 @@ export class InfraService {
     ];
   }
 
-  sshTest(): { stdout: string; stderr: string; exitCode: number } {
+  async sshTest(tenantId: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+    normalizeTenantId(tenantId);
     return {
       stdout: 'SSH connection OK',
       stderr: '',
@@ -298,18 +301,19 @@ export class InfraService {
     };
   }
 
-  execSsh(input: ExecSshInput): {
+  async execSsh(
+    tenantId: string,
+    input: ExecSshInput,
+  ): Promise<{
     stdout: string;
     stderr: string;
     exitCode: number;
     allowlisted: boolean;
-  } {
-    const command = String(input.command || '').trim();
-    if (!command) {
-      throw new InfraServiceError(400, 'BAD_REQUEST', 'command is required');
-    }
+  }> {
+    normalizeTenantId(tenantId);
+    const command = assertCommand(String(input.command || ''));
 
-    const allowlisted = this.isSshCommandAllowlisted(command);
+    const allowlisted = isSshCommandAllowlisted(command);
     if (!allowlisted) {
       throw new InfraServiceError(
         403,
@@ -318,7 +322,7 @@ export class InfraService {
       );
     }
 
-    const timeoutMs = Number.isFinite(Number(input.timeout)) ? Number(input.timeout) : 30_000;
+    const timeoutMs = parseTimeoutMs(input.timeout, 30_000);
 
     return {
       stdout: `Executed (${timeoutMs}ms): ${command}`,
@@ -328,35 +332,27 @@ export class InfraService {
     };
   }
 
-  readVmConfig(vmid: string): { config: string } {
-    const normalizedVmid = String(vmid).trim();
-    if (!normalizedVmid) {
-      throw new InfraServiceError(400, 'BAD_REQUEST', 'Invalid vmid');
-    }
+  async readVmConfig(tenantId: string, vmid: string): Promise<{ config: string }> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const normalizedVmid = assertVmid(vmid);
 
-    const existing = this.vmConfigStore.get(normalizedVmid);
+    const existing = await this.repository.findVmConfig(normalizedTenantId, normalizedVmid);
     if (existing) {
       return { config: existing };
     }
 
-    const fallback = `cores: 2\nmemory: 4096\nname: vm-${normalizedVmid}\n`;
     return {
-      config: fallback,
+      config: `cores: 2\nmemory: 4096\nname: vm-${normalizedVmid}\n`,
     };
   }
 
-  writeVmConfig(input: WriteVmConfigInput): { written: true } {
-    const normalizedVmid = String(input.vmid).trim();
-    if (!normalizedVmid) {
-      throw new InfraServiceError(400, 'BAD_REQUEST', 'Invalid vmid');
-    }
+  async writeVmConfig(tenantId: string, input: WriteVmConfigInput): Promise<{ written: true }> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const normalizedVmid = assertVmid(input.vmid);
+    const content = assertContent(String(input.content || ''));
 
-    const content = String(input.content || '');
-    if (!content) {
-      throw new InfraServiceError(400, 'BAD_REQUEST', 'content is required');
-    }
+    await this.repository.upsertVmConfig(normalizedTenantId, normalizedVmid, content);
 
-    this.vmConfigStore.set(normalizedVmid, content);
     return {
       written: true,
     };

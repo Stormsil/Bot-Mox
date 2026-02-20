@@ -4,15 +4,6 @@ import { VMSettingsForm } from '../../../components/vm';
 import type { VMStorageOption } from '../../../types';
 import { DeleteVmModal } from '../DeleteVmModal';
 import type { UseDeleteVmWorkflowResult } from '../hooks/deleteVmWorkflow.types';
-import styles from '../VMsPage.module.css';
-
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
 
 interface VMPageModalsProps {
   panelOpen: 'settings' | null;
@@ -60,7 +51,6 @@ export const VMPageModals: React.FC<VMPageModalsProps> = ({
       footer={null}
       width={1100}
       destroyOnHidden
-      className={cx('vm-generator-modal')}
       styles={{
         mask: {
           background: 'rgba(var(--boxmox-color-brand-primary-rgb), 0.08)',

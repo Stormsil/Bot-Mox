@@ -6,7 +6,7 @@
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NoteBlockType, TextBlock } from '../../entities/notes/model/types';
-import styles from './NotesComponents.module.css';
+import styles from './NoteBlocks.module.css';
 
 interface BlockEditorProps {
   block: TextBlock;

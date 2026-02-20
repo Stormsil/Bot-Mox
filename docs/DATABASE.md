@@ -4,7 +4,7 @@ Status: Active
 Owner: Data Platform
 Last Updated: 2026-02-19
 Applies To: Supabase/Postgres runtime
-Non-goals: Firebase legacy implementation
+Non-goals: Legacy/archived datastore implementations
 Related Checks: `db:types:check`, `contract:check`
 
 ## Primary Store

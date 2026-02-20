@@ -25,7 +25,7 @@ import type { Note } from '../../entities/notes/model/types';
 import { TableActionButton } from '../ui/TableActionButton';
 import '@uiw/react-md-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
-import styles from './NotesComponents.module.css';
+import styles from './NoteEditor.module.css';
 
 interface NoteEditorProps {
   note: Note;

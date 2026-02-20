@@ -7,7 +7,7 @@ import {
   updateVMConfig,
   updateVMSettings,
   waitForTask,
-} from './vmLegacyFacade';
+} from './vmRuntimeFacade';
 
 interface StartStopVmPayload {
   vmid: number;

@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
+import { FinanceRepository } from './finance.repository';
 
 type FinanceOperationRecord = Record<string, unknown>;
 
@@ -19,7 +21,17 @@ export interface FinanceListResult {
 
 @Injectable()
 export class FinanceService {
-  private readonly operations = new Map<string, FinanceOperationRecord>();
+  constructor(private readonly repository: FinanceRepository) {}
+
+  private normalizeTenantId(tenantId: string): string {
+    const normalized = String(tenantId || '')
+      .trim()
+      .toLowerCase();
+    if (!normalized) {
+      throw new Error('tenantId is required');
+    }
+    return normalized;
+  }
 
   private normalizeSearchValue(value: unknown): string {
     if (value === null || value === undefined) {
@@ -52,7 +64,10 @@ export class FinanceService {
     return `${year}-${month}-${day}`;
   }
 
-  list(query: FinanceListQuery): FinanceListResult {
+  private applyListQuery(
+    items: FinanceOperationRecord[],
+    query: FinanceListQuery,
+  ): FinanceListResult {
     const order = query.order === 'desc' ? 'desc' : 'asc';
     const page = Number.isFinite(query.page) && (query.page ?? 0) > 0 ? Number(query.page) : 1;
     const limit = Number.isFinite(query.limit) && (query.limit ?? 0) > 0 ? Number(query.limit) : 50;
@@ -61,7 +76,7 @@ export class FinanceService {
       .toLowerCase();
     const sort = String(query.sort || '').trim();
 
-    let data = [...this.operations.values()];
+    let data = [...items];
 
     if (q) {
       data = data.filter((item) =>
@@ -94,11 +109,36 @@ export class FinanceService {
     };
   }
 
-  getById(id: string): FinanceOperationRecord | null {
-    return this.operations.get(id) ?? null;
+  private mapDbRow(row: Record<string, unknown>): FinanceOperationRecord {
+    const id = String(row.id || '').trim();
+    const payload = row.payload;
+    if (payload && typeof payload === 'object') {
+      return { ...(payload as FinanceOperationRecord), ...(id ? { id } : {}) };
+    }
+    return id ? { id } : {};
   }
 
-  create(payload: FinanceOperationRecord, explicitId?: string): FinanceOperationRecord {
+  async list(query: FinanceListQuery, tenantId: string): Promise<FinanceListResult> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const rows = await this.repository.list(normalizedTenantId);
+    return this.applyListQuery(
+      rows.map((row) => this.mapDbRow(row)),
+      query,
+    );
+  }
+
+  async getById(id: string, tenantId: string): Promise<FinanceOperationRecord | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const row = await this.repository.findById(normalizedTenantId, id);
+    return row ? this.mapDbRow(row) : null;
+  }
+
+  async create(
+    payload: FinanceOperationRecord,
+    explicitId: string | undefined,
+    tenantId: string,
+  ): Promise<FinanceOperationRecord> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
     const rawId = typeof explicitId === 'string' ? explicitId.trim() : '';
     const payloadId = typeof payload.id === 'string' ? payload.id.trim() : '';
     const id = rawId || payloadId || this.makeId();
@@ -110,13 +150,23 @@ export class FinanceService {
       created_at: payload.created_at ?? now,
       updated_at: now,
     };
-
-    this.operations.set(id, nextRecord);
-    return nextRecord;
+    const row = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id,
+      payload: nextRecord as Prisma.InputJsonValue,
+    });
+    return this.mapDbRow(row);
   }
 
-  patch(id: string, payload: FinanceOperationRecord): FinanceOperationRecord | null {
-    const current = this.operations.get(id);
+  async patch(
+    id: string,
+    payload: FinanceOperationRecord,
+    tenantId: string,
+  ): Promise<FinanceOperationRecord | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const dbCurrent = await this.repository.findById(normalizedTenantId, id);
+    const current = dbCurrent ? this.mapDbRow(dbCurrent) : null;
+
     if (!current) {
       return null;
     }
@@ -127,20 +177,28 @@ export class FinanceService {
       id,
       updated_at: Date.now(),
     };
-
-    this.operations.set(id, nextRecord);
-    return nextRecord;
+    const row = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id,
+      payload: nextRecord as Prisma.InputJsonValue,
+    });
+    return this.mapDbRow(row);
   }
 
-  remove(id: string): boolean {
-    return this.operations.delete(id);
+  async remove(id: string, tenantId: string): Promise<boolean> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    return this.repository.delete(normalizedTenantId, id);
   }
 
-  getDailyStats(): Record<string, Record<string, unknown>> {
+  async getDailyStats(tenantId: string): Promise<Record<string, Record<string, unknown>>> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
     const stats: Record<string, Record<string, unknown>> = {};
     const activeBotsByDate = new Map<string, Set<string>>();
+    const source = (await this.repository.list(normalizedTenantId)).map((row) =>
+      this.mapDbRow(row),
+    );
 
-    for (const operation of this.operations.values()) {
+    for (const operation of source) {
       const dateKey = this.toDay(operation.date ?? operation.created_at);
       const amount = Number(operation.amount || 0);
       const type = operation.type === 'expense' ? 'expense' : 'income';
@@ -181,10 +239,14 @@ export class FinanceService {
     return stats;
   }
 
-  getGoldPriceHistory(): Record<string, { price: number }> {
+  async getGoldPriceHistory(tenantId: string): Promise<Record<string, { price: number }>> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
     const sums = new Map<string, { total: number; count: number }>();
+    const source = (await this.repository.list(normalizedTenantId)).map((row) =>
+      this.mapDbRow(row),
+    );
 
-    for (const operation of this.operations.values()) {
+    for (const operation of source) {
       const isSale = operation.type === 'income' && operation.category === 'sale';
       const rawPrice = operation.gold_price_at_time;
       const price = Number(rawPrice);

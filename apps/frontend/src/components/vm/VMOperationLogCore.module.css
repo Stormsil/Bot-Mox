@@ -1,0 +1,231 @@
+.vm-operation-log {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+  border-top: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  font-size: 11px;
+  overflow: hidden;
+}
+
+.vm-operation-log-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 8px;
+  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  flex-shrink: 0;
+}
+
+.vm-operation-log-toolbar-title {
+  margin-right: 4px;
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vm-operation-log-toolbar-stat {
+  margin-right: auto;
+  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+  font-size: 11px;
+}
+
+.vm-operation-log-toolbar button {
+  min-height: 24px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  box-shadow: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.vm-operation-log-toolbar button:hover {
+  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+  border-color: var(--vmx-border-strong, var(--boxmox-color-border-strong));
+}
+
+.vm-operation-log-content-shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.vm-operation-log-tab-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.vm-task-console {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.vm-task-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.vm-task-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 11px;
+}
+
+.vm-task-table th,
+.vm-task-table td {
+  border-right: 1px solid var(--vmx-border, var(--boxmox-color-border-subtle));
+  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-subtle));
+  padding: 5px 8px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.vm-task-table th:last-child,
+.vm-task-table td:last-child {
+  border-right: none;
+}
+
+.vm-task-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.vm-task-table th:nth-child(1),
+.vm-task-table td:nth-child(1) {
+  width: 138px;
+}
+
+.vm-task-table th:nth-child(2),
+.vm-task-table td:nth-child(2) {
+  width: 138px;
+}
+
+.vm-task-table th:nth-child(4),
+.vm-task-table td:nth-child(4) {
+  width: 84px;
+}
+
+.vm-task-table-row {
+  cursor: default;
+}
+
+.vm-task-table-row:nth-child(even) {
+  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+}
+
+.vm-task-table-row:hover {
+  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+}
+
+.vm-task-table-row.selected {
+  background: var(--vmx-accent-soft, var(--boxmox-color-brand-soft));
+}
+
+.vm-task-open-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vm-task-open-btn:hover {
+  color: var(--vmx-accent, var(--boxmox-color-brand-primary));
+}
+
+.vm-task-open-btn:focus-visible {
+  outline: 2px solid rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
+  outline-offset: 2px;
+}
+
+.vm-task-table-row--error {
+  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+}
+
+.vm-task-table-row--error:nth-child(even),
+.vm-task-table-row--error:hover,
+.vm-task-table-row--error.selected {
+  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+}
+
+.vm-task-table-empty {
+  text-align: center;
+  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+  padding: 20px;
+}
+
+.vm-task-status {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.vm-task-status--running {
+  color: var(--vmx-info, var(--boxmox-color-status-info));
+}
+
+.vm-task-status--ok {
+  color: var(--vmx-success, var(--boxmox-color-status-success));
+}
+
+.vm-task-status--error {
+  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+}
+
+.vm-task-status--cancelled {
+  color: var(--vmx-warning, var(--boxmox-color-status-warning));
+}
+
+.vm-task-open-hint {
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  border-top: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+  font-size: 10px;
+}
+
+@media (max-width: 1100px) {
+  .vm-task-table th:nth-child(1),
+  .vm-task-table td:nth-child(1),
+  .vm-task-table th:nth-child(2),
+  .vm-task-table td:nth-child(2) {
+    width: 124px;
+  }
+}

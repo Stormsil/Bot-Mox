@@ -1,74 +1,48 @@
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
-import { Injectable } from '@nestjs/common';
-
-type VmCommandStatus =
-  | 'queued'
-  | 'dispatched'
-  | 'running'
-  | 'succeeded'
-  | 'failed'
-  | 'expired'
-  | 'cancelled';
-
-const TERMINAL_STATUSES: ReadonlySet<VmCommandStatus> = new Set([
-  'succeeded',
-  'failed',
-  'expired',
-  'cancelled',
-]);
-
-interface VmCommandRecord {
-  id: string;
-  tenant_id: string;
-  agent_id: string;
-  command_type: string;
-  payload: Record<string, unknown>;
-  status: VmCommandStatus;
-  queued_at: string;
-  expires_at: string | null;
-  started_at: string | null;
-  completed_at: string | null;
-  result?: unknown | null;
-  error_message?: string | null;
-  created_by?: string | null;
-}
-
-interface VmCommandEvent {
-  event_id: number;
-  event_type: 'vm-command';
-  tenant_id: string;
-  server_time: string;
-  command: VmCommandRecord;
-}
-
-interface Waiter {
-  tenantId: string;
-  agentId: string;
-  resolve: (command: VmCommandRecord | null) => void;
-  timer: ReturnType<typeof setTimeout>;
-}
+import { Injectable, Logger } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
+import { cloneCommand, mapDbCommand, normalizeTenantId, nowIso } from './vm-ops.mappers';
+import {
+  buildDeadLetterMessage,
+  buildRequeueMessage,
+  extractDispatchRequeueCount,
+  getVmOpsReliabilityConfig,
+} from './vm-ops.reliability';
+import { VmOpsRepository } from './vm-ops.repository';
+import {
+  TERMINAL_STATUSES,
+  type VmCommandEvent,
+  type VmCommandRecord,
+  type Waiter,
+} from './vm-ops.types';
 
 @Injectable()
 export class VmOpsService {
-  private readonly commands = new Map<string, VmCommandRecord>();
-  private readonly commandOrder: string[] = [];
+  private readonly logger = new Logger(VmOpsService.name);
   private readonly commandEvents: VmCommandEvent[] = [];
   private readonly eventEmitter = new EventEmitter();
   private readonly waiters = new Set<Waiter>();
   private nextEventId = 1;
+  private readonly runningCommandMaxMs: number;
+  private readonly dispatchedCommandMaxMs: number;
+  private readonly dispatchMaxRequeues: number;
+  private readonly staleSweepTimer: ReturnType<typeof setInterval>;
 
   private static readonly MAX_EVENT_HISTORY = 500;
 
-  private nowIso(): string {
-    return new Date().toISOString();
-  }
+  constructor(private readonly repository: VmOpsRepository) {
+    const reliabilityConfig = getVmOpsReliabilityConfig(process.env);
+    this.runningCommandMaxMs = reliabilityConfig.runningCommandMaxMs;
+    this.dispatchedCommandMaxMs = reliabilityConfig.dispatchedCommandMaxMs;
+    this.dispatchMaxRequeues = reliabilityConfig.dispatchMaxRequeues;
 
-  private cloneCommand(command: VmCommandRecord): VmCommandRecord {
-    return {
-      ...command,
-      payload: { ...command.payload },
-    };
+    this.staleSweepTimer = setInterval(() => {
+      this.sweepStaleRunningCommands();
+    }, 60_000);
+    if (typeof this.staleSweepTimer.unref === 'function') {
+      this.staleSweepTimer.unref();
+    }
   }
 
   private emitCommandEvent(command: VmCommandRecord): void {
@@ -76,8 +50,8 @@ export class VmOpsService {
       event_id: this.nextEventId,
       event_type: 'vm-command',
       tenant_id: command.tenant_id,
-      server_time: this.nowIso(),
-      command: this.cloneCommand(command),
+      server_time: nowIso(),
+      command: cloneCommand(command),
     };
 
     this.nextEventId += 1;
@@ -89,48 +63,27 @@ export class VmOpsService {
     this.eventEmitter.emit('vm-command', event);
   }
 
-  private findQueuedCommand(tenantId: string, agentId: string): VmCommandRecord | null {
-    for (const commandId of this.commandOrder) {
-      const command = this.commands.get(commandId);
-      if (!command) {
-        continue;
-      }
-      if (command.tenant_id !== tenantId) {
-        continue;
-      }
-      if (command.agent_id !== agentId) {
-        continue;
-      }
-      if (command.status !== 'queued') {
-        continue;
-      }
-      return command;
-    }
-    return null;
-  }
-
-  private takeQueuedCommand(tenantId: string, agentId: string): VmCommandRecord | null {
-    const command = this.findQueuedCommand(tenantId, agentId);
-    if (!command) {
-      return null;
-    }
-
-    command.status = 'dispatched';
-    this.emitCommandEvent(command);
-    return this.cloneCommand(command);
-  }
-
-  private resolvePendingWaiters(tenantId: string, agentId: string): void {
+  private async resolvePendingWaiters(tenantId: string, agentId: string): Promise<void> {
     const pending = Array.from(this.waiters);
     for (const waiter of pending) {
       if (waiter.tenantId !== tenantId || waiter.agentId !== agentId) {
         continue;
       }
 
-      const command = this.takeQueuedCommand(tenantId, agentId);
-      if (!command) {
+      let claimed: Awaited<ReturnType<VmOpsRepository['claimNextQueued']>> = null;
+      try {
+        claimed = await this.repository.claimNextQueued({ tenantId, agentId });
+      } catch (error) {
+        this.logger.error(
+          `Failed to resolve pending command waiter: ${(error as Error)?.message || String(error)}`,
+        );
         break;
       }
+      if (!claimed) {
+        break;
+      }
+      const command = mapDbCommand(claimed);
+      this.emitCommandEvent(command);
 
       this.waiters.delete(waiter);
       clearTimeout(waiter.timer);
@@ -138,24 +91,29 @@ export class VmOpsService {
     }
   }
 
-  dispatch(input: {
-    tenantId?: string;
+  async dispatch(input: {
+    tenantId: string;
     agentId: string;
     commandType: string;
     payload: Record<string, unknown>;
     createdBy?: string;
     expiresInSeconds?: number;
-  }): VmCommandRecord {
+  }): Promise<VmCommandRecord> {
     const id = randomUUID();
-    const queuedAt = this.nowIso();
+    const queuedAt = nowIso();
     const expiresAt =
       input.expiresInSeconds && Number.isFinite(input.expiresInSeconds)
         ? new Date(Date.now() + input.expiresInSeconds * 1_000).toISOString()
         : null;
 
+    const normalizedTenantId = input.tenantId ? normalizeTenantId(input.tenantId) : '';
+    if (!normalizedTenantId) {
+      throw new Error('tenantId is required');
+    }
+
     const command: VmCommandRecord = {
       id,
-      tenant_id: String(input.tenantId || 'default'),
+      tenant_id: normalizedTenantId,
       agent_id: input.agentId,
       command_type: input.commandType,
       payload: { ...(input.payload || {}) },
@@ -168,53 +126,73 @@ export class VmOpsService {
       error_message: null,
       created_by: input.createdBy || null,
     };
-
-    this.commands.set(id, command);
-    this.commandOrder.push(id);
-    this.emitCommandEvent(command);
-    this.resolvePendingWaiters(command.tenant_id, command.agent_id);
-
-    return this.cloneCommand(command);
+    const dbCommand = await this.repository.create({
+      id,
+      tenantId: command.tenant_id,
+      agentId: command.agent_id,
+      commandType: command.command_type,
+      payload: command.payload as Prisma.InputJsonValue,
+      status: command.status,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      createdBy: command.created_by || null,
+    });
+    const mapped = mapDbCommand(dbCommand);
+    this.emitCommandEvent(mapped);
+    void this.resolvePendingWaiters(mapped.tenant_id, mapped.agent_id);
+    return mapped;
   }
 
-  getById(id: string): VmCommandRecord | null {
-    const command = this.commands.get(id);
-    return command ? this.cloneCommand(command) : null;
+  async getById(id: string, tenantId?: string): Promise<VmCommandRecord | null> {
+    const dbCommand = await this.repository.findById(id);
+    if (!dbCommand) return null;
+    const mapped = mapDbCommand(dbCommand);
+    if (tenantId && mapped.tenant_id !== tenantId) {
+      return null;
+    }
+    return mapped;
   }
 
-  listCommands(filters: { agentId?: string; status?: string }): VmCommandRecord[] {
+  async listCommands(filters: {
+    tenantId?: string;
+    agentId?: string;
+    status?: string;
+  }): Promise<VmCommandRecord[]> {
     const statusFilter = String(filters.status || '')
       .trim()
       .toLowerCase();
     const agentIdFilter = String(filters.agentId || '').trim();
 
-    return this.commandOrder
-      .map((commandId) => this.commands.get(commandId))
-      .filter((command): command is VmCommandRecord => Boolean(command))
-      .filter((command) => {
-        if (agentIdFilter && command.agent_id !== agentIdFilter) {
-          return false;
-        }
-        if (statusFilter && String(command.status).toLowerCase() !== statusFilter) {
-          return false;
-        }
-        return true;
-      })
-      .map((command) => this.cloneCommand(command));
+    const dbFilters: { tenantId?: string; agentId?: string; status?: string } = {};
+    if (filters.tenantId) {
+      dbFilters.tenantId = filters.tenantId;
+    }
+    if (agentIdFilter) {
+      dbFilters.agentId = agentIdFilter;
+    }
+    if (statusFilter) {
+      dbFilters.status = statusFilter;
+    }
+    const rows = await this.repository.list(dbFilters);
+    return rows.map((row) => mapDbCommand(row));
   }
 
-  waitForNextAgentCommand(input: {
-    tenantId?: string;
+  async waitForNextAgentCommand(input: {
+    tenantId: string;
     agentId: string;
     timeoutMs?: number;
   }): Promise<VmCommandRecord | null> {
-    const tenantId = String(input.tenantId || 'default');
+    const tenantId = normalizeTenantId(input.tenantId);
+    if (!tenantId) {
+      throw new Error('tenantId is required');
+    }
     const agentId = String(input.agentId || '').trim();
     const timeoutMs = Number.isFinite(input.timeoutMs) ? Number(input.timeoutMs) : 25_000;
 
-    const immediate = this.takeQueuedCommand(tenantId, agentId);
-    if (immediate) {
-      return Promise.resolve(immediate);
+    const claimed = await this.repository.claimNextQueued({ tenantId, agentId });
+    if (claimed) {
+      const mapped = mapDbCommand(claimed);
+      this.emitCommandEvent(mapped);
+      return mapped;
     }
 
     return new Promise((resolve) => {
@@ -231,35 +209,96 @@ export class VmOpsService {
     });
   }
 
-  updateCommandStatus(input: {
+  async updateCommandStatus(input: {
     id: string;
-    status: 'running' | 'succeeded' | 'failed';
+    status: 'running' | 'succeeded' | 'failed' | 'expired' | 'cancelled';
     result?: unknown;
     errorMessage?: string;
-  }): VmCommandRecord | null {
-    const command = this.commands.get(input.id);
-    if (!command) {
+    tenantId?: string;
+  }): Promise<VmCommandRecord | null> {
+    const normalizedTenantId = input.tenantId ? normalizeTenantId(input.tenantId) : '';
+    if (normalizedTenantId) {
+      const existing = await this.repository.findById(input.id);
+      if (!existing) {
+        return null;
+      }
+      const existingMapped = mapDbCommand(existing);
+      if (existingMapped.tenant_id !== normalizedTenantId) {
+        return null;
+      }
+    }
+
+    const now = new Date();
+    const updated = await this.repository.updateStatus({
+      id: input.id,
+      status: input.status,
+      ...(Object.hasOwn(input, 'result')
+        ? { result: (input.result ?? null) as Prisma.InputJsonValue | null }
+        : {}),
+      ...(Object.hasOwn(input, 'errorMessage') ? { errorMessage: input.errorMessage ?? null } : {}),
+      ...(input.status === 'running' ? { startedAt: now } : {}),
+      ...(TERMINAL_STATUSES.has(input.status) ? { completedAt: now } : {}),
+    });
+    if (!updated) {
       return null;
     }
+    const mapped = mapDbCommand(updated);
+    this.emitCommandEvent(mapped);
+    return mapped;
+  }
 
-    command.status = input.status;
-    if (input.status === 'running') {
-      command.started_at = command.started_at || this.nowIso();
-    }
-    if (TERMINAL_STATUSES.has(input.status)) {
-      command.completed_at = this.nowIso();
-      command.started_at = command.started_at || command.completed_at;
-    }
+  private async sweepStaleRunningCommands(): Promise<void> {
+    try {
+      const expiredRunningCount = await this.repository.expireStaleRunning({
+        runningMaxAgeMs: this.runningCommandMaxMs,
+      });
 
-    if (Object.hasOwn(input, 'result')) {
-      command.result = input.result ?? null;
-    }
-    if (Object.hasOwn(input, 'errorMessage')) {
-      command.error_message = input.errorMessage ?? null;
-    }
+      const staleDispatched = await this.repository.listStaleDispatched({
+        dispatchedMaxAgeMs: this.dispatchedCommandMaxMs,
+      });
 
-    this.emitCommandEvent(command);
-    return this.cloneCommand(command);
+      let requeuedCount = 0;
+      let deadLetteredCount = 0;
+      for (const command of staleDispatched) {
+        const retryCount = extractDispatchRequeueCount(command.errorMessage);
+        if (retryCount < this.dispatchMaxRequeues) {
+          const updated = await this.repository.requeueDispatched({
+            id: command.id,
+            errorMessage: buildRequeueMessage(
+              retryCount + 1,
+              this.dispatchedCommandMaxMs,
+              command.errorMessage,
+            ),
+          });
+          if (updated) {
+            requeuedCount += 1;
+            this.emitCommandEvent(mapDbCommand(updated));
+          }
+          continue;
+        }
+
+        const updated = await this.repository.deadLetterDispatched({
+          id: command.id,
+          errorMessage: buildDeadLetterMessage(
+            retryCount,
+            this.dispatchedCommandMaxMs,
+            command.errorMessage,
+          ),
+        });
+        if (updated) {
+          deadLetteredCount += 1;
+          this.emitCommandEvent(mapDbCommand(updated));
+        }
+      }
+
+      if (expiredRunningCount > 0 || requeuedCount > 0 || deadLetteredCount > 0) {
+        this.logger.warn(
+          `Reliability sweep: runningExpired=${expiredRunningCount}, dispatchedRequeued=${requeuedCount}, dispatchedDeadLettered=${deadLetteredCount} (running>${this.runningCommandMaxMs}ms, dispatched>${this.dispatchedCommandMaxMs}ms, maxRequeues=${this.dispatchMaxRequeues})`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Reliability sweep failed: ${(error as Error)?.message || String(error)}`);
+    }
   }
 
   listEventsSince(lastEventId: number): VmCommandEvent[] {
@@ -267,7 +306,7 @@ export class VmOpsService {
       .filter((event) => event.event_id > lastEventId)
       .map((event) => ({
         ...event,
-        command: this.cloneCommand(event.command),
+        command: cloneCommand(event.command),
       }));
   }
 

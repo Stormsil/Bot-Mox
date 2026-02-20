@@ -1,0 +1,181 @@
+.vm-generator {
+  --vmx-bg: var(--boxmox-color-surface-base);
+  --vmx-panel: var(--boxmox-color-surface-panel);
+  --vmx-muted: var(--boxmox-color-surface-muted);
+  --vmx-muted-2: var(--boxmox-color-surface-hover);
+  --vmx-border: var(--boxmox-color-border-default);
+  --vmx-border-strong: var(--boxmox-color-border-strong);
+  --vmx-text: var(--boxmox-color-text-primary);
+  --vmx-text-muted: var(--boxmox-color-text-secondary);
+  --vmx-accent: var(--boxmox-color-brand-primary);
+  --vmx-accent-hover: var(--boxmox-color-brand-primary-hover);
+  --vmx-accent-soft: var(--boxmox-color-brand-soft);
+  --vmx-accent-rgb: var(--boxmox-color-brand-primary-rgb);
+  --vmx-danger: var(--boxmox-color-status-danger);
+  --vmx-success: var(--boxmox-color-status-success);
+  --vmx-info: var(--boxmox-color-status-info);
+  --vmx-warning: var(--boxmox-color-status-warning);
+  --vmx-neutral: var(--boxmox-color-status-neutral);
+  --vmx-header-text: var(--boxmox-color-header-text);
+
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  overflow: hidden;
+  background: var(--vmx-bg);
+  color: var(--vmx-text);
+}
+
+.vm-generator-target-strip {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 8px;
+  border: 1px solid var(--vmx-border);
+  border-radius: 2px;
+  background: var(--vmx-panel);
+}
+
+.proxmox-content:has(.vm-generator) {
+  overflow: hidden;
+}
+
+.vm-generator-workspace {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.vm-generator-service-pane {
+  min-height: 0;
+  border: 1px solid var(--vmx-border);
+  border-radius: 2px;
+  background: var(--vmx-panel);
+  overflow: hidden;
+}
+
+.vm-generator-workspace-resizer {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 10px;
+  min-width: 10px;
+  cursor: col-resize;
+  border: 1px solid var(--vmx-border);
+  border-radius: 2px;
+  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+}
+
+.vm-generator-workspace-resizer::before {
+  content: "";
+  width: 2px;
+  height: 72px;
+  background: var(--vmx-border-strong);
+  opacity: 0.9;
+}
+
+.vm-generator-workspace-resizer:hover,
+.vm-generator-workspace--resizing .vm-generator-workspace-resizer {
+  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+  border-color: var(--vmx-border-strong);
+}
+
+.vm-generator-main {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--vmx-border);
+  border-radius: 2px;
+  background: var(--vmx-panel);
+  overflow: hidden;
+}
+
+.vm-generator-queue-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.vm-generator-queue-wrap :global(.vm-queue-panel) {
+  height: 100%;
+}
+
+.vm-generator-queue-wrap :global(.vm-queue-panel-list) {
+  min-height: 0;
+}
+
+.vm-generator-log-resizer {
+  appearance: none;
+  width: 100%;
+  padding: 0;
+  flex-shrink: 0;
+  height: 8px;
+  cursor: row-resize;
+  position: relative;
+  border-top: 1px solid var(--vmx-border);
+  border-bottom: 1px solid var(--vmx-border);
+  background: var(--vmx-panel);
+}
+
+.vm-generator-log-resizer::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 92px;
+  height: 3px;
+  border-radius: 0;
+  background: var(--vmx-border-strong);
+  opacity: 0.85;
+}
+
+.vm-generator-log-resizer:hover,
+.vm-generator--resizing .vm-generator-log-resizer {
+  background: var(--vmx-muted-2);
+}
+
+.vm-generator-log-resizer:hover::before,
+.vm-generator--resizing .vm-generator-log-resizer::before {
+  background: var(--vmx-accent);
+  opacity: 1;
+}
+
+.vm-generator-log-wrap {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--vmx-panel);
+}
+
+.vm-generator-log-wrap :global(.vm-operation-log) {
+  height: 100%;
+}
+
+@media (max-width: 1240px) {
+  .vm-generator-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .vm-generator-service-pane {
+    min-height: 320px;
+  }
+
+  .vm-generator-workspace-resizer {
+    display: none;
+  }
+}
+
+@media (max-width: 1080px) {
+  /* VMCommandPanel migrated to CSS Modules */
+}

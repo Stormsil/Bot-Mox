@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
+import { WorkspaceRepository } from './workspace.repository';
 
 export type WorkspaceKind = 'notes' | 'calendar' | 'kanban';
 type WorkspaceRecord = Record<string, unknown>;
@@ -20,18 +22,16 @@ export interface WorkspaceListResult {
 
 @Injectable()
 export class WorkspaceService {
-  private readonly store = new Map<WorkspaceKind, Map<string, WorkspaceRecord>>([
-    ['notes', new Map()],
-    ['calendar', new Map()],
-    ['kanban', new Map()],
-  ]);
+  constructor(private readonly repository: WorkspaceRepository) {}
 
-  private getBucket(kind: WorkspaceKind): Map<string, WorkspaceRecord> {
-    const bucket = this.store.get(kind);
-    if (!bucket) {
-      throw new Error(`Unknown workspace bucket: ${kind}`);
+  private normalizeTenantId(tenantId: string): string {
+    const normalized = String(tenantId || '')
+      .trim()
+      .toLowerCase();
+    if (!normalized) {
+      throw new Error('tenantId is required');
     }
-    return bucket;
+    return normalized;
   }
 
   private normalizeSearchValue(value: unknown): string {
@@ -56,7 +56,7 @@ export class WorkspaceService {
     return `${kind}-${stamp}-${random}`;
   }
 
-  list(kind: WorkspaceKind, query: WorkspaceListQuery): WorkspaceListResult {
+  private applyListQuery(items: WorkspaceRecord[], query: WorkspaceListQuery): WorkspaceListResult {
     const order = query.order === 'desc' ? 'desc' : 'asc';
     const page = Number.isFinite(query.page) && (query.page ?? 0) > 0 ? Number(query.page) : 1;
     const limit = Number.isFinite(query.limit) && (query.limit ?? 0) > 0 ? Number(query.limit) : 50;
@@ -65,7 +65,7 @@ export class WorkspaceService {
       .toLowerCase();
     const sort = String(query.sort || '').trim();
 
-    let data = [...this.getBucket(kind).values()];
+    let data = [...items];
 
     if (q) {
       data = data.filter((item) =>
@@ -98,11 +98,46 @@ export class WorkspaceService {
     };
   }
 
-  getById(kind: WorkspaceKind, id: string): WorkspaceRecord | null {
-    return this.getBucket(kind).get(id) ?? null;
+  private mapDbRowToRecord(row: Record<string, unknown>): WorkspaceRecord {
+    const id = String(row.id || '').trim();
+    const payload = row.payload;
+    if (payload && typeof payload === 'object') {
+      return { ...(payload as WorkspaceRecord), ...(id ? { id } : {}) };
+    }
+    return id ? { id } : {};
   }
 
-  create(kind: WorkspaceKind, payload: WorkspaceRecord, explicitId?: string): WorkspaceRecord {
+  async list(
+    kind: WorkspaceKind,
+    query: WorkspaceListQuery,
+    tenantId: string,
+  ): Promise<WorkspaceListResult> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const rows = await this.repository.list(normalizedTenantId, kind);
+    const items = rows.map((row) => this.mapDbRowToRecord(row));
+    return this.applyListQuery(items, query);
+  }
+
+  async getById(
+    kind: WorkspaceKind,
+    id: string,
+    tenantId: string,
+  ): Promise<WorkspaceRecord | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const row = await this.repository.findById(normalizedTenantId, kind, id);
+    if (!row) {
+      return null;
+    }
+    return this.mapDbRowToRecord(row);
+  }
+
+  async create(
+    kind: WorkspaceKind,
+    payload: WorkspaceRecord,
+    explicitId: string | undefined,
+    tenantId: string,
+  ): Promise<WorkspaceRecord> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
     const rawId = typeof explicitId === 'string' ? explicitId.trim() : '';
     const payloadId = typeof payload.id === 'string' ? payload.id.trim() : '';
     const id = rawId || payloadId || this.makeId(kind);
@@ -115,12 +150,25 @@ export class WorkspaceService {
       updated_at: now,
     };
 
-    this.getBucket(kind).set(id, nextRecord);
-    return nextRecord;
+    const row = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      kind,
+      id,
+      payload: nextRecord as Prisma.InputJsonValue,
+    });
+    return this.mapDbRowToRecord(row);
   }
 
-  update(kind: WorkspaceKind, id: string, payload: WorkspaceRecord): WorkspaceRecord | null {
-    const current = this.getBucket(kind).get(id);
+  async update(
+    kind: WorkspaceKind,
+    id: string,
+    payload: WorkspaceRecord,
+    tenantId: string,
+  ): Promise<WorkspaceRecord | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const dbCurrent = await this.repository.findById(normalizedTenantId, kind, id);
+    const current = dbCurrent ? this.mapDbRowToRecord(dbCurrent) : null;
+
     if (!current) {
       return null;
     }
@@ -132,11 +180,17 @@ export class WorkspaceService {
       updated_at: Date.now(),
     };
 
-    this.getBucket(kind).set(id, nextRecord);
-    return nextRecord;
+    const row = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      kind,
+      id,
+      payload: nextRecord as Prisma.InputJsonValue,
+    });
+    return this.mapDbRowToRecord(row);
   }
 
-  remove(kind: WorkspaceKind, id: string): boolean {
-    return this.getBucket(kind).delete(id);
+  async remove(kind: WorkspaceKind, id: string, tenantId: string): Promise<boolean> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    return await this.repository.delete(normalizedTenantId, kind, id);
   }
 }

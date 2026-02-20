@@ -65,8 +65,12 @@ export class Logger {
   }
 
   private safeJson(value: unknown): string {
+    const sensitiveKeyPattern = /password|token|secret|authorization|cookie|key/i;
     const seen = new WeakSet<object>();
-    return JSON.stringify(value, (_key, nestedValue) => {
+    return JSON.stringify(value, (key, nestedValue) => {
+      if (sensitiveKeyPattern.test(String(key || ''))) {
+        return '[REDACTED]';
+      }
       if (typeof nestedValue === 'bigint') {
         return nestedValue.toString();
       }

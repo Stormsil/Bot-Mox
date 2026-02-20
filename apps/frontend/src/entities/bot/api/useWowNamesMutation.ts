@@ -1,5 +1,5 @@
 import { type UseMutationResult, useMutation } from '@tanstack/react-query';
-import { getWowNames } from './botLegacyFacade';
+import { getWowNames } from './botRuntimeFacade';
 
 interface GetWowNamesPayload {
   batches?: number;

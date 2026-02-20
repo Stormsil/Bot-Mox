@@ -1,114 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
+import { buildBanPayload, buildTransitionPayload, buildUnbanPayload } from './bots.lifecycle';
+import { BotsRepository } from './bots.repository';
+import type {
+  BotLifecycleState,
+  BotLifecycleTransition,
+  BotRecord,
+  BotStatus,
+  BotsListQuery,
+  BotsListResult,
+} from './bots.types';
+import {
+  createDefaultLifecycle,
+  makeId,
+  mapDbRow,
+  normalizeSearchValue,
+  normalizeTenantId,
+} from './bots.utils';
 
-type BotRecord = Record<string, unknown>;
-type BotStatus = 'offline' | 'prepare' | 'leveling' | 'profession' | 'farming' | 'banned';
-type BotLifecycleStage = 'prepare' | 'leveling' | 'profession' | 'farming' | 'banned';
-
-interface BotLifecycleTransition {
-  from: 'prepare' | 'leveling' | 'profession' | 'farming' | 'create';
-  to: 'prepare' | 'leveling' | 'profession' | 'farming';
-  timestamp: number;
-}
-
-interface BotLifecycleState {
-  current_stage: BotLifecycleStage;
-  previous_status?: BotStatus;
-  stage_transitions: BotLifecycleTransition[];
-  ban_details?: Record<string, unknown>;
-}
-
-export interface BotsListQuery {
-  page?: number | undefined;
-  limit?: number | undefined;
-  sort?: string | undefined;
-  order?: 'asc' | 'desc' | undefined;
-  q?: string | undefined;
-}
-
-export interface BotsListResult {
-  items: BotRecord[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-const BOT_STATUS_TO_STAGE: Record<
-  string,
-  'prepare' | 'leveling' | 'profession' | 'farming' | null
-> = {
-  offline: null,
-  prepare: 'prepare',
-  leveling: 'leveling',
-  profession: 'profession',
-  farming: 'farming',
-  banned: null,
-};
-
-const RESTORABLE_STATUSES = new Set(['offline', 'prepare', 'leveling', 'profession', 'farming']);
+export type { BotsListQuery } from './bots.types';
 
 export class BotsServiceValidationError extends Error {}
 
 @Injectable()
 export class BotsService {
-  private readonly store = new Map<string, BotRecord>();
+  constructor(private readonly repository: BotsRepository) {}
 
-  private normalizeSearchValue(value: unknown): string {
-    if (value === null || value === undefined) {
-      return '';
-    }
-
-    if (typeof value === 'string') {
-      return value.toLowerCase();
-    }
-
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      return String(value).toLowerCase();
-    }
-
-    return '';
-  }
-
-  private makeId(): string {
-    const stamp = Date.now().toString(36);
-    const random = Math.random().toString(36).slice(2, 8);
-    return `bot-${stamp}-${random}`;
-  }
-
-  private toLifecycleStageFromStatus(
-    status: unknown,
-  ): 'prepare' | 'leveling' | 'profession' | 'farming' | null {
-    const normalized = String(status || '')
-      .trim()
-      .toLowerCase();
-    return BOT_STATUS_TO_STAGE[normalized] || null;
-  }
-
-  private createDefaultLifecycle(): BotLifecycleState {
-    return {
-      current_stage: 'prepare',
-      stage_transitions: [],
-    };
-  }
-
-  private toTimestampFromRussianDate(value: unknown): number {
-    const parts = String(value || '')
-      .trim()
-      .split('.')
-      .map((part) => Number(part));
-
-    if (parts.length !== 3) return Date.now();
-    const [day, month, year] = parts;
-    if (!day || !month || !year) return Date.now();
-
-    const date = new Date(year, month - 1, day);
-    if (Number.isNaN(date.getTime())) {
-      return Date.now();
-    }
-
-    return date.getTime();
-  }
-
-  list(query: BotsListQuery): BotsListResult {
+  async list(query: BotsListQuery, tenantId: string): Promise<BotsListResult> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
     const order = query.order === 'desc' ? 'desc' : 'asc';
     const page = Number.isFinite(query.page) && (query.page ?? 0) > 0 ? Number(query.page) : 1;
     const limit = Number.isFinite(query.limit) && (query.limit ?? 0) > 0 ? Number(query.limit) : 50;
@@ -117,11 +36,13 @@ export class BotsService {
       .toLowerCase();
     const sort = String(query.sort || '').trim();
 
-    let data = [...this.store.values()];
+    let data: BotRecord[] = [];
+    const rows = await this.repository.list(normalizedTenantId);
+    data = rows.map((row) => mapDbRow(row));
 
     if (q) {
       data = data.filter((item) =>
-        Object.values(item).some((value) => this.normalizeSearchValue(value).includes(q)),
+        Object.values(item).some((value) => normalizeSearchValue(value).includes(q)),
       );
     }
 
@@ -150,14 +71,21 @@ export class BotsService {
     };
   }
 
-  getById(id: string): BotRecord | null {
-    return this.store.get(id) ?? null;
+  async getById(id: string, tenantId: string): Promise<BotRecord | null> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const row = await this.repository.findById(normalizedTenantId, id);
+    return row ? mapDbRow(row) : null;
   }
 
-  create(payload: BotRecord, explicitId?: string): BotRecord {
+  async create(
+    payload: BotRecord,
+    explicitId: string | undefined,
+    tenantId: string,
+  ): Promise<BotRecord> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
     const rawId = typeof explicitId === 'string' ? explicitId.trim() : '';
     const payloadId = typeof payload.id === 'string' ? payload.id.trim() : '';
-    const id = rawId || payloadId || this.makeId();
+    const id = rawId || payloadId || makeId();
 
     const nextRecord = {
       ...payload,
@@ -165,13 +93,18 @@ export class BotsService {
       created_at: payload.created_at ?? Date.now(),
       updated_at: Date.now(),
     };
-
-    this.store.set(id, nextRecord);
-    return nextRecord;
+    const row = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id,
+      payload: nextRecord as Prisma.InputJsonValue,
+    });
+    return mapDbRow(row);
   }
 
-  patch(id: string, payload: BotRecord): BotRecord | null {
-    const current = this.store.get(id);
+  async patch(id: string, payload: BotRecord, tenantId: string): Promise<BotRecord | null> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const row = await this.repository.findById(normalizedTenantId, id);
+    const current = row ? mapDbRow(row) : null;
     if (!current) return null;
 
     const next = {
@@ -180,31 +113,39 @@ export class BotsService {
       id,
       updated_at: Date.now(),
     };
-    this.store.set(id, next);
-    return next;
+    const updatedRow = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id,
+      payload: next as Prisma.InputJsonValue,
+    });
+    return mapDbRow(updatedRow);
   }
 
-  remove(id: string): boolean {
-    return this.store.delete(id);
+  async remove(id: string, tenantId: string): Promise<boolean> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    return this.repository.delete(normalizedTenantId, id);
   }
 
-  getLifecycle(id: string): BotLifecycleState | null {
-    const entity = this.store.get(id);
+  async getLifecycle(id: string, tenantId: string): Promise<BotLifecycleState | null> {
+    const entity = await this.getById(id, tenantId);
     if (!entity) return null;
     const lifecycle = entity.lifecycle;
     if (!lifecycle || typeof lifecycle !== 'object') return null;
     return lifecycle as BotLifecycleState;
   }
 
-  getStageTransitions(id: string): BotLifecycleTransition[] | null {
-    const entity = this.store.get(id);
+  async getStageTransitions(
+    id: string,
+    tenantId: string,
+  ): Promise<BotLifecycleTransition[] | null> {
+    const entity = await this.getById(id, tenantId);
     if (!entity) return null;
     const transitions = (entity.lifecycle as BotLifecycleState | undefined)?.stage_transitions;
     return Array.isArray(transitions) ? transitions : [];
   }
 
-  isBanned(id: string): boolean | null {
-    const entity = this.store.get(id);
+  async isBanned(id: string, tenantId: string): Promise<boolean | null> {
+    const entity = await this.getById(id, tenantId);
     if (!entity) return null;
     const status = String(entity.status || '').toLowerCase();
     const lifecycleStage = String(
@@ -213,12 +154,13 @@ export class BotsService {
     return status === 'banned' || lifecycleStage === 'banned';
   }
 
-  transition(id: string, nextStatus: BotStatus): BotRecord | null {
+  async transition(id: string, nextStatus: BotStatus, tenantId: string): Promise<BotRecord | null> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
     if (nextStatus === 'banned') {
       throw new BotsServiceValidationError('Use /lifecycle/ban endpoint for ban transitions');
     }
 
-    const entity = this.store.get(id);
+    const entity = await this.getById(id, normalizedTenantId);
     if (!entity) return null;
 
     const currentStatus = String(entity.status || 'offline') as BotStatus;
@@ -226,114 +168,53 @@ export class BotsService {
       return entity;
     }
 
-    const lifecycle = ((entity.lifecycle as BotLifecycleState | undefined) ||
-      this.createDefaultLifecycle()) as BotLifecycleState;
-    const nextStage = this.toLifecycleStageFromStatus(nextStatus) || 'prepare';
-    const previousStage = this.toLifecycleStageFromStatus(currentStatus);
-    const nextTransitions = Array.isArray(lifecycle.stage_transitions)
-      ? [...lifecycle.stage_transitions]
-      : [];
+    const updated = buildTransitionPayload(entity, nextStatus);
 
-    if (previousStage) {
-      nextTransitions.push({
-        from: previousStage,
-        to: nextStage,
-        timestamp: Date.now(),
-      });
-    } else {
-      nextTransitions.push({
-        from: 'create',
-        to: nextStage,
-        timestamp: Date.now(),
-      });
-    }
-
-    const updated = {
-      ...entity,
-      status: nextStatus,
-      lifecycle: {
-        ...lifecycle,
-        current_stage: nextStage,
-        previous_status: currentStatus,
-        stage_transitions: nextTransitions,
-      },
-      updated_at: Date.now(),
-    };
-
-    this.store.set(id, updated);
-    return updated;
+    const row = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id,
+      payload: updated as unknown as Prisma.InputJsonValue,
+    });
+    return mapDbRow(row);
   }
 
-  ban(id: string, details: Record<string, unknown>): BotRecord | null {
-    const entity = this.store.get(id);
+  async ban(
+    id: string,
+    details: Record<string, unknown>,
+    tenantId: string,
+  ): Promise<BotRecord | null> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const entity = await this.getById(id, normalizedTenantId);
     if (!entity) return null;
 
-    const currentStatus = String(entity.status || 'offline');
-    const lifecycle = ((entity.lifecycle as BotLifecycleState | undefined) ||
-      this.createDefaultLifecycle()) as BotLifecycleState;
-    const nextTransitions = Array.isArray(lifecycle.stage_transitions)
-      ? [...lifecycle.stage_transitions]
-      : [];
-    const previousStage = this.toLifecycleStageFromStatus(currentStatus);
-    if (previousStage) {
-      nextTransitions.push({
-        from: previousStage,
-        to: previousStage,
-        timestamp: Date.now(),
-      });
-    }
+    const updated = buildBanPayload(entity, details);
 
-    const banDetails = {
-      ...details,
-      ban_timestamp: this.toTimestampFromRussianDate(details.ban_date),
-    };
-
-    const updated = {
-      ...entity,
-      status: 'banned',
-      lifecycle: {
-        ...lifecycle,
-        current_stage: 'banned',
-        previous_status: currentStatus,
-        stage_transitions: nextTransitions,
-        ban_details: banDetails,
-      },
-      updated_at: Date.now(),
-    };
-
-    this.store.set(id, updated);
-    return updated;
+    const row = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id,
+      payload: updated as unknown as Prisma.InputJsonValue,
+    });
+    return mapDbRow(row);
   }
 
-  unban(id: string): BotRecord | null {
-    const entity = this.store.get(id);
+  async unban(id: string, tenantId: string): Promise<BotRecord | null> {
+    const normalizedTenantId = normalizeTenantId(tenantId);
+    const entity = await this.getById(id, normalizedTenantId);
     if (!entity) return null;
 
     const lifecycle = ((entity.lifecycle as BotLifecycleState | undefined) ||
-      this.createDefaultLifecycle()) as BotLifecycleState;
+      createDefaultLifecycle()) as BotLifecycleState;
     if (!lifecycle?.ban_details) {
       throw new BotsServiceValidationError('Bot is not banned');
     }
 
-    const previousStatus = String(lifecycle.previous_status || '').toLowerCase();
-    const restoredStatus = RESTORABLE_STATUSES.has(previousStatus) ? previousStatus : 'offline';
-    const restoredStage = this.toLifecycleStageFromStatus(restoredStatus) || 'prepare';
+    const updated = buildUnbanPayload(entity);
 
-    const updated = {
-      ...entity,
-      status: restoredStatus,
-      lifecycle: {
-        ...lifecycle,
-        current_stage: restoredStage,
-        ban_details: {
-          ...lifecycle.ban_details,
-          unbanned_at: Date.now(),
-        },
-      },
-      updated_at: Date.now(),
-    };
-
-    this.store.set(id, updated);
-    return updated;
+    const row = await this.repository.upsert({
+      tenantId: normalizedTenantId,
+      id,
+      payload: updated as unknown as Prisma.InputJsonValue,
+    });
+    return mapDbRow(row);
   }
 }

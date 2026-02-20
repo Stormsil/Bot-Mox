@@ -23,25 +23,22 @@ import {
 import { useProxiesQuery } from '../../entities/resources/api/useResourcesQueries';
 import type { Proxy as ProxyResource } from '../../types';
 import styles from './ProxiesPage.module.css';
+import { ProxiesStatsCards } from './ProxiesStatsCards';
 import { ProxyCrudModal } from './ProxyCrudModal';
+import {
+  buildProxyStats,
+  DEFAULT_PROVIDERS,
+  extractCountries,
+  filterProxies,
+  mapProxiesWithBots,
+  type ProxiesBotMap,
+  STATS_COLLAPSED_KEY,
+} from './proxiesPageModel';
 import { buildProxyColumns, type ProxyWithBot } from './proxyColumns';
-
-const DEFAULT_PROVIDERS = ['IPRoyal', 'Smartproxy', 'Luminati', 'Oxylabs'];
-const STATS_COLLAPSED_KEY = 'proxiesStatsCollapsed';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { confirm } = Modal;
-
-type ProxiesBotMap = Record<
-  string,
-  {
-    character?: { name?: string };
-    person?: { name?: string; vm_name?: string };
-    vm?: { name?: string };
-    name?: string;
-  }
->;
 
 export const ProxiesPage: React.FC = () => {
   const botsMapQuery = useBotsMapQuery();
@@ -67,19 +64,7 @@ export const ProxiesPage: React.FC = () => {
   }, [botsMapQuery.data]);
 
   const proxies = useMemo<ProxyWithBot[]>(
-    () =>
-      (proxiesQuery.data || []).map((proxy) => {
-        const bot = proxy.bot_id ? bots[proxy.bot_id] : undefined;
-        const characterName = bot?.character?.name;
-        const vmName = bot?.vm?.name;
-
-        return {
-          ...proxy,
-          botName: characterName || bot?.name,
-          botCharacter: characterName,
-          botVMName: vmName,
-        } as ProxyWithBot;
-      }),
+    () => mapProxiesWithBots(proxiesQuery.data || [], bots),
     [bots, proxiesQuery.data],
   );
 
@@ -230,40 +215,21 @@ export const ProxiesPage: React.FC = () => {
 
   const filteredProxies = useMemo(
     () =>
-      proxies.filter((proxy) => {
-        const normalizedSearch = searchText.toLowerCase();
-        const matchesSearch =
-          proxy.ip.toLowerCase().includes(normalizedSearch) ||
-          proxy.provider.toLowerCase().includes(normalizedSearch) ||
-          (proxy.botName?.toLowerCase().includes(normalizedSearch) ?? false) ||
-          proxy.country.toLowerCase().includes(normalizedSearch) ||
-          (proxy.isp?.toLowerCase().includes(normalizedSearch) ?? false);
-
-        const matchesStatus = statusFilter === 'all' || proxy.status === statusFilter;
-        const matchesType = typeFilter === 'all' || proxy.type === typeFilter;
-        const matchesCountry = countryFilter === 'all' || proxy.country === countryFilter;
-
-        return matchesSearch && matchesStatus && matchesType && matchesCountry;
+      filterProxies(proxies, {
+        searchText,
+        statusFilter,
+        typeFilter,
+        countryFilter,
       }),
     [countryFilter, proxies, searchText, statusFilter, typeFilter],
   );
 
   const stats = useMemo(
-    () => ({
-      total: proxies.length,
-      active: proxies.filter((proxy) => proxy.status === 'active' && !isExpired(proxy.expires_at))
-        .length,
-      expired: proxies.filter((proxy) => isExpired(proxy.expires_at)).length,
-      expiringSoon: proxies.filter((proxy) => isExpiringSoon(proxy.expires_at)).length,
-      unassigned: proxies.filter((proxy) => !proxy.bot_id).length,
-    }),
+    () => buildProxyStats(proxies, { isExpired, isExpiringSoon }),
     [isExpired, isExpiringSoon, proxies],
   );
 
-  const countries = useMemo(
-    () => [...new Set(proxies.map((proxy) => proxy.country).filter(Boolean))],
-    [proxies],
-  );
+  const countries = useMemo(() => extractCountries(proxies), [proxies]);
 
   return (
     <div className={styles.root}>
@@ -292,30 +258,7 @@ export const ProxiesPage: React.FC = () => {
         </div>
       </Card>
 
-      {!statsCollapsed && (
-        <div className={styles.stats}>
-          <Card className={styles.statCard}>
-            <div className={styles.statValue}>{stats.total}</div>
-            <div className={styles.statLabel}>Total</div>
-          </Card>
-          <Card className={`${styles.statCard} ${styles.statCardActive}`}>
-            <div className={styles.statValue}>{stats.active}</div>
-            <div className={styles.statLabel}>Active</div>
-          </Card>
-          <Card className={`${styles.statCard} ${styles.statCardWarning}`}>
-            <div className={styles.statValue}>{stats.expiringSoon}</div>
-            <div className={styles.statLabel}>Expiring Soon</div>
-          </Card>
-          <Card className={`${styles.statCard} ${styles.statCardExpired}`}>
-            <div className={styles.statValue}>{stats.expired}</div>
-            <div className={styles.statLabel}>Expired</div>
-          </Card>
-          <Card className={styles.statCard}>
-            <div className={styles.statValue}>{stats.unassigned}</div>
-            <div className={styles.statLabel}>Unassigned</div>
-          </Card>
-        </div>
-      )}
+      {!statsCollapsed && <ProxiesStatsCards stats={stats} />}
 
       <Card className={styles.filters}>
         <div className={styles.filtersRow}>

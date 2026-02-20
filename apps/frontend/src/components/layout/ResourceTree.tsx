@@ -25,19 +25,15 @@ import {
   isProjectsBranchKey,
   parseStatusGroupKey,
 } from './resourceTree/tree-utils';
-import type { BotStatus, TreeItem } from './resourceTree/types';
+import type { TreeItem } from './resourceTree/types';
 import {
   COLLAPSED_TREE_WIDTH,
   DEFAULT_TREE_WIDTH,
-  DEFAULT_VISIBLE_STATUSES,
   MAX_TREE_WIDTH,
   MIN_TREE_WIDTH,
-  RESOURCE_TREE_COLLAPSED_KEY,
-  RESOURCE_TREE_WIDTH_KEY,
-  ROOT_SECTION_KEYS,
-  SHOW_FILTERS_KEY,
-  sanitizeBotStatuses,
-} from './resourceTree/types';
+  useResourceTreePanelSizing,
+} from './resourceTree/useResourceTreePanelSizing';
+import { useResourceTreeState } from './resourceTree/useResourceTreeState';
 
 function cx(classNames: string): string {
   return classNames
@@ -53,11 +49,8 @@ export const ResourceTree: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
-  const isResizingRef = React.useRef(false);
 
-  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
-  const [showFilters, setShowFilters] = useState(true);
   const botsMapQuery = useBotsMapQuery();
   const projectSettingsQuery = useProjectSettingsQuery();
   const resourceTreeSettingsQuery = useResourceTreeSettingsQuery();
@@ -77,83 +70,27 @@ export const ResourceTree: React.FC = () => {
     [projectSettingsQuery.data],
   );
   const loading = botsMapQuery.isLoading;
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
-  const [hasRemoteSettings, setHasRemoteSettings] = useState(false);
-  const [treeWidth, setTreeWidth] = useState<number>(() => {
-    if (typeof window === 'undefined') return DEFAULT_TREE_WIDTH;
-    const stored = Number(localStorage.getItem(RESOURCE_TREE_WIDTH_KEY));
-    if (!Number.isFinite(stored)) return DEFAULT_TREE_WIDTH;
-    return Math.min(MAX_TREE_WIDTH, Math.max(MIN_TREE_WIDTH, stored));
+  const {
+    treeWidth,
+    isCollapsed,
+    isResizing,
+    setTreeWidth,
+    setCollapsedState,
+    handleResizeStart,
+    handleResizerKeyDown,
+  } = useResourceTreePanelSizing(containerRef);
+  const {
+    expandedKeys,
+    showFilters,
+    visibleStatuses,
+    setExpandedKeys,
+    setShowFilters,
+    toggleStatus,
+  } = useResourceTreeState({
+    loading,
+    resourceTreeSettingsQuery,
+    saveResourceTreeSettingsMutation,
   });
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem(RESOURCE_TREE_COLLAPSED_KEY) === 'true';
-  });
-  const [isResizing, setIsResizing] = useState(false);
-  const [visibleStatuses, setVisibleStatuses] = useState<BotStatus[]>(DEFAULT_VISIBLE_STATUSES);
-
-  useEffect(() => {
-    if (settingsLoaded || !resourceTreeSettingsQuery.isFetched) {
-      return;
-    }
-
-    const data = resourceTreeSettingsQuery.data;
-    if (data) {
-      const frameId = window.requestAnimationFrame(() => {
-        setHasRemoteSettings(true);
-        if (data.visibleStatuses?.length) {
-          setVisibleStatuses(sanitizeBotStatuses(data.visibleStatuses));
-        }
-        if (Array.isArray(data.expandedKeys)) {
-          setExpandedKeys(data.expandedKeys);
-        }
-        if (typeof data.showFilters === 'boolean') {
-          setShowFilters(data.showFilters);
-        }
-        setSettingsLoaded(true);
-      });
-      return () => {
-        window.cancelAnimationFrame(frameId);
-      };
-    }
-
-    let nextVisibleStatuses: BotStatus[] | null = null;
-    let nextExpandedKeys: React.Key[] | null = null;
-    let nextShowFilters: boolean | null = null;
-
-    try {
-      const savedFilters = localStorage.getItem('resourceTreeFilters');
-      if (savedFilters) {
-        nextVisibleStatuses = sanitizeBotStatuses(JSON.parse(savedFilters));
-      }
-      const savedExpanded = localStorage.getItem('resourceTreeExpanded');
-      if (savedExpanded) {
-        nextExpandedKeys = JSON.parse(savedExpanded);
-      }
-      const savedShowFilters = localStorage.getItem(SHOW_FILTERS_KEY);
-      if (savedShowFilters) {
-        nextShowFilters = JSON.parse(savedShowFilters);
-      }
-    } catch (error) {
-      console.warn('Failed to parse local resource tree settings:', error);
-    }
-
-    const frameId = window.requestAnimationFrame(() => {
-      if (nextVisibleStatuses) {
-        setVisibleStatuses(nextVisibleStatuses);
-      }
-      if (nextExpandedKeys) {
-        setExpandedKeys(nextExpandedKeys);
-      }
-      if (typeof nextShowFilters === 'boolean') {
-        setShowFilters(nextShowFilters);
-      }
-      setSettingsLoaded(true);
-    });
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
-  }, [settingsLoaded, resourceTreeSettingsQuery.isFetched, resourceTreeSettingsQuery.data]);
 
   useEffect(() => {
     if (!botsMapQuery.error) {
@@ -178,55 +115,6 @@ export const ResourceTree: React.FC = () => {
     () => buildUnifiedTreeData({ bots, projectsMeta, visibleStatuses }),
     [bots, projectsMeta, visibleStatuses],
   );
-
-  useEffect(() => {
-    if (!settingsLoaded || hasRemoteSettings || loading) return;
-    if (expandedKeys.length > 0) return;
-
-    const frameId = window.requestAnimationFrame(() => {
-      setExpandedKeys([...ROOT_SECTION_KEYS]);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
-  }, [settingsLoaded, hasRemoteSettings, loading, expandedKeys.length]);
-
-  useEffect(() => {
-    if (!settingsLoaded) return;
-    const payload = {
-      expandedKeys: expandedKeys.map((key) => String(key)),
-      visibleStatuses,
-      showFilters,
-      updated_at: Date.now(),
-    };
-
-    const timeout = setTimeout(() => {
-      saveResourceTreeSettingsMutation.mutate(payload, {
-        onError: (error) => {
-          console.error('Error saving resource tree settings:', error);
-        },
-      });
-    }, 400);
-
-    return () => clearTimeout(timeout);
-  }, [
-    settingsLoaded,
-    expandedKeys,
-    visibleStatuses,
-    showFilters,
-    saveResourceTreeSettingsMutation,
-  ]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('resourceTreeExpanded', JSON.stringify(expandedKeys));
-      localStorage.setItem('resourceTreeFilters', JSON.stringify(visibleStatuses));
-      localStorage.setItem(SHOW_FILTERS_KEY, JSON.stringify(showFilters));
-    } catch (error) {
-      console.warn('Failed to save local resource tree cache:', error);
-    }
-  }, [expandedKeys, visibleStatuses, showFilters]);
 
   useEffect(() => {
     const nextSelectedKeys = getSelectedKeysForLocation(location.pathname, location.search);
@@ -265,15 +153,6 @@ export const ResourceTree: React.FC = () => {
     [bots, navigate],
   );
 
-  const setCollapsedState = useCallback((next: boolean) => {
-    setIsCollapsed(next);
-    try {
-      localStorage.setItem(RESOURCE_TREE_COLLAPSED_KEY, String(next));
-    } catch (error) {
-      console.warn('Failed to save resource tree collapse state:', error);
-    }
-  }, []);
-
   const handleCollapsedRootClick = useCallback(
     (item: TreeItem) => {
       if (item.type === 'section') {
@@ -289,46 +168,8 @@ export const ResourceTree: React.FC = () => {
       setSelectedKeys([item.key]);
       navigateByTreeKey(item.key);
     },
-    [navigateByTreeKey, setCollapsedState],
+    [navigateByTreeKey, setCollapsedState, setExpandedKeys],
   );
-
-  const toggleStatus = useCallback((status: BotStatus) => {
-    setVisibleStatuses((prev) =>
-      prev.includes(status) ? prev.filter((value) => value !== status) : [...prev, status],
-    );
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(RESOURCE_TREE_WIDTH_KEY, String(treeWidth));
-  }, [treeWidth]);
-
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      if (!isResizingRef.current || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const nextWidth = Math.min(
-        MAX_TREE_WIDTH,
-        Math.max(MIN_TREE_WIDTH, event.clientX - rect.left),
-      );
-      setTreeWidth(nextWidth);
-    };
-
-    const handleMouseUp = () => {
-      if (!isResizingRef.current) return;
-      isResizingRef.current = false;
-      setIsResizing(false);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, []);
 
   const treeDataNodes = useMemo(() => convertToTreeData(treeData, cx), [treeData]);
 
@@ -390,52 +231,7 @@ export const ResourceTree: React.FC = () => {
     return () => {
       window.cancelAnimationFrame(frameId);
     };
-  }, [selectedKeys, treeData]);
-
-  const handleResizeStart = (event: React.MouseEvent<HTMLHRElement>) => {
-    if (isCollapsed) return;
-    event.preventDefault();
-    isResizingRef.current = true;
-    setIsResizing(true);
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-  };
-
-  const resizeByDelta = useCallback(
-    (delta: number) => {
-      if (isCollapsed) return;
-      setTreeWidth((prev) => Math.min(MAX_TREE_WIDTH, Math.max(MIN_TREE_WIDTH, prev + delta)));
-    },
-    [isCollapsed],
-  );
-
-  const handleResizerKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isCollapsed) return;
-
-      switch (event.key) {
-        case 'ArrowLeft':
-          event.preventDefault();
-          resizeByDelta(-16);
-          break;
-        case 'ArrowRight':
-          event.preventDefault();
-          resizeByDelta(16);
-          break;
-        case 'Home':
-          event.preventDefault();
-          setTreeWidth(MIN_TREE_WIDTH);
-          break;
-        case 'End':
-          event.preventDefault();
-          setTreeWidth(MAX_TREE_WIDTH);
-          break;
-        default:
-          break;
-      }
-    },
-    [isCollapsed, resizeByDelta],
-  );
+  }, [selectedKeys, treeData, setExpandedKeys]);
 
   return (
     <div
