@@ -77,11 +77,15 @@ export function getProxmoxTargetsFromConfig(
   });
 
   if (cfg.proxmox && typeof cfg.proxmox === 'object') {
-    const legacy = normalizeTargetConfig(cfg.proxmox as Partial<ProxmoxTargetConfig>);
-    if (legacy.url && legacy.username) {
-      const legacyId = buildProxmoxTargetId(legacy.url, legacy.username, legacy.node);
-      if (!targets[legacyId]) {
-        targets[legacyId] = legacy;
+    const compatTarget = normalizeTargetConfig(cfg.proxmox as Partial<ProxmoxTargetConfig>);
+    if (compatTarget.url && compatTarget.username) {
+      const compatTargetId = buildProxmoxTargetId(
+        compatTarget.url,
+        compatTarget.username,
+        compatTarget.node,
+      );
+      if (!targets[compatTargetId]) {
+        targets[compatTargetId] = compatTarget;
       }
     }
   }

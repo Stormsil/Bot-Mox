@@ -65,7 +65,7 @@ export interface ThemeShapeSettings {
   radiusLg: number;
 }
 
-export const LEGACY_THEME_COLOR_KEYS: Record<ThemeColorVariable, string[]> = {
+export const COMPAT_THEME_COLOR_KEYS: Record<ThemeColorVariable, string[]> = {
   '--boxmox-color-surface-base': ['--proxmox-bg-primary', '--proxmox-bg'],
   '--boxmox-color-surface-panel': ['--proxmox-bg-secondary', '--proxmox-card-bg'],
   '--boxmox-color-surface-muted': ['--proxmox-bg-tertiary'],
@@ -95,6 +95,8 @@ export const LEGACY_THEME_COLOR_KEYS: Record<ThemeColorVariable, string[]> = {
   '--boxmox-color-header-text-muted': ['--vsphere-header-muted'],
   '--boxmox-color-header-hover': ['--vsphere-header-hover'],
 };
+/** @deprecated Use COMPAT_THEME_COLOR_KEYS. */
+export const LEGACY_THEME_COLOR_KEYS = COMPAT_THEME_COLOR_KEYS;
 
 export const DEFAULT_LIGHT_THEME_PALETTE: ThemePalette = {
   '--boxmox-color-surface-base': '#f2f4f7',
