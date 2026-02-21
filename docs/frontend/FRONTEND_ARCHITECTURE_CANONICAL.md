@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: Frontend Platform  
-Last Updated: 2026-02-19  
+Last Updated: 2026-02-21  
 Applies To: `apps/frontend`  
 Non-goals: Pixel-level design specs  
 Related Checks: `check:ui:boundaries`, `check:entities:service-boundary`, `check:vm:provider-boundary`, `check:file-size:budgets`
@@ -35,6 +35,8 @@ Current repository still contains transitional folders (`components`, `hooks`, `
 4. Styling is AntD-token-first and CSS Modules scoped.
 5. New global CSS or raw palette literals require explicit approval.
 6. New large files require decomposition plan if over budget.
+7. Migration code must use `compat` naming (`compat*`, `*Compat*`) instead of new `legacy*` names.
+8. If a public symbol rename is needed in migration layers, keep a deprecated alias for one transition wave.
 
 ## Styling Rules
 
@@ -61,3 +63,4 @@ Each hotspot must be split into model/api/ui composition and moved toward FSD bo
 
 1. Прямые API-вызовы из UI-компонентов запрещены.
 2. CSS пишем через AntD токены и CSS Modules, не через глобальные хаки.
+3. Для backward-compatible миграций используем нейминг `compat`, а не `legacy`.
