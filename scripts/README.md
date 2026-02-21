@@ -195,7 +195,7 @@ Standard mode:
 
 Strict mode:
 
-- requires all flags and enforces non-legacy-safe values:
+- requires all flags and enforces strict production-like values:
   - `AUTH_MODE=enforced`
   - `AGENT_TRANSPORT=ws`
   - `SECRETS_VAULT_MODE=enforced`
@@ -273,7 +273,7 @@ E2E_USER_ID=<user-id>
 - `E2E_CHANNEL` (default: `stable`)
 - `E2E_AGENT_ID` / `E2E_RUNNER_ID`
 - `E2E_RELEASE_ID` (если задан и есть `ADMIN_BEARER_TOKEN`, скрипт делает `POST /api/v1/artifacts/assign`)
-- Legacy: `API_BEARER_TOKEN` (alias for `RUNNER_BEARER_TOKEN`)
+- Deprecated: `API_BEARER_TOKEN` (alias for `RUNNER_BEARER_TOKEN`)
 
 Запуск:
 
@@ -323,6 +323,7 @@ Interval: every 30-60 seconds. If no heartbeat for > 2x interval, server may con
 - If URL expires before download completes, call `resolve-download` again.
 - Each resolve attempt is recorded in `artifact_download_audit`.
 
-## Removed Legacy
+## Removed Deprecated
 
-Legacy maintenance/migration scripts are removed from the active `scripts/` set.
+Deprecated maintenance/migration scripts are removed from the active `scripts/` set.
+

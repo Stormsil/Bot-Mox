@@ -5,7 +5,7 @@ Owner: Platform Architecture
 Last Updated: 2026-02-19  
 Applies To: Any AI agent operating in this repository  
 Non-goals: Product management instructions  
-Related Checks: `docs:legacy:check`, `check:ui:boundaries`, `check:all:mono`, `smoke:prodlike`
+Related Checks: `docs:deprecated:check`, `check:ui:boundaries`, `check:all:mono`, `smoke:prodlike`
 
 ## Mandatory Technology Baseline
 
@@ -62,3 +62,4 @@ Do not introduce alternate frameworks without explicit architectural approval.
 
 1. ИИ-агент обязан следовать зафиксированному стеку.
 2. Любое отклонение от стандартов должно быть явно обосновано и ограничено по времени.
+

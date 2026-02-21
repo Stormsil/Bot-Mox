@@ -34,4 +34,5 @@
 - [ ] Layer boundaries preserved
 - [ ] Contract-first + Zod boundaries preserved
 - [ ] Styling/token system preserved
-- [ ] No legacy naming in active files
+- [ ] No deprecated naming in active files
+

@@ -74,9 +74,9 @@
     "docs:lint": "node scripts/docs-lint.js",
     "docs:freshness:check": "node scripts/check-docs-freshness.js",
     "docs:change:policy": "node scripts/check-docs-change-policy.js",
-    "docs:legacy:check": "node scripts/check-docs-legacy.js",
+    "docs:deprecated:check": "node scripts/check-docs-deprecated.js",
     "docs:links:check": "node scripts/check-docs-links.js",
-    "docs:check": "pnpm run docs:lint && pnpm run docs:freshness:check && pnpm run docs:legacy:check && pnpm run docs:links:check && pnpm run docs:change:policy",
+    "docs:check": "pnpm run docs:lint && pnpm run docs:freshness:check && pnpm run docs:deprecated:check && pnpm run docs:links:check && pnpm run docs:change:policy",
     "audit:hygiene:baseline": "node scripts/generate-engineering-hygiene-baseline.js",
     "repo:map": "node scripts/generate-repo-map.js",
     "repo:hotspots": "node scripts/generate-hotspots-report.js",
@@ -89,8 +89,8 @@
     "biome:check:mono": "pnpm exec biome check apps packages configs scripts start-dev.js apps/agent/src apps/frontend/src apps/backend/src",
     "biome:write:mono": "pnpm exec biome check apps packages configs scripts start-dev.js apps/agent/src apps/frontend/src apps/backend/src --write",
     "check:no-any:mono": "node scripts/check-no-any-mono.js",
-    "check:legacy:naming": "node scripts/check-legacy-naming-cutover.js",
-    "check:all:mono": "pnpm run db:types:check && pnpm run contract:check && pnpm --filter @botmox/shared-types check && pnpm --filter @botmox/ui-kit check && pnpm --filter @botmox/utils check && pnpm --filter @botmox/backend contract:check && pnpm --filter @botmox/agent contract:check && pnpm run biome:check:mono && pnpm run check:no-any:mono && pnpm run check:pnpm:first && pnpm run check:lockfiles && pnpm run check:legacy:naming && pnpm run docs:check && pnpm run check:zod:boundaries && pnpm run check:backend:tenant-defaults && pnpm run check:architecture:imports && pnpm run check:fsd:boundaries && pnpm run check:style:token-usage && pnpm run check:file-size:budgets && pnpm run check:infra:gateway && pnpm run backend:test && pnpm run agent:test",
+    "check:deprecated:naming": "node scripts/check-deprecated-naming-cutover.js",
+    "check:all:mono": "pnpm run db:types:check && pnpm run contract:check && pnpm --filter @botmox/shared-types check && pnpm --filter @botmox/ui-kit check && pnpm --filter @botmox/utils check && pnpm --filter @botmox/backend contract:check && pnpm --filter @botmox/agent contract:check && pnpm run biome:check:mono && pnpm run check:no-any:mono && pnpm run check:pnpm:first && pnpm run check:lockfiles && pnpm run check:deprecated:naming && pnpm run docs:check && pnpm run check:zod:boundaries && pnpm run check:backend:tenant-defaults && pnpm run check:architecture:imports && pnpm run check:fsd:boundaries && pnpm run check:style:token-usage && pnpm run check:file-size:budgets && pnpm run check:infra:gateway && pnpm run backend:test && pnpm run agent:test",
     "check:types": "pnpm --filter @botmox/frontend typecheck",
     "check:bundle:budgets": "node scripts/check-bundle-budgets.js",
     "check:theme:contrast": "node scripts/check-theme-contrast.js",
@@ -132,3 +132,4 @@
     "typescript": "^5.9.3"
   }
 }
+

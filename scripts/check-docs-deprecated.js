@@ -4,7 +4,7 @@ const path = require('node:path');
 
 const repoRoot = process.cwd();
 
-const LEGACY_PATTERNS = [
+const DEPRECATED_PATTERNS = [
   { label: 'bot-mox', pattern: /\bbot-mox\b/g },
   { label: 'proxy-server', pattern: /\bproxy-server\b/g },
   { label: 'apps/api-legacy', pattern: /\bapps[\\/]+api-legacy\b/g },
@@ -56,7 +56,7 @@ function lineNumber(source, index) {
 
 const docsDir = path.join(repoRoot, 'docs');
 if (!fs.existsSync(docsDir)) {
-  process.stdout.write('No docs directory, skipping legacy docs check.\n');
+  process.stdout.write('No docs directory, skipping deprecated docs check.\n');
   process.exit(0);
 }
 
@@ -69,7 +69,7 @@ for (const { abs, rel } of files) {
   }
 
   const source = fs.readFileSync(abs, 'utf8');
-  for (const { label, pattern } of LEGACY_PATTERNS) {
+  for (const { label, pattern } of DEPRECATED_PATTERNS) {
     pattern.lastIndex = 0;
     let m = pattern.exec(source);
     while (m) {
@@ -80,11 +80,11 @@ for (const { abs, rel } of files) {
 }
 
 if (violations.length > 0) {
-  process.stderr.write('Legacy references found in active docs:\n');
+  process.stderr.write('Deprecated naming references found in active docs:\n');
   for (const v of violations) {
     process.stderr.write(`- ${v.rel}:${v.line} -> ${v.label} (${v.snippet})\n`);
   }
   process.exit(1);
 }
 
-process.stdout.write('Docs legacy check passed.\n');
+process.stdout.write('Docs deprecated naming check passed.\n');

@@ -6,8 +6,8 @@ Last Updated: 2026-02-19
 
 ## Compliance Controls
 
-1. Deprecated naming scan (`check:legacy:naming`) with active-file scope.
-2. Docs checks (`docs:legacy:check`, `docs:links:check`, `docs:lint`).
+1. Deprecated naming scan (`check:deprecated:naming`) with active-file scope.
+2. Docs checks (`docs:deprecated:check`, `docs:links:check`, `docs:lint`).
 3. Architecture boundary checks (`check:ui:boundaries`, `check:entities:service-boundary`, `check:vm:provider-boundary`).
 
 ## Allowed Historical Zones
@@ -37,3 +37,4 @@ Last Updated: 2026-02-19
 1. Execute `docs/plans/codebase-grooming-wave-plan-2026Q1.md`.
 2. Track file-size budget trend weekly.
 3. Keep canonical docs synchronized with every architecture-affecting PR.
+
