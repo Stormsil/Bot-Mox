@@ -67,7 +67,7 @@ Each hotspot must be split into model/api/ui composition and moved toward FSD bo
 1. When a `src/services/*.ts` file grows beyond maintenance comfort, split it into a dedicated folder with focused modules (for example `backend`, `settings`, `mapper`, `presentation`) and keep the original entry file as a compatibility facade.
 2. Preserve the public API surface of the original service entry during the wave; avoid breaking call-sites in the same PR unless migration is explicit.
 3. Keep transport calls isolated in a transport-oriented module (`backend` or `client`) and keep pure mapping/formatting logic in side-effect-free modules.
-4. Example applied: `src/services/ipqsService.ts` was decomposed into `src/services/ipqsService/*` modules while keeping facade exports stable.
+4. Examples applied: `src/services/ipqsService.ts` and `src/services/notesService.ts` were decomposed into `src/services/<domain>/*` modules while keeping facade exports stable.
 
 ## RU Notes
 
