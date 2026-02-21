@@ -21,10 +21,13 @@ export type {
 export const DEFAULT_TIMEZONE = 'Europe/Moscow';
 
 export type UnknownRecord = Record<string, unknown>;
-export type LegacyScheduleSlot = Partial<
+export type CompatScheduleSlot = Partial<
   Pick<ScheduleSession, 'start' | 'end' | 'enabled' | 'profile'>
 > &
   UnknownRecord;
+
+/** @deprecated Use CompatScheduleSlot. */
+export type LegacyScheduleSlot = CompatScheduleSlot;
 
 export interface LauncherScheduleSlot {
   start: string;

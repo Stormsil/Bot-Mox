@@ -19,6 +19,8 @@ export const DEFAULT_DELETE_VM_FILTERS: NonNullable<VMGeneratorSettings['deleteV
 };
 
 export const LEGACY_STORAGE_PLACEHOLDER = 'disk';
+/** @deprecated Use COMPAT_STORAGE_PLACEHOLDER. */
+export const COMPAT_STORAGE_PLACEHOLDER = LEGACY_STORAGE_PLACEHOLDER;
 export const FALLBACK_STORAGE_VALUES = ['data', 'nvme0n1'];
 
 export const DEFAULT_SETTINGS: VMGeneratorSettings = {

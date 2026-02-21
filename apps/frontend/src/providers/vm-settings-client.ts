@@ -19,7 +19,7 @@ const DEFAULT_DELETE_VM_FILTERS: NonNullable<VMGeneratorSettings['deleteVmFilter
   },
 };
 
-const LEGACY_STORAGE_PLACEHOLDER = 'disk';
+const COMPAT_STORAGE_PLACEHOLDER = 'disk';
 const FALLBACK_STORAGE_VALUES = ['data', 'nvme0n1'];
 
 const DEFAULT_SETTINGS: VMGeneratorSettings = {
@@ -115,7 +115,7 @@ function normalizeStorageSettings(
       if (!entry) {
         continue;
       }
-      if (entry.toLowerCase() === LEGACY_STORAGE_PLACEHOLDER) {
+      if (entry.toLowerCase() === COMPAT_STORAGE_PLACEHOLDER) {
         continue;
       }
       if (seen.has(entry)) {
@@ -132,7 +132,7 @@ function normalizeStorageSettings(
   const enabledRaw = normalizeList(input.enabledDisks);
   const defaultRaw = String(input.default ?? '').trim();
   const defaultCandidate =
-    defaultRaw && defaultRaw.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER ? defaultRaw : '';
+    defaultRaw && defaultRaw.toLowerCase() !== COMPAT_STORAGE_PLACEHOLDER ? defaultRaw : '';
 
   const options: string[] = [...optionsRaw];
   for (const entry of enabledRaw) {
@@ -168,25 +168,25 @@ function normalizeStorageSettings(
 }
 
 function mergeSettings(data: Partial<VMGeneratorSettings> | undefined | null): VMGeneratorSettings {
-  const legacyTiny = (data as Record<string, unknown> | null | undefined)?.tinyFM as
+  const compatTiny = (data as Record<string, unknown> | null | undefined)?.tinyFM as
     | Record<string, unknown>
     | undefined;
-  const legacySyncThing = (data as Record<string, unknown> | null | undefined)?.syncThing as
+  const compatSyncThing = (data as Record<string, unknown> | null | undefined)?.syncThing as
     | Record<string, unknown>
     | undefined;
 
-  const servicesFromLegacy: Partial<VMGeneratorSettings['services']> = {};
-  if (typeof legacyTiny?.url === 'string') servicesFromLegacy.tinyFmUrl = legacyTiny.url;
-  if (typeof legacyTiny?.username === 'string')
-    servicesFromLegacy.tinyFmUsername = legacyTiny.username;
-  if (typeof legacyTiny?.password === 'string')
-    servicesFromLegacy.tinyFmPassword = legacyTiny.password;
-  if (typeof legacySyncThing?.url === 'string')
-    servicesFromLegacy.syncThingUrl = legacySyncThing.url;
-  if (typeof legacySyncThing?.username === 'string')
-    servicesFromLegacy.syncThingUsername = legacySyncThing.username;
-  if (typeof legacySyncThing?.password === 'string')
-    servicesFromLegacy.syncThingPassword = legacySyncThing.password;
+  const servicesFromCompat: Partial<VMGeneratorSettings['services']> = {};
+  if (typeof compatTiny?.url === 'string') servicesFromCompat.tinyFmUrl = compatTiny.url;
+  if (typeof compatTiny?.username === 'string')
+    servicesFromCompat.tinyFmUsername = compatTiny.username;
+  if (typeof compatTiny?.password === 'string')
+    servicesFromCompat.tinyFmPassword = compatTiny.password;
+  if (typeof compatSyncThing?.url === 'string')
+    servicesFromCompat.syncThingUrl = compatSyncThing.url;
+  if (typeof compatSyncThing?.username === 'string')
+    servicesFromCompat.syncThingUsername = compatSyncThing.username;
+  if (typeof compatSyncThing?.password === 'string')
+    servicesFromCompat.syncThingPassword = compatSyncThing.password;
 
   const mergedStorage = normalizeStorageSettings({
     ...DEFAULT_SETTINGS.storage,
@@ -215,11 +215,11 @@ function mergeSettings(data: Partial<VMGeneratorSettings> | undefined | null): V
     hardwareApply: { ...DEFAULT_SETTINGS.hardwareApply, ...(data?.hardwareApply || {}) },
     services: {
       ...DEFAULT_SETTINGS.services,
-      ...servicesFromLegacy,
+      ...servicesFromCompat,
       ...(data?.services || {}),
       tinyFmUrl: normalizeTinyFmUrl(
         (data?.services?.tinyFmUrl as string | undefined) ??
-          servicesFromLegacy.tinyFmUrl ??
+          servicesFromCompat.tinyFmUrl ??
           DEFAULT_SETTINGS.services.tinyFmUrl,
       ),
     },

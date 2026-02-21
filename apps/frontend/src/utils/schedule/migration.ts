@@ -1,6 +1,6 @@
 import { generateSessionId } from './core';
 import type { BotScheduleV2, ScheduleDay, ScheduleSession } from './types';
-import { DEFAULT_TIMEZONE, type LegacyScheduleSlot, type UnknownRecord } from './types';
+import { type CompatScheduleSlot, DEFAULT_TIMEZONE, type UnknownRecord } from './types';
 
 export function createEmptySchedule(): BotScheduleV2 {
   const emptyDay = (): ScheduleDay => ({
@@ -82,7 +82,7 @@ export function migrateSchedule(oldSchedule: UnknownRecord | null): BotScheduleV
       const sessions: ScheduleSession[] = [];
       for (const slot of oldDay) {
         if (slot && typeof slot === 'object') {
-          const slotRecord = slot as LegacyScheduleSlot;
+          const slotRecord = slot as CompatScheduleSlot;
           sessions.push({
             id: generateSessionId(),
             start: slotRecord.start || '09:00',
