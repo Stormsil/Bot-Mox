@@ -4,7 +4,7 @@ Status: Active
 Owner: Backend Platform
 Last Updated: 2026-02-19
 Applies To: `apps/backend`, `apps/frontend`, `apps/agent`
-Non-goals: Legacy auth adapters
+Non-goals: Deprecated auth adapters
 Related Checks: `check:zod:boundaries`, `contract:check`
 
 Bot-Mox API uses `Authorization: Bearer <token>` for all `/api/v1/*` endpoints.
@@ -24,7 +24,7 @@ Bot-Mox API uses `Authorization: Bearer <token>` for all `/api/v1/*` endpoints.
    - Agents are user-bound (`owner_user_id`); VM command dispatch validates ownership unless caller has `admin/infra`.
    - Non-privileged access to unassigned agents is blocked (`AGENT_OWNER_UNASSIGNED`).
 
-Legacy internal API token auth is removed from runtime middleware.
+Deprecated internal API token auth is removed from runtime middleware.
 
 ## Agent Pairing UX Helpers
 

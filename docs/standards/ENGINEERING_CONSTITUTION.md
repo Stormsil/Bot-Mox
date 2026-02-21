@@ -24,7 +24,7 @@ Related Checks: `check:all:mono`, `docs:check`, `check:style:token-usage`, `chec
 
 1. Do not introduce alternative frameworks without approved ADR.
 2. Do not bypass contract package with duplicated ad-hoc types.
-3. Do not reintroduce legacy naming/runtime in active code or docs.
+3. Do not reintroduce deprecated naming/runtime in active code or docs.
 4. Do not add oversized files without split contract and remediation plan.
 5. Do not merge when mandatory checks are red.
 6. Do not keep “ready but unmerged” architectural changes locally for long periods.

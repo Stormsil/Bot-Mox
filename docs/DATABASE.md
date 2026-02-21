@@ -4,7 +4,7 @@ Status: Active
 Owner: Data Platform
 Last Updated: 2026-02-19
 Applies To: Supabase/Postgres runtime
-Non-goals: Legacy/archived datastore implementations
+Non-goals: Deprecated/archived datastore implementations
 Related Checks: `db:types:check`, `contract:check`
 
 ## Primary Store
@@ -71,10 +71,10 @@ Related Checks: `db:types:check`, `contract:check`
 - `POST /api/v1/provisioning/report-progress`
 - `GET /api/v1/provisioning/progress/{vmUuid}`
 
-Legacy `/api/*` adapters are removed.
+Deprecated `/api/*` adapters are removed.
 
 ## History
 
 - `docs/history/architecture/refactor-baseline.md`
 - `docs/history/architecture/refactor-handoff-2026-02-10.md`
-- `docs/history/` (archived legacy materials)
+- `docs/history/` (archived historical materials)

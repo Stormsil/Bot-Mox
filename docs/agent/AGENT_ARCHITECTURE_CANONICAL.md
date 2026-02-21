@@ -36,7 +36,7 @@ Related Checks: `agent:typecheck`, `contract:check`
 1. Agent must not define private ad-hoc API contract types for backend endpoints.
 2. Command execution logs must remain structured and machine-readable.
 3. Error payloads should preserve code/category details for diagnostics.
-4. New compatibility code must use `compat` naming; `legacy` names are allowed only as deprecated aliases during transition.
+4. New compatibility code must use `compat` naming; deprecated aliases are allowed only during transition.
 
 ## Logging Schema (minimum)
 

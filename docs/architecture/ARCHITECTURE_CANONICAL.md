@@ -70,7 +70,7 @@ Cross-domain composition happens in:
 1. Allowed stack is fixed: React + Refine + AntD on frontend, NestJS on backend, Electron for agent.
 2. No ad-hoc framework substitution without ADR and explicit approval.
 3. No direct service/data imports from UI presentation layer.
-4. No new legacy aliases/naming in active files.
+4. No new deprecated aliases/naming in active files.
 
 ## Historical Notes
 

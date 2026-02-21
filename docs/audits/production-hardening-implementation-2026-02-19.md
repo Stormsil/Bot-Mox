@@ -21,7 +21,7 @@ This wave is completed and merged to `main` via PR `#5`.
    - `SECRETS_VAULT_MODE=enforced`
 2. Backend/agent regression tests are mandatory in CI.
 3. Monorepo hardening gates run in CI (`check:all:mono`).
-4. Docs and architecture guardrails are active (`docs:check`, boundaries, legacy naming checks).
+4. Docs and architecture guardrails are active (`docs:check`, boundaries, deprecated naming checks).
 
 ## Delivered Architecture Outcomes
 

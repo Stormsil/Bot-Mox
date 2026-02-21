@@ -6,7 +6,7 @@ Last Updated: 2026-02-19
 
 ## Objective
 
-Reduce transitional legacy shape in frontend/backend code while preserving behavior and contract compatibility.
+Reduce transitional deprecated-shape patterns in frontend/backend code while preserving behavior and contract compatibility.
 
 ## Wave A (Frontend Hotspots)
 
