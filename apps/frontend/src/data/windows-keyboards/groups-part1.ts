@@ -153,7 +153,7 @@ export const KEYBOARD_GROUPS_PART1: KeyboardLanguageGroup[] = [
     languageId: '0C0C',
     layouts: [
       { id: '00001009', name: 'Canadian French', languageId: '0C0C' },
-      { id: '00000C0C', name: 'Canadian French (Legacy)', languageId: '0C0C' },
+      { id: '00000C0C', name: 'Canadian French (Classic)', languageId: '0C0C' },
       { id: '00011009', name: 'Canadian Multilingual Standard', languageId: '0C0C' },
     ],
   },

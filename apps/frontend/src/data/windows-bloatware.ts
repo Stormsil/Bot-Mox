@@ -100,7 +100,7 @@ export const WINDOWS_FEATURES: WindowsFeature[] = [
   { id: 'MediaPlayback', name: 'Media Features' },
   { id: 'MicrosoftWindowsPowerShellV2Root', name: 'PowerShell 2.0' },
   { id: 'MicrosoftWindowsPowerShellV2', name: 'PowerShell 2.0 Engine' },
-  { id: 'WindowsMediaPlayer', name: 'Windows Media Player (legacy)' },
+  { id: 'WindowsMediaPlayer', name: 'Windows Media Player (classic)' },
   { id: 'Microsoft-Windows-Client-EmbeddedExp-Package', name: 'Windows Sandbox' },
   { id: 'Containers-DisposableClientVM', name: 'Windows Sandbox (Hyper-V)' },
   { id: 'Microsoft-Hyper-V-All', name: 'Hyper-V' },

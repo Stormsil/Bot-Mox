@@ -69,4 +69,4 @@ export function isCompatStubTemplate(xmlTemplate: string): boolean {
 }
 
 /** @deprecated Use isCompatStubTemplate. */
-export const isLegacyStubTemplate = isCompatStubTemplate;
+export const isDeprecatedStubTemplate = isCompatStubTemplate;

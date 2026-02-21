@@ -58,4 +58,5 @@ Frontend ориентирован на canonical API:
 - `GET|POST|PATCH|DELETE /api/v1/finance/*`
 - `GET|POST|PUT|DELETE /api/v1/infra/*`
 
-Legacy `/api/*` маршруты не поддерживаются.
+Deprecated `/api/*` маршруты не поддерживаются.
+

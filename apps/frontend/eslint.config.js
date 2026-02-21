@@ -68,13 +68,13 @@ export default defineConfig([
               name: '../../services/botsApiService',
               importNames: ['subscribeBotsList', 'subscribeBotsMap'],
               message:
-                'Legacy polling subscriptions are not allowed in UI. Use entities/bot query hooks.',
+                'Deprecated polling subscriptions are not allowed in UI. Use entities/bot query hooks.',
             },
             {
               name: '../../../services/botsApiService',
               importNames: ['subscribeBotsList', 'subscribeBotsMap'],
               message:
-                'Legacy polling subscriptions are not allowed in UI. Use entities/bot query hooks.',
+                'Deprecated polling subscriptions are not allowed in UI. Use entities/bot query hooks.',
             },
             {
               name: '../../services/botsApiService',
@@ -92,13 +92,13 @@ export default defineConfig([
               name: '../../services/resourcesApiService',
               importNames: ['subscribeResources'],
               message:
-                'Legacy resource subscriptions are not allowed in UI. Use entities/resources query hooks.',
+                'Deprecated resource subscriptions are not allowed in UI. Use entities/resources query hooks.',
             },
             {
               name: '../../../services/resourcesApiService',
               importNames: ['subscribeResources'],
               message:
-                'Legacy resource subscriptions are not allowed in UI. Use entities/resources query hooks.',
+                'Deprecated resource subscriptions are not allowed in UI. Use entities/resources query hooks.',
             },
             {
               name: '../../services/resourcesApiService',
@@ -116,13 +116,13 @@ export default defineConfig([
               name: '../../services/licensesApiService',
               importNames: ['subscribeLicenses'],
               message:
-                'Legacy license subscriptions are not allowed in UI. Use entities/resources query hooks.',
+                'Deprecated license subscriptions are not allowed in UI. Use entities/resources query hooks.',
             },
             {
               name: '../../../services/licensesApiService',
               importNames: ['subscribeLicenses'],
               message:
-                'Legacy license subscriptions are not allowed in UI. Use entities/resources query hooks.',
+                'Deprecated license subscriptions are not allowed in UI. Use entities/resources query hooks.',
             },
             {
               name: '../../services/licensesApiService',
@@ -140,25 +140,25 @@ export default defineConfig([
               name: '../../services/projectSettingsService',
               importNames: ['subscribeToProjectSettings'],
               message:
-                'Legacy project settings subscriptions are not allowed in UI. Use entities/settings query hooks.',
+                'Deprecated project settings subscriptions are not allowed in UI. Use entities/settings query hooks.',
             },
             {
               name: '../../../services/projectSettingsService',
               importNames: ['subscribeToProjectSettings'],
               message:
-                'Legacy project settings subscriptions are not allowed in UI. Use entities/settings query hooks.',
+                'Deprecated project settings subscriptions are not allowed in UI. Use entities/settings query hooks.',
             },
             {
               name: '../../services/notesService',
               importNames: ['subscribeToNotesIndex'],
               message:
-                'Legacy notes index subscriptions are not allowed in UI. Use entities/notes query hooks.',
+                'Deprecated notes index subscriptions are not allowed in UI. Use entities/notes query hooks.',
             },
             {
               name: '../../../services/notesService',
               importNames: ['subscribeToNotesIndex'],
               message:
-                'Legacy notes index subscriptions are not allowed in UI. Use entities/notes query hooks.',
+                'Deprecated notes index subscriptions are not allowed in UI. Use entities/notes query hooks.',
             },
             {
               name: '../../services/notesService',
@@ -176,13 +176,13 @@ export default defineConfig([
               name: '../../services/proxyDataService',
               importNames: ['subscribeProxies', 'subscribeBots'],
               message:
-                'Legacy proxies polling is not allowed in UI. Use entities/resources and entities/bot query hooks.',
+                'Deprecated proxies polling is not allowed in UI. Use entities/resources and entities/bot query hooks.',
             },
             {
               name: '../../../services/proxyDataService',
               importNames: ['subscribeProxies', 'subscribeBots'],
               message:
-                'Legacy proxies polling is not allowed in UI. Use entities/resources and entities/bot query hooks.',
+                'Deprecated proxies polling is not allowed in UI. Use entities/resources and entities/bot query hooks.',
             },
             {
               name: '../../services/proxyDataService',

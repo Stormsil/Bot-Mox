@@ -7,7 +7,7 @@ export const KEYBOARD_GROUPS_PART3: KeyboardLanguageGroup[] = [
     languageId: '0418',
     layouts: [
       { id: '00010418', name: 'Romanian (Standard)', languageId: '0418' },
-      { id: '00000418', name: 'Romanian (Legacy)', languageId: '0418' },
+      { id: '00000418', name: 'Romanian (Classic)', languageId: '0418' },
       { id: '00020418', name: 'Romanian (Programmers)', languageId: '0418' },
     ],
   },
