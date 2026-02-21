@@ -144,6 +144,5 @@ Quick manual QA:
 
 Preferred flow:
 1. First try existing semantic vars (examples earlier in this doc).
-2. If semantics are missing, extend the token mapping in `apps/frontend/src/theme/themeRuntime.tsx` (antd tokens/components) and, only if needed, the legacy CSS vars bridge.
+2. If semantics are missing, extend the token mapping in `apps/frontend/src/theme/themeRuntime.tsx` (antd tokens/components) and, only if needed, the compatibility CSS vars bridge.
 3. Document the new semantic token name in this file (so future pages reuse it).
-

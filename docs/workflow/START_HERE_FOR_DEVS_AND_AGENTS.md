@@ -40,6 +40,6 @@ pnpm run smoke:prodlike
 1. Keep API compatibility at `/api/v1/*`.
 2. Keep contract-first and Zod validation boundaries.
 3. Keep UI boundaries and styling standards.
-4. Do not reintroduce legacy naming or runtime layers.
+4. Do not reintroduce deprecated naming or retired runtime layers.
 5. Use `pnpm-lock.yaml` as the only lockfile in active tree.
 6. Keep observability/debuggability first-class: structured logs + correlation context + reproducible bugfix flow.

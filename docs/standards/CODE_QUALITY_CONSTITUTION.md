@@ -16,7 +16,7 @@ Related Checks: `check:all:mono`, `docs:check`, `check:no-any:mono`
 5. UI quality: AntD-token-first + CSS Modules, no style hacks.
 6. Architecture boundaries are enforced by automated checks.
 7. Active docs are canonical source of truth; historical docs are archive-only.
-8. Legacy naming is forbidden outside approved archive zones.
+8. Deprecated naming is forbidden outside approved archive zones.
 9. Lockfile policy is pnpm-only (`pnpm-lock.yaml` in active tree).
 10. Observability is mandatory for operational flows: structured logs + trace/correlation context.
 11. Debuggability is a quality requirement: every non-trivial failure path must be diagnosable from logs/metrics.

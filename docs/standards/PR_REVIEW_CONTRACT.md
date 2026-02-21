@@ -23,7 +23,7 @@ Related Checks: `check:all:mono`, `docs:check`
 3. Styling remains token/system aligned.
 4. File-size budgets not regressed.
 5. Active docs updated with owner/status/date.
-6. No legacy naming introduced in active files.
+6. No deprecated naming introduced in active files.
 7. Docs change policy is satisfied for architecture/workflow impacting changes.
 8. Hotspot policy respected for touched files (split completed or explicitly scheduled next).
 9. PR is a single semantic slice (no mixed unrelated payload).

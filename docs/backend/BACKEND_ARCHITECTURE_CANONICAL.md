@@ -4,7 +4,7 @@ Status: Active
 Owner: Backend Platform  
 Last Updated: 2026-02-20  
 Applies To: `apps/backend`  
-Non-goals: Legacy runtime support  
+Non-goals: Deprecated runtime support  
 Related Checks: `check:zod:boundaries`, `check:infra:gateway`, `contract:check`, `check:backend:syntax`
 
 ## Stack
@@ -19,7 +19,7 @@ Related Checks: `check:zod:boundaries`, `check:infra:gateway`, `contract:check`,
 1. Public API namespace is `/api/v1/*`.
 2. Controllers remain thin; business logic lives in services/use-case helpers.
 3. All request/response payload boundaries are validated through contract/shared schemas.
-4. No new Express runtime or legacy adapters in active backend runtime.
+4. No new Express runtime or deprecated adapters in active backend runtime.
 5. Auth mode is runtime-configurable via `AUTH_MODE` (default: `enforced`):
    - `shadow`: allow requests without hard-fail, attach shadow identity (`BOTMOX_SHADOW_TENANT_ID`, default `shadow-tenant`).
    - `enforced`: reject missing/invalid bearer token.

@@ -33,7 +33,7 @@ Do not introduce alternate frameworks without explicit architectural approval.
 ## Development Boundaries
 
 1. Do not add direct API/service access inside pure UI components.
-2. Do not add new legacy directories or names in active files.
+2. Do not add new deprecated/retired directories or names in active files.
 3. Do not bypass contract package with duplicated DTO definitions.
 4. Do not add global `.ant-*` overrides and avoid raw CSS literals when semantic tokens exist.
 

@@ -146,4 +146,4 @@ pnpm run docs:check
 1. Каноничный режим разработки: через `pnpm` из корня монорепозитория.
 2. Все архитектурные изменения сопровождаются обновлением canonical docs.
 3. Lock policy: только `pnpm-lock.yaml`; `package-lock.json` запрещен.
-4. Базовый runtime-профиль без legacy fallback: `AUTH_MODE=enforced`, `AGENT_TRANSPORT=ws`, `SECRETS_VAULT_MODE=enforced`.
+4. Базовый runtime-профиль без deprecated fallback: `AUTH_MODE=enforced`, `AGENT_TRANSPORT=ws`, `SECRETS_VAULT_MODE=enforced`.
