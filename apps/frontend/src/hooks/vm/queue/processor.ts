@@ -10,7 +10,7 @@ import { resolveTemplateHardware } from './templateResources';
 import type { ProcessVmQueueContext } from './types';
 import { normalizeCores, normalizeMemory, normalizeProxmoxUsername, sleep } from './utils';
 
-const LEGACY_STORAGE_PLACEHOLDER = 'disk';
+const COMPAT_STORAGE_PLACEHOLDER = 'disk';
 
 export async function processVmQueue(context: ProcessVmQueueContext): Promise<void> {
   const {
@@ -105,7 +105,7 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
       settings,
       updateQueueItem,
       setOperationText,
-      legacyStoragePlaceholder: LEGACY_STORAGE_PLACEHOLDER,
+      compatStoragePlaceholder: COMPAT_STORAGE_PLACEHOLDER,
     });
 
     if (cancelRef.current) {

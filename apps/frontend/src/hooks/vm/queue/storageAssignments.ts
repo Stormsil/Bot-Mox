@@ -18,7 +18,7 @@ interface BuildStorageAssignmentsParams {
   pendingCreateItems: VMQueueItem[];
   updateQueueItem: (id: string, updates: Partial<VMQueueItem>) => void;
   log: VMLog;
-  legacyStoragePlaceholder: string;
+  compatStoragePlaceholder: string;
 }
 
 export async function buildStorageAssignments(
@@ -30,7 +30,7 @@ export async function buildStorageAssignments(
     pendingCreateItems,
     updateQueueItem,
     log,
-    legacyStoragePlaceholder,
+    compatStoragePlaceholder,
   } = params;
 
   const storageAssignments = new Map<string, string>();
@@ -45,7 +45,7 @@ export async function buildStorageAssignments(
           new Set(
             settings.storage.enabledDisks
               .map((v) => String(v).trim())
-              .filter((value) => value && value.toLowerCase() !== legacyStoragePlaceholder),
+              .filter((value) => value && value.toLowerCase() !== compatStoragePlaceholder),
           ),
         )
       : [];

@@ -23,7 +23,7 @@ interface RunClonePhaseParams {
   };
   updateQueueItem: (id: string, updates: Partial<VMQueueItem>) => void;
   setOperationText: (next: string) => void;
-  legacyStoragePlaceholder: string;
+  compatStoragePlaceholder: string;
 }
 
 export async function runClonePhase(params: RunClonePhaseParams): Promise<{
@@ -41,7 +41,7 @@ export async function runClonePhase(params: RunClonePhaseParams): Promise<{
     settings,
     updateQueueItem,
     setOperationText,
-    legacyStoragePlaceholder,
+    compatStoragePlaceholder,
   } = params;
 
   log.step('Phase 1 - Cloning');
@@ -66,7 +66,7 @@ export async function runClonePhase(params: RunClonePhaseParams): Promise<{
     pendingCreateItems,
     updateQueueItem,
     log,
-    legacyStoragePlaceholder,
+    compatStoragePlaceholder,
   });
 
   for (const item of pendingCreateItems) {
@@ -100,7 +100,7 @@ export async function runClonePhase(params: RunClonePhaseParams): Promise<{
         String(item.storage || '').trim() ||
         (() => {
           const configuredDefault = String(settings.storage?.default || '').trim();
-          return configuredDefault.toLowerCase() === legacyStoragePlaceholder
+          return configuredDefault.toLowerCase() === compatStoragePlaceholder
             ? ''
             : configuredDefault;
         })() ||
