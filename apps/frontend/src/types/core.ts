@@ -118,7 +118,7 @@ export interface ProfessionProgress {
   max_skill_points: number;
 }
 
-// Schedule Types - Расписание работы (Legacy v1)
+// Schedule Types - Расписание работы (v1 compatibility schema)
 export interface ScheduleEntry {
   id: string;
   day: 0 | 1 | 2 | 3 | 4 | 5 | 6;

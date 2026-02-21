@@ -88,10 +88,12 @@ function listProxmoxTargets(config: AgentConfig): Array<{
     return [];
   }
 
+  const fallbackLabel =
+    String(config.proxmox.url || '').replace(/^https?:\/\//, '') || 'compat-fallback';
   return [
     {
-      id: 'legacy',
-      label: String(config.proxmox.url || '').replace(/^https?:\/\//, '') || 'legacy',
+      id: 'compat-fallback',
+      label: fallbackLabel,
       url: config.proxmox.url,
       username: config.proxmox.username,
       node: config.proxmox.node,

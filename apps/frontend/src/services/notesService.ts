@@ -1,6 +1,6 @@
 /**
  * @fileoverview Notes service over canonical API (/api/v1/workspace/notes)
- * Версия 2: markdown content + backward compatibility для legacy blocks.
+ * Version 2: markdown content + backward compatibility for previous block schema.
  */
 
 import { uiLogger } from '../observability/uiLogger';

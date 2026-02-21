@@ -171,7 +171,7 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
     // Add gold price data
     goldPriceHistory.forEach((item) => {
       const existing = dataMap.get(item.date) || { date: item.date };
-      // Handle legacy project IDs if needed or just use current ones
+      // Handle compatibility project IDs if needed or just use current ones
       const key = `gold_price_${item.project_id}`;
       existing[key] = item.price;
       dataMap.set(item.date, existing);
