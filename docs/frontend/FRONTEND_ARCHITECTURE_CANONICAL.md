@@ -39,6 +39,7 @@ Current repository still contains transitional folders (`components`, `hooks`, `
 8. If a public symbol rename is needed in migration layers, keep a deprecated alias for one transition wave.
 9. Special migration markers (for example storage placeholders) must be named `*_COMPAT_*` in new code.
 10. Theme/settings migration markers must use `COMPAT_*` naming; do not introduce new `LEGACY_*` constants in active code.
+11. Deprecated aliases in active runtime paths must use `Deprecated*` naming (not `Legacy*`) and should be removed after migration windows close.
 
 ## Styling Rules
 
