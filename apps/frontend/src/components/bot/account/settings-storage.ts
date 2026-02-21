@@ -51,9 +51,9 @@ export const loadCompatTemplateSnapshot = () => ({
 });
 
 /** @deprecated Use loadCompatDefaultTemplateId. */
-export const loadLegacyDefaultTemplateId = loadCompatDefaultTemplateId;
+export const loadDeprecatedDefaultTemplateId = loadCompatDefaultTemplateId;
 /** @deprecated Use loadCompatTemplateSnapshot. */
-export const loadLegacyTemplateSnapshot = loadCompatTemplateSnapshot;
+export const loadDeprecatedTemplateSnapshot = loadCompatTemplateSnapshot;
 
 export const templatesArrayToMap = (
   templates: AccountGeneratorTemplate[],

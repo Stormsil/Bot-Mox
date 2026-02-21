@@ -76,7 +76,7 @@ function isPayloadLike(value: unknown): value is UiLoggerPayload {
   );
 }
 
-function parseLegacyArgs(
+function parseCompatArgs(
   args: unknown[],
   fallbackEvent: string,
 ): { event: string; payload: UiLoggerPayload } {
@@ -142,7 +142,7 @@ function buildEvent(
 }
 
 function emit(level: UiLogLevel, args: unknown[], context: { module?: string }): void {
-  const parsed = parseLegacyArgs(args, `frontend.${level}`);
+  const parsed = parseCompatArgs(args, `frontend.${level}`);
   const entry = buildEvent(level, parsed.event, parsed.payload, context.module);
 
   if (canLogToConsole(level)) {
