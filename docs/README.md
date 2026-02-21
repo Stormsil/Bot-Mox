@@ -28,8 +28,8 @@ Applies To: `apps/frontend`, `apps/backend`, `apps/agent`, `packages/*`
 
 ## Audits
 
-1. Repository architecture + compatibility cutover audit: `docs/audits/repo-architecture-delegacy-audit-2026-02-19.md`
-2. Compatibility cutover compliance report: `docs/audits/repo-delegacy-compliance-report-2026-02-19.md`
+1. Repository architecture + compatibility cutover audit: `docs/audits/repo-architecture-deprecated-naming-audit-2026-02-19.md`
+2. Compatibility cutover compliance report: `docs/audits/repo-deprecated-naming-compliance-report-2026-02-19.md`
 3. Engineering hygiene baseline: `docs/audits/engineering-hygiene-baseline-2026-02-19.md`
 
 ## Active Plans
@@ -54,3 +54,4 @@ Applies To: `apps/frontend`, `apps/backend`, `apps/agent`, `packages/*`
 
 All deprecated and historical plans/audits are archived under `docs/history/**`.
 These files are not source-of-truth for current implementation.
+

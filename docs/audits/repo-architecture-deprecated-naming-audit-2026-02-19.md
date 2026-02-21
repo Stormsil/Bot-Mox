@@ -34,7 +34,7 @@ Last Updated: 2026-02-19
 | `docs/audits/*` (historical) | Documentation | Medium | Historical migration references | Moved to `docs/history/audits/*` |
 | `docs/architecture/agent-ownership-policy.md` | Documentation | Medium | Referenced old backend path | Archived to history and replaced by canonical docs |
 | `apps/frontend/test-results/playwright-report.json` | Generated artifact | Low | Contains historical path strings | Kept as generated artifact; excluded from active checks |
-| `scripts/check-legacy-naming-cutover.js` | Guardrail script | Medium | Missing one deprecated-path blocking rule | Updated in this hardening wave |
+| `scripts/check-deprecated-naming-cutover.js` | Guardrail script | Medium | Missing one deprecated-path blocking rule | Updated in this hardening wave |
 
 ## Key Cleanup Directions
 
@@ -46,3 +46,4 @@ Last Updated: 2026-02-19
 ## Result
 
 Hardening wave introduced canonical documentation, archive segregation, and stricter naming/boundary enforcement to prevent architecture drift.
+

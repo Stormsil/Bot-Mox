@@ -29,8 +29,8 @@ const SKIP_DIRS = new Set([
 
 const SKIP_PATH_PREFIXES = ['docs/history/'];
 const SKIP_FILES = new Set([
-  'scripts/check-legacy-naming-cutover.js',
-  'scripts/check-docs-legacy.js',
+  'scripts/check-deprecated-naming-cutover.js',
+  'scripts/check-docs-deprecated.js',
 ]);
 const SKIP_EXTENSIONS = new Set([
   '.ico',
@@ -58,7 +58,7 @@ const SKIP_EXTENSIONS = new Set([
   '.sqlite',
 ]);
 
-const LEGACY_PATTERNS = [
+const DEPRECATED_PATTERNS = [
   { label: 'bot-mox', pattern: /\bbot-mox\b/g },
   { label: 'proxy-server', pattern: /\bproxy-server\b/g },
   { label: 'apps/api-legacy', pattern: /\bapps[\\/]+api-legacy\b/g },
@@ -149,7 +149,7 @@ for (const relativePath of uniqueFiles) {
     continue;
   }
 
-  for (const { label, pattern } of LEGACY_PATTERNS) {
+  for (const { label, pattern } of DEPRECATED_PATTERNS) {
     pattern.lastIndex = 0;
     let match = pattern.exec(source);
     while (match) {
@@ -166,7 +166,7 @@ for (const relativePath of uniqueFiles) {
 }
 
 if (violations.length > 0) {
-  process.stderr.write('Found legacy naming references in active files:\n');
+  process.stderr.write('Found deprecated naming references in active files:\n');
   for (const violation of violations) {
     process.stderr.write(
       `- ${violation.file}:${violation.line} -> ${violation.label} (${violation.snippet})\n`,
@@ -176,5 +176,5 @@ if (violations.length > 0) {
 }
 
 process.stdout.write(
-  `Legacy naming cutover check passed (${uniqueFiles.length} active files scanned).\n`,
+  `Deprecated naming cutover check passed (${uniqueFiles.length} active files scanned).\n`,
 );

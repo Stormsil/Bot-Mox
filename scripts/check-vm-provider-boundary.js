@@ -124,7 +124,7 @@ if (violations.length > 0) {
     process.stderr.write(` - ${violation.file}:${violation.line} -> ${violation.specifier}\n`);
   }
   process.stderr.write(
-    '[check-vm-provider-boundary] migrate provider implementation to contract/path-client/runtime helpers instead of legacy vm services/bridges.\n',
+    '[check-vm-provider-boundary] migrate provider implementation to contract/path-client/runtime helpers instead of deprecated vm services/bridges.\n',
   );
   process.exit(2);
 }

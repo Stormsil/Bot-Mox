@@ -120,7 +120,7 @@ if (writeBaseline) {
   const payload = {
     generatedAt: new Date().toISOString(),
     description:
-      'Temporary allowlist for legacy services imports inside entities; new imports are blocked by check script.',
+      'Temporary allowlist for deprecated services imports inside entities; new imports are blocked by check script.',
     allowed: uniqueCompact,
   };
   fs.writeFileSync(baselineFile, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
@@ -145,7 +145,7 @@ const violations = imports.filter((entry) => !baseline.has(`${entry.file}|${entr
 
 if (violations.length > 0) {
   process.stderr.write(
-    `[check-entities-service-boundary] found ${violations.length} new legacy service import(s) in entities:\n`,
+    `[check-entities-service-boundary] found ${violations.length} new deprecated service import(s) in entities:\n`,
   );
   for (const entry of violations) {
     process.stderr.write(` - ${entry.file}:${entry.line} -> ${entry.specifier}\n`);

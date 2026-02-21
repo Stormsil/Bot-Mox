@@ -147,7 +147,9 @@ async function run() {
   const baseUrl = normalizeBaseUrl(readEnv('API_BASE_URL', 'http://localhost:3002'));
   const runnerToken = readEnv('RUNNER_BEARER_TOKEN', readEnv('API_BEARER_TOKEN', ''));
   if (!runnerToken) {
-    throw new Error('Missing required env: RUNNER_BEARER_TOKEN (or legacy API_BEARER_TOKEN)');
+    throw new Error(
+      'Missing required env: RUNNER_BEARER_TOKEN (or compatibility alias API_BEARER_TOKEN)',
+    );
   }
   const adminToken = readEnv('ADMIN_BEARER_TOKEN', '');
   const userId = readRequiredEnv('E2E_USER_ID');
