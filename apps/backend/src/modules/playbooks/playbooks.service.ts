@@ -156,7 +156,7 @@ export class PlaybooksService {
       };
     }
 
-    // Lightweight structural checks to keep parity with legacy 422 branch.
+    // Lightweight structural checks to keep parity with previous 422 validation behavior.
     const hasName = /(^|\n)\s*name\s*:/i.test(normalized);
     const hasRoles = /(^|\n)\s*roles\s*:/i.test(normalized);
     const hasYamlControl = /[:\-\n]/.test(normalized);

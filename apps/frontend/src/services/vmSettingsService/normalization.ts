@@ -1,6 +1,5 @@
 import type { VMGeneratorSettings } from '../../types';
 import {
-  // Keep compatibility with persisted payloads containing the old "disk" marker.
   COMPAT_STORAGE_PLACEHOLDER,
   DEFAULT_DELETE_VM_FILTERS,
   DEFAULT_SETTINGS,

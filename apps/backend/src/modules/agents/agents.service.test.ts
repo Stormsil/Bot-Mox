@@ -52,7 +52,7 @@ test('AgentsService fails fast on repository list error', async () => {
   await assert.rejects(() => service.list(undefined, 'tenant-a'), /db list failed/);
 });
 
-test('AgentsService fails fast on repository list error (no legacy fallback)', async () => {
+test('AgentsService fails fast on repository list error (no fallback path)', async () => {
   const repositoryStub = {
     list: async () => {
       throw new Error('db list failed dual');

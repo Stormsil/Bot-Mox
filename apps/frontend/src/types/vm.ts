@@ -223,7 +223,7 @@ export interface VMGeneratorSettings {
     useKeyAuth: boolean;
   };
   storage: {
-    /** @deprecated Alias for enabledDisks in legacy data. */
+    /** @deprecated Alias for enabledDisks in v1-compatible persisted data. */
     options?: string[];
     enabledDisks: string[];
     autoSelectBest: boolean;

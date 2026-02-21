@@ -110,7 +110,7 @@ export interface FinanceFilters {
   dateTo: string | null;
 }
 
-// Legacy type for backward compatibility
+// Compatibility type for backward compatibility
 export interface FinanceEntry {
   id: string;
   type: 'income' | 'expense';

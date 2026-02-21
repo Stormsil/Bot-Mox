@@ -68,7 +68,7 @@ test('WorkspaceService fails hard on repository errors', async () => {
   );
 });
 
-test('WorkspaceService fails fast on repository errors (no legacy fallback)', async () => {
+test('WorkspaceService fails fast on repository errors (no fallback path)', async () => {
   const repositoryStub: RepositoryStub = {
     list: async () => {
       throw new Error('db list failed dual');
