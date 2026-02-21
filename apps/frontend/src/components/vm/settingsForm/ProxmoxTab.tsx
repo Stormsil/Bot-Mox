@@ -19,9 +19,9 @@ import { VMConfigPreview } from '../VMConfigPreview';
 import styles from './ProxmoxTab.module.css';
 import {
   buildStorageRows,
+  COMPAT_STORAGE_PLACEHOLDER,
   formatGiBFromBytes,
   formatGiBFromMb,
-  LEGACY_STORAGE_PLACEHOLDER,
   mapDisplayName,
   pickBestStorage,
   type StorageRow,
@@ -52,7 +52,7 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
     Array.isArray(settings.storage.enabledDisks) && settings.storage.enabledDisks.length > 0
       ? settings.storage.enabledDisks
       : (settings.storage.options ?? []),
-  ).filter((value) => value.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER);
+  ).filter((value) => value.toLowerCase() !== COMPAT_STORAGE_PLACEHOLDER);
   const availableStorageValues = uniqueTrimmed(storageOptions.map((opt) => opt.value));
   const candidatePool =
     availableStorageValues.length > 0 ? availableStorageValues : rawEnabledValues;
@@ -85,7 +85,7 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
   const configuredDefaultRaw = String(settings.storage.default || '').trim();
   const configuredDefault =
     configuredDefaultRaw &&
-    configuredDefaultRaw.toLowerCase() !== LEGACY_STORAGE_PLACEHOLDER &&
+    configuredDefaultRaw.toLowerCase() !== COMPAT_STORAGE_PLACEHOLDER &&
     candidatePool.includes(configuredDefaultRaw)
       ? configuredDefaultRaw
       : '';

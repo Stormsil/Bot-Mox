@@ -37,6 +37,7 @@ Current repository still contains transitional folders (`components`, `hooks`, `
 6. New large files require decomposition plan if over budget.
 7. Migration code must use `compat` naming (`compat*`, `*Compat*`) instead of new `legacy*` names.
 8. If a public symbol rename is needed in migration layers, keep a deprecated alias for one transition wave.
+9. Special migration markers (for example storage placeholders) must be named `*_COMPAT_*` in new code.
 
 ## Styling Rules
 

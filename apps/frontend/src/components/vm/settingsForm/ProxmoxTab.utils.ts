@@ -9,7 +9,9 @@ export interface StorageRow {
   freeLabel: string;
 }
 
-export const LEGACY_STORAGE_PLACEHOLDER = 'disk';
+export const COMPAT_STORAGE_PLACEHOLDER = 'disk';
+/** @deprecated Use COMPAT_STORAGE_PLACEHOLDER. */
+export const LEGACY_STORAGE_PLACEHOLDER = COMPAT_STORAGE_PLACEHOLDER;
 
 const formatGb = (bytes: number): string => {
   const gb = bytes / 1_000_000_000;
