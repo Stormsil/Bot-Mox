@@ -34,7 +34,7 @@ export const loadFromLocalStorage = <T>(key: string): T | null => {
   }
 };
 
-export const loadLegacyDefaultTemplateId = (): string | null => {
+export const loadCompatDefaultTemplateId = (): string | null => {
   try {
     return localStorage.getItem(ACCOUNT_DEFAULT_TEMPLATE_MIGRATION_KEY);
   } catch (error) {
@@ -43,12 +43,17 @@ export const loadLegacyDefaultTemplateId = (): string | null => {
   }
 };
 
-export const loadLegacyTemplateSnapshot = () => ({
+export const loadCompatTemplateSnapshot = () => ({
   templates:
     loadFromLocalStorage<AccountGeneratorTemplate[]>(ACCOUNT_TEMPLATES_MIGRATION_KEY) || [],
-  defaultTemplateId: loadLegacyDefaultTemplateId(),
+  defaultTemplateId: loadCompatDefaultTemplateId(),
   lastSettings: loadFromLocalStorage<AccountGeneratorSettings>(ACCOUNT_SETTINGS_MIGRATION_KEY),
 });
+
+/** @deprecated Use loadCompatDefaultTemplateId. */
+export const loadLegacyDefaultTemplateId = loadCompatDefaultTemplateId;
+/** @deprecated Use loadCompatTemplateSnapshot. */
+export const loadLegacyTemplateSnapshot = loadCompatTemplateSnapshot;
 
 export const templatesArrayToMap = (
   templates: AccountGeneratorTemplate[],

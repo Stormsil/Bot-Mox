@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { popularEmailDomains } from '../../../utils/accountGenerators';
 import {
   accountGeneratorPaths,
-  loadLegacyTemplateSnapshot,
+  loadCompatTemplateSnapshot,
   patchSettingsPath,
   readSettingsPath,
   templatesArrayToMap,
@@ -97,7 +97,7 @@ export const useAccountGeneratorState = (): AccountGeneratorState => {
         let loadedLastSettings = lastSettingsData || null;
 
         if (loadedTemplates.length === 0 && !loadedDefaultTemplateId && !loadedLastSettings) {
-          const localSnapshot = loadLegacyTemplateSnapshot();
+          const localSnapshot = loadCompatTemplateSnapshot();
 
           if (localSnapshot.templates.length > 0) {
             await writeSettingsPath(

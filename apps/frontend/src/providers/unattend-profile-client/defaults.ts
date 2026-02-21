@@ -59,7 +59,7 @@ export const DEFAULT_PROFILE_CONFIG: UnattendProfileConfig = {
   xmlTemplate: DEFAULT_UNATTEND_XML_TEMPLATE,
 };
 
-export function isLegacyStubTemplate(xmlTemplate: string): boolean {
+export function isCompatStubTemplate(xmlTemplate: string): boolean {
   const normalized = xmlTemplate.replace(/\s+/g, ' ').toLowerCase();
   return (
     normalized.includes('default template generated from schneegans unattend generator') &&
@@ -67,3 +67,6 @@ export function isLegacyStubTemplate(xmlTemplate: string): boolean {
     !normalized.includes('c:\\windows\\setup\\scripts\\specialize.ps1')
   );
 }
+
+/** @deprecated Use isCompatStubTemplate. */
+export const isLegacyStubTemplate = isCompatStubTemplate;

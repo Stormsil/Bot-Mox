@@ -13,7 +13,7 @@ import {
   type UnattendWindowsSettings,
 } from './types';
 
-function isLegacyStubTemplate(xmlTemplate: string): boolean {
+function isCompatStubTemplate(xmlTemplate: string): boolean {
   const normalized = xmlTemplate.replace(/\s+/g, ' ').toLowerCase();
   return (
     normalized.includes('default template generated from schneegans unattend generator') &&
@@ -22,25 +22,25 @@ function isLegacyStubTemplate(xmlTemplate: string): boolean {
   );
 }
 
-interface LegacyLocaleConfig extends Partial<UnattendLocaleConfig> {
+interface CompatLocaleConfig extends Partial<UnattendLocaleConfig> {
   inputLocales?: string[];
 }
 
-interface LegacyVisualEffectsConfig extends Omit<Partial<UnattendVisualEffects>, 'mode'> {
+interface CompatVisualEffectsConfig extends Omit<Partial<UnattendVisualEffects>, 'mode'> {
   mode?: UnattendVisualEffects['mode'] | 'balanced' | 'random';
   cursorShadow?: boolean;
   fontSmoothing?: boolean;
 }
 
-interface LegacyDesktopIconsConfig extends Partial<UnattendDesktopIcons> {
+interface CompatDesktopIconsConfig extends Partial<UnattendDesktopIcons> {
   recycleBin?: boolean;
   thisPC?: boolean;
 }
 
-interface LegacyProfileConfig {
+interface CompatProfileConfig {
   user?: Partial<UnattendUserConfig>;
   computerName?: Partial<UnattendComputerNameConfig>;
-  locale?: LegacyLocaleConfig;
+  locale?: CompatLocaleConfig;
   softwareRemoval?: Omit<Partial<UnattendSoftwareRemovalConfig>, 'mode'> & {
     mode?: UnattendSoftwareRemovalConfig['mode'] | 'mixed';
   };
@@ -48,8 +48,8 @@ interface LegacyProfileConfig {
     mode?: UnattendCapabilityRemovalConfig['mode'] | 'mixed';
   };
   windowsSettings?: Partial<UnattendWindowsSettings>;
-  visualEffects?: LegacyVisualEffectsConfig;
-  desktopIcons?: LegacyDesktopIconsConfig;
+  visualEffects?: CompatVisualEffectsConfig;
+  desktopIcons?: CompatDesktopIconsConfig;
   customScript?: Partial<UnattendCustomScript>;
   xmlTemplate?: string;
 }
@@ -57,7 +57,7 @@ interface LegacyProfileConfig {
 export function migrateProfileConfig(raw: unknown): UnattendProfileConfig {
   if (!raw || typeof raw !== 'object') return structuredClone(DEFAULT_PROFILE_CONFIG);
 
-  const config: LegacyProfileConfig = structuredClone(raw as LegacyProfileConfig);
+  const config: CompatProfileConfig = structuredClone(raw as CompatProfileConfig);
 
   if (config.user) {
     if (config.user.autoLogonCount === undefined) config.user.autoLogonCount = 9999999;
@@ -150,7 +150,7 @@ export function migrateProfileConfig(raw: unknown): UnattendProfileConfig {
   }
 
   const resolvedTemplate = typeof config.xmlTemplate === 'string' ? config.xmlTemplate.trim() : '';
-  if (!resolvedTemplate || isLegacyStubTemplate(resolvedTemplate)) {
+  if (!resolvedTemplate || isCompatStubTemplate(resolvedTemplate)) {
     config.xmlTemplate = DEFAULT_UNATTEND_XML_TEMPLATE;
   }
 
