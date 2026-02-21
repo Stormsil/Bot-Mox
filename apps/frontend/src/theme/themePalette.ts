@@ -8,11 +8,11 @@ import type {
   ThemeVisualSize,
 } from './themePalette.definitions';
 import {
+  COMPAT_THEME_COLOR_KEYS,
   createDefaultThemePalettes,
   DEFAULT_THEME_SHAPE_SETTINGS,
   DEFAULT_THEME_TYPOGRAPHY_SETTINGS,
   DEFAULT_THEME_VISUAL_SETTINGS,
-  LEGACY_THEME_COLOR_KEYS,
   THEME_COLOR_DEFINITIONS,
 } from './themePalette.definitions';
 
@@ -118,9 +118,9 @@ const sanitizePalette = (source: unknown, fallback: ThemePalette): ThemePalette 
   for (const { cssVar } of THEME_COLOR_DEFINITIONS) {
     const value =
       sourcePalette[cssVar] ??
-      LEGACY_THEME_COLOR_KEYS[cssVar]
-        .map((legacyKey) => sourcePalette[legacyKey])
-        .find((legacyValue) => typeof legacyValue === 'string');
+      COMPAT_THEME_COLOR_KEYS[cssVar]
+        .map((compatKey) => sourcePalette[compatKey])
+        .find((compatValue) => typeof compatValue === 'string');
 
     if (typeof value === 'string') {
       nextPalette[cssVar] = normalizeHexColor(value, fallback[cssVar]);
