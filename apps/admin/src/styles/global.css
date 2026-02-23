@@ -1,0 +1,67 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap");
+@import "./variables.css";
+
+/* Global reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  background-color: var(--boxmox-color-surface-base);
+  color: var(--boxmox-color-text-primary);
+  height: 100%;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-condensed);
+  font-weight: 600;
+  color: var(--boxmox-color-text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+h1 {
+  font-size: var(--text-2xl);
+}
+h2 {
+  font-size: var(--text-xl);
+}
+h3 {
+  font-size: var(--text-lg);
+}
+h4 {
+  font-size: var(--text-md);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--boxmox-color-surface-muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--boxmox-color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--boxmox-color-border-default);
+}

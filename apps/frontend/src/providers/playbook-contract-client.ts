@@ -91,18 +91,35 @@ function toApiClientError(path: string, status: number, body: unknown): ApiClien
   });
 }
 
-export async function listPlaybooksViaContract(): Promise<ApiSuccessEnvelope<PlaybookRecord[]>> {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
-  const response = await client.playbooksList({
-    headers: { authorization },
-  });
-
-  if (response.status !== 200) {
-    throw toApiClientError('/api/v1/playbooks', response.status, response.body);
+function isExpectedPlaybookReadDegradedError(error: unknown): error is ApiClientError {
+  if (!(error instanceof ApiClientError)) {
+    return false;
   }
+  const code = String(error.code || '').trim();
+  return (
+    error.status === 502 || code === 'AGENTS_STORAGE_UNAVAILABLE' || code === 'VM_OPS_UNAVAILABLE'
+  );
+}
 
-  return response.body as ApiSuccessEnvelope<PlaybookRecord[]>;
+export async function listPlaybooksViaContract(): Promise<ApiSuccessEnvelope<PlaybookRecord[]>> {
+  try {
+    const client = createRuntimeClient();
+    const authorization = resolveAuthorizationHeader();
+    const response = await client.playbooksList({
+      headers: { authorization },
+    });
+
+    if (response.status !== 200) {
+      throw toApiClientError('/api/v1/playbooks', response.status, response.body);
+    }
+
+    return response.body as ApiSuccessEnvelope<PlaybookRecord[]>;
+  } catch (error) {
+    if (isExpectedPlaybookReadDegradedError(error)) {
+      return { success: true, data: [] };
+    }
+    throw error;
+  }
 }
 
 export async function getPlaybookViaContract(

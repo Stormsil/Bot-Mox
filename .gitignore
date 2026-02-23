@@ -63,3 +63,7 @@ backups/
 # Generated documentation artifacts
 docs/_generated/
 docs/**/_generated/
+
+# Generated local diagnostics/audit snapshots (keep monthly reports if committed intentionally)
+docs/audits/*-latest.txt
+docs/audits/post-start-diagnostics-*.txt

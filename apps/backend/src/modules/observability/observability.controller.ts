@@ -8,13 +8,21 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { AuthService } from '../auth/auth.service';
+import { getRequestIdentity } from '../auth/request-identity.util';
 import { ObservabilityService } from './observability.service';
+import { RuntimeMetricsService } from './runtime-metrics.service';
 
 @Controller()
 export class ObservabilityController {
-  constructor(private readonly observabilityService: ObservabilityService) {}
+  constructor(
+    private readonly observabilityService: ObservabilityService,
+    private readonly runtimeMetricsService: RuntimeMetricsService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Get('diag/trace')
   getTrace(@Headers() headers: Record<string, unknown>): { success: true; data: unknown } {
@@ -88,5 +96,49 @@ export class ObservabilityController {
         },
       });
     }
+  }
+
+  @Get('diag/runtime-metrics')
+  getRuntimeMetrics(
+    @Headers('authorization') authorization: string | undefined,
+    @Req() req: Request,
+  ): { success: true; data: unknown } {
+    if (!authorization) {
+      throw new UnauthorizedException({
+        code: 'MISSING_BEARER_TOKEN',
+        message: 'Missing bearer token',
+      });
+    }
+    const identity = getRequestIdentity(req);
+    if (!this.authService.isAdmin(identity.roles)) {
+      throw new UnauthorizedException({
+        code: 'AUTH_ADMIN_ROLE_REQUIRED',
+        message: 'Admin role is required',
+      });
+    }
+
+    const headers = (req.headers || {}) as Record<string, unknown>;
+    const forwarded = headers['x-forwarded-for'];
+    const fromForwarded = Array.isArray(forwarded)
+      ? String(forwarded[0] || '')
+          .split(',')[0]
+          ?.trim()
+      : String(forwarded || '')
+          .split(',')[0]
+          ?.trim();
+    const clientIp = String(fromForwarded || req.ip || 'unknown')
+      .trim()
+      .toLowerCase();
+    this.authService.enforceAdminRateLimit?.({
+      action: 'diag.runtime-metrics.read',
+      clientIp,
+      actorUserId: identity.userId,
+      principal: identity.tenantId,
+    });
+
+    return {
+      success: true,
+      data: this.runtimeMetricsService.snapshot(),
+    };
   }
 }

@@ -1,6 +1,7 @@
 import { buildApiUrl } from '../../../config/env';
 
 const AUTH_TOKEN_KEY = 'botmox.auth.token';
+const AUTH_IDENTITY_KEY = 'botmox.auth.identity';
 
 interface SettingsEnvelope<T> {
   data: T;
@@ -17,6 +18,45 @@ function getAuthToken(): string {
   } catch {
     return '';
   }
+}
+
+function hasWriteAccess(): boolean {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+
+  try {
+    const raw = String(localStorage.getItem(AUTH_IDENTITY_KEY) || '').trim();
+    if (!raw) {
+      return true;
+    }
+    const parsed = JSON.parse(raw) as { access?: { write_access?: unknown } };
+    return parsed?.access?.write_access === true;
+  } catch {
+    return true;
+  }
+}
+
+function assertWriteAccess(path: string): void {
+  if (hasWriteAccess()) {
+    return;
+  }
+
+  const error = new Error('Premium access is required for write operations') as Error & {
+    code?: string;
+    status?: number;
+    statusCode?: number;
+    details?: unknown;
+  };
+  error.name = 'ApiClientError';
+  error.code = 'PREMIUM_REQUIRED';
+  error.status = 403;
+  error.statusCode = 403;
+  error.details = {
+    path,
+    source: 'frontend_settings_write_guard',
+  };
+  throw error;
 }
 
 function withAuthHeaders(headers?: HeadersInit): Headers {
@@ -66,7 +106,11 @@ async function requestSettings<T>(
   path: string,
   payload?: unknown,
 ): Promise<SettingsEnvelope<T>> {
-  const response = await fetch(buildApiUrl(getSettingsPath(path)), {
+  if (method !== 'GET') {
+    assertWriteAccess(path);
+  }
+
+  const response = await fetch(buildApiUrl(path), {
     method,
     cache: 'no-store',
     headers: withAuthHeaders(
@@ -103,7 +147,22 @@ export const apiPut = <T>(path: string, payload: unknown): Promise<SettingsEnvel
   return requestSettings<T>('PUT', path, payload);
 };
 
-export const getSettingsPath = (path: string): string => `/api/v1/settings/${path}`;
+export const getSettingsPath = (path: string): string => {
+  const normalized = String(path || '').trim();
+  if (!normalized) {
+    return '/api/v1/settings';
+  }
+
+  const withoutLeadingSlash = normalized.replace(/^\/+/, '');
+  if (withoutLeadingSlash.startsWith('api/v1/settings/')) {
+    return `/${withoutLeadingSlash}`;
+  }
+  if (withoutLeadingSlash === 'api/v1/settings') {
+    return '/api/v1/settings';
+  }
+
+  return `/api/v1/settings/${withoutLeadingSlash}`;
+};
 
 export const readSettingsPath = async <T>(path: string): Promise<T | null> => {
   const response = await apiGet<unknown>(getSettingsPath(path));

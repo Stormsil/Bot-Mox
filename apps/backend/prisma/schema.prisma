@@ -279,3 +279,72 @@ model ProvisioningProgressItem {
   @@index([tenantId, vmUuid, updatedAt(sort: Desc)], map: "idx_provisioning_progress_items_scope")
   @@map("provisioning_progress_items")
 }
+
+model ProjectCatalogRelease {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectKey String  @map("project_key")
+  version   String
+  status    String   @default("active")
+  artifacts Json     @default("[]")
+  metadata  Json     @default("{}")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  rollouts TenantProjectRollout[]
+
+  @@unique([projectKey, version], map: "ux_project_catalog_release_version")
+  @@index([projectKey, status, updatedAt(sort: Desc)], map: "idx_project_catalog_release_project_status")
+  @@map("project_catalog_releases")
+}
+
+model TenantProjectRollout {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String   @map("tenant_id")
+  projectKey String   @map("project_key")
+  releaseId  String   @map("release_id") @db.Uuid
+  status     String   @default("rolled_out")
+  wave       String?
+  notes      String?
+  rolledOutAt DateTime @default(now()) @map("rolled_out_at") @db.Timestamptz(6)
+  updatedBy  String?  @map("updated_by")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  release ProjectCatalogRelease @relation(fields: [releaseId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, projectKey], map: "ux_tenant_project_rollout_scope")
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_tenant_project_rollout_tenant_updated")
+  @@index([projectKey, status, updatedAt(sort: Desc)], map: "idx_tenant_project_rollout_project_status")
+  @@map("tenant_project_rollouts")
+}
+
+model TenantAccountAccess {
+  tenantId        String    @id @map("tenant_id")
+  plan            String    @default("free")
+  trialStartedAt  DateTime? @map("trial_started_at") @db.Timestamptz(6)
+  trialEndsAt     DateTime? @map("trial_ends_at") @db.Timestamptz(6)
+  trialUsedAt     DateTime? @map("trial_used_at") @db.Timestamptz(6)
+  premiumUntil    DateTime? @map("premium_until") @db.Timestamptz(6)
+  lifetimePremium Boolean   @default(false) @map("lifetime_premium")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([plan, updatedAt(sort: Desc)], map: "idx_tenant_account_access_plan_updated")
+  @@map("tenant_account_access")
+}
+
+model AdminAuditEvent {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorUserId    String?  @map("actor_user_id")
+  actorTenantId  String?  @map("actor_tenant_id")
+  action         String
+  targetTenantId String?  @map("target_tenant_id")
+  payload        Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt(sort: Desc)], map: "idx_admin_audit_events_created")
+  @@index([action, createdAt(sort: Desc)], map: "idx_admin_audit_events_action_created")
+  @@index([targetTenantId, createdAt(sort: Desc)], map: "idx_admin_audit_events_target_created")
+  @@map("admin_audit_events")
+}

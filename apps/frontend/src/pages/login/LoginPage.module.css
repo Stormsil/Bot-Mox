@@ -14,3 +14,13 @@
   width: min(420px, 100%);
   border-radius: 12px;
 }
+
+.hint {
+  margin-top: 12px;
+  margin-bottom: 0;
+  color: var(--boxmox-color-text-muted);
+}
+
+.policy {
+  margin-bottom: 16px;
+}

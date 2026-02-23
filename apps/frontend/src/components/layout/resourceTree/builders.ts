@@ -101,7 +101,7 @@ export function buildUnifiedTreeData({
   projectsMeta,
   visibleStatuses,
 }: BuildUnifiedInput): TreeItem[] {
-  return [
+  const result: TreeItem[] = [
     {
       key: 'datacenter',
       title: 'Overview',
@@ -153,9 +153,15 @@ export function buildUnifiedTreeData({
       type: 'finance',
     },
     {
+      key: 'billing',
+      title: 'Billing',
+      type: 'billing',
+    },
+    {
       key: 'settings',
       title: 'Settings',
       type: 'settings',
     },
   ];
+  return result;
 }

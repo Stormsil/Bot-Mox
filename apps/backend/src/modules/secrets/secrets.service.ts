@@ -63,6 +63,22 @@ export interface SecretBindingRecord {
   updated_at: string;
 }
 
+export interface TenantSecretRotationSummary {
+  tenant_id: string;
+  key_id: string;
+  dry_run: boolean;
+  requested: number;
+  planned: number;
+  rotated: number;
+  skipped: number;
+  failed: number;
+  details: Array<{
+    secret_id: string;
+    status: 'planned' | 'rotated' | 'skipped' | 'failed';
+    reason?: string;
+  }>;
+}
+
 @Injectable()
 export class SecretsService {
   constructor(
@@ -228,5 +244,124 @@ export class SecretsService {
     });
 
     return rows.map((row) => this.mapDbBinding(row));
+  }
+
+  async rotateTenantSecrets(input: {
+    tenantId: string;
+    keyId: string;
+    limit?: number;
+    dryRun?: boolean;
+  }): Promise<TenantSecretRotationSummary> {
+    const normalizedTenantId = this.normalizeTenantId(input.tenantId);
+    const keyId = String(input.keyId || '').trim();
+    if (!keyId) {
+      throw new Error('keyId is required');
+    }
+    const limit = Number.isFinite(input.limit)
+      ? Math.max(1, Math.min(10_000, Math.trunc(input.limit || 500)))
+      : 500;
+    const dryRun = input.dryRun === true;
+
+    const rows = await this.repository.listSecretMeta({
+      tenantId: normalizedTenantId,
+      limit,
+    });
+
+    let planned = 0;
+    let rotated = 0;
+    let skipped = 0;
+    let failed = 0;
+    const details: TenantSecretRotationSummary['details'] = [];
+
+    for (const row of rows) {
+      const secretId = String(row.id || '').trim();
+      const vaultRef = String(row.vaultRef || '').trim();
+      const alg = String(row.alg || '').trim() || 'AES-256-GCM';
+      const currentKeyId = String(row.keyId || '').trim();
+      if (!secretId) {
+        skipped += 1;
+        details.push({
+          secret_id: '',
+          status: 'skipped',
+          reason: 'invalid_secret_id',
+        });
+        continue;
+      }
+      if (!vaultRef) {
+        skipped += 1;
+        details.push({
+          secret_id: secretId,
+          status: 'skipped',
+          reason: 'missing_vault_ref',
+        });
+        continue;
+      }
+      if (currentKeyId && currentKeyId === keyId) {
+        skipped += 1;
+        details.push({
+          secret_id: secretId,
+          status: 'skipped',
+          reason: 'already_on_key_id',
+        });
+        continue;
+      }
+
+      try {
+        if (dryRun) {
+          planned += 1;
+          details.push({
+            secret_id: secretId,
+            status: 'planned',
+          });
+          continue;
+        }
+
+        const rotatedMaterial = await this.vaultAdapter.rotateStoredMaterial({
+          tenantId: normalizedTenantId,
+          secretId,
+          vaultRef,
+          keyId,
+          alg,
+        });
+        this.ensureVaultReferencePolicy(rotatedMaterial.vaultRef);
+
+        await this.repository.upsertSecretMeta({
+          tenantId: normalizedTenantId,
+          id: secretId,
+          label: String(row.label || '').trim() || secretId,
+          alg,
+          keyId,
+          vaultRef: rotatedMaterial.vaultRef,
+          materialVersion: rotatedMaterial.materialVersion,
+          aadMeta: this.normalizeAadMeta(row.aadMeta) as Prisma.InputJsonValue,
+          rotatedAt: new Date(),
+        });
+
+        rotated += 1;
+        details.push({
+          secret_id: secretId,
+          status: 'rotated',
+        });
+      } catch (error) {
+        failed += 1;
+        details.push({
+          secret_id: secretId,
+          status: 'failed',
+          reason: error instanceof Error ? error.message : 'unknown_error',
+        });
+      }
+    }
+
+    return {
+      tenant_id: normalizedTenantId,
+      key_id: keyId,
+      dry_run: dryRun,
+      requested: rows.length,
+      planned,
+      rotated,
+      skipped,
+      failed,
+      details,
+    };
   }
 }

@@ -1,6 +1,7 @@
 export type BotMoxRuntimeConfig = {
   apiBaseUrl?: string;
   wsBaseUrl?: string;
+  adminAppUrl?: string;
   supabaseUrl?: string;
   supabaseAnonKey?: string;
   otelEnabled?: string;

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { AgentsRepository } from './agents.repository';
 
@@ -97,6 +97,48 @@ export class AgentsService {
     };
   }
 
+  async createQuickPairAgent(input: {
+    tenantId: string;
+    userId: string;
+    name?: string;
+    machineName?: string;
+    version?: string;
+    platform?: string;
+    capabilities?: string[];
+  }): Promise<{
+    id: string;
+    name: string;
+    status: string;
+    paired_at: string;
+  }> {
+    const normalizedTenantId = this.normalizeTenantId(input.tenantId);
+    const nextName = String(input.name || input.machineName || 'agent').trim() || 'agent';
+    const nextVersion = String(input.version || '').trim();
+    const nextPlatform = String(input.platform || '').trim();
+    const nextCapabilities = Array.isArray(input.capabilities)
+      ? input.capabilities.map((item) => String(item || '').trim()).filter(Boolean)
+      : [];
+
+    const created = await this.repository.createQuickPairAgent({
+      tenantId: normalizedTenantId,
+      name: nextName,
+      pairedBy: String(input.userId || '').trim() || 'unknown-user',
+      ...(nextVersion ? { version: nextVersion } : {}),
+      ...(nextPlatform ? { platform: nextPlatform } : {}),
+      capabilities: nextCapabilities,
+      metadata: {
+        machine_name: String(input.machineName || '').trim() || null,
+      },
+    });
+
+    return {
+      id: created.id,
+      name: created.name,
+      status: created.status,
+      paired_at: (created.pairedAt || created.updatedAt || new Date()).toISOString(),
+    };
+  }
+
   async heartbeat(input: {
     tenantId: string;
     agentId: string;
@@ -110,6 +152,77 @@ export class AgentsService {
       status: input.status,
       metadata: input.metadata as Prisma.InputJsonValue,
     });
+    if (!stored) {
+      throw new NotFoundException({
+        code: 'AGENT_NOT_FOUND',
+        message: 'Agent not found for this tenant',
+      });
+    }
     return this.mapDbRecord(stored);
+  }
+
+  async existsWithinTenant(input: { tenantId: string; agentId: string }): Promise<boolean> {
+    const normalizedTenantId = this.normalizeTenantId(input.tenantId);
+    const agentId = String(input.agentId || '').trim();
+    if (!agentId) {
+      return false;
+    }
+
+    const direct = (
+      this.repository as unknown as {
+        findByIdWithinTenant?: (input: { tenantId: string; agentId: string }) => Promise<{
+          id: string;
+        } | null>;
+      }
+    ).findByIdWithinTenant;
+    if (typeof direct === 'function') {
+      const row = await direct({
+        tenantId: normalizedTenantId,
+        agentId,
+      });
+      return Boolean(row);
+    }
+
+    const fallback = await this.repository.findById(agentId);
+    return Boolean(fallback && fallback.tenantId === normalizedTenantId);
+  }
+
+  async repair(input: {
+    tenantId: string;
+    agentId: string;
+    repairedBy: string;
+    reason?: string;
+    expiresInMinutes?: number;
+  }): Promise<Record<string, unknown>> {
+    const normalizedTenantId = this.normalizeTenantId(input.tenantId);
+    const expiresInMinutes = Number.isFinite(input.expiresInMinutes)
+      ? Math.max(5, Math.min(1_440, Math.trunc(input.expiresInMinutes || 15)))
+      : 15;
+    const pairingCode = `bmx-${Math.random().toString(36).slice(2, 10)}`.toUpperCase();
+    const pairingExpiresAt = new Date(Date.now() + expiresInMinutes * 60_000);
+
+    const repaired = await this.repository.repair({
+      tenantId: normalizedTenantId,
+      agentId: input.agentId,
+      pairingCode,
+      pairingExpiresAt,
+      repairedBy: String(input.repairedBy || '').trim() || 'unknown-user',
+      ...(String(input.reason || '').trim() ? { reason: String(input.reason || '').trim() } : {}),
+    });
+    if (!repaired) {
+      throw new NotFoundException({
+        code: 'AGENT_NOT_FOUND',
+        message: 'Agent not found for this tenant',
+      });
+    }
+
+    return {
+      id: repaired.id,
+      tenant_id: repaired.tenantId,
+      status: repaired.status,
+      pairing_code: repaired.pairingCode,
+      pairing_expires_at: repaired.pairingExpiresAt?.toISOString(),
+      pairing_uri: `botmox://pair?code=${encodeURIComponent(pairingCode)}`,
+    };
   }
 }

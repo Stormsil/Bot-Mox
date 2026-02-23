@@ -6,6 +6,7 @@ import {
   listWorkspaceNotesViaContract,
   patchWorkspaceNoteViaContract,
 } from '../../../providers/workspace-contract-client';
+import { ApiClientError } from '../../../services/apiClient';
 import type { CreateNoteData, Note, NoteBlock, NoteIndex, UpdateNoteData } from '../model/types';
 
 interface NoteDb {
@@ -23,6 +24,19 @@ interface NoteDb {
 }
 
 const FETCH_LIMIT = 200;
+
+function shouldSoftFailNotesList(error: unknown): boolean {
+  if (!(error instanceof ApiClientError)) {
+    return false;
+  }
+  const code = String(error.code || '')
+    .trim()
+    .toUpperCase();
+  if (error.status === 502) {
+    return true;
+  }
+  return code === 'AGENTS_STORAGE_UNAVAILABLE' || code === 'VM_OPS_UNAVAILABLE';
+}
 
 function normalizeApiErrorMessage(error: unknown, fallback: string): Error {
   if (error instanceof Error) return error;
@@ -236,6 +250,9 @@ export async function listNotes(): Promise<NoteIndex[]> {
       .map(toNoteIndex)
       .sort((a, b) => b.updated_at - a.updated_at);
   } catch (error) {
+    if (shouldSoftFailNotesList(error)) {
+      return [];
+    }
     uiLogger.error('Error listing notes:', error);
     throw normalizeApiErrorMessage(error, 'Failed to list notes');
   }

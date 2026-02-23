@@ -10,6 +10,7 @@ import type {
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import type { z } from 'zod';
+import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { ThemeAssetsRepository } from './theme-assets.repository';
 
 type ThemeAsset = z.infer<typeof themeAssetSchema>;
@@ -21,6 +22,8 @@ type ThemeAssetDeleteResult = z.infer<typeof themeAssetDeleteResultSchema>;
 
 @Injectable()
 export class ThemeAssetsService {
+  private readonly atRestCrypto = new DataAtRestCrypto();
+
   constructor(private readonly repository: ThemeAssetsRepository) {}
 
   private normalizeTenantId(tenantId: string): string {
@@ -59,8 +62,22 @@ export class ThemeAssetsService {
     return JSON.parse(JSON.stringify(value)) as T;
   }
 
+  private toStoredPayload(payload: ThemeAsset): Prisma.InputJsonValue {
+    return {
+      __enc_payload_v1: this.atRestCrypto.encryptJson(this.clone(payload)),
+    } as unknown as Prisma.InputJsonValue;
+  }
+
   private mapDbRowPayload(row: Record<string, unknown>): ThemeAsset {
-    return this.clone(row.payload as ThemeAsset);
+    const payload = row.payload as Record<string, unknown>;
+    const wrapped = payload.__enc_payload_v1;
+    if (wrapped !== undefined) {
+      const decrypted = this.atRestCrypto.decryptJson<ThemeAsset>(wrapped);
+      if (decrypted) {
+        return this.clone(decrypted);
+      }
+    }
+    return this.clone(payload as unknown as ThemeAsset);
   }
 
   async listAssets(tenantId: string): Promise<ThemeAssetsList> {
@@ -102,7 +119,7 @@ export class ThemeAssetsService {
     await this.repository.upsert({
       tenantId: normalizedTenantId,
       id: assetId,
-      payload: this.clone(pending) as Prisma.InputJsonValue,
+      payload: this.toStoredPayload(pending),
     });
 
     return {
@@ -142,7 +159,7 @@ export class ThemeAssetsService {
     await this.repository.upsert({
       tenantId: normalizedTenantId,
       id: payload.asset_id,
-      payload: this.clone(next) as Prisma.InputJsonValue,
+      payload: this.toStoredPayload(next),
     });
     return next;
   }
@@ -172,7 +189,7 @@ export class ThemeAssetsService {
     await this.repository.upsert({
       tenantId: normalizedTenantId,
       id: normalizedId,
-      payload: this.clone(next) as Prisma.InputJsonValue,
+      payload: this.toStoredPayload(next),
     });
     return {
       id: normalizedId,

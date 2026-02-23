@@ -18,6 +18,19 @@ interface FinanceListQuery {
   q?: string;
 }
 
+function isFinanceDegradedReadError(error: unknown): boolean {
+  if (!(error instanceof ApiClientError)) {
+    return false;
+  }
+  const code = String(error.code || '')
+    .trim()
+    .toUpperCase();
+  if (error.status === 502) {
+    return true;
+  }
+  return code === 'VM_OPS_UNAVAILABLE' || code === 'AGENTS_STORAGE_UNAVAILABLE';
+}
+
 export type FinanceOperationContractRecord = ReturnType<typeof financeOperationRecordSchema.parse>;
 export type FinanceDailyStatsContractMap = ReturnType<typeof financeDailyStatsSchema.parse>;
 export type FinanceGoldPriceHistoryContractMap = ReturnType<
@@ -77,22 +90,33 @@ function toApiClientError(path: string, status: number, body: unknown): ApiClien
 export async function listFinanceOperationsViaContract(
   query: FinanceListQuery,
 ): Promise<ApiSuccessEnvelope<FinanceOperationContractRecord[]>> {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
-  const response = await client.financeOperationsList({
-    headers: { authorization },
-    query,
-  });
+  try {
+    const client = createRuntimeClient();
+    const authorization = resolveAuthorizationHeader();
+    const response = await client.financeOperationsList({
+      headers: { authorization },
+      query,
+    });
 
-  if (response.status !== 200) {
-    throw toApiClientError('/api/v1/finance/operations', response.status, response.body);
+    if (response.status !== 200) {
+      throw toApiClientError('/api/v1/finance/operations', response.status, response.body);
+    }
+
+    return {
+      success: true,
+      data: financeOperationRecordSchema.array().parse(response.body.data),
+      ...(response.body.meta ? { meta: response.body.meta } : {}),
+    };
+  } catch (error) {
+    if (!isFinanceDegradedReadError(error)) {
+      throw error;
+    }
+    return {
+      success: true,
+      data: [],
+      meta: { total: 0, page: Number(query.page || 1), limit: Number(query.limit || 50) },
+    };
   }
-
-  return {
-    success: true,
-    data: financeOperationRecordSchema.array().parse(response.body.data),
-    ...(response.body.meta ? { meta: response.body.meta } : {}),
-  };
 }
 
 export async function getFinanceOperationViaContract(
@@ -182,39 +206,59 @@ export async function deleteFinanceOperationViaContract(
 export async function getFinanceDailyStatsViaContract(): Promise<
   ApiSuccessEnvelope<FinanceDailyStatsContractMap>
 > {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
-  const response = await client.financeDailyStats({
-    headers: { authorization },
-  });
+  try {
+    const client = createRuntimeClient();
+    const authorization = resolveAuthorizationHeader();
+    const response = await client.financeDailyStats({
+      headers: { authorization },
+    });
 
-  if (response.status !== 200) {
-    throw toApiClientError('/api/v1/finance/daily-stats', response.status, response.body);
+    if (response.status !== 200) {
+      throw toApiClientError('/api/v1/finance/daily-stats', response.status, response.body);
+    }
+
+    return {
+      success: true,
+      data: financeDailyStatsSchema.parse(response.body.data),
+      ...(response.body.meta ? { meta: response.body.meta } : {}),
+    };
+  } catch (error) {
+    if (!isFinanceDegradedReadError(error)) {
+      throw error;
+    }
+    return {
+      success: true,
+      data: financeDailyStatsSchema.parse({}),
+    };
   }
-
-  return {
-    success: true,
-    data: financeDailyStatsSchema.parse(response.body.data),
-    ...(response.body.meta ? { meta: response.body.meta } : {}),
-  };
 }
 
 export async function getFinanceGoldPriceHistoryViaContract(): Promise<
   ApiSuccessEnvelope<FinanceGoldPriceHistoryContractMap>
 > {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
-  const response = await client.financeGoldPriceHistory({
-    headers: { authorization },
-  });
+  try {
+    const client = createRuntimeClient();
+    const authorization = resolveAuthorizationHeader();
+    const response = await client.financeGoldPriceHistory({
+      headers: { authorization },
+    });
 
-  if (response.status !== 200) {
-    throw toApiClientError('/api/v1/finance/gold-price-history', response.status, response.body);
+    if (response.status !== 200) {
+      throw toApiClientError('/api/v1/finance/gold-price-history', response.status, response.body);
+    }
+
+    return {
+      success: true,
+      data: financeGoldPriceHistorySchema.parse(response.body.data),
+      ...(response.body.meta ? { meta: response.body.meta } : {}),
+    };
+  } catch (error) {
+    if (!isFinanceDegradedReadError(error)) {
+      throw error;
+    }
+    return {
+      success: true,
+      data: financeGoldPriceHistorySchema.parse({}),
+    };
   }
-
-  return {
-    success: true,
-    data: financeGoldPriceHistorySchema.parse(response.body.data),
-    ...(response.body.meta ? { meta: response.body.meta } : {}),
-  };
 }

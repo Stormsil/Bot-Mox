@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { buildBanPayload, buildTransitionPayload, buildUnbanPayload } from './bots.lifecycle';
 import { BotsRepository } from './bots.repository';
 import type {
@@ -13,7 +14,6 @@ import type {
 import {
   createDefaultLifecycle,
   makeId,
-  mapDbRow,
   normalizeSearchValue,
   normalizeTenantId,
 } from './bots.utils';
@@ -24,7 +24,31 @@ export class BotsServiceValidationError extends Error {}
 
 @Injectable()
 export class BotsService {
+  private readonly atRestCrypto = new DataAtRestCrypto();
+
   constructor(private readonly repository: BotsRepository) {}
+
+  private mapDbRow(row: Record<string, unknown>): BotRecord {
+    const id = String(row.id || '').trim();
+    const payload = row.payload;
+    if (payload && typeof payload === 'object') {
+      const wrapped = (payload as Record<string, unknown>).__enc_payload_v1;
+      const decryptedPayload =
+        wrapped !== undefined ? this.atRestCrypto.decryptJson<BotRecord>(wrapped) : null;
+      const materialized =
+        decryptedPayload && typeof decryptedPayload === 'object'
+          ? decryptedPayload
+          : (payload as BotRecord);
+      return { ...materialized, ...(id ? { id } : {}) };
+    }
+    return id ? { id } : {};
+  }
+
+  private encryptBotPayload(input: BotRecord): BotRecord {
+    return {
+      __enc_payload_v1: this.atRestCrypto.encryptJson(input),
+    };
+  }
 
   async list(query: BotsListQuery, tenantId: string): Promise<BotsListResult> {
     const normalizedTenantId = normalizeTenantId(tenantId);
@@ -38,7 +62,7 @@ export class BotsService {
 
     let data: BotRecord[] = [];
     const rows = await this.repository.list(normalizedTenantId);
-    data = rows.map((row) => mapDbRow(row));
+    data = rows.map((row) => this.mapDbRow(row));
 
     if (q) {
       data = data.filter((item) =>
@@ -74,7 +98,7 @@ export class BotsService {
   async getById(id: string, tenantId: string): Promise<BotRecord | null> {
     const normalizedTenantId = normalizeTenantId(tenantId);
     const row = await this.repository.findById(normalizedTenantId, id);
-    return row ? mapDbRow(row) : null;
+    return row ? this.mapDbRow(row) : null;
   }
 
   async create(
@@ -96,15 +120,15 @@ export class BotsService {
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: nextRecord as Prisma.InputJsonValue,
+      payload: this.encryptBotPayload(nextRecord) as Prisma.InputJsonValue,
     });
-    return mapDbRow(row);
+    return this.mapDbRow(row);
   }
 
   async patch(id: string, payload: BotRecord, tenantId: string): Promise<BotRecord | null> {
     const normalizedTenantId = normalizeTenantId(tenantId);
     const row = await this.repository.findById(normalizedTenantId, id);
-    const current = row ? mapDbRow(row) : null;
+    const current = row ? this.mapDbRow(row) : null;
     if (!current) return null;
 
     const next = {
@@ -116,9 +140,9 @@ export class BotsService {
     const updatedRow = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: next as Prisma.InputJsonValue,
+      payload: this.encryptBotPayload(next) as Prisma.InputJsonValue,
     });
-    return mapDbRow(updatedRow);
+    return this.mapDbRow(updatedRow);
   }
 
   async remove(id: string, tenantId: string): Promise<boolean> {
@@ -173,9 +197,9 @@ export class BotsService {
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: updated as unknown as Prisma.InputJsonValue,
+      payload: this.encryptBotPayload(updated) as unknown as Prisma.InputJsonValue,
     });
-    return mapDbRow(row);
+    return this.mapDbRow(row);
   }
 
   async ban(
@@ -192,9 +216,9 @@ export class BotsService {
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: updated as unknown as Prisma.InputJsonValue,
+      payload: this.encryptBotPayload(updated) as unknown as Prisma.InputJsonValue,
     });
-    return mapDbRow(row);
+    return this.mapDbRow(row);
   }
 
   async unban(id: string, tenantId: string): Promise<BotRecord | null> {
@@ -213,8 +237,8 @@ export class BotsService {
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: updated as unknown as Prisma.InputJsonValue,
+      payload: this.encryptBotPayload(updated) as unknown as Prisma.InputJsonValue,
     });
-    return mapDbRow(row);
+    return this.mapDbRow(row);
   }
 }

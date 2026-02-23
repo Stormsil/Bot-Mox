@@ -1,7 +1,12 @@
 import { Module } from '@nestjs/common';
+import { AdminAccessModule } from './admin-access/admin-access.module';
+import { AdminAuditModule } from './admin-audit/admin-audit.module';
+import { AdminDataEncryptionModule } from './admin-data-encryption/admin-data-encryption.module';
+import { AdminProjectsModule } from './admin-projects/admin-projects.module';
 import { AgentsModule } from './agents/agents.module';
 import { ArtifactsModule } from './artifacts/artifacts.module';
 import { AuthModule } from './auth/auth.module';
+import { BillingModule } from './billing/billing.module';
 import { BotsModule } from './bots/bots.module';
 import { DbModule } from './db/db.module';
 import { FinanceModule } from './finance/finance.module';
@@ -29,6 +34,11 @@ import { WowNamesModule } from './wow-names/wow-names.module';
     InfraGatewayModule,
     ObservabilityModule,
     AuthModule,
+    AdminAuditModule,
+    AdminAccessModule,
+    AdminDataEncryptionModule,
+    BillingModule,
+    AdminProjectsModule,
     ArtifactsModule,
     InfraModule,
     BotsModule,

@@ -112,7 +112,12 @@ export const ResourceTree: React.FC = () => {
   }, [resourceTreeSettingsQuery.error]);
 
   const treeData = useMemo(
-    () => buildUnifiedTreeData({ bots, projectsMeta, visibleStatuses }),
+    () =>
+      buildUnifiedTreeData({
+        bots,
+        projectsMeta,
+        visibleStatuses,
+      }),
     [bots, projectsMeta, visibleStatuses],
   );
 

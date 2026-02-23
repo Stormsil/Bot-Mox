@@ -19,14 +19,53 @@ const reportRelPath = path.join(
 );
 const reportAbsPath = path.join(repoRoot, reportRelPath);
 
+function hydrateEnvFromProdSimFile() {
+  const candidates = [
+    path.join(repoRoot, 'deploy', 'compose.prod-sim.env'),
+    path.join(repoRoot, 'deploy', 'compose.prod-sim.env.example'),
+  ];
+  const existingFiles = candidates.filter((candidate) => fs.existsSync(candidate));
+  if (existingFiles.length === 0) {
+    return;
+  }
+
+  for (const envFilePath of existingFiles) {
+    const lines = fs.readFileSync(envFilePath, 'utf8').split(/\r?\n/);
+    for (const rawLine of lines) {
+      const line = String(rawLine || '').trim();
+      if (!line || line.startsWith('#')) {
+        continue;
+      }
+      const idx = line.indexOf('=');
+      if (idx <= 0) {
+        continue;
+      }
+      const key = line.slice(0, idx).trim();
+      const value = line.slice(idx + 1).trim();
+      if (!key) {
+        continue;
+      }
+      if (String(process.env[key] || '').trim().length === 0) {
+        process.env[key] = value;
+      }
+    }
+  }
+}
+
+hydrateEnvFromProdSimFile();
+
 const authMode = String(process.env.AUTH_MODE || '').trim() || '(unset)';
 const agentTransport = String(process.env.AGENT_TRANSPORT || '').trim() || '(unset)';
 const vaultMode = String(process.env.SECRETS_VAULT_MODE || '').trim() || '(unset)';
 
-function runCommand(command, commandArgs) {
+function runCommand(command, commandArgs, extraEnv) {
   const commandLine = `${command} ${commandArgs.join(' ')}`;
   const result = spawnSync(commandLine, {
     cwd: repoRoot,
+    env: {
+      ...process.env,
+      ...(extraEnv || {}),
+    },
     shell: true,
     stdio: 'pipe',
     encoding: 'utf8',
@@ -38,6 +77,13 @@ function runCommand(command, commandArgs) {
     stdout: String(result.stdout || '').trim(),
     stderr: String(result.stderr || '').trim(),
   };
+}
+
+function hasAdminSmokeEnv() {
+  const adminToken = String(process.env.ADMIN_BEARER_TOKEN || '').trim();
+  const adminEmail = String(process.env.BOTMOX_ADMIN_EMAIL || '').trim();
+  const adminPassword = String(process.env.BOTMOX_ADMIN_PASSWORD || '').trim();
+  return Boolean(adminToken || (adminEmail && adminPassword));
 }
 
 function summarizeChecks(commandResults) {
@@ -92,10 +138,84 @@ function updateLastUpdated(source) {
 
 const commandResults = [];
 if (withChecks) {
+  commandResults.push(runCommand('pnpm', ['run', 'migration:check:strict']));
   commandResults.push(runCommand('pnpm', ['run', 'docs:check']));
+  commandResults.push(runCommand('pnpm', ['run', 'check:admin:surface-isolation']));
+  commandResults.push(runCommand('pnpm', ['run', 'smoke:admin-origin:e2e']));
+  commandResults.push(runCommand('pnpm', ['run', 'smoke:admin-rbac:e2e']));
+  commandResults.push(runCommand('pnpm', ['run', 'smoke:tenant-isolation:e2e']));
+  commandResults.push(runCommand('pnpm', ['run', 'smoke:agents-tenant-isolation:e2e']));
+  commandResults.push(runCommand('pnpm', ['run', 'check:db:rls']));
   commandResults.push(runCommand('pnpm', ['run', 'backend:test']));
   commandResults.push(runCommand('pnpm', ['run', 'agent:test']));
   commandResults.push(runCommand('pnpm', ['run', 'check:infra:gateway']));
+  if (hasAdminSmokeEnv()) {
+    commandResults.push(runCommand('pnpm', ['run', 'smoke:admin-projects:e2e']));
+    commandResults.push(runCommand('pnpm', ['run', 'smoke:billing-admin:e2e']));
+    commandResults.push(runCommand('pnpm', ['run', 'smoke:data-encryption:e2e']));
+    commandResults.push(
+      runCommand('pnpm', ['run', 'hardening:data:record:strict'], {
+        DATA_ENCRYPTION_ROTATE_DRY_RUN: 'true',
+        DATA_ENCRYPTION_ROTATE_REASON: 'hardening_smoke_window_check',
+      }),
+    );
+    commandResults.push(
+      runCommand('pnpm', ['run', 'hardening:secrets:record:strict'], {
+        SECRETS_ROTATE_DRY_RUN: 'true',
+        SECRETS_ROTATE_REASON: 'hardening_smoke_window_check',
+      }),
+    );
+    commandResults.push(runCommand('pnpm', ['run', 'hardening:runtime:record:strict']));
+  } else {
+    commandResults.push({
+      command:
+        'pnpm run smoke:admin-projects:e2e (skipped: set ADMIN_BEARER_TOKEN or BOTMOX_ADMIN_EMAIL+BOTMOX_ADMIN_PASSWORD)',
+      ok: true,
+      status: 0,
+      stdout: '',
+      stderr: '',
+    });
+    commandResults.push({
+      command:
+        'pnpm run smoke:billing-admin:e2e (skipped: set ADMIN_BEARER_TOKEN or BOTMOX_ADMIN_EMAIL+BOTMOX_ADMIN_PASSWORD)',
+      ok: true,
+      status: 0,
+      stdout: '',
+      stderr: '',
+    });
+    commandResults.push({
+      command:
+        'pnpm run smoke:data-encryption:e2e (skipped: set ADMIN_BEARER_TOKEN or BOTMOX_ADMIN_EMAIL+BOTMOX_ADMIN_PASSWORD)',
+      ok: true,
+      status: 0,
+      stdout: '',
+      stderr: '',
+    });
+    commandResults.push({
+      command:
+        'pnpm run hardening:data:record:strict (skipped: set ADMIN_BEARER_TOKEN or BOTMOX_ADMIN_EMAIL+BOTMOX_ADMIN_PASSWORD)',
+      ok: true,
+      status: 0,
+      stdout: '',
+      stderr: '',
+    });
+    commandResults.push({
+      command:
+        'pnpm run hardening:secrets:record:strict (skipped: set ADMIN_BEARER_TOKEN or BOTMOX_ADMIN_EMAIL+BOTMOX_ADMIN_PASSWORD)',
+      ok: true,
+      status: 0,
+      stdout: '',
+      stderr: '',
+    });
+    commandResults.push({
+      command:
+        'pnpm run hardening:runtime:record:strict (skipped: set ADMIN_BEARER_TOKEN or BOTMOX_ADMIN_EMAIL+BOTMOX_ADMIN_PASSWORD)',
+      ok: true,
+      status: 0,
+      stdout: '',
+      stderr: '',
+    });
+  }
 }
 
 const checksSummary = summarizeChecks(commandResults);

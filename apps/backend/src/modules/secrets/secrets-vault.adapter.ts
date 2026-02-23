@@ -31,6 +31,9 @@ export class SecretsVaultAdapter {
     process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   ).trim();
   private readonly vaultRpcName = String(process.env.SUPABASE_VAULT_RPC_NAME || '').trim();
+  private readonly vaultRotateRpcName = String(
+    process.env.SUPABASE_VAULT_ROTATE_RPC_NAME || '',
+  ).trim();
 
   async storeMaterial(input: StoreSecretMaterialInput): Promise<StoreSecretMaterialResult> {
     return this.upsertMaterial(input, 1);
@@ -38,6 +41,60 @@ export class SecretsVaultAdapter {
 
   async rotateMaterial(input: StoreSecretMaterialInput): Promise<StoreSecretMaterialResult> {
     return this.upsertMaterial(input, 2);
+  }
+
+  async rotateStoredMaterial(input: {
+    tenantId: string;
+    secretId: string;
+    vaultRef: string;
+    keyId: string;
+    alg: string;
+  }): Promise<StoreSecretMaterialResult> {
+    if (!this.supabaseUrl || !this.supabaseServiceRoleKey || !this.vaultRotateRpcName) {
+      throw new Error(
+        'Supabase Vault rotate configuration missing (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_VAULT_ROTATE_RPC_NAME)',
+      );
+    }
+
+    const response = await fetch(
+      `${this.supabaseUrl.replace(/\/+$/, '')}/rest/v1/rpc/${this.vaultRotateRpcName}`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: this.supabaseServiceRoleKey,
+          authorization: `Bearer ${this.supabaseServiceRoleKey}`,
+          'content-type': 'application/json',
+          prefer: 'return=representation',
+        },
+        body: JSON.stringify({
+          p_tenant_id: input.tenantId,
+          p_secret_id: input.secretId,
+          p_vault_ref: input.vaultRef,
+          p_key_id: input.keyId,
+          p_alg: input.alg,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Supabase vault rotate RPC failed: HTTP ${response.status}`);
+    }
+
+    const payload = (await response.json()) as RpcStoreResponse;
+    if (!payload || typeof payload !== 'object') {
+      throw new Error('Supabase vault rotate RPC returned invalid payload');
+    }
+
+    const vaultRef = String(payload.vault_ref || '').trim();
+    if (!vaultRef) {
+      throw new Error('Supabase vault rotate RPC did not return vault_ref');
+    }
+
+    const version = Number(payload.material_version || 1);
+    return {
+      vaultRef,
+      materialVersion: Number.isFinite(version) && version > 0 ? Math.trunc(version) : 1,
+    };
   }
 
   private async upsertMaterial(

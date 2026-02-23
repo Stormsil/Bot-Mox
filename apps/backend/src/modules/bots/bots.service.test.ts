@@ -3,6 +3,7 @@ export {};
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { BotsService } = require('./bots.service.ts');
+const { DataAtRestCrypto } = require('../common/data-at-rest-crypto.ts');
 
 type RepositoryStub = {
   list: (...args: unknown[]) => Promise<Array<Record<string, unknown>>>;
@@ -77,4 +78,60 @@ test('BotsService CRUD/list use repository only', async () => {
   assert.equal(fetched?.id, 'b-1');
   const removed = await service.remove('b-1', 'tenant-a');
   assert.equal(removed, true);
+});
+
+test('BotsService stores encrypted payload and returns decrypted shape', async () => {
+  const crypto = new DataAtRestCrypto();
+  let persistedRow: Record<string, unknown> | null = null;
+
+  const repositoryStub: RepositoryStub = {
+    list: async () => [],
+    findById: async () => null,
+    upsert: async (input: unknown) => {
+      const typed = input as { id: string; payload: Record<string, unknown> };
+      persistedRow = {
+        id: typed.id,
+        payload: typed.payload,
+      };
+      return persistedRow;
+    },
+    delete: async () => false,
+  };
+
+  const service = createService(repositoryStub);
+  const created = await service.create({ status: 'offline', name: 'bot enc' }, 'b-enc', 'tenant-a');
+
+  assert.equal(created.id, 'b-enc');
+  assert.equal(created.name, 'bot enc');
+  assert.ok(persistedRow);
+
+  const persisted = persistedRow as unknown as Record<string, unknown>;
+  const envelope = persisted.payload as Record<string, unknown>;
+  assert.ok(envelope.__enc_payload_v1);
+  const decrypted = crypto.decryptJson(envelope.__enc_payload_v1) as Record<string, unknown>;
+  assert.equal(decrypted.name, 'bot enc');
+  assert.equal(decrypted.id, 'b-enc');
+});
+
+test('BotsService keeps legacy plaintext payload compatible', async () => {
+  const repositoryStub: RepositoryStub = {
+    list: async () => [],
+    findById: async () => ({
+      id: 'b-legacy',
+      payload: {
+        id: 'b-legacy',
+        name: 'legacy bot',
+        status: 'offline',
+      },
+    }),
+    upsert: async () => {
+      throw new Error('should_not_upsert');
+    },
+    delete: async () => false,
+  };
+
+  const service = createService(repositoryStub);
+  const item = await service.getById('b-legacy', 'tenant-a');
+  assert.equal(item?.id, 'b-legacy');
+  assert.equal(item?.name, 'legacy bot');
 });

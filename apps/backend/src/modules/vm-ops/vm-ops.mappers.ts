@@ -17,6 +17,22 @@ interface VmCommandDbRow {
   createdBy: string | null;
 }
 
+function toIsoOrFallback(
+  value: Date | string | null | undefined,
+  fallback: string | null = null,
+): string | null {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (typeof value === 'string') {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString();
+    }
+  }
+  return fallback;
+}
+
 export function nowIso(): string {
   return new Date().toISOString();
 }
@@ -45,10 +61,10 @@ export function mapDbCommand(command: VmCommandDbRow): VmCommandRecord {
         ? (command.payload as Record<string, unknown>)
         : {},
     status: command.status as VmCommandStatus,
-    queued_at: command.queuedAt.toISOString(),
-    expires_at: command.expiresAt ? command.expiresAt.toISOString() : null,
-    started_at: command.startedAt ? command.startedAt.toISOString() : null,
-    completed_at: command.completedAt ? command.completedAt.toISOString() : null,
+    queued_at: toIsoOrFallback(command.queuedAt, nowIso()) as string,
+    expires_at: toIsoOrFallback(command.expiresAt),
+    started_at: toIsoOrFallback(command.startedAt),
+    completed_at: toIsoOrFallback(command.completedAt),
     result: command.result ?? null,
     error_message: command.errorMessage,
     created_by: command.createdBy,

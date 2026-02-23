@@ -29,16 +29,18 @@ test('SettingsService requires tenantId', async () => {
 
 test('SettingsService uses repository storage for proxy settings', async () => {
   const records = new Map<string, Record<string, unknown>>();
+  const dbRows = new Map<string, Record<string, unknown>>();
   const repositoryStub: RepositoryStub = {
     findByPath: async (tenantId: unknown, path: unknown) => {
       const key = `${String(tenantId)}:${String(path)}`;
-      const payload = records.get(key);
-      return payload ? { payload } : null;
+      return dbRows.get(key) ?? null;
     },
     upsert: async (input: unknown) => {
       const typed = input as { tenantId: string; path: string; payload: Record<string, unknown> };
       records.set(`${typed.tenantId}:${typed.path}`, typed.payload);
-      return { payload: typed.payload };
+      const row = { payload: typed.payload };
+      dbRows.set(`${typed.tenantId}:${typed.path}`, row);
+      return row;
     },
   };
   const service = createService(repositoryStub);
@@ -48,6 +50,49 @@ test('SettingsService uses repository storage for proxy settings', async () => {
   assert.equal(tenantB.host, 'proxy-b.local');
   assert.equal((await service.getProxy('tenant-a'))?.host, 'proxy-a.local');
   assert.equal((await service.getProxy('tenant-b'))?.host, 'proxy-b.local');
+});
+
+test('SettingsService stores encrypted payload and returns decrypted settings', async () => {
+  let lastPayload: Record<string, unknown> | null = null;
+  const dbRows = new Map<string, Record<string, unknown>>();
+  const repositoryStub: RepositoryStub = {
+    findByPath: async (tenantId: unknown, path: unknown) =>
+      dbRows.get(`${String(tenantId)}:${String(path)}`) ?? null,
+    upsert: async (input: unknown) => {
+      const typed = input as { tenantId: string; path: string; payload: Record<string, unknown> };
+      lastPayload = typed.payload;
+      const row = { payload: typed.payload };
+      dbRows.set(`${typed.tenantId}:${typed.path}`, row);
+      return row;
+    },
+  };
+  const service = createService(repositoryStub);
+
+  const updated = await service.updateApiKeys({ openai_api_key: 'super-secret' }, 'tenant-a');
+  assert.equal(updated.openai_api_key, 'super-secret');
+  assert.ok(lastPayload && Object.hasOwn(lastPayload, '__enc_payload_v1'));
+  assert.equal(Object.hasOwn(lastPayload || {}, 'openai_api_key'), false);
+
+  const read = await service.getApiKeys('tenant-a');
+  assert.equal(read?.openai_api_key, 'super-secret');
+});
+
+test('SettingsService keeps legacy plaintext payload compatible', async () => {
+  const repositoryStub: RepositoryStub = {
+    findByPath: async (_tenantId: unknown, path: unknown) => {
+      if (String(path) === 'settings/api_keys') {
+        return { payload: { openai_api_key: 'legacy-key' } };
+      }
+      return null;
+    },
+    upsert: async (input: unknown) => {
+      const typed = input as { payload: Record<string, unknown> };
+      return { payload: typed.payload };
+    },
+  };
+  const service = createService(repositoryStub);
+  const read = await service.getApiKeys('tenant-a');
+  assert.equal(read?.openai_api_key, 'legacy-key');
 });
 
 test('SettingsService uses repository read paths', async () => {

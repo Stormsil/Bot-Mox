@@ -37,14 +37,31 @@ export async function testProxmoxConnection(): Promise<boolean> {
 
 export async function getProxmoxConnectionSnapshot(): Promise<ProxmoxConnectionSnapshot> {
   try {
-    const result = await executeVmOps<{ connected?: boolean }>({
+    const result = await executeVmOps<{
+      connected?: boolean;
+      proxmoxConnected?: boolean;
+      agent_online?: boolean;
+      agentOnline?: boolean;
+    }>({
       type: 'proxmox',
       action: 'status',
       timeoutMs: 15_000,
     });
+    const explicitAgentOnline =
+      typeof result?.agent_online === 'boolean'
+        ? result.agent_online
+        : typeof result?.agentOnline === 'boolean'
+          ? result.agentOnline
+          : null;
+    const proxmoxConnected =
+      typeof result?.connected === 'boolean'
+        ? result.connected
+        : typeof result?.proxmoxConnected === 'boolean'
+          ? result.proxmoxConnected
+          : false;
     return {
-      agentOnline: true,
-      proxmoxConnected: Boolean(result?.connected),
+      agentOnline: explicitAgentOnline ?? true,
+      proxmoxConnected,
     };
   } catch (error) {
     if (

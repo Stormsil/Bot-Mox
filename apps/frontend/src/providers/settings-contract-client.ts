@@ -54,18 +54,35 @@ function toApiClientError(path: string, status: number, body: unknown): ApiClien
   });
 }
 
-export async function getApiKeysViaContract(): Promise<ApiSuccessEnvelope<Partial<ApiKeys>>> {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
-  const response = await client.settingsApiKeysGet({
-    headers: { authorization },
-  });
-
-  if (response.status !== 200) {
-    throw toApiClientError('/api/v1/settings/api_keys', response.status, response.body);
+function isExpectedSettingsReadDegradedError(error: unknown): error is ApiClientError {
+  if (!(error instanceof ApiClientError)) {
+    return false;
   }
+  const code = String(error.code || '').trim();
+  return (
+    error.status === 502 || code === 'AGENTS_STORAGE_UNAVAILABLE' || code === 'VM_OPS_UNAVAILABLE'
+  );
+}
 
-  return response.body as ApiSuccessEnvelope<Partial<ApiKeys>>;
+export async function getApiKeysViaContract(): Promise<ApiSuccessEnvelope<Partial<ApiKeys>>> {
+  try {
+    const client = createRuntimeClient();
+    const authorization = resolveAuthorizationHeader();
+    const response = await client.settingsApiKeysGet({
+      headers: { authorization },
+    });
+
+    if (response.status !== 200) {
+      throw toApiClientError('/api/v1/settings/api_keys', response.status, response.body);
+    }
+
+    return response.body as ApiSuccessEnvelope<Partial<ApiKeys>>;
+  } catch (error) {
+    if (isExpectedSettingsReadDegradedError(error)) {
+      return { success: true, data: {} };
+    }
+    throw error;
+  }
 }
 
 export async function putApiKeysViaContract(
@@ -88,17 +105,24 @@ export async function putApiKeysViaContract(
 export async function getProxySettingsViaContract(): Promise<
   ApiSuccessEnvelope<Partial<ProxySettings>>
 > {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
-  const response = await client.settingsProxyGet({
-    headers: { authorization },
-  });
+  try {
+    const client = createRuntimeClient();
+    const authorization = resolveAuthorizationHeader();
+    const response = await client.settingsProxyGet({
+      headers: { authorization },
+    });
 
-  if (response.status !== 200) {
-    throw toApiClientError('/api/v1/settings/proxy', response.status, response.body);
+    if (response.status !== 200) {
+      throw toApiClientError('/api/v1/settings/proxy', response.status, response.body);
+    }
+
+    return response.body as ApiSuccessEnvelope<Partial<ProxySettings>>;
+  } catch (error) {
+    if (isExpectedSettingsReadDegradedError(error)) {
+      return { success: true, data: {} };
+    }
+    throw error;
   }
-
-  return response.body as ApiSuccessEnvelope<Partial<ProxySettings>>;
 }
 
 export async function putProxySettingsViaContract(
@@ -121,17 +145,28 @@ export async function putProxySettingsViaContract(
 export async function getNotificationEventsViaContract(): Promise<
   ApiSuccessEnvelope<Partial<NotificationEvents>>
 > {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
-  const response = await client.settingsNotificationEventsGet({
-    headers: { authorization },
-  });
+  try {
+    const client = createRuntimeClient();
+    const authorization = resolveAuthorizationHeader();
+    const response = await client.settingsNotificationEventsGet({
+      headers: { authorization },
+    });
 
-  if (response.status !== 200) {
-    throw toApiClientError('/api/v1/settings/notifications/events', response.status, response.body);
+    if (response.status !== 200) {
+      throw toApiClientError(
+        '/api/v1/settings/notifications/events',
+        response.status,
+        response.body,
+      );
+    }
+
+    return response.body as ApiSuccessEnvelope<Partial<NotificationEvents>>;
+  } catch (error) {
+    if (isExpectedSettingsReadDegradedError(error)) {
+      return { success: true, data: {} };
+    }
+    throw error;
   }
-
-  return response.body as ApiSuccessEnvelope<Partial<NotificationEvents>>;
 }
 
 export async function putNotificationEventsViaContract(

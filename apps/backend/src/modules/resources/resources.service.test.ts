@@ -44,24 +44,24 @@ test('ResourcesService fails fast on repository list error', async () => {
 
 test('ResourcesService create/get/update/remove use repository only', async () => {
   const records = new Map<string, Record<string, unknown>>();
+  const dbRows = new Map<string, Record<string, unknown>>();
   const repository: RepositoryStub = {
-    list: async () => [...records.values()].map((record) => ({ id: record.id, payload: record })),
+    list: async () => [...dbRows.values()],
     findById: async (_tenantId: unknown, _kind: unknown, id: unknown) => {
       const key = String(id);
-      const record = records.get(key);
-      if (!record) {
-        return null;
-      }
-      return { id: key, payload: record };
+      return dbRows.get(key) ?? null;
     },
     upsert: async (input: unknown) => {
       const typed = input as { id: string; payload: Record<string, unknown> };
       records.set(typed.id, typed.payload);
-      return { id: typed.id, payload: typed.payload };
+      const row = { id: typed.id, payload: typed.payload };
+      dbRows.set(typed.id, row);
+      return row;
     },
     delete: async (_tenantId: unknown, _kind: unknown, id: unknown) => {
       const key = String(id);
-      const existed = records.has(key);
+      const existed = dbRows.has(key);
+      dbRows.delete(key);
       records.delete(key);
       return existed;
     },
@@ -93,4 +93,36 @@ test('ResourcesService create/get/update/remove use repository only', async () =
 
   const deleted = await service.remove('licenses', 'lic-1', 'tenant-a');
   assert.equal(deleted, true);
+});
+
+test('ResourcesService stores encrypted payload and returns decrypted shape', async () => {
+  let lastUpsertPayload: Record<string, unknown> | null = null;
+  const dbRows = new Map<string, Record<string, unknown>>();
+  const repository: RepositoryStub = {
+    list: async () => [...dbRows.values()],
+    findById: async (_tenantId: unknown, _kind: unknown, id: unknown) =>
+      dbRows.get(String(id)) ?? null,
+    upsert: async (input: unknown) => {
+      const typed = input as { id: string; payload: Record<string, unknown> };
+      lastUpsertPayload = typed.payload;
+      const row = { id: typed.id, payload: typed.payload };
+      dbRows.set(typed.id, row);
+      return row;
+    },
+    delete: async () => false,
+  };
+  const service = createService(repository);
+  const created = await service.create(
+    'subscriptions',
+    { id: 'sub-1', email: 'user@local', token: 'top-secret' },
+    undefined,
+    'tenant-a',
+  );
+  assert.equal(created.id, 'sub-1');
+  assert.equal(created.token, 'top-secret');
+  assert.ok(lastUpsertPayload && Object.hasOwn(lastUpsertPayload, '__enc_payload_v1'));
+  assert.equal(Object.hasOwn(lastUpsertPayload || {}, 'token'), false);
+
+  const listed = await service.list('subscriptions', {}, 'tenant-a');
+  assert.equal(listed.items[0].token, 'top-secret');
 });

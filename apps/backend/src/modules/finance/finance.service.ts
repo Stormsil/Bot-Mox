@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { FinanceRepository } from './finance.repository';
 
 type FinanceOperationRecord = Record<string, unknown>;
@@ -21,6 +22,8 @@ export interface FinanceListResult {
 
 @Injectable()
 export class FinanceService {
+  private readonly atRestCrypto = new DataAtRestCrypto();
+
   constructor(private readonly repository: FinanceRepository) {}
 
   private normalizeTenantId(tenantId: string): string {
@@ -113,9 +116,24 @@ export class FinanceService {
     const id = String(row.id || '').trim();
     const payload = row.payload;
     if (payload && typeof payload === 'object') {
-      return { ...(payload as FinanceOperationRecord), ...(id ? { id } : {}) };
+      const wrapped = (payload as FinanceOperationRecord).__enc_payload_v1;
+      const decryptedPayload =
+        wrapped !== undefined
+          ? this.atRestCrypto.decryptJson<FinanceOperationRecord>(wrapped)
+          : null;
+      const materialized =
+        decryptedPayload && typeof decryptedPayload === 'object'
+          ? decryptedPayload
+          : (payload as FinanceOperationRecord);
+      return { ...materialized, ...(id ? { id } : {}) };
     }
     return id ? { id } : {};
+  }
+
+  private encryptFinancePayload(input: FinanceOperationRecord): FinanceOperationRecord {
+    return {
+      __enc_payload_v1: this.atRestCrypto.encryptJson(input),
+    };
   }
 
   async list(query: FinanceListQuery, tenantId: string): Promise<FinanceListResult> {
@@ -150,10 +168,11 @@ export class FinanceService {
       created_at: payload.created_at ?? now,
       updated_at: now,
     };
+    const storedRecord = this.encryptFinancePayload(nextRecord as FinanceOperationRecord);
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: nextRecord as Prisma.InputJsonValue,
+      payload: storedRecord as Prisma.InputJsonValue,
     });
     return this.mapDbRow(row);
   }
@@ -177,10 +196,11 @@ export class FinanceService {
       id,
       updated_at: Date.now(),
     };
+    const storedRecord = this.encryptFinancePayload(nextRecord as FinanceOperationRecord);
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: nextRecord as Prisma.InputJsonValue,
+      payload: storedRecord as Prisma.InputJsonValue,
     });
     return this.mapDbRow(row);
   }

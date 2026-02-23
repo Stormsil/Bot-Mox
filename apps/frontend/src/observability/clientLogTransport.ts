@@ -28,12 +28,18 @@ function getEndpoint(): string {
 }
 
 async function postBatch(events: UiLogEvent[], attempt = 0): Promise<boolean> {
+  const headers = withAuthHeaders({
+    'Content-Type': 'application/json',
+  });
+
+  if (!headers.has('Authorization')) {
+    return true;
+  }
+
   try {
     const response = await fetch(getEndpoint(), {
       method: 'POST',
-      headers: withAuthHeaders({
-        'Content-Type': 'application/json',
-      }),
+      headers,
       body: JSON.stringify({ events }),
       keepalive: true,
     });
@@ -43,7 +49,8 @@ async function postBatch(events: UiLogEvent[], attempt = 0): Promise<boolean> {
     }
 
     if (response.status >= 400 && response.status < 500) {
-      return false;
+      // Permanent client-side auth/validation failure: drop this batch to avoid infinite retry loops.
+      return true;
     }
   } catch {
     // Retry below.

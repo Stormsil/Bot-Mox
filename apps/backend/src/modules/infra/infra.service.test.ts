@@ -60,3 +60,33 @@ test('InfraService uses repository paths and fails hard on repository errors', a
   });
   await assert.rejects(() => failing.readVmConfig('tenant-a', '100'), /db unavailable/);
 });
+
+test('InfraService stores encrypted vm config content at rest', async () => {
+  let storedContent: string | null = null;
+  const service = createService({
+    upsertVmConfig: async (_tenantId: string, _vmid: string, content: string) => {
+      storedContent = content;
+    },
+    findVmConfig: async () => storedContent,
+  });
+
+  await service.writeVmConfig('tenant-a', {
+    vmid: '101',
+    content: 'name: vm-secret\nmemory: 2048\n',
+  });
+  assert.equal(typeof storedContent, 'string');
+  assert.match(String(storedContent), /__enc_v1/);
+  assert.doesNotMatch(String(storedContent), /vm-secret/);
+
+  const loaded = await service.readVmConfig('tenant-a', '101');
+  assert.match(loaded.config, /vm-secret/);
+});
+
+test('InfraService reads legacy plaintext vm config content', async () => {
+  const service = createService({
+    findVmConfig: async () => 'name: vm-legacy\nmemory: 1024\n',
+  });
+
+  const loaded = await service.readVmConfig('tenant-a', '102');
+  assert.match(loaded.config, /vm-legacy/);
+});

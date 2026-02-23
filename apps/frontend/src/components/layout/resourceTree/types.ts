@@ -44,6 +44,7 @@ export interface TreeItem {
     | 'project'
     | 'bot'
     | 'finance'
+    | 'billing'
     | 'archive'
     | 'settings'
     | 'status_group'

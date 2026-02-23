@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
+import { softFailMissingStorageRead } from '../common/prisma-soft-fail';
 import { PrismaService } from '../db/prisma.service';
 import type {
   ProvisioningTokenRecord,
@@ -9,7 +11,29 @@ import type {
 
 @Injectable()
 export class ProvisioningRepository {
+  private readonly atRestCrypto = new DataAtRestCrypto();
+
   constructor(private readonly prisma: PrismaService) {}
+
+  private readAnyEnvelope(payload: Prisma.JsonValue): unknown {
+    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+      const wrapped = (payload as Record<string, unknown>).__enc_payload_v1;
+      return wrapped ?? payload;
+    }
+    return payload;
+  }
+
+  private encryptTokenPayload(payload: ProvisioningTokenRecord): Prisma.InputJsonValue {
+    return {
+      __enc_payload_v1: this.atRestCrypto.encryptJson(payload),
+    } as unknown as Prisma.InputJsonValue;
+  }
+
+  private decryptTokenPayload(payload: Prisma.JsonValue): ProvisioningTokenRecord {
+    const envelope = this.readAnyEnvelope(payload);
+    const decrypted = this.atRestCrypto.decryptJson<ProvisioningTokenRecord>(envelope);
+    return (decrypted ?? payload) as unknown as ProvisioningTokenRecord;
+  }
 
   private getProfileClient(): {
     findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
@@ -50,25 +74,25 @@ export class ProvisioningRepository {
   }
 
   async listProfiles(tenantId: string): Promise<UnattendProfileRecord[]> {
-    const rows = await this.getProfileClient().findMany({
+    const rows = await softFailMissingStorageRead(() => this.getProfileClient().findMany({
       where: { tenantId },
       orderBy: { updatedAt: 'desc' },
-    });
+    }), []);
     return rows.map((row) => row.payload as UnattendProfileRecord);
   }
 
   async findProfileById(tenantId: string, id: string): Promise<UnattendProfileRecord | null> {
-    const row = await this.getProfileClient().findFirst({
+    const row = await softFailMissingStorageRead(() => this.getProfileClient().findFirst({
       where: { tenantId, id },
-    });
+    }), null);
     return row ? (row.payload as UnattendProfileRecord) : null;
   }
 
   async upsertProfile(input: {
     tenantId: string;
     id: string;
-    payload: UnattendProfileRecord;
-  }): Promise<UnattendProfileRecord> {
+    payload: Record<string, unknown> | UnattendProfileRecord;
+  }): Promise<Record<string, unknown>> {
     const row = await this.getProfileClient().upsert({
       where: {
         tenantId_id: {
@@ -85,7 +109,7 @@ export class ProvisioningRepository {
         payload: input.payload as unknown as Prisma.InputJsonValue,
       },
     });
-    return row.payload as UnattendProfileRecord;
+    return row.payload as Record<string, unknown>;
   }
 
   async deleteProfile(tenantId: string, id: string): Promise<void> {
@@ -107,24 +131,24 @@ export class ProvisioningRepository {
       create: {
         token: record.token,
         tenantId: record.tenantId,
-        payload: record as unknown as Prisma.InputJsonValue,
+        payload: this.encryptTokenPayload(record),
         expiresAt: new Date(record.expiresAtMs),
       },
       update: {
         tenantId: record.tenantId,
-        payload: record as unknown as Prisma.InputJsonValue,
+        payload: this.encryptTokenPayload(record),
         expiresAt: new Date(record.expiresAtMs),
       },
     });
   }
 
   async findToken(token: string): Promise<ProvisioningTokenRecord | null> {
-    const row = await this.getTokenClient().findFirst({
+    const row = await softFailMissingStorageRead(() => this.getTokenClient().findFirst({
       where: {
         token,
       },
-    });
-    return row ? (row.payload as ProvisioningTokenRecord) : null;
+    }), null);
+    return row ? this.decryptTokenPayload(row.payload as Prisma.JsonValue) : null;
   }
 
   async deleteToken(token: string): Promise<void> {
@@ -139,7 +163,7 @@ export class ProvisioningRepository {
     tenantId: string;
     id: string;
     vmUuid: string;
-    payload: ReportProgressResult;
+    payload: Record<string, unknown> | ReportProgressResult;
   }): Promise<void> {
     await this.getProgressClient().create({
       data: {
@@ -151,8 +175,11 @@ export class ProvisioningRepository {
     });
   }
 
-  async listProgressByVm(tenantId: string, vmUuid: string): Promise<ReportProgressResult[]> {
-    const rows = await this.getProgressClient().findMany({
+  async listProgressByVm(
+    tenantId: string,
+    vmUuid: string,
+  ): Promise<Array<Record<string, unknown>>> {
+    const rows = await softFailMissingStorageRead(() => this.getProgressClient().findMany({
       where: {
         tenantId,
         vmUuid,
@@ -160,7 +187,7 @@ export class ProvisioningRepository {
       orderBy: {
         updatedAt: 'asc',
       },
-    });
-    return rows.map((row) => row.payload as ReportProgressResult);
+    }), []);
+    return rows.map((row) => row.payload as Record<string, unknown>);
   }
 }

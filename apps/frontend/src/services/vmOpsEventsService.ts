@@ -3,6 +3,17 @@ import { authFetch } from './authFetch';
 
 const INITIAL_RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 15_000;
+const ERROR_NOTIFY_DEDUPE_WINDOW_MS = 5_000;
+
+class VmOpsEventsStreamError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'VmOpsEventsStreamError';
+    this.status = status;
+  }
+}
 
 export interface VmOpsCommandEvent {
   event_id: number;
@@ -40,6 +51,8 @@ let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
 let isConnecting = false;
 let lastEventId = 0;
+let lastNotifiedErrorSignature = '';
+let lastNotifiedErrorAtMs = 0;
 
 function normalizeFilter(value?: string): string | undefined {
   const normalized = String(value || '').trim();
@@ -47,6 +60,18 @@ function normalizeFilter(value?: string): string | undefined {
 }
 
 function notifyErrors(error: Error): void {
+  const signature = `${error.name}|${error.message}`;
+  const nowMs = Date.now();
+  if (
+    signature &&
+    signature === lastNotifiedErrorSignature &&
+    nowMs - lastNotifiedErrorAtMs < ERROR_NOTIFY_DEDUPE_WINDOW_MS
+  ) {
+    return;
+  }
+  lastNotifiedErrorSignature = signature;
+  lastNotifiedErrorAtMs = nowMs;
+
   listeners.forEach((listener) => {
     try {
       listener.onError?.(error);
@@ -139,6 +164,19 @@ function clearReconnectTimer(): void {
   }
 }
 
+function shouldReconnectAfterError(error: unknown): boolean {
+  if (!(error instanceof VmOpsEventsStreamError)) {
+    return true;
+  }
+
+  // Permanent auth/config failures should not create infinite reconnect noise.
+  if (error.status === 401 || error.status === 403 || error.status === 404) {
+    return false;
+  }
+
+  return true;
+}
+
 function scheduleReconnect(): void {
   if (listeners.size === 0 || reconnectTimer) {
     return;
@@ -159,6 +197,8 @@ function stopVmOpsEventsConnection(): void {
     streamAbortController.abort();
     streamAbortController = null;
   }
+  lastNotifiedErrorSignature = '';
+  lastNotifiedErrorAtMs = 0;
 }
 
 async function connectVmOpsEventsStream(signal: AbortSignal): Promise<void> {
@@ -172,7 +212,10 @@ async function connectVmOpsEventsStream(signal: AbortSignal): Promise<void> {
   });
 
   if (!response.ok || !response.body) {
-    throw new Error(`VM events stream unavailable (HTTP ${response.status})`);
+    throw new VmOpsEventsStreamError(
+      `VM events stream unavailable (HTTP ${response.status})`,
+      response.status,
+    );
   }
 
   reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
@@ -222,7 +265,9 @@ export async function ensureVmOpsEventsConnection(): Promise<void> {
     if (!controller.signal.aborted) {
       const normalizedError = error instanceof Error ? error : new Error('VM events stream error');
       notifyErrors(normalizedError);
-      scheduleReconnect();
+      if (shouldReconnectAfterError(error)) {
+        scheduleReconnect();
+      }
     }
   } finally {
     if (streamAbortController === controller) {

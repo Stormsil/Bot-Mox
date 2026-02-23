@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { LicenseRepository } from '../license/license.repository';
+import { LicenseRepository } from '../license/license.repository';
 import { ArtifactsRepository } from './artifacts.repository';
 
 export interface ArtifactReleaseCreateInput {
@@ -88,7 +88,7 @@ export class ArtifactsServiceError extends Error {
 export class ArtifactsService {
   constructor(
     private readonly repository: ArtifactsRepository,
-    private readonly licenseRepository: Pick<LicenseRepository, 'findActiveByToken'>,
+    private readonly licenseRepository: LicenseRepository,
   ) {}
 
   private normalizeTenantId(tenantId: string | undefined): string {

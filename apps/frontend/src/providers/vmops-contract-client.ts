@@ -62,9 +62,20 @@ function toApiClientError(path: string, status: number, body: unknown): ApiClien
       ? (envelope.error as { code?: unknown; message?: unknown; details?: unknown })
       : {};
 
-  return new ApiClientError(String(payload.message || `Contract request failed: ${path}`), {
+  const code = String(payload.code || 'API_CONTRACT_ERROR');
+  const rawMessage = String(payload.message || '').trim();
+  const normalizedMessage =
+    code === 'AGENTS_STORAGE_UNAVAILABLE'
+      ? 'Agent pairing storage is not ready yet. Retry after backend startup completes.'
+      : code === 'VM_OPS_UNAVAILABLE'
+        ? 'VM operations storage is not ready yet. Retry after backend startup completes.'
+        : code === 'AGENT_OFFLINE'
+          ? 'Agent is offline or not paired yet.'
+          : rawMessage || `Contract request failed: ${path}`;
+
+  return new ApiClientError(normalizedMessage, {
     status,
-    code: String(payload.code || 'API_CONTRACT_ERROR'),
+    code,
     details: payload.details ?? body,
   });
 }

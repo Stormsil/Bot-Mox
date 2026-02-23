@@ -1,0 +1,14 @@
+.root {
+  padding: 20px;
+}
+
+.card {
+  max-width: 760px;
+  border-radius: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

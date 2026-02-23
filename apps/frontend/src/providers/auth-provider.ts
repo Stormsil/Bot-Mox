@@ -13,6 +13,16 @@ interface StoredIdentity {
   name: string;
   email: string;
   roles?: string[];
+  access?: {
+    tenant_type?: 'user';
+    access_tier?: 'free' | 'trial' | 'premium' | 'admin';
+    premium_active?: boolean;
+    write_access?: boolean;
+    lifetime_premium?: boolean;
+    trial_used?: boolean;
+    trial_ends_at?: string | null;
+    premium_until?: string | null;
+  };
 }
 
 function saveSession(token: string, identity: StoredIdentity): void {
@@ -54,6 +64,16 @@ async function verifyTokenWithBackend(token: string): Promise<StoredIdentity | n
         uid?: unknown;
         email?: unknown;
         roles?: unknown;
+        access?: {
+          tenantType?: unknown;
+          accessTier?: unknown;
+          premiumActive?: unknown;
+          writeAccess?: unknown;
+          lifetimePremium?: unknown;
+          trialUsed?: unknown;
+          trialEndsAt?: unknown;
+          premiumUntil?: unknown;
+        };
       }>('/api/v1/auth/whoami', {
         method: 'GET',
         headers: {
@@ -67,6 +87,21 @@ async function verifyTokenWithBackend(token: string): Promise<StoredIdentity | n
         name: String(data.email || data.uid || 'User'),
         email: String(data.email || ''),
         roles: Array.isArray(data.roles) ? data.roles : [],
+        access:
+          data.access && typeof data.access === 'object'
+            ? {
+                tenant_type: 'user' as const,
+                access_tier: String(data.access.accessTier || '')
+                  .trim()
+                  .toLowerCase() as 'free' | 'trial' | 'premium' | 'admin',
+                premium_active: Boolean(data.access.premiumActive),
+                write_access: Boolean(data.access.writeAccess),
+                lifetime_premium: Boolean(data.access.lifetimePremium),
+                trial_used: Boolean(data.access.trialUsed),
+                trial_ends_at: String(data.access.trialEndsAt || '').trim() || null,
+                premium_until: String(data.access.premiumUntil || '').trim() || null,
+              }
+            : undefined,
       };
     } catch {
       return null;
@@ -141,7 +176,15 @@ async function ensureSupabaseSessionValid(): Promise<boolean> {
 }
 
 export const authProvider: AuthProvider = {
-  login: async ({ email, password }) => {
+  login: async ({
+    email,
+    password,
+    mode,
+  }: {
+    email: string;
+    password: string;
+    mode?: 'signin' | 'signup';
+  }) => {
     if (!email || !password) {
       return {
         success: false,
@@ -152,52 +195,36 @@ export const authProvider: AuthProvider = {
       };
     }
 
-    if (!hasSupabaseAuth || !supabase) {
-      return {
-        success: false,
-        error: {
-          name: 'SupabaseNotConfigured',
-          message:
-            'Supabase Auth is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.',
-        },
-      };
-    }
-
     try {
-      const result = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const route = mode === 'signup' ? '/api/v1/auth/signup' : '/api/v1/auth/signin';
+      const response = await apiRequest<{
+        access_token?: unknown;
+        uid?: unknown;
+        email?: unknown;
+        access?: unknown;
+      }>(route, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...(mode === 'signup' ? { email } : { login: email }),
+          password,
+        }),
       });
-
-      if (result.error) {
-        return {
-          success: false,
-          error: {
-            name: 'LoginError',
-            message: result.error.message || 'Invalid email or password',
-          },
-        };
-      }
-
-      const token = result.data.session?.access_token || '';
+      const token = String(response.data?.access_token || '').trim();
       if (!token) {
         return {
           success: false,
           error: {
             name: 'LoginError',
-            message: 'Supabase did not return access token',
+            message: 'Backend did not return access token',
           },
         };
       }
 
       const verifiedIdentity = await verifyTokenWithBackend(token);
-
       if (!verifiedIdentity) {
-        try {
-          await supabase.auth.signOut();
-        } catch {
-          // ignore
-        }
         return {
           success: false,
           error: {
@@ -230,9 +257,13 @@ export const authProvider: AuthProvider = {
 
     if (supabase) {
       try {
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: 'local' });
       } catch {
-        // Supabase session may already be invalid.
+        try {
+          await supabase.auth.signOut();
+        } catch {
+          // Supabase session may already be invalid, or global logout may be denied.
+        }
       }
     }
 
@@ -243,7 +274,7 @@ export const authProvider: AuthProvider = {
   },
 
   check: async () => {
-    const isValid = (await ensureSupabaseSessionValid()) || (await ensureSessionValid());
+    const isValid = (await ensureSessionValid()) || (await ensureSupabaseSessionValid());
 
     if (isValid) {
       return {
@@ -272,10 +303,20 @@ export const authProvider: AuthProvider = {
       name: identity.name,
       email: identity.email,
       roles: identity.roles || [],
+      ...(identity.access ? { access: identity.access } : {}),
     };
   },
 
   onError: async (error) => {
+    if (error?.statusCode === 403) {
+      const code = String(error?.code || '');
+      if (code === 'PREMIUM_REQUIRED') {
+        return {
+          redirectTo: '/billing',
+          error,
+        };
+      }
+    }
     if (error?.statusCode === 401 || error?.statusCode === 403) {
       clearSession();
       return {

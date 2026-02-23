@@ -20,6 +20,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { z } from 'zod';
+import { isPrismaMissingStorageError } from '../common/prisma-soft-fail';
 import { getRequestIdentity } from '../auth/request-identity.util';
 import { type FinanceListQuery, FinanceService } from './finance.service';
 
@@ -32,6 +33,10 @@ const financeIdSchema = z
 @Controller('finance')
 export class FinanceController {
   constructor(private readonly financeService: FinanceService) {}
+
+  private isFinanceStorageUnavailable(error: unknown): boolean {
+    return isPrismaMissingStorageError(error);
+  }
 
   private ensureAuthHeader(authorization: string | undefined): void {
     if (!authorization) {
@@ -103,7 +108,20 @@ export class FinanceController {
     this.ensureAuthHeader(authorization);
     const parsedQuery = this.parseListQuery(query);
     const identity = getRequestIdentity(req);
-    const result = await this.financeService.list(parsedQuery, identity.tenantId);
+    let result: Awaited<ReturnType<FinanceService['list']>>;
+    try {
+      result = await this.financeService.list(parsedQuery, identity.tenantId);
+    } catch (error) {
+      if (!this.isFinanceStorageUnavailable(error)) {
+        throw error;
+      }
+      result = {
+        items: [],
+        total: 0,
+        page: parsedQuery.page ?? 1,
+        limit: parsedQuery.limit ?? 50,
+      };
+    }
     return {
       success: true,
       data: result.items,
@@ -124,7 +142,15 @@ export class FinanceController {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
     const identity = getRequestIdentity(req);
-    const operation = await this.financeService.getById(parsedId, identity.tenantId);
+    let operation: Awaited<ReturnType<FinanceService['getById']>>;
+    try {
+      operation = await this.financeService.getById(parsedId, identity.tenantId);
+    } catch (error) {
+      if (!this.isFinanceStorageUnavailable(error)) {
+        throw error;
+      }
+      operation = null;
+    }
     if (!operation) {
       throw new NotFoundException({
         code: 'FINANCE_OPERATION_NOT_FOUND',
@@ -212,10 +238,20 @@ export class FinanceController {
   }> {
     this.ensureAuthHeader(authorization);
     const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.financeService.getDailyStats(identity.tenantId),
-    };
+    try {
+      return {
+        success: true,
+        data: await this.financeService.getDailyStats(identity.tenantId),
+      };
+    } catch (error) {
+      if (!this.isFinanceStorageUnavailable(error)) {
+        throw error;
+      }
+      return {
+        success: true,
+        data: {},
+      };
+    }
   }
 
   @Get('gold-price-history')
@@ -228,9 +264,19 @@ export class FinanceController {
   }> {
     this.ensureAuthHeader(authorization);
     const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.financeService.getGoldPriceHistory(identity.tenantId),
-    };
+    try {
+      return {
+        success: true,
+        data: await this.financeService.getGoldPriceHistory(identity.tenantId),
+      };
+    } catch (error) {
+      if (!this.isFinanceStorageUnavailable(error)) {
+        throw error;
+      }
+      return {
+        success: true,
+        data: {},
+      };
+    }
   }
 }

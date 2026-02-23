@@ -121,7 +121,13 @@ async function signToken(input) {
 
 test('auth -> provisioning -> vm-ops flow keeps tenant isolation', async () => {
   const prevSecret = process.env.SUPABASE_JWT_SECRET;
+  const prevIssuer = process.env.SUPABASE_JWT_ISSUER;
+  const prevAudience = process.env.SUPABASE_JWT_AUDIENCE;
+  const prevJwks = process.env.SUPABASE_JWKS_URL;
   process.env.SUPABASE_JWT_SECRET = 'integration-secret-auth-provisioning-vmops';
+  process.env.SUPABASE_JWT_ISSUER = 'supabase';
+  process.env.SUPABASE_JWT_AUDIENCE = 'authenticated';
+  process.env.SUPABASE_JWKS_URL = '';
 
   try {
     const tokenA = await signToken({
@@ -215,6 +221,21 @@ test('auth -> provisioning -> vm-ops flow keeps tenant isolation', async () => {
       delete process.env.SUPABASE_JWT_SECRET;
     } else {
       process.env.SUPABASE_JWT_SECRET = prevSecret;
+    }
+    if (prevIssuer === undefined) {
+      delete process.env.SUPABASE_JWT_ISSUER;
+    } else {
+      process.env.SUPABASE_JWT_ISSUER = prevIssuer;
+    }
+    if (prevAudience === undefined) {
+      delete process.env.SUPABASE_JWT_AUDIENCE;
+    } else {
+      process.env.SUPABASE_JWT_AUDIENCE = prevAudience;
+    }
+    if (prevJwks === undefined) {
+      delete process.env.SUPABASE_JWKS_URL;
+    } else {
+      process.env.SUPABASE_JWKS_URL = prevJwks;
     }
   }
 });

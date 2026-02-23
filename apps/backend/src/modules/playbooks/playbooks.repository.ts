@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
+import { softFailMissingStorageRead } from '../common/prisma-soft-fail';
 import { PrismaService } from '../db/prisma.service';
 
 @Injectable()
 export class PlaybooksRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private getPlaybookItemClient(): {
+  private getPlaybookItemClient(source: PrismaClient | Prisma.TransactionClient): {
     findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
     findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
     upsert: (args: unknown) => Promise<Record<string, unknown>>;
     deleteMany: (args: unknown) => Promise<{ count: number }>;
   } {
-    return (this.prisma as unknown as { playbookItem: unknown }).playbookItem as {
+    return (source as unknown as { playbookItem: unknown }).playbookItem as {
       findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
       findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
       upsert: (args: unknown) => Promise<Record<string, unknown>>;
@@ -21,19 +22,23 @@ export class PlaybooksRepository {
   }
 
   async list(tenantId: string): Promise<Array<Record<string, unknown>>> {
-    return this.getPlaybookItemClient().findMany({
-      where: { tenantId },
-      orderBy: { updatedAt: 'desc' },
-    });
+    return softFailMissingStorageRead(() => this.prisma.withTenantContext(tenantId, async (tx) => {
+      return this.getPlaybookItemClient(tx).findMany({
+        where: { tenantId },
+        orderBy: { updatedAt: 'desc' },
+      });
+    }), []);
   }
 
   async findById(tenantId: string, id: string): Promise<Record<string, unknown> | null> {
-    return this.getPlaybookItemClient().findFirst({
-      where: {
-        tenantId,
-        id,
-      },
-    });
+    return softFailMissingStorageRead(() => this.prisma.withTenantContext(tenantId, async (tx) => {
+      return this.getPlaybookItemClient(tx).findFirst({
+        where: {
+          tenantId,
+          id,
+        },
+      });
+    }), null);
   }
 
   async upsert(input: {
@@ -41,31 +46,35 @@ export class PlaybooksRepository {
     id: string;
     payload: Prisma.InputJsonValue;
   }): Promise<Record<string, unknown>> {
-    return this.getPlaybookItemClient().upsert({
-      where: {
-        tenantId_id: {
-          tenantId: input.tenantId,
-          id: input.id,
+    return this.prisma.withTenantContext(input.tenantId, async (tx) => {
+      return this.getPlaybookItemClient(tx).upsert({
+        where: {
+          tenantId_id: {
+            tenantId: input.tenantId,
+            id: input.id,
+          },
         },
-      },
-      create: {
-        id: input.id,
-        tenantId: input.tenantId,
-        payload: input.payload,
-      },
-      update: {
-        tenantId: input.tenantId,
-        payload: input.payload,
-      },
+        create: {
+          id: input.id,
+          tenantId: input.tenantId,
+          payload: input.payload,
+        },
+        update: {
+          tenantId: input.tenantId,
+          payload: input.payload,
+        },
+      });
     });
   }
 
   async delete(tenantId: string, id: string): Promise<boolean> {
-    const result = await this.getPlaybookItemClient().deleteMany({
-      where: {
-        tenantId,
-        id,
-      },
+    const result = await this.prisma.withTenantContext(tenantId, async (tx) => {
+      return this.getPlaybookItemClient(tx).deleteMany({
+        where: {
+          tenantId,
+          id,
+        },
+      });
     });
     return result.count > 0;
   }

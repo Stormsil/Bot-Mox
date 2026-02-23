@@ -15,6 +15,19 @@ interface ListThemeAssetsResponse {
   items: ThemeBackgroundAsset[];
 }
 
+function shouldSoftFailThemeAssetsList(error: unknown): boolean {
+  if (!(error instanceof ApiClientError)) {
+    return false;
+  }
+  const code = String(error.code || '')
+    .trim()
+    .toUpperCase();
+  if (error.status === 502) {
+    return true;
+  }
+  return code === 'AGENTS_STORAGE_UNAVAILABLE' || code === 'VM_OPS_UNAVAILABLE';
+}
+
 function assertAllowedImageType(file: File): void {
   const allowed = new Set<ThemeAssetMimeType>(['image/jpeg', 'image/png', 'image/webp']);
   if (!allowed.has(file.type as ThemeAssetMimeType)) {
@@ -57,12 +70,22 @@ function loadImageDimensions(file: File): Promise<{ width: number; height: numbe
 }
 
 export async function listThemeAssets(): Promise<ListThemeAssetsResponse> {
-  const response = await listThemeAssetsViaContract();
-  const payload = response.data;
-  return {
-    generated_at_ms: Number(payload?.generated_at_ms || Date.now()),
-    items: Array.isArray(payload?.items) ? payload.items : [],
-  };
+  try {
+    const response = await listThemeAssetsViaContract();
+    const payload = response.data;
+    return {
+      generated_at_ms: Number(payload?.generated_at_ms || Date.now()),
+      items: Array.isArray(payload?.items) ? payload.items : [],
+    };
+  } catch (error) {
+    if (!shouldSoftFailThemeAssetsList(error)) {
+      throw error;
+    }
+    return {
+      generated_at_ms: Date.now(),
+      items: [],
+    };
+  }
 }
 
 export async function uploadThemeAsset(file: File): Promise<ThemeBackgroundAsset> {

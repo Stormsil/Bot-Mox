@@ -16,9 +16,11 @@ Last Updated: 2026-02-19
 
 ```bash
 pnpm install --frozen-lockfile
+pnpm run stack:one:up
 pnpm run doctor
-pnpm run dev:prodlike:up
 ```
+
+`stack:one:up` is strict by default (full reset + no-cache rebuild + auth/access smoke + admin projects lifecycle smoke).
 
 ## 3. Mandatory Checks Before Commit
 
