@@ -7,18 +7,13 @@ import {
 } from '@ant-design/icons';
 import { Button, Spin } from 'antd';
 import type { CSSProperties } from 'react';
+import { bindCssModuleCx } from '../../../shared/lib/classNames';
 import styles from '../ResourceTree.module.css';
 import { getIcon } from './tree-utils';
 import type { BotStatus, TreeItem } from './types';
 import { statusConfig } from './types';
 
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+const cx = bindCssModuleCx(styles);
 
 interface ResourceTreeToolbarProps {
   isCollapsed: boolean;

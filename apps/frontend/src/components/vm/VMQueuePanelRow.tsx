@@ -1,9 +1,8 @@
 import { FileTextOutlined } from '@ant-design/icons';
 import { Button, Progress, Select, Typography } from 'antd';
 import type React from 'react';
-import type { Playbook } from '../../entities/vm/api/playbookFacade';
-import type { UnattendProfile } from '../../entities/vm/api/unattendProfileFacade';
-import type { VMQueueItem, VMStorageOption } from '../../types';
+import { useVMQueueContext } from '../../features/vm-queue/model/VMQueueContext';
+import type { VMQueueItem } from '../../types';
 import {
   buildStorageUsage,
   formatMemoryGiB,
@@ -27,45 +26,27 @@ interface QueueResourcePreset {
 
 interface VMQueuePanelRowProps {
   item: VMQueueItem;
-  isProcessing: boolean;
-  isStartActionRunning: boolean;
-  startingItemId: string | null;
-  storageOptions: VMStorageOption[];
-  projectOptionById: Map<VMProjectId, { value: VMProjectId; label: string }>;
-  resourcePresets: Record<VMProjectId, QueueResourcePreset>;
-  unattendProfileById: Map<string, UnattendProfile>;
-  defaultUnattendProfile: UnattendProfile | null;
-  playbookList: Playbook[];
-  defaultPlaybook: Playbook | null;
-  unattendProfilesLoading: boolean;
-  onRemove: (id: string) => void;
-  onUpdate: (id: string, updates: Partial<VMQueueItem>) => void;
-  onStartOne?: (id: string) => void;
-  openCustomEditor: (item: VMQueueItem) => void;
-  openUnattendEditor: (item: VMQueueItem) => void;
-  className: (classNames: string) => string;
 }
 
-export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({
-  item,
-  isProcessing,
-  isStartActionRunning,
-  startingItemId,
-  storageOptions,
-  projectOptionById,
-  resourcePresets,
-  unattendProfileById,
-  defaultUnattendProfile,
-  playbookList,
-  defaultPlaybook,
-  unattendProfilesLoading,
-  onRemove,
-  onUpdate,
-  onStartOne,
-  openCustomEditor,
-  openUnattendEditor,
-  className,
-}) => {
+export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({ item }) => {
+  const {
+    isProcessing,
+    isStartActionRunning,
+    startingItemId,
+    storageOptions,
+    projectOptionById,
+    resourcePresets,
+    unattendProfileById,
+    defaultUnattendProfile,
+    playbookList,
+    defaultPlaybook,
+    unattendProfilesLoading,
+    onStartOne,
+    onUpdate,
+    openCustomEditor,
+    openUnattendEditor,
+    className,
+  } = useVMQueueContext();
   const action = item.action || 'create';
   const isDeleteAction = action === 'delete';
   const status = getStatusDisplay(item.status);
@@ -113,8 +94,6 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({
         hasDeleteTargetVmId={hasDeleteTargetVmId}
         deleteTargetVmId={deleteTargetVmId}
         editableCreate={editableCreate}
-        onUpdate={onUpdate}
-        className={className}
       />
 
       <div className={className('vm-queue-item-select vm-queue-item-select--storage')}>
@@ -266,8 +245,6 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({
         effectiveCores={effectiveCores}
         effectiveMemoryMb={effectiveMemoryMb}
         effectiveDiskGiB={effectiveDiskGiB}
-        openCustomEditor={openCustomEditor}
-        className={className}
       />
 
       <div className={className('vm-queue-item-unattend')}>
@@ -333,16 +310,11 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({
       <VMQueuePanelRowActions
         canStartItem={canStartItem}
         isItemStarting={isItemStarting}
-        isProcessing={isProcessing}
-        isStartActionRunning={isStartActionRunning}
         vmId={item.vmId}
         itemId={item.id}
         statusText={status.text}
         statusTone={status.tone}
         canRemove={canRemove}
-        onStartOne={onStartOne}
-        onRemove={onRemove}
-        className={className}
       />
     </div>
   );

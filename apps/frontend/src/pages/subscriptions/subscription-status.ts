@@ -1,4 +1,4 @@
-import type { ComputedSubscriptionStatus } from '../../types';
+import type { ComputedSubscriptionStatus } from '../../entities/resources/model/types';
 
 export const getSubscriptionStatusColor = (status: ComputedSubscriptionStatus) => {
   switch (status) {

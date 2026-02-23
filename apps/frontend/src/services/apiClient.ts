@@ -10,7 +10,6 @@ import { enqueueRequest, resolveRequestQos, resolveRequestUrl } from './apiClien
 import { ApiClientError, type ApiSuccessEnvelope, parseEnvelope } from './apiClient/types';
 import { authFetch } from './authFetch';
 
-export { createPollingSubscription } from './apiClient/polling';
 export type { ApiSuccessEnvelope } from './apiClient/types';
 export { ApiClientError } from './apiClient/types';
 

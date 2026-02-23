@@ -21,7 +21,7 @@ import {
   useUpdateProxyMutation,
 } from '../../entities/resources/api/useProxyMutations';
 import { useProxiesQuery } from '../../entities/resources/api/useResourcesQueries';
-import type { Proxy as ProxyResource } from '../../types';
+import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
 import styles from './ProxiesPage.module.css';
 import { ProxiesStatsCards } from './ProxiesStatsCards';
 import { ProxyCrudModal } from './ProxyCrudModal';

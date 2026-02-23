@@ -67,6 +67,3 @@ export function isCompatStubTemplate(xmlTemplate: string): boolean {
     !normalized.includes('c:\\windows\\setup\\scripts\\specialize.ps1')
   );
 }
-
-/** @deprecated Use isCompatStubTemplate. */
-export const isDeprecatedStubTemplate = isCompatStubTemplate;

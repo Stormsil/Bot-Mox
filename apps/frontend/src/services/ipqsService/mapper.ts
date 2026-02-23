@@ -1,4 +1,4 @@
-import type { IPQSResponse, Proxy as ProxyResource } from '../../types';
+import type { IPQSResponse, Proxy as ProxyResource } from '../../entities/resources/model/types';
 
 export function updateProxyWithIPQSData(
   proxy: Partial<ProxyResource>,

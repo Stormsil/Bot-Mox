@@ -31,7 +31,7 @@ export { createDefaultSchedule, createEmptySchedule, migrateSchedule } from './s
 export type {
   BotScheduleV2,
   DayScheduleStats,
-  DeprecatedScheduleSlot,
+  CompatScheduleSlot,
   GeneratedSchedule,
   LauncherScheduleDay,
   LauncherSchedulePayload,

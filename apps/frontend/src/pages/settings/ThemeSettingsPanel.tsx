@@ -1,6 +1,7 @@
 import { BgColorsOutlined, SaveOutlined } from '@ant-design/icons';
 import { Button, Drawer, Segmented, Space, Typography } from 'antd';
 import type React from 'react';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import type { ThemeMode } from '../../theme/themePalette';
 import styles from './SettingsPage.module.css';
 import { ThemeQuickCard } from './ThemeQuickCard';
@@ -14,13 +15,7 @@ import {
 
 const { Text } = Typography;
 
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+const cx = bindCssModuleCx(styles);
 
 export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = (props) => {
   return (

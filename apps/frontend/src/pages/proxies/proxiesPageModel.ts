@@ -1,4 +1,4 @@
-import type { Proxy as ProxyResource } from '../../types';
+import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
 import type { ProxyWithBot } from './proxyColumns';
 
 export const DEFAULT_PROVIDERS = ['IPRoyal', 'Smartproxy', 'Luminati', 'Oxylabs'];

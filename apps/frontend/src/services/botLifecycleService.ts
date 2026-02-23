@@ -6,7 +6,9 @@ import {
   transitionBotLifecycleViaContract,
   unbanBotViaContract,
 } from '../providers/bot-contract-client';
-import type { BanDetails, BotLifecycle, BotStatus } from '../types';
+import { parseRussianDate as parseRussianDateShared } from '../shared/lib/date';
+import type { BanDetails, BotLifecycle } from '../entities/bot/model/lifecycleTypes';
+import type { BotStatus } from '../types/core';
 
 function normalizeLifecycle(value: unknown): BotLifecycle | null {
   if (!value || typeof value !== 'object') return null;
@@ -93,7 +95,5 @@ export const getStageTransitions = async (
  * Форматирует дату из DD.MM.YYYY в timestamp.
  */
 export function parseRussianDate(russianDate: string): number {
-  const [day, month, year] = russianDate.split('.').map(Number);
-  const date = new Date(year, month - 1, day);
-  return date.getTime();
+  return parseRussianDateShared(russianDate);
 }

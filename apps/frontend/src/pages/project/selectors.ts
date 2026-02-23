@@ -1,4 +1,4 @@
-import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../types';
+import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../entities/resources/model/types';
 import type {
   BotRecord,
   BotRow,

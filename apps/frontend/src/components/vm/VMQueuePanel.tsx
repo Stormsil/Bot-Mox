@@ -1,4 +1,6 @@
 import type React from 'react';
+import { VMQueueContextProvider } from '../../features/vm-queue/model/VMQueueContext';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import type { VMQueueItem, VMStorageOption } from '../../types';
 import { useVMQueuePanelState } from './useVMQueuePanelState';
 import { VMQueueColumnsHeader } from './VMQueueColumnsHeader';
@@ -11,12 +13,7 @@ import { VMQueueUnattendModal } from './VMQueueUnattendModal';
 
 const styles = { ...coreStyles, ...modalStyles };
 
-const cx = (...classNames: Array<string | false | null | undefined>) =>
-  classNames
-    .flatMap((name) => String(name || '').split(/\s+/))
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
+const cx = bindCssModuleCx(styles);
 
 type VMProjectId = 'wow_tbc' | 'wow_midnight';
 
@@ -69,8 +66,30 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
     onUpdate,
   });
 
+  const contextValue = {
+    queue,
+    isProcessing,
+    isStartActionRunning,
+    startingItemId,
+    storageOptions,
+    projectOptionById: state.projectOptionById,
+    resourcePresets,
+    unattendProfileById: state.unattendProfileById,
+    defaultUnattendProfile: state.defaultUnattendProfile,
+    playbookList: state.playbookList,
+    defaultPlaybook: state.defaultPlaybook,
+    unattendProfilesLoading: state.unattendProfilesLoading,
+    onRemove,
+    onUpdate,
+    onStartOne,
+    openCustomEditor: state.openCustomEditor,
+    openUnattendEditor: state.openUnattendEditor,
+    className: cx,
+  } as const;
+
   return (
-    <div className={`${cx('vm-queue-panel')} vm-queue-panel`}>
+    <VMQueueContextProvider value={contextValue}>
+      <div className={`${cx('vm-queue-panel')} vm-queue-panel`}>
       <VMQueuePanelHeader
         className={cx}
         isProcessing={isProcessing}
@@ -91,27 +110,7 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
           <>
             <VMQueueColumnsHeader className={cx} />
             {queue.map((item) => (
-              <VMQueuePanelRow
-                key={item.id}
-                item={item}
-                isProcessing={isProcessing}
-                isStartActionRunning={isStartActionRunning}
-                startingItemId={startingItemId}
-                storageOptions={storageOptions}
-                projectOptionById={state.projectOptionById}
-                resourcePresets={resourcePresets}
-                unattendProfileById={state.unattendProfileById}
-                defaultUnattendProfile={state.defaultUnattendProfile}
-                playbookList={state.playbookList}
-                defaultPlaybook={state.defaultPlaybook}
-                unattendProfilesLoading={state.unattendProfilesLoading}
-                onRemove={onRemove}
-                onUpdate={onUpdate}
-                onStartOne={onStartOne}
-                openCustomEditor={state.openCustomEditor}
-                openUnattendEditor={state.openUnattendEditor}
-                className={cx}
-              />
+              <VMQueuePanelRow key={item.id} item={item} />
             ))}
           </>
         )}
@@ -150,6 +149,7 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
         onExportTemplate={state.exportUnattendTemplate}
         onExportFinal={state.exportUnattendFinal}
       />
-    </div>
+      </div>
+    </VMQueueContextProvider>
   );
 };

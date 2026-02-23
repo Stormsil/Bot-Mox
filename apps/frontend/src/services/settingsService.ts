@@ -1,5 +1,5 @@
 import { uiLogger } from '../observability/uiLogger';
-import type { SubscriptionSettings } from '../types';
+import type { SubscriptionSettings } from '../entities/resources/model/types';
 import { apiGet, apiPut } from './apiClient';
 
 const SETTINGS_PATH = '/api/v1/settings/alerts';

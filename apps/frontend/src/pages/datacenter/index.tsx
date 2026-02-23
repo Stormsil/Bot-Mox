@@ -16,7 +16,7 @@ import {
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { useFinanceOperations } from '../../features/finance/model/useFinanceOperations';
 import { uiLogger } from '../../observability/uiLogger';
-import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../types';
+import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../entities/resources/model/types';
 import { DatacenterContentMap, type ExpiringItem } from './content-map';
 import { cx } from './datacenterUi';
 import { buildProjectStats, FINANCE_WINDOW_DAYS, MS_PER_DAY } from './page-helpers';

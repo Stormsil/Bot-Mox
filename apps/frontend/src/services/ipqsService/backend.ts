@@ -4,7 +4,7 @@ import {
   checkIpqsViaContract,
   getIpqsStatusViaContract,
 } from '../../providers/ipqs-contract-client';
-import type { IPQSResponse } from '../../types';
+import type { IPQSResponse } from '../../entities/resources/model/types';
 import { ApiClientError } from '../apiClient';
 
 export const LOCAL_PROXY_URL = API_BASE_URL_FROM_ENV;

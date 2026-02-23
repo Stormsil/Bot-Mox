@@ -9,15 +9,9 @@ import {
 } from '@ant-design/icons';
 import { Segmented } from 'antd';
 import type React from 'react';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import styles from './ContentPanel.module.css';
-
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+const cx = bindCssModuleCx(styles);
 
 export type TabType =
   | 'summary'

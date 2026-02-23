@@ -22,6 +22,7 @@ import {
   useUpdateNoteMutation,
 } from '../../entities/notes/api/useNoteMutations';
 import type { Note } from '../../entities/notes/model/types';
+import { cx } from '../../shared/lib/classNames';
 import { TableActionButton } from '../ui/TableActionButton';
 import '@uiw/react-md-editor/markdown-editor.css';
 import styles from './NoteEditor.module.css';
@@ -81,8 +82,6 @@ function useDebouncedSave(
 export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onNoteChange, onNoteDelete }) => {
   const updateNoteMutation = useUpdateNoteMutation();
   const deleteNoteMutation = useDeleteNoteMutation();
-  const cx = (...parts: Array<string | false | null | undefined>) =>
-    parts.filter(Boolean).join(' ');
 
   // Локальное состояние заметки
   const [localNote, setLocalNote] = useState<Note>({

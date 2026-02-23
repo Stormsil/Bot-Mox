@@ -1,6 +1,5 @@
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { VMListView, VMOperationLog, VMQueuePanel, VMStatusBar } from '../../components/vm';
 import { useRefreshOnVmMutationEvents } from '../../entities/vm/api/useRefreshOnVmMutationEvents';
 import { useProxmoxTargetsQuery, useVmSettingsQuery } from '../../entities/vm/api/useVmQueries';
 import { useProxmox } from '../../hooks/useProxmox';
@@ -15,12 +14,10 @@ import { useVmStartAndQueueActions } from './hooks/useVmStartAndQueueActions';
 import { useVmStorageOptions } from './hooks/useVmStorageOptions';
 import { useVmTargetSelection } from './hooks/useVmTargetSelection';
 import { useVmWorkspaceLayout } from './hooks/useVmWorkspaceLayout';
-import { cx } from './page/cx';
 import { enqueueVmRecreate } from './page/recreateVm';
 import { selectStorageForNewVm } from './page/storageSelection';
 import { syncTemplateHardwareFromApi as syncTemplateHardwareFromApiAction } from './page/templateHardwareSync';
-import { VMPageModals } from './page/VMPageModals';
-import { VmTargetStrip } from './page/VmTargetStrip';
+import { VMWorkspace } from '../../widgets/vm-workspace';
 
 const VM_COMMAND_REFRESH_DEBOUNCE_MS = 500;
 export const VMsPage: React.FC = () => {
@@ -235,108 +232,59 @@ export const VMsPage: React.FC = () => {
   );
 
   return (
-    <div className={cx(`vm-generator ${isLogResizing ? 'vm-generator--resizing' : ''}`)}>
-      <VMStatusBar
-        uiState={queue.uiState}
-        operationText={queue.operationText}
-        isProcessing={queue.isProcessing}
-        hasPending={hasPending}
-        queueTotal={queueStats.total}
-        pendingCount={queueStats.pending}
-        activeCount={queueStats.active}
-        doneCount={queueStats.done}
-        errorCount={queueStats.error}
-        onStart={queue.processQueue}
-        onStop={queue.cancelProcessing}
-        onOpenSettings={() => {
-          setPanelOpen('settings');
-        }}
-        activeTopPanel={panelOpen}
-      />
-
-      <VmTargetStrip
-        targets={proxmoxTargets}
-        selectedTargetId={effectiveSelectedTargetId}
-        loading={proxmoxTargetsQuery.isLoading || proxmoxTargetsQuery.isFetching}
-        sshConfigured={proxmox.sshConfigured}
-        sshConnected={proxmox.sshConnected}
-        sshStatusCode={proxmox.sshStatusCode}
-        onChange={handleTargetChange}
-        onRefresh={() => {
-          void proxmoxTargetsQuery.refetch();
-        }}
-      />
-
-      <div
-        ref={workspaceLayoutRef}
-        className={cx(
-          `vm-generator-workspace${isWorkspaceResizing ? ' vm-generator-workspace--resizing' : ''}`,
-        )}
-        style={{ gridTemplateColumns: workspaceGridTemplateColumns }}
-      >
-        <div className={cx('vm-generator-service-pane')}>
-          <VMListView
-            vms={proxmox.vms}
-            loading={proxmox.loading}
-            connected={proxmox.connected}
-            node={proxmox.node}
-            refreshVMs={proxmox.refreshVMs}
-            onRecreate={handleRecreateVm}
-          />
-        </div>
-
-        <button
-          type="button"
-          className={cx('vm-generator-workspace-resizer')}
-          aria-label="Resize workspace panes"
-          onMouseDown={startWorkspaceResize}
-        />
-
-        <div ref={workspaceRef} className={cx('vm-generator-main')}>
-          <div className={cx('vm-generator-queue-wrap')}>
-            <VMQueuePanel
-              queue={queue.queue}
-              isProcessing={queue.isProcessing}
-              isStartActionRunning={isStartActionRunning}
-              canStartAll={startableQueueItems.length > 0}
-              startingItemId={startingQueueItemId}
-              storageOptions={storageOptions}
-              projectOptions={projectOptions}
-              resourcePresets={resourcePresets}
-              onAdd={handleAddVM}
-              onAddDelete={deleteVm.handleOpenDeleteVmModal}
-              onClear={queue.clearQueue}
-              onStartAll={handleStartAllReady}
-              onStartOne={handleStartOneReady}
-              onRemove={queue.removeFromQueue}
-              onUpdate={handleQueueUpdate}
-            />
-          </div>
-
-          <button
-            type="button"
-            className={cx('vm-generator-log-resizer')}
-            onMouseDown={startLogResize}
-            aria-label="Resize log panel"
-          />
-
-          <div className={cx('vm-generator-log-wrap')} style={{ height: logHeight }}>
-            <VMOperationLog
-              tasks={log.tasks}
-              onClear={log.clear}
-              onCancelTask={handleCancelTask}
-              getFullLog={log.getFullLog}
-            />
-          </div>
-        </div>
-      </div>
-
-      <VMPageModals
-        panelOpen={panelOpen}
-        setPanelOpen={setPanelOpen}
-        deleteVm={deleteVm}
-        storageOptions={storageOptions}
-      />
-    </div>
+    <VMWorkspace
+      isLogResizing={isLogResizing}
+      queueUiState={queue.uiState}
+      queueOperationText={queue.operationText}
+      queueIsProcessing={queue.isProcessing}
+      hasPending={hasPending}
+      queueStats={queueStats}
+      processQueue={queue.processQueue}
+      cancelProcessing={queue.cancelProcessing}
+      panelOpen={panelOpen}
+      setPanelOpen={setPanelOpen}
+      proxmoxTargets={proxmoxTargets}
+      selectedTargetId={effectiveSelectedTargetId}
+      targetsLoading={proxmoxTargetsQuery.isLoading || proxmoxTargetsQuery.isFetching}
+      sshConfigured={proxmox.sshConfigured}
+      sshConnected={proxmox.sshConnected}
+      sshStatusCode={proxmox.sshStatusCode}
+      onTargetChange={handleTargetChange}
+      onTargetsRefresh={() => {
+        void proxmoxTargetsQuery.refetch();
+      }}
+      workspaceLayoutRef={workspaceLayoutRef}
+      workspaceRef={workspaceRef}
+      workspaceGridTemplateColumns={workspaceGridTemplateColumns}
+      isWorkspaceResizing={isWorkspaceResizing}
+      startWorkspaceResize={startWorkspaceResize}
+      proxmoxVms={proxmox.vms}
+      proxmoxLoading={proxmox.loading}
+      proxmoxConnected={proxmox.connected}
+      proxmoxNode={proxmox.node}
+      refreshVMs={proxmox.refreshVMs}
+      onRecreateVm={handleRecreateVm}
+      queueItems={queue.queue}
+      isStartActionRunning={isStartActionRunning}
+      canStartAll={startableQueueItems.length > 0}
+      startingQueueItemId={startingQueueItemId}
+      storageOptions={storageOptions}
+      projectOptions={projectOptions}
+      resourcePresets={resourcePresets}
+      onAddVm={handleAddVM}
+      onAddDelete={deleteVm.handleOpenDeleteVmModal}
+      onClearQueue={queue.clearQueue}
+      onStartAll={handleStartAllReady}
+      onStartOne={handleStartOneReady}
+      onRemoveQueueItem={queue.removeFromQueue}
+      onUpdateQueueItem={handleQueueUpdate}
+      startLogResize={startLogResize}
+      logHeight={logHeight}
+      logTasks={log.tasks}
+      onClearLog={log.clear}
+      onCancelTask={handleCancelTask}
+      getFullLog={log.getFullLog}
+      deleteVm={deleteVm}
+    />
   );
 };

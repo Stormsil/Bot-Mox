@@ -4,17 +4,12 @@ import {
   apiPatch,
   apiPost,
   buildQueryString,
-  createPollingSubscription,
 } from './apiClient';
 
 export type ResourceKind = 'licenses' | 'proxies' | 'subscriptions';
 
 const PAGE_LIMIT = 200;
 const MAX_PAGE_COUNT = 100;
-
-interface ResourceRecord {
-  id: string;
-}
 
 function hasStringId(value: unknown): value is { id: string } {
   if (!value || typeof value !== 'object') return false;
@@ -82,21 +77,4 @@ export async function updateResource<T extends { id: string }>(
 
 export async function deleteResource(kind: ResourceKind, id: string): Promise<void> {
   await apiDelete(`/api/v1/resources/${kind}/${encodeURIComponent(String(id || '').trim())}`);
-}
-
-interface SubscribeOptions {
-  intervalMs?: number;
-}
-
-export function subscribeResources<T extends ResourceRecord>(
-  kind: ResourceKind,
-  onData: (items: T[]) => void,
-  onError?: (error: Error) => void,
-  options: SubscribeOptions = {},
-): () => void {
-  return createPollingSubscription(() => fetchResources<T>(kind), onData, onError, {
-    key: `resources:${kind}`,
-    intervalMs: options.intervalMs ?? 7000,
-    immediate: true,
-  });
 }

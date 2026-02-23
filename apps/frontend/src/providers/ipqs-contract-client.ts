@@ -2,7 +2,7 @@ import { createApiContractClient } from '@botmox/api-contract';
 import { API_BASE_URL } from '../config/env';
 import { ApiClientError, type ApiSuccessEnvelope } from '../services/apiClient';
 import { withAuthHeaders } from '../services/authFetch';
-import type { IPQSResponse } from '../types';
+import type { IPQSResponse } from '../entities/resources/model/types';
 
 interface IpqsStatusPayload {
   enabled?: unknown;

@@ -1,5 +1,5 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { BotLicense } from '../../../types';
+import type { BotLicense } from '../model/types';
 import {
   createResourceViaContractMutation,
   deleteResourceViaContractMutation,

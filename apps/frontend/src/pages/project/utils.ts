@@ -1,4 +1,5 @@
-import type { BotLicense, BotStatus, Subscription } from '../../types';
+import type { BotStatus } from '../../types/core';
+import type { BotLicense, Subscription } from '../../entities/resources/model/types';
 import {
   type BotRecord,
   OFFLINE_THRESHOLD_MS,

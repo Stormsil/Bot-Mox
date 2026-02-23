@@ -1,4 +1,4 @@
-import type { BotLicense, LicenseWithBots } from '../../../types';
+import type { BotLicense, LicenseWithBots } from '../../../entities/resources/model/types';
 import type { BotsMap, LicensesStats } from './types';
 
 export const STATS_COLLAPSED_KEY = 'licensesStatsCollapsed';

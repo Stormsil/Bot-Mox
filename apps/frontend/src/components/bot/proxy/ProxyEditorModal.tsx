@@ -1,7 +1,7 @@
 import type { FormInstance } from 'antd';
 import { DatePicker, Form, Input, Modal, Spin, Typography, theme } from 'antd';
 import type React from 'react';
-import type { IPQSResponse } from '../../../types';
+import type { IPQSResponse } from '../../../entities/resources/model/types';
 import type { ParsedProxy } from '../../../utils/proxyUtils';
 import { ProxyIpqsResults } from './ProxyIpqsResults';
 import { ProxyParsedAlert } from './ProxyParsedAlert';

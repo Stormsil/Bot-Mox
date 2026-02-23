@@ -11,7 +11,6 @@ import {
   createResource,
   deleteResource,
   fetchResources,
-  subscribeResources,
   updateResource,
 } from './resourcesApiService';
 
@@ -220,29 +219,6 @@ export async function getSubscriptionById(id: string): Promise<Subscription | nu
 export async function getSubscriptionsByBotId(botId: string): Promise<Subscription[]> {
   const allSubscriptions = await getSubscriptions();
   return allSubscriptions.filter((sub) => sub.bot_id === botId);
-}
-
-/**
- * Подписывается на изменения всех подписок
- */
-export function subscribeToSubscriptions(
-  callback: (subscriptions: Subscription[]) => void,
-  onError?: (error: Error) => void,
-): () => void {
-  return subscribeResources<Subscription>('subscriptions', callback, onError, { intervalMs: 6000 });
-}
-
-/**
- * Подписывается на изменения подписок конкретного бота
- */
-export function subscribeToBotSubscriptions(
-  botId: string,
-  callback: (subscriptions: Subscription[]) => void,
-  onError?: (error: Error) => void,
-): () => void {
-  return subscribeToSubscriptions((subscriptions) => {
-    callback(subscriptions.filter((subscription) => subscription.bot_id === botId));
-  }, onError);
 }
 
 /**

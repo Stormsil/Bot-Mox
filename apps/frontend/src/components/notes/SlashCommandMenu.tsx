@@ -11,9 +11,8 @@ import {
 } from '@ant-design/icons';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { NoteBlockType } from '../../entities/notes/model/types';
+import { cx } from '../../shared/lib/classNames';
 import styles from './SlashCommandMenu.module.css';
-
-const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 
 /**
  * Опция меню команд

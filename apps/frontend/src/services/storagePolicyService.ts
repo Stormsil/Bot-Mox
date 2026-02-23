@@ -1,5 +1,5 @@
 import { uiLogger } from '../observability/uiLogger';
-import type { StoragePolicy } from '../types';
+import type { StoragePolicy } from '../entities/settings/model/types';
 import { apiGet, apiPut } from './apiClient';
 
 const STORAGE_POLICY_PATH = '/api/v1/settings/storage_policy';

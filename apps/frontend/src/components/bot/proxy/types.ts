@@ -1,5 +1,6 @@
 import type { Dayjs } from 'dayjs';
-import type { Bot, IPQSResponse, Proxy as ProxyResource } from '../../../types';
+import type { Bot } from '../../../types';
+import type { IPQSResponse, Proxy as ProxyResource } from '../../../entities/resources/model/types';
 import type { ParsedProxy } from '../../../utils/proxyUtils';
 
 export interface BotProxyProps {

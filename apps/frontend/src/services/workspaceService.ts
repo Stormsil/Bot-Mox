@@ -8,7 +8,6 @@ import {
   patchWorkspaceCalendarViaContract,
   patchWorkspaceKanbanViaContract,
 } from '../providers/workspace-contract-client';
-import { createPollingSubscription } from './apiClient';
 
 const PAGE_LIMIT = 200;
 const MAX_PAGE_COUNT = 50;
@@ -237,17 +236,6 @@ export async function fetchCalendarEvents(): Promise<WorkspaceCalendarEvent[]> {
     });
 }
 
-export function subscribeToCalendarEvents(
-  callback: (events: WorkspaceCalendarEvent[]) => void,
-  onError?: (error: Error) => void,
-): () => void {
-  return createPollingSubscription(fetchCalendarEvents, callback, onError, {
-    key: 'workspace:calendar',
-    intervalMs: 6000,
-    immediate: true,
-  });
-}
-
 export async function createKanbanTask(data: CreateKanbanTaskData): Promise<string> {
   if (!data.title?.trim()) {
     throw new Error('Task title is required');
@@ -306,15 +294,4 @@ export async function fetchKanbanTasks(): Promise<KanbanTask[]> {
       if (a.status === b.status) return a.order - b.order || b.updated_at - a.updated_at;
       return a.status.localeCompare(b.status);
     });
-}
-
-export function subscribeToKanbanTasks(
-  callback: (tasks: KanbanTask[]) => void,
-  onError?: (error: Error) => void,
-): () => void {
-  return createPollingSubscription(fetchKanbanTasks, callback, onError, {
-    key: 'workspace:kanban',
-    intervalMs: 6000,
-    immediate: true,
-  });
 }

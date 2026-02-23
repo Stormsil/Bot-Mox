@@ -2,7 +2,7 @@ import { createApiContractClient } from '@botmox/api-contract';
 import { API_BASE_URL } from '../config/env';
 import { ApiClientError, type ApiSuccessEnvelope } from '../services/apiClient';
 import { withAuthHeaders } from '../services/authFetch';
-import type { ApiKeys, NotificationEvents, ProxySettings } from '../types';
+import type { ApiKeys, NotificationEvents, ProxySettings } from '../entities/settings/model/types';
 
 function resolveApiBaseUrl(): string {
   if (API_BASE_URL) {

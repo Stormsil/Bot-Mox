@@ -12,16 +12,10 @@ import { MetricCard } from '../../components/ui/MetricCard';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { useBotsListQuery } from '../../entities/bot/api/useBotQueries';
 import { uiLogger } from '../../observability/uiLogger';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import type { Bot } from '../../types';
 import styles from './Dashboard.module.css';
-
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+const cx = bindCssModuleCx(styles);
 
 const { Title } = Typography;
 

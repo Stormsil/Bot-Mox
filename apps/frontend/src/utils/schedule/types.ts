@@ -26,9 +26,6 @@ export type CompatScheduleSlot = Partial<
 > &
   UnknownRecord;
 
-/** @deprecated Use CompatScheduleSlot. */
-export type DeprecatedScheduleSlot = CompatScheduleSlot;
-
 export interface LauncherScheduleSlot {
   start: string;
   end: string;

@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useVMQueueContext } from '../../features/vm-queue/model/VMQueueContext';
 import type { VMQueueItem } from '../../types';
 
 interface VMQueuePanelRowNameCellProps {
@@ -7,8 +8,6 @@ interface VMQueuePanelRowNameCellProps {
   hasDeleteTargetVmId: boolean;
   deleteTargetVmId: number;
   editableCreate: boolean;
-  onUpdate: (id: string, updates: Partial<VMQueueItem>) => void;
-  className: (classNames: string) => string;
 }
 
 export const VMQueuePanelRowNameCell: React.FC<VMQueuePanelRowNameCellProps> = ({
@@ -17,9 +16,8 @@ export const VMQueuePanelRowNameCell: React.FC<VMQueuePanelRowNameCellProps> = (
   hasDeleteTargetVmId,
   deleteTargetVmId,
   editableCreate,
-  onUpdate,
-  className,
 }) => {
+  const { onUpdate, className } = useVMQueueContext();
   const vmInputValue =
     isDeleteAction && hasDeleteTargetVmId ? `${item.name} [ID ${deleteTargetVmId}]` : item.name;
 

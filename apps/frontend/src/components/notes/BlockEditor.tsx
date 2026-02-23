@@ -6,6 +6,7 @@
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NoteBlockType, TextBlock } from '../../entities/notes/model/types';
+import { cx } from '../../shared/lib/classNames';
 import styles from './NoteBlocks.module.css';
 
 interface BlockEditorProps {
@@ -45,8 +46,6 @@ const stripMarkdown = (content: string, type: NoteBlockType): string => {
       return content;
   }
 };
-
-const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 
 /**
  * Получает CSS класс для типа блока

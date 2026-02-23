@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { uiLogger } from '../observability/uiLogger';
 import { apiPut } from '../services/apiClient';
@@ -11,7 +12,7 @@ import {
   taskLevelFromStatus,
 } from './vmLogUtils';
 import { useVmLogWriters } from './vmLogWriters';
-import { subscribeVmTaskHistory } from './vmTaskHistoryPersistence';
+import { loadPersistedTasks } from './vmTaskHistoryPersistence';
 
 const LOG_PERSIST_DEBOUNCE_MS = 250;
 const RUNNING_TASK_SWEEP_INTERVAL_MS = 15_000;
@@ -31,6 +32,12 @@ export function useVMLog() {
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydratedRef = useRef(false);
   const lastPersistedHashRef = useRef('');
+  const { data: hydratedTasksData, error: hydratedTasksError } = useQuery<VMTaskEntry[], Error>({
+    queryKey: ['settings', 'vmgenerator', 'task_logs'],
+    queryFn: loadPersistedTasks,
+    refetchInterval: 4000,
+    retry: false,
+  });
 
   const persistTasks = useCallback((nextTasks: VMTaskEntry[]) => {
     if (!hydratedRef.current) return;
@@ -80,18 +87,25 @@ export function useVMLog() {
       hydratedRef.current = true;
     };
 
-    const unsubscribe = subscribeVmTaskHistory(applyHydratedTasks, () => {
-      hydratedRef.current = true;
-    });
+    if (hydratedTasksData) {
+      applyHydratedTasks(hydratedTasksData);
+    }
 
-    return () => {
-      unsubscribe();
+    if (hydratedTasksError) {
+      uiLogger.error('Failed to load VM task history:', hydratedTasksError);
+      hydratedRef.current = true;
+    }
+  }, [hydratedTasksData, hydratedTasksError]);
+
+  useEffect(
+    () => () => {
       if (persistTimerRef.current) {
         clearTimeout(persistTimerRef.current);
         persistTimerRef.current = null;
       }
-    };
-  }, []);
+    },
+    [],
+  );
 
   const push = useCallback((entry: VMLogEntry) => {
     entriesRef.current = [...entriesRef.current, entry];

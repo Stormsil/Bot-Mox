@@ -11,7 +11,7 @@ import {
   useCreateProxyMutation,
   useUpdateProxyMutation,
 } from '../../entities/resources/api/useProxyMutations';
-import type { IPQSResponse, Proxy as ProxyResource } from '../../types';
+import type { IPQSResponse, Proxy as ProxyResource } from '../../entities/resources/model/types';
 import { parseProxyString } from '../../utils/proxyUtils';
 import type { ProxyWithBot } from './proxyColumns';
 import { ParsedProxyAlert, ProxyIpqsLoadingAlert, ProxyIpqsResultAlert } from './proxyCrudAlerts';

@@ -1,6 +1,6 @@
 import { uiLogger } from '../observability/uiLogger';
 import type { VMConfigProfile, VMGeneratorSettings, VMHardwareConfig } from '../types';
-import { apiPatch, createPollingSubscription } from './apiClient';
+import { apiPatch } from './apiClient';
 import { DEFAULT_SETTINGS, SETTINGS_PATH, VM_PROFILES_PATH } from './vmSettingsService/constants';
 import { mergeSettings, stripPasswords } from './vmSettingsService/normalization';
 import { normalizeApiPath, readSettingsPath } from './vmSettingsService/paths';
@@ -48,20 +48,6 @@ export async function saveVMConfigProfile(
 
 export async function deleteVMConfigProfile(profileId: string): Promise<void> {
   await deleteVMConfigProfileRecord(profileId);
-}
-
-export function subscribeToVMSettings(
-  callback: (settings: VMGeneratorSettings) => void,
-): () => void {
-  return createPollingSubscription(
-    async () => getVMSettings(),
-    callback,
-    (error) => {
-      uiLogger.error('Error subscribing to VM settings:', error);
-      callback(DEFAULT_SETTINGS);
-    },
-    { key: 'settings:vmgenerator', intervalMs: 4000, immediate: true },
-  );
 }
 
 export { DEFAULT_SETTINGS };

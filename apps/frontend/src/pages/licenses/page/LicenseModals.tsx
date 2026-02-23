@@ -1,7 +1,7 @@
 import type { FormInstance } from 'antd';
 import { AutoComplete, DatePicker, Form, Input, Modal, Select } from 'antd';
 import type React from 'react';
-import type { LicenseWithBots } from '../../../types';
+import type { LicenseWithBots } from '../../../entities/resources/model/types';
 import type { AddBotFormValues, BotsMap, LicenseFormValues } from './types';
 
 const { Option } = Select;

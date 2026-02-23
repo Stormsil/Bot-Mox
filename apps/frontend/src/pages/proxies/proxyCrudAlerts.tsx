@@ -6,7 +6,7 @@ import {
 } from '@ant-design/icons';
 import { Alert, Button, Space, Spin, Tag, Typography } from 'antd';
 import type React from 'react';
-import type { IPQSResponse } from '../../types';
+import type { IPQSResponse } from '../../entities/resources/model/types';
 import { getCountryFlag } from '../../utils/proxyUtils';
 
 const { Text } = Typography;

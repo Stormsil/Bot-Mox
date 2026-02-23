@@ -1,5 +1,5 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { SubscriptionSettings } from '../../../types';
+import type { SubscriptionSettings } from '../../resources/model/types';
 import { getDefaultSettings, updateSubscriptionSettings } from './settingsFacade';
 import { settingsQueryKeys } from './settingsQueryKeys';
 

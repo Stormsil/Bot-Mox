@@ -1,6 +1,6 @@
 import type { FormInstance } from 'antd';
 import dayjs from 'dayjs';
-import type { LicenseWithBots } from '../../../types';
+import type { LicenseWithBots } from '../../../entities/resources/model/types';
 import type { LicenseFormValues } from './types';
 
 export const setLicenseEditorDefaults = (

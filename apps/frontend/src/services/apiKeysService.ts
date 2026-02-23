@@ -7,7 +7,7 @@ import {
   putNotificationEventsViaContract,
   putProxySettingsViaContract,
 } from '../providers/settings-contract-client';
-import type { ApiKeys, NotificationEvents, ProxySettings } from '../types';
+import type { ApiKeys, NotificationEvents, ProxySettings } from '../entities/settings/model/types';
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' ? (value as Record<string, unknown>) : {};

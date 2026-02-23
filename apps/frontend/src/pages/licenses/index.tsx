@@ -17,7 +17,7 @@ import {
 } from '../../entities/resources/api/useLicenseMutations';
 import { useLicensesQuery } from '../../entities/resources/api/useResourcesQueries';
 import { uiLogger } from '../../observability/uiLogger';
-import type { LicenseWithBots } from '../../types';
+import type { LicenseWithBots } from '../../entities/resources/model/types';
 import styles from './LicensesPage.module.css';
 import type { AddBotFormValues, LicenseFormValues } from './page';
 import {

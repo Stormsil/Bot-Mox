@@ -1,4 +1,4 @@
-import { fetchBotsMap } from './botsApiService';
+import { fetchBotsMapViaContract } from '../entities/bot/api/botReadFacade';
 import { fetchResources } from './resourcesApiService';
 
 export interface DeleteVmBotRecord {
@@ -43,7 +43,7 @@ function normalizeToken(value: unknown): string {
 
 export async function fetchDeleteVmContext(): Promise<DeleteVmContext> {
   const [botsMap, proxiesList, subscriptionsList, licensesList] = await Promise.all([
-    fetchBotsMap(),
+    fetchBotsMapViaContract(),
     fetchResources<{ id: string; bot_id?: string | null }>('proxies'),
     fetchResources<{ id: string; bot_id?: string | null }>('subscriptions'),
     fetchResources<{ id: string; bot_ids?: unknown[] }>('licenses'),

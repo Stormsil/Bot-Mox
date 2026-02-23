@@ -50,11 +50,6 @@ export const loadCompatTemplateSnapshot = () => ({
   lastSettings: loadFromLocalStorage<AccountGeneratorSettings>(ACCOUNT_SETTINGS_MIGRATION_KEY),
 });
 
-/** @deprecated Use loadCompatDefaultTemplateId. */
-export const loadDeprecatedDefaultTemplateId = loadCompatDefaultTemplateId;
-/** @deprecated Use loadCompatTemplateSnapshot. */
-export const loadDeprecatedTemplateSnapshot = loadCompatTemplateSnapshot;
-
 export const templatesArrayToMap = (
   templates: AccountGeneratorTemplate[],
 ): Record<string, Omit<AccountGeneratorTemplate, 'id'>> => {

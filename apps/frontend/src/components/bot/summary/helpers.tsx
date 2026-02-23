@@ -9,7 +9,8 @@ import {
 } from '@ant-design/icons';
 import { Spin } from 'antd';
 import dayjs from 'dayjs';
-import type { Subscription } from '../../../types';
+import { formatDateDotted } from '../../../shared/lib/date';
+import type { Subscription } from '../../../entities/resources/model/types';
 import type {
   BotStatusInfo,
   BotSummaryBot,
@@ -78,7 +79,7 @@ export function formatProjectName(projectId: BotSummaryBot['project_id']) {
 
 export function formatDate(timestamp?: number) {
   if (!timestamp) return '—';
-  return dayjs(timestamp).format('DD.MM.YYYY');
+  return formatDateDotted(timestamp);
 }
 
 export function formatDaysLeft(timestamp?: number) {

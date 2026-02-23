@@ -1,6 +1,6 @@
 import { banBotViaContract, unbanBotViaContract } from '../../../providers/bot-contract-client';
 import { getWowNamesViaContract } from '../../../providers/wow-names-contract-client';
-import type { BanDetails } from '../../../types';
+import type { BanDetails } from '../model/lifecycleTypes';
 
 interface WowNamesPayload {
   names?: unknown;

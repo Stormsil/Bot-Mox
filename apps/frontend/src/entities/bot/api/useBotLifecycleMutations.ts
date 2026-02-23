@@ -1,5 +1,5 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { BanDetails } from '../../../types';
+import type { BanDetails } from '../model/lifecycleTypes';
 import { botQueryKeys } from './botQueryKeys';
 import { banBot, unbanBot } from './botRuntimeFacade';
 

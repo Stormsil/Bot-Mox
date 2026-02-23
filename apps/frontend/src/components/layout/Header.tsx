@@ -12,17 +12,11 @@ import { Avatar, Button, Dropdown, Layout, Space, Switch, Tag, Tooltip, Typograp
 import React, { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import { useThemeRuntime } from '../../theme/themeRuntime';
 import styles from './Header.module.css';
 import { buildBotContext, buildBreadcrumbs } from './header/breadcrumbs';
-
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+const cx = bindCssModuleCx(styles);
 
 const { Header: AntHeader } = Layout;
 const { Text } = Typography;
