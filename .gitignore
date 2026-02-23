@@ -67,3 +67,6 @@ docs/**/_generated/
 # Generated local diagnostics/audit snapshots (keep monthly reports if committed intentionally)
 docs/audits/*-latest.txt
 docs/audits/post-start-diagnostics-*.txt
+
+# Historical screenshot audit artifacts (heavy, non-code context)
+docs/history/snapshots/audit-artifacts/
