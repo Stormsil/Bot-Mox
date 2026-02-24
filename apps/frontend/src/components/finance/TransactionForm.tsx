@@ -70,46 +70,39 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   // Инициализация формы при открытии
   useEffect(() => {
     if (!visible) return;
+    if (operation) {
+      // Режим редактирования
+      setTransactionType(operation.type);
+      setSelectedCategory(operation.category);
+      setGoldAmount(operation.gold_amount || 0);
+      setGoldPrice(operation.gold_price_at_time || 0);
 
-    const frameId = window.requestAnimationFrame(() => {
-      if (operation) {
-        // Режим редактирования
-        setTransactionType(operation.type);
-        setSelectedCategory(operation.category);
-        setGoldAmount(operation.gold_amount || 0);
-        setGoldPrice(operation.gold_price_at_time || 0);
+      form.setFieldsValue({
+        type: operation.type,
+        category: operation.category,
+        project_id: operation.project_id,
+        description: operation.description,
+        amount: operation.amount,
+        currency: operation.currency,
+        gold_amount: operation.gold_amount,
+        gold_price_at_time: operation.gold_price_at_time,
+        date: dayjs(formatTimestampToDate(operation.date)),
+      });
+    } else {
+      // Режим создания
+      setTransactionType('expense');
+      setSelectedCategory('');
+      setGoldAmount(0);
+      setGoldPrice(0);
 
-        form.setFieldsValue({
-          type: operation.type,
-          category: operation.category,
-          project_id: operation.project_id,
-          description: operation.description,
-          amount: operation.amount,
-          currency: operation.currency,
-          gold_amount: operation.gold_amount,
-          gold_price_at_time: operation.gold_price_at_time,
-          date: dayjs(formatTimestampToDate(operation.date)),
-        });
-      } else {
-        // Режим создания
-        setTransactionType('expense');
-        setSelectedCategory('');
-        setGoldAmount(0);
-        setGoldPrice(0);
-
-        form.resetFields();
-        form.setFieldsValue({
-          type: 'expense',
-          currency: 'USD',
-          date: dayjs(),
-          category: undefined,
-        });
-      }
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+      form.resetFields();
+      form.setFieldsValue({
+        type: 'expense',
+        currency: 'USD',
+        date: dayjs(),
+        category: undefined,
+      });
+    }
   }, [visible, operation, form]);
 
   // Note: Gold price is now entered manually per transaction

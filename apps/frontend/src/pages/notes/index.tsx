@@ -34,13 +34,7 @@ export const NotesPage: React.FC = () => {
   useEffect(() => {
     const noteIdFromQuery = new URLSearchParams(location.search).get('note');
     if (!noteIdFromQuery) return;
-    const frameId = window.requestAnimationFrame(() => {
-      setSelectedNoteId((prev) => (prev === noteIdFromQuery ? prev : noteIdFromQuery));
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+    setSelectedNoteId((prev) => (prev === noteIdFromQuery ? prev : noteIdFromQuery));
   }, [location.search]);
 
   // Загрузка заметки при изменении выбранного ID

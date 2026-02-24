@@ -75,28 +75,23 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
     if (botQuery.isLoading && !botQuery.data) {
       return;
     }
-    const frameId = window.requestAnimationFrame(() => {
-      if (botQuery.error) {
-        console.error('Error loading bot status:', botQuery.error);
-        setError('Failed to load bot status');
-        setLoading(false);
-        return;
-      }
-
-      const status = typeof botQuery.data?.status === 'string' ? botQuery.data.status : '';
-      if (status) {
-        const mappedStage = STATUS_TO_STAGE_MAP[status];
-        if (mappedStage) {
-          setCurrentStage(mappedStage);
-        }
-      }
-
-      setError(null);
+    if (botQuery.error) {
+      console.error('Error loading bot status:', botQuery.error);
+      setError('Failed to load bot status');
       setLoading(false);
-    });
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+      return;
+    }
+
+    const status = typeof botQuery.data?.status === 'string' ? botQuery.data.status : '';
+    if (status) {
+      const mappedStage = STATUS_TO_STAGE_MAP[status];
+      if (mappedStage) {
+        setCurrentStage(mappedStage);
+      }
+    }
+
+    setError(null);
+    setLoading(false);
   }, [botQuery.data, botQuery.error, botQuery.isLoading]);
 
   const handleStageChange = (value: LifeStage) => {
