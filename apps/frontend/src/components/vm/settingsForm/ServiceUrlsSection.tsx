@@ -1,4 +1,4 @@
-import { Input, Switch } from 'antd';
+import { Input } from 'antd';
 import type React from 'react';
 import { SecretField } from './SecretField';
 import layout from './SettingsSectionLayout.module.css';
@@ -20,18 +20,6 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
           onChange={(event) => onFieldChange('services.proxmoxUrl', event.target.value)}
           size="small"
         />
-      </div>
-    </div>
-    <div className={`${layout.row} ${layout.rowSingle}`}>
-      <div className={layout.field}>
-        <div className={layout.fieldLabel}>Proxmox Auto Login</div>
-        <div>
-          <Switch
-            checked={settings.services.proxmoxAutoLogin}
-            onChange={(value) => onFieldChange('services.proxmoxAutoLogin', value)}
-            size="small"
-          />
-        </div>
       </div>
     </div>
     <div className={layout.row}>
@@ -78,28 +66,6 @@ export const ServiceUrlsSection: React.FC<SettingsSectionProps> = ({
           />
         </div>
       )}
-    </div>
-    <div className={layout.row}>
-      <div className={layout.field}>
-        <div className={layout.fieldLabel}>TinyFM Auto Login</div>
-        <div>
-          <Switch
-            checked={settings.services.tinyFmAutoLogin}
-            onChange={(value) => onFieldChange('services.tinyFmAutoLogin', value)}
-            size="small"
-          />
-        </div>
-      </div>
-      <div className={layout.field}>
-        <div className={layout.fieldLabel}>SyncThing Auto Login</div>
-        <div>
-          <Switch
-            checked={settings.services.syncThingAutoLogin}
-            onChange={(value) => onFieldChange('services.syncThingAutoLogin', value)}
-            size="small"
-          />
-        </div>
-      </div>
     </div>
     <div className={layout.row}>
       <div className={layout.field}>

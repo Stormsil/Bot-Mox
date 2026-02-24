@@ -181,33 +181,6 @@ export function buildBreadcrumbs(
   if (pathname.startsWith('/vms/list')) {
     return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'VM List' }];
   }
-  if (pathname.startsWith('/vms/sites/proxmox') || pathname.startsWith('/vms/proxmox')) {
-    return [
-      { label: 'Resources' },
-      { label: 'Virtual Machines' },
-      { label: 'Sites' },
-      { label: 'Proxmox' },
-    ];
-  }
-  if (pathname.startsWith('/vms/sites/tinyfm') || pathname.startsWith('/vms/tinyfm')) {
-    return [
-      { label: 'Resources' },
-      { label: 'Virtual Machines' },
-      { label: 'Sites' },
-      { label: 'TinyFileManager' },
-    ];
-  }
-  if (pathname.startsWith('/vms/sites/syncthing') || pathname.startsWith('/vms/syncthing')) {
-    return [
-      { label: 'Resources' },
-      { label: 'Virtual Machines' },
-      { label: 'Sites' },
-      { label: 'SyncThing' },
-    ];
-  }
-  if (pathname.startsWith('/vms/sites')) {
-    return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'Sites' }];
-  }
   if (pathname.startsWith('/vms')) {
     return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'VM Generator' }];
   }
