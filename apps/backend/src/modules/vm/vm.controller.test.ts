@@ -138,3 +138,23 @@ test('VmController returns deterministic code for missing bearer token', async (
     restore();
   }
 });
+
+test('VmController register ignores body user_id and uses authenticated identity userId', async () => {
+  const { controller, restore } = createController();
+  const auth = 'Bearer test-token';
+  try {
+    const created = await controller.register(
+      auth,
+      {
+        vm_uuid: 'VM-UUID-SECURE-001',
+        user_id: 'spoofed-user-id',
+        vm_name: 'vm-secure',
+      },
+      buildRequest('tenant-a'),
+    );
+
+    assert.equal((created.data as { user_id: string }).user_id, 'user-1');
+  } finally {
+    restore();
+  }
+});

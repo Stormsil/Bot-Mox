@@ -2,6 +2,7 @@ export {};
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { DataAtRestCrypto } = require('../common/data-at-rest-crypto.ts');
 const { ThemeAssetsService } = require('./theme-assets.service.ts');
 
 function createRepositoryStub(overrides = {}) {
@@ -69,19 +70,22 @@ test('ThemeAssetsService persists and reads assets via repository', async () => 
 });
 
 test('ThemeAssetsService uses repository list path', async () => {
+  const crypto = new DataAtRestCrypto();
   const row = {
     payload: {
-      id: 'asset-1',
-      object_key: 'theme-assets/tenant-a/asset-1-a.png',
-      mime_type: 'image/png',
-      size_bytes: 100,
-      width: 100,
-      height: 100,
-      status: 'ready',
-      image_url: 'https://example.local/theme-assets/asset-1',
-      image_url_expires_at_ms: Date.now() + 10_000,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      __enc_payload_v1: crypto.encryptJson({
+        id: 'asset-1',
+        object_key: 'theme-assets/tenant-a/asset-1-a.png',
+        mime_type: 'image/png',
+        size_bytes: 100,
+        width: 100,
+        height: 100,
+        status: 'ready',
+        image_url: 'https://example.local/theme-assets/asset-1',
+        image_url_expires_at_ms: Date.now() + 10_000,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }),
     },
   };
   const { service } = createService({
@@ -90,6 +94,42 @@ test('ThemeAssetsService uses repository list path', async () => {
   const list = await service.listAssets('tenant-a');
   assert.equal(list.items.length, 1);
   assert.equal(list.items[0].id, 'asset-1');
+});
+
+test('ThemeAssetsService stores encrypted payload and reads legacy payload', async () => {
+  let lastUpsertPayload = null;
+  const legacyRow = {
+    payload: {
+      id: 'legacy-asset',
+      object_key: 'theme-assets/tenant-a/legacy-asset-a.png',
+      mime_type: 'image/png',
+      size_bytes: 50,
+      width: 50,
+      height: 50,
+      status: 'ready',
+      image_url: 'https://example.local/theme-assets/legacy-asset',
+      image_url_expires_at_ms: Date.now() + 10_000,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  };
+  const { service } = createService({
+    upsert: async (input: { payload: Record<string, unknown> }) => {
+      lastUpsertPayload = input.payload;
+      return { payload: input.payload };
+    },
+    listByTenant: async () => [legacyRow],
+  });
+
+  await service.createPresignedUpload(
+    { filename: 'enc.png', mime_type: 'image/png', size_bytes: 10 },
+    'tenant-a',
+  );
+  assert.ok(lastUpsertPayload && Object.hasOwn(lastUpsertPayload, '__enc_payload_v1'));
+
+  const list = await service.listAssets('tenant-a');
+  assert.equal(list.items.length, 1);
+  assert.equal(list.items[0].id, 'legacy-asset');
 });
 
 test('ThemeAssetsService fails hard on repository errors', async () => {

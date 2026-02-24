@@ -4,10 +4,28 @@ import {
   listResourcesViaContract,
   updateResourceViaContract,
 } from '../../../providers/resource-contract-client';
+import { ApiClientError } from '../../../shared/api/apiClient';
 import type { ResourceKind } from '../model/types';
 
 const PAGE_LIMIT = 200;
 const MAX_PAGE_COUNT = 100;
+
+function shouldSoftFailResourceList(error: unknown): boolean {
+  if (!(error instanceof ApiClientError)) {
+    return false;
+  }
+  const code = String(error.code || '')
+    .trim()
+    .toUpperCase();
+  if (error.status === 502) {
+    return true;
+  }
+  return (
+    code === 'AGENTS_STORAGE_UNAVAILABLE' ||
+    code === 'VM_OPS_UNAVAILABLE' ||
+    code === 'AGENT_OFFLINE'
+  );
+}
 
 function hasStringId(value: unknown): value is { id: string } {
   if (!value || typeof value !== 'object') return false;
@@ -42,13 +60,20 @@ export async function fetchResourcesViaContract<T extends { id: string }>(
 ): Promise<T[]> {
   const all: T[] = [];
 
-  for (let page = 1; page <= MAX_PAGE_COUNT; page += 1) {
-    const { items, total } = await fetchResourcePage<T>(kind, page);
-    all.push(...items);
+  try {
+    for (let page = 1; page <= MAX_PAGE_COUNT; page += 1) {
+      const { items, total } = await fetchResourcePage<T>(kind, page);
+      all.push(...items);
 
-    if (items.length === 0) break;
-    if (all.length >= total) break;
-    if (items.length < PAGE_LIMIT) break;
+      if (items.length === 0) break;
+      if (all.length >= total) break;
+      if (items.length < PAGE_LIMIT) break;
+    }
+  } catch (error) {
+    if (shouldSoftFailResourceList(error)) {
+      return [];
+    }
+    throw error;
   }
 
   return all;

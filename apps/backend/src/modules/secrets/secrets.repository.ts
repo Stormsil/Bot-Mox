@@ -8,10 +8,12 @@ export class SecretsRepository {
 
   private getSecretMetaClient(): {
     findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
+    findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
     upsert: (args: unknown) => Promise<Record<string, unknown>>;
   } {
     return (this.prisma as unknown as { secretMeta: unknown }).secretMeta as {
       findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
+      findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
       upsert: (args: unknown) => Promise<Record<string, unknown>>;
     };
   }
@@ -81,6 +83,24 @@ export class SecretsRepository {
         tenantId,
         id,
       },
+    });
+  }
+
+  async listSecretMeta(input: {
+    tenantId: string;
+    limit?: number;
+  }): Promise<Array<Record<string, unknown>>> {
+    const limit = Number.isFinite(input.limit)
+      ? Math.max(1, Math.min(10_000, Math.trunc(input.limit || 500)))
+      : 500;
+    return this.getSecretMetaClient().findMany({
+      where: {
+        tenantId: input.tenantId,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      take: limit,
     });
   }
 

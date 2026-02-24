@@ -1,5 +1,5 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { SubscriptionFormData } from '../../../types';
+import type { SubscriptionFormData } from '../model/types';
 import { resourceQueryKeys } from './resourceQueryKeys';
 import { createSubscription, deleteSubscription, updateSubscription } from './subscriptionFacade';
 

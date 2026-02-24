@@ -6,12 +6,14 @@ services:
     restart: unless-stopped
     depends_on:
       - frontend
+      - admin
       - backend
       - minio
       - supabase-kong
     environment:
       CADDY_EMAIL: ${CADDY_EMAIL:-ops@example.com}
       APP_DOMAIN: ${APP_DOMAIN:-app.localhost}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN:-admin.localhost}
       API_DOMAIN: ${API_DOMAIN:-api.localhost}
       S3_DOMAIN: ${S3_DOMAIN:-s3.localhost}
       SUPABASE_DOMAIN: ${SUPABASE_DOMAIN:-supabase.localhost}
@@ -34,11 +36,23 @@ services:
       VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost}
       VITE_SUPABASE_URL: ${SUPABASE_PUBLIC_URL:-http://localhost}
       VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+      VITE_ADMIN_APP_URL: ${VITE_ADMIN_APP_URL:-http://${ADMIN_DOMAIN:-admin.localhost}}
       # Observability (runtime-config.js injected by nginx entrypoint)
       VITE_OTEL_ENABLED: ${VITE_OTEL_ENABLED:-0}
       VITE_OTEL_SERVICE_NAME: ${VITE_OTEL_SERVICE_NAME:-botmox-frontend}
       # In prod-like mode, prefer exporting via backend proxy (avoids Jaeger CORS issues).
       VITE_OTEL_EXPORTER_OTLP_ENDPOINT: ${VITE_OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost/api/v1/otel/v1/traces}
+    networks:
+      - app
+
+  admin:
+    image: ${ADMIN_IMAGE:-botmox/admin:prod-sim}
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost}
+      VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost}
+      VITE_SUPABASE_URL: ${SUPABASE_PUBLIC_URL:-http://localhost}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
     networks:
       - app
 
@@ -50,6 +64,15 @@ services:
       PORT: ${BACKEND_PORT:-3002}
       NEST_PORT: ${BACKEND_PORT:-3002}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      ADMIN_CORS_ORIGIN: ${ADMIN_CORS_ORIGIN:-http://localhost:5174,http://admin.localhost}
+      ADMIN_ORIGIN_ENFORCEMENT: ${ADMIN_ORIGIN_ENFORCEMENT:-true}
+      ADMIN_ORIGIN_STRICT: ${ADMIN_ORIGIN_STRICT:-false}
+      AUTH_SIGNIN_RATE_LIMIT_MAX: ${AUTH_SIGNIN_RATE_LIMIT_MAX:-30}
+      AUTH_SIGNIN_RATE_LIMIT_WINDOW_SECONDS: ${AUTH_SIGNIN_RATE_LIMIT_WINDOW_SECONDS:-60}
+      AUTH_SIGNUP_RATE_LIMIT_MAX: ${AUTH_SIGNUP_RATE_LIMIT_MAX:-10}
+      AUTH_SIGNUP_RATE_LIMIT_WINDOW_SECONDS: ${AUTH_SIGNUP_RATE_LIMIT_WINDOW_SECONDS:-3600}
+      AUTH_ADMIN_RATE_LIMIT_MAX: ${AUTH_ADMIN_RATE_LIMIT_MAX:-120}
+      AUTH_ADMIN_RATE_LIMIT_WINDOW_SECONDS: ${AUTH_ADMIN_RATE_LIMIT_WINDOW_SECONDS:-60}
       # Observability
       BOTMOX_OTEL_ENABLED: ${BOTMOX_OTEL_ENABLED:-0}
       BOTMOX_OTEL_PROXY_ENABLED: ${BOTMOX_OTEL_PROXY_ENABLED:-0}
@@ -58,7 +81,12 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-}
       DATA_BACKEND: ${DATA_BACKEND:-supabase}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:${SUPABASE_DB_PASSWORD:-postgres}@supabase-db:5432/postgres?schema=public}
       SUPABASE_URL: ${SUPABASE_URL:-http://supabase-kong:8000}
+      SUPABASE_JWT_ISSUER: ${SUPABASE_JWT_ISSUER:-http://localhost/auth/v1}
+      SUPABASE_JWT_AUDIENCE: ${SUPABASE_JWT_AUDIENCE:-authenticated}
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-}
+      SUPABASE_JWKS_URL: ${SUPABASE_JWKS_URL:-}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
       SUPABASE_ADMIN_EMAILS: ${SUPABASE_ADMIN_EMAILS:-}
       SUPABASE_ADMIN_USER_IDS: ${SUPABASE_ADMIN_USER_IDS:-}
@@ -76,10 +104,11 @@ services:
       INTERNAL_INFRA_TOKEN: ${INTERNAL_INFRA_TOKEN:-}
       LICENSE_LEASE_SECRET: ${LICENSE_LEASE_SECRET:-}
       AGENT_AUTH_SECRET: ${AGENT_AUTH_SECRET:-}
-      AGENT_TOKEN_TTL_SECONDS: ${AGENT_TOKEN_TTL_SECONDS:-2592000}
+      AGENT_AUTH_TOKEN_TTL_SECONDS: ${AGENT_AUTH_TOKEN_TTL_SECONDS:-2592000}
       AGENT_PAIRING_PUBLIC_URL: ${AGENT_PAIRING_PUBLIC_URL:-https://${API_DOMAIN:-api.localhost}}
     networks:
       - app
+      - data
 
   supabase-db:
     image: public.ecr.aws/supabase/postgres:15.8.1.085

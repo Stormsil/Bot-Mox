@@ -1,9 +1,12 @@
 import {
+  subscribeToVmOpsEvents,
+  type VmOpsCommandEvent,
+} from '../../providers/vm-ops-events-client';
+import {
   dispatchVmOpsViaContract,
   getVmOpsCommandViaContract,
 } from '../../providers/vmops-contract-client';
-import { ApiClientError } from '../apiClient';
-import { subscribeToVmOpsEvents, type VmOpsCommandEvent } from '../vmOpsEventsService';
+import { ApiClientError } from '../../shared/api/apiClient';
 import { type CommandStatus, toCommandStatus } from './parsers';
 
 const TERMINAL_STATES = new Set(['succeeded', 'failed', 'expired', 'cancelled']);

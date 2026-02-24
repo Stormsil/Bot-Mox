@@ -12,8 +12,8 @@ import type {
   NotificationEvents,
   ProxySettings,
   StoragePolicy,
-  SubscriptionSettings,
-} from '../../../types';
+} from '../model/types';
+import type { SubscriptionSettings } from '../../resources/model/types';
 import type { ProjectSettings } from '../model/projectSettings';
 import {
   DEFAULT_PROJECTS,

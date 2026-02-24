@@ -1,10 +1,11 @@
 import {
+  ApiClientError,
   type ApiSuccessEnvelope,
   apiDelete,
   apiGet,
   apiPost,
   apiPut,
-} from '../../services/apiClient';
+} from '../../shared/api/apiClient';
 import type {
   GenerateIsoPayloadRequest,
   GenerateIsoPayloadResponse,
@@ -16,8 +17,25 @@ import type {
 const PROFILES_PREFIX = '/api/v1/unattend-profiles';
 const PROVISIONING_PREFIX = '/api/v1/provisioning';
 
+function isExpectedProvisioningReadDegradedError(error: unknown): error is ApiClientError {
+  if (!(error instanceof ApiClientError)) {
+    return false;
+  }
+  const code = String(error.code || '').trim();
+  return (
+    error.status === 502 || code === 'AGENTS_STORAGE_UNAVAILABLE' || code === 'VM_OPS_UNAVAILABLE'
+  );
+}
+
 export async function listUnattendProfiles(): Promise<ApiSuccessEnvelope<UnattendProfile[]>> {
-  return apiGet<UnattendProfile[]>(PROFILES_PREFIX);
+  try {
+    return await apiGet<UnattendProfile[]>(PROFILES_PREFIX);
+  } catch (error) {
+    if (isExpectedProvisioningReadDegradedError(error)) {
+      return { success: true, data: [] };
+    }
+    throw error;
+  }
 }
 
 export async function createUnattendProfile(payload: {
@@ -55,5 +73,12 @@ export async function generateIsoPayload(
 export async function getVmSetupProgress(
   vmUuid: string,
 ): Promise<ApiSuccessEnvelope<VmSetupProgressEntry[]>> {
-  return apiGet<VmSetupProgressEntry[]>(`${PROVISIONING_PREFIX}/progress/${vmUuid}`);
+  try {
+    return await apiGet<VmSetupProgressEntry[]>(`${PROVISIONING_PREFIX}/progress/${vmUuid}`);
+  } catch (error) {
+    if (isExpectedProvisioningReadDegradedError(error)) {
+      return { success: true, data: [] };
+    }
+    throw error;
+  }
 }

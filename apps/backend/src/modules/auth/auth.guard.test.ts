@@ -2,7 +2,7 @@ export {};
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { UnauthorizedException } = require('@nestjs/common');
+const { ForbiddenException, UnauthorizedException } = require('@nestjs/common');
 const { AuthGuard } = require('./auth.guard.ts');
 const { REQUEST_IDENTITY_KEY } = require('./request-identity.ts');
 
@@ -34,6 +34,34 @@ test('AuthGuard allows public health route without auth', async () => {
   const req: Record<string, unknown> = {
     method: 'GET',
     path: '/api/v1/health',
+    headers: {},
+  };
+
+  const allowed = await guard.canActivate(makeContext(req));
+  assert.equal(allowed, true);
+  assert.equal(verifyCalls, 0);
+});
+
+test('AuthGuard allows public admin signin route without auth', async () => {
+  let verifyCalls = 0;
+  const authService = {
+    verifyBearerToken: async () => {
+      verifyCalls += 1;
+      return null;
+    },
+    isShadow: () => false,
+    createShadowIdentity: () => ({
+      uid: 'shadow',
+      email: 'shadow@local',
+      roles: ['user'],
+      tenantId: 'shadow-tenant',
+      raw: {},
+    }),
+  };
+  const guard = new AuthGuard(authService);
+  const req: Record<string, unknown> = {
+    method: 'POST',
+    path: '/api/v1/auth/admin/signin',
     headers: {},
   };
 
@@ -129,4 +157,90 @@ test('AuthGuard stores verified identity on request', async () => {
   assert.equal(allowed, true);
   assert.equal((req[REQUEST_IDENTITY_KEY] as { userId: string }).userId, 'user-1');
   assert.equal((req[REQUEST_IDENTITY_KEY] as { tenantId: string }).tenantId, 'tenant-a');
+});
+
+test('AuthGuard blocks write endpoints for free access tier', async () => {
+  const authService = {
+    verifyBearerToken: async () => ({
+      uid: 'user-free',
+      email: 'free@botmox.local',
+      roles: ['user'],
+      tenantId: 'tenant-free',
+      access: {
+        tenantType: 'user',
+        accessTier: 'free',
+        premiumActive: false,
+        writeAccess: false,
+        lifetimePremium: false,
+        trialEndsAt: null,
+        premiumUntil: null,
+      },
+      raw: {},
+    }),
+    isShadow: () => false,
+    createShadowIdentity: () => ({
+      uid: 'shadow-user',
+      email: 'shadow@local',
+      roles: ['user'],
+      tenantId: 'shadow-tenant',
+      raw: {},
+    }),
+  };
+  const guard = new AuthGuard(authService);
+  const req: Record<string, unknown> = {
+    method: 'POST',
+    path: '/api/v1/bots',
+    headers: { authorization: 'Bearer free-token' },
+  };
+
+  await assert.rejects(
+    () => guard.canActivate(makeContext(req)),
+    (error: unknown) => {
+      assert.ok(error instanceof ForbiddenException);
+      assert.deepEqual((error as { getResponse: () => unknown }).getResponse(), {
+        code: 'PREMIUM_REQUIRED',
+        message: 'Premium access or active trial is required for write operations',
+      });
+      return true;
+    },
+  );
+});
+
+test('AuthGuard allows free access tier to start one-time trial', async () => {
+  const authService = {
+    verifyBearerToken: async () => ({
+      uid: 'user-free',
+      email: 'free@botmox.local',
+      roles: ['user'],
+      tenantId: 'tenant-free',
+      access: {
+        tenantType: 'user',
+        accessTier: 'free',
+        premiumActive: false,
+        writeAccess: false,
+        lifetimePremium: false,
+        trialEndsAt: null,
+        premiumUntil: null,
+      },
+      raw: {},
+    }),
+    isShadow: () => false,
+    createShadowIdentity: () => ({
+      uid: 'shadow-user',
+      email: 'shadow@local',
+      roles: ['user'],
+      tenantId: 'shadow-tenant',
+      raw: {},
+    }),
+  };
+  const guard = new AuthGuard(authService);
+  const req: Record<string, unknown> = {
+    method: 'POST',
+    path: '/api/v1/billing/trial/start',
+    headers: { authorization: 'Bearer free-token' },
+  };
+
+  const allowed = await guard.canActivate(makeContext(req));
+  assert.equal(allowed, true);
+  assert.equal((req[REQUEST_IDENTITY_KEY] as { tenantId: string }).tenantId, 'tenant-free');
 });

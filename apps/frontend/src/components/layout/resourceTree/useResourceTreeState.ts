@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type BotStatus,
   DEFAULT_VISIBLE_STATUSES,
@@ -54,6 +54,22 @@ export function useResourceTreeState(options: UseResourceTreeStateOptions): Reso
   const [visibleStatuses, setVisibleStatuses] = useState<BotStatus[]>(DEFAULT_VISIBLE_STATUSES);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [hasRemoteSettings, setHasRemoteSettings] = useState(false);
+  const lastPersistedSignatureRef = useRef<string>('');
+
+  const buildSettingsSignature = useCallback(
+    (input: {
+      expandedKeys: React.Key[];
+      visibleStatuses: BotStatus[];
+      showFilters: boolean;
+    }): string => {
+      return JSON.stringify({
+        expandedKeys: input.expandedKeys.map((key) => String(key)),
+        visibleStatuses: input.visibleStatuses,
+        showFilters: input.showFilters,
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     if (settingsLoaded || !options.resourceTreeSettingsQuery.isFetched) {
@@ -63,6 +79,11 @@ export function useResourceTreeState(options: UseResourceTreeStateOptions): Reso
     const data = options.resourceTreeSettingsQuery.data;
     if (data) {
       const frameId = window.requestAnimationFrame(() => {
+        lastPersistedSignatureRef.current = buildSettingsSignature({
+          expandedKeys: Array.isArray(data.expandedKeys) ? data.expandedKeys : [],
+          visibleStatuses: Array.isArray(data.visibleStatuses) ? data.visibleStatuses : [],
+          showFilters: typeof data.showFilters === 'boolean' ? data.showFilters : true,
+        });
         setHasRemoteSettings(true);
         if (data.visibleStatuses?.length) {
           setVisibleStatuses(sanitizeBotStatuses(data.visibleStatuses));
@@ -102,6 +123,11 @@ export function useResourceTreeState(options: UseResourceTreeStateOptions): Reso
     }
 
     const frameId = window.requestAnimationFrame(() => {
+      lastPersistedSignatureRef.current = buildSettingsSignature({
+        expandedKeys: nextExpandedKeys ?? [],
+        visibleStatuses: nextVisibleStatuses ?? DEFAULT_VISIBLE_STATUSES,
+        showFilters: typeof nextShowFilters === 'boolean' ? nextShowFilters : true,
+      });
       if (nextVisibleStatuses) {
         setVisibleStatuses(nextVisibleStatuses);
       }
@@ -120,6 +146,7 @@ export function useResourceTreeState(options: UseResourceTreeStateOptions): Reso
     settingsLoaded,
     options.resourceTreeSettingsQuery.isFetched,
     options.resourceTreeSettingsQuery.data,
+    buildSettingsSignature,
   ]);
 
   useEffect(() => {
@@ -137,6 +164,14 @@ export function useResourceTreeState(options: UseResourceTreeStateOptions): Reso
 
   useEffect(() => {
     if (!settingsLoaded) return;
+    const nextSignature = buildSettingsSignature({
+      expandedKeys,
+      visibleStatuses,
+      showFilters,
+    });
+    if (nextSignature === lastPersistedSignatureRef.current) {
+      return;
+    }
     const payload = {
       expandedKeys: expandedKeys.map((key) => String(key)),
       visibleStatuses,
@@ -145,6 +180,7 @@ export function useResourceTreeState(options: UseResourceTreeStateOptions): Reso
     };
 
     const timeout = setTimeout(() => {
+      lastPersistedSignatureRef.current = nextSignature;
       options.saveResourceTreeSettingsMutation.mutate(payload, {
         onError: (error) => {
           console.error('Error saving resource tree settings:', error);
@@ -158,6 +194,7 @@ export function useResourceTreeState(options: UseResourceTreeStateOptions): Reso
     expandedKeys,
     visibleStatuses,
     showFilters,
+    buildSettingsSignature,
     options.saveResourceTreeSettingsMutation,
   ]);
 

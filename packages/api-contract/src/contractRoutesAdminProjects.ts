@@ -1,0 +1,112 @@
+import { z } from 'zod';
+import {
+  adminProjectCreateReleaseSchema,
+  adminProjectReleaseListQuerySchema,
+  adminProjectReleaseRecordSchema,
+  adminProjectReleasesListResponseSchema,
+  adminProjectRollbackResponseSchema,
+  adminProjectRollbackSchema,
+  adminProjectRolloutResponseSchema,
+  adminProjectRolloutSchema,
+  adminProjectRolloutStatusListResponseSchema,
+  adminProjectRolloutStatusQuerySchema,
+  adminProjectStagedRolloutResponseSchema,
+  adminProjectStagedRolloutSchema,
+  authHeaderSchema,
+  errorEnvelopeSchema,
+  successEnvelopeSchema,
+} from './schemas.js';
+
+export const contractRoutesAdminProjects = {
+  adminProjectsCreateRelease: {
+    method: 'POST',
+    path: '/api/v1/admin/projects/catalog/releases',
+    headers: authHeaderSchema,
+    body: adminProjectCreateReleaseSchema,
+    responses: {
+      200: successEnvelopeSchema(adminProjectReleaseRecordSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+    },
+    summary: 'Create project catalog release',
+  },
+  adminProjectsListReleases: {
+    method: 'GET',
+    path: '/api/v1/admin/projects/catalog/releases',
+    headers: authHeaderSchema,
+    query: adminProjectReleaseListQuerySchema,
+    responses: {
+      200: successEnvelopeSchema(
+        z.union([z.array(adminProjectReleaseRecordSchema), adminProjectReleasesListResponseSchema]),
+      ),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+    },
+    summary: 'List project catalog releases',
+  },
+  adminProjectsRollout: {
+    method: 'POST',
+    path: '/api/v1/admin/projects/rollout',
+    headers: authHeaderSchema,
+    body: adminProjectRolloutSchema,
+    responses: {
+      200: successEnvelopeSchema(adminProjectRolloutResponseSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+    },
+    summary: 'Rollout release to tenants',
+  },
+  adminProjectsRolloutStaged: {
+    method: 'POST',
+    path: '/api/v1/admin/projects/rollout/staged',
+    headers: authHeaderSchema,
+    body: adminProjectStagedRolloutSchema,
+    responses: {
+      200: successEnvelopeSchema(adminProjectStagedRolloutResponseSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+    },
+    summary: 'Canary + wave staged rollout',
+  },
+  adminProjectsRollback: {
+    method: 'POST',
+    path: '/api/v1/admin/projects/rollback',
+    headers: authHeaderSchema,
+    body: adminProjectRollbackSchema,
+    responses: {
+      200: successEnvelopeSchema(adminProjectRollbackResponseSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+    },
+    summary: 'Rollback project rollout',
+  },
+  adminProjectsRolloutStatus: {
+    method: 'GET',
+    path: '/api/v1/admin/projects/rollout/status',
+    headers: authHeaderSchema,
+    query: adminProjectRolloutStatusQuerySchema,
+    responses: {
+      200: successEnvelopeSchema(
+        z.union([
+          z.array(adminProjectRolloutStatusListResponseSchema.shape.items.element),
+          adminProjectRolloutStatusListResponseSchema,
+        ]),
+      ),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+    },
+    summary: 'List rollout status',
+  },
+} as const;

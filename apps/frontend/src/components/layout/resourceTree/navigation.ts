@@ -1,6 +1,7 @@
 const PATH_BY_TREE_KEY: Record<string, string> = {
   datacenter: '/',
   finance: '/finance',
+  billing: '/billing',
   settings: '/settings',
   notes: '/notes',
   workspace_calendar: '/workspace/calendar',

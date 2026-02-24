@@ -33,21 +33,24 @@ test('PlaybooksService requires tenantId', async () => {
 
 test('PlaybooksService uses repository list results', async () => {
   const records = new Map<string, Record<string, unknown>>();
+  const dbRows = new Map<string, Record<string, unknown>>();
   const repositoryStub: RepositoryStub = {
-    list: async () => [...records.values()].map((record) => ({ id: record.id, payload: record })),
+    list: async () => [...dbRows.values()],
     findById: async (_tenantId: unknown, id: unknown) => {
       const key = String(id);
-      const record = records.get(key);
-      return record ? { id: key, payload: record } : null;
+      return dbRows.get(key) ?? null;
     },
     upsert: async (input: unknown) => {
       const typed = input as { id: string; payload: Record<string, unknown> };
       records.set(typed.id, typed.payload);
-      return { id: typed.id, payload: typed.payload };
+      const row = { id: typed.id, payload: typed.payload };
+      dbRows.set(typed.id, row);
+      return row;
     },
     delete: async (_tenantId: unknown, id: unknown) => {
       const key = String(id);
-      const existed = records.has(key);
+      const existed = dbRows.has(key);
+      dbRows.delete(key);
       records.delete(key);
       return existed;
     },
@@ -60,6 +63,61 @@ test('PlaybooksService uses repository list results', async () => {
   const list = await service.list('tenant-a');
   assert.equal(list.length, 1);
   assert.equal(list[0].name, 'Tenant A');
+});
+
+test('PlaybooksService stores encrypted payload and returns decrypted shape', async () => {
+  let lastUpsertPayload: Record<string, unknown> | null = null;
+  const dbRows = new Map<string, Record<string, unknown>>();
+  const repositoryStub: RepositoryStub = {
+    list: async () => [...dbRows.values()],
+    findById: async (_tenantId: unknown, id: unknown) => dbRows.get(String(id)) ?? null,
+    upsert: async (input: unknown) => {
+      const typed = input as { id: string; payload: Record<string, unknown> };
+      lastUpsertPayload = typed.payload;
+      const row = { id: typed.id, payload: typed.payload };
+      dbRows.set(typed.id, row);
+      return row;
+    },
+    delete: async () => false,
+  };
+  const service = createService(repositoryStub);
+  const created = await service.create(
+    { id: 'pb-sec-1', name: 'PB', content: 'private content', is_default: false },
+    'tenant-a',
+  );
+  assert.equal(created.id, 'pb-sec-1');
+  assert.equal(created.content, 'private content');
+  assert.ok(lastUpsertPayload && Object.hasOwn(lastUpsertPayload, '__enc_payload_v1'));
+  assert.equal(Object.hasOwn(lastUpsertPayload || {}, 'content'), false);
+
+  const listed = await service.list('tenant-a');
+  assert.equal(listed.length, 1);
+  assert.equal(listed[0].content, 'private content');
+});
+
+test('PlaybooksService keeps legacy plaintext payload compatible', async () => {
+  const repositoryStub: RepositoryStub = {
+    list: async () => [
+      {
+        id: 'pb-legacy-1',
+        payload: { id: 'pb-legacy-1', name: 'Legacy', content: 'legacy plain', is_default: false },
+      },
+    ],
+    findById: async () => ({
+      id: 'pb-legacy-1',
+      payload: { id: 'pb-legacy-1', name: 'Legacy', content: 'legacy plain', is_default: false },
+    }),
+    upsert: async (input: unknown) => {
+      const typed = input as { id: string; payload: Record<string, unknown> };
+      return { id: typed.id, payload: typed.payload };
+    },
+    delete: async () => false,
+  };
+  const service = createService(repositoryStub);
+  const list = await service.list('tenant-a');
+  assert.equal(list[0].content, 'legacy plain');
+  const one = await service.getById('pb-legacy-1', 'tenant-a');
+  assert.equal(one?.content, 'legacy plain');
 });
 
 test('PlaybooksService fails hard on repository errors', async () => {

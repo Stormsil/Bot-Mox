@@ -29,6 +29,10 @@ function createRepositoryStub(overrides = {}) {
       return row;
     },
     findSecretMeta: async (tenantId, id) => secretStore.get(`${tenantId}:${id}`) ?? null,
+    listSecretMeta: async (input) =>
+      Array.from(secretStore.values())
+        .filter((item) => item.tenantId === input.tenantId)
+        .slice(0, Number(input.limit ?? 500)),
     upsertBinding: async (input) => {
       const key = `${input.tenantId}:${input.scopeType}:${input.scopeId}:${input.fieldName}`;
       const existing = bindingStore.get(key);
@@ -59,6 +63,7 @@ function makeVaultStub(overrides = {}) {
   return {
     storeMaterial: async () => ({ vaultRef: 'vault://ref-1', materialVersion: 1 }),
     rotateMaterial: async () => ({ vaultRef: 'vault://ref-2', materialVersion: 2 }),
+    rotateStoredMaterial: async () => ({ vaultRef: 'vault://ref-3', materialVersion: 3 }),
     ...overrides,
   };
 }
@@ -242,5 +247,128 @@ test('SecretsService rejects local fallback references in shadow mode', async ()
     );
   } finally {
     shadow.restore();
+  }
+});
+
+test('SecretsService rotateTenantSecrets rotates tenant scoped metadata only', async () => {
+  const repository = createRepositoryStub();
+  const { service, restore } = createService(repository, makeVaultStub());
+  try {
+    const a = await service.createSecret({
+      tenantId: 'tenant-a',
+      label: 'secret-a1',
+      ciphertext: 'cipher-a1',
+      alg: 'aes',
+      keyId: 'k-old',
+      nonce: 'n1',
+    });
+    await service.createSecret({
+      tenantId: 'tenant-a',
+      label: 'secret-a2',
+      ciphertext: 'cipher-a2',
+      alg: 'aes',
+      keyId: 'k-old',
+      nonce: 'n2',
+    });
+    const b = await service.createSecret({
+      tenantId: 'tenant-b',
+      label: 'secret-b1',
+      ciphertext: 'cipher-b1',
+      alg: 'aes',
+      keyId: 'k-old',
+      nonce: 'n3',
+    });
+
+    const summary = await service.rotateTenantSecrets({
+      tenantId: 'tenant-a',
+      keyId: 'k-new',
+    });
+    assert.equal(summary.tenant_id, 'tenant-a');
+    assert.equal(summary.key_id, 'k-new');
+    assert.equal(summary.dry_run, false);
+    assert.equal(summary.requested, 2);
+    assert.equal(summary.planned, 0);
+    assert.equal(summary.rotated, 2);
+    assert.equal(summary.failed, 0);
+
+    const rotatedMeta = await service.getSecretMeta('tenant-a', a.id);
+    assert.equal(rotatedMeta?.key_id, 'k-new');
+    assert.equal(rotatedMeta?.material_version, 3);
+
+    const untouched = await service.getSecretMeta('tenant-b', b.id);
+    assert.equal(untouched?.key_id, 'k-old');
+  } finally {
+    restore();
+  }
+});
+
+test('SecretsService rotateTenantSecrets dry-run plans rotations without mutating metadata', async () => {
+  const repository = createRepositoryStub();
+  const { service, restore } = createService(repository, makeVaultStub());
+  try {
+    const created = await service.createSecret({
+      tenantId: 'tenant-a',
+      label: 'secret-a1',
+      ciphertext: 'cipher-a1',
+      alg: 'aes',
+      keyId: 'k-old',
+      nonce: 'n1',
+    });
+
+    const summary = await service.rotateTenantSecrets({
+      tenantId: 'tenant-a',
+      keyId: 'k-new',
+      dryRun: true,
+    });
+
+    assert.equal(summary.dry_run, true);
+    assert.equal(summary.requested, 1);
+    assert.equal(summary.planned, 1);
+    assert.equal(summary.rotated, 0);
+    assert.equal(summary.failed, 0);
+    assert.equal(summary.details[0]?.status, 'planned');
+
+    const after = await service.getSecretMeta('tenant-a', created.id);
+    assert.equal(after?.key_id, 'k-old');
+  } finally {
+    restore();
+  }
+});
+
+test('SecretsService rotateTenantSecrets skips secrets already on target key id', async () => {
+  const repository = createRepositoryStub();
+  const { service, restore } = createService(repository, makeVaultStub());
+  try {
+    const created = await service.createSecret({
+      tenantId: 'tenant-a',
+      label: 'secret-a1',
+      ciphertext: 'cipher-a1',
+      alg: 'aes',
+      keyId: 'k-current',
+      nonce: 'n1',
+    });
+
+    const dryRunSummary = await service.rotateTenantSecrets({
+      tenantId: 'tenant-a',
+      keyId: 'k-current',
+      dryRun: true,
+    });
+    assert.equal(dryRunSummary.requested, 1);
+    assert.equal(dryRunSummary.planned, 0);
+    assert.equal(dryRunSummary.skipped, 1);
+    assert.equal(dryRunSummary.details[0]?.reason, 'already_on_key_id');
+
+    const liveSummary = await service.rotateTenantSecrets({
+      tenantId: 'tenant-a',
+      keyId: 'k-current',
+    });
+    assert.equal(liveSummary.rotated, 0);
+    assert.equal(liveSummary.skipped, 1);
+    assert.equal(liveSummary.details[0]?.reason, 'already_on_key_id');
+
+    const after = await service.getSecretMeta('tenant-a', created.id);
+    assert.equal(after?.key_id, 'k-current');
+  } finally {
+    restore();
   }
 });

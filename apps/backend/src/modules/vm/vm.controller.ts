@@ -46,8 +46,13 @@ export class VmController {
       });
     }
 
-    const fallbackUserId = 'user-1';
-    const resolvedUserId = String(parsedBody.data.user_id || '').trim() || fallbackUserId;
+    const resolvedUserId = String(identity.userId || '').trim();
+    if (!resolvedUserId) {
+      throw new UnauthorizedException({
+        code: 'MISSING_AUTH_IDENTITY',
+        message: 'Authenticated user identity is required',
+      });
+    }
 
     const created = await this.vmService.registerVm({
       tenantId: identity.tenantId,

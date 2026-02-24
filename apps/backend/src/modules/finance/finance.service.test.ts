@@ -49,21 +49,23 @@ test('FinanceService fails hard on repository errors', async () => {
 
 test('FinanceService CRUD/list use repository only', async () => {
   const records = new Map<string, Record<string, unknown>>();
+  const dbRows = new Map<string, Record<string, unknown>>();
   const repositoryStub: RepositoryStub = {
-    list: async () => [...records.values()].map((record) => ({ id: record.id, payload: record })),
+    list: async () => [...dbRows.values()],
     findById: async (_tenantId: unknown, id: unknown) => {
       const key = String(id);
-      const record = records.get(key);
-      return record ? { id: key, payload: record } : null;
+      return dbRows.get(key) ?? null;
     },
     upsert: async (input: unknown) => {
       const typed = input as { id: string; payload: Record<string, unknown> };
+      dbRows.set(typed.id, { id: typed.id, payload: typed.payload });
       records.set(typed.id, typed.payload);
-      return { id: typed.id, payload: typed.payload };
+      return dbRows.get(typed.id) as Record<string, unknown>;
     },
     delete: async (_tenantId: unknown, id: unknown) => {
       const key = String(id);
-      const existed = records.has(key);
+      const existed = dbRows.has(key);
+      dbRows.delete(key);
       records.delete(key);
       return existed;
     },
@@ -77,4 +79,38 @@ test('FinanceService CRUD/list use repository only', async () => {
   assert.equal(fetched?.id, 'fin-1');
   const removed = await service.remove('fin-1', 'tenant-a');
   assert.equal(removed, true);
+});
+
+test('FinanceService stores encrypted payload and returns decrypted shape', async () => {
+  let lastUpsertPayload: Record<string, unknown> | null = null;
+  const dbRows = new Map<string, Record<string, unknown>>();
+  const repositoryStub: RepositoryStub = {
+    list: async () => [...dbRows.values()],
+    findById: async (_tenantId: unknown, id: unknown) => dbRows.get(String(id)) ?? null,
+    upsert: async (input: unknown) => {
+      const typed = input as { id: string; payload: Record<string, unknown> };
+      lastUpsertPayload = typed.payload;
+      const row = { id: typed.id, payload: typed.payload };
+      dbRows.set(typed.id, row);
+      return row;
+    },
+    delete: async () => false,
+  };
+
+  const service = createService(repositoryStub);
+  const created = await service.create(
+    { id: 'fin-sec-1', amount: 77, note: 'private note' },
+    undefined,
+    'tenant-a',
+  );
+
+  assert.equal(created.id, 'fin-sec-1');
+  assert.equal(created.note, 'private note');
+  assert.ok(lastUpsertPayload && typeof lastUpsertPayload === 'object');
+  assert.ok(Object.hasOwn(lastUpsertPayload || {}, '__enc_payload_v1'));
+  assert.equal(Object.hasOwn(lastUpsertPayload || {}, 'note'), false);
+
+  const listed = await service.list({}, 'tenant-a');
+  assert.equal(listed.items.length, 1);
+  assert.equal(listed.items[0].note, 'private note');
 });

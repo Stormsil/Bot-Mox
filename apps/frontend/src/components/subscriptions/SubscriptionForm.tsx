@@ -4,7 +4,7 @@ import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import type { SubscriptionFormData, SubscriptionWithDetails } from '../../types';
+import type { SubscriptionFormData, SubscriptionWithDetails } from '../../entities/resources/model/types';
 import styles from './SubscriptionForm.module.css';
 
 const { Option } = Select;

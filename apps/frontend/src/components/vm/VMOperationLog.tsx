@@ -1,6 +1,7 @@
 import { message, Popconfirm } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import type { VMTaskEntry } from '../../types';
 import coreStyles from './VMOperationLogCore.module.css';
 import modalStyles from './VMOperationLogModal.module.css';
@@ -10,12 +11,7 @@ import { getTaskText } from './vmOperationLogUtils';
 
 const styles = { ...coreStyles, ...modalStyles };
 
-const cx = (...classNames: Array<string | false | null | undefined>) =>
-  classNames
-    .flatMap((name) => String(name || '').split(/\s+/))
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
+const cx = bindCssModuleCx(styles);
 
 interface VMOperationLogProps {
   tasks: VMTaskEntry[];

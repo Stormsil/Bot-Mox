@@ -1,4 +1,4 @@
-import { deleteVM, waitForTask, waitForVmPresence } from '../../../services/vmService';
+import { deleteVM, waitForTask, waitForVmPresence } from '../../../services/vmService/proxmoxOps';
 import type { VMQueueItem } from '../../../types';
 import type { VMLog } from '../../useVMLog';
 import { normalizeVmId } from './utils';

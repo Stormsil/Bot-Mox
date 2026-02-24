@@ -11,10 +11,11 @@ Related Checks: `docs:check`, `check:all:mono`
 
 Default local mode is production-like localhost through Caddy.
 
-1. Start prod-like dev stack:
+1. Start deterministic one-command stack (rebuild + restart + agent; admin account is reused):
 ```bash
-pnpm run dev:prodlike:up
+pnpm run stack:one:up
 ```
+`stack:one:up` is strict by default (full reset + no-cache rebuild + auth/access smoke + admin projects lifecycle smoke).
 2. Observe status:
 ```bash
 pnpm run dev:prodlike:ps
@@ -74,6 +75,7 @@ Strict CI profile uses `pnpm run migration:check:strict` with enforced baseline:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `SUPABASE_VAULT_RPC_NAME`
+   - `SUPABASE_VAULT_ROTATE_RPC_NAME`
 5. GitHub Actions setup order is mandatory:
    - run `pnpm/action-setup` before `actions/setup-node` when using `cache: pnpm`.
 6. CI `quality-gates` executes `check:all:mono` in deterministic sequential mode (no turbo fan-out) to avoid runner-specific package-manager spawn instability.

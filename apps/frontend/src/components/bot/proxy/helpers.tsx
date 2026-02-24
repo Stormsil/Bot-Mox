@@ -5,7 +5,7 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import type { AlertProps } from 'antd';
-import type { Proxy as ProxyResource } from '../../../types';
+import type { Proxy as ProxyResource } from '../../../entities/resources/model/types';
 import type { ProxyInfo } from './types';
 
 export const withProxyComputedState = (proxy: ProxyResource): ProxyInfo => {

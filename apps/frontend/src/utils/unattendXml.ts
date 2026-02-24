@@ -1,5 +1,5 @@
 import defaultUnattendTemplateRaw from '../data/default-unattend-template.xml?raw';
-import type { UnattendProfileConfig } from '../services/unattendProfileService';
+import type { UnattendProfileConfig } from '../entities/vm/api/unattendProfileFacade';
 
 export const DEFAULT_UNATTEND_XML_TEMPLATE = defaultUnattendTemplateRaw.trim();
 

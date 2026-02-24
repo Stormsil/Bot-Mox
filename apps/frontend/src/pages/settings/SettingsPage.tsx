@@ -20,6 +20,7 @@ import {
 import { useUpdateSubscriptionSettingsMutation } from '../../entities/settings/api/useSubscriptionSettingsMutation';
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import { useThemeRuntime } from '../../theme/themeRuntime';
 import styles from './SettingsPage.module.css';
 import {
@@ -33,13 +34,7 @@ import { ThemeSettingsPanel } from './ThemeSettingsPanel';
 import { useSettingsSaveHandlers } from './useSettingsSaveHandlers';
 import { useThemeSettings } from './useThemeSettings';
 
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+const cx = bindCssModuleCx(styles);
 
 const { Title } = Typography;
 

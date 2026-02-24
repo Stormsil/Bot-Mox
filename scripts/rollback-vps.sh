@@ -90,22 +90,29 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 
 FRONTEND_IMAGE_REPO="${FRONTEND_IMAGE_REPO:-$(read_env_value FRONTEND_IMAGE_REPO)}"
+ADMIN_IMAGE_REPO="${ADMIN_IMAGE_REPO:-$(read_env_value ADMIN_IMAGE_REPO)}"
 BACKEND_IMAGE_REPO="${BACKEND_IMAGE_REPO:-$(read_env_value BACKEND_IMAGE_REPO)}"
 
 if [[ -z "${FRONTEND_IMAGE_REPO}" ]]; then
   FRONTEND_IMAGE_REPO="$(derive_repo_from_image "${FRONTEND_IMAGE:-$(read_env_value FRONTEND_IMAGE)}")"
+fi
+if [[ -z "${ADMIN_IMAGE_REPO}" ]]; then
+  ADMIN_IMAGE_REPO="$(derive_repo_from_image "${ADMIN_IMAGE:-$(read_env_value ADMIN_IMAGE)}")"
 fi
 if [[ -z "${BACKEND_IMAGE_REPO}" ]]; then
   BACKEND_IMAGE_REPO="$(derive_repo_from_image "${BACKEND_IMAGE:-$(read_env_value BACKEND_IMAGE)}")"
 fi
 
 : "${FRONTEND_IMAGE_REPO:?FRONTEND_IMAGE_REPO (or FRONTEND_IMAGE in env file) is required}"
+: "${ADMIN_IMAGE_REPO:?ADMIN_IMAGE_REPO (or ADMIN_IMAGE in env file) is required}"
 : "${BACKEND_IMAGE_REPO:?BACKEND_IMAGE_REPO (or BACKEND_IMAGE in env file) is required}"
 
 export FRONTEND_IMAGE="${FRONTEND_IMAGE_REPO}:${PREVIOUS_TAG}"
+export ADMIN_IMAGE="${ADMIN_IMAGE_REPO}:${PREVIOUS_TAG}"
 export BACKEND_IMAGE="${BACKEND_IMAGE_REPO}:${PREVIOUS_TAG}"
 echo "[rollback-vps] Using rollback tag ${PREVIOUS_TAG}"
 echo "[rollback-vps] FRONTEND_IMAGE=${FRONTEND_IMAGE}"
+echo "[rollback-vps] ADMIN_IMAGE=${ADMIN_IMAGE}"
 echo "[rollback-vps] BACKEND_IMAGE=${BACKEND_IMAGE}"
 
 compose_cmd=(docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}")

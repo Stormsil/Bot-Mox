@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
+import { softFailMissingStorageRead } from '../common/prisma-soft-fail';
 import { PrismaService } from '../db/prisma.service';
 
 @Injectable()
 export class WorkspaceRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private getWorkspaceItemClient(): {
+  private getWorkspaceItemClient(source: PrismaClient | Prisma.TransactionClient): {
     findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
     findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
     upsert: (args: unknown) => Promise<Record<string, unknown>>;
     deleteMany: (args: unknown) => Promise<{ count: number }>;
   } {
-    return (this.prisma as unknown as { workspaceItem: unknown }).workspaceItem as {
+    return (source as unknown as { workspaceItem: unknown }).workspaceItem as {
       findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
       findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
       upsert: (args: unknown) => Promise<Record<string, unknown>>;
@@ -21,13 +22,15 @@ export class WorkspaceRepository {
   }
 
   async list(tenantId: string, kind: string): Promise<Array<Record<string, unknown>>> {
-    return this.getWorkspaceItemClient().findMany({
-      where: {
-        tenantId,
-        kind,
-      },
-      orderBy: { updatedAt: 'desc' },
-    });
+    return softFailMissingStorageRead(() => this.prisma.withTenantContext(tenantId, async (tx) => {
+      return this.getWorkspaceItemClient(tx).findMany({
+        where: {
+          tenantId,
+          kind,
+        },
+        orderBy: { updatedAt: 'desc' },
+      });
+    }), []);
   }
 
   async findById(
@@ -35,13 +38,15 @@ export class WorkspaceRepository {
     kind: string,
     id: string,
   ): Promise<Record<string, unknown> | null> {
-    return this.getWorkspaceItemClient().findFirst({
-      where: {
-        tenantId,
-        kind,
-        id,
-      },
-    });
+    return softFailMissingStorageRead(() => this.prisma.withTenantContext(tenantId, async (tx) => {
+      return this.getWorkspaceItemClient(tx).findFirst({
+        where: {
+          tenantId,
+          kind,
+          id,
+        },
+      });
+    }), null);
   }
 
   async upsert(input: {
@@ -50,35 +55,39 @@ export class WorkspaceRepository {
     id: string;
     payload: Prisma.InputJsonValue;
   }): Promise<Record<string, unknown>> {
-    return this.getWorkspaceItemClient().upsert({
-      where: {
-        tenantId_kind_id: {
+    return this.prisma.withTenantContext(input.tenantId, async (tx) => {
+      return this.getWorkspaceItemClient(tx).upsert({
+        where: {
+          tenantId_kind_id: {
+            tenantId: input.tenantId,
+            kind: input.kind,
+            id: input.id,
+          },
+        },
+        create: {
+          id: input.id,
           tenantId: input.tenantId,
           kind: input.kind,
-          id: input.id,
+          payload: input.payload,
         },
-      },
-      create: {
-        id: input.id,
-        tenantId: input.tenantId,
-        kind: input.kind,
-        payload: input.payload,
-      },
-      update: {
-        tenantId: input.tenantId,
-        kind: input.kind,
-        payload: input.payload,
-      },
+        update: {
+          tenantId: input.tenantId,
+          kind: input.kind,
+          payload: input.payload,
+        },
+      });
     });
   }
 
   async delete(tenantId: string, kind: string, id: string): Promise<boolean> {
-    const result = await this.getWorkspaceItemClient().deleteMany({
-      where: {
-        tenantId,
-        kind,
-        id,
-      },
+    const result = await this.prisma.withTenantContext(tenantId, async (tx) => {
+      return this.getWorkspaceItemClient(tx).deleteMany({
+        where: {
+          tenantId,
+          kind,
+          id,
+        },
+      });
     });
     return result.count > 0;
   }

@@ -16,7 +16,7 @@ import type {
   UpdateResponse,
 } from '@refinedev/core';
 import { buildApiUrl } from '../config/env';
-import { type ApiSuccessEnvelope, apiRequest } from '../services/apiClient';
+import { ApiClientError, type ApiSuccessEnvelope, apiRequest } from '../shared/api/apiClient';
 import {
   createBotViaContract,
   deleteBotViaContract,
@@ -50,6 +50,57 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<ApiSucc
     ...init,
     headers,
   });
+}
+
+function isWriteMethod(method: string): boolean {
+  const normalized = String(method || 'GET')
+    .trim()
+    .toUpperCase();
+  return (
+    normalized === 'POST' ||
+    normalized === 'PUT' ||
+    normalized === 'PATCH' ||
+    normalized === 'DELETE'
+  );
+}
+
+function hasFrontendWriteAccess(): boolean {
+  if (typeof localStorage === 'undefined') {
+    return true;
+  }
+
+  const raw = localStorage.getItem('botmox.auth.identity');
+  if (!raw) {
+    return true;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as {
+      access?: {
+        write_access?: unknown;
+      };
+    };
+    return parsed?.access?.write_access === true;
+  } catch {
+    return true;
+  }
+}
+
+function assertFrontendWriteAccess(scope: string): void {
+  if (hasFrontendWriteAccess()) {
+    return;
+  }
+
+  const error = new ApiClientError('Premium access is required for write operations', {
+    status: 403,
+    code: 'PREMIUM_REQUIRED',
+    details: {
+      scope,
+      source: 'frontend_write_guard',
+    },
+  }) as ApiClientError & { statusCode?: number };
+  error.statusCode = 403;
+  throw error;
 }
 
 export const dataProvider: DataProvider = {
@@ -98,6 +149,8 @@ export const dataProvider: DataProvider = {
   create: async <TData extends BaseRecord = BaseRecord, TVariables = Record<string, unknown>>(
     params: CreateParams<TVariables>,
   ): Promise<CreateResponse<TData>> => {
+    assertFrontendWriteAccess(`create:${String(params.resource || 'unknown')}`);
+
     if (isBotResource(params.resource)) {
       const payload = await createBotViaContract({
         ...(params.variables as Record<string, unknown> | undefined),
@@ -124,6 +177,8 @@ export const dataProvider: DataProvider = {
   update: async <TData extends BaseRecord = BaseRecord, TVariables = Record<string, unknown>>(
     params: UpdateParams<TVariables>,
   ): Promise<UpdateResponse<TData>> => {
+    assertFrontendWriteAccess(`update:${String(params.resource || 'unknown')}`);
+
     if (isBotResource(params.resource)) {
       const payload = await patchBotViaContract(String(params.id), {
         ...(params.variables as Record<string, unknown> | undefined),
@@ -150,6 +205,8 @@ export const dataProvider: DataProvider = {
   deleteOne: async <TData extends BaseRecord = BaseRecord, TVariables = Record<string, unknown>>(
     params: DeleteOneParams<TVariables>,
   ): Promise<DeleteOneResponse<TData>> => {
+    assertFrontendWriteAccess(`delete:${String(params.resource || 'unknown')}`);
+
     if (isBotResource(params.resource)) {
       await deleteBotViaContract(String(params.id));
       return { data: { id: params.id } as TData };
@@ -219,6 +276,9 @@ export const dataProvider: DataProvider = {
         : {};
     const method = String(customParams.method || 'GET').toUpperCase();
     const path = String(customParams.url || '/api/v1/health');
+    if (isWriteMethod(method)) {
+      assertFrontendWriteAccess(`custom:${method}:${path}`);
+    }
     const payload = await request<TData>(path, {
       method,
       body: customParams.payload ? JSON.stringify(customParams.payload) : undefined,

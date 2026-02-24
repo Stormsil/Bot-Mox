@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { WorkspaceRepository } from './workspace.repository';
 
 export type WorkspaceKind = 'notes' | 'calendar' | 'kanban';
@@ -22,6 +23,8 @@ export interface WorkspaceListResult {
 
 @Injectable()
 export class WorkspaceService {
+  private readonly atRestCrypto = new DataAtRestCrypto();
+
   constructor(private readonly repository: WorkspaceRepository) {}
 
   private normalizeTenantId(tenantId: string): string {
@@ -100,11 +103,96 @@ export class WorkspaceService {
 
   private mapDbRowToRecord(row: Record<string, unknown>): WorkspaceRecord {
     const id = String(row.id || '').trim();
+    const kind = String(row.kind || '')
+      .trim()
+      .toLowerCase();
     const payload = row.payload;
     if (payload && typeof payload === 'object') {
-      return { ...(payload as WorkspaceRecord), ...(id ? { id } : {}) };
+      const encryptedPayloadWrapper = (payload as WorkspaceRecord).__enc_payload_v1;
+      const decryptedPayload =
+        encryptedPayloadWrapper !== undefined
+          ? this.atRestCrypto.decryptJson<WorkspaceRecord>(encryptedPayloadWrapper)
+          : null;
+      const materialized = {
+        ...((decryptedPayload && typeof decryptedPayload === 'object'
+          ? decryptedPayload
+          : (payload as WorkspaceRecord)) as WorkspaceRecord),
+        ...(id ? { id } : {}),
+      };
+      if (kind === 'notes') {
+        return this.decryptNotesRecord(materialized);
+      }
+      return materialized;
     }
     return id ? { id } : {};
+  }
+
+  private encryptNotesRecord(input: WorkspaceRecord): WorkspaceRecord {
+    const next: WorkspaceRecord = { ...input };
+    this.atRestCrypto.encryptStringField(next, 'title');
+    this.atRestCrypto.encryptStringField(next, 'content');
+    this.atRestCrypto.encryptStringField(next, 'preview');
+
+    const tags = next.tags;
+    if (Array.isArray(tags)) {
+      next.tags = tags.map((value) =>
+        typeof value === 'string' && value.length > 0
+          ? this.atRestCrypto.encryptString(value)
+          : value,
+      );
+    }
+
+    const blocks = next.blocks;
+    if (blocks && typeof blocks === 'object' && !Array.isArray(blocks)) {
+      const encryptedBlocks: Record<string, unknown> = {};
+      for (const [blockId, block] of Object.entries(blocks as Record<string, unknown>)) {
+        if (block && typeof block === 'object' && !Array.isArray(block)) {
+          const blockRecord = { ...(block as Record<string, unknown>) };
+          this.atRestCrypto.encryptStringField(blockRecord, 'content');
+          encryptedBlocks[blockId] = blockRecord;
+        } else {
+          encryptedBlocks[blockId] = block;
+        }
+      }
+      next.blocks = encryptedBlocks;
+    }
+
+    return next;
+  }
+
+  private decryptNotesRecord(input: WorkspaceRecord): WorkspaceRecord {
+    const next: WorkspaceRecord = { ...input };
+    next.title = this.atRestCrypto.tryDecryptUnknown(next.title);
+    next.content = this.atRestCrypto.tryDecryptUnknown(next.content);
+    next.preview = this.atRestCrypto.tryDecryptUnknown(next.preview);
+
+    const tags = next.tags;
+    if (Array.isArray(tags)) {
+      next.tags = tags.map((value) => this.atRestCrypto.tryDecryptUnknown(value));
+    }
+
+    const blocks = next.blocks;
+    if (blocks && typeof blocks === 'object' && !Array.isArray(blocks)) {
+      const decryptedBlocks: Record<string, unknown> = {};
+      for (const [blockId, block] of Object.entries(blocks as Record<string, unknown>)) {
+        if (block && typeof block === 'object' && !Array.isArray(block)) {
+          const blockRecord = { ...(block as Record<string, unknown>) };
+          blockRecord.content = this.atRestCrypto.tryDecryptUnknown(blockRecord.content);
+          decryptedBlocks[blockId] = blockRecord;
+        } else {
+          decryptedBlocks[blockId] = block;
+        }
+      }
+      next.blocks = decryptedBlocks;
+    }
+
+    return next;
+  }
+
+  private encryptWorkspacePayload(input: WorkspaceRecord): WorkspaceRecord {
+    return {
+      __enc_payload_v1: this.atRestCrypto.encryptJson(input),
+    };
   }
 
   async list(
@@ -149,12 +237,15 @@ export class WorkspaceService {
       created_at: payload.created_at ?? now,
       updated_at: now,
     };
+    const baseRecord =
+      kind === 'notes' ? this.encryptNotesRecord(nextRecord as WorkspaceRecord) : nextRecord;
+    const storedRecord = this.encryptWorkspacePayload(baseRecord as WorkspaceRecord);
 
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       kind,
       id,
-      payload: nextRecord as Prisma.InputJsonValue,
+      payload: storedRecord as Prisma.InputJsonValue,
     });
     return this.mapDbRowToRecord(row);
   }
@@ -179,12 +270,15 @@ export class WorkspaceService {
       id,
       updated_at: Date.now(),
     };
+    const baseRecord =
+      kind === 'notes' ? this.encryptNotesRecord(nextRecord as WorkspaceRecord) : nextRecord;
+    const storedRecord = this.encryptWorkspacePayload(baseRecord as WorkspaceRecord);
 
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       kind,
       id,
-      payload: nextRecord as Prisma.InputJsonValue,
+      payload: storedRecord as Prisma.InputJsonValue,
     });
     return this.mapDbRowToRecord(row);
   }

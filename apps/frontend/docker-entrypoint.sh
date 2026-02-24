@@ -15,6 +15,7 @@ js_string() {
 
 API_BASE_URL="${VITE_API_BASE_URL:-}"
 WS_BASE_URL="${VITE_WS_BASE_URL:-}"
+ADMIN_APP_URL="${VITE_ADMIN_APP_URL:-}"
 SUPABASE_URL="${VITE_SUPABASE_URL:-}"
 SUPABASE_ANON_KEY="${VITE_SUPABASE_ANON_KEY:-}"
 OTEL_ENABLED="${VITE_OTEL_ENABLED:-}"
@@ -25,6 +26,7 @@ cat >"${OUT_FILE}" <<EOF
 window.__BOTMOX_CONFIG__ = Object.assign(window.__BOTMOX_CONFIG__ || {}, {
   apiBaseUrl: $(js_string "${API_BASE_URL}"),
   wsBaseUrl: $(js_string "${WS_BASE_URL}"),
+  adminAppUrl: $(js_string "${ADMIN_APP_URL}"),
   supabaseUrl: $(js_string "${SUPABASE_URL}"),
   supabaseAnonKey: $(js_string "${SUPABASE_ANON_KEY}"),
   otelEnabled: $(js_string "${OTEL_ENABLED}"),

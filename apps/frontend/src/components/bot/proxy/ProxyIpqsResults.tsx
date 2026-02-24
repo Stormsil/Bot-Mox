@@ -2,7 +2,7 @@ import { SafetyCertificateOutlined } from '@ant-design/icons';
 import { Alert, Progress, Space, Tag, Typography } from 'antd';
 import type React from 'react';
 import { getFraudScoreColor, getFraudScoreLabel } from '../../../entities/resources/api/ipqsFacade';
-import type { IPQSResponse } from '../../../types';
+import type { IPQSResponse } from '../../../entities/resources/model/types';
 import styles from './proxy.module.css';
 
 const { Text } = Typography;

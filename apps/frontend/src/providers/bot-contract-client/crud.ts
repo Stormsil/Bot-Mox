@@ -1,5 +1,6 @@
 import type { BotRecord } from '../../entities/bot/model/types';
-import type { ApiSuccessEnvelope } from '../../services/apiClient';
+import type { ApiSuccessEnvelope } from '../../shared/api/apiClient';
+import { ApiClientError } from '../../shared/api/apiClient';
 import {
   createRuntimeClient,
   resolveAuthorizationHeader,
@@ -7,6 +8,19 @@ import {
   toBotRecord,
 } from './runtime';
 import { type BotsListQuery, MAX_PAGE_COUNT, PAGE_LIMIT } from './types';
+
+function shouldSoftFailBotList(error: unknown): boolean {
+  if (!(error instanceof ApiClientError)) {
+    return false;
+  }
+  const code = String(error.code || '')
+    .trim()
+    .toUpperCase();
+  if (error.status === 502) {
+    return true;
+  }
+  return code === 'AGENTS_STORAGE_UNAVAILABLE' || code === 'VM_OPS_UNAVAILABLE';
+}
 
 async function listBotsPage(
   query: BotsListQuery,
@@ -73,27 +87,34 @@ export async function createBotViaContract(
 export async function fetchBotsListViaContract(): Promise<BotRecord[]> {
   const all: BotRecord[] = [];
 
-  for (let page = 1; page <= MAX_PAGE_COUNT; page += 1) {
-    const payload = await listBotsPage({
-      page,
-      limit: PAGE_LIMIT,
-      sort: 'updated_at',
-      order: 'desc',
-    });
-    const items = Array.isArray(payload.data)
-      ? payload.data
-          .map((item) => toBotRecord(item))
-          .filter((item): item is BotRecord => item !== null)
-      : [];
+  try {
+    for (let page = 1; page <= MAX_PAGE_COUNT; page += 1) {
+      const payload = await listBotsPage({
+        page,
+        limit: PAGE_LIMIT,
+        sort: 'updated_at',
+        order: 'desc',
+      });
+      const items = Array.isArray(payload.data)
+        ? payload.data
+            .map((item) => toBotRecord(item))
+            .filter((item): item is BotRecord => item !== null)
+        : [];
 
-    const total = Number(payload.meta?.total ?? items.length);
-    const normalizedTotal = Number.isFinite(total) ? total : items.length;
+      const total = Number(payload.meta?.total ?? items.length);
+      const normalizedTotal = Number.isFinite(total) ? total : items.length;
 
-    all.push(...items);
+      all.push(...items);
 
-    if (items.length === 0) break;
-    if (all.length >= normalizedTotal) break;
-    if (items.length < PAGE_LIMIT) break;
+      if (items.length === 0) break;
+      if (all.length >= normalizedTotal) break;
+      if (items.length < PAGE_LIMIT) break;
+    }
+  } catch (error) {
+    if (shouldSoftFailBotList(error)) {
+      return [];
+    }
+    throw error;
   }
 
   return all;

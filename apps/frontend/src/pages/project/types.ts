@@ -1,4 +1,5 @@
-import type { BotLicense, BotStatus, Proxy as ProxyResource, Subscription } from '../../types';
+import type { BotStatus } from '../../types/core';
+import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../entities/resources/model/types';
 
 export const OFFLINE_THRESHOLD_MS = 5 * 60 * 1000;
 

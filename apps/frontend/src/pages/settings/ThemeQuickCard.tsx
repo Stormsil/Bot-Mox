@@ -1,17 +1,12 @@
 import { BgColorsOutlined, CheckOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Select, Typography } from 'antd';
 import type React from 'react';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import styles from './SettingsPage.module.css';
 
 const { Text } = Typography;
 
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+const cx = bindCssModuleCx(styles);
 
 interface ThemeQuickCardProps {
   selectedPresetId?: string;

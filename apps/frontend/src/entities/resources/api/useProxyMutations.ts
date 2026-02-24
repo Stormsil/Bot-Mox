@@ -1,5 +1,5 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Proxy as ProxyResource } from '../../../types';
+import type { Proxy as ProxyResource } from '../model/types';
 import {
   createResourceViaContractMutation,
   deleteResourceViaContractMutation,

@@ -120,8 +120,11 @@ export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) 
 
   const cancelProcessing = useCallback(() => {
     cancelRef.current = true;
+    log.warn(
+      'VM queue cancel requested by user. In-flight hypervisor tasks may continue until the current wait step completes.',
+    );
     setOperationText('Cancelling...');
-  }, []);
+  }, [log]);
 
   /**
    * Two-phase processing.

@@ -8,6 +8,7 @@ import {
 } from '@botmox/api-contract';
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { SettingsRepository } from './settings.repository';
 
 type SettingsApiKeys = import('zod').infer<typeof settingsApiKeysSchema>;
@@ -22,6 +23,27 @@ type SettingsNotificationEventsMutation = import('zod').infer<
 const SETTINGS_API_KEYS_PATH = 'settings/api_keys';
 const SETTINGS_PROXY_PATH = 'settings/proxy';
 const SETTINGS_NOTIFICATION_EVENTS_PATH = 'settings/notifications/events';
+const SETTINGS_THEME_PATH = 'settings/theme';
+const SETTINGS_PROJECTS_PATH = 'settings/projects';
+const SETTINGS_ALERTS_PATH = 'settings/alerts';
+const SETTINGS_STORAGE_POLICY_PATH = 'settings/storage_policy';
+const SETTINGS_UI_RESOURCE_TREE_PATH = 'settings/ui/resource_tree';
+const SETTINGS_VMGENERATOR_PATH = 'settings/vmgenerator';
+const SETTINGS_VMGENERATOR_TASK_LOGS_PATH = 'settings/vmgenerator/task_logs';
+const DEFAULT_SETTINGS_ALERTS = { warning_days: 7 };
+const DEFAULT_SETTINGS_RESOURCE_TREE = {
+  expandedKeys: [] as string[],
+  visibleStatuses: [] as string[],
+  showFilters: true,
+};
+const DEFAULT_SETTINGS_PROJECTS: Record<string, unknown> = {};
+const DEFAULT_SETTINGS_STORAGE_POLICY: Record<string, unknown> = {};
+const DEFAULT_SETTINGS_THEME: Record<string, unknown> = {};
+const DEFAULT_SETTINGS_VMGENERATOR: Record<string, unknown> = {};
+const DEFAULT_SETTINGS_VMGENERATOR_TASK_LOGS: unknown[] = [];
+const DEFAULT_SETTINGS_API_KEYS: Record<string, unknown> = {};
+const DEFAULT_SETTINGS_PROXY: Record<string, unknown> = {};
+const DEFAULT_SETTINGS_NOTIFICATION_EVENTS: Record<string, unknown> = {};
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -29,6 +51,8 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 @Injectable()
 export class SettingsService {
+  private readonly atRestCrypto = new DataAtRestCrypto();
+
   constructor(private readonly repository: SettingsRepository) {}
 
   private normalizeTenantId(tenantId: string): string {
@@ -49,7 +73,22 @@ export class SettingsService {
   }
 
   private mapDbRowPayload(row: Record<string, unknown>): unknown {
-    return this.clone(row.payload);
+    const payload = this.clone(row.payload);
+    if (!isPlainObject(payload)) {
+      return payload;
+    }
+    const wrapped = payload.__enc_payload_v1;
+    if (wrapped === undefined) {
+      return payload;
+    }
+    const decrypted = this.atRestCrypto.decryptJson<unknown>(wrapped);
+    return decrypted ?? payload;
+  }
+
+  private encryptSettingsPayload(payload: unknown): Record<string, unknown> {
+    return {
+      __enc_payload_v1: this.atRestCrypto.encryptJson(this.clone(payload)),
+    };
   }
 
   private readPath<T>(
@@ -92,7 +131,7 @@ export class SettingsService {
       const row = await this.repository.upsert({
         tenantId: normalizedTenantId,
         path,
-        payload: this.clone(next) as Prisma.InputJsonValue,
+        payload: this.encryptSettingsPayload(next) as Prisma.InputJsonValue,
       });
       const parsed = schema.safeParse(this.mapDbRowPayload(row));
       if (!parsed.success) {
@@ -102,8 +141,49 @@ export class SettingsService {
     });
   }
 
+  private readRawPath(tenantId: string, path: string): Promise<unknown | null> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    return this.repository
+      .findByPath(normalizedTenantId, path)
+      .then((row) => (row ? this.mapDbRowPayload(row) : null));
+  }
+
+  private writeRawPath(tenantId: string, path: string, payload: unknown): Promise<unknown> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    return this.repository
+      .upsert({
+        tenantId: normalizedTenantId,
+        path,
+        payload: this.encryptSettingsPayload(payload) as Prisma.InputJsonValue,
+      })
+      .then((row) => this.mapDbRowPayload(row));
+  }
+
+  private patchRawPath(tenantId: string, path: string, patch: unknown): Promise<unknown> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    return this.repository.findByPath(normalizedTenantId, path).then(async (existing) => {
+      const current = existing ? this.mapDbRowPayload(existing) : {};
+      const currentObj = isPlainObject(current) ? current : {};
+      const patchObj = isPlainObject(patch) ? patch : {};
+      const next: Record<string, unknown> = { ...currentObj, ...patchObj };
+      for (const [key, value] of Object.entries(next)) {
+        if (value === null) {
+          delete next[key];
+        }
+      }
+      const row = await this.repository.upsert({
+        tenantId: normalizedTenantId,
+        path,
+        payload: this.encryptSettingsPayload(next) as Prisma.InputJsonValue,
+      });
+      return this.mapDbRowPayload(row);
+    });
+  }
+
   getApiKeys(tenantId: string): Promise<SettingsApiKeys | null> {
-    return this.readPath(tenantId, SETTINGS_API_KEYS_PATH, settingsApiKeysSchema);
+    return this.readPath(tenantId, SETTINGS_API_KEYS_PATH, settingsApiKeysSchema).then(
+      (value) => (value ?? this.clone(DEFAULT_SETTINGS_API_KEYS)) as SettingsApiKeys,
+    );
   }
 
   updateApiKeys(payload: SettingsApiKeysMutation, tenantId: string): Promise<SettingsApiKeys> {
@@ -111,7 +191,9 @@ export class SettingsService {
   }
 
   getProxy(tenantId: string): Promise<SettingsProxy | null> {
-    return this.readPath(tenantId, SETTINGS_PROXY_PATH, settingsProxySchema);
+    return this.readPath(tenantId, SETTINGS_PROXY_PATH, settingsProxySchema).then(
+      (value) => (value ?? this.clone(DEFAULT_SETTINGS_PROXY)) as SettingsProxy,
+    );
   }
 
   updateProxy(payload: SettingsProxyMutation, tenantId: string): Promise<SettingsProxy> {
@@ -119,10 +201,8 @@ export class SettingsService {
   }
 
   getNotificationEvents(tenantId: string): Promise<SettingsNotificationEvents | null> {
-    return this.readPath(
-      tenantId,
-      SETTINGS_NOTIFICATION_EVENTS_PATH,
-      settingsNotificationEventsSchema,
+    return this.readPath(tenantId, SETTINGS_NOTIFICATION_EVENTS_PATH, settingsNotificationEventsSchema).then(
+      (value) => (value ?? this.clone(DEFAULT_SETTINGS_NOTIFICATION_EVENTS)) as SettingsNotificationEvents,
     );
   }
 
@@ -136,5 +216,82 @@ export class SettingsService {
       payload,
       settingsNotificationEventsSchema,
     );
+  }
+
+  getTheme(tenantId: string): Promise<unknown | null> {
+    return this.readRawPath(tenantId, SETTINGS_THEME_PATH).then((value) => value ?? DEFAULT_SETTINGS_THEME);
+  }
+
+  updateTheme(payload: unknown, tenantId: string): Promise<unknown> {
+    return this.writeRawPath(tenantId, SETTINGS_THEME_PATH, payload ?? {});
+  }
+
+  getProjects(tenantId: string): Promise<unknown | null> {
+    return this.readRawPath(tenantId, SETTINGS_PROJECTS_PATH).then((value) => value ?? DEFAULT_SETTINGS_PROJECTS);
+  }
+
+  async upsertProject(projectId: string, payload: unknown, tenantId: string): Promise<unknown> {
+    const normalizedProjectId = String(projectId || '').trim();
+    if (!normalizedProjectId) {
+      throw new Error('projectId is required');
+    }
+    const current = await this.readRawPath(tenantId, SETTINGS_PROJECTS_PATH);
+    const nextProjects = {
+      ...(isPlainObject(current) ? current : {}),
+      [normalizedProjectId]: payload,
+    };
+    return this.writeRawPath(tenantId, SETTINGS_PROJECTS_PATH, nextProjects);
+  }
+
+  patchProjects(payload: unknown, tenantId: string): Promise<unknown> {
+    return this.patchRawPath(tenantId, SETTINGS_PROJECTS_PATH, payload);
+  }
+
+  getResourceTree(tenantId: string): Promise<unknown | null> {
+    return this.readRawPath(tenantId, SETTINGS_UI_RESOURCE_TREE_PATH).then(
+      (value) => value ?? DEFAULT_SETTINGS_RESOURCE_TREE,
+    );
+  }
+
+  updateResourceTree(payload: unknown, tenantId: string): Promise<unknown> {
+    return this.writeRawPath(tenantId, SETTINGS_UI_RESOURCE_TREE_PATH, payload ?? {});
+  }
+
+  getAlerts(tenantId: string): Promise<unknown | null> {
+    return this.readRawPath(tenantId, SETTINGS_ALERTS_PATH).then((value) => value ?? DEFAULT_SETTINGS_ALERTS);
+  }
+
+  updateAlerts(payload: unknown, tenantId: string): Promise<unknown> {
+    return this.writeRawPath(tenantId, SETTINGS_ALERTS_PATH, payload ?? {});
+  }
+
+  getStoragePolicy(tenantId: string): Promise<unknown | null> {
+    return this.readRawPath(tenantId, SETTINGS_STORAGE_POLICY_PATH).then(
+      (value) => value ?? DEFAULT_SETTINGS_STORAGE_POLICY,
+    );
+  }
+
+  updateStoragePolicy(payload: unknown, tenantId: string): Promise<unknown> {
+    return this.writeRawPath(tenantId, SETTINGS_STORAGE_POLICY_PATH, payload ?? {});
+  }
+
+  getVmGenerator(tenantId: string): Promise<unknown | null> {
+    return this.readRawPath(tenantId, SETTINGS_VMGENERATOR_PATH).then(
+      (value) => value ?? DEFAULT_SETTINGS_VMGENERATOR,
+    );
+  }
+
+  updateVmGenerator(payload: unknown, tenantId: string): Promise<unknown> {
+    return this.writeRawPath(tenantId, SETTINGS_VMGENERATOR_PATH, payload ?? {});
+  }
+
+  getVmGeneratorTaskLogs(tenantId: string): Promise<unknown | null> {
+    return this.readRawPath(tenantId, SETTINGS_VMGENERATOR_TASK_LOGS_PATH).then(
+      (value) => value ?? DEFAULT_SETTINGS_VMGENERATOR_TASK_LOGS,
+    );
+  }
+
+  updateVmGeneratorTaskLogs(payload: unknown, tenantId: string): Promise<unknown> {
+    return this.writeRawPath(tenantId, SETTINGS_VMGENERATOR_TASK_LOGS_PATH, payload ?? []);
   }
 }

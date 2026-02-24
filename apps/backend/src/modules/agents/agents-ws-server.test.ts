@@ -10,7 +10,7 @@ interface TestContext {
 }
 
 async function startServer(
-  authService: { verifyBearerToken: (token: string) => Promise<unknown> },
+  authService: { verifyAgentBearerToken: (token: string) => Promise<unknown> },
   vmOpsService: {
     waitForNextAgentCommand: (input: unknown) => Promise<unknown>;
     updateCommandStatus: (input: unknown) => Promise<unknown>;
@@ -108,7 +108,7 @@ async function waitMessageType(
 
 test('agents ws server rejects unauthorized handshake', async () => {
   const authService = {
-    async verifyBearerToken(): Promise<null> {
+    async verifyAgentBearerToken(): Promise<null> {
       return null;
     },
   };
@@ -139,8 +139,8 @@ test('agents ws server rejects unauthorized handshake', async () => {
 
 test('agents ws server accepts ack and returns agent.command.ack', async () => {
   const authService = {
-    async verifyBearerToken(): Promise<{ tenantId: string }> {
-      return { tenantId: 'tenant-alpha' };
+    async verifyAgentBearerToken(): Promise<{ tenantId: string; raw: { agent_id: string } }> {
+      return { tenantId: 'tenant-alpha', raw: { agent_id: 'agent-007' } };
     },
   };
 
@@ -186,7 +186,56 @@ test('agents ws server accepts ack and returns agent.command.ack', async () => {
       id: 'cmd-1',
       status: 'running',
       tenantId: 'tenant-alpha',
+      agentId: 'agent-007',
     });
+  } finally {
+    if (ws) {
+      ws.close();
+    }
+    await stopServer(ctx.server);
+  }
+});
+
+test('agents ws server rejects ack when message agent_id mismatches authenticated session', async () => {
+  const authService = {
+    async verifyAgentBearerToken(): Promise<{ tenantId: string; raw: { agent_id: string } }> {
+      return { tenantId: 'tenant-alpha', raw: { agent_id: 'agent-007' } };
+    },
+  };
+
+  const statusUpdates: Array<Record<string, unknown>> = [];
+  const vmOpsService = {
+    async waitForNextAgentCommand(): Promise<null> {
+      return null;
+    },
+    async updateCommandStatus(input: unknown): Promise<{ id: string; status: string }> {
+      statusUpdates.push(input as Record<string, unknown>);
+      return { id: 'cmd-1', status: 'running' };
+    },
+  };
+  const agentsService = {
+    async heartbeat(): Promise<null> {
+      return null;
+    },
+  };
+
+  const ctx = await startServer(authService, vmOpsService, agentsService);
+  let ws: WebSocket | null = null;
+  try {
+    ws = await openSocket(`${ctx.baseUrl}/api/v1/agents/ws?agent_id=agent-007&token=test-token`);
+
+    ws.send(
+      JSON.stringify({
+        type: 'agent.command.ack',
+        request_id: 'ack-bad-1',
+        command_id: 'cmd-1',
+        agent_id: 'agent-evil',
+      }),
+    );
+
+    const error = await waitMessageType(ws, 'error');
+    assert.equal(error.code, 'AGENT_ID_MISMATCH');
+    assert.equal(statusUpdates.length, 0);
   } finally {
     if (ws) {
       ws.close();
@@ -197,8 +246,8 @@ test('agents ws server accepts ack and returns agent.command.ack', async () => {
 
 test('agents ws server returns assigned command for next_command', async () => {
   const authService = {
-    async verifyBearerToken(): Promise<{ tenantId: string }> {
-      return { tenantId: 'tenant-beta' };
+    async verifyAgentBearerToken(): Promise<{ tenantId: string; raw: { agent_id: string } }> {
+      return { tenantId: 'tenant-beta', raw: { agent_id: 'agent-55' } };
     },
   };
 
@@ -265,8 +314,8 @@ test('agents ws server returns assigned command for next_command', async () => {
 
 test('agents ws server accepts command result and returns agent.command.result', async () => {
   const authService = {
-    async verifyBearerToken(): Promise<{ tenantId: string }> {
-      return { tenantId: 'tenant-gamma' };
+    async verifyAgentBearerToken(): Promise<{ tenantId: string; raw: { agent_id: string } }> {
+      return { tenantId: 'tenant-gamma', raw: { agent_id: 'agent-88' } };
     },
   };
 
@@ -312,6 +361,7 @@ test('agents ws server accepts command result and returns agent.command.result',
       id: 'cmd-result-1',
       status: 'succeeded',
       tenantId: 'tenant-gamma',
+      agentId: 'agent-88',
       result: { ok: true },
     });
   } finally {
@@ -324,8 +374,8 @@ test('agents ws server accepts command result and returns agent.command.result',
 
 test('agents ws server heartbeat updates agents service and echoes metadata', async () => {
   const authService = {
-    async verifyBearerToken(): Promise<{ tenantId: string }> {
-      return { tenantId: 'tenant-heartbeat' };
+    async verifyAgentBearerToken(): Promise<{ tenantId: string; raw: { agent_id: string } }> {
+      return { tenantId: 'tenant-heartbeat', raw: { agent_id: 'agent-heartbeat-1' } };
     },
   };
   const vmOpsService = {
@@ -391,8 +441,8 @@ test('agents ws server heartbeat updates agents service and echoes metadata', as
 
 test('agents ws server rejects heartbeat with invalid metadata payload', async () => {
   const authService = {
-    async verifyBearerToken(): Promise<{ tenantId: string }> {
-      return { tenantId: 'tenant-heartbeat' };
+    async verifyAgentBearerToken(): Promise<{ tenantId: string; raw: { agent_id: string } }> {
+      return { tenantId: 'tenant-heartbeat', raw: { agent_id: 'agent-heartbeat-2' } };
     },
   };
   const vmOpsService = {

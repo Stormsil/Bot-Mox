@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 import type React from 'react';
 import { TableActionButton, TableActionGroup } from '../../components/ui/TableActionButton';
 import { getFraudScoreColor } from '../../entities/resources/api/ipqsFacade';
-import type { Proxy as ProxyResource } from '../../types';
+import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
 import styles from './ProxiesPage.module.css';
 
 const { Text } = Typography;

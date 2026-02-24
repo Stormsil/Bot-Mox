@@ -3,7 +3,7 @@ import {
   resizeVMDisk,
   updateVMConfig,
   waitForTask,
-} from '../../../services/vmService';
+} from '../../../services/vmService/proxmoxOps';
 import type { VMQueueItem, VMResourceMode } from '../../../types';
 import { bytesToGiBRounded, pickPrimaryVolumeFromConfig } from './storageHeuristics';
 import { formatMemoryWithGb, normalizeCores, normalizeMemory, sleep } from './utils';

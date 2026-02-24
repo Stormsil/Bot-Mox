@@ -82,5 +82,5 @@ Operators can be granted `admin` + `infra` by env allowlist:
 
 ## Tenant Context (MVP)
 
-For Supabase Auth, `tenant_id` is derived from `app_metadata.tenant_id` when present,
-otherwise falls back to `DEFAULT_TENANT_ID`.
+For Supabase Auth, `tenant_id` is derived from `app_metadata.tenant_id` and is required in enforced runtime.
+JWT without explicit tenant claim is rejected (no runtime fallback to `DEFAULT_TENANT_ID`).

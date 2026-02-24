@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { cx } from '../../shared/lib/classNames';
 import type { ScheduleSession } from '../../types';
 import { minutesToTime, timeToMinutes } from '../../utils/scheduleUtils';
 import { getRestrictedSegments, getSessionSegments, HOURS } from './timeline/helpers';
@@ -18,8 +19,6 @@ type DragState = {
   sessionId: string | null;
   dragType: 'start' | 'end' | 'move' | null;
 };
-
-const cx = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).join(' ');
 
 export const TimelineVisualizer: React.FC<TimelineVisualizerProps> = ({
   sessions,

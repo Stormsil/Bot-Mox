@@ -23,6 +23,31 @@ export const agentPairingCreateSchema = z.object({
   expires_in_minutes: z.coerce.number().int().min(5).max(1_440).optional(),
 });
 
+export const agentQuickPairSchema = z.object({
+  login: z.string().trim().min(1).max(320),
+  password: z.string().min(1).max(512),
+  machine_name: z.string().trim().min(1).max(200).optional(),
+  name: z.string().trim().min(1).max(200).optional(),
+  version: z.string().trim().min(1).max(100).optional(),
+  platform: z.string().trim().min(1).max(100).optional(),
+  capabilities: z.array(z.string().trim().min(1).max(100)).max(32).optional(),
+});
+
+export const agentRepairSchema = z.object({
+  agent_id: z.string().trim().min(1).max(200),
+  reason: z.string().trim().min(1).max(1_000).optional(),
+  expires_in_minutes: z.coerce.number().int().min(5).max(1_440).optional(),
+});
+
+export const agentQuickPairResponseSchema = z.object({
+  id: z.string().trim().min(1),
+  name: z.string().trim().min(1),
+  status: z.string().trim().min(1),
+  paired_at: z.string().trim().min(1),
+  agent_token: z.string().trim().min(1),
+  agent_token_expires_at: z.string().trim().min(1).optional(),
+});
+
 export const agentHeartbeatSchema = z.object({
   agent_id: z.string().trim().min(1),
   status: z.string().trim().min(1).default('active'),

@@ -1,0 +1,19 @@
+.root {
+  padding: 20px;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1200px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

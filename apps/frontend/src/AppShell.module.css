@@ -19,6 +19,16 @@
   z-index: 1;
 }
 
+.access-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--boxmox-color-header-border);
+  background: var(--boxmox-color-surface-panel);
+}
+
 .proxmox-content {
   position: relative;
   z-index: 2;

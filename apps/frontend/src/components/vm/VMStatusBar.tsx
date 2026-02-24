@@ -1,5 +1,6 @@
 import { PlayCircleOutlined, StopOutlined } from '@ant-design/icons';
 import type React from 'react';
+import { cx } from '../../shared/lib/classNames';
 import type { VMUiState } from '../../types';
 import styles from './VMStatusBar.module.css';
 
@@ -25,10 +26,6 @@ const badgeLabels: Record<VMUiState, string> = {
   success: 'Success',
   error: 'Error',
 };
-
-function cx(...values: Array<string | false | null | undefined>): string {
-  return values.filter(Boolean).join(' ');
-}
 
 export const VMStatusBar: React.FC<VMStatusBarProps> = ({
   uiState,

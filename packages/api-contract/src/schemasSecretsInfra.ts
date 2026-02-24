@@ -35,6 +35,22 @@ export const secretBindingsListQuerySchema = z.object({
   }, z.string().trim().min(1).max(200).optional()),
 });
 
+export const adminSecretRotateTenantSchema = z.object({
+  tenant_id: z.string().trim().min(1).max(200),
+  key_id: z.string().trim().min(1).max(200),
+  limit: z.coerce.number().int().min(1).max(10_000).optional(),
+  dry_run: z.boolean().optional(),
+  reason: z.string().trim().min(1).max(1_000).optional(),
+});
+
+export const adminSecretRotateTenantsSchema = z.object({
+  tenant_ids: z.array(z.string().trim().min(1).max(200)).min(1).max(10_000),
+  key_id: z.string().trim().min(1).max(200),
+  limit_per_tenant: z.coerce.number().int().min(1).max(10_000).optional(),
+  dry_run: z.boolean().optional(),
+  reason: z.string().trim().min(1).max(1_000).optional(),
+});
+
 export const secretMetaRecordSchema = z
   .object({
     id: z.string().trim().min(1),

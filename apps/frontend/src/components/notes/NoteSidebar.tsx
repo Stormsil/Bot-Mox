@@ -16,6 +16,7 @@ import {
 } from '../../entities/notes/api/useNoteMutations';
 import { useNotesIndexQuery } from '../../entities/notes/api/useNotesIndexQuery';
 import type { NoteIndex } from '../../entities/notes/model/types';
+import { cx } from '../../shared/lib/classNames';
 import { TableActionButton } from '../ui/TableActionButton';
 import styles from './NoteSidebar.module.css';
 import { formatDate, getTagColor } from './noteSidebarUtils';
@@ -40,8 +41,6 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
   const createNoteMutation = useCreateNoteMutation();
   const deleteNoteMutation = useDeleteNoteMutation();
   const updateNoteMutation = useUpdateNoteMutation();
-  const cx = (...parts: Array<string | false | null | undefined>) =>
-    parts.filter(Boolean).join(' ');
 
   const notesIndexQuery = useNotesIndexQuery();
   const notes = useMemo(() => (notesIndexQuery.data || []) as NoteIndex[], [notesIndexQuery.data]);

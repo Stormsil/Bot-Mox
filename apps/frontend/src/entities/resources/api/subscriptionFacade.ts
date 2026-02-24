@@ -1,10 +1,10 @@
 import type {
-  BotStatus,
   ComputedSubscriptionStatus,
   Subscription,
   SubscriptionFormData,
   SubscriptionWithDetails,
-} from '../../../types';
+} from '../model/types';
+import type { BotStatus } from '../../../types';
 import {
   createResourceViaContractMutation,
   deleteResourceViaContractMutation,

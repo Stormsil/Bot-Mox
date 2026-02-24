@@ -220,6 +220,18 @@ export function buildBreadcrumbs(
   if (pathname.startsWith('/finance')) {
     return [{ label: 'Finance' }];
   }
+  if (pathname.startsWith('/billing')) {
+    return [{ label: 'Billing' }];
+  }
+  if (pathname.startsWith('/admin/access')) {
+    return [{ label: 'Admin' }, { label: 'Access' }];
+  }
+  if (pathname.startsWith('/admin/projects')) {
+    return [{ label: 'Admin' }, { label: 'Projects' }];
+  }
+  if (pathname.startsWith('/admin/operations')) {
+    return [{ label: 'Admin' }, { label: 'Operations' }];
+  }
   if (pathname.startsWith('/settings')) {
     return [{ label: 'Settings' }];
   }

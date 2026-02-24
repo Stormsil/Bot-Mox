@@ -119,6 +119,10 @@ export const getIcon = (
       return (
         <DollarOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
       );
+    case 'billing':
+      return (
+        <CreditCardOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+      );
     case 'archive':
       return (
         <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
@@ -249,6 +253,7 @@ export const getSelectedKeysForLocation = (pathname: string, search: string): st
     return [status ? `status_${projectId}_${status}` : `project_${projectId}`];
   }
   if (pathname === '/finance') return ['finance'];
+  if (pathname === '/billing') return ['billing'];
   if (pathname === '/settings') return ['settings'];
   if (pathname === '/notes') return ['notes'];
   if (pathname === '/workspace/calendar' || pathname === '/notes/reminders')

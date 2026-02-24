@@ -13,7 +13,7 @@ import {
   useUpdateProxyMutation,
 } from '../../entities/resources/api/useProxyMutations';
 import { useProxiesQuery } from '../../entities/resources/api/useResourcesQueries';
-import type { IPQSResponse, Proxy as ProxyResource } from '../../types';
+import type { IPQSResponse, Proxy as ProxyResource } from '../../entities/resources/model/types';
 import { parseProxyString } from '../../utils/proxyUtils';
 import type { BotProxyProps, ProxyInfo, ProxyModalFormValues } from './proxy';
 import {

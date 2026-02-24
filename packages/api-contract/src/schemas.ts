@@ -1,3 +1,4 @@
+export * from './schemasAdminProjects.js';
 export * from './schemasAgentsVmOpsArtifacts.js';
 export * from './schemasBotsResources.js';
 export * from './schemasCommon.js';

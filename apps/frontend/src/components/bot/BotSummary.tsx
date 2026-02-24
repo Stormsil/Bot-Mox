@@ -7,7 +7,7 @@ import {
   useProxiesQuery,
   useSubscriptionsQuery,
 } from '../../entities/resources/api/useResourcesQueries';
-import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../types';
+import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../entities/resources/model/types';
 import styles from './BotSummary.module.css';
 import {
   calculateScheduleStats,

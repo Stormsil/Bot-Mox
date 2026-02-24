@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import type { RuntimeMetricsService } from '../observability/runtime-metrics.service';
 
 function toCodeFromLabel(label: string): string {
   return label
@@ -77,6 +78,7 @@ function normalizeHttpErrorPayload(
 @Catch()
 export class HttpErrorEnvelopeFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpErrorEnvelopeFilter.name);
+  constructor(private readonly runtimeMetricsService?: RuntimeMetricsService) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -85,6 +87,7 @@ export class HttpErrorEnvelopeFilter implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       const statusCode = exception.getStatus();
+      this.runtimeMetricsService?.recordHttpStatus({ statusCode });
       const payload = normalizeHttpErrorPayload(statusCode, exception.getResponse());
       response.status(statusCode).json({
         success: false,
@@ -99,6 +102,9 @@ export class HttpErrorEnvelopeFilter implements ExceptionFilter {
       }`,
     );
 
+    this.runtimeMetricsService?.recordHttpStatus({
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+    });
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       error: {

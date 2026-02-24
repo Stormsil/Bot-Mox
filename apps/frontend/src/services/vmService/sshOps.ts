@@ -1,6 +1,6 @@
+import { ApiClientError } from '../../shared/api/apiClient';
 import type { SSHResult } from '../../types';
-import { ApiClientError } from '../apiClient';
-import { executeVmOps } from '../vmOpsService';
+import { executeVmOps } from '../vmOps/runtime';
 
 export interface SshConnectionStatus {
   connected: boolean;

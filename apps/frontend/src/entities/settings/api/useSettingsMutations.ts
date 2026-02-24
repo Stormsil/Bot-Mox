@@ -1,5 +1,5 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { ApiKeys, NotificationEvents, ProxySettings, StoragePolicy } from '../../../types';
+import type { ApiKeys, NotificationEvents, ProxySettings, StoragePolicy } from '../model/types';
 import {
   updateApiKeys,
   updateNotificationEvents,

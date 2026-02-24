@@ -9,7 +9,7 @@ import type { TableColumnsType } from 'antd';
 import { Button, Popconfirm, Popover, Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { TableActionButton, TableActionGroup } from '../../../components/ui/TableActionButton';
-import type { LicenseWithBots } from '../../../types';
+import type { LicenseWithBots } from '../../../entities/resources/model/types';
 import styles from '../LicensesPage.module.css';
 import { isExpired, isExpiringSoon, ONE_DAY_MS } from './helpers';
 import type { LicenseColumnsHandlers } from './types';

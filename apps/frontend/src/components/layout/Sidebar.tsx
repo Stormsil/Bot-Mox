@@ -10,15 +10,9 @@ import {
 import { Layout, Menu } from 'antd';
 import type React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import styles from './Sidebar.module.css';
-
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+const cx = bindCssModuleCx(styles);
 
 const { Sider } = Layout;
 

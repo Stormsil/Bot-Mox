@@ -26,7 +26,34 @@ if (testFiles.length === 0) {
   process.exit(1);
 }
 
-const result = spawnSync(process.execPath, ['--test', '--import', 'tsx', ...testFiles], {
+const extraArgs = process.argv.slice(2);
+const testArgs = extraArgs.length > 0 ? extraArgs : testFiles;
+
+function resolveTestConcurrency() {
+  const raw = String(process.env.BOTMOX_BACKEND_TEST_CONCURRENCY || '').trim();
+  if (raw) {
+    const parsed = Number.parseInt(raw, 10);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  // Windows Node test workers are more prone to OOM in this repo when run in parallel.
+  if (process.platform === 'win32') {
+    return 1;
+  }
+
+  return null;
+}
+
+const concurrency = resolveTestConcurrency();
+const nodeArgs = ['--test', '--import', 'tsx'];
+if (concurrency !== null) {
+  nodeArgs.push(`--test-concurrency=${concurrency}`);
+}
+nodeArgs.push(...testArgs);
+
+const result = spawnSync(process.execPath, nodeArgs, {
   stdio: 'inherit',
   cwd: path.resolve(__dirname, '..'),
   env: process.env,

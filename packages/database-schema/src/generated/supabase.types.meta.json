@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-19T04:07:06.999Z",
+  "generatedAt": "2026-02-22T10:14:18.012Z",
   "schemaList": "public,storage,graphql_public",
-  "migrationsHash": "ed987d2909a7053afde99c61cb6d7e1932bda0191cb2033982096ea73c996223",
+  "migrationsHash": "383ce87b34ab26e5533937eb6411b3ccb0e57936af8eeb8ebd728c1e8144a3da",
   "migrationFiles": [
     "supabase/migrations/20260212000100_create_storage_policies.sql",
     "supabase/migrations/20260212000200_create_artifacts_domain.sql",
@@ -15,6 +15,11 @@
     "supabase/migrations/20260216002000_create_playbooks.sql",
     "supabase/migrations/20260219000100_normalize_resources_subscriptions_projection.sql",
     "supabase/migrations/20260219000200_normalize_resources_finance_projections.sql",
-    "supabase/migrations/20260219000300_normalize_workspace_bots_settings_projections.sql"
+    "supabase/migrations/20260219000300_normalize_workspace_bots_settings_projections.sql",
+    "supabase/migrations/20260221000100_create_prisma_projection_tables.sql",
+    "supabase/migrations/20260221000200_project_catalog_rollout.sql",
+    "supabase/migrations/20260221000300_enable_tenant_rls.sql",
+    "supabase/migrations/20260221000400_tenant_account_access.sql",
+    "supabase/migrations/20260221000500_admin_audit_events.sql"
   ]
 }

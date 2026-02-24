@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { ResourcesRepository } from './resources.repository';
 
 type ResourceKind = 'licenses' | 'proxies' | 'subscriptions';
@@ -22,6 +23,8 @@ export interface ResourceListResult {
 
 @Injectable()
 export class ResourcesService {
+  private readonly atRestCrypto = new DataAtRestCrypto();
+
   constructor(private readonly repository: ResourcesRepository) {}
 
   private normalizeSearchValue(value: unknown): string {
@@ -92,9 +95,22 @@ export class ResourcesService {
     const id = String(row.id || '').trim();
     const payload = row.payload;
     if (payload && typeof payload === 'object') {
-      return { ...(payload as ResourceRecord), ...(id ? { id } : {}) };
+      const wrapped = (payload as ResourceRecord).__enc_payload_v1;
+      const decryptedPayload =
+        wrapped !== undefined ? this.atRestCrypto.decryptJson<ResourceRecord>(wrapped) : null;
+      const materialized =
+        decryptedPayload && typeof decryptedPayload === 'object'
+          ? decryptedPayload
+          : (payload as ResourceRecord);
+      return { ...materialized, ...(id ? { id } : {}) };
     }
     return id ? { id } : {};
+  }
+
+  private encryptResourcePayload(input: ResourceRecord): ResourceRecord {
+    return {
+      __enc_payload_v1: this.atRestCrypto.encryptJson(input),
+    };
   }
 
   async list(
@@ -136,7 +152,7 @@ export class ResourcesService {
       tenantId,
       kind,
       id,
-      payload: nextRecord as Prisma.InputJsonValue,
+      payload: this.encryptResourcePayload(nextRecord as ResourceRecord) as Prisma.InputJsonValue,
     });
     return this.mapDbRowToRecord(row);
   }
@@ -164,7 +180,7 @@ export class ResourcesService {
       tenantId,
       kind,
       id,
-      payload: nextRecord as Prisma.InputJsonValue,
+      payload: this.encryptResourcePayload(nextRecord as ResourceRecord) as Prisma.InputJsonValue,
     });
     return this.mapDbRowToRecord(row);
   }

@@ -1,5 +1,6 @@
 import { Button } from 'antd';
 import type React from 'react';
+import { useVMQueueContext } from '../../features/vm-queue/model/VMQueueContext';
 import type { VMQueueItem } from '../../types';
 import { formatMemoryGiB } from './queuePanelUtils';
 
@@ -9,8 +10,6 @@ interface VMQueuePanelRowResourcesCellProps {
   effectiveCores: number;
   effectiveMemoryMb: number;
   effectiveDiskGiB: number;
-  openCustomEditor: (item: VMQueueItem) => void;
-  className: (classNames: string) => string;
 }
 
 export const VMQueuePanelRowResourcesCell: React.FC<VMQueuePanelRowResourcesCellProps> = ({
@@ -19,9 +18,8 @@ export const VMQueuePanelRowResourcesCell: React.FC<VMQueuePanelRowResourcesCell
   effectiveCores,
   effectiveMemoryMb,
   effectiveDiskGiB,
-  openCustomEditor,
-  className,
 }) => {
+  const { openCustomEditor, className } = useVMQueueContext();
   return (
     <div className={className('vm-queue-item-resources')}>
       {isDeleteAction ? (

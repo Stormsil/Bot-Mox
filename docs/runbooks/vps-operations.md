@@ -15,6 +15,13 @@ Use the local production-like Docker stack as a direct substitute for VPS deploy
 # Start local production-like stack
 pnpm run deploy:local:up
 
+# Start strict deterministic local stack (full reset + no-cache rebuild + auth smoke)
+pnpm run stack:one:up:strict
+# same as default one-command startup:
+pnpm run stack:one:up
+# strict + admin projects lifecycle smoke:
+pnpm run stack:one:up:strict:full
+
 # Check status
 pnpm run deploy:local:ps
 
@@ -31,9 +38,23 @@ pnpm run deploy:local:down
 This mode uses:
 - `deploy/compose.stack.yml`
 - `deploy/compose.prod-sim.env.example`
-- local images `apps/frontend/frontend:prod-sim` and `apps/frontend/backend:prod-sim`
+- local images `botmox/frontend:prod-sim` and `botmox/backend:prod-sim`
 
 So you can validate full-stack behavior before real VPS appears.
+
+`deploy:local:up` and `deploy:local:restart` now route through strict deterministic startup (`stack:one:up`).
+
+Recommended auth/access smoke check after stack up:
+
+```bash
+BOTMOX_ADMIN_EMAIL=admin@localhost BOTMOX_ADMIN_PASSWORD=BotmoxLocal234 pnpm run smoke:auth-access:e2e
+```
+
+Recommended multi-tenant load smoke (before rollout waves):
+
+```bash
+BOTMOX_ADMIN_EMAIL=admin@localhost BOTMOX_ADMIN_PASSWORD=BotmoxLocal234 LOAD_USERS=20 LOAD_ITERATIONS=25 pnpm run smoke:load:multi-tenant
+```
 
 ## 1. Required Secrets
 
@@ -53,12 +74,18 @@ So you can validate full-stack behavior before real VPS appears.
 |---|---|
 | `LICENSE_LEASE_SECRET` | HS256 signing key for execution leases (min 32 chars) |
 | `AGENT_AUTH_SECRET` | HS256 signing key for scoped agent tokens (can equal `LICENSE_LEASE_SECRET`) |
-| `AGENT_TOKEN_TTL_SECONDS` | Agent token TTL (recommended 30 days = `2592000`) |
+| `AGENT_AUTH_TOKEN_TTL_SECONDS` | Agent token TTL (recommended 30 days = `2592000`) |
 | `AGENT_PAIRING_PUBLIC_URL` | Public API URL used in generated pairing links (`https://api.example.com`) |
+| `AUTH_SIGNIN_RATE_LIMIT_MAX` | Max sign-in attempts per window (per IP and principal) |
+| `AUTH_SIGNIN_RATE_LIMIT_WINDOW_SECONDS` | Sign-in rate-limit window in seconds |
+| `AUTH_SIGNUP_RATE_LIMIT_MAX` | Max sign-up attempts per window (per IP and principal) |
+| `AUTH_SIGNUP_RATE_LIMIT_WINDOW_SECONDS` | Sign-up rate-limit window in seconds |
 | `SUPABASE_DB_PASSWORD` | PostgreSQL password |
 | `SUPABASE_JWT_SECRET` | Supabase JWT signing key (min 32 chars) |
 | `SUPABASE_ANON_KEY` | Supabase anonymous key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
+| `SUPABASE_VAULT_RPC_NAME` | RPC name for storing secret material in Vault (`vault_store_secret`) |
+| `SUPABASE_VAULT_ROTATE_RPC_NAME` | RPC name for server-side secret rewrap rotation (`vault_rotate_secret`) |
 | `SUPABASE_ADMIN_EMAILS` | Comma-separated operator emails mapped to `admin` + `infra` |
 | `SUPABASE_ADMIN_USER_IDS` | Comma-separated operator user IDs mapped to `admin` + `infra` |
 | `MINIO_ROOT_PASSWORD` | MinIO root password |
@@ -191,6 +218,9 @@ docker compose -f deploy/compose.stack.yml --env-file .env.prod ps
 # Check logs
 docker compose -f deploy/compose.stack.yml --env-file .env.prod logs --tail=50 backend
 docker compose -f deploy/compose.stack.yml --env-file .env.prod logs --tail=50 frontend
+
+# Runtime counters snapshot (auth/5xx/ws/sse)
+curl -sf https://api.example.com/api/v1/diag/runtime-metrics | jq .
 ```
 
 ---
@@ -241,6 +271,9 @@ docker compose -f deploy/compose.stack.yml --env-file .env.prod restart backend
 
 # MinIO backup daily at 03:30
 30 3 * * * cd /opt/botmox && ./scripts/backup-minio.sh >> /var/log/botmox-backup.log 2>&1
+
+# Secrets rotation (weekly example, Sunday 04:00)
+0 4 * * 0 cd /opt/botmox && API_BASE_URL=https://api.example.com SECRETS_ROTATE_KEY_ID=kms-2026q1 BOTMOX_ADMIN_EMAIL=admin@example.com BOTMOX_ADMIN_PASSWORD='<secure-password>' pnpm run secrets:rotate:run >> /var/log/botmox-secrets-rotation.log 2>&1
 
 # Cleanup backups older than 14 days
 0 4 * * * find /opt/botmox/backups -name "*.gz" -mtime +14 -delete

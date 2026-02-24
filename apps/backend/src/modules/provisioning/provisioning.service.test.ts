@@ -4,6 +4,7 @@ export {};
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { ProvisioningService } = require('./provisioning.service.ts');
+const { DataAtRestCrypto } = require('../common/data-at-rest-crypto.ts');
 
 function createRepositoryStub(overrides = {}) {
   const profiles = new Map();
@@ -176,4 +177,86 @@ test('ProvisioningService uses repository and fails hard on repository errors', 
     },
   });
   await assert.rejects(() => failing.listProfiles('tenant-a'), /db unavailable/);
+});
+
+test('ProvisioningService stores encrypted profile payload and reads legacy plaintext', async () => {
+  const crypto = new DataAtRestCrypto();
+  let capturedPayload = null;
+
+  const service = createService({
+    upsertProfile: async (input) => {
+      capturedPayload = input.payload;
+      return input.payload;
+    },
+    findProfileById: async () => ({
+      id: 'legacy-1',
+      name: 'legacy profile',
+      is_default: false,
+      config: { locale: 'en-US' },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }),
+  });
+
+  const created = await service.createProfile(
+    { name: 'enc profile', is_default: false, config: { locale: 'ru-RU' } },
+    'tenant-a',
+  );
+
+  assert.equal(created.name, 'enc profile');
+  assert.ok(capturedPayload);
+  assert.ok(capturedPayload.__enc_payload_v1);
+  const decrypted = crypto.decryptJson(capturedPayload.__enc_payload_v1);
+  assert.equal(decrypted.name, 'enc profile');
+
+  const legacy = await service.getProfile('legacy-1', 'tenant-a');
+  assert.equal(legacy?.name, 'legacy profile');
+});
+
+test('ProvisioningService stores encrypted progress payload and reads legacy plaintext progress', async () => {
+  const crypto = new DataAtRestCrypto();
+  let capturedProgressPayload = null;
+
+  const tokenRecord = {
+    token: 'token-vm-a-token-1',
+    tokenId: 'token-1',
+    tenantId: 'tenant-a',
+    userId: 'user-a',
+    vmUuid: 'vm-a',
+    expiresAtMs: Date.now() + 60_000,
+  };
+
+  const service = createService({
+    findToken: async () => tokenRecord,
+    appendProgress: async (input) => {
+      capturedProgressPayload = input.payload;
+    },
+    listProgressByVm: async () => [
+      {
+        vm_uuid: 'vm-a',
+        step: 'bootstrap',
+        status: 'running',
+        details: null,
+        updated_at: new Date().toISOString(),
+      },
+    ],
+  });
+
+  const saved = await service.reportProgress({
+    token: 'token-vm-a-token-1',
+    vm_uuid: 'vm-a',
+    step: 'bootstrap',
+    status: 'running',
+    details: null,
+  });
+  assert.equal(saved?.vm_uuid, 'vm-a');
+  assert.ok(capturedProgressPayload);
+  assert.ok(capturedProgressPayload.__enc_payload_v1);
+
+  const decrypted = crypto.decryptJson(capturedProgressPayload.__enc_payload_v1);
+  assert.equal(decrypted.vm_uuid, 'vm-a');
+
+  const progress = await service.getProgress('vm-a', 'tenant-a');
+  assert.equal(progress.events.length, 1);
+  assert.equal(progress.events[0]?.vm_uuid, 'vm-a');
 });

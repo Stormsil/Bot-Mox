@@ -55,6 +55,14 @@ export const WS_BASE_URL = trimTrailingSlash(
   ).trim(),
 );
 
+export const ADMIN_APP_URL = trimTrailingSlash(
+  String(
+    readRuntimeString(getRuntimeConfig().adminAppUrl) ||
+      import.meta.env.VITE_ADMIN_APP_URL ||
+      'http://localhost:5174',
+  ).trim(),
+);
+
 export function buildApiUrl(path: string): string {
   const normalizedPath = ensureLeadingSlash(trimLeadingSlash(String(path || '').trim()));
   if (!API_BASE_URL) return normalizedPath;

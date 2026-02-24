@@ -143,9 +143,23 @@ export class VmOpsService {
   }
 
   async getById(id: string, tenantId?: string): Promise<VmCommandRecord | null> {
-    const dbCommand = await this.repository.findById(id);
-    if (!dbCommand) return null;
-    const mapped = mapDbCommand(dbCommand);
+    const dbCommand = tenantId
+      ? await (
+          this.repository as unknown as {
+            findByIdWithinTenant?: (input: {
+              id: string;
+              tenantId: string;
+            }) => Promise<Awaited<ReturnType<VmOpsRepository['findById']>>>;
+          }
+        ).findByIdWithinTenant?.({
+          id,
+          tenantId: normalizeTenantId(tenantId),
+        })
+      : await this.repository.findById(id);
+    const resolvedDbCommand =
+      dbCommand === undefined ? await this.repository.findById(id) : dbCommand;
+    if (!resolvedDbCommand) return null;
+    const mapped = mapDbCommand(resolvedDbCommand);
     if (tenantId && mapped.tenant_id !== tenantId) {
       return null;
     }
@@ -215,21 +229,13 @@ export class VmOpsService {
     result?: unknown;
     errorMessage?: string;
     tenantId?: string;
+    agentId?: string;
   }): Promise<VmCommandRecord | null> {
     const normalizedTenantId = input.tenantId ? normalizeTenantId(input.tenantId) : '';
-    if (normalizedTenantId) {
-      const existing = await this.repository.findById(input.id);
-      if (!existing) {
-        return null;
-      }
-      const existingMapped = mapDbCommand(existing);
-      if (existingMapped.tenant_id !== normalizedTenantId) {
-        return null;
-      }
-    }
+    const normalizedAgentId = String(input.agentId || '').trim();
 
     const now = new Date();
-    const updated = await this.repository.updateStatus({
+    const updatePayload = {
       id: input.id,
       status: input.status,
       ...(Object.hasOwn(input, 'result')
@@ -238,11 +244,49 @@ export class VmOpsService {
       ...(Object.hasOwn(input, 'errorMessage') ? { errorMessage: input.errorMessage ?? null } : {}),
       ...(input.status === 'running' ? { startedAt: now } : {}),
       ...(TERMINAL_STATUSES.has(input.status) ? { completedAt: now } : {}),
-    });
-    if (!updated) {
+    };
+    const tenantAwareRepository = this.repository as unknown as {
+      updateStatusWithinTenant?: (input: {
+        id: string;
+        tenantId: string;
+        agentId?: string;
+        status: 'running' | 'succeeded' | 'failed' | 'expired' | 'cancelled';
+        result?: Prisma.InputJsonValue | null;
+        errorMessage?: string | null;
+        startedAt?: Date | null;
+        completedAt?: Date | null;
+      }) => Promise<Awaited<ReturnType<VmOpsRepository['updateStatus']>>>;
+    };
+    let resolvedUpdated: Awaited<ReturnType<VmOpsRepository['updateStatus']>> = null;
+    if (
+      normalizedTenantId &&
+      typeof tenantAwareRepository.updateStatusWithinTenant === 'function'
+    ) {
+      resolvedUpdated = await tenantAwareRepository.updateStatusWithinTenant({
+        ...updatePayload,
+        tenantId: normalizedTenantId,
+        ...(normalizedAgentId ? { agentId: normalizedAgentId } : {}),
+      });
+    } else {
+      if (normalizedTenantId) {
+        const existing = await this.repository.findById(input.id);
+        if (!existing) {
+          return null;
+        }
+        const existingMapped = mapDbCommand(existing);
+        if (existingMapped.tenant_id !== normalizedTenantId) {
+          return null;
+        }
+        if (normalizedAgentId && existingMapped.agent_id !== normalizedAgentId) {
+          return null;
+        }
+      }
+      resolvedUpdated = await this.repository.updateStatus(updatePayload);
+    }
+    if (!resolvedUpdated) {
       return null;
     }
-    const mapped = mapDbCommand(updated);
+    const mapped = mapDbCommand(resolvedUpdated);
     this.emitCommandEvent(mapped);
     return mapped;
   }

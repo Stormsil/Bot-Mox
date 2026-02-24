@@ -35,6 +35,7 @@ Related Checks: `check:zod:boundaries`, `check:infra:gateway`, `contract:check`,
      - `SUPABASE_URL`
      - `SUPABASE_SERVICE_ROLE_KEY`
      - `SUPABASE_VAULT_RPC_NAME`
+     - `SUPABASE_VAULT_ROTATE_RPC_NAME`
 9. VM command lease reliability limits are runtime-configurable:
    - `BOTMOX_VMOPS_RUNNING_MAX_MS` (running lease timeout, min 60000)
    - `BOTMOX_VMOPS_DISPATCHED_MAX_MS` (dispatched/ack timeout, min 15000)

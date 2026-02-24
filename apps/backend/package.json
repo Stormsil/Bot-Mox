@@ -5,15 +5,16 @@
   "type": "commonjs",
   "scripts": {
     "start": "node dist/main.js",
-    "predev": "pnpm --filter @botmox/api-contract build",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "predev": "pnpm run prisma:generate && pnpm --filter @botmox/api-contract build",
     "dev": "nest start --watch",
-    "prebuild": "pnpm --filter @botmox/api-contract build",
+    "prebuild": "pnpm run prisma:generate && pnpm --filter @botmox/api-contract build",
     "build": "tsc -p tsconfig.json",
     "lint": "pnpm --dir ../.. exec biome check apps/backend/src",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "contract:check": "pnpm run typecheck",
-    "pretest": "pnpm --filter @botmox/api-contract build",
-    "test": "node scripts/run-tests.cjs && pnpm run typecheck",
+    "pretest": "pnpm run prisma:generate && pnpm --filter @botmox/api-contract build",
+    "test": "node scripts/run-tests-and-typecheck.cjs",
     "check": "pnpm run typecheck && pnpm run build"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
     "@nestjs/platform-express": "^11.1.14",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
+    "express": "^4.21.2",
     "http-proxy": "1.18.1",
     "jose": "^6.1.0",
     "reflect-metadata": "^0.2.2",

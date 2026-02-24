@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
 import type { BotRecord } from '../../entities/bot/model/types';
 import { useProjectSettingsQuery } from '../../entities/settings/api/useProjectSettingsQuery';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import {
   useResourceTreeSettingsQuery,
   useSaveResourceTreeSettingsMutation,
@@ -35,13 +36,7 @@ import {
 } from './resourceTree/useResourceTreePanelSizing';
 import { useResourceTreeState } from './resourceTree/useResourceTreeState';
 
-function cx(classNames: string): string {
-  return classNames
-    .split(' ')
-    .filter(Boolean)
-    .map((name) => styles[name] || name)
-    .join(' ');
-}
+const cx = bindCssModuleCx(styles);
 
 export type { BotStatus } from './resourceTree/types';
 
@@ -112,7 +107,12 @@ export const ResourceTree: React.FC = () => {
   }, [resourceTreeSettingsQuery.error]);
 
   const treeData = useMemo(
-    () => buildUnifiedTreeData({ bots, projectsMeta, visibleStatuses }),
+    () =>
+      buildUnifiedTreeData({
+        bots,
+        projectsMeta,
+        visibleStatuses,
+      }),
     [bots, projectsMeta, visibleStatuses],
   );
 

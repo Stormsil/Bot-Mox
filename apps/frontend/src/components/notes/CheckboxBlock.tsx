@@ -7,9 +7,8 @@ import { Checkbox } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CheckboxBlock } from '../../entities/notes/model/types';
+import { cx } from '../../shared/lib/classNames';
 import styles from './NoteBlocks.module.css';
-
-const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 
 interface CheckboxBlockProps {
   block: CheckboxBlock;

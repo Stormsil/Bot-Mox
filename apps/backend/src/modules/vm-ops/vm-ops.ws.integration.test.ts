@@ -140,7 +140,7 @@ function createRepositoryStub() {
 }
 
 async function startServer(
-  authService: { verifyBearerToken: (token: string) => Promise<unknown> },
+  authService: { verifyAgentBearerToken: (token: string) => Promise<unknown> },
   vmOpsService: VmOpsService,
   agentsService: { heartbeat: (input: unknown) => Promise<unknown> },
 ): Promise<TestContext> {
@@ -234,8 +234,8 @@ async function waitMessageType(
 test('vm-ops ws lifecycle dispatches, acknowledges, and completes command', async () => {
   const vmOpsService = new VmOpsService(createRepositoryStub() as never);
   const authService = {
-    async verifyBearerToken(): Promise<{ tenantId: string }> {
-      return { tenantId: 'tenant-int' };
+    async verifyAgentBearerToken(): Promise<{ tenantId: string; raw: { agent_id: string } }> {
+      return { tenantId: 'tenant-int', raw: { agent_id: 'agent-int' } };
     },
   };
   const agentsService = {
@@ -309,8 +309,8 @@ test('vm-ops ws lifecycle dispatches, acknowledges, and completes command', asyn
 test('vm-ops ws enforces tenant isolation for assigned and ack flows', async () => {
   const vmOpsService = new VmOpsService(createRepositoryStub() as never);
   const authService = {
-    async verifyBearerToken(): Promise<{ tenantId: string }> {
-      return { tenantId: 'tenant-other' };
+    async verifyAgentBearerToken(): Promise<{ tenantId: string; raw: { agent_id: string } }> {
+      return { tenantId: 'tenant-other', raw: { agent_id: 'agent-int' } };
     },
   };
   const agentsService = {

@@ -3,7 +3,7 @@ import type { TableColumnsType } from 'antd';
 import { Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { TableActionButton, TableActionGroup } from '../../components/ui/TableActionButton';
-import type { SubscriptionWithDetails } from '../../types';
+import type { SubscriptionWithDetails } from '../../entities/resources/model/types';
 import { getSubscriptionStatusColor, getSubscriptionStatusText } from './subscription-status';
 
 const { Text } = Typography;

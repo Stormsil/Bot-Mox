@@ -1,0 +1,37 @@
+.root {
+  padding: 20px;
+}
+
+.tableCard {
+  border-radius: 12px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.passwordPolicy {
+  border: 1px solid var(--boxmox-color-border-default, #2f3b4a);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--boxmox-color-surface-panel, #1a2330);
+}
+
+.passwordRule {
+  font-size: 12px;
+}
+
+@media (max-width: 1200px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

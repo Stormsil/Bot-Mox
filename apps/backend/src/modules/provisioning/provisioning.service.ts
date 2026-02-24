@@ -13,6 +13,7 @@ import type {
 } from '@botmox/api-contract';
 import { Injectable } from '@nestjs/common';
 import type { z } from 'zod';
+import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { ProvisioningRepository } from './provisioning.repository';
 
 export type UnattendProfileRecord = z.infer<typeof unattendProfileRecordSchema>;
@@ -50,6 +51,7 @@ export interface ProvisioningTokenRecord {
 @Injectable()
 export class ProvisioningService {
   private tokenSequence = 0;
+  private readonly atRestCrypto = new DataAtRestCrypto();
 
   constructor(private readonly repository: ProvisioningRepository) {}
 
@@ -92,6 +94,40 @@ export class ProvisioningService {
     return JSON.parse(JSON.stringify(value)) as TValue;
   }
 
+  private mapProfilePayload(payload: unknown): UnattendProfileRecord {
+    const source =
+      payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {};
+    const wrapped = source.__enc_payload_v1;
+    const decrypted =
+      wrapped !== undefined ? this.atRestCrypto.decryptJson<UnattendProfileRecord>(wrapped) : null;
+    const materialized =
+      decrypted && typeof decrypted === 'object' ? decrypted : (source as UnattendProfileRecord);
+    return this.clone(materialized);
+  }
+
+  private encryptProfilePayload(profile: UnattendProfileRecord): Record<string, unknown> {
+    return {
+      __enc_payload_v1: this.atRestCrypto.encryptJson(this.clone(profile)),
+    };
+  }
+
+  private mapProgressPayload(payload: unknown): ReportProgressResult {
+    const source =
+      payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {};
+    const wrapped = source.__enc_payload_v1;
+    const decrypted =
+      wrapped !== undefined ? this.atRestCrypto.decryptJson<ReportProgressResult>(wrapped) : null;
+    const materialized =
+      decrypted && typeof decrypted === 'object' ? decrypted : (source as ReportProgressResult);
+    return this.clone(materialized);
+  }
+
+  private encryptProgressPayload(progress: ReportProgressResult): Record<string, unknown> {
+    return {
+      __enc_payload_v1: this.atRestCrypto.encryptJson(this.clone(progress)),
+    };
+  }
+
   private async getTokenRecord(token: string): Promise<ProvisioningTokenRecord | null> {
     const normalized = String(token || '').trim();
     if (!normalized) return null;
@@ -110,7 +146,7 @@ export class ProvisioningService {
   }
 
   private async unsetDefaultProfile(tenantId: string, exceptProfileId?: string): Promise<void> {
-    const profiles = await this.repository.listProfiles(tenantId);
+    const profiles = await this.listProfiles(tenantId);
     for (const profile of profiles) {
       if (!profile.is_default) {
         continue;
@@ -121,11 +157,11 @@ export class ProvisioningService {
       await this.repository.upsertProfile({
         tenantId,
         id: profile.id,
-        payload: {
+        payload: this.encryptProfilePayload({
           ...profile,
           is_default: false,
           updated_at: new Date().toISOString(),
-        },
+        }),
       });
     }
   }
@@ -133,7 +169,7 @@ export class ProvisioningService {
   async listProfiles(tenantId: string): Promise<UnattendProfileRecord[]> {
     const normalizedTenantId = this.normalizeTenantId(tenantId);
     const items = await this.repository.listProfiles(normalizedTenantId);
-    return items.map((item) => this.clone(item));
+    return items.map((item) => this.mapProfilePayload(item));
   }
 
   async createProfile(
@@ -161,9 +197,9 @@ export class ProvisioningService {
     const persisted = await this.repository.upsertProfile({
       tenantId: normalizedTenantId,
       id,
-      payload: profile,
+      payload: this.encryptProfilePayload(profile),
     });
-    return this.clone(persisted);
+    return this.mapProfilePayload(persisted);
   }
 
   async updateProfile(
@@ -173,8 +209,9 @@ export class ProvisioningService {
   ): Promise<UnattendProfileRecord | null> {
     const normalizedTenantId = this.normalizeTenantId(tenantId);
     const normalizedId = String(id || '').trim();
-    const current = await this.repository.findProfileById(normalizedTenantId, normalizedId);
-    if (!current) return null;
+    const currentRow = await this.repository.findProfileById(normalizedTenantId, normalizedId);
+    if (!currentRow) return null;
+    const current = this.mapProfilePayload(currentRow);
 
     const nextIsDefault = payload.is_default === true;
     if (nextIsDefault) {
@@ -193,9 +230,9 @@ export class ProvisioningService {
     const persisted = await this.repository.upsertProfile({
       tenantId: normalizedTenantId,
       id: normalizedId,
-      payload: updated,
+      payload: this.encryptProfilePayload(updated),
     });
-    return this.clone(persisted);
+    return this.mapProfilePayload(persisted);
   }
 
   async deleteProfile(id: string, tenantId: string): Promise<boolean> {
@@ -215,7 +252,7 @@ export class ProvisioningService {
     const normalizedTenantId = this.normalizeTenantId(tenantId);
     const normalizedId = String(id || '').trim();
     const profile = await this.repository.findProfileById(normalizedTenantId, normalizedId);
-    return profile ? this.clone(profile) : null;
+    return profile ? this.mapProfilePayload(profile) : null;
   }
 
   async issueToken(input: IssueTokenInput): Promise<IssueTokenResult> {
@@ -328,7 +365,7 @@ export class ProvisioningService {
       tenantId: tokenRecord.tenantId,
       id: randomUUID(),
       vmUuid: normalizedVmUuid,
-      payload: entry,
+      payload: this.encryptProgressPayload(entry),
     });
 
     if (payload.status === 'completed' || payload.status === 'failed') {
@@ -341,8 +378,10 @@ export class ProvisioningService {
     const normalizedVmUuid = String(vmUuid || '').trim();
     const normalizedTenantId = this.normalizeTenantId(tenantId);
 
-    const events = await this.repository.listProgressByVm(normalizedTenantId, normalizedVmUuid);
-    const updatedAt = events[events.length - 1]?.updated_at ?? new Date().toISOString();
+    const events = (
+      await this.repository.listProgressByVm(normalizedTenantId, normalizedVmUuid)
+    ).map((row) => this.mapProgressPayload(row));
+    const updatedAt = String(events[events.length - 1]?.updated_at || new Date().toISOString());
 
     return {
       vm_uuid: normalizedVmUuid,

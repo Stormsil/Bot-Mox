@@ -1,5 +1,5 @@
 import { buildApiUrl } from '../config/env';
-import { authFetch } from '../services/authFetch';
+import { authFetch } from '../shared/api/authFetch';
 
 const INITIAL_RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 15_000;

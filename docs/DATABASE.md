@@ -2,7 +2,7 @@
 
 Status: Active
 Owner: Data Platform
-Last Updated: 2026-02-19
+Last Updated: 2026-02-22
 Applies To: Supabase/Postgres runtime
 Non-goals: Deprecated/archived datastore implementations
 Related Checks: `db:types:check`, `contract:check`
@@ -11,6 +11,34 @@ Related Checks: `db:types:check`, `contract:check`
 
 - Supabase/Postgres is the primary runtime store.
 - Frontend accesses data through backend API (`/api/v1/*`) for business operations.
+- Sensitive workspace payloads are encrypted at rest by backend before persistence
+  (notes/calendar/kanban JSON payload), and transparently decrypted on read.
+- Sensitive finance payloads are encrypted at rest by backend before persistence
+  (`finance_operations.payload`), and transparently decrypted on read.
+- Settings payloads are encrypted at rest by backend before persistence
+  (`settings_items.payload`), and transparently decrypted on read.
+- Resources payloads are encrypted at rest by backend before persistence
+  (`resource_items.payload`), and transparently decrypted on read.
+- Playbooks payloads are encrypted at rest by backend before persistence
+  (`playbook_items.payload`), and transparently decrypted on read.
+- Bots payloads are encrypted at rest by backend before persistence
+  (`bot_entities.payload`), and transparently decrypted on read.
+- Artifact release/assignment payloads are encrypted at rest by backend before persistence
+  (`artifact_release_items.payload`, `artifact_assignment_items.payload`), and transparently decrypted on read.
+- Theme assets payloads are encrypted at rest by backend before persistence
+  (`theme_asset_items.payload`), and transparently decrypted on read.
+- License lease payloads are encrypted at rest by backend before persistence
+  (`license_lease_items.payload`), and transparently decrypted on read.
+- Provisioning unattend profiles are encrypted at rest by backend before persistence
+  (`provisioning_profile_items.payload`), and transparently decrypted on read.
+- Provisioning progress events are encrypted at rest by backend before persistence
+  (`provisioning_progress_items.payload`), and transparently decrypted on read.
+- Provisioning token payloads are encrypted at rest by backend before persistence
+  (`provisioning_token_items.payload`), and transparently decrypted on read.
+- Infra VM SSH config content is encrypted at rest by backend before persistence
+  (`infra_vm_config_items.content`), and transparently decrypted on read.
+- Agent command payload/result are encrypted at rest by backend before persistence
+  (`agent_commands.payload`, `agent_commands.result`), and transparently decrypted on read.
 
 ## Supabase Runtime Domains
 
@@ -72,6 +100,61 @@ Related Checks: `db:types:check`, `contract:check`
 - `GET /api/v1/provisioning/progress/{vmUuid}`
 
 Deprecated `/api/*` adapters are removed.
+
+## Inspecting Schema And Data
+
+Use these commands to inspect schema/data safely without bypassing app isolation checks in normal flows.
+
+### Local (compose stack)
+
+```bash
+# open psql inside the local stack database
+docker compose -f deploy/compose.stack.yml --env-file deploy/compose.prod-sim.env exec supabase-db \
+  psql -U postgres -d postgres
+```
+
+```sql
+-- list tenant-scoped projection tables
+\dt public.*_items
+
+-- inspect one tenant safely (replace tenant id)
+SELECT tenant_id, path, updated_at
+FROM public.settings_items
+WHERE tenant_id = 't_example'
+ORDER BY updated_at DESC
+LIMIT 50;
+
+-- verify RLS policies are enabled
+SELECT schemaname, tablename, rowsecurity
+FROM pg_tables
+WHERE schemaname = 'public'
+  AND tablename IN (
+    'resource_items',
+    'workspace_items',
+    'finance_operations',
+    'bot_entities',
+    'settings_items',
+    'agents',
+    'agent_commands'
+  )
+ORDER BY tablename;
+```
+
+### VPS (production-like)
+
+```bash
+# from server shell, with DATABASE_URL already exported
+psql "$DATABASE_URL"
+```
+
+```sql
+-- show table + index details for hot tenant paths
+\d+ public.settings_items
+\d+ public.resource_items
+\d+ public.workspace_items
+```
+
+Do not query or dump cross-tenant data for operational tasks. Use tenant-filtered queries and audited admin APIs first.
 
 ## History
 

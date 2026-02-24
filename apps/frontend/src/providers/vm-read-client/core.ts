@@ -1,4 +1,4 @@
-import { executeVmOps } from '../../services/vmOpsService';
+import { executeVmOps } from '../../services/vmOps/runtime';
 import type {
   ProxmoxClusterResource,
   ProxmoxTaskStatus,

@@ -6,6 +6,7 @@ import { normalizeCores, normalizeMemory } from '../vmPageUtils';
 
 interface SyncTemplateHardwareParams {
   explicitSettings?: VMGeneratorSettings | null;
+  isCurrent?: () => boolean;
   settingsRef: MutableRefObject<VMGeneratorSettings | null>;
   proxmoxNode: string;
   templateHardwareLiveRef: MutableRefObject<{ cores: number; memory: number } | null>;
@@ -18,6 +19,10 @@ export async function syncTemplateHardwareFromApi(params: SyncTemplateHardwarePa
   cores: number;
   memory: number;
 } | null> {
+  if (params.isCurrent && !params.isCurrent()) {
+    return null;
+  }
+
   const activeSettings = params.explicitSettings || params.settingsRef.current;
   if (!activeSettings) {
     return null;
@@ -39,12 +44,19 @@ export async function syncTemplateHardwareFromApi(params: SyncTemplateHardwarePa
   }
 
   try {
+    if (params.isCurrent && !params.isCurrent()) {
+      return null;
+    }
     const config = await getVMConfig(vmId, node);
+    if (params.isCurrent && !params.isCurrent()) {
+      return null;
+    }
     const cores = normalizeCores(config.cores, fallbackCores);
     const memory = normalizeMemory(config.memory, fallbackMemory);
     params.setTemplateHardwareLive({ cores, memory });
 
     params.queueItemsRef.current.forEach((item) => {
+      if (params.isCurrent && !params.isCurrent()) return;
       if (item.status !== 'pending') return;
       if ((item.resourceMode || 'original') !== 'original') return;
 
@@ -62,6 +74,9 @@ export async function syncTemplateHardwareFromApi(params: SyncTemplateHardwarePa
 
     return { cores, memory };
   } catch {
+    if (params.isCurrent && !params.isCurrent()) {
+      return null;
+    }
     const fallback = { cores: fallbackCores, memory: fallbackMemory };
     params.setTemplateHardwareLive(fallback);
     return fallback;

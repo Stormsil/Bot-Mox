@@ -2,6 +2,7 @@ export {};
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { NotFoundException } = require('@nestjs/common');
 const { AgentsService } = require('./agents.service.ts');
 
 type RepositoryStub = {
@@ -66,4 +67,33 @@ test('AgentsService fails fast on repository list error (no fallback path)', asy
   };
   const service = createService(repositoryStub);
   await assert.rejects(() => service.list(undefined, 'tenant-a'), /db list failed dual/);
+});
+
+test('AgentsService heartbeat fails with AGENT_NOT_FOUND when agent is outside tenant scope', async () => {
+  const repositoryStub = {
+    list: async () => [],
+    createPairing: async () => {
+      throw new Error('unexpected');
+    },
+    heartbeat: async () => null,
+  };
+  const service = createService(repositoryStub);
+
+  await assert.rejects(
+    () =>
+      service.heartbeat({
+        tenantId: 'tenant-a',
+        agentId: 'agent-1',
+        status: 'active',
+        metadata: {},
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof NotFoundException);
+      assert.deepEqual((error as { getResponse?: () => unknown }).getResponse?.(), {
+        code: 'AGENT_NOT_FOUND',
+        message: 'Agent not found for this tenant',
+      });
+      return true;
+    },
+  );
 });

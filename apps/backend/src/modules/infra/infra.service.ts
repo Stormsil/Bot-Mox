@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { InfraServiceError } from './infra.errors';
 import { InfraRepository } from './infra.repository';
 import type {
@@ -24,8 +25,28 @@ import {
 @Injectable()
 export class InfraService {
   private taskSequence = 0;
+  private readonly atRestCrypto = new DataAtRestCrypto();
 
   constructor(private readonly repository: InfraRepository) {}
+
+  private decodeVmConfigContent(value: string): string {
+    const source = String(value ?? '');
+    if (!source.trim()) {
+      return source;
+    }
+    try {
+      const parsed = JSON.parse(source) as unknown;
+      const decrypted = this.atRestCrypto.decryptString(parsed);
+      return decrypted === null ? source : decrypted;
+    } catch {
+      return source;
+    }
+  }
+
+  private encodeVmConfigContent(value: string): string {
+    const envelope = this.atRestCrypto.encryptString(value);
+    return JSON.stringify(envelope);
+  }
 
   private nextUpid(): string {
     this.taskSequence += 1;
@@ -338,7 +359,7 @@ export class InfraService {
 
     const existing = await this.repository.findVmConfig(normalizedTenantId, normalizedVmid);
     if (existing) {
-      return { config: existing };
+      return { config: this.decodeVmConfigContent(existing) };
     }
 
     return {
@@ -351,7 +372,11 @@ export class InfraService {
     const normalizedVmid = assertVmid(input.vmid);
     const content = assertContent(String(input.content || ''));
 
-    await this.repository.upsertVmConfig(normalizedTenantId, normalizedVmid, content);
+    await this.repository.upsertVmConfig(
+      normalizedTenantId,
+      normalizedVmid,
+      this.encodeVmConfigContent(content),
+    );
 
     return {
       written: true,

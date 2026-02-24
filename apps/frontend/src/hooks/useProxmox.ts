@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ApiClientError } from '../services/apiClient';
-import { subscribeToVmOpsEvents } from '../services/vmOpsEventsService';
-import { getSelectedProxmoxTargetNode } from '../services/vmOpsService';
-import {
-  getProxmoxConnectionSnapshot,
-  getSshConnectionStatus,
-  listVMs,
-} from '../services/vmService';
-import { getVMSettings } from '../services/vmSettingsService';
+import { subscribeToVmOpsEvents } from '../entities/vm/api/vmRuntimeFacade';
+import { getSelectedProxmoxTargetNode } from '../entities/vm/api/vmSelectionFacade';
+import { getVMSettings } from '../entities/vm/api/vmSettingsFacade';
+import { ApiClientError } from '../shared/api/apiClient';
+import { getProxmoxConnectionSnapshot, listVMs } from '../services/vmService/proxmoxOps';
+import { getSshConnectionStatus } from '../services/vmService/sshOps';
 import type { ProxmoxVM } from '../types';
 
 const VM_MUTATION_COMMANDS = new Set([

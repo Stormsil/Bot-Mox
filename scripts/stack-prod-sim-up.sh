@@ -7,6 +7,7 @@ ENV_FILE="${REPO_ROOT}/deploy/compose.prod-sim.env.example"
 
 cd "${REPO_ROOT}"
 docker build -f apps/frontend/Dockerfile -t botmox/frontend:prod-sim .
+docker build -f apps/admin/Dockerfile -t botmox/admin:prod-sim .
 docker build -f apps/backend/Dockerfile -t botmox/backend:prod-sim .
 
 docker compose \

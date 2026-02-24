@@ -1,6 +1,6 @@
 import type { Dayjs } from 'dayjs';
 import type { BotRecord } from '../../../entities/bot/model/types';
-import type { LicenseWithBots } from '../../../types';
+import type { LicenseWithBots } from '../../../entities/resources/model/types';
 
 export interface LicenseFormValues {
   key: string;

@@ -1,4 +1,5 @@
-import { getVMConfig, registerVmResource } from '../../../services/vmService';
+import { getVMConfig } from '../../../services/vmService/proxmoxOps';
+import { registerVmResource } from '../../../services/vmService/resourceRegistry';
 import type { VMQueueItem } from '../../../types';
 import { TASK_CONFIG_DIFF_FIELDS } from './constants';
 import {

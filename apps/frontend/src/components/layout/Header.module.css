@@ -41,6 +41,18 @@
   font-size: 10px;
 }
 
+.access-tag {
+  margin-inline-end: 0;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+}
+
+.upgrade-btn {
+  padding-inline: 4px;
+  height: auto;
+  color: var(--boxmox-color-brand-primary);
+}
+
 .header-path {
   display: flex;
   align-items: center;

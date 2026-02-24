@@ -130,13 +130,57 @@ async function checkUi(baseUrl) {
     const res = await requestWithTimeout(uiUrl, {}, 8000);
     const contentType = res.headers?.['content-type'] || '';
     return {
-      ok: res.ok,
+      ok: res.ok || (res.status >= 300 && res.status < 400),
       uiUrl,
       status: res.status,
       contentType,
     };
   } catch (e) {
     return { ok: false, uiUrl, error: e?.message || 'unreachable' };
+  }
+}
+
+async function checkAdmin(baseUrl) {
+  const adminUrl = process.env.BOTMOX_ADMIN_URL
+    ? toText(process.env.BOTMOX_ADMIN_URL).trim()
+    : baseUrl === 'http://localhost'
+      ? 'http://admin.localhost'
+      : 'http://localhost:5174';
+
+  try {
+    const res = await requestWithTimeout(adminUrl, {}, 8000);
+    const contentType = res.headers?.['content-type'] || '';
+    return {
+      ok: res.ok || (res.status >= 300 && res.status < 400),
+      adminUrl,
+      status: res.status,
+      contentType,
+    };
+  } catch (e) {
+    if (baseUrl === 'http://localhost') {
+      try {
+        const fallback = await requestWithTimeout(
+          'http://localhost',
+          {
+            headers: {
+              Host: 'admin.localhost',
+            },
+          },
+          8000,
+        );
+        const contentType = fallback.headers?.['content-type'] || '';
+        return {
+          ok: fallback.ok || (fallback.status >= 300 && fallback.status < 400),
+          adminUrl,
+          status: fallback.status,
+          contentType,
+          fallbackUrl: 'http://localhost (Host: admin.localhost)',
+        };
+      } catch {
+        // ignore; return original error below
+      }
+    }
+    return { ok: false, adminUrl, error: e?.message || 'unreachable' };
   }
 }
 
@@ -226,6 +270,7 @@ function summarize(report) {
   const lines = [];
   lines.push(`mode=${report.mode} api=${report.baseUrl}`);
   lines.push(`ui=${report.ui.ok ? 'OK' : 'FAIL'} (${report.ui.uiUrl})`);
+  lines.push(`admin=${report.admin.ok ? 'OK' : 'FAIL'} (${report.admin.adminUrl})`);
   lines.push(`health=${report.health.ok ? 'OK' : 'FAIL'} (${report.health.url})`);
 
   const h = report.health?.headers || {};
@@ -274,6 +319,7 @@ async function main() {
     mode: detected.mode,
     baseUrl,
     ui: await checkUi(baseUrl),
+    admin: await checkAdmin(baseUrl),
     health: await checkHealth(baseUrl),
     diag: await checkDiagTrace(baseUrl),
     jaeger: await checkJaeger(),
@@ -291,7 +337,7 @@ async function main() {
   const depsOk = healthData
     ? Boolean(healthData.supabase_ready !== false && healthData.s3_ready !== false)
     : true;
-  const ok = report.ui.ok && report.health.ok && report.diag.ok && depsOk;
+  const ok = report.ui.ok && report.admin.ok && report.health.ok && report.diag.ok && depsOk;
   process.exit(ok ? 0 : 1);
 }
 

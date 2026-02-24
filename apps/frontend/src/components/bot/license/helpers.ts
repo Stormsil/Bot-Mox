@@ -1,5 +1,5 @@
 import type { MenuProps } from 'antd';
-import type { BotLicense } from '../../../types';
+import type { BotLicense } from '../../../entities/resources/model/types';
 import type { LicenseFormValues, LicenseInfo } from './types';
 
 const DAY_MS = 1000 * 60 * 60 * 24;
