@@ -1,22 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { uiLogger } from '../../observability/uiLogger';
+import { useCurrentTime } from '../../shared/lib/hooks/useCurrentTime';
 import type { ContentMapSection } from './content-map';
 import { CONTENT_MAP_COLLAPSE_KEY, DEFAULT_COLLAPSED_SECTIONS } from './page-helpers';
 
 export function useDatacenterCurrentTime(): number {
-  const [currentTime, setCurrentTime] = useState(() => Date.now());
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 60_000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
-
-  return currentTime;
+  return useCurrentTime();
 }
 
 export function useDatacenterCollapsedSections(): {

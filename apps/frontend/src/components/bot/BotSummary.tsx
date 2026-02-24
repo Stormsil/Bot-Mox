@@ -7,7 +7,12 @@ import {
   useProxiesQuery,
   useSubscriptionsQuery,
 } from '../../entities/resources/api/useResourcesQueries';
-import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../entities/resources/model/types';
+import type {
+  BotLicense,
+  Proxy as ProxyResource,
+  Subscription,
+} from '../../entities/resources/model/types';
+import { useCurrentTime } from '../../shared/lib/hooks/useCurrentTime';
 import styles from './BotSummary.module.css';
 import {
   calculateScheduleStats,
@@ -38,19 +43,11 @@ import type {
 
 export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
   const [activeSection, setActiveSection] = useState('overview');
-  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const currentTime = useCurrentTime();
   const licensesQuery = useLicensesQuery();
   const proxiesQuery = useProxiesQuery();
   const subscriptionsQuery = useSubscriptionsQuery();
   const [searchParams, setSearchParams] = useSearchParams();
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 60_000);
-
-    return () => window.clearInterval(intervalId);
-  }, []);
 
   useEffect(() => {
     const resourcesError = licensesQuery.error ?? proxiesQuery.error ?? subscriptionsQuery.error;

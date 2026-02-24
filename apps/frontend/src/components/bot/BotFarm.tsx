@@ -5,7 +5,8 @@ import {
   ThunderboltOutlined,
 } from '@ant-design/icons';
 import { Card, Col, List, Row, Statistic, Tag, Typography } from 'antd';
-import React from 'react';
+import type React from 'react';
+import { useCurrentTime } from '../../shared/lib/hooks/useCurrentTime';
 import type { Bot, InventoryItem } from '../../types';
 import styles from './BotFarm.module.css';
 
@@ -48,21 +49,11 @@ const getQualityColor = (quality: InventoryItem['quality']) => {
 export const BotFarm: React.FC<BotFarmProps> = () => {
   const inventory = mockInventory;
   const farmStats = mockFarmStats;
-  const [currentTime, setCurrentTime] = React.useState(() => Date.now());
+  const currentTime = useCurrentTime();
   const sessionDuration = currentTime - farmStats.session_start;
   const hoursActive = sessionDuration / 3600000;
   // goldEarned will be used in future
   void hoursActive;
-
-  React.useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 60_000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
 
   const formatDuration = (ms: number) => {
     const hours = Math.floor(ms / 3600000);

@@ -16,8 +16,9 @@ import {
   useUpdateLicenseMutation,
 } from '../../entities/resources/api/useLicenseMutations';
 import { useLicensesQuery } from '../../entities/resources/api/useResourcesQueries';
-import { uiLogger } from '../../observability/uiLogger';
 import type { LicenseWithBots } from '../../entities/resources/model/types';
+import { uiLogger } from '../../observability/uiLogger';
+import { useCurrentTime } from '../../shared/lib/hooks/useCurrentTime';
 import styles from './LicensesPage.module.css';
 import type { AddBotFormValues, LicenseFormValues } from './page';
 import {
@@ -56,7 +57,7 @@ export const LicensesPage: React.FC = () => {
   const [isAddBotModalOpen, setIsAddBotModalOpen] = useState(false);
   const [editingLicense, setEditingLicense] = useState<LicenseWithBots | null>(null);
   const [selectedLicenseForBot, setSelectedLicenseForBot] = useState<LicenseWithBots | null>(null);
-  const [currentTime, setCurrentTime] = useState(() => getCurrentTimestamp());
+  const currentTime = useCurrentTime();
   const [form] = Form.useForm<LicenseFormValues>();
   const [addBotForm] = Form.useForm<AddBotFormValues>();
   const [statsCollapsed, setStatsCollapsed] = useState<boolean>(() => {
@@ -67,14 +68,6 @@ export const LicensesPage: React.FC = () => {
   useEffect(() => {
     localStorage.setItem(STATS_COLLAPSED_KEY, JSON.stringify(statsCollapsed));
   }, [statsCollapsed]);
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setCurrentTime(getCurrentTimestamp());
-    }, 60_000);
-
-    return () => window.clearInterval(intervalId);
-  }, []);
 
   useEffect(() => {
     if (!licensesQuery.error) return;
