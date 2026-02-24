@@ -4,7 +4,6 @@ import {
   Form,
   Input,
   InputNumber,
-  Modal,
   Radio,
   Select,
   Space,
@@ -20,6 +19,7 @@ import type {
   FinanceOperationFormData,
   FinanceOperationType,
 } from '../../entities/finance/model/types';
+import { ThemeModal } from '../ui';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -176,7 +176,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   const categories = transactionType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
   return (
-    <Modal
+    <ThemeModal
       title={
         <span style={{ color: token.colorText }}>
           {isEdit ? 'Edit Transaction' : 'Add Transaction'}
@@ -187,19 +187,6 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       onCancel={onCancel}
       confirmLoading={loading}
       width={600}
-      styles={{
-        content: {
-          background: token.colorBgElevated,
-          border: `1px solid ${token.colorBorderSecondary}`,
-        },
-        header: {
-          background: token.colorBgElevated,
-          borderBottom: `1px solid ${token.colorBorderSecondary}`,
-        },
-        footer: {
-          borderTop: `1px solid ${token.colorBorderSecondary}`,
-        },
-      }}
     >
       <Form form={form} layout="vertical" initialValues={{ type: 'expense', currency: 'USD' }}>
         {/* Тип транзакции */}
@@ -344,6 +331,6 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
           <Input.TextArea rows={2} placeholder="Enter transaction description (optional)" />
         </Form.Item>
       </Form>
-    </Modal>
+    </ThemeModal>
   );
 };

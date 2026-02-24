@@ -1,17 +1,9 @@
 import type { FormInstance } from 'antd';
-import { AutoComplete, Form, Modal } from 'antd';
+import { AutoComplete, Form } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
+import { ThemeModal } from '../../ui';
 import type { AssignLicenseFormValues, LicenseInfo } from './types';
-
-const modalStyles = {
-  content: { background: 'var(--boxmox-color-surface-panel)' },
-  header: {
-    background: 'var(--boxmox-color-surface-muted)',
-    borderBottom: '1px solid var(--boxmox-color-border-default)',
-  },
-  footer: { borderTop: '1px solid var(--boxmox-color-border-default)' },
-};
 
 interface AssignLicenseModalProps {
   open: boolean;
@@ -28,7 +20,7 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
   onCancel,
   onSubmit,
 }) => (
-  <Modal
+  <ThemeModal
     title={
       <span style={{ color: 'var(--boxmox-color-text-primary)' }}>Assign Existing License</span>
     }
@@ -37,7 +29,6 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
     onCancel={onCancel}
     okText="Assign"
     width={500}
-    styles={modalStyles}
   >
     <Form form={form} layout="vertical" onFinish={(values) => void onSubmit(values)}>
       <Form.Item
@@ -63,5 +54,5 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
         />
       </Form.Item>
     </Form>
-  </Modal>
+  </ThemeModal>
 );
