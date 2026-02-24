@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { uiLogger } from '../observability/uiLogger';
-import { apiPut } from '../services/apiClient';
+import { apiPut } from '../shared/api/apiClient';
 import type { VMLogEntry, VMTaskDetailLevel, VMTaskEntry, VMTaskStatus } from '../types';
 import {
   formatFullLog,
@@ -24,6 +24,12 @@ interface StartTaskMeta {
   vmName?: string;
 }
 
+interface PersistSnapshot {
+  seq: number;
+  serialized: string;
+  tasks: VMTaskEntry[];
+}
+
 export function useVMLog() {
   const [entries, setEntries] = useState<VMLogEntry[]>([]);
   const [tasks, setTasks] = useState<VMTaskEntry[]>([]);
@@ -32,6 +38,12 @@ export function useVMLog() {
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydratedRef = useRef(false);
   const lastPersistedHashRef = useRef('');
+  const lastQueuedHashRef = useRef('');
+  const persistSeqRef = useRef(0);
+  const lastEnqueuedSeqRef = useRef(0);
+  const lastCommittedSeqRef = useRef(0);
+  const pendingPersistSnapshotRef = useRef<PersistSnapshot | null>(null);
+  const flushInFlightRef = useRef<Promise<void> | null>(null);
   const { data: hydratedTasksData, error: hydratedTasksError } = useQuery<VMTaskEntry[], Error>({
     queryKey: ['settings', 'vmgenerator', 'task_logs'],
     queryFn: loadPersistedTasks,
@@ -39,41 +51,107 @@ export function useVMLog() {
     retry: false,
   });
 
-  const persistTasks = useCallback((nextTasks: VMTaskEntry[]) => {
-    if (!hydratedRef.current) return;
-    const serialized = JSON.stringify(nextTasks);
-    if (serialized === lastPersistedHashRef.current) return;
-
-    if (persistTimerRef.current) {
-      clearTimeout(persistTimerRef.current);
+  const flushLatestTasks = useCallback(async (): Promise<void> => {
+    if (flushInFlightRef.current) {
+      await flushInFlightRef.current;
+      return;
     }
 
-    persistTimerRef.current = setTimeout(() => {
-      apiPut(VM_LOG_TASKS_API_PATH, nextTasks)
-        .then(() => {
-          lastPersistedHashRef.current = serialized;
-        })
-        .catch((error) => {
+    const run = (async () => {
+      while (true) {
+        const snapshot = pendingPersistSnapshotRef.current;
+        if (!snapshot) {
+          return;
+        }
+
+        if (snapshot.serialized === lastPersistedHashRef.current) {
+          if (pendingPersistSnapshotRef.current?.seq === snapshot.seq) {
+            pendingPersistSnapshotRef.current = null;
+          }
+          lastQueuedHashRef.current = lastPersistedHashRef.current;
+          lastCommittedSeqRef.current = Math.max(lastCommittedSeqRef.current, snapshot.seq);
+          continue;
+        }
+
+        try {
+          await apiPut(VM_LOG_TASKS_API_PATH, snapshot.tasks);
+          lastPersistedHashRef.current = snapshot.serialized;
+          lastCommittedSeqRef.current = snapshot.seq;
+        } catch (error) {
           uiLogger.error('Failed to persist VM tasks:', error);
-        })
-        .finally(() => {
-          persistTimerRef.current = null;
-        });
-    }, LOG_PERSIST_DEBOUNCE_MS);
+          lastQueuedHashRef.current = lastPersistedHashRef.current;
+          return;
+        } finally {
+          if (pendingPersistSnapshotRef.current?.seq === snapshot.seq) {
+            pendingPersistSnapshotRef.current = null;
+          }
+        }
+      }
+    })().finally(() => {
+      flushInFlightRef.current = null;
+    });
+
+    flushInFlightRef.current = run;
+    await run;
+
+    if (
+      pendingPersistSnapshotRef.current &&
+      pendingPersistSnapshotRef.current.seq > lastCommittedSeqRef.current
+    ) {
+      await flushLatestTasks();
+    }
   }, []);
 
-  const persistTasksImmediately = useCallback(async (nextTasks: VMTaskEntry[]) => {
+  const enqueuePersistSnapshot = useCallback((nextTasks: VMTaskEntry[]) => {
     const serialized = JSON.stringify(nextTasks);
-    if (serialized === lastPersistedHashRef.current) return;
-
-    if (persistTimerRef.current) {
-      clearTimeout(persistTimerRef.current);
-      persistTimerRef.current = null;
+    if (serialized === lastPersistedHashRef.current || serialized === lastQueuedHashRef.current) {
+      return null;
     }
 
-    await apiPut(VM_LOG_TASKS_API_PATH, nextTasks);
-    lastPersistedHashRef.current = serialized;
+    const seq = persistSeqRef.current + 1;
+    persistSeqRef.current = seq;
+    lastEnqueuedSeqRef.current = seq;
+    lastQueuedHashRef.current = serialized;
+    pendingPersistSnapshotRef.current = {
+      seq,
+      serialized,
+      tasks: nextTasks,
+    };
+
+    return seq;
   }, []);
+
+  const persistTasks = useCallback(
+    (nextTasks: VMTaskEntry[]) => {
+      if (!hydratedRef.current) return;
+      const seq = enqueuePersistSnapshot(nextTasks);
+      if (seq == null) return;
+
+      if (persistTimerRef.current) {
+        clearTimeout(persistTimerRef.current);
+      }
+
+      persistTimerRef.current = setTimeout(() => {
+        persistTimerRef.current = null;
+        void flushLatestTasks();
+      }, LOG_PERSIST_DEBOUNCE_MS);
+    },
+    [enqueuePersistSnapshot, flushLatestTasks],
+  );
+
+  const persistTasksImmediately = useCallback(
+    async (nextTasks: VMTaskEntry[]) => {
+      enqueuePersistSnapshot(nextTasks);
+
+      if (persistTimerRef.current) {
+        clearTimeout(persistTimerRef.current);
+        persistTimerRef.current = null;
+      }
+
+      await flushLatestTasks();
+    },
+    [enqueuePersistSnapshot, flushLatestTasks],
+  );
 
   useEffect(() => {
     const applyHydratedTasks = (parsed: VMTaskEntry[]) => {
@@ -84,6 +162,7 @@ export function useVMLog() {
       tasksRef.current = parsed;
       setTasks(parsed);
       lastPersistedHashRef.current = serialized;
+      lastQueuedHashRef.current = serialized;
       hydratedRef.current = true;
     };
 

@@ -5,7 +5,7 @@ import {
   apiGet,
   apiPost,
   apiPut,
-} from '../../services/apiClient';
+} from '../../shared/api/apiClient';
 import type {
   GenerateIsoPayloadRequest,
   GenerateIsoPayloadResponse,

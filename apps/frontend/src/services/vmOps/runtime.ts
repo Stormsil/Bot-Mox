@@ -1,38 +1,8 @@
-import {
-  createAgentPairingViaContract,
-  listAgentsViaContract,
-} from '../providers/vmops-contract-client';
-import { ApiClientError } from './apiClient';
-import { dispatchAndPoll } from './vmOps/commandExecution';
-import {
-  type AgentPairingRecord,
-  type AgentSummary,
-  toAgentPairingRecord,
-  toAgentSummaryList,
-} from './vmOps/parsers';
-import {
-  getSelectedProxmoxTargetId,
-  getSelectedProxmoxTargetNode,
-  setSelectedProxmoxTargetId,
-  setSelectedProxmoxTargetNode,
-} from './vmOps/targetStorage';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-export type { AgentPairingRecord };
-export type { AgentPairingDefaults } from './vmOps/parsers';
-export {
-  getSelectedProxmoxTargetId,
-  getSelectedProxmoxTargetNode,
-  setSelectedProxmoxTargetId,
-  setSelectedProxmoxTargetNode,
-};
-
-// ---------------------------------------------------------------------------
-// Agent discovery
-// ---------------------------------------------------------------------------
+import { listAgentsViaContract } from '../../providers/vmops-contract-client';
+import { ApiClientError } from '../../shared/api/apiClient';
+import { dispatchAndPoll } from './commandExecution';
+import { type AgentSummary, toAgentSummaryList } from './parsers';
+import { getSelectedProxmoxTargetId, getSelectedProxmoxTargetNode } from './targetStorage';
 
 const AGENT_ONLINE_WINDOW_MS = 120_000;
 const AGENT_CACHE_TTL_MS = 10_000;
@@ -108,13 +78,7 @@ async function lookupActiveAgentId(): Promise<string | null> {
   return null;
 }
 
-/**
- * Get the first online agent for the current tenant.
- * Caches the result for the session to avoid repeated queries.
- */
-export async function getActiveAgentId(
-  options: { forceRefresh?: boolean } = {},
-): Promise<string | null> {
+async function getActiveAgentId(options: { forceRefresh?: boolean } = {}): Promise<string | null> {
   const forceRefresh = options.forceRefresh === true;
   if (!forceRefresh && hasFreshAgentCache()) {
     return cachedAgentId;
@@ -135,7 +99,7 @@ export async function getActiveAgentId(
   }
 }
 
-export function clearAgentCache(): void {
+function clearAgentCache(): void {
   cachedAgentId = null;
   cachedAgentExpiresAtMs = 0;
   inFlightAgentLookup = null;
@@ -187,29 +151,6 @@ function buildDedupeKey(
   return `${agentId}|${opKey}|${JSON.stringify(payload)}`;
 }
 
-export async function createAgentPairing(params?: {
-  name?: string;
-  expiresInMinutes?: number;
-}): Promise<AgentPairingRecord> {
-  const payload: {
-    name?: string;
-    expires_in_minutes?: number;
-  } = {};
-  if (params?.name && String(params.name).trim()) {
-    payload.name = String(params.name).trim();
-  }
-  if (typeof params?.expiresInMinutes === 'number' && Number.isFinite(params.expiresInMinutes)) {
-    payload.expires_in_minutes = Math.max(5, Math.min(1_440, Math.trunc(params.expiresInMinutes)));
-  }
-
-  const { data } = await createAgentPairingViaContract(payload);
-  return toAgentPairingRecord(data);
-}
-
-/**
- * High-level helper: resolve agent, dispatch command, poll for result.
- * Throws if no agent is available.
- */
 export async function executeVmOps<T = unknown>(params: {
   type: 'proxmox' | 'syncthing';
   action: string;

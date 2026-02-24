@@ -1,4 +1,4 @@
-import { buildApiUrl } from '../../config/env';
+import { buildApiUrl } from '../../../config/env';
 import { ApiClientError } from './types';
 
 interface RequestQos {

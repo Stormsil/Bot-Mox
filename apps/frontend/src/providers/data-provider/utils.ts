@@ -1,5 +1,5 @@
 import type { BaseRecord, GetListParams, GetListResponse } from '@refinedev/core';
-import type { ApiSuccessEnvelope } from '../../services/apiClient';
+import type { ApiSuccessEnvelope } from '../../shared/api/apiClient';
 import type { ContractResourceKind } from '../resource-contract-client';
 
 export function resolveResourcePath(resource: string): string {

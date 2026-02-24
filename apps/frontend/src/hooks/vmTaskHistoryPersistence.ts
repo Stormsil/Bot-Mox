@@ -1,4 +1,4 @@
-import { apiGet } from '../services/apiClient';
+import { apiGet } from '../shared/api/apiClient';
 import type { VMTaskEntry } from '../types';
 import { parsePersistedTasks } from './vmLogUtils';
 

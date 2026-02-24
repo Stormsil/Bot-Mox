@@ -1,6 +1,6 @@
 import type { BotRecord } from '../../entities/bot/model/types';
-import type { ApiSuccessEnvelope } from '../../services/apiClient';
-import { ApiClientError } from '../../services/apiClient';
+import type { ApiSuccessEnvelope } from '../../shared/api/apiClient';
+import { ApiClientError } from '../../shared/api/apiClient';
 import {
   createRuntimeClient,
   resolveAuthorizationHeader,

@@ -1,4 +1,4 @@
-import { getVMSettings } from '../../../services/vmSettingsService';
+import { getVMSettings } from '../../../entities/vm/api/vmSettingsFacade';
 import type { VMHardwareConfig } from '../../../types';
 import { runClonePhase } from './clonePhase';
 import { runConfigurePhase } from './configurePhase';
@@ -81,6 +81,9 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
     });
 
     if (cancelRef.current) {
+      log.warn(
+        'Queue processing stopped cooperatively after delete phase. In-flight hypervisor tasks may still complete.',
+      );
       setIsProcessing(false);
       setUiState('error');
       setOperationText('');
@@ -110,6 +113,9 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
 
     if (cancelRef.current) {
       log.warn('Processing cancelled after clone phase');
+      log.warn(
+        'Queue processing stopped cooperatively after clone phase. In-flight hypervisor tasks may still complete.',
+      );
       for (const { item } of clonedItems) {
         log.finishTask(`vm:${item.id}`, 'cancelled', 'Cancelled by user');
       }

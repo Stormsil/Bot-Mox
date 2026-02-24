@@ -60,81 +60,6 @@ export default defineConfig([
         {
           paths: [
             {
-              name: '../../services/resourcesApiService',
-              importNames: ['subscribeResources'],
-              message:
-                'Deprecated resource subscriptions are not allowed in UI. Use entities/resources query hooks.',
-            },
-            {
-              name: '../../../services/resourcesApiService',
-              importNames: ['subscribeResources'],
-              message:
-                'Deprecated resource subscriptions are not allowed in UI. Use entities/resources query hooks.',
-            },
-            {
-              name: '../../services/resourcesApiService',
-              importNames: ['fetchResources', 'createResource', 'updateResource', 'deleteResource'],
-              message:
-                'Direct resource API usage is not allowed in UI. Use entities/resources query/mutation hooks.',
-            },
-            {
-              name: '../../../services/resourcesApiService',
-              importNames: ['fetchResources', 'createResource', 'updateResource', 'deleteResource'],
-              message:
-                'Direct resource API usage is not allowed in UI. Use entities/resources query/mutation hooks.',
-            },
-            {
-              name: '../../services/workspaceService',
-              importNames: [
-                'subscribeToCalendarEvents',
-                'subscribeToKanbanTasks',
-                'fetchCalendarEvents',
-                'fetchKanbanTasks',
-                'createCalendarEvent',
-                'updateCalendarEvent',
-                'deleteCalendarEvent',
-                'createKanbanTask',
-                'updateKanbanTask',
-                'deleteKanbanTask',
-              ],
-              message:
-                'Direct workspace API usage in UI is not allowed. Use entities/workspace query/mutation hooks.',
-            },
-            {
-              name: '../../../services/workspaceService',
-              importNames: [
-                'subscribeToCalendarEvents',
-                'subscribeToKanbanTasks',
-                'fetchCalendarEvents',
-                'fetchKanbanTasks',
-                'createCalendarEvent',
-                'updateCalendarEvent',
-                'deleteCalendarEvent',
-                'createKanbanTask',
-                'updateKanbanTask',
-                'deleteKanbanTask',
-              ],
-              message:
-                'Direct workspace API usage in UI is not allowed. Use entities/workspace query/mutation hooks.',
-            },
-            {
-              name: '../../../../services/workspaceService',
-              importNames: [
-                'subscribeToCalendarEvents',
-                'subscribeToKanbanTasks',
-                'fetchCalendarEvents',
-                'fetchKanbanTasks',
-                'createCalendarEvent',
-                'updateCalendarEvent',
-                'deleteCalendarEvent',
-                'createKanbanTask',
-                'updateKanbanTask',
-                'deleteKanbanTask',
-              ],
-              message:
-                'Direct workspace API usage in UI is not allowed. Use entities/workspace query/mutation hooks.',
-            },
-            {
               name: '../../services/settingsService',
               importNames: ['getSubscriptionSettings'],
               message:
@@ -181,46 +106,6 @@ export default defineConfig([
               group: ['**/services/themeService'],
               message:
                 'UI layers must not import themeService directly. Use entities/settings facade/theme slices.',
-            },
-            {
-              group: ['**/services/apiKeysService'],
-              message:
-                'UI layers must not import apiKeysService directly. Use entities/settings facade/query hooks.',
-            },
-            {
-              group: ['**/services/storagePolicyService'],
-              message:
-                'UI layers must not import storagePolicyService directly. Use entities/settings facade/query hooks.',
-            },
-            {
-              group: ['**/services/vmService'],
-              message:
-                'UI layers must not import vmService directly. Use entities/vm facades/query hooks.',
-            },
-            {
-              group: ['**/services/vmOpsService'],
-              message:
-                'UI layers must not import vmOpsService directly. Use entities/vm facades/query hooks.',
-            },
-            {
-              group: ['**/services/vmOpsEventsService'],
-              message:
-                'UI layers must not import vmOpsEventsService directly. Use entities/vm facades/query hooks.',
-            },
-            {
-              group: ['**/services/vmSettingsService'],
-              message:
-                'UI layers must not import vmSettingsService directly. Use entities/vm facades/query hooks.',
-            },
-            {
-              group: ['**/services/playbookService'],
-              message:
-                'UI layers must not import playbookService directly. Use entities/vm facades/query hooks.',
-            },
-            {
-              group: ['**/services/secretsService'],
-              message:
-                'UI layers must not import secretsService directly. Use entities/vm facades/query hooks.',
             },
             {
               group: ['**/services/unattendProfileService'],

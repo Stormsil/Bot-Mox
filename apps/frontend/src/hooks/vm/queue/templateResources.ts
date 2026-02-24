@@ -1,4 +1,4 @@
-import { getVMConfig } from '../../../services/vmService';
+import { getVMConfig } from '../../../services/vmService/proxmoxOps';
 import type { VMLog } from '../../useVMLog';
 import { normalizeCores, normalizeMemory } from './utils';
 

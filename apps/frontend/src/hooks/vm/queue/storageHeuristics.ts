@@ -1,4 +1,4 @@
-import { getClusterResources } from '../../../services/vmService';
+import { getClusterResources } from '../../../services/vmService/proxmoxOps';
 
 const PROJECT_DISK_FALLBACK_GIB: Record<string, number> = {
   wow_tbc: 128,

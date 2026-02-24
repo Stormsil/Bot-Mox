@@ -1,6 +1,6 @@
 import type { UploadProps } from 'antd';
 import { message } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { listPlaybooks, type Playbook } from '../../entities/vm/api/playbookFacade';
 import {
   DEFAULT_PROFILE_CONFIG,
@@ -52,32 +52,36 @@ export function useVMQueuePanelState({
   const [unattendProfilesLoading, setUnattendProfilesLoading] = useState(true);
   const [unattendEditorError, setUnattendEditorError] = useState<string | null>(null);
   const [playbookList, setPlaybookList] = useState<Playbook[]>([]);
+  const unattendLoadSeqRef = useRef(0);
+  const playbookLoadSeqRef = useRef(0);
 
   useEffect(() => {
     let active = true;
+    const unattendSeq = ++unattendLoadSeqRef.current;
+    const playbookSeq = ++playbookLoadSeqRef.current;
 
     void listUnattendProfiles()
       .then((envelope) => {
-        if (!active) return;
+        if (!active || unattendLoadSeqRef.current !== unattendSeq) return;
         setUnattendProfiles(envelope.data || []);
       })
       .catch(() => {
-        if (!active) return;
-        setUnattendProfiles([]);
+        if (!active || unattendLoadSeqRef.current !== unattendSeq) return;
+        setUnattendProfiles((prev) => (prev.length > 0 ? prev : []));
       })
       .finally(() => {
-        if (!active) return;
+        if (!active || unattendLoadSeqRef.current !== unattendSeq) return;
         setUnattendProfilesLoading(false);
       });
 
     void listPlaybooks()
       .then((envelope) => {
-        if (!active) return;
+        if (!active || playbookLoadSeqRef.current !== playbookSeq) return;
         setPlaybookList(envelope.data || []);
       })
       .catch(() => {
-        if (!active) return;
-        setPlaybookList([]);
+        if (!active || playbookLoadSeqRef.current !== playbookSeq) return;
+        setPlaybookList((prev) => (prev.length > 0 ? prev : []));
       });
 
     return () => {

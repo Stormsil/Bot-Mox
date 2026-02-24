@@ -1,4 +1,4 @@
-import type { ApiSuccessEnvelope } from '../../services/apiClient';
+import type { ApiSuccessEnvelope } from '../../shared/api/apiClient';
 import { createRuntimeClient, resolveAuthorizationHeader, toApiClientError } from './runtime';
 import type { BotBanPayload, BotLifecycleTransitionStatus } from './types';
 

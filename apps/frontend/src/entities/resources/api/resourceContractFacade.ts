@@ -4,7 +4,7 @@ import {
   listResourcesViaContract,
   updateResourceViaContract,
 } from '../../../providers/resource-contract-client';
-import { ApiClientError } from '../../../services/apiClient';
+import { ApiClientError } from '../../../shared/api/apiClient';
 import type { ResourceKind } from '../model/types';
 
 const PAGE_LIMIT = 200;

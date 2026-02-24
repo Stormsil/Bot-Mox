@@ -1,5 +1,5 @@
 import { uiLogger } from '../observability/uiLogger';
-import { apiGet, apiPatch } from '../services/apiClient';
+import { apiGet, apiPatch } from '../shared/api/apiClient';
 import type { VMGeneratorSettings } from '../types';
 
 const SETTINGS_PATH = 'vmgenerator';

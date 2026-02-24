@@ -1,4 +1,4 @@
-import { getVMConfig, updateVMConfig, waitForTask } from '../../../services/vmService';
+import { getVMConfig, updateVMConfig, waitForTask } from '../../../services/vmService/proxmoxOps';
 import type { VMQueueItem } from '../../../types';
 import { patchConfig } from '../../../utils/vm';
 import type { VMLog } from '../../useVMLog';

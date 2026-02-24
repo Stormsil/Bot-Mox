@@ -1,4 +1,4 @@
-import { apiPost } from '../apiClient';
+import { apiPost } from '../../shared/api/apiClient';
 
 export interface VmResourceRegistrationPayload {
   vmUuid: string;

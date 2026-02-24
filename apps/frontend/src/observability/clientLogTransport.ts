@@ -1,5 +1,5 @@
 import { buildApiUrl } from '../config/env';
-import { withAuthHeaders } from '../services/authFetch';
+import { withAuthHeaders } from '../shared/api/authFetch';
 import type { UiLogEvent } from './logContext';
 
 const MAX_BATCH_SIZE = 10;

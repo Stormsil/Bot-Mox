@@ -1,4 +1,4 @@
-import { ApiClientError } from '../apiClient';
+import { ApiClientError } from '../../shared/api/apiClient';
 
 interface CommandEnvelope {
   id: string;

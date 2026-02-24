@@ -1,4 +1,4 @@
-import { apiPost } from '../services/apiClient';
+import { apiPost } from '../shared/api/apiClient';
 import type { SecretBinding, SecretMeta } from '../types';
 
 const SECRETS_PREFIX = '/api/v1/secrets';

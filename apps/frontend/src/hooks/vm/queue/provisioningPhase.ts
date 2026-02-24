@@ -1,5 +1,5 @@
-import { generateIsoPayload } from '../../../services/unattendProfileService';
-import { executeVmOps } from '../../../services/vmOpsService';
+import { generateIsoPayload } from '../../../entities/vm/api/unattendProfileFacade';
+import { executeVmOps } from '../../../services/vmOps/runtime';
 import type { VMQueueItem } from '../../../types';
 import type { VMLog } from '../../useVMLog';
 import type { ClonedVmQueueItem } from './phaseTypes';

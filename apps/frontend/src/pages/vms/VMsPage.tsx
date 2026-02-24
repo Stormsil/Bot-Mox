@@ -1,23 +1,23 @@
 import type React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRefreshOnVmMutationEvents } from '../../entities/vm/api/useRefreshOnVmMutationEvents';
 import { useProxmoxTargetsQuery, useVmSettingsQuery } from '../../entities/vm/api/useVmQueries';
 import { useProxmox } from '../../hooks/useProxmox';
 import { useVMKeyboardShortcuts } from '../../hooks/useVMKeyboardShortcuts';
 import { useVMLog } from '../../hooks/useVMLog';
 import { useVMQueue } from '../../hooks/useVMQueue';
-import type { ProxmoxVM, VMGeneratorSettings, VMQueueItem, VMResourceMode } from '../../types';
+import type { ProxmoxVM, VMGeneratorSettings, VMResourceMode } from '../../types';
+import { VMWorkspace } from '../../widgets/vm-workspace';
 import { useDeleteVmWorkflow } from './hooks/useDeleteVmWorkflow';
 import { useVmOperationLogActions } from './hooks/useVmOperationLogActions';
+import { useVmPageLiveRefs } from './hooks/useVmPageLiveRefs';
 import { useVmResourcePresets } from './hooks/useVmResourcePresets';
 import { useVmStartAndQueueActions } from './hooks/useVmStartAndQueueActions';
 import { useVmStorageOptions } from './hooks/useVmStorageOptions';
 import { useVmTargetSelection } from './hooks/useVmTargetSelection';
-import { useVmWorkspaceLayout } from './hooks/useVmWorkspaceLayout';
+import { useVmTemplateHardwareSync } from './hooks/useVmTemplateHardwareSync';
 import { enqueueVmRecreate } from './page/recreateVm';
 import { selectStorageForNewVm } from './page/storageSelection';
-import { syncTemplateHardwareFromApi as syncTemplateHardwareFromApiAction } from './page/templateHardwareSync';
-import { VMWorkspace } from '../../widgets/vm-workspace';
 
 const VM_COMMAND_REFRESH_DEBOUNCE_MS = 500;
 export const VMsPage: React.FC = () => {
@@ -34,15 +34,7 @@ export const VMsPage: React.FC = () => {
   const updateQueueItem = queue.updateQueueItem;
   const addToQueue = queue.addToQueue;
 
-  const workspaceLayoutRef = useRef<HTMLDivElement | null>(null);
-  const workspaceRef = useRef<HTMLDivElement | null>(null);
-  const proxmoxVmsRef = useRef(proxmox.vms);
-  const queueItemsRef = useRef<VMQueueItem[]>([]);
-  const settingsRef = useRef<VMGeneratorSettings | null>(null);
-  const templateHardwareLiveRef = useRef<{ cores: number; memory: number } | null>(null);
-
   const [settingsOverride, setSettingsOverride] = useState<VMGeneratorSettings | null>(null);
-  const [panelOpen, setPanelOpen] = useState<'settings' | null>(null);
   const [templateHardwareLive, setTemplateHardwareLive] = useState<{
     cores: number;
     memory: number;
@@ -52,32 +44,11 @@ export const VMsPage: React.FC = () => {
   const settings = settingsOverride || vmSettingsQuery.data || null;
   const proxmoxTargets = useMemo(() => proxmoxTargetsQuery.data || [], [proxmoxTargetsQuery.data]);
 
-  useEffect(() => {
-    proxmoxVmsRef.current = proxmox.vms;
-  }, [proxmox.vms]);
-
-  useEffect(() => {
-    queueItemsRef.current = queueItems;
-  }, [queueItems]);
-
-  useEffect(() => {
-    settingsRef.current = settings;
-  }, [settings]);
-
-  useEffect(() => {
-    templateHardwareLiveRef.current = templateHardwareLive;
-  }, [templateHardwareLive]);
-
-  const {
-    workspaceGridTemplateColumns,
-    isWorkspaceResizing,
-    startWorkspaceResize,
-    logHeight,
-    isLogResizing,
-    startLogResize,
-  } = useVmWorkspaceLayout({
-    workspaceLayoutRef,
-    workspaceRef,
+  const { proxmoxVmsRef, queueItemsRef, settingsRef, templateHardwareLiveRef } = useVmPageLiveRefs({
+    proxmoxVms: proxmox.vms,
+    queueItems,
+    settings,
+    templateHardwareLive,
   });
 
   const { storageOptions, refreshStorageOptions } = useVmStorageOptions({
@@ -93,22 +64,14 @@ export const VMsPage: React.FC = () => {
     void refreshStorageOptions(settings);
   }, [settings, refreshStorageOptions]);
 
-  const syncTemplateHardwareFromApi = useCallback(
-    async (
-      explicitSettings?: VMGeneratorSettings | null,
-    ): Promise<{ cores: number; memory: number } | null> => {
-      return syncTemplateHardwareFromApiAction({
-        explicitSettings,
-        settingsRef,
-        proxmoxNode: proxmox.node,
-        templateHardwareLiveRef,
-        queueItemsRef,
-        setTemplateHardwareLive,
-        updateQueueItem,
-      });
-    },
-    [proxmox.node, updateQueueItem],
-  );
+  const syncTemplateHardwareFromApi = useVmTemplateHardwareSync({
+    settingsRef,
+    proxmoxNode: proxmox.node,
+    templateHardwareLiveRef,
+    queueItemsRef,
+    setTemplateHardwareLive,
+    updateQueueItem,
+  });
   useEffect(() => {
     if (queue.uiState === 'success') {
       void refreshStorageOptions();
@@ -134,7 +97,7 @@ export const VMsPage: React.FC = () => {
     checkConnections: proxmox.checkConnections,
     refreshVms: proxmox.refreshVMs,
     refreshStorageOptions,
-    syncTemplateHardwareFromApi,
+    syncTemplateHardwareFromApi: (options) => syncTemplateHardwareFromApi(undefined, options),
   });
 
   const { templateVmId, getResourcePreset, projectOptions, resourcePresets } = useVmResourcePresets(
@@ -166,7 +129,7 @@ export const VMsPage: React.FC = () => {
       memory: preset.memory,
       diskGiB: preset.diskGiB,
     });
-  }, [getResourcePreset, addToQueue, settings, storageOptions]);
+  }, [getResourcePreset, addToQueue, settings, storageOptions, queueItemsRef, settingsRef]);
 
   const deleteVm = useDeleteVmWorkflow({
     queue: {
@@ -228,62 +191,62 @@ export const VMsPage: React.FC = () => {
         getProjectPreset: (projectId) => getResourcePreset(projectId, 'project'),
       });
     },
-    [getResourcePreset, queue, settings],
+    [getResourcePreset, queue, settings, settingsRef],
   );
 
   return (
     <VMWorkspace
-      isLogResizing={isLogResizing}
-      queueUiState={queue.uiState}
-      queueOperationText={queue.operationText}
-      queueIsProcessing={queue.isProcessing}
-      hasPending={hasPending}
-      queueStats={queueStats}
-      processQueue={queue.processQueue}
-      cancelProcessing={queue.cancelProcessing}
-      panelOpen={panelOpen}
-      setPanelOpen={setPanelOpen}
-      proxmoxTargets={proxmoxTargets}
-      selectedTargetId={effectiveSelectedTargetId}
-      targetsLoading={proxmoxTargetsQuery.isLoading || proxmoxTargetsQuery.isFetching}
-      sshConfigured={proxmox.sshConfigured}
-      sshConnected={proxmox.sshConnected}
-      sshStatusCode={proxmox.sshStatusCode}
-      onTargetChange={handleTargetChange}
-      onTargetsRefresh={() => {
-        void proxmoxTargetsQuery.refetch();
+      status={{
+        uiState: queue.uiState,
+        operationText: queue.operationText,
+        isProcessing: queue.isProcessing,
+        hasPending,
+        queueStats,
+        processQueue: queue.processQueue,
+        cancelProcessing: queue.cancelProcessing,
       }}
-      workspaceLayoutRef={workspaceLayoutRef}
-      workspaceRef={workspaceRef}
-      workspaceGridTemplateColumns={workspaceGridTemplateColumns}
-      isWorkspaceResizing={isWorkspaceResizing}
-      startWorkspaceResize={startWorkspaceResize}
-      proxmoxVms={proxmox.vms}
-      proxmoxLoading={proxmox.loading}
-      proxmoxConnected={proxmox.connected}
-      proxmoxNode={proxmox.node}
-      refreshVMs={proxmox.refreshVMs}
-      onRecreateVm={handleRecreateVm}
-      queueItems={queue.queue}
-      isStartActionRunning={isStartActionRunning}
-      canStartAll={startableQueueItems.length > 0}
-      startingQueueItemId={startingQueueItemId}
-      storageOptions={storageOptions}
-      projectOptions={projectOptions}
-      resourcePresets={resourcePresets}
-      onAddVm={handleAddVM}
-      onAddDelete={deleteVm.handleOpenDeleteVmModal}
-      onClearQueue={queue.clearQueue}
-      onStartAll={handleStartAllReady}
-      onStartOne={handleStartOneReady}
-      onRemoveQueueItem={queue.removeFromQueue}
-      onUpdateQueueItem={handleQueueUpdate}
-      startLogResize={startLogResize}
-      logHeight={logHeight}
-      logTasks={log.tasks}
-      onClearLog={log.clear}
-      onCancelTask={handleCancelTask}
-      getFullLog={log.getFullLog}
+      targets={{
+        proxmoxTargets,
+        selectedTargetId: effectiveSelectedTargetId,
+        targetsLoading: proxmoxTargetsQuery.isLoading || proxmoxTargetsQuery.isFetching,
+        sshConfigured: proxmox.sshConfigured,
+        sshConnected: proxmox.sshConnected,
+        sshStatusCode: proxmox.sshStatusCode,
+        onTargetChange: handleTargetChange,
+        onTargetsRefresh: () => {
+          void proxmoxTargetsQuery.refetch();
+        },
+      }}
+      proxmoxPane={{
+        proxmoxVms: proxmox.vms,
+        proxmoxLoading: proxmox.loading,
+        proxmoxConnected: proxmox.connected,
+        proxmoxNode: proxmox.node,
+        refreshVMs: proxmox.refreshVMs,
+        onRecreateVm: handleRecreateVm,
+      }}
+      queuePanel={{
+        queueItems: queue.queue,
+        isStartActionRunning,
+        canStartAll: startableQueueItems.length > 0,
+        startingQueueItemId,
+        storageOptions,
+        projectOptions,
+        resourcePresets,
+        onAddVm: handleAddVM,
+        onAddDelete: deleteVm.handleOpenDeleteVmModal,
+        onClearQueue: queue.clearQueue,
+        onStartAll: handleStartAllReady,
+        onStartOne: handleStartOneReady,
+        onRemoveQueueItem: queue.removeFromQueue,
+        onUpdateQueueItem: handleQueueUpdate,
+      }}
+      logPanel={{
+        logTasks: log.tasks,
+        onClearLog: log.clear,
+        onCancelTask: handleCancelTask,
+        getFullLog: log.getFullLog,
+      }}
       deleteVm={deleteVm}
     />
   );

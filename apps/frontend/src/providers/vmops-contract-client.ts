@@ -1,7 +1,8 @@
-import { createApiContractClient } from '@botmox/api-contract';
-import { API_BASE_URL } from '../config/env';
-import { ApiClientError, type ApiSuccessEnvelope } from '../services/apiClient';
-import { withAuthHeaders } from '../services/authFetch';
+import { ApiClientError, type ApiSuccessEnvelope } from '../shared/api/apiClient';
+import {
+  createContractRuntimeClient,
+  resolveContractAuthorizationHeader,
+} from '../shared/api/contracts/runtimeClient';
 
 export type VmOpsDispatchTarget = 'proxmox' | 'syncthing';
 
@@ -17,42 +18,6 @@ export interface ContractAgentPairingPayload {
 export interface ContractVmOpsDispatchPayload {
   agent_id: string;
   params?: Record<string, unknown>;
-}
-
-function resolveApiBaseUrl(): string {
-  if (API_BASE_URL) {
-    return API_BASE_URL;
-  }
-
-  if (typeof window !== 'undefined' && window.location?.origin) {
-    return window.location.origin;
-  }
-
-  return 'http://localhost:3002';
-}
-
-function resolveBearerToken(): string {
-  const authorization = withAuthHeaders().get('Authorization') || '';
-  return authorization.replace(/^Bearer\s+/i, '').trim();
-}
-
-function resolveAuthorizationHeader(): string {
-  const token = resolveBearerToken();
-  if (!token) {
-    throw new ApiClientError('Missing auth token for contract request', {
-      status: 401,
-      code: 'MISSING_AUTH_TOKEN',
-    });
-  }
-
-  return `Bearer ${token}`;
-}
-
-function createRuntimeClient() {
-  return createApiContractClient({
-    baseUrl: resolveApiBaseUrl(),
-    accessToken: resolveBearerToken(),
-  });
 }
 
 function toApiClientError(path: string, status: number, body: unknown): ApiClientError {
@@ -83,8 +48,8 @@ function toApiClientError(path: string, status: number, body: unknown): ApiClien
 export async function listAgentsViaContract(
   query: ContractAgentListQuery,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>[]>> {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
+  const client = createContractRuntimeClient();
+  const authorization = resolveContractAuthorizationHeader();
   const response = await client.agentsList({
     headers: { authorization },
     query,
@@ -100,8 +65,8 @@ export async function listAgentsViaContract(
 export async function createAgentPairingViaContract(
   payload: ContractAgentPairingPayload,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
+  const client = createContractRuntimeClient();
+  const authorization = resolveContractAuthorizationHeader();
   const response = await client.agentsCreatePairing({
     headers: { authorization },
     body: payload,
@@ -119,8 +84,8 @@ export async function dispatchVmOpsViaContract(
   action: string,
   payload: ContractVmOpsDispatchPayload,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
+  const client = createContractRuntimeClient();
+  const authorization = resolveContractAuthorizationHeader();
   const endpoint =
     target === 'syncthing' ? client.vmOpsDispatchSyncthing : client.vmOpsDispatchProxmox;
   const response = await endpoint({
@@ -139,8 +104,8 @@ export async function dispatchVmOpsViaContract(
 export async function getVmOpsCommandViaContract(
   commandId: string,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
-  const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
+  const client = createContractRuntimeClient();
+  const authorization = resolveContractAuthorizationHeader();
   const response = await client.vmOpsCommandById({
     headers: { authorization },
     params: { id: commandId },

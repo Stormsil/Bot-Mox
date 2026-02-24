@@ -1,3 +1,4 @@
+import { ApiClientError } from '../../shared/api/apiClient';
 import type {
   CloneParams,
   ProxmoxClusterResource,
@@ -6,8 +7,7 @@ import type {
   ProxmoxVMConfig,
   VMConfigUpdateParams,
 } from '../../types';
-import { ApiClientError } from '../apiClient';
-import { executeVmOps } from '../vmOpsService';
+import { executeVmOps } from '../vmOps/runtime';
 import { AGENT_CONNECTIVITY_ERROR_CODES, extractUpid } from './proxmoxUtils';
 
 export interface ProxmoxTargetInfo {

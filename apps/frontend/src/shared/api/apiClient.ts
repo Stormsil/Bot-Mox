@@ -1,3 +1,4 @@
+import { authFetch } from './authFetch';
 import {
   clearGetCache,
   clearInFlightGet,
@@ -5,13 +6,12 @@ import {
   getInFlightGet,
   setCachedGet,
   setInFlightGet,
-} from './apiClient/getCache';
-import { enqueueRequest, resolveRequestQos, resolveRequestUrl } from './apiClient/requestQueue';
-import { ApiClientError, type ApiSuccessEnvelope, parseEnvelope } from './apiClient/types';
-import { authFetch } from './authFetch';
+} from './internal/getCache';
+import { enqueueRequest, resolveRequestQos, resolveRequestUrl } from './internal/requestQueue';
+import { ApiClientError, type ApiSuccessEnvelope, parseEnvelope } from './internal/types';
 
-export type { ApiSuccessEnvelope } from './apiClient/types';
-export { ApiClientError } from './apiClient/types';
+export type { ApiSuccessEnvelope } from './internal/types';
+export { ApiClientError } from './internal/types';
 
 async function performRequest<T>(path: string, init: RequestInit): Promise<ApiSuccessEnvelope<T>> {
   const response = await authFetch(resolveRequestUrl(path), {

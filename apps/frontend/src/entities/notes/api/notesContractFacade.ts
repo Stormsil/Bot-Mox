@@ -6,7 +6,7 @@ import {
   listWorkspaceNotesViaContract,
   patchWorkspaceNoteViaContract,
 } from '../../../providers/workspace-contract-client';
-import { ApiClientError } from '../../../services/apiClient';
+import { ApiClientError } from '../../../shared/api/apiClient';
 import type { CreateNoteData, Note, NoteBlock, NoteIndex, UpdateNoteData } from '../model/types';
 
 interface NoteDb {

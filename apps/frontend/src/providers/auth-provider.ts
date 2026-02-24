@@ -1,5 +1,5 @@
 import type { AuthProvider } from '@refinedev/core';
-import { apiRequest } from '../services/apiClient';
+import { apiRequest } from '../shared/api/apiClient';
 import { hasSupabaseAuth, supabase } from '../utils/supabase';
 
 const AUTH_TOKEN_KEY = 'botmox.auth.token';

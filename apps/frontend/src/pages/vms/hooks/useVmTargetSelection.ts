@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import type { ProxmoxTargetInfo } from '../../../entities/vm/api/vmReadFacade';
@@ -23,7 +24,7 @@ interface UseVmTargetSelectionParams {
   checkConnections: () => Promise<unknown>;
   refreshVms: () => Promise<unknown>;
   refreshStorageOptions: () => Promise<unknown>;
-  syncTemplateHardwareFromApi: () => Promise<unknown>;
+  syncTemplateHardwareFromApi: (options?: { isCurrent?: () => boolean }) => Promise<unknown>;
 }
 
 interface UseVmTargetSelectionResult {
@@ -45,6 +46,7 @@ export function useVmTargetSelection({
   const [selectedTargetId, setSelectedTargetId] = useState<string | undefined>(
     () => getSelectedProxmoxTargetId() || undefined,
   );
+  const targetChangeSeqRef = useRef(0);
 
   const effectiveSelectedTargetId = useMemo(() => {
     const selectedFromState = selectedTargetId
@@ -98,10 +100,18 @@ export function useVmTargetSelection({
         });
       }
 
-      void checkConnections();
-      void refreshVms();
-      void refreshStorageOptions();
-      void syncTemplateHardwareFromApi();
+      const seq = targetChangeSeqRef.current + 1;
+      targetChangeSeqRef.current = seq;
+      const isCurrent = () => targetChangeSeqRef.current === seq;
+
+      void Promise.allSettled([
+        Promise.resolve().then(() => (isCurrent() ? checkConnections() : undefined)),
+        Promise.resolve().then(() => (isCurrent() ? refreshVms() : undefined)),
+        Promise.resolve().then(() => (isCurrent() ? refreshStorageOptions() : undefined)),
+        Promise.resolve().then(() =>
+          isCurrent() ? syncTemplateHardwareFromApi({ isCurrent }) : undefined,
+        ),
+      ]);
     },
     [
       checkConnections,

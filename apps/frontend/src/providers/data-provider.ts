@@ -16,7 +16,7 @@ import type {
   UpdateResponse,
 } from '@refinedev/core';
 import { buildApiUrl } from '../config/env';
-import { ApiClientError, type ApiSuccessEnvelope, apiRequest } from '../services/apiClient';
+import { ApiClientError, type ApiSuccessEnvelope, apiRequest } from '../shared/api/apiClient';
 import {
   createBotViaContract,
   deleteBotViaContract,
