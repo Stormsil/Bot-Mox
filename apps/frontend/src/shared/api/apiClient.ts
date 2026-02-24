@@ -1,12 +1,4 @@
 import { authFetch } from './authFetch';
-import {
-  clearGetCache,
-  clearInFlightGet,
-  getCachedGet,
-  getInFlightGet,
-  setCachedGet,
-  setInFlightGet,
-} from './internal/getCache';
 import { enqueueRequest, resolveRequestQos, resolveRequestUrl } from './internal/requestQueue';
 import { ApiClientError, type ApiSuccessEnvelope, parseEnvelope } from './internal/types';
 
@@ -62,39 +54,17 @@ export async function apiRequest<T>(
   const qos = resolveRequestQos(path, method);
 
   if (method !== 'GET') {
-    const result = await enqueueRequest(() => performRequest<T>(path, init), qos);
-    clearGetCache();
-    return result;
+    return enqueueRequest(() => performRequest<T>(path, init), qos);
   }
 
-  const cached = getCachedGet<T>(path);
-  if (cached) {
-    return cached;
-  }
-
-  const inFlight = getInFlightGet<T>(path);
-  if (inFlight) {
-    return inFlight;
-  }
-
-  const requestPromise = enqueueRequest(
+  return enqueueRequest(
     () =>
       performRequest<T>(path, {
         ...init,
         method: 'GET',
       }),
     qos,
-  )
-    .then((result) => {
-      setCachedGet(path, result as ApiSuccessEnvelope<unknown>);
-      return result;
-    })
-    .finally(() => {
-      clearInFlightGet(path);
-    });
-
-  setInFlightGet(path, requestPromise);
-  return requestPromise;
+  );
 }
 
 export function buildQueryString(
