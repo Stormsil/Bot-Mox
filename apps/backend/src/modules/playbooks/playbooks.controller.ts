@@ -10,17 +10,15 @@ import {
   Delete,
   Get,
   Headers,
-  NotFoundException,
   Param,
   Post,
   Put,
   Req,
-  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { z } from 'zod';
-import { getRequestIdentity } from '../auth/request-identity.util';
+import { TenantCrudControllerCoreBase } from '../common/tenant-crud.controller-core-base';
 import { PlaybooksService } from './playbooks.service';
 
 const playbookIdSchema = z
@@ -30,19 +28,19 @@ const playbookIdSchema = z
   .refine((value) => value.length > 0, 'Playbook id is required');
 
 @Controller('playbooks')
-export class PlaybooksController {
-  constructor(private readonly playbooksService: PlaybooksService) {}
-
-  private ensureAuthHeader(authorization: string | undefined): void {
-    if (!authorization) {
-      throw new UnauthorizedException({
-        code: 'MISSING_BEARER_TOKEN',
-        message: 'Missing bearer token',
-      });
-    }
+export class PlaybooksController extends TenantCrudControllerCoreBase<
+  {
+    name: string;
+    is_default?: boolean;
+    content: string;
+  },
+  z.infer<typeof playbookUpdateSchema>
+> {
+  constructor(private readonly playbooksService: PlaybooksService) {
+    super();
   }
 
-  private parseId(id: string): string {
+  protected parseId(id: string): string {
     const parsed = playbookIdSchema.safeParse(String(id || ''));
     if (!parsed.success) {
       throw new BadRequestException({
@@ -54,7 +52,7 @@ export class PlaybooksController {
     return parsed.data;
   }
 
-  private parseCreateBody(body: unknown): {
+  protected parseCreateBody(body: unknown): {
     name: string;
     is_default?: boolean;
     content: string;
@@ -70,7 +68,7 @@ export class PlaybooksController {
     return parsed.data;
   }
 
-  private parseUpdateBody(body: unknown): z.infer<typeof playbookUpdateSchema> {
+  protected parseUpdateBody(body: unknown): z.infer<typeof playbookUpdateSchema> {
     const parsed = playbookUpdateSchema.safeParse(body ?? {});
     if (!parsed.success) {
       throw new BadRequestException({
@@ -96,54 +94,43 @@ export class PlaybooksController {
     return parsed.data;
   }
 
-  @Get()
-  async list(
-    @Headers('authorization') authorization: string | undefined,
-    @Req() req: Request,
-  ): Promise<{
-    success: true;
-    data: unknown[];
-  }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
+  protected getNotFoundPayload(): { code: string; message: string } {
     return {
-      success: true,
-      data: await this.playbooksService.list(identity.tenantId),
+      code: 'PLAYBOOK_NOT_FOUND',
+      message: 'Playbook not found',
     };
   }
 
-  @Get(':id')
-  async getOne(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('id') id: string,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
-    const identity = getRequestIdentity(req);
-    const playbook = await this.playbooksService.getById(parsedId, identity.tenantId);
-    if (!playbook) {
-      throw new NotFoundException({
-        code: 'PLAYBOOK_NOT_FOUND',
-        message: 'Playbook not found',
-      });
-    }
-    return {
-      success: true,
-      data: playbook,
-    };
+  protected getEntityById(id: string, tenantId: string) {
+    return this.playbooksService.getById(id, tenantId);
   }
 
-  @Post()
-  async create(
-    @Headers('authorization') authorization: string | undefined,
-    @Body() body: unknown,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedBody = this.parseCreateBody(body);
-    const identity = getRequestIdentity(req);
-    const validation = this.playbooksService.validate(parsedBody.content);
+  protected createEntity(
+    body: { name: string; is_default?: boolean; content: string },
+    _explicitId: string | undefined,
+    tenantId: string,
+  ) {
+    return this.playbooksService.create(body, tenantId);
+  }
+
+  protected updateEntity(id: string, body: z.infer<typeof playbookUpdateSchema>, tenantId: string) {
+    return this.playbooksService.update(id, body, tenantId);
+  }
+
+  protected removeEntity(id: string, tenantId: string) {
+    return this.playbooksService.remove(id, tenantId);
+  }
+
+  protected override buildDeleteResponseData(): unknown {
+    return { deleted: true };
+  }
+
+  protected override async beforeCreate(body: {
+    name: string;
+    is_default?: boolean;
+    content: string;
+  }): Promise<void> {
+    const validation = this.playbooksService.validate(body.content);
     if (!validation.valid) {
       throw new UnprocessableEntityException({
         success: false,
@@ -157,10 +144,63 @@ export class PlaybooksController {
         },
       });
     }
+  }
+
+  protected override async beforeUpdate(
+    _id: string,
+    body: z.infer<typeof playbookUpdateSchema>,
+  ): Promise<void> {
+    if (typeof body.content !== 'string') {
+      return;
+    }
+    const validation = this.playbooksService.validate(body.content);
+    if (!validation.valid) {
+      throw new UnprocessableEntityException({
+        success: false,
+        error: {
+          code: 'INVALID_PLAYBOOK',
+          message: 'Playbook YAML validation failed',
+          details: {
+            errors: validation.errors,
+            warnings: validation.warnings,
+          },
+        },
+      });
+    }
+  }
+
+  @Get()
+  async list(
+    @Headers('authorization') authorization: string | undefined,
+    @Req() req: Request,
+  ): Promise<{
+    success: true;
+    data: unknown[];
+  }> {
+    this.ensureAuthHeader(authorization);
+    const tenantId = this.getTenantId(req);
     return {
       success: true,
-      data: await this.playbooksService.create(parsedBody, identity.tenantId),
+      data: await this.playbooksService.list(tenantId),
     };
+  }
+
+  @Get(':id')
+  async getOne(
+    @Headers('authorization') authorization: string | undefined,
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    return this.getOneCore(authorization, id, req);
+  }
+
+  @Post()
+  async create(
+    @Headers('authorization') authorization: string | undefined,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    return this.createCore(authorization, body, req);
   }
 
   @Put(':id')
@@ -170,39 +210,7 @@ export class PlaybooksController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
-    const parsedBody = this.parseUpdateBody(body);
-    const identity = getRequestIdentity(req);
-
-    if (typeof parsedBody.content === 'string') {
-      const validation = this.playbooksService.validate(parsedBody.content);
-      if (!validation.valid) {
-        throw new UnprocessableEntityException({
-          success: false,
-          error: {
-            code: 'INVALID_PLAYBOOK',
-            message: 'Playbook YAML validation failed',
-            details: {
-              errors: validation.errors,
-              warnings: validation.warnings,
-            },
-          },
-        });
-      }
-    }
-
-    const updated = await this.playbooksService.update(parsedId, parsedBody, identity.tenantId);
-    if (!updated) {
-      throw new NotFoundException({
-        code: 'PLAYBOOK_NOT_FOUND',
-        message: 'Playbook not found',
-      });
-    }
-    return {
-      success: true,
-      data: updated,
-    };
+    return this.updateCore(authorization, id, body, req);
   }
 
   @Delete(':id')
@@ -211,20 +219,10 @@ export class PlaybooksController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { deleted: boolean } }> {
-    this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
-    const identity = getRequestIdentity(req);
-    const removed = await this.playbooksService.remove(parsedId, identity.tenantId);
-    if (!removed) {
-      throw new NotFoundException({
-        code: 'PLAYBOOK_NOT_FOUND',
-        message: 'Playbook not found',
-      });
-    }
-    return {
-      success: true,
-      data: { deleted: true },
-    };
+    return this.removeCore(authorization, id, req) as Promise<{
+      success: true;
+      data: { deleted: boolean };
+    }>;
   }
 
   @Post('validate')
