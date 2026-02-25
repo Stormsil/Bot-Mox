@@ -24,72 +24,74 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import type { z } from 'zod';
+import type { ZodType, z } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
+import { TenantCrudControllerCoreBase } from '../common/tenant-crud.controller-core-base';
 import { ProvisioningService } from './provisioning.service';
 
 @Controller()
-export class ProvisioningController {
-  constructor(private readonly provisioningService: ProvisioningService) {}
+export class ProvisioningController extends TenantCrudControllerCoreBase<
+  z.infer<typeof unattendProfileCreateSchema>,
+  z.infer<typeof unattendProfileUpdateSchema>
+> {
+  constructor(private readonly provisioningService: ProvisioningService) {
+    super();
+  }
 
-  private ensureAuthHeader(authorization: string | undefined): void {
-    if (!authorization) {
-      throw new UnauthorizedException({
-        code: 'MISSING_BEARER_TOKEN',
-        message: 'Missing bearer token',
+  private parseWithSchema<TSchema extends ZodType>(
+    schema: TSchema,
+    body: unknown,
+    code: string,
+    message: string,
+  ): z.output<TSchema> {
+    const parsed = schema.safeParse(body ?? {});
+    if (!parsed.success) {
+      throw new BadRequestException({
+        code,
+        message,
+        details: parsed.error.flatten(),
       });
     }
+    return parsed.data;
   }
 
   private parseValidateBody(body: unknown): z.infer<typeof provisioningValidateTokenSchema> {
-    const parsed = provisioningValidateTokenSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'PROVISIONING_INVALID_VALIDATE_BODY',
-        message: 'Invalid provisioning validate-token payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return this.parseWithSchema(
+      provisioningValidateTokenSchema,
+      body,
+      'PROVISIONING_INVALID_VALIDATE_BODY',
+      'Invalid provisioning validate-token payload',
+    );
   }
 
   private parseReportBody(body: unknown): z.infer<typeof provisioningReportProgressSchema> {
-    const parsed = provisioningReportProgressSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'PROVISIONING_INVALID_REPORT_BODY',
-        message: 'Invalid provisioning report-progress payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return this.parseWithSchema(
+      provisioningReportProgressSchema,
+      body,
+      'PROVISIONING_INVALID_REPORT_BODY',
+      'Invalid provisioning report-progress payload',
+    );
   }
 
-  private parseUnattendCreateBody(body: unknown): z.infer<typeof unattendProfileCreateSchema> {
-    const parsed = unattendProfileCreateSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'PROVISIONING_INVALID_PROFILE_CREATE_BODY',
-        message: 'Invalid unattend profile create payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+  protected parseCreateBody(body: unknown): z.infer<typeof unattendProfileCreateSchema> {
+    return this.parseWithSchema(
+      unattendProfileCreateSchema,
+      body,
+      'PROVISIONING_INVALID_PROFILE_CREATE_BODY',
+      'Invalid unattend profile create payload',
+    );
   }
 
-  private parseUnattendUpdateBody(body: unknown): z.infer<typeof unattendProfileUpdateSchema> {
-    const parsed = unattendProfileUpdateSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'PROVISIONING_INVALID_PROFILE_UPDATE_BODY',
-        message: 'Invalid unattend profile update payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+  protected parseUpdateBody(body: unknown): z.infer<typeof unattendProfileUpdateSchema> {
+    return this.parseWithSchema(
+      unattendProfileUpdateSchema,
+      body,
+      'PROVISIONING_INVALID_PROFILE_UPDATE_BODY',
+      'Invalid unattend profile update payload',
+    );
   }
 
-  private parseProfileId(id: string): string {
+  protected parseId(id: string): string {
     const parsed = unattendProfilePathSchema.safeParse({ id });
     if (!parsed.success) {
       throw new BadRequestException({
@@ -99,6 +101,41 @@ export class ProvisioningController {
       });
     }
     return parsed.data.id;
+  }
+
+  protected getNotFoundPayload(): { code: string; message: string } {
+    return {
+      code: 'UNATTEND_PROFILE_NOT_FOUND',
+      message: 'Unattend profile not found',
+    };
+  }
+
+  protected getEntityById(id: string, tenantId: string) {
+    return this.provisioningService.getProfile(id, tenantId);
+  }
+
+  protected createEntity(
+    body: z.infer<typeof unattendProfileCreateSchema>,
+    _explicitId: string | undefined,
+    tenantId: string,
+  ) {
+    return this.provisioningService.createProfile(body, tenantId);
+  }
+
+  protected updateEntity(
+    id: string,
+    body: z.infer<typeof unattendProfileUpdateSchema>,
+    tenantId: string,
+  ) {
+    return this.provisioningService.updateProfile(id, body, tenantId);
+  }
+
+  protected removeEntity(id: string, tenantId: string) {
+    return this.provisioningService.deleteProfile(id, tenantId);
+  }
+
+  protected override buildDeleteResponseData(): unknown {
+    return { deleted: true };
   }
 
   private parseGenerateBody(body: unknown): z.infer<typeof provisioningGenerateIsoPayloadSchema> {
@@ -140,10 +177,10 @@ export class ProvisioningController {
     data: unknown[];
   }> {
     this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
+    const tenantId = this.getTenantId(req);
     return {
       success: true,
-      data: await this.provisioningService.listProfiles(identity.tenantId),
+      data: await this.provisioningService.listProfiles(tenantId),
     };
   }
 
@@ -154,13 +191,7 @@ export class ProvisioningController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedBody = this.parseUnattendCreateBody(body);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.provisioningService.createProfile(parsedBody, identity.tenantId),
-    };
+    return this.createCore(authorization, body, req);
   }
 
   @Put('unattend-profiles/:id')
@@ -170,26 +201,7 @@ export class ProvisioningController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const profileId = this.parseProfileId(id);
-    const parsedBody = this.parseUnattendUpdateBody(body);
-    const identity = getRequestIdentity(req);
-    const updated = await this.provisioningService.updateProfile(
-      profileId,
-      parsedBody,
-      identity.tenantId,
-    );
-    if (!updated) {
-      throw new NotFoundException({
-        code: 'UNATTEND_PROFILE_NOT_FOUND',
-        message: 'Unattend profile not found',
-      });
-    }
-
-    return {
-      success: true,
-      data: updated,
-    };
+    return this.updateCore(authorization, id, body, req);
   }
 
   @Delete('unattend-profiles/:id')
@@ -198,23 +210,10 @@ export class ProvisioningController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { deleted: boolean } }> {
-    this.ensureAuthHeader(authorization);
-    const profileId = this.parseProfileId(id);
-    const identity = getRequestIdentity(req);
-    const deleted = await this.provisioningService.deleteProfile(profileId, identity.tenantId);
-    if (!deleted) {
-      throw new NotFoundException({
-        code: 'UNATTEND_PROFILE_NOT_FOUND',
-        message: 'Unattend profile not found',
-      });
-    }
-
-    return {
-      success: true,
-      data: {
-        deleted: true,
-      },
-    };
+    return this.removeCore(authorization, id, req) as Promise<{
+      success: true;
+      data: { deleted: boolean };
+    }>;
   }
 
   @Post('provisioning/generate-iso-payload')
@@ -303,10 +302,10 @@ export class ProvisioningController {
   ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
     const parsedVmUuid = this.parseVmUuid(vmUuid);
-    const identity = getRequestIdentity(req);
+    const tenantId = this.getTenantId(req);
     return {
       success: true,
-      data: await this.provisioningService.getProgress(parsedVmUuid, identity.tenantId),
+      data: await this.provisioningService.getProgress(parsedVmUuid, tenantId),
     };
   }
 }
