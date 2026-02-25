@@ -1,34 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
+import { EncryptedJsonPayloadCodec } from '../common/encrypted-json-payload.codec';
 import { PrismaService } from '../db/prisma.service';
 import type { ArtifactAssignmentRecord, ArtifactReleaseRecord } from './artifacts.service';
 
 @Injectable()
 export class ArtifactsRepository {
-  private readonly atRestCrypto = new DataAtRestCrypto();
+  private readonly payloadCodec = new EncryptedJsonPayloadCodec();
 
   constructor(private readonly prisma: PrismaService) {}
-
-  private readAnyEnvelope(payload: Prisma.JsonValue): unknown {
-    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
-      const wrapped = (payload as Record<string, unknown>).__enc_payload_v1;
-      return wrapped ?? payload;
-    }
-    return payload;
-  }
-
-  private decryptRecord<T>(payload: Prisma.JsonValue): T {
-    const envelope = this.readAnyEnvelope(payload);
-    const decrypted = this.atRestCrypto.decryptJson<T>(envelope);
-    return (decrypted ?? payload) as T;
-  }
-
-  private encryptRecord(payload: Record<string, unknown>): Prisma.InputJsonValue {
-    return {
-      __enc_payload_v1: this.atRestCrypto.encryptJson(payload),
-    } as unknown as Prisma.InputJsonValue;
-  }
 
   private getReleaseClient(): {
     findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
@@ -69,7 +49,7 @@ export class ArtifactsRepository {
       },
     });
     if (!row) return null;
-    return this.decryptRecord<ArtifactReleaseRecord>(row.payload as Prisma.JsonValue);
+    return this.payloadCodec.decryptJson<ArtifactReleaseRecord>(row.payload as Prisma.JsonValue);
   }
 
   async upsertRelease(input: {
@@ -87,13 +67,13 @@ export class ArtifactsRepository {
       create: {
         tenantId: input.tenantId,
         id: input.id,
-        payload: this.encryptRecord(input.payload as unknown as Record<string, unknown>),
+        payload: this.payloadCodec.encryptJson(input.payload as unknown as Record<string, unknown>),
       },
       update: {
-        payload: this.encryptRecord(input.payload as unknown as Record<string, unknown>),
+        payload: this.payloadCodec.encryptJson(input.payload as unknown as Record<string, unknown>),
       },
     });
-    return this.decryptRecord<ArtifactReleaseRecord>(row.payload as Prisma.JsonValue);
+    return this.payloadCodec.decryptJson<ArtifactReleaseRecord>(row.payload as Prisma.JsonValue);
   }
 
   async getNextAssignmentId(tenantId: string): Promise<number> {
@@ -121,7 +101,7 @@ export class ArtifactsRepository {
       },
     });
     if (!row) return null;
-    return this.decryptRecord<ArtifactAssignmentRecord>(row.payload as Prisma.JsonValue);
+    return this.payloadCodec.decryptJson<ArtifactAssignmentRecord>(row.payload as Prisma.JsonValue);
   }
 
   async upsertAssignmentByScope(input: {
@@ -150,13 +130,13 @@ export class ArtifactsRepository {
         platform: input.platform,
         channel: input.channel,
         userKey: input.userKey,
-        payload: this.encryptRecord(input.payload as unknown as Record<string, unknown>),
+        payload: this.payloadCodec.encryptJson(input.payload as unknown as Record<string, unknown>),
       },
       update: {
         id: input.id,
-        payload: this.encryptRecord(input.payload as unknown as Record<string, unknown>),
+        payload: this.payloadCodec.encryptJson(input.payload as unknown as Record<string, unknown>),
       },
     });
-    return this.decryptRecord<ArtifactAssignmentRecord>(row.payload as Prisma.JsonValue);
+    return this.payloadCodec.decryptJson<ArtifactAssignmentRecord>(row.payload as Prisma.JsonValue);
   }
 }
