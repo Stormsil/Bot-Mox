@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma, PrismaClient } from '@prisma/client';
-import { softFailMissingStorageRead } from '../common/prisma-soft-fail';
+import { TenantJsonStoreRepository } from '../common/prisma-json-store.repository';
 import { PrismaService } from '../db/prisma.service';
 
 @Injectable()
 export class ResourcesRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly jsonStore: TenantJsonStoreRepository;
+
+  constructor(prisma: PrismaService) {
+    this.jsonStore = new TenantJsonStoreRepository(prisma);
+  }
 
   private getResourceItemClient(source: PrismaClient | Prisma.TransactionClient): {
     findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
@@ -22,15 +26,14 @@ export class ResourcesRepository {
   }
 
   async list(tenantId: string, kind: string): Promise<Array<Record<string, unknown>>> {
-    return softFailMissingStorageRead(() => this.prisma.withTenantContext(tenantId, async (tx) => {
-      return this.getResourceItemClient(tx).findMany({
-        where: {
-          tenantId,
-          kind,
-        },
-        orderBy: { updatedAt: 'desc' },
-      });
-    }), []);
+    return this.jsonStore.list(tenantId, {
+      getClient: (tx) => this.getResourceItemClient(tx),
+      where: {
+        tenantId,
+        kind,
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
   }
 
   async findById(
@@ -38,15 +41,14 @@ export class ResourcesRepository {
     kind: string,
     id: string,
   ): Promise<Record<string, unknown> | null> {
-    return softFailMissingStorageRead(() => this.prisma.withTenantContext(tenantId, async (tx) => {
-      return this.getResourceItemClient(tx).findFirst({
-        where: {
-          tenantId,
-          kind,
-          id,
-        },
-      });
-    }), null);
+    return this.jsonStore.findById(tenantId, {
+      getClient: (tx) => this.getResourceItemClient(tx),
+      where: {
+        tenantId,
+        kind,
+        id,
+      },
+    });
   }
 
   async upsert(input: {
@@ -55,40 +57,37 @@ export class ResourcesRepository {
     id: string;
     payload: Prisma.InputJsonValue;
   }): Promise<Record<string, unknown>> {
-    return this.prisma.withTenantContext(input.tenantId, async (tx) => {
-      return this.getResourceItemClient(tx).upsert({
-        where: {
-          tenantId_kind_id: {
-            tenantId: input.tenantId,
-            kind: input.kind,
-            id: input.id,
-          },
-        },
-        create: {
+    return this.jsonStore.upsert(input.tenantId, {
+      getClient: (tx) => this.getResourceItemClient(tx),
+      where: {
+        tenantId_kind_id: {
+          tenantId: input.tenantId,
+          kind: input.kind,
           id: input.id,
-          tenantId: input.tenantId,
-          kind: input.kind,
-          payload: input.payload,
         },
-        update: {
-          tenantId: input.tenantId,
-          kind: input.kind,
-          payload: input.payload,
-        },
-      });
+      },
+      create: {
+        id: input.id,
+        tenantId: input.tenantId,
+        kind: input.kind,
+        payload: input.payload,
+      },
+      update: {
+        tenantId: input.tenantId,
+        kind: input.kind,
+        payload: input.payload,
+      },
     });
   }
 
   async delete(tenantId: string, kind: string, id: string): Promise<boolean> {
-    const result = await this.prisma.withTenantContext(tenantId, async (tx) => {
-      return this.getResourceItemClient(tx).deleteMany({
-        where: {
-          tenantId,
-          kind,
-          id,
-        },
-      });
+    return this.jsonStore.delete(tenantId, {
+      getClient: (tx) => this.getResourceItemClient(tx),
+      where: {
+        tenantId,
+        kind,
+        id,
+      },
     });
-    return result.count > 0;
   }
 }
