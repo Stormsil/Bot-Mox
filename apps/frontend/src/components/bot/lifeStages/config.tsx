@@ -8,6 +8,7 @@ import {
   StopOutlined,
   ToolOutlined,
 } from '@ant-design/icons';
+import { subtractNow } from '../../../shared/lib/date';
 import type { InventoryItem, LevelingProgress, ProfessionProgress } from '../../../types';
 
 export type LifeStage = 'prepare' | 'leveling' | 'professions' | 'farm' | 'banned';
@@ -38,7 +39,7 @@ export const mockInventory: InventoryItem[] = [
 export const mockFarmStats = {
   total_gold: 15420,
   gold_per_hour: 125.5,
-  session_start: Date.now() - 3600000 * 6,
+  session_start: subtractNow(6, 'hour'),
 };
 
 export const mockAnalytics = {

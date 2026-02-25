@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import type { BotRecord } from '../../../entities/bot/model/types';
 
 export interface BreadcrumbItem {
@@ -69,7 +70,10 @@ function formatStatusLabel(status?: string): string | undefined {
 
 function computeBotStatus(bot: BotBreadcrumbData): string | undefined {
   if (bot.status === 'banned') return 'banned';
-  if (typeof bot.last_seen === 'number' && Date.now() - bot.last_seen > OFFLINE_THRESHOLD_MS) {
+  if (
+    typeof bot.last_seen === 'number' &&
+    dayjs().diff(bot.last_seen, 'millisecond') > OFFLINE_THRESHOLD_MS
+  ) {
     return 'offline';
   }
   return bot.status;

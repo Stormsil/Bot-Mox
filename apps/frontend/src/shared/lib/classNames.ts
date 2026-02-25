@@ -1,20 +1,16 @@
-type ClassValue = string | false | null | undefined;
+import { type ClassValue, clsx } from 'clsx';
+
 type CssModuleMap = Record<string, string>;
 
-function splitClassNames(value: ClassValue): string[] {
-  return String(value || '')
-    .split(/\s+/)
-    .filter(Boolean);
-}
-
 export function cx(...values: ClassValue[]): string {
-  return values.flatMap(splitClassNames).join(' ');
+  return clsx(values);
 }
 
 export function bindCssModuleCx(...styleMaps: CssModuleMap[]): (...values: ClassValue[]) => string {
   return (...values: ClassValue[]) =>
-    values
-      .flatMap(splitClassNames)
+    clsx(values)
+      .split(/\s+/)
+      .filter(Boolean)
       .map((name) => {
         for (const styles of styleMaps) {
           if (styles[name]) {
@@ -25,4 +21,3 @@ export function bindCssModuleCx(...styleMaps: CssModuleMap[]): (...values: Class
       })
       .join(' ');
 }
-

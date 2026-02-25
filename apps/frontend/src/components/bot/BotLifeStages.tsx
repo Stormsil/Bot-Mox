@@ -29,6 +29,7 @@ import {
   useUnbanBotMutation,
 } from '../../entities/bot/api/useBotLifecycleMutations';
 import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
+import { formatDurationHoursMinutes } from '../../shared/lib/date';
 import type { BanDetails, Bot } from '../../types';
 import type { LifeStage } from './lifeStages/config';
 import { formatDate, getStageColor, getStageIcon, getStageLabel } from './lifeStages/config';
@@ -96,12 +97,6 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
 
   const handleStageChange = (value: LifeStage) => {
     setCurrentStage(value);
-  };
-
-  const formatDuration = (ms: number) => {
-    const hours = Math.floor(ms / 3600000);
-    const minutes = Math.floor((ms % 3600000) / 60000);
-    return `${hours}h ${minutes}m`;
   };
 
   const handleBan = async () => {
@@ -206,7 +201,7 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
           <StagePanels
             currentStage={currentStage}
             renderTimestamp={renderTimestamp}
-            formatDuration={formatDuration}
+            formatDuration={formatDurationHoursMinutes}
           />
         </Col>
         <Col xs={24} xl={6}>

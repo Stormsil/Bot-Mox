@@ -6,6 +6,7 @@ import {
 } from '@ant-design/icons';
 import { Card, Col, List, Row, Statistic, Tag, Typography } from 'antd';
 import type React from 'react';
+import { formatDurationHoursMinutes, subtractNow } from '../../shared/lib/date';
 import { useCurrentTime } from '../../shared/lib/hooks/useCurrentTime';
 import type { Bot, InventoryItem } from '../../types';
 import styles from './BotFarm.module.css';
@@ -28,7 +29,7 @@ const mockInventory: InventoryItem[] = [
 const mockFarmStats = {
   total_gold: 15420,
   gold_per_hour: 125.5,
-  session_start: Date.now() - 3600000 * 6, // 6 hours ago
+  session_start: subtractNow(6, 'hour'),
 };
 
 const getQualityColor = (quality: InventoryItem['quality']) => {
@@ -51,15 +52,6 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
   const farmStats = mockFarmStats;
   const currentTime = useCurrentTime();
   const sessionDuration = currentTime - farmStats.session_start;
-  const hoursActive = sessionDuration / 3600000;
-  // goldEarned will be used in future
-  void hoursActive;
-
-  const formatDuration = (ms: number) => {
-    const hours = Math.floor(ms / 3600000);
-    const minutes = Math.floor((ms % 3600000) / 60000);
-    return `${hours}h ${minutes}m`;
-  };
 
   return (
     <div className={styles['bot-farm']}>
@@ -90,7 +82,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
           <Card className={styles['farm-stat-card']} styles={{ body: { padding: 16 } }}>
             <Statistic
               title={<span className={styles.farmStatTitle}>Session Time</span>}
-              value={formatDuration(sessionDuration)}
+              value={formatDurationHoursMinutes(sessionDuration)}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#1890ff', fontSize: 'var(--text-xl)', fontWeight: 600 }}
             />

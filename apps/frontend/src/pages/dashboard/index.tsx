@@ -6,6 +6,7 @@ import {
 } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
 import { Card, Col, Row, Spin, Table, Typography } from 'antd';
+import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo } from 'react';
 import { MetricCard } from '../../components/ui/MetricCard';
@@ -15,6 +16,7 @@ import { uiLogger } from '../../observability/uiLogger';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
 import type { Bot } from '../../types';
 import styles from './Dashboard.module.css';
+
 const cx = bindCssModuleCx(styles);
 
 const { Title } = Typography;
@@ -91,9 +93,7 @@ const columns: TableColumnsType<BotData> = [
     render: (timestamp: number) => {
       if (!timestamp) return 'Never';
       const date = new Date(timestamp);
-      const now = new Date();
-      const diff = now.getTime() - date.getTime();
-      const minutes = Math.floor(diff / 60000);
+      const minutes = dayjs().diff(timestamp, 'minute');
 
       if (minutes < 1) return 'Just now';
       if (minutes < 60) return `${minutes} min ago`;
