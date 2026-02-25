@@ -1,6 +1,5 @@
 import { Card, Table, Tag, Typography } from 'antd';
-import type React from 'react';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import type { FinanceOperation } from '../../entities/finance/model/types';
 import commonStyles from './FinanceCommon.module.css';
 import styles from './FinanceSummary.module.css';
@@ -23,7 +22,7 @@ interface ProjectStats {
   transactionCount: number;
 }
 
-export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = ({
+const ProjectPerformanceTableImpl: React.FC<ProjectPerformanceTableProps> = ({
   operations,
   loading = false,
 }) => {
@@ -85,78 +84,82 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
       .filter((stat) => stat.transactionCount > 0); // Hide completely empty rows
   }, [operations]);
 
-  const columns = [
-    {
-      title: 'Project / Scope',
-      dataIndex: 'project',
-      key: 'project',
-      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-      onCell: () => ({ className: styles.tableCell }),
-      render: (text: string) => <Text strong>{text}</Text>,
-    },
-    {
-      title: 'Income',
-      dataIndex: 'income',
-      key: 'income',
-      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-      onCell: () => ({ className: styles.tableCell }),
-      render: (val: number) => (
-        <Text>
-          ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </Text>
-      ),
-      sorter: (a: ProjectStats, b: ProjectStats) => a.income - b.income,
-    },
-    {
-      title: 'Expenses',
-      dataIndex: 'expense',
-      key: 'expense',
-      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-      onCell: () => ({ className: styles.tableCell }),
-      render: (val: number) => (
-        <Text>
-          ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </Text>
-      ),
-      sorter: (a: ProjectStats, b: ProjectStats) => a.expense - b.expense,
-    },
-    {
-      title: 'Net Profit',
-      dataIndex: 'profit',
-      key: 'profit',
-      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-      onCell: () => ({ className: styles.tableCell }),
-      render: (val: number) => (
-        <Text style={{ fontWeight: 600 }}>
-          {val >= 0 ? '+' : ''}$
-          {val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </Text>
-      ),
-      sorter: (a: ProjectStats, b: ProjectStats) => a.profit - b.profit,
-      defaultSortOrder: 'descend' as const,
-    },
-    {
-      title: 'Margin',
-      dataIndex: 'margin',
-      key: 'margin',
-      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-      onCell: () => ({ className: styles.tableCell }),
-      render: (val: number, record: ProjectStats) => {
-        // If it's pure expense (Global), margin doesn't make sense
-        if (record.income === 0) return <Tag className={commonStyles.financeTag}>N/A</Tag>;
-
-        return <Tag className={commonStyles.financeTag}>{val.toFixed(1)}%</Tag>;
+  const columns = useMemo(
+    () => [
+      {
+        title: 'Project / Scope',
+        dataIndex: 'project',
+        key: 'project',
+        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+        onCell: () => ({ className: styles.tableCell }),
+        render: (text: string) => <Text strong>{text}</Text>,
       },
-    },
-    {
-      title: 'Gold Sold',
-      dataIndex: 'goldVolume',
-      key: 'goldVolume',
-      onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-      onCell: () => ({ className: styles.tableCell }),
-      render: (val: number) => (val > 0 ? `${val.toLocaleString()} g` : '-'),
-    },
-  ];
+      {
+        title: 'Income',
+        dataIndex: 'income',
+        key: 'income',
+        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+        onCell: () => ({ className: styles.tableCell }),
+        render: (val: number) => (
+          <Text>
+            ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+        ),
+        sorter: (a: ProjectStats, b: ProjectStats) => a.income - b.income,
+      },
+      {
+        title: 'Expenses',
+        dataIndex: 'expense',
+        key: 'expense',
+        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+        onCell: () => ({ className: styles.tableCell }),
+        render: (val: number) => (
+          <Text>
+            ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+        ),
+        sorter: (a: ProjectStats, b: ProjectStats) => a.expense - b.expense,
+      },
+      {
+        title: 'Net Profit',
+        dataIndex: 'profit',
+        key: 'profit',
+        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+        onCell: () => ({ className: styles.tableCell }),
+        render: (val: number) => (
+          <Text style={{ fontWeight: 600 }}>
+            {val >= 0 ? '+' : ''}$
+            {val.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </Text>
+        ),
+        sorter: (a: ProjectStats, b: ProjectStats) => a.profit - b.profit,
+        defaultSortOrder: 'descend' as const,
+      },
+      {
+        title: 'Margin',
+        dataIndex: 'margin',
+        key: 'margin',
+        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+        onCell: () => ({ className: styles.tableCell }),
+        render: (val: number, record: ProjectStats) => {
+          if (record.income === 0) return <Tag className={commonStyles.financeTag}>N/A</Tag>;
+          return <Tag className={commonStyles.financeTag}>{val.toFixed(1)}%</Tag>;
+        },
+      },
+      {
+        title: 'Gold Sold',
+        dataIndex: 'goldVolume',
+        key: 'goldVolume',
+        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
+        onCell: () => ({ className: styles.tableCell }),
+        render: (val: number) => (val > 0 ? `${val.toLocaleString()} g` : '-'),
+      },
+    ],
+    [],
+  );
 
   return (
     <Card
@@ -176,3 +179,4 @@ export const ProjectPerformanceTable: React.FC<ProjectPerformanceTableProps> = (
     </Card>
   );
 };
+export const ProjectPerformanceTable = React.memo(ProjectPerformanceTableImpl);
