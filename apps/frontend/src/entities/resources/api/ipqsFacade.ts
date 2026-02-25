@@ -3,8 +3,8 @@ import {
   checkIpqsViaContract,
   getIpqsStatusViaContract,
 } from '../../../providers/ipqs-contract-client';
-import type { IPQSResponse, Proxy as ProxyResource } from '../model/types';
 import { getApiKeys, getProxySettings } from '../../settings/api/settingsFacade';
+import type { IPQSResponse, Proxy as ProxyResource } from '../model/types';
 
 interface BackendStatusPayload {
   enabled?: unknown;

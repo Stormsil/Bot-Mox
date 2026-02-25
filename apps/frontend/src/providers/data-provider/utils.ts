@@ -64,9 +64,17 @@ export function normalizeListResponse<TData extends BaseRecord = BaseRecord>(
 export function extractQueryFromListParams(params: GetListParams): string {
   const search = new URLSearchParams();
 
-  if (params.pagination && 'current' in params.pagination) {
-    const current = params.pagination.current ?? 1;
-    const pageSize = params.pagination.pageSize ?? 20;
+  const pagination = params.pagination as
+    | { current?: number; currentPage?: number; pageSize?: number }
+    | undefined;
+  if (
+    pagination &&
+    (pagination.current !== undefined ||
+      pagination.currentPage !== undefined ||
+      pagination.pageSize !== undefined)
+  ) {
+    const current = pagination.current ?? pagination.currentPage ?? 1;
+    const pageSize = pagination.pageSize ?? 20;
     search.set('page', String(current));
     search.set('limit', String(pageSize));
   }
@@ -105,9 +113,17 @@ export function extractContractQueryFromListParams(params: GetListParams): {
     q?: string;
   } = {};
 
-  if (params.pagination && 'current' in params.pagination) {
-    const current = Number(params.pagination.current ?? 1);
-    const pageSize = Number(params.pagination.pageSize ?? 20);
+  const pagination = params.pagination as
+    | { current?: number; currentPage?: number; pageSize?: number }
+    | undefined;
+  if (
+    pagination &&
+    (pagination.current !== undefined ||
+      pagination.currentPage !== undefined ||
+      pagination.pageSize !== undefined)
+  ) {
+    const current = Number(pagination.current ?? pagination.currentPage ?? 1);
+    const pageSize = Number(pagination.pageSize ?? 20);
     query.page = Number.isFinite(current) && current > 0 ? current : 1;
     query.limit = Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 20;
   }

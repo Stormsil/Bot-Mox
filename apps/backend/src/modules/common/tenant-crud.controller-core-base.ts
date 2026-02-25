@@ -71,6 +71,16 @@ export abstract class TenantCrudControllerCoreBase<
     };
   }
 
+  protected async listCore<TResponse>(
+    authorization: string | undefined,
+    req: Request,
+    run: (tenantId: string) => Promise<TResponse>,
+  ): Promise<TResponse> {
+    this.ensureAuthHeader(authorization);
+    const tenantId = this.getTenantId(req);
+    return run(tenantId);
+  }
+
   protected async createCore(
     authorization: string | undefined,
     body: unknown,

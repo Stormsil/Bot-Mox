@@ -35,12 +35,27 @@ import {
   toContractResourceKind,
 } from './data-provider/utils';
 import {
+  createFinanceOperationViaContract,
+  deleteFinanceOperationViaContract,
+  getFinanceOperationViaContract,
+  listFinanceOperationsViaContract,
+  patchFinanceOperationViaContract,
+} from './finance-contract-client';
+import {
   createResourceViaContract,
   deleteResourceViaContract,
   getResourceViaContract,
   listResourcesViaContract,
   updateResourceViaContract,
 } from './resource-contract-client';
+
+function isFinanceOperationsResource(resource: string): boolean {
+  return (
+    String(resource || '')
+      .trim()
+      .toLowerCase() === 'finance/operations'
+  );
+}
 
 function isWriteMethod(method: string): boolean {
   const normalized = String(method || 'GET')
@@ -58,6 +73,13 @@ export const dataProvider: DataProvider = {
   getList: async <TData extends BaseRecord = BaseRecord>(
     params: GetListParams,
   ): Promise<GetListResponse<TData>> => {
+    if (isFinanceOperationsResource(params.resource)) {
+      const payload = await listFinanceOperationsViaContract(
+        extractContractQueryFromListParams(params),
+      );
+      return normalizeListResponse(payload as ApiSuccessEnvelope<TData[]>);
+    }
+
     if (isBotResource(params.resource)) {
       const payload = await listBotsViaContract(extractContractQueryFromListParams(params));
       return normalizeListResponse(payload as ApiSuccessEnvelope<TData[]>);
@@ -81,6 +103,11 @@ export const dataProvider: DataProvider = {
   getOne: async <TData extends BaseRecord = BaseRecord>(
     params: GetOneParams,
   ): Promise<GetOneResponse<TData>> => {
+    if (isFinanceOperationsResource(params.resource)) {
+      const payload = await getFinanceOperationViaContract(String(params.id));
+      return { data: payload.data as TData };
+    }
+
     if (isBotResource(params.resource)) {
       const payload = await getBotViaContract(String(params.id));
       return { data: payload.data as TData };
@@ -103,6 +130,11 @@ export const dataProvider: DataProvider = {
     params: CreateParams<TVariables>,
   ): Promise<CreateResponse<TData>> => {
     assertFrontendWriteAccess(`create:${String(params.resource || 'unknown')}`);
+
+    if (isFinanceOperationsResource(params.resource)) {
+      const payload = await createFinanceOperationViaContract(params.variables);
+      return { data: payload.data as TData };
+    }
 
     if (isBotResource(params.resource)) {
       const payload = await createBotViaContract({
@@ -131,6 +163,11 @@ export const dataProvider: DataProvider = {
     params: UpdateParams<TVariables>,
   ): Promise<UpdateResponse<TData>> => {
     assertFrontendWriteAccess(`update:${String(params.resource || 'unknown')}`);
+
+    if (isFinanceOperationsResource(params.resource)) {
+      const payload = await patchFinanceOperationViaContract(String(params.id), params.variables);
+      return { data: payload.data as TData };
+    }
 
     if (isBotResource(params.resource)) {
       const payload = await patchBotViaContract(String(params.id), {
@@ -162,6 +199,11 @@ export const dataProvider: DataProvider = {
     params: DeleteOneParams<TVariables>,
   ): Promise<DeleteOneResponse<TData>> => {
     assertFrontendWriteAccess(`delete:${String(params.resource || 'unknown')}`);
+
+    if (isFinanceOperationsResource(params.resource)) {
+      await deleteFinanceOperationViaContract(String(params.id));
+      return { data: { id: params.id } as TData };
+    }
 
     if (isBotResource(params.resource)) {
       await deleteBotViaContract(String(params.id));

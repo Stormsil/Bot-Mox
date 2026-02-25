@@ -7,14 +7,9 @@ import {
   putNotificationEventsViaContract,
   putProxySettingsViaContract,
 } from '../../../providers/settings-contract-client';
-import type {
-  ApiKeys,
-  NotificationEvents,
-  ProxySettings,
-  StoragePolicy,
-} from '../model/types';
 import type { SubscriptionSettings } from '../../resources/model/types';
 import type { ProjectSettings } from '../model/projectSettings';
+import type { ApiKeys, NotificationEvents, ProxySettings, StoragePolicy } from '../model/types';
 import {
   DEFAULT_PROJECTS,
   getDefaultApiKeys,

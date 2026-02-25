@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { subscribeToVmOpsEvents } from '../entities/vm/api/vmRuntimeFacade';
 import { getSelectedProxmoxTargetNode } from '../entities/vm/api/vmSelectionFacade';
 import { getVMSettings } from '../entities/vm/api/vmSettingsFacade';
-import { ApiClientError } from '../shared/api/apiClient';
 import { getProxmoxConnectionSnapshot, listVMs } from '../services/vmService/proxmoxOps';
 import { getSshConnectionStatus } from '../services/vmService/sshOps';
+import { ApiClientError } from '../shared/api/apiClient';
 import type { ProxmoxVM } from '../types';
 
 const VM_MUTATION_COMMANDS = new Set([

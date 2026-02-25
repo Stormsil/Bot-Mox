@@ -3,7 +3,7 @@ export {};
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { ConflictException, NotFoundException, UnauthorizedException } = require('@nestjs/common');
+const { NotFoundException, UnauthorizedException } = require('@nestjs/common');
 const { REQUEST_IDENTITY_KEY } = require('../auth/request-identity.ts');
 const { VmOpsController } = require('./vm-ops.controller.ts');
 const { VmOpsService } = require('./vm-ops.service.ts');
@@ -214,30 +214,21 @@ test('VmOpsController blocks agent token from patching another agent command', a
   );
 });
 
-test('VmOpsController legacy proxmox GET returns AGENT_OFFLINE when no active agent can be resolved', async () => {
+test('VmOpsController legacy proxmox GET soft-fails with empty list when no active agent can be resolved', async () => {
   const { controller } = createController();
   const auth = 'Bearer test-token';
 
-  await assert.rejects(
-    () =>
-      controller.dispatchProxmoxLegacyGet(
-        auth,
-        'list-vms',
-        { node: 'h1' },
-        buildRequest('tenant-a'),
-      ),
-    (error) => {
-      assert.ok(error instanceof ConflictException);
-      assert.deepEqual(error.getResponse(), {
-        code: 'AGENT_OFFLINE',
-        message: 'No active agent available for this tenant',
-      });
-      return true;
-    },
+  const response = await controller.dispatchProxmoxLegacyGet(
+    auth,
+    'list-vms',
+    { node: 'h1' },
+    buildRequest('tenant-a'),
   );
+
+  assert.deepEqual(response, { success: true, data: [] });
 });
 
-test('VmOpsController legacy proxmox GET ignores stale active agents and returns AGENT_OFFLINE', async () => {
+test('VmOpsController legacy proxmox GET ignores stale active agents and soft-fails status', async () => {
   const repositoryStub = createRepositoryStub();
   const staleDate = new Date(Date.now() - 10 * 60 * 1000).toISOString();
   const agentsService = {
@@ -258,15 +249,20 @@ test('VmOpsController legacy proxmox GET ignores stale active agents and returns
   const controller = new VmOpsController(new VmOpsService(repositoryStub), agentsService);
   const auth = 'Bearer test-token';
 
-  await assert.rejects(
-    () => controller.dispatchProxmoxLegacyGet(auth, 'status', {}, buildRequest('tenant-a')),
-    (error) => {
-      assert.ok(error instanceof ConflictException);
-      assert.deepEqual(error.getResponse(), {
-        code: 'AGENT_OFFLINE',
-        message: 'No active agent available for this tenant',
-      });
-      return true;
-    },
+  const response = await controller.dispatchProxmoxLegacyGet(
+    auth,
+    'status',
+    {},
+    buildRequest('tenant-a'),
   );
+
+  assert.deepEqual(response, {
+    success: true,
+    data: {
+      connected: false,
+      agent_online: false,
+      degraded: true,
+      reason: 'AGENT_OFFLINE',
+    },
+  });
 });

@@ -5,16 +5,12 @@ import {
   workspaceListQuerySchema,
   workspaceNotesMutationSchema,
 } from '@botmox/api-contract';
-import { BadRequestException, Controller } from '@nestjs/common';
-import { z } from 'zod';
+import { Controller } from '@nestjs/common';
 import { TenantKindCrudControllerBase } from '../common/tenant-kind-crud.controller-base';
+import { buildTrimmedIdSchema, parseWithZodOrBadRequest } from '../common/zod-http-parse';
 import { type WorkspaceKind, type WorkspaceListQuery, WorkspaceService } from './workspace.service';
 
-const workspaceIdSchema = z
-  .string()
-  .min(1)
-  .transform((value) => value.trim())
-  .refine((value) => value.length > 0, 'Workspace id is required');
+const workspaceIdSchema = buildTrimmedIdSchema('Workspace id');
 
 @Controller('workspace')
 export class WorkspaceController extends TenantKindCrudControllerBase<
@@ -26,39 +22,24 @@ export class WorkspaceController extends TenantKindCrudControllerBase<
   }
 
   protected parseKind(kind: string): WorkspaceKind {
-    const parsed = workspaceKindSchema.safeParse(String(kind || '').trim());
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'WORKSPACE_INVALID_KIND',
-        message: 'Invalid workspace kind',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data as WorkspaceKind;
+    return parseWithZodOrBadRequest(workspaceKindSchema, String(kind || '').trim(), {
+      code: 'WORKSPACE_INVALID_KIND',
+      message: 'Invalid workspace kind',
+    }) as WorkspaceKind;
   }
 
   protected parseId(id: string): string {
-    const parsed = workspaceIdSchema.safeParse(String(id || ''));
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'WORKSPACE_INVALID_ID',
-        message: 'Invalid workspace id',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(workspaceIdSchema, String(id || ''), {
+      code: 'WORKSPACE_INVALID_ID',
+      message: 'Invalid workspace id',
+    });
   }
 
   protected parseListQuery(query: Record<string, unknown>): WorkspaceListQuery {
-    const parsed = workspaceListQuerySchema.safeParse(query ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'WORKSPACE_INVALID_LIST_QUERY',
-        message: 'Invalid workspace list query',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(workspaceListQuerySchema, query ?? {}, {
+      code: 'WORKSPACE_INVALID_LIST_QUERY',
+      message: 'Invalid workspace list query',
+    });
   }
 
   protected parseBody(kind: WorkspaceKind, body: unknown): Record<string, unknown> {
@@ -69,15 +50,10 @@ export class WorkspaceController extends TenantKindCrudControllerBase<
           ? workspaceCalendarMutationSchema
           : workspaceKanbanMutationSchema;
 
-    const parsed = schema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'WORKSPACE_INVALID_BODY',
-        message: 'Invalid workspace payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(schema, body ?? {}, {
+      code: 'WORKSPACE_INVALID_BODY',
+      message: 'Invalid workspace payload',
+    });
   }
 
   protected getNotFoundPayload(): { code: string; message: string } {

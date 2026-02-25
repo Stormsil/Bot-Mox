@@ -1,11 +1,13 @@
+import { useInfiniteList } from '@refinedev/core';
 import { Spin } from 'antd';
 import type React from 'react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentPanel } from '../../components/layout/ContentPanel';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
 import type { BotRecord } from '../../entities/bot/model/types';
 import { calculateFinanceSummary } from '../../entities/finance/lib/analytics';
+import { mapFinanceOperationsFromInfinitePages } from '../../entities/finance/lib/financeOperationMapper';
 import { useNotesIndexQuery } from '../../entities/notes/api/useNotesIndexQuery';
 import type { NoteIndex } from '../../entities/notes/model/types';
 import {
@@ -13,18 +15,26 @@ import {
   useProxiesQuery,
   useSubscriptionsQuery,
 } from '../../entities/resources/api/useResourcesQueries';
+import type {
+  BotLicense,
+  Proxy as ProxyResource,
+  Subscription,
+} from '../../entities/resources/model/types';
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
-import { useFinanceOperations } from '../../features/finance/model/useFinanceOperations';
 import { uiLogger } from '../../observability/uiLogger';
-import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../entities/resources/model/types';
+import type { FinanceOperationContractRecord } from '../../providers/finance-contract-client';
 import { DatacenterContentMap, type ExpiringItem } from './content-map';
 import { cx } from './datacenterUi';
 import { buildProjectStats, FINANCE_WINDOW_DAYS, MS_PER_DAY } from './page-helpers';
 import { useDatacenterCollapsedSections, useDatacenterCurrentTime } from './useDatacenterState';
 
+const FINANCE_PAGE_SIZE = 200;
+const FINANCE_REFETCH_INTERVAL_MS = 4_000;
+
 export const DatacenterPage: React.FC = () => {
   const navigate = useNavigate();
   const currentTime = useDatacenterCurrentTime();
+  const [isFinanceInitialLoadComplete, setIsFinanceInitialLoadComplete] = useState(false);
   const botsMapQuery = useBotsMapQuery();
   const licensesQuery = useLicensesQuery();
   const proxiesQuery = useProxiesQuery();
@@ -34,7 +44,68 @@ export const DatacenterPage: React.FC = () => {
 
   const { collapsedSections, toggleSection } = useDatacenterCollapsedSections();
 
-  const { operations, loading: financeLoading } = useFinanceOperations();
+  const financeOperationsList = useInfiniteList<FinanceOperationContractRecord>({
+    resource: 'finance/operations',
+    pagination: {
+      mode: 'server',
+      currentPage: 1,
+      pageSize: FINANCE_PAGE_SIZE,
+    },
+    sorters: [{ field: 'date', order: 'desc' }],
+    queryOptions: {
+      refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
+    },
+  });
+  const { query: financeOperationsQuery, result: financeOperationsResult } = financeOperationsList;
+
+  useEffect(() => {
+    if (!financeOperationsResult.hasNextPage) {
+      return;
+    }
+    if (financeOperationsQuery.isLoading || financeOperationsQuery.isFetchingNextPage) {
+      return;
+    }
+
+    void financeOperationsQuery.fetchNextPage();
+  }, [
+    financeOperationsQuery.fetchNextPage,
+    financeOperationsQuery.isFetchingNextPage,
+    financeOperationsQuery.isLoading,
+    financeOperationsResult.hasNextPage,
+  ]);
+
+  useEffect(() => {
+    if (isFinanceInitialLoadComplete) {
+      return;
+    }
+    if (!financeOperationsResult.data) {
+      return;
+    }
+    if (financeOperationsResult.hasNextPage) {
+      return;
+    }
+    if (financeOperationsQuery.isLoading || financeOperationsQuery.isFetchingNextPage) {
+      return;
+    }
+
+    setIsFinanceInitialLoadComplete(true);
+  }, [
+    financeOperationsQuery.isFetchingNextPage,
+    financeOperationsQuery.isLoading,
+    financeOperationsResult.data,
+    financeOperationsResult.hasNextPage,
+    isFinanceInitialLoadComplete,
+  ]);
+
+  const operations = useMemo(
+    () => mapFinanceOperationsFromInfinitePages(financeOperationsResult.data?.pages),
+    [financeOperationsResult.data?.pages],
+  );
+  const financeLoading =
+    !isFinanceInitialLoadComplete &&
+    (financeOperationsQuery.isLoading ||
+      financeOperationsQuery.isFetchingNextPage ||
+      Boolean(financeOperationsResult.hasNextPage));
   const bots = useMemo<Record<string, BotRecord>>(
     () => (botsMapQuery.data || {}) as Record<string, BotRecord>,
     [botsMapQuery.data],

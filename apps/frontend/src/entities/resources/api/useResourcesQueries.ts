@@ -1,5 +1,10 @@
 import { type UseQueryResult, useQuery } from '@tanstack/react-query';
-import type { BotLicense, Proxy as ProxyResource, ResourceKind, Subscription } from '../model/types';
+import type {
+  BotLicense,
+  Proxy as ProxyResource,
+  ResourceKind,
+  Subscription,
+} from '../model/types';
 import { fetchResourcesViaContract } from './resourceContractFacade';
 import { resourceQueryKeys } from './resourceQueryKeys';
 

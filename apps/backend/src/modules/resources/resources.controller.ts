@@ -3,17 +3,13 @@ import {
   resourceListQuerySchema,
   resourceMutationSchema,
 } from '@botmox/api-contract';
-import { BadRequestException, Body, Controller, Headers, Param, Put, Req } from '@nestjs/common';
+import { Body, Controller, Headers, Param, Put, Req } from '@nestjs/common';
 import type { Request } from 'express';
-import { z } from 'zod';
 import { TenantKindCrudControllerBase } from '../common/tenant-kind-crud.controller-base';
+import { buildTrimmedIdSchema, parseWithZodOrBadRequest } from '../common/zod-http-parse';
 import { type ResourceListQuery, ResourcesService } from './resources.service';
 
-const resourceIdSchema = z
-  .string()
-  .min(1)
-  .transform((value) => value.trim())
-  .refine((value) => value.length > 0, 'Resource id is required');
+const resourceIdSchema = buildTrimmedIdSchema('Resource id');
 
 @Controller('resources')
 export class ResourcesController extends TenantKindCrudControllerBase<
@@ -25,54 +21,34 @@ export class ResourcesController extends TenantKindCrudControllerBase<
   }
 
   protected parseKind(kind: string): 'licenses' | 'proxies' | 'subscriptions' {
-    const parsed = resourceKindSchema.safeParse(String(kind || '').trim());
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'RESOURCES_INVALID_KIND',
-        message: 'Invalid resource kind',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(resourceKindSchema, String(kind || '').trim(), {
+      code: 'RESOURCES_INVALID_KIND',
+      message: 'Invalid resource kind',
+    });
   }
 
   protected parseId(id: string): string {
-    const parsed = resourceIdSchema.safeParse(String(id || ''));
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'RESOURCES_INVALID_ID',
-        message: 'Invalid resource id',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(resourceIdSchema, String(id || ''), {
+      code: 'RESOURCES_INVALID_ID',
+      message: 'Invalid resource id',
+    });
   }
 
   protected parseBody(
     _kind: 'licenses' | 'proxies' | 'subscriptions',
     body: unknown,
   ): Record<string, unknown> {
-    const parsed = resourceMutationSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'RESOURCES_INVALID_BODY',
-        message: 'Invalid resource payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(resourceMutationSchema, body ?? {}, {
+      code: 'RESOURCES_INVALID_BODY',
+      message: 'Invalid resource payload',
+    });
   }
 
   protected parseListQuery(query: Record<string, unknown>): ResourceListQuery {
-    const parsed = resourceListQuerySchema.safeParse(query ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'RESOURCES_INVALID_LIST_QUERY',
-        message: 'Invalid resources list query',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(resourceListQuerySchema, query ?? {}, {
+      code: 'RESOURCES_INVALID_LIST_QUERY',
+      message: 'Invalid resources list query',
+    });
   }
 
   protected getNotFoundPayload(): { code: string; message: string } {

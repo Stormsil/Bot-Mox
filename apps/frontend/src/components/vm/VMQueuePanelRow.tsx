@@ -17,13 +17,6 @@ const { Text } = Typography;
 
 type VMProjectId = 'wow_tbc' | 'wow_midnight';
 
-interface QueueResourcePreset {
-  label: string;
-  cores: number;
-  memoryMb: number;
-  diskGiB: number;
-}
-
 interface VMQueuePanelRowProps {
   item: VMQueueItem;
 }

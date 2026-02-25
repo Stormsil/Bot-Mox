@@ -1,6 +1,6 @@
 import type { Dayjs } from 'dayjs';
-import type { Bot } from '../../../types';
 import type { BotLicense } from '../../../entities/resources/model/types';
+import type { Bot } from '../../../types';
 
 export interface BotLicenseProps {
   bot: Bot;

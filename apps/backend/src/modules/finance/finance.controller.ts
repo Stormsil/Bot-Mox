@@ -4,13 +4,11 @@ import {
   financeOperationPatchSchema,
 } from '@botmox/api-contract';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   Headers,
-  NotFoundException,
   Param,
   Patch,
   Post,
@@ -18,16 +16,12 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { z } from 'zod';
 import { isPrismaMissingStorageError } from '../common/prisma-soft-fail';
 import { TenantCrudControllerCoreBase } from '../common/tenant-crud.controller-core-base';
+import { buildTrimmedIdSchema, parseWithZodOrBadRequest } from '../common/zod-http-parse';
 import { type FinanceListQuery, FinanceService } from './finance.service';
 
-const financeIdSchema = z
-  .string()
-  .min(1)
-  .transform((value) => value.trim())
-  .refine((value) => value.length > 0, 'Finance operation id is required');
+const financeIdSchema = buildTrimmedIdSchema('Finance operation id');
 
 @Controller('finance')
 export class FinanceController extends TenantCrudControllerCoreBase<
@@ -43,51 +37,31 @@ export class FinanceController extends TenantCrudControllerCoreBase<
   }
 
   protected parseId(id: string): string {
-    const parsed = financeIdSchema.safeParse(String(id || ''));
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'FINANCE_INVALID_ID',
-        message: 'Invalid finance operation id',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(financeIdSchema, String(id || ''), {
+      code: 'FINANCE_INVALID_ID',
+      message: 'Invalid finance operation id',
+    });
   }
 
   private parseListQuery(query: Record<string, unknown>): FinanceListQuery {
-    const parsed = financeListQuerySchema.safeParse(query ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'FINANCE_INVALID_LIST_QUERY',
-        message: 'Invalid finance list query',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(financeListQuerySchema, query ?? {}, {
+      code: 'FINANCE_INVALID_LIST_QUERY',
+      message: 'Invalid finance list query',
+    });
   }
 
   protected parseCreateBody(body: unknown): Record<string, unknown> {
-    const parsed = financeOperationCreateSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'FINANCE_INVALID_CREATE_BODY',
-        message: 'Invalid finance create payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(financeOperationCreateSchema, body ?? {}, {
+      code: 'FINANCE_INVALID_CREATE_BODY',
+      message: 'Invalid finance create payload',
+    });
   }
 
   protected parseUpdateBody(body: unknown): Record<string, unknown> {
-    const parsed = financeOperationPatchSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'FINANCE_INVALID_PATCH_BODY',
-        message: 'Invalid finance patch payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(financeOperationPatchSchema, body ?? {}, {
+      code: 'FINANCE_INVALID_PATCH_BODY',
+      message: 'Invalid finance patch payload',
+    });
   }
 
   protected getNotFoundPayload(): { code: string; message: string } {
@@ -98,7 +72,12 @@ export class FinanceController extends TenantCrudControllerCoreBase<
   }
 
   protected getEntityById(id: string, tenantId: string) {
-    return this.financeService.getById(id, tenantId);
+    return this.financeService.getById(id, tenantId).catch((error) => {
+      if (!this.isFinanceStorageUnavailable(error)) {
+        throw error;
+      }
+      return null;
+    });
   }
 
   protected createEntity(
@@ -127,32 +106,32 @@ export class FinanceController extends TenantCrudControllerCoreBase<
     data: unknown[];
     meta: { total: number; page: number; limit: number };
   }> {
-    this.ensureAuthHeader(authorization);
     const parsedQuery = this.parseListQuery(query);
-    const tenantId = this.getTenantId(req);
-    let result: Awaited<ReturnType<FinanceService['list']>>;
-    try {
-      result = await this.financeService.list(parsedQuery, tenantId);
-    } catch (error) {
-      if (!this.isFinanceStorageUnavailable(error)) {
-        throw error;
+    return this.listCore(authorization, req, async (tenantId) => {
+      let result: Awaited<ReturnType<FinanceService['list']>>;
+      try {
+        result = await this.financeService.list(parsedQuery, tenantId);
+      } catch (error) {
+        if (!this.isFinanceStorageUnavailable(error)) {
+          throw error;
+        }
+        result = {
+          items: [],
+          total: 0,
+          page: parsedQuery.page ?? 1,
+          limit: parsedQuery.limit ?? 50,
+        };
       }
-      result = {
-        items: [],
-        total: 0,
-        page: parsedQuery.page ?? 1,
-        limit: parsedQuery.limit ?? 50,
+      return {
+        success: true,
+        data: result.items,
+        meta: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+        },
       };
-    }
-    return {
-      success: true,
-      data: result.items,
-      meta: {
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-      },
-    };
+    });
   }
 
   @Get('operations/:id')
@@ -161,25 +140,7 @@ export class FinanceController extends TenantCrudControllerCoreBase<
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
-    const tenantId = this.getTenantId(req);
-    let operation: Awaited<ReturnType<FinanceService['getById']>>;
-    try {
-      operation = await this.financeService.getById(parsedId, tenantId);
-    } catch (error) {
-      if (!this.isFinanceStorageUnavailable(error)) {
-        throw error;
-      }
-      operation = null;
-    }
-    if (!operation) {
-      throw new NotFoundException(this.getNotFoundPayload());
-    }
-    return {
-      success: true,
-      data: operation,
-    };
+    return this.getOneCore(authorization, id, req);
   }
 
   @Post('operations')

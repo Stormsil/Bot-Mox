@@ -4,7 +4,6 @@ import {
   playbookValidateBodySchema,
 } from '@botmox/api-contract';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -19,13 +18,10 @@ import {
 import type { Request } from 'express';
 import { z } from 'zod';
 import { TenantCrudControllerCoreBase } from '../common/tenant-crud.controller-core-base';
+import { buildTrimmedIdSchema, parseWithZodOrBadRequest } from '../common/zod-http-parse';
 import { PlaybooksService } from './playbooks.service';
 
-const playbookIdSchema = z
-  .string()
-  .min(1)
-  .transform((value) => value.trim())
-  .refine((value) => value.length > 0, 'Playbook id is required');
+const playbookIdSchema = buildTrimmedIdSchema('Playbook id');
 
 @Controller('playbooks')
 export class PlaybooksController extends TenantCrudControllerCoreBase<
@@ -41,15 +37,10 @@ export class PlaybooksController extends TenantCrudControllerCoreBase<
   }
 
   protected parseId(id: string): string {
-    const parsed = playbookIdSchema.safeParse(String(id || ''));
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'PLAYBOOK_INVALID_ID',
-        message: 'Invalid playbook id',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(playbookIdSchema, String(id || ''), {
+      code: 'PLAYBOOK_INVALID_ID',
+      message: 'Invalid playbook id',
+    });
   }
 
   protected parseCreateBody(body: unknown): {
@@ -57,41 +48,26 @@ export class PlaybooksController extends TenantCrudControllerCoreBase<
     is_default?: boolean;
     content: string;
   } {
-    const parsed = playbookCreateSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'PLAYBOOK_INVALID_CREATE_BODY',
-        message: 'Invalid playbook create payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(playbookCreateSchema, body ?? {}, {
+      code: 'PLAYBOOK_INVALID_CREATE_BODY',
+      message: 'Invalid playbook create payload',
+    });
   }
 
   protected parseUpdateBody(body: unknown): z.infer<typeof playbookUpdateSchema> {
-    const parsed = playbookUpdateSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'PLAYBOOK_INVALID_UPDATE_BODY',
-        message: 'Invalid playbook update payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(playbookUpdateSchema, body ?? {}, {
+      code: 'PLAYBOOK_INVALID_UPDATE_BODY',
+      message: 'Invalid playbook update payload',
+    });
   }
 
   private parseValidateBody(body: unknown): {
     content: string;
   } {
-    const parsed = playbookValidateBodySchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'PLAYBOOK_INVALID_VALIDATE_BODY',
-        message: 'Invalid playbook validate payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return parseWithZodOrBadRequest(playbookValidateBodySchema, body ?? {}, {
+      code: 'PLAYBOOK_INVALID_VALIDATE_BODY',
+      message: 'Invalid playbook validate payload',
+    });
   }
 
   protected getNotFoundPayload(): { code: string; message: string } {
@@ -177,12 +153,10 @@ export class PlaybooksController extends TenantCrudControllerCoreBase<
     success: true;
     data: unknown[];
   }> {
-    this.ensureAuthHeader(authorization);
-    const tenantId = this.getTenantId(req);
-    return {
+    return this.listCore(authorization, req, async (tenantId) => ({
       success: true,
       data: await this.playbooksService.list(tenantId),
-    };
+    }));
   }
 
   @Get(':id')

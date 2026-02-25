@@ -1,9 +1,13 @@
 import { message } from 'antd';
 import { useCallback } from 'react';
-import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
-import { uiLogger } from '../../observability/uiLogger';
-import type { ApiKeys, NotificationEvents, ProxySettings } from '../../entities/settings/model/types';
 import type { SubscriptionSettings } from '../../entities/resources/model/types';
+import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
+import type {
+  ApiKeys,
+  NotificationEvents,
+  ProxySettings,
+} from '../../entities/settings/model/types';
+import { uiLogger } from '../../observability/uiLogger';
 import type {
   ApiKeysFormValues,
   NotificationEventsFormValues,

@@ -1,7 +1,11 @@
 import type { AlertProps } from 'antd';
 import type React from 'react';
+import type {
+  BotLicense,
+  Proxy as ProxyResource,
+  Subscription,
+} from '../../../entities/resources/model/types';
 import type { Bot } from '../../../types';
-import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../../entities/resources/model/types';
 
 export interface BotSummaryBot extends Bot {
   account?: {

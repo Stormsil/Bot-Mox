@@ -18,7 +18,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { z, type ZodType } from 'zod';
+import { type ZodType, z } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
 import { SecretsService } from './secrets.service';
 
