@@ -23,4 +23,20 @@ export class EncryptedJsonPayloadCodec {
       __enc_payload_v1: this.atRestCrypto.encryptJson(payload),
     } as unknown as Prisma.InputJsonValue;
   }
+
+  encryptOpaqueJsonField(value: Prisma.InputJsonValue): Prisma.InputJsonValue {
+    return this.atRestCrypto.encryptJson(value) as unknown as Prisma.InputJsonValue;
+  }
+
+  decryptOpaqueJsonField(value: Prisma.JsonValue | null): Prisma.JsonValue | null {
+    if (value === null || value === undefined) {
+      return null;
+    }
+    try {
+      const decrypted = this.atRestCrypto.decryptJson<Prisma.JsonValue>(value as unknown);
+      return decrypted === null ? value : decrypted;
+    } catch {
+      return value;
+    }
+  }
 }
