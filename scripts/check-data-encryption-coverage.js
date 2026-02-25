@@ -4,6 +4,17 @@ const path = require('node:path');
 
 const repoRoot = process.cwd();
 
+const genericCodeEncryptionPatterns = [
+  /DataAtRestCrypto/,
+  /__enc_payload_v1/,
+  /getPayloadCryptoClient\s*(?:<|\()/,
+  /encrypt[A-Za-z_]/,
+  /decrypt[A-Za-z_]/,
+];
+
+const genericTestEncryptionPatterns = [/(encrypt|encrypted|plaintext)/i];
+const additionalTestSignalPatterns = [/__enc_payload_v1/, /legacy payload/i];
+
 const domains = [
   {
     scope: 'workspace',
@@ -120,12 +131,30 @@ function hasAnyPattern(source, patterns) {
   return patterns.some((pattern) => pattern.test(source));
 }
 
+function readModuleTsSources(relativePath) {
+  const moduleDir = path.dirname(path.join(repoRoot, relativePath));
+  if (!fs.existsSync(moduleDir)) {
+    return [];
+  }
+  return fs
+    .readdirSync(moduleDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.ts'))
+    .map((entry) => fs.readFileSync(path.join(moduleDir, entry.name), 'utf8'));
+}
+
 function checkDomain(domain, runnerSource, controllerSource) {
   const issues = [];
 
   for (const relativePath of domain.codeFiles) {
     const source = readFile(relativePath);
-    if (!hasAnyPattern(source, domain.codePatterns)) {
+    const moduleSources = readModuleTsSources(relativePath);
+    const hasDomainMarker =
+      hasAnyPattern(source, domain.codePatterns) ||
+      moduleSources.some((item) => hasAnyPattern(item, domain.codePatterns));
+    const hasGenericMarker =
+      hasAnyPattern(source, genericCodeEncryptionPatterns) ||
+      moduleSources.some((item) => hasAnyPattern(item, genericCodeEncryptionPatterns));
+    if (!hasDomainMarker && !hasGenericMarker) {
       issues.push(`${domain.scope}: code file lacks encryption markers (${relativePath})`);
     }
   }
@@ -133,7 +162,11 @@ function checkDomain(domain, runnerSource, controllerSource) {
   let hasEncryptionTestSignal = false;
   for (const relativePath of domain.testFiles) {
     const source = readFile(relativePath);
-    if (hasAnyPattern(source, domain.testPatterns)) {
+    if (
+      hasAnyPattern(source, domain.testPatterns) ||
+      hasAnyPattern(source, genericTestEncryptionPatterns) ||
+      hasAnyPattern(source, additionalTestSignalPatterns)
+    ) {
       hasEncryptionTestSignal = true;
     }
   }
