@@ -16,7 +16,8 @@ import type {
   UpdateResponse,
 } from '@refinedev/core';
 import { buildApiUrl } from '../config/env';
-import { ApiClientError, type ApiSuccessEnvelope, apiRequest } from '../shared/api/apiClient';
+import type { ApiSuccessEnvelope } from '../shared/api/apiClient';
+import { assertFrontendWriteAccess } from '../shared/api/writeAccessGuard';
 import {
   createBotViaContract,
   deleteBotViaContract,
@@ -24,6 +25,7 @@ import {
   listBotsViaContract,
   patchBotViaContract,
 } from './bot-contract-client';
+import { requestHttpFallback } from './data-provider/httpFallback';
 import {
   extractContractQueryFromListParams,
   extractQueryFromListParams,
@@ -40,18 +42,6 @@ import {
   updateResourceViaContract,
 } from './resource-contract-client';
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<ApiSuccessEnvelope<T>> {
-  const headers = new Headers(init.headers || {});
-  if (init.body !== undefined && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
-  }
-
-  return apiRequest<T>(path, {
-    ...init,
-    headers,
-  });
-}
-
 function isWriteMethod(method: string): boolean {
   const normalized = String(method || 'GET')
     .trim()
@@ -62,45 +52,6 @@ function isWriteMethod(method: string): boolean {
     normalized === 'PATCH' ||
     normalized === 'DELETE'
   );
-}
-
-function hasFrontendWriteAccess(): boolean {
-  if (typeof localStorage === 'undefined') {
-    return true;
-  }
-
-  const raw = localStorage.getItem('botmox.auth.identity');
-  if (!raw) {
-    return true;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as {
-      access?: {
-        write_access?: unknown;
-      };
-    };
-    return parsed?.access?.write_access === true;
-  } catch {
-    return true;
-  }
-}
-
-function assertFrontendWriteAccess(scope: string): void {
-  if (hasFrontendWriteAccess()) {
-    return;
-  }
-
-  const error = new ApiClientError('Premium access is required for write operations', {
-    status: 403,
-    code: 'PREMIUM_REQUIRED',
-    details: {
-      scope,
-      source: 'frontend_write_guard',
-    },
-  }) as ApiClientError & { statusCode?: number };
-  error.statusCode = 403;
-  throw error;
 }
 
 export const dataProvider: DataProvider = {
@@ -123,7 +74,7 @@ export const dataProvider: DataProvider = {
 
     const basePath = resolveResourcePath(params.resource);
     const query = extractQueryFromListParams(params);
-    const payload = await request<TData[]>(`${basePath}${query}`);
+    const payload = await requestHttpFallback<TData[]>(`${basePath}${query}`);
     return normalizeListResponse(payload);
   },
 
@@ -142,7 +93,9 @@ export const dataProvider: DataProvider = {
     }
 
     const basePath = resolveResourcePath(params.resource);
-    const payload = await request<TData>(`${basePath}/${encodeURIComponent(String(params.id))}`);
+    const payload = await requestHttpFallback<TData>(
+      `${basePath}/${encodeURIComponent(String(params.id))}`,
+    );
     return { data: payload.data };
   },
 
@@ -167,7 +120,7 @@ export const dataProvider: DataProvider = {
     }
 
     const basePath = resolveResourcePath(params.resource);
-    const payload = await request<TData>(basePath, {
+    const payload = await requestHttpFallback<TData>(basePath, {
       method: 'POST',
       body: JSON.stringify(params.variables || {}),
     });
@@ -195,10 +148,13 @@ export const dataProvider: DataProvider = {
     }
 
     const basePath = resolveResourcePath(params.resource);
-    const payload = await request<TData>(`${basePath}/${encodeURIComponent(String(params.id))}`, {
-      method: 'PATCH',
-      body: JSON.stringify(params.variables || {}),
-    });
+    const payload = await requestHttpFallback<TData>(
+      `${basePath}/${encodeURIComponent(String(params.id))}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(params.variables || {}),
+      },
+    );
     return { data: payload.data };
   },
 
@@ -219,7 +175,7 @@ export const dataProvider: DataProvider = {
     }
 
     const basePath = resolveResourcePath(params.resource);
-    await request(`${basePath}/${encodeURIComponent(String(params.id))}`, {
+    await requestHttpFallback(`${basePath}/${encodeURIComponent(String(params.id))}`, {
       method: 'DELETE',
     });
 
@@ -257,7 +213,9 @@ export const dataProvider: DataProvider = {
     const basePath = resolveResourcePath(params.resource);
     const items = await Promise.all(
       params.ids.map(async (id) => {
-        const payload = await request<TData>(`${basePath}/${encodeURIComponent(String(id))}`);
+        const payload = await requestHttpFallback<TData>(
+          `${basePath}/${encodeURIComponent(String(id))}`,
+        );
         return payload.data;
       }),
     );
@@ -279,7 +237,7 @@ export const dataProvider: DataProvider = {
     if (isWriteMethod(method)) {
       assertFrontendWriteAccess(`custom:${method}:${path}`);
     }
-    const payload = await request<TData>(path, {
+    const payload = await requestHttpFallback<TData>(path, {
       method,
       body: customParams.payload ? JSON.stringify(customParams.payload) : undefined,
     });

@@ -1,9 +1,17 @@
+import { buildApiUrl } from '../../config/env';
 import { authFetch } from './authFetch';
-import { enqueueRequest, resolveRequestQos, resolveRequestUrl } from './internal/requestQueue';
 import { ApiClientError, type ApiSuccessEnvelope, parseEnvelope } from './internal/types';
 
 export type { ApiSuccessEnvelope } from './internal/types';
 export { ApiClientError } from './internal/types';
+
+function resolveRequestUrl(path: string): string {
+  const normalized = String(path || '').trim();
+  if (/^https?:\/\//i.test(normalized)) {
+    return normalized;
+  }
+  return buildApiUrl(normalized);
+}
 
 async function performRequest<T>(path: string, init: RequestInit): Promise<ApiSuccessEnvelope<T>> {
   const response = await authFetch(resolveRequestUrl(path), {
@@ -51,20 +59,15 @@ export async function apiRequest<T>(
   const method = String(init.method || 'GET')
     .trim()
     .toUpperCase();
-  const qos = resolveRequestQos(path, method);
 
   if (method !== 'GET') {
-    return enqueueRequest(() => performRequest<T>(path, init), qos);
+    return performRequest<T>(path, init);
   }
 
-  return enqueueRequest(
-    () =>
-      performRequest<T>(path, {
-        ...init,
-        method: 'GET',
-      }),
-    qos,
-  );
+  return performRequest<T>(path, {
+    ...init,
+    method: 'GET',
+  });
 }
 
 export function buildQueryString(

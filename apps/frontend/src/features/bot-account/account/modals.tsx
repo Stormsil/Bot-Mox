@@ -1,5 +1,5 @@
 import { Alert } from 'antd';
-import { ThemeModal } from '../../ui';
+import { ThemeModal } from '../../../components/ui';
 
 interface ConfirmGenerationModalProps {
   open: boolean;
