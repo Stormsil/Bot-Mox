@@ -5,24 +5,9 @@ import {
   workspaceListQuerySchema,
   workspaceNotesMutationSchema,
 } from '@botmox/api-contract';
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Headers,
-  NotFoundException,
-  Param,
-  Patch,
-  Post,
-  Query,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
-import type { Request } from 'express';
+import { BadRequestException, Controller } from '@nestjs/common';
 import { z } from 'zod';
-import { getRequestIdentity } from '../auth/request-identity.util';
+import { TenantKindCrudControllerBase } from '../common/tenant-kind-crud.controller-base';
 import { type WorkspaceKind, type WorkspaceListQuery, WorkspaceService } from './workspace.service';
 
 const workspaceIdSchema = z
@@ -32,19 +17,15 @@ const workspaceIdSchema = z
   .refine((value) => value.length > 0, 'Workspace id is required');
 
 @Controller('workspace')
-export class WorkspaceController {
-  constructor(private readonly workspaceService: WorkspaceService) {}
-
-  private ensureAuthHeader(authorization: string | undefined): void {
-    if (!authorization) {
-      throw new UnauthorizedException({
-        code: 'MISSING_BEARER_TOKEN',
-        message: 'Missing bearer token',
-      });
-    }
+export class WorkspaceController extends TenantKindCrudControllerBase<
+  WorkspaceKind,
+  WorkspaceListQuery
+> {
+  constructor(private readonly workspaceService: WorkspaceService) {
+    super();
   }
 
-  private parseKind(kind: string): WorkspaceKind {
+  protected parseKind(kind: string): WorkspaceKind {
     const parsed = workspaceKindSchema.safeParse(String(kind || '').trim());
     if (!parsed.success) {
       throw new BadRequestException({
@@ -56,7 +37,7 @@ export class WorkspaceController {
     return parsed.data as WorkspaceKind;
   }
 
-  private parseId(id: string): string {
+  protected parseId(id: string): string {
     const parsed = workspaceIdSchema.safeParse(String(id || ''));
     if (!parsed.success) {
       throw new BadRequestException({
@@ -68,7 +49,7 @@ export class WorkspaceController {
     return parsed.data;
   }
 
-  private parseListQuery(query: Record<string, unknown>): WorkspaceListQuery {
+  protected parseListQuery(query: Record<string, unknown>): WorkspaceListQuery {
     const parsed = workspaceListQuerySchema.safeParse(query ?? {});
     if (!parsed.success) {
       throw new BadRequestException({
@@ -80,7 +61,7 @@ export class WorkspaceController {
     return parsed.data;
   }
 
-  private parseBody(kind: WorkspaceKind, body: unknown): Record<string, unknown> {
+  protected parseBody(kind: WorkspaceKind, body: unknown): Record<string, unknown> {
     const schema =
       kind === 'notes'
         ? workspaceNotesMutationSchema
@@ -99,143 +80,40 @@ export class WorkspaceController {
     return parsed.data;
   }
 
-  @Get(':kind')
-  async list(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Query() query: Record<string, unknown>,
-    @Req() req: Request,
-  ): Promise<{
-    success: true;
-    data: unknown[];
-    meta: { total: number; page: number; limit: number };
-  }> {
-    this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedQuery = this.parseListQuery(query);
-    const identity = getRequestIdentity(req);
-    const result = await this.workspaceService.list(parsedKind, parsedQuery, identity.tenantId);
-
+  protected getNotFoundPayload(): { code: string; message: string } {
     return {
-      success: true,
-      data: result.items,
-      meta: {
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-      },
+      code: 'WORKSPACE_ENTITY_NOT_FOUND',
+      message: 'Workspace entity not found',
     };
   }
 
-  @Get(':kind/:id')
-  async getOne(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Param('id') id: string,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedId = this.parseId(id);
-    const identity = getRequestIdentity(req);
-    const entity = await this.workspaceService.getById(parsedKind, parsedId, identity.tenantId);
-
-    if (!entity) {
-      throw new NotFoundException({
-        code: 'WORKSPACE_ENTITY_NOT_FOUND',
-        message: 'Workspace entity not found',
-      });
-    }
-
-    return {
-      success: true,
-      data: entity,
-    };
+  protected listEntities(kind: WorkspaceKind, query: WorkspaceListQuery, tenantId: string) {
+    return this.workspaceService.list(kind, query, tenantId);
   }
 
-  @Post(':kind')
-  async create(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Body() body: unknown,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedBody = this.parseBody(parsedKind, body);
-    const explicitId = typeof parsedBody.id === 'string' ? parsedBody.id.trim() : undefined;
-    const identity = getRequestIdentity(req);
-
-    return {
-      success: true,
-      data: await this.workspaceService.create(
-        parsedKind,
-        parsedBody,
-        explicitId,
-        identity.tenantId,
-      ),
-    };
+  protected getEntityById(kind: WorkspaceKind, id: string, tenantId: string) {
+    return this.workspaceService.getById(kind, id, tenantId);
   }
 
-  @Patch(':kind/:id')
-  async update(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Param('id') id: string,
-    @Body() body: unknown,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedId = this.parseId(id);
-    const parsedBody = this.parseBody(parsedKind, body);
-    const identity = getRequestIdentity(req);
-    const updated = await this.workspaceService.update(
-      parsedKind,
-      parsedId,
-      parsedBody,
-      identity.tenantId,
-    );
-
-    if (!updated) {
-      throw new NotFoundException({
-        code: 'WORKSPACE_ENTITY_NOT_FOUND',
-        message: 'Workspace entity not found',
-      });
-    }
-
-    return {
-      success: true,
-      data: updated,
-    };
+  protected createEntity(
+    kind: WorkspaceKind,
+    body: Record<string, unknown>,
+    explicitId: string | undefined,
+    tenantId: string,
+  ) {
+    return this.workspaceService.create(kind, body, explicitId, tenantId);
   }
 
-  @Delete(':kind/:id')
-  async remove(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Param('id') id: string,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: { id: string; deleted: boolean } }> {
-    this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedId = this.parseId(id);
-    const identity = getRequestIdentity(req);
-    const deleted = await this.workspaceService.remove(parsedKind, parsedId, identity.tenantId);
+  protected updateEntity(
+    kind: WorkspaceKind,
+    id: string,
+    body: Record<string, unknown>,
+    tenantId: string,
+  ) {
+    return this.workspaceService.update(kind, id, body, tenantId);
+  }
 
-    if (!deleted) {
-      throw new NotFoundException({
-        code: 'WORKSPACE_ENTITY_NOT_FOUND',
-        message: 'Workspace entity not found',
-      });
-    }
-
-    return {
-      success: true,
-      data: {
-        id: parsedId,
-        deleted: true,
-      },
-    };
+  protected removeEntity(kind: WorkspaceKind, id: string, tenantId: string) {
+    return this.workspaceService.remove(kind, id, tenantId);
   }
 }

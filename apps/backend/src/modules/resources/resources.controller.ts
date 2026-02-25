@@ -3,25 +3,10 @@ import {
   resourceListQuerySchema,
   resourceMutationSchema,
 } from '@botmox/api-contract';
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Headers,
-  NotFoundException,
-  Param,
-  Patch,
-  Post,
-  Put,
-  Query,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Headers, Param, Put, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { z } from 'zod';
-import { getRequestIdentity } from '../auth/request-identity.util';
+import { TenantKindCrudControllerBase } from '../common/tenant-kind-crud.controller-base';
 import { type ResourceListQuery, ResourcesService } from './resources.service';
 
 const resourceIdSchema = z
@@ -31,19 +16,15 @@ const resourceIdSchema = z
   .refine((value) => value.length > 0, 'Resource id is required');
 
 @Controller('resources')
-export class ResourcesController {
-  constructor(private readonly resourcesService: ResourcesService) {}
-
-  private ensureAuthHeader(authorization: string | undefined): void {
-    if (!authorization) {
-      throw new UnauthorizedException({
-        code: 'MISSING_BEARER_TOKEN',
-        message: 'Missing bearer token',
-      });
-    }
+export class ResourcesController extends TenantKindCrudControllerBase<
+  'licenses' | 'proxies' | 'subscriptions',
+  ResourceListQuery
+> {
+  constructor(private readonly resourcesService: ResourcesService) {
+    super();
   }
 
-  private parseKind(kind: string): 'licenses' | 'proxies' | 'subscriptions' {
+  protected parseKind(kind: string): 'licenses' | 'proxies' | 'subscriptions' {
     const parsed = resourceKindSchema.safeParse(String(kind || '').trim());
     if (!parsed.success) {
       throw new BadRequestException({
@@ -55,7 +36,7 @@ export class ResourcesController {
     return parsed.data;
   }
 
-  private parseId(id: string): string {
+  protected parseId(id: string): string {
     const parsed = resourceIdSchema.safeParse(String(id || ''));
     if (!parsed.success) {
       throw new BadRequestException({
@@ -67,7 +48,10 @@ export class ResourcesController {
     return parsed.data;
   }
 
-  private parseBody(body: unknown): Record<string, unknown> {
+  protected parseBody(
+    _kind: 'licenses' | 'proxies' | 'subscriptions',
+    body: unknown,
+  ): Record<string, unknown> {
     const parsed = resourceMutationSchema.safeParse(body ?? {});
     if (!parsed.success) {
       throw new BadRequestException({
@@ -79,7 +63,7 @@ export class ResourcesController {
     return parsed.data;
   }
 
-  private parseListQuery(query: Record<string, unknown>): ResourceListQuery {
+  protected parseListQuery(query: Record<string, unknown>): ResourceListQuery {
     const parsed = resourceListQuerySchema.safeParse(query ?? {});
     if (!parsed.success) {
       throw new BadRequestException({
@@ -91,115 +75,53 @@ export class ResourcesController {
     return parsed.data;
   }
 
-  @Get(':kind')
-  async list(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Query() query: Record<string, unknown>,
-    @Req() req: Request,
-  ): Promise<{
-    success: true;
-    data: unknown[];
-    meta: { total: number; page: number; limit: number };
-  }> {
-    this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedQuery = this.parseListQuery(query);
-    const identity = getRequestIdentity(req);
-    const result = await this.resourcesService.list(parsedKind, parsedQuery, identity.tenantId);
-
+  protected getNotFoundPayload(): { code: string; message: string } {
     return {
-      success: true,
-      data: result.items,
-      meta: {
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-      },
+      code: 'RESOURCE_NOT_FOUND',
+      message: 'Resource not found',
     };
   }
 
-  @Get(':kind/:id')
-  async getOne(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Param('id') id: string,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedId = this.parseId(id);
-    const identity = getRequestIdentity(req);
-    const entity = await this.resourcesService.getById(parsedKind, parsedId, identity.tenantId);
-
-    if (!entity) {
-      throw new NotFoundException({
-        code: 'RESOURCE_NOT_FOUND',
-        message: 'Resource not found',
-      });
-    }
-
-    return {
-      success: true,
-      data: entity,
-    };
+  protected listEntities(
+    kind: 'licenses' | 'proxies' | 'subscriptions',
+    query: ResourceListQuery,
+    tenantId: string,
+  ) {
+    return this.resourcesService.list(kind, query, tenantId);
   }
 
-  @Post(':kind')
-  async create(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Body() body: unknown,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedBody = this.parseBody(body);
-    const explicitId = typeof parsedBody.id === 'string' ? parsedBody.id : undefined;
-    const identity = getRequestIdentity(req);
-
-    return {
-      success: true,
-      data: await this.resourcesService.create(
-        parsedKind,
-        parsedBody,
-        explicitId,
-        identity.tenantId,
-      ),
-    };
+  protected getEntityById(
+    kind: 'licenses' | 'proxies' | 'subscriptions',
+    id: string,
+    tenantId: string,
+  ) {
+    return this.resourcesService.getById(kind, id, tenantId);
   }
 
-  @Patch(':kind/:id')
-  async update(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Param('id') id: string,
-    @Body() body: unknown,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedId = this.parseId(id);
-    const parsedBody = this.parseBody(body);
-    const identity = getRequestIdentity(req);
-    const updated = await this.resourcesService.update(
-      parsedKind,
-      parsedId,
-      parsedBody,
-      identity.tenantId,
-    );
+  protected createEntity(
+    kind: 'licenses' | 'proxies' | 'subscriptions',
+    body: Record<string, unknown>,
+    explicitId: string | undefined,
+    tenantId: string,
+  ) {
+    return this.resourcesService.create(kind, body, explicitId, tenantId);
+  }
 
-    if (!updated) {
-      throw new NotFoundException({
-        code: 'RESOURCE_NOT_FOUND',
-        message: 'Resource not found',
-      });
-    }
+  protected updateEntity(
+    kind: 'licenses' | 'proxies' | 'subscriptions',
+    id: string,
+    body: Record<string, unknown>,
+    tenantId: string,
+  ) {
+    return this.resourcesService.update(kind, id, body, tenantId);
+  }
 
-    return {
-      success: true,
-      data: updated,
-    };
+  protected removeEntity(
+    kind: 'licenses' | 'proxies' | 'subscriptions',
+    id: string,
+    tenantId: string,
+  ) {
+    return this.resourcesService.remove(kind, id, tenantId);
   }
 
   @Put(':kind/:id')
@@ -211,34 +133,5 @@ export class ResourcesController {
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
     return this.update(authorization, kind, id, body, req);
-  }
-
-  @Delete(':kind/:id')
-  async remove(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Param('id') id: string,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: { id: string; deleted: boolean } }> {
-    this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedId = this.parseId(id);
-    const identity = getRequestIdentity(req);
-    const deleted = await this.resourcesService.remove(parsedKind, parsedId, identity.tenantId);
-
-    if (!deleted) {
-      throw new NotFoundException({
-        code: 'RESOURCE_NOT_FOUND',
-        message: 'Resource not found',
-      });
-    }
-
-    return {
-      success: true,
-      data: {
-        id: parsedId,
-        deleted: true,
-      },
-    };
   }
 }
