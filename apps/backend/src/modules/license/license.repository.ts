@@ -1,8 +1,6 @@
 import type { licenseLeaseResponseSchema } from '@botmox/api-contract';
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
 import type { z } from 'zod';
-import { EncryptedJsonPayloadCodec } from '../common/encrypted-json-payload.codec';
 import { softFailMissingStorageRead } from '../common/prisma-soft-fail';
 import { PrismaService } from '../db/prisma.service';
 
@@ -16,8 +14,6 @@ export interface PersistedLease {
 
 @Injectable()
 export class LicenseRepository {
-  private readonly payloadCodec = new EncryptedJsonPayloadCodec();
-
   constructor(private readonly prisma: PrismaService) {}
 
   private getLicenseLeaseItemClient(): {
@@ -25,7 +21,11 @@ export class LicenseRepository {
     findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
     upsert: (args: unknown) => Promise<Record<string, unknown>>;
   } {
-    return (this.prisma as unknown as { licenseLeaseItem: unknown }).licenseLeaseItem as {
+    return (
+      this.prisma.getPayloadCryptoClient<{ licenseLeaseItem: unknown }>() as {
+        licenseLeaseItem: unknown;
+      }
+    ).licenseLeaseItem as {
       findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
       findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
       upsert: (args: unknown) => Promise<Record<string, unknown>>;
@@ -46,7 +46,7 @@ export class LicenseRepository {
     if (!row) {
       return null;
     }
-    return this.payloadCodec.decryptJson<PersistedLease>(row.payload as Prisma.JsonValue);
+    return row.payload as PersistedLease;
   }
 
   async upsert(input: {
@@ -64,13 +64,13 @@ export class LicenseRepository {
       create: {
         tenantId: input.tenantId,
         id: input.id,
-        payload: this.payloadCodec.encryptJson(input.payload as unknown as Record<string, unknown>),
+        payload: input.payload,
       },
       update: {
-        payload: this.payloadCodec.encryptJson(input.payload as unknown as Record<string, unknown>),
+        payload: input.payload,
       },
     });
-    return this.payloadCodec.decryptJson<PersistedLease>(row.payload as Prisma.JsonValue);
+    return row.payload as PersistedLease;
   }
 
   async findActiveByToken(input: {
@@ -89,9 +89,7 @@ export class LicenseRepository {
 
     const now = Date.now();
     for (const row of rows) {
-      const payload = this.payloadCodec.decryptJson<PersistedLease>(
-        row.payload as Prisma.JsonValue,
-      );
+      const payload = row.payload as PersistedLease;
       if (!payload || payload.status !== 'active') {
         continue;
       }

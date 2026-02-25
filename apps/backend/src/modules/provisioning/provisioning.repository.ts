@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { EncryptedJsonPayloadCodec } from '../common/encrypted-json-payload.codec';
 import { softFailMissingStorageRead } from '../common/prisma-soft-fail';
 import { PrismaService } from '../db/prisma.service';
 import type {
@@ -11,8 +10,6 @@ import type {
 
 @Injectable()
 export class ProvisioningRepository {
-  private readonly payloadCodec = new EncryptedJsonPayloadCodec();
-
   constructor(private readonly prisma: PrismaService) {}
 
   private getProfileClient(): {
@@ -21,8 +18,11 @@ export class ProvisioningRepository {
     upsert: (args: unknown) => Promise<Record<string, unknown>>;
     delete: (args: unknown) => Promise<unknown>;
   } {
-    return (this.prisma as unknown as { provisioningProfileItem: unknown })
-      .provisioningProfileItem as {
+    return (
+      this.prisma.getPayloadCryptoClient<{ provisioningProfileItem: unknown }>() as {
+        provisioningProfileItem: unknown;
+      }
+    ).provisioningProfileItem as {
       findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
       findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
       upsert: (args: unknown) => Promise<Record<string, unknown>>;
@@ -35,7 +35,11 @@ export class ProvisioningRepository {
     upsert: (args: unknown) => Promise<Record<string, unknown>>;
     delete: (args: unknown) => Promise<unknown>;
   } {
-    return (this.prisma as unknown as { provisioningTokenItem: unknown }).provisioningTokenItem as {
+    return (
+      this.prisma.getPayloadCryptoClient<{ provisioningTokenItem: unknown }>() as {
+        provisioningTokenItem: unknown;
+      }
+    ).provisioningTokenItem as {
       findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
       upsert: (args: unknown) => Promise<Record<string, unknown>>;
       delete: (args: unknown) => Promise<unknown>;
@@ -46,8 +50,11 @@ export class ProvisioningRepository {
     findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
     create: (args: unknown) => Promise<Record<string, unknown>>;
   } {
-    return (this.prisma as unknown as { provisioningProgressItem: unknown })
-      .provisioningProgressItem as {
+    return (
+      this.prisma.getPayloadCryptoClient<{ provisioningProgressItem: unknown }>() as {
+        provisioningProgressItem: unknown;
+      }
+    ).provisioningProgressItem as {
       findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
       create: (args: unknown) => Promise<Record<string, unknown>>;
     };
@@ -119,12 +126,12 @@ export class ProvisioningRepository {
       create: {
         token: record.token,
         tenantId: record.tenantId,
-        payload: this.payloadCodec.encryptJson(record as unknown as Record<string, unknown>),
+        payload: record,
         expiresAt: new Date(record.expiresAtMs),
       },
       update: {
         tenantId: record.tenantId,
-        payload: this.payloadCodec.encryptJson(record as unknown as Record<string, unknown>),
+        payload: record,
         expiresAt: new Date(record.expiresAtMs),
       },
     });
@@ -140,9 +147,7 @@ export class ProvisioningRepository {
         }),
       null,
     );
-    return row
-      ? this.payloadCodec.decryptJson<ProvisioningTokenRecord>(row.payload as Prisma.JsonValue)
-      : null;
+    return row ? (row.payload as ProvisioningTokenRecord) : null;
   }
 
   async deleteToken(token: string): Promise<void> {

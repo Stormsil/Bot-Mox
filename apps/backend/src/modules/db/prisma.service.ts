@@ -7,6 +7,10 @@ type ExtendableTransactionClient = Prisma.TransactionClient & {
   $extends?: (extension: unknown) => unknown;
 };
 
+type ExtendablePrismaClient = {
+  $extends?: (extension: unknown) => unknown;
+};
+
 type QueryHookParams = {
   args: unknown;
   query: (args: unknown) => Promise<unknown>;
@@ -22,11 +26,16 @@ const PAYLOAD_MODEL_NAMES = [
   'settingsItem',
   'provisioningProfileItem',
   'provisioningProgressItem',
+  'licenseLeaseItem',
+  'artifactReleaseItem',
+  'artifactAssignmentItem',
+  'provisioningTokenItem',
 ] as const;
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleDestroy {
   private readonly dataAtRestCrypto = new DataAtRestCrypto();
+  private payloadCryptoClientCache: unknown | null = null;
   private readonly enforceTenantContext = String(process.env.ENFORCE_TENANT_CONTEXT || 'true')
     .trim()
     .toLowerCase();
@@ -134,6 +143,14 @@ export class PrismaService extends PrismaClient implements OnModuleDestroy {
     );
   }
 
+  getPayloadCryptoClient<T>(): T {
+    if (this.payloadCryptoClientCache) {
+      return this.payloadCryptoClientCache as T;
+    }
+    this.payloadCryptoClientCache = this.withPayloadCryptoExtension(this);
+    return this.payloadCryptoClientCache as T;
+  }
+
   private async runInContext<T>(
     context: { tenantId: string | null; system: boolean },
     handler: () => Promise<T>,
@@ -145,8 +162,8 @@ export class PrismaService extends PrismaClient implements OnModuleDestroy {
     });
   }
 
-  private withPayloadCryptoExtension(tx: Prisma.TransactionClient): Prisma.TransactionClient {
-    const extendableTx = tx as ExtendableTransactionClient;
+  private withPayloadCryptoExtension<T>(tx: T): T {
+    const extendableTx = tx as T & ExtendablePrismaClient & ExtendableTransactionClient;
     if (typeof extendableTx.$extends !== 'function') {
       return tx;
     }
@@ -216,6 +233,6 @@ export class PrismaService extends PrismaClient implements OnModuleDestroy {
       query: Object.fromEntries(PAYLOAD_MODEL_NAMES.map((model) => [model, payloadModelHooks])),
     };
 
-    return extendableTx.$extends(extension) as Prisma.TransactionClient;
+    return extendableTx.$extends(extension) as T;
   }
 }
