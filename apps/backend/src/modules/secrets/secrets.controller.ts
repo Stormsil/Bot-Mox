@@ -18,7 +18,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { z } from 'zod';
+import { z, type ZodType } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
 import { SecretsService } from './secrets.service';
 
@@ -30,6 +30,10 @@ const secretIdPathSchema = z.object({
 export class SecretsController {
   constructor(private readonly secretsService: SecretsService) {}
 
+  private success<T>(data: T): { success: true; data: T } {
+    return { success: true, data };
+  }
+
   private ensureAuthorization(authorization: string | undefined): void {
     if (!authorization) {
       throw new UnauthorizedException({
@@ -39,16 +43,42 @@ export class SecretsController {
     }
   }
 
-  private parseSecretId(id: string): string {
-    const parsed = secretIdPathSchema.safeParse({ id });
+  private getTenantId(authorization: string | undefined, req: Request): string {
+    this.ensureAuthorization(authorization);
+    return getRequestIdentity(req).tenantId;
+  }
+
+  private parseWithSchema<TSchema extends ZodType>(
+    schema: TSchema,
+    input: unknown,
+    code: string,
+    message: string,
+  ): z.output<TSchema> {
+    const parsed = schema.safeParse(input ?? {});
     if (!parsed.success) {
       throw new BadRequestException({
-        code: 'SECRETS_INVALID_ID',
-        message: 'Invalid secret id',
+        code,
+        message,
         details: parsed.error.flatten(),
       });
     }
-    return parsed.data.id;
+    return parsed.data;
+  }
+
+  private notFoundSecret(): never {
+    throw new NotFoundException({
+      code: 'SECRET_NOT_FOUND',
+      message: 'Secret not found',
+    });
+  }
+
+  private parseSecretId(id: string): string {
+    return this.parseWithSchema(
+      secretIdPathSchema,
+      { id },
+      'SECRETS_INVALID_ID',
+      'Invalid secret id',
+    ).id;
   }
 
   @Post()
@@ -57,32 +87,24 @@ export class SecretsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthorization(authorization);
-
-    const parsed = secretCreateSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'SECRETS_INVALID_CREATE_BODY',
-        message: 'Invalid secret create payload',
-        details: parsed.error.flatten(),
-      });
-    }
-
-    const identity = getRequestIdentity(req);
+    const parsed = this.parseWithSchema(
+      secretCreateSchema,
+      body,
+      'SECRETS_INVALID_CREATE_BODY',
+      'Invalid secret create payload',
+    );
+    const tenantId = this.getTenantId(authorization, req);
     const created = await this.secretsService.createSecret({
-      tenantId: identity.tenantId,
-      label: parsed.data.label,
-      ciphertext: parsed.data.ciphertext,
-      alg: parsed.data.alg,
-      keyId: parsed.data.key_id,
-      nonce: parsed.data.nonce,
-      aadMeta: parsed.data.aad_meta,
+      tenantId,
+      label: parsed.label,
+      ciphertext: parsed.ciphertext,
+      alg: parsed.alg,
+      keyId: parsed.key_id,
+      nonce: parsed.nonce,
+      aadMeta: parsed.aad_meta,
     });
 
-    return {
-      success: true,
-      data: created,
-    };
+    return this.success(created);
   }
 
   @Get(':id/meta')
@@ -91,20 +113,13 @@ export class SecretsController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthorization(authorization);
     const parsedId = this.parseSecretId(id);
-    const identity = getRequestIdentity(req);
-    const record = await this.secretsService.getSecretMeta(identity.tenantId, parsedId);
+    const tenantId = this.getTenantId(authorization, req);
+    const record = await this.secretsService.getSecretMeta(tenantId, parsedId);
     if (!record) {
-      throw new NotFoundException({
-        code: 'SECRET_NOT_FOUND',
-        message: 'Secret not found',
-      });
+      this.notFoundSecret();
     }
-    return {
-      success: true,
-      data: record,
-    };
+    return this.success(record);
   }
 
   @Post(':id/rotate')
@@ -114,38 +129,27 @@ export class SecretsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthorization(authorization);
     const parsedId = this.parseSecretId(id);
-
-    const parsedBody = secretRotateSchema.safeParse(body ?? {});
-    if (!parsedBody.success) {
-      throw new BadRequestException({
-        code: 'SECRETS_INVALID_ROTATE_BODY',
-        message: 'Invalid secret rotate payload',
-        details: parsedBody.error.flatten(),
-      });
-    }
-
-    const identity = getRequestIdentity(req);
+    const parsedBody = this.parseWithSchema(
+      secretRotateSchema,
+      body,
+      'SECRETS_INVALID_ROTATE_BODY',
+      'Invalid secret rotate payload',
+    );
+    const tenantId = this.getTenantId(authorization, req);
     const record = await this.secretsService.rotateSecret({
-      tenantId: identity.tenantId,
+      tenantId,
       id: parsedId,
-      ciphertext: parsedBody.data.ciphertext,
-      alg: parsedBody.data.alg,
-      keyId: parsedBody.data.key_id,
-      nonce: parsedBody.data.nonce,
-      aadMeta: parsedBody.data.aad_meta,
+      ciphertext: parsedBody.ciphertext,
+      alg: parsedBody.alg,
+      keyId: parsedBody.key_id,
+      nonce: parsedBody.nonce,
+      aadMeta: parsedBody.aad_meta,
     });
     if (!record) {
-      throw new NotFoundException({
-        code: 'SECRET_NOT_FOUND',
-        message: 'Secret not found',
-      });
+      this.notFoundSecret();
     }
-    return {
-      success: true,
-      data: record,
-    };
+    return this.success(record);
   }
 
   @Post('bindings')
@@ -154,30 +158,21 @@ export class SecretsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthorization(authorization);
-
-    const parsed = secretBindingCreateSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'SECRETS_INVALID_BINDING_CREATE_BODY',
-        message: 'Invalid secret binding create payload',
-        details: parsed.error.flatten(),
-      });
-    }
-
-    const identity = getRequestIdentity(req);
+    const parsed = this.parseWithSchema(
+      secretBindingCreateSchema,
+      body,
+      'SECRETS_INVALID_BINDING_CREATE_BODY',
+      'Invalid secret binding create payload',
+    );
+    const tenantId = this.getTenantId(authorization, req);
     const binding = await this.secretsService.createBinding({
-      tenantId: identity.tenantId,
-      scopeType: parsed.data.scope_type,
-      scopeId: parsed.data.scope_id,
-      secretRef: parsed.data.secret_ref,
-      fieldName: parsed.data.field_name,
+      tenantId,
+      scopeType: parsed.scope_type,
+      scopeId: parsed.scope_id,
+      secretRef: parsed.secret_ref,
+      fieldName: parsed.field_name,
     });
-
-    return {
-      success: true,
-      data: binding,
-    };
+    return this.success(binding);
   }
 
   @Get('bindings')
@@ -186,27 +181,18 @@ export class SecretsController {
     @Query() query: Record<string, unknown>,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthorization(authorization);
-
-    const parsed = secretBindingsListQuerySchema.safeParse(query ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'SECRETS_INVALID_BINDINGS_LIST_QUERY',
-        message: 'Invalid secret bindings list query',
-        details: parsed.error.flatten(),
-      });
-    }
-
-    const identity = getRequestIdentity(req);
+    const parsed = this.parseWithSchema(
+      secretBindingsListQuerySchema,
+      query,
+      'SECRETS_INVALID_BINDINGS_LIST_QUERY',
+      'Invalid secret bindings list query',
+    );
+    const tenantId = this.getTenantId(authorization, req);
     const bindings = await this.secretsService.listBindings({
-      tenantId: identity.tenantId,
-      scopeType: parsed.data.scope_type,
-      scopeId: parsed.data.scope_id,
+      tenantId,
+      scopeType: parsed.scope_type,
+      scopeId: parsed.scope_id,
     });
-
-    return {
-      success: true,
-      data: bindings,
-    };
+    return this.success(bindings);
   }
 }
