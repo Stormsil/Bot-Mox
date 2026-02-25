@@ -101,6 +101,46 @@ export const resourceMutationSchema = z
     (payload) => Object.keys(payload || {}).length > 0,
     'Payload must contain at least one field',
   );
+
+export const proxyTypeSchema = z.enum(['http', 'socks5']);
+export const proxyStatusSchema = z.enum(['active', 'expired', 'banned']);
+
+export const proxyResourceCreateSchema = z.object({
+  ip: z.string().trim().min(1),
+  port: z.coerce.number().int().min(1).max(65535),
+  login: z.string().trim().min(1),
+  password: z.string().min(1),
+  provider: z.string().trim().min(1),
+  country: z.string().trim().min(1),
+  country_code: z.string().trim().optional(),
+  type: proxyTypeSchema,
+  status: proxyStatusSchema,
+  bot_id: z.union([z.string().trim().min(1), z.null()]),
+  fraud_score: z.coerce.number().finite(),
+  vpn: z.boolean().optional(),
+  proxy: z.boolean().optional(),
+  tor: z.boolean().optional(),
+  bot_status: z.boolean().optional(),
+  isp: z.string().optional(),
+  organization: z.string().optional(),
+  city: z.string().optional(),
+  region: z.string().optional(),
+  zip_code: z.string().optional(),
+  timezone: z.string().optional(),
+  latitude: z.coerce.number().finite().optional(),
+  longitude: z.coerce.number().finite().optional(),
+  expires_at: z.coerce.number().int().nonnegative(),
+  created_at: z.coerce.number().int().nonnegative(),
+  updated_at: z.coerce.number().int().nonnegative(),
+  last_checked: z.coerce.number().int().nonnegative().optional(),
+});
+
+export const proxyResourceUpdateSchema = proxyResourceCreateSchema
+  .partial()
+  .refine(
+    (payload) => Object.keys(payload || {}).length > 0,
+    'Proxy update payload must not be empty',
+  );
 export const resourceDeleteResultSchema = z.object({
   id: z.string().min(1),
   deleted: z.boolean(),
