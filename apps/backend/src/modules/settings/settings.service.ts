@@ -8,7 +8,6 @@ import {
 } from '@botmox/api-contract';
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { SettingsRepository } from './settings.repository';
 
 type SettingsApiKeys = import('zod').infer<typeof settingsApiKeysSchema>;
@@ -51,8 +50,6 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 @Injectable()
 export class SettingsService {
-  private readonly atRestCrypto = new DataAtRestCrypto();
-
   constructor(private readonly repository: SettingsRepository) {}
 
   private normalizeTenantId(tenantId: string): string {
@@ -73,22 +70,7 @@ export class SettingsService {
   }
 
   private mapDbRowPayload(row: Record<string, unknown>): unknown {
-    const payload = this.clone(row.payload);
-    if (!isPlainObject(payload)) {
-      return payload;
-    }
-    const wrapped = payload.__enc_payload_v1;
-    if (wrapped === undefined) {
-      return payload;
-    }
-    const decrypted = this.atRestCrypto.decryptJson<unknown>(wrapped);
-    return decrypted ?? payload;
-  }
-
-  private encryptSettingsPayload(payload: unknown): Record<string, unknown> {
-    return {
-      __enc_payload_v1: this.atRestCrypto.encryptJson(this.clone(payload)),
-    };
+    return this.clone(row.payload);
   }
 
   private readPath<T>(
@@ -131,7 +113,7 @@ export class SettingsService {
       const row = await this.repository.upsert({
         tenantId: normalizedTenantId,
         path,
-        payload: this.encryptSettingsPayload(next) as Prisma.InputJsonValue,
+        payload: this.clone(next) as Prisma.InputJsonValue,
       });
       const parsed = schema.safeParse(this.mapDbRowPayload(row));
       if (!parsed.success) {
@@ -154,7 +136,7 @@ export class SettingsService {
       .upsert({
         tenantId: normalizedTenantId,
         path,
-        payload: this.encryptSettingsPayload(payload) as Prisma.InputJsonValue,
+        payload: this.clone(payload) as Prisma.InputJsonValue,
       })
       .then((row) => this.mapDbRowPayload(row));
   }
@@ -174,7 +156,7 @@ export class SettingsService {
       const row = await this.repository.upsert({
         tenantId: normalizedTenantId,
         path,
-        payload: this.encryptSettingsPayload(next) as Prisma.InputJsonValue,
+        payload: this.clone(next) as Prisma.InputJsonValue,
       });
       return this.mapDbRowPayload(row);
     });
@@ -201,8 +183,13 @@ export class SettingsService {
   }
 
   getNotificationEvents(tenantId: string): Promise<SettingsNotificationEvents | null> {
-    return this.readPath(tenantId, SETTINGS_NOTIFICATION_EVENTS_PATH, settingsNotificationEventsSchema).then(
-      (value) => (value ?? this.clone(DEFAULT_SETTINGS_NOTIFICATION_EVENTS)) as SettingsNotificationEvents,
+    return this.readPath(
+      tenantId,
+      SETTINGS_NOTIFICATION_EVENTS_PATH,
+      settingsNotificationEventsSchema,
+    ).then(
+      (value) =>
+        (value ?? this.clone(DEFAULT_SETTINGS_NOTIFICATION_EVENTS)) as SettingsNotificationEvents,
     );
   }
 
@@ -219,7 +206,9 @@ export class SettingsService {
   }
 
   getTheme(tenantId: string): Promise<unknown | null> {
-    return this.readRawPath(tenantId, SETTINGS_THEME_PATH).then((value) => value ?? DEFAULT_SETTINGS_THEME);
+    return this.readRawPath(tenantId, SETTINGS_THEME_PATH).then(
+      (value) => value ?? DEFAULT_SETTINGS_THEME,
+    );
   }
 
   updateTheme(payload: unknown, tenantId: string): Promise<unknown> {
@@ -227,7 +216,9 @@ export class SettingsService {
   }
 
   getProjects(tenantId: string): Promise<unknown | null> {
-    return this.readRawPath(tenantId, SETTINGS_PROJECTS_PATH).then((value) => value ?? DEFAULT_SETTINGS_PROJECTS);
+    return this.readRawPath(tenantId, SETTINGS_PROJECTS_PATH).then(
+      (value) => value ?? DEFAULT_SETTINGS_PROJECTS,
+    );
   }
 
   async upsertProject(projectId: string, payload: unknown, tenantId: string): Promise<unknown> {
@@ -258,7 +249,9 @@ export class SettingsService {
   }
 
   getAlerts(tenantId: string): Promise<unknown | null> {
-    return this.readRawPath(tenantId, SETTINGS_ALERTS_PATH).then((value) => value ?? DEFAULT_SETTINGS_ALERTS);
+    return this.readRawPath(tenantId, SETTINGS_ALERTS_PATH).then(
+      (value) => value ?? DEFAULT_SETTINGS_ALERTS,
+    );
   }
 
   updateAlerts(payload: unknown, tenantId: string): Promise<unknown> {

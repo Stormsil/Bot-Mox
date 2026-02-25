@@ -108,15 +108,8 @@ export class WorkspaceService {
       .toLowerCase();
     const payload = row.payload;
     if (payload && typeof payload === 'object') {
-      const encryptedPayloadWrapper = (payload as WorkspaceRecord).__enc_payload_v1;
-      const decryptedPayload =
-        encryptedPayloadWrapper !== undefined
-          ? this.atRestCrypto.decryptJson<WorkspaceRecord>(encryptedPayloadWrapper)
-          : null;
       const materialized = {
-        ...((decryptedPayload && typeof decryptedPayload === 'object'
-          ? decryptedPayload
-          : (payload as WorkspaceRecord)) as WorkspaceRecord),
+        ...(payload as WorkspaceRecord),
         ...(id ? { id } : {}),
       };
       if (kind === 'notes') {
@@ -189,12 +182,6 @@ export class WorkspaceService {
     return next;
   }
 
-  private encryptWorkspacePayload(input: WorkspaceRecord): WorkspaceRecord {
-    return {
-      __enc_payload_v1: this.atRestCrypto.encryptJson(input),
-    };
-  }
-
   async list(
     kind: WorkspaceKind,
     query: WorkspaceListQuery,
@@ -239,13 +226,12 @@ export class WorkspaceService {
     };
     const baseRecord =
       kind === 'notes' ? this.encryptNotesRecord(nextRecord as WorkspaceRecord) : nextRecord;
-    const storedRecord = this.encryptWorkspacePayload(baseRecord as WorkspaceRecord);
 
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       kind,
       id,
-      payload: storedRecord as Prisma.InputJsonValue,
+      payload: baseRecord as Prisma.InputJsonValue,
     });
     return this.mapDbRowToRecord(row);
   }
@@ -272,13 +258,12 @@ export class WorkspaceService {
     };
     const baseRecord =
       kind === 'notes' ? this.encryptNotesRecord(nextRecord as WorkspaceRecord) : nextRecord;
-    const storedRecord = this.encryptWorkspacePayload(baseRecord as WorkspaceRecord);
 
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       kind,
       id,
-      payload: storedRecord as Prisma.InputJsonValue,
+      payload: baseRecord as Prisma.InputJsonValue,
     });
     return this.mapDbRowToRecord(row);
   }
