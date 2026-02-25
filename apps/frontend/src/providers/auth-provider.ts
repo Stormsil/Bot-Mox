@@ -1,4 +1,5 @@
 import type { AuthProvider } from '@refinedev/core';
+import dayjs from 'dayjs';
 import { apiRequest } from '../shared/api/apiClient';
 import { hasSupabaseAuth, supabase } from '../utils/supabase';
 
@@ -122,7 +123,8 @@ async function ensureSessionValid(): Promise<boolean> {
   if (!token) return false;
 
   const lastVerify = Number(localStorage.getItem(AUTH_VERIFY_TS_KEY) || 0);
-  const stillFresh = Number.isFinite(lastVerify) && Date.now() - lastVerify < VERIFY_TTL_MS;
+  const stillFresh =
+    Number.isFinite(lastVerify) && dayjs().diff(lastVerify, 'millisecond') < VERIFY_TTL_MS;
   if (stillFresh) return true;
 
   const identity = await verifyTokenWithBackend(token);
@@ -149,7 +151,8 @@ async function ensureSupabaseSessionValid(): Promise<boolean> {
 
   const cachedToken = String(localStorage.getItem(AUTH_TOKEN_KEY) || '');
   const lastVerify = Number(localStorage.getItem(AUTH_VERIFY_TS_KEY) || 0);
-  const stillFresh = Number.isFinite(lastVerify) && Date.now() - lastVerify < VERIFY_TTL_MS;
+  const stillFresh =
+    Number.isFinite(lastVerify) && dayjs().diff(lastVerify, 'millisecond') < VERIFY_TTL_MS;
   if (stillFresh && cachedToken && cachedToken === session.access_token && readIdentity()) {
     return true;
   }

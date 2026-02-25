@@ -1,5 +1,5 @@
-import { Modal } from 'antd';
 import type React from 'react';
+import { ThemeModal } from '../../../components/ui';
 import { VMSettingsForm } from '../../../components/vm';
 import type { VMStorageOption } from '../../../types';
 import { DeleteVmModal } from '../DeleteVmModal';
@@ -40,7 +40,7 @@ export const VMPageModals: React.FC<VMPageModalsProps> = ({
       onClearSelection={deleteVm.handleClearDeleteVmSelection}
     />
 
-    <Modal
+    <ThemeModal
       title={
         <span style={{ color: 'var(--boxmox-color-text-primary)', fontWeight: 700, fontSize: 13 }}>
           Virtual Machines Settings
@@ -52,30 +52,16 @@ export const VMPageModals: React.FC<VMPageModalsProps> = ({
       width={1100}
       destroyOnHidden
       styles={{
-        mask: {
-          background: 'rgba(var(--boxmox-color-brand-primary-rgb), 0.08)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-        },
-        content: {
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--boxmox-color-border-default)',
-          background: 'var(--boxmox-color-surface-panel)',
-          overflow: 'hidden',
-        },
         header: {
-          borderBottom: '1px solid var(--boxmox-color-border-default)',
-          background: 'var(--boxmox-color-surface-muted)',
           padding: '10px 14px',
         },
         body: {
           maxHeight: '74vh',
           overflow: 'auto',
-          background: 'var(--boxmox-color-surface-panel)',
         },
       }}
     >
       <VMSettingsForm storageOptions={storageOptions} />
-    </Modal>
+    </ThemeModal>
   </>
 );

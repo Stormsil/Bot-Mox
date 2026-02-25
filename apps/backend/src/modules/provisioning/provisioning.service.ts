@@ -13,7 +13,6 @@ import type {
 } from '@botmox/api-contract';
 import { Injectable } from '@nestjs/common';
 import type { z } from 'zod';
-import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { ProvisioningRepository } from './provisioning.repository';
 
 export type UnattendProfileRecord = z.infer<typeof unattendProfileRecordSchema>;
@@ -51,7 +50,6 @@ export interface ProvisioningTokenRecord {
 @Injectable()
 export class ProvisioningService {
   private tokenSequence = 0;
-  private readonly atRestCrypto = new DataAtRestCrypto();
 
   constructor(private readonly repository: ProvisioningRepository) {}
 
@@ -96,36 +94,18 @@ export class ProvisioningService {
 
   private mapProfilePayload(payload: unknown): UnattendProfileRecord {
     const source =
-      payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {};
-    const wrapped = source.__enc_payload_v1;
-    const decrypted =
-      wrapped !== undefined ? this.atRestCrypto.decryptJson<UnattendProfileRecord>(wrapped) : null;
-    const materialized =
-      decrypted && typeof decrypted === 'object' ? decrypted : (source as UnattendProfileRecord);
-    return this.clone(materialized);
-  }
-
-  private encryptProfilePayload(profile: UnattendProfileRecord): Record<string, unknown> {
-    return {
-      __enc_payload_v1: this.atRestCrypto.encryptJson(this.clone(profile)),
-    };
+      payload && typeof payload === 'object'
+        ? (payload as UnattendProfileRecord)
+        : ({} as UnattendProfileRecord);
+    return this.clone(source);
   }
 
   private mapProgressPayload(payload: unknown): ReportProgressResult {
     const source =
-      payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {};
-    const wrapped = source.__enc_payload_v1;
-    const decrypted =
-      wrapped !== undefined ? this.atRestCrypto.decryptJson<ReportProgressResult>(wrapped) : null;
-    const materialized =
-      decrypted && typeof decrypted === 'object' ? decrypted : (source as ReportProgressResult);
-    return this.clone(materialized);
-  }
-
-  private encryptProgressPayload(progress: ReportProgressResult): Record<string, unknown> {
-    return {
-      __enc_payload_v1: this.atRestCrypto.encryptJson(this.clone(progress)),
-    };
+      payload && typeof payload === 'object'
+        ? (payload as ReportProgressResult)
+        : ({} as ReportProgressResult);
+    return this.clone(source);
   }
 
   private async getTokenRecord(token: string): Promise<ProvisioningTokenRecord | null> {
@@ -157,7 +137,7 @@ export class ProvisioningService {
       await this.repository.upsertProfile({
         tenantId,
         id: profile.id,
-        payload: this.encryptProfilePayload({
+        payload: this.clone({
           ...profile,
           is_default: false,
           updated_at: new Date().toISOString(),
@@ -197,7 +177,7 @@ export class ProvisioningService {
     const persisted = await this.repository.upsertProfile({
       tenantId: normalizedTenantId,
       id,
-      payload: this.encryptProfilePayload(profile),
+      payload: this.clone(profile),
     });
     return this.mapProfilePayload(persisted);
   }
@@ -230,7 +210,7 @@ export class ProvisioningService {
     const persisted = await this.repository.upsertProfile({
       tenantId: normalizedTenantId,
       id: normalizedId,
-      payload: this.encryptProfilePayload(updated),
+      payload: this.clone(updated),
     });
     return this.mapProfilePayload(persisted);
   }
@@ -365,7 +345,7 @@ export class ProvisioningService {
       tenantId: tokenRecord.tenantId,
       id: randomUUID(),
       vmUuid: normalizedVmUuid,
-      payload: this.encryptProgressPayload(entry),
+      payload: this.clone(entry),
     });
 
     if (payload.status === 'completed' || payload.status === 'failed') {

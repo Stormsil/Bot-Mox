@@ -1,6 +1,7 @@
 // SMBIOS Config Generator — port of generator_v3.py to JavaScript/TypeScript
 // Full platform-grouped SMBIOS args generator for QEMU/KVM VMs
 
+import dayjs from 'dayjs';
 import { PLATFORM_GROUPS } from './smbiosPlatformGroups';
 import { RAM_DB } from './smbiosRamDb';
 
@@ -36,12 +37,25 @@ function randInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function uuid4(): string {
+function fallbackUuidV4(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
+}
+
+function generateUuidV4(): string {
+  try {
+    const cryptoApi = globalThis.crypto;
+    if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
+      return cryptoApi.randomUUID();
+    }
+  } catch {
+    // Fall through to non-crypto fallback in insecure environments.
+  }
+
+  return fallbackUuidV4();
 }
 
 function randHex8(): string {
@@ -197,9 +211,8 @@ export function generateSmbios(): SmbiosResult {
   const release = pick(biosReleases);
 
   // BIOS date - 100 to 1800 days ago
-  const now = new Date();
   const daysAgo = randInt(100, 1800);
-  const biosDateObj = new Date(now.getTime() - daysAgo * 86400000);
+  const biosDateObj = dayjs().subtract(daysAgo, 'day').toDate();
   const mm = String(biosDateObj.getMonth() + 1).padStart(2, '0');
   const dd = String(biosDateObj.getDate()).padStart(2, '0');
   const yyyy = biosDateObj.getFullYear();
@@ -210,7 +223,7 @@ export function generateSmbios(): SmbiosResult {
   const [ramMfg, ramPart] = pick(ramParts);
 
   // Serials
-  const generatedUuid = uuid4();
+  const generatedUuid = generateUuidV4();
   const serialSys = generateSerial(brand);
   const serialMb = generateMbSerial(brand, biosDate);
   const serialChassis = generateSerial(brand);

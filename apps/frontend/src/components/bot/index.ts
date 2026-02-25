@@ -1,4 +1,3 @@
-export { BotAccount } from './BotAccount';
 export { BotCharacter } from './BotCharacter';
 export { BotLeveling } from './BotLeveling';
 export { BotLicense } from './BotLicense';

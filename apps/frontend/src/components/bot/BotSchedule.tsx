@@ -47,32 +47,27 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     if (botQuery.isLoading && !botQuery.data) {
       return;
     }
-    const frameId = window.requestAnimationFrame(() => {
-      if (botQuery.error) {
-        console.error('Failed to load schedule:', botQuery.error);
-        setError('Failed to load schedule');
-        setLoading(false);
-        return;
-      }
-
-      const payload = botQuery.data;
-      const locks = (payload?.generation_locks || {}) as Record<string, unknown>;
-      setScheduleLocked(Boolean(locks.schedule));
-
-      const incoming = payload?.schedule
-        ? migrateSchedule(payload.schedule as Record<string, unknown>)
-        : createEmptySchedule();
-
-      setServerSchedule(incoming);
-      if (!hasChanges) {
-        setSchedule(incoming);
-      }
-      setError(null);
+    if (botQuery.error) {
+      console.error('Failed to load schedule:', botQuery.error);
+      setError('Failed to load schedule');
       setLoading(false);
-    });
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+      return;
+    }
+
+    const payload = botQuery.data;
+    const locks = (payload?.generation_locks || {}) as Record<string, unknown>;
+    setScheduleLocked(Boolean(locks.schedule));
+
+    const incoming = payload?.schedule
+      ? migrateSchedule(payload.schedule as Record<string, unknown>)
+      : createEmptySchedule();
+
+    setServerSchedule(incoming);
+    if (!hasChanges) {
+      setSchedule(incoming);
+    }
+    setError(null);
+    setLoading(false);
   }, [botId, botQuery.data, botQuery.error, botQuery.isLoading, hasChanges]);
 
   const getCurrentDaySchedule = useCallback((): ScheduleDay => {

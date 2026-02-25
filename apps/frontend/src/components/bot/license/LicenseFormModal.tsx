@@ -1,16 +1,8 @@
 import type { FormInstance } from 'antd';
-import { AutoComplete, DatePicker, Form, Input, Modal } from 'antd';
+import { AutoComplete, DatePicker, Form, Input } from 'antd';
 import type React from 'react';
+import { ThemeModal } from '../../ui';
 import type { LicenseFormValues } from './types';
-
-const modalStyles = {
-  content: { background: 'var(--boxmox-color-surface-panel)' },
-  header: {
-    background: 'var(--boxmox-color-surface-muted)',
-    borderBottom: '1px solid var(--boxmox-color-border-default)',
-  },
-  footer: { borderTop: '1px solid var(--boxmox-color-border-default)' },
-};
 
 interface LicenseFormModalProps {
   open: boolean;
@@ -31,14 +23,13 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
   onCancel,
   onSubmit,
 }) => (
-  <Modal
+  <ThemeModal
     title={<span style={{ color: 'var(--boxmox-color-text-primary)' }}>{title}</span>}
     open={open}
     onOk={() => form.submit()}
     onCancel={onCancel}
     okText={okText}
     width={500}
-    styles={modalStyles}
   >
     <Form form={form} layout="vertical" onFinish={(values) => void onSubmit(values)}>
       <Form.Item
@@ -87,5 +78,5 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
         />
       </Form.Item>
     </Form>
-  </Modal>
+  </ThemeModal>
 );

@@ -56,11 +56,7 @@ export interface TreeItem {
     | 'workspace_kanban'
     | 'vms'
     | 'vms_list'
-    | 'vms_unattend_profiles'
-    | 'vms_sites'
-    | 'vms_site_proxmox'
-    | 'vms_site_tinyfm'
-    | 'vms_site_syncthing';
+    | 'vms_unattend_profiles';
   sectionKind?: 'projects' | 'resources' | 'workspace';
   status?: BotStatus;
   selectable?: boolean;

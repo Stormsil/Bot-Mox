@@ -1,5 +1,6 @@
-import type { BotStatus } from '../../types/core';
+import dayjs from 'dayjs';
 import type { BotLicense, Subscription } from '../../entities/resources/model/types';
+import type { BotStatus } from '../../types/core';
 import {
   type BotRecord,
   OFFLINE_THRESHOLD_MS,
@@ -17,7 +18,7 @@ export const computeBotStatus = (bot: BotRecord): BotStatus => {
   if (
     typeof lastSeen === 'number' &&
     lastSeen > 0 &&
-    Date.now() - lastSeen > OFFLINE_THRESHOLD_MS
+    dayjs().diff(lastSeen, 'millisecond') > OFFLINE_THRESHOLD_MS
   ) {
     return 'offline';
   }
@@ -35,9 +36,10 @@ export const computeProxyStatus = (proxy?: ProxyLike) => {
     };
   }
 
-  const isExpired = proxy.expires_at ? Date.now() > proxy.expires_at : false;
+  const now = dayjs();
+  const isExpired = proxy.expires_at ? now.valueOf() > proxy.expires_at : false;
   const daysRemaining = proxy.expires_at
-    ? Math.ceil((proxy.expires_at - Date.now()) / (1000 * 60 * 60 * 24))
+    ? Math.ceil(dayjs(proxy.expires_at).diff(now, 'day', true))
     : 0;
   const isExpiring = daysRemaining <= 7 && daysRemaining > 0;
 
@@ -91,15 +93,15 @@ export const computeSubscriptionStatus = (subs: Subscription[], warningDays: num
     };
   }
 
-  const now = Date.now();
+  const now = dayjs();
   let expiredCount = 0;
   let expiringCount = 0;
   let minDaysRemaining = Number.POSITIVE_INFINITY;
 
   subs.forEach((sub) => {
-    const daysRemaining = Math.ceil((sub.expires_at - now) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.ceil(dayjs(sub.expires_at).diff(now, 'day', true));
     minDaysRemaining = Math.min(minDaysRemaining, Math.max(0, daysRemaining));
-    if (now > sub.expires_at) {
+    if (now.valueOf() > sub.expires_at) {
       expiredCount += 1;
     } else if (daysRemaining <= warningDays && daysRemaining > 0) {
       expiringCount += 1;
@@ -146,15 +148,15 @@ export const computeLicenseStatus = (licenses: BotLicense[], warningDays: number
     };
   }
 
-  const now = Date.now();
+  const now = dayjs();
   let hasExpired = false;
   let hasExpiring = false;
   let minDaysRemaining = Number.POSITIVE_INFINITY;
 
   licenses.forEach((license) => {
-    const daysRemaining = Math.ceil((license.expires_at - now) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.ceil(dayjs(license.expires_at).diff(now, 'day', true));
     minDaysRemaining = Math.min(minDaysRemaining, Math.max(0, daysRemaining));
-    if (now > license.expires_at) {
+    if (now.valueOf() > license.expires_at) {
       hasExpired = true;
     } else if (daysRemaining <= warningDays && daysRemaining > 0) {
       hasExpiring = true;

@@ -2,7 +2,6 @@ export {};
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { DataAtRestCrypto } = require('../common/data-at-rest-crypto.ts');
 const { ThemeAssetsService } = require('./theme-assets.service.ts');
 
 function createRepositoryStub(overrides = {}) {
@@ -70,22 +69,19 @@ test('ThemeAssetsService persists and reads assets via repository', async () => 
 });
 
 test('ThemeAssetsService uses repository list path', async () => {
-  const crypto = new DataAtRestCrypto();
   const row = {
     payload: {
-      __enc_payload_v1: crypto.encryptJson({
-        id: 'asset-1',
-        object_key: 'theme-assets/tenant-a/asset-1-a.png',
-        mime_type: 'image/png',
-        size_bytes: 100,
-        width: 100,
-        height: 100,
-        status: 'ready',
-        image_url: 'https://example.local/theme-assets/asset-1',
-        image_url_expires_at_ms: Date.now() + 10_000,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }),
+      id: 'asset-1',
+      object_key: 'theme-assets/tenant-a/asset-1-a.png',
+      mime_type: 'image/png',
+      size_bytes: 100,
+      width: 100,
+      height: 100,
+      status: 'ready',
+      image_url: 'https://example.local/theme-assets/asset-1',
+      image_url_expires_at_ms: Date.now() + 10_000,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     },
   };
   const { service } = createService({
@@ -96,7 +92,7 @@ test('ThemeAssetsService uses repository list path', async () => {
   assert.equal(list.items[0].id, 'asset-1');
 });
 
-test('ThemeAssetsService stores encrypted payload and reads legacy payload', async () => {
+test('ThemeAssetsService passes plain payload to repository and reads legacy payload', async () => {
   let lastUpsertPayload = null;
   const legacyRow = {
     payload: {
@@ -125,7 +121,10 @@ test('ThemeAssetsService stores encrypted payload and reads legacy payload', asy
     { filename: 'enc.png', mime_type: 'image/png', size_bytes: 10 },
     'tenant-a',
   );
-  assert.ok(lastUpsertPayload && Object.hasOwn(lastUpsertPayload, '__enc_payload_v1'));
+  assert.equal(
+    Boolean(lastUpsertPayload && Object.hasOwn(lastUpsertPayload, '__enc_payload_v1')),
+    false,
+  );
 
   const list = await service.listAssets('tenant-a');
   assert.equal(list.items.length, 1);

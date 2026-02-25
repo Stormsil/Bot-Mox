@@ -1,35 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { type AgentCommand, Prisma } from '@prisma/client';
-import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
+import { EncryptedJsonPayloadCodec } from '../common/encrypted-json-payload.codec';
 import { PrismaService } from '../db/prisma.service';
 
 @Injectable()
 export class VmOpsRepository {
-  private readonly atRestCrypto = new DataAtRestCrypto();
+  private readonly payloadCodec = new EncryptedJsonPayloadCodec();
 
   constructor(private readonly prisma: PrismaService) {}
-
-  private encryptJsonField(value: Prisma.InputJsonValue): Prisma.InputJsonValue {
-    return this.atRestCrypto.encryptJson(value) as unknown as Prisma.InputJsonValue;
-  }
-
-  private decryptJsonField(value: Prisma.JsonValue | null): Prisma.JsonValue | null {
-    if (value === null || value === undefined) {
-      return null;
-    }
-    try {
-      const decrypted = this.atRestCrypto.decryptJson<Prisma.JsonValue>(value as unknown);
-      return decrypted === null ? value : decrypted;
-    } catch {
-      return value;
-    }
-  }
 
   private mapCommandRow(row: AgentCommand): AgentCommand {
     return {
       ...row,
-      payload: (this.decryptJsonField(row.payload) ?? row.payload) as Prisma.JsonValue,
-      result: this.decryptJsonField((row.result ?? null) as Prisma.JsonValue | null),
+      payload: (this.payloadCodec.decryptOpaqueJsonField(row.payload) ??
+        row.payload) as Prisma.JsonValue,
+      result: this.payloadCodec.decryptOpaqueJsonField(
+        (row.result ?? null) as Prisma.JsonValue | null,
+      ),
     };
   }
 
@@ -50,7 +37,7 @@ export class VmOpsRepository {
           tenantId: input.tenantId,
           agentId: input.agentId,
           commandType: input.commandType,
-          payload: this.encryptJsonField(input.payload),
+          payload: this.payloadCodec.encryptOpaqueJsonField(input.payload),
           status: input.status,
           expiresAt: input.expiresAt ?? null,
           createdBy: input.createdBy ?? null,
@@ -159,7 +146,7 @@ export class VmOpsRepository {
       if (result === null) {
         data.result = Prisma.JsonNull;
       } else if (result !== undefined) {
-        data.result = this.encryptJsonField(result);
+        data.result = this.payloadCodec.encryptOpaqueJsonField(result);
       }
     }
     if (Object.hasOwn(input, 'errorMessage')) {
@@ -211,7 +198,7 @@ export class VmOpsRepository {
       if (result === null) {
         data.result = Prisma.JsonNull;
       } else if (result !== undefined) {
-        data.result = this.encryptJsonField(result);
+        data.result = this.payloadCodec.encryptOpaqueJsonField(result);
       }
     }
     if (Object.hasOwn(input, 'errorMessage')) {

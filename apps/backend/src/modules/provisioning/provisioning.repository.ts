@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { softFailMissingStorageRead } from '../common/prisma-soft-fail';
 import { PrismaService } from '../db/prisma.service';
 import type {
@@ -11,29 +10,7 @@ import type {
 
 @Injectable()
 export class ProvisioningRepository {
-  private readonly atRestCrypto = new DataAtRestCrypto();
-
   constructor(private readonly prisma: PrismaService) {}
-
-  private readAnyEnvelope(payload: Prisma.JsonValue): unknown {
-    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
-      const wrapped = (payload as Record<string, unknown>).__enc_payload_v1;
-      return wrapped ?? payload;
-    }
-    return payload;
-  }
-
-  private encryptTokenPayload(payload: ProvisioningTokenRecord): Prisma.InputJsonValue {
-    return {
-      __enc_payload_v1: this.atRestCrypto.encryptJson(payload),
-    } as unknown as Prisma.InputJsonValue;
-  }
-
-  private decryptTokenPayload(payload: Prisma.JsonValue): ProvisioningTokenRecord {
-    const envelope = this.readAnyEnvelope(payload);
-    const decrypted = this.atRestCrypto.decryptJson<ProvisioningTokenRecord>(envelope);
-    return (decrypted ?? payload) as unknown as ProvisioningTokenRecord;
-  }
 
   private getProfileClient(): {
     findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
@@ -41,8 +18,11 @@ export class ProvisioningRepository {
     upsert: (args: unknown) => Promise<Record<string, unknown>>;
     delete: (args: unknown) => Promise<unknown>;
   } {
-    return (this.prisma as unknown as { provisioningProfileItem: unknown })
-      .provisioningProfileItem as {
+    return (
+      this.prisma.getPayloadCryptoClient<{ provisioningProfileItem: unknown }>() as {
+        provisioningProfileItem: unknown;
+      }
+    ).provisioningProfileItem as {
       findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
       findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
       upsert: (args: unknown) => Promise<Record<string, unknown>>;
@@ -55,7 +35,11 @@ export class ProvisioningRepository {
     upsert: (args: unknown) => Promise<Record<string, unknown>>;
     delete: (args: unknown) => Promise<unknown>;
   } {
-    return (this.prisma as unknown as { provisioningTokenItem: unknown }).provisioningTokenItem as {
+    return (
+      this.prisma.getPayloadCryptoClient<{ provisioningTokenItem: unknown }>() as {
+        provisioningTokenItem: unknown;
+      }
+    ).provisioningTokenItem as {
       findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
       upsert: (args: unknown) => Promise<Record<string, unknown>>;
       delete: (args: unknown) => Promise<unknown>;
@@ -66,25 +50,36 @@ export class ProvisioningRepository {
     findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
     create: (args: unknown) => Promise<Record<string, unknown>>;
   } {
-    return (this.prisma as unknown as { provisioningProgressItem: unknown })
-      .provisioningProgressItem as {
+    return (
+      this.prisma.getPayloadCryptoClient<{ provisioningProgressItem: unknown }>() as {
+        provisioningProgressItem: unknown;
+      }
+    ).provisioningProgressItem as {
       findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
       create: (args: unknown) => Promise<Record<string, unknown>>;
     };
   }
 
   async listProfiles(tenantId: string): Promise<UnattendProfileRecord[]> {
-    const rows = await softFailMissingStorageRead(() => this.getProfileClient().findMany({
-      where: { tenantId },
-      orderBy: { updatedAt: 'desc' },
-    }), []);
+    const rows = await softFailMissingStorageRead(
+      () =>
+        this.getProfileClient().findMany({
+          where: { tenantId },
+          orderBy: { updatedAt: 'desc' },
+        }),
+      [],
+    );
     return rows.map((row) => row.payload as UnattendProfileRecord);
   }
 
   async findProfileById(tenantId: string, id: string): Promise<UnattendProfileRecord | null> {
-    const row = await softFailMissingStorageRead(() => this.getProfileClient().findFirst({
-      where: { tenantId, id },
-    }), null);
+    const row = await softFailMissingStorageRead(
+      () =>
+        this.getProfileClient().findFirst({
+          where: { tenantId, id },
+        }),
+      null,
+    );
     return row ? (row.payload as UnattendProfileRecord) : null;
   }
 
@@ -131,24 +126,28 @@ export class ProvisioningRepository {
       create: {
         token: record.token,
         tenantId: record.tenantId,
-        payload: this.encryptTokenPayload(record),
+        payload: record,
         expiresAt: new Date(record.expiresAtMs),
       },
       update: {
         tenantId: record.tenantId,
-        payload: this.encryptTokenPayload(record),
+        payload: record,
         expiresAt: new Date(record.expiresAtMs),
       },
     });
   }
 
   async findToken(token: string): Promise<ProvisioningTokenRecord | null> {
-    const row = await softFailMissingStorageRead(() => this.getTokenClient().findFirst({
-      where: {
-        token,
-      },
-    }), null);
-    return row ? this.decryptTokenPayload(row.payload as Prisma.JsonValue) : null;
+    const row = await softFailMissingStorageRead(
+      () =>
+        this.getTokenClient().findFirst({
+          where: {
+            token,
+          },
+        }),
+      null,
+    );
+    return row ? (row.payload as ProvisioningTokenRecord) : null;
   }
 
   async deleteToken(token: string): Promise<void> {
@@ -179,15 +178,19 @@ export class ProvisioningRepository {
     tenantId: string,
     vmUuid: string,
   ): Promise<Array<Record<string, unknown>>> {
-    const rows = await softFailMissingStorageRead(() => this.getProgressClient().findMany({
-      where: {
-        tenantId,
-        vmUuid,
-      },
-      orderBy: {
-        updatedAt: 'asc',
-      },
-    }), []);
+    const rows = await softFailMissingStorageRead(
+      () =>
+        this.getProgressClient().findMany({
+          where: {
+            tenantId,
+            vmUuid,
+          },
+          orderBy: {
+            updatedAt: 'asc',
+          },
+        }),
+      [],
+    );
     return rows.map((row) => row.payload as Record<string, unknown>);
   }
 }

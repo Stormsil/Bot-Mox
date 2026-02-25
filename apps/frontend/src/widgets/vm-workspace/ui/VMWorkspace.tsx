@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useRef, useState } from 'react';
-import { VMListView, VMOperationLog, VMQueuePanel, VMStatusBar } from '../../../components/vm';
+import { VMListContainer, VMOperationLog, VMQueuePanel, VMStatusBar } from '../../../components/vm';
 import type { ProxmoxTargetInfo } from '../../../entities/vm/api/vmReadFacade';
 import type { ProxmoxVM, VMStorageOption } from '../../../entities/vm/model/types';
 import { cx } from '../../../pages/vms/page/cx';
@@ -144,7 +144,7 @@ export const VMWorkspace: React.FC<VMWorkspaceProps> = ({
         style={{ gridTemplateColumns: workspaceGridTemplateColumns }}
       >
         <div className={cx('vm-generator-service-pane')}>
-          <VMListView
+          <VMListContainer
             vms={proxmoxPane.proxmoxVms}
             loading={proxmoxPane.proxmoxLoading}
             connected={proxmoxPane.proxmoxConnected}

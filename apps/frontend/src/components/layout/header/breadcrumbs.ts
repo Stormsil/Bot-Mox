@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import type { BotRecord } from '../../../entities/bot/model/types';
 
 export interface BreadcrumbItem {
@@ -69,7 +70,10 @@ function formatStatusLabel(status?: string): string | undefined {
 
 function computeBotStatus(bot: BotBreadcrumbData): string | undefined {
   if (bot.status === 'banned') return 'banned';
-  if (typeof bot.last_seen === 'number' && Date.now() - bot.last_seen > OFFLINE_THRESHOLD_MS) {
+  if (
+    typeof bot.last_seen === 'number' &&
+    dayjs().diff(bot.last_seen, 'millisecond') > OFFLINE_THRESHOLD_MS
+  ) {
     return 'offline';
   }
   return bot.status;
@@ -180,33 +184,6 @@ export function buildBreadcrumbs(
   }
   if (pathname.startsWith('/vms/list')) {
     return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'VM List' }];
-  }
-  if (pathname.startsWith('/vms/sites/proxmox') || pathname.startsWith('/vms/proxmox')) {
-    return [
-      { label: 'Resources' },
-      { label: 'Virtual Machines' },
-      { label: 'Sites' },
-      { label: 'Proxmox' },
-    ];
-  }
-  if (pathname.startsWith('/vms/sites/tinyfm') || pathname.startsWith('/vms/tinyfm')) {
-    return [
-      { label: 'Resources' },
-      { label: 'Virtual Machines' },
-      { label: 'Sites' },
-      { label: 'TinyFileManager' },
-    ];
-  }
-  if (pathname.startsWith('/vms/sites/syncthing') || pathname.startsWith('/vms/syncthing')) {
-    return [
-      { label: 'Resources' },
-      { label: 'Virtual Machines' },
-      { label: 'Sites' },
-      { label: 'SyncThing' },
-    ];
-  }
-  if (pathname.startsWith('/vms/sites')) {
-    return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'Sites' }];
   }
   if (pathname.startsWith('/vms')) {
     return [{ label: 'Resources' }, { label: 'Virtual Machines' }, { label: 'VM Generator' }];

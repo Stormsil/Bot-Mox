@@ -1,8 +1,9 @@
 import type { FormInstance } from 'antd';
-import { DatePicker, Form, Input, Modal, Spin, Typography, theme } from 'antd';
+import { DatePicker, Form, Input, Spin, Typography, theme } from 'antd';
 import type React from 'react';
 import type { IPQSResponse } from '../../../entities/resources/model/types';
 import type { ParsedProxy } from '../../../utils/proxyUtils';
+import { ThemeModal } from '../../ui';
 import { ProxyIpqsResults } from './ProxyIpqsResults';
 import { ProxyParsedAlert } from './ProxyParsedAlert';
 import styles from './proxy.module.css';
@@ -47,7 +48,7 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
   const { token } = theme.useToken();
 
   return (
-    <Modal
+    <ThemeModal
       title={
         <span className={styles['modal-title']} style={{ color: token.colorText }}>
           {editing ? 'Edit Proxy' : 'Add Proxy'}
@@ -59,19 +60,6 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
       okText={editing ? 'Update' : 'Add'}
       width={600}
       okButtonProps={{ disabled: !parsedProxy }}
-      styles={{
-        content: {
-          background: token.colorBgElevated,
-          border: `1px solid ${token.colorBorderSecondary}`,
-        },
-        header: {
-          background: token.colorBgElevated,
-          borderBottom: `1px solid ${token.colorBorderSecondary}`,
-        },
-        footer: {
-          borderTop: `1px solid ${token.colorBorderSecondary}`,
-        },
-      }}
     >
       <Form form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item
@@ -118,6 +106,6 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
           <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" variant="filled" />
         </Form.Item>
       </Form>
-    </Modal>
+    </ThemeModal>
   );
 };

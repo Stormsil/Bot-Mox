@@ -93,7 +93,7 @@ test('WorkspaceService fails fast on repository errors (no fallback path)', asyn
   await assert.rejects(() => service.remove('notes', 'n-1', 'tenant-a'), /db delete failed dual/);
 });
 
-test('WorkspaceService encrypts notes payload at rest and decrypts on read', async () => {
+test('WorkspaceService encrypts sensitive notes fields and returns decrypted shape', async () => {
   let storedPayload = {} as Record<string, unknown>;
 
   const repositoryStub: RepositoryStub = {
@@ -132,16 +132,16 @@ test('WorkspaceService encrypts notes payload at rest and decrypts on read', asy
     'super secret block',
   );
 
-  assert.equal(typeof storedPayload.__enc_payload_v1, 'object');
-  assert.equal(Object.hasOwn(storedPayload, 'title'), false);
-  assert.equal(Object.hasOwn(storedPayload, 'content'), false);
+  assert.equal(Object.hasOwn(storedPayload, '__enc_payload_v1'), false);
+  assert.equal(typeof storedPayload.title, 'object');
+  assert.equal(typeof storedPayload.content, 'object');
 
   const loaded = await service.getById('notes', 'n-enc', 'tenant-a');
   assert.equal(loaded?.title, 'private title');
   assert.equal(loaded?.content, 'private body');
 });
 
-test('WorkspaceService encrypts non-notes workspace payload at rest and decrypts on read', async () => {
+test('WorkspaceService stores non-notes workspace payload without service-side envelope wrapping', async () => {
   let storedPayload = {} as Record<string, unknown>;
 
   const repositoryStub: RepositoryStub = {
@@ -167,8 +167,8 @@ test('WorkspaceService encrypts non-notes workspace payload at rest and decrypts
   );
 
   assert.equal(created.title, 'personal board');
-  assert.equal(typeof storedPayload.__enc_payload_v1, 'object');
-  assert.equal(Object.hasOwn(storedPayload, 'title'), false);
+  assert.equal(Object.hasOwn(storedPayload, '__enc_payload_v1'), false);
+  assert.equal(storedPayload.title, 'personal board');
 
   const loaded = await service.getById('kanban', 'k-1', 'tenant-a');
   assert.equal(loaded?.title, 'personal board');

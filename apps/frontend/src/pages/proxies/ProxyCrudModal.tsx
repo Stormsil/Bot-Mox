@@ -1,7 +1,15 @@
-import { DatePicker, Form, Input, Modal, message, Select } from 'antd';
-import dayjs from 'dayjs';
+import {
+  proxyResourceCreateSchema,
+  proxyResourceUpdateSchema,
+  proxyStatusSchema,
+  proxyTypeSchema,
+} from '@botmox/api-contract';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, Modal, message } from 'antd';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { z } from 'zod';
 import {
   checkIPQuality,
   isAutoCheckEnabled,
@@ -12,12 +20,10 @@ import {
   useUpdateProxyMutation,
 } from '../../entities/resources/api/useProxyMutations';
 import type { IPQSResponse, Proxy as ProxyResource } from '../../entities/resources/model/types';
+import { RHFDatePicker, RHFSelect, RHFTextArea } from '../../shared/ui/form';
 import { parseProxyString } from '../../utils/proxyUtils';
 import type { ProxyWithBot } from './proxyColumns';
 import { ParsedProxyAlert, ProxyIpqsLoadingAlert, ProxyIpqsResultAlert } from './proxyCrudAlerts';
-
-const { Option } = Select;
-const { TextArea } = Input;
 
 interface ProxyCrudModalProps {
   open: boolean;
@@ -39,31 +45,65 @@ type ProxiesBotMap = Record<
   }
 >;
 
+const proxyCrudFormSchema = z.object({
+  proxyString: z
+    .string()
+    .trim()
+    .min(1, 'Please enter proxy string')
+    .refine((value) => parseProxyString(value) !== null, {
+      message: 'Invalid proxy format. Use: ip:port:login:password',
+    }),
+  bot_id: z.string().trim().min(1, 'Please select a bot'),
+  expires_at: z.coerce.number().int().positive('Please select expiration date'),
+  provider: z.string().trim().min(1).default('IPRoyal'),
+  country: z.string().trim().optional(),
+  country_code: z.string().trim().optional(),
+  status: proxyStatusSchema.default('active'),
+  type: proxyTypeSchema.default('socks5'),
+  fraud_score: z.coerce.number().finite().default(0),
+});
+
+type ProxyCrudFormValues = z.input<typeof proxyCrudFormSchema>;
+
+const DEFAULT_PROVIDER = 'IPRoyal';
+
 const getProviderValue = (providerValue: string | string[] | undefined | null): string => {
   if (Array.isArray(providerValue)) {
-    return providerValue[0] || 'IPRoyal';
+    return providerValue[0] || DEFAULT_PROVIDER;
   }
   if (typeof providerValue === 'string' && providerValue.trim() !== '') {
     return providerValue;
   }
-  return 'IPRoyal';
+  return DEFAULT_PROVIDER;
 };
 
-const getTimestamp = (value: unknown): number => {
-  if (value && typeof (value as { valueOf?: () => unknown }).valueOf === 'function') {
-    const rawValue = (value as { valueOf: () => unknown }).valueOf();
-    const numericValue = Number(rawValue);
-    if (Number.isFinite(numericValue)) {
-      return numericValue;
-    }
-  }
+function getCreateDefaults(): ProxyCrudFormValues {
+  return {
+    proxyString: '',
+    bot_id: '',
+    provider: DEFAULT_PROVIDER,
+    status: 'active',
+    type: 'socks5',
+    fraud_score: 0,
+    expires_at: Date.now() + 30 * 24 * 60 * 60 * 1000,
+    country: undefined,
+    country_code: undefined,
+  };
+}
 
-  if (typeof value === 'string' || typeof value === 'number') {
-    return new Date(value).getTime();
-  }
-
-  return Date.now();
-};
+function getEditDefaults(editingProxy: ProxyWithBot): ProxyCrudFormValues {
+  return {
+    proxyString: `${editingProxy.ip}:${editingProxy.port}:${editingProxy.login}:${editingProxy.password}`,
+    bot_id: editingProxy.bot_id ?? '',
+    provider: editingProxy.provider || DEFAULT_PROVIDER,
+    status: editingProxy.status || 'active',
+    type: editingProxy.type || 'socks5',
+    fraud_score: editingProxy.fraud_score ?? 0,
+    expires_at: editingProxy.expires_at,
+    country: editingProxy.country || undefined,
+    country_code: editingProxy.country_code || undefined,
+  };
+}
 
 export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
   open,
@@ -76,105 +116,78 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
 }) => {
   const createProxyMutation = useCreateProxyMutation();
   const updateProxyMutation = useUpdateProxyMutation();
-  const [form] = Form.useForm();
-  const [proxyInput, setProxyInput] = useState('');
-  const [parsedProxy, setParsedProxy] = useState<ReturnType<typeof parseProxyString>>(null);
   const [checkingIPQS, setCheckingIPQS] = useState(false);
   const [ipqsData, setIpqsData] = useState<IPQSResponse | null>(null);
-  const [parseError, setParseError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  const { control, handleSubmit, reset, formState } = useForm<ProxyCrudFormValues>({
+    resolver: zodResolver(proxyCrudFormSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+    defaultValues: getCreateDefaults(),
+  });
+
+  const proxyInput = useWatch({ control, name: 'proxyString' }) ?? '';
+  const parsedProxy = useMemo(() => parseProxyString(proxyInput), [proxyInput]);
+
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
 
-    if (editingProxy) {
-      const proxyString = `${editingProxy.ip}:${editingProxy.port}:${editingProxy.login}:${editingProxy.password}`;
-      setProxyInput(proxyString);
-      setParsedProxy(parseProxyString(proxyString));
-      setIpqsData(null);
-      setParseError('');
-      setShowPassword(false);
-      form.setFieldsValue({
-        bot_id: editingProxy.bot_id,
-        expires_at: dayjs(editingProxy.expires_at),
-      });
-      return;
-    }
-
-    setProxyInput('');
-    setParsedProxy(null);
     setIpqsData(null);
-    setParseError('');
+    setCheckingIPQS(false);
     setShowPassword(false);
-    form.resetFields();
-    form.setFieldsValue({
-      status: 'active',
-      type: 'socks5',
-      fraud_score: 0,
-      provider: 'IPRoyal',
-      expires_at: dayjs().add(30, 'days'),
-    });
-  }, [editingProxy, form, open]);
+    reset(editingProxy ? getEditDefaults(editingProxy) : getCreateDefaults());
+  }, [editingProxy, open, reset]);
 
-  const checkProxyIPQS = async (ip: string) => {
-    setCheckingIPQS(true);
-    try {
-      const autoCheckEnabled = await isAutoCheckEnabled();
-      if (!autoCheckEnabled) {
-        return;
-      }
-
-      const data = await checkIPQuality(ip);
-      setIpqsData(data);
-    } catch {
-      // no-op
-    } finally {
-      setCheckingIPQS(false);
+  useEffect(() => {
+    if (proxyInput.trim() === '') {
+      setIpqsData(null);
+      return;
     }
-  };
-
-  const handleProxyInputChange = (value: string) => {
-    setProxyInput(value);
-    setParseError('');
     setIpqsData(null);
+  }, [proxyInput]);
 
-    const parsed = parseProxyString(value);
-    if (parsed) {
-      setParsedProxy(parsed);
-      void checkProxyIPQS(parsed.ip);
-      return;
-    }
+  useEffect(() => {
+    if (!open || editingProxy || !parsedProxy) return;
 
-    if (value.trim()) {
-      setParsedProxy(null);
-      setParseError('Invalid proxy format. Use: ip:port:login:password');
-      return;
-    }
+    let active = true;
+    void (async () => {
+      setCheckingIPQS(true);
+      try {
+        const autoCheckEnabled = await isAutoCheckEnabled();
+        if (!autoCheckEnabled || !active) return;
+        const data = await checkIPQuality(parsedProxy.ip);
+        if (active) {
+          setIpqsData(data);
+        }
+      } catch {
+        // no-op
+      } finally {
+        if (active) {
+          setCheckingIPQS(false);
+        }
+      }
+    })();
 
-    setParsedProxy(null);
-  };
+    return () => {
+      active = false;
+      setCheckingIPQS(false);
+    };
+  }, [editingProxy, open, parsedProxy]);
 
-  const handleSave = async (values: {
-    provider?: string | string[];
-    bot_id?: string | null;
-    expires_at?: unknown;
-    country?: string;
-    country_code?: string;
-  }) => {
+  const submitForm = handleSubmit(async (values) => {
     try {
       const providerValue = getProviderValue(values.provider);
       if (providerValue && !providers.includes(providerValue)) {
         onProviderCreated(providerValue);
       }
 
-      const expiresAt = getTimestamp(values.expires_at);
-
       if (!parsedProxy) {
         message.error('Please enter a valid proxy string');
         return;
       }
+
+      const expiresAt = values.expires_at;
 
       if (editingProxy) {
         const proxyData: Partial<ProxyResource> = {
@@ -188,6 +201,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           updated_at: Date.now(),
         };
 
+        proxyResourceUpdateSchema.parse(proxyData);
         await updateProxyMutation.mutateAsync({ id: editingProxy.id, payload: proxyData });
         message.success('');
       } else {
@@ -206,7 +220,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           port: parsedProxy.port,
           login: parsedProxy.login,
           password: parsedProxy.password,
-          provider: providerValue || 'IPRoyal',
+          provider: providerValue || DEFAULT_PROVIDER,
           country: ipqsData?.country_code || values.country || 'Unknown',
           country_code: ipqsData?.country_code || values.country_code || '',
           type: parsedProxy.type,
@@ -231,6 +245,8 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           last_checked: hasIPQSData ? Date.now() : undefined,
         };
 
+        proxyResourceCreateSchema.parse(proxyData);
+
         if (proxyStatus === 'banned') {
           message.warning(
             `Warning: High fraud score detected (${ipqsData?.fraud_score}). Proxy marked as banned.`,
@@ -246,36 +262,33 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       message.error(`Failed to save proxy: ${errorMessage}`);
     }
-  };
+  });
 
   return (
     <Modal
       title={editingProxy ? '' : ''}
       open={open}
-      onOk={form.submit}
+      onOk={() => {
+        void submitForm();
+      }}
       onCancel={onClose}
       okText={editingProxy ? 'Update' : 'Create'}
       width={700}
       okButtonProps={{ disabled: !editingProxy && !parsedProxy }}
+      confirmLoading={
+        formState.isSubmitting || createProxyMutation.isPending || updateProxyMutation.isPending
+      }
     >
-      <Form form={form} layout="vertical" onFinish={handleSave}>
-        <Form.Item
+      <Form layout="vertical">
+        <RHFTextArea<ProxyCrudFormValues, 'proxyString'>
+          control={control}
+          name="proxyString"
           label="Proxy String"
-          required
-          validateStatus={parseError ? 'error' : parsedProxy ? 'success' : ''}
-          help={
-            parseError ||
-            (parsedProxy ? 'Valid proxy format detected' : 'Format: ip:port:login:password')
-          }
-        >
-          <TextArea
-            placeholder="Enter proxy string (ip:port:login:password)"
-            value={proxyInput}
-            onChange={(event) => handleProxyInputChange(event.target.value)}
-            rows={2}
-            style={{ fontFamily: 'monospace' }}
-          />
-        </Form.Item>
+          rows={2}
+          placeholder="Enter proxy string (ip:port:login:password)"
+          style={{ fontFamily: 'monospace' }}
+          formItemProps={{ required: true, extra: 'Format: ip:port:login:password' }}
+        />
 
         {parsedProxy && (
           <ParsedProxyAlert
@@ -289,27 +302,24 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
 
         {!editingProxy && ipqsData && <ProxyIpqsResultAlert ipqsData={ipqsData} />}
 
-        <Form.Item
+        <RHFSelect<ProxyCrudFormValues, 'bot_id'>
+          control={control}
           name="bot_id"
           label="Assign to Bot"
-          rules={[{ required: true, message: 'Please select a bot' }]}
-        >
-          <Select placeholder="Select bot">
-            {Object.entries(bots).map(([id, bot]) => (
-              <Option key={id} value={id}>
-                {bot.character?.name || 'Unknown'} {bot.vm?.name ? `(${bot.vm.name})` : ''} - {id}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+          placeholder="Select bot"
+          options={Object.entries(bots).map(([id, bot]) => ({
+            value: id,
+            label: `${bot.character?.name || 'Unknown'} ${bot.vm?.name ? `(${bot.vm.name})` : ''} - ${id}`,
+          }))}
+        />
 
-        <Form.Item
+        <RHFDatePicker<ProxyCrudFormValues, 'expires_at', number>
+          control={control}
           name="expires_at"
           label="Expiration Date"
-          rules={[{ required: true, message: 'Please select expiration date' }]}
-        >
-          <DatePicker style={{ width: '100%' }} />
-        </Form.Item>
+          style={{ width: '100%' }}
+          toFormValue={(date) => (date ? date.valueOf() : Date.now())}
+        />
       </Form>
     </Modal>
   );

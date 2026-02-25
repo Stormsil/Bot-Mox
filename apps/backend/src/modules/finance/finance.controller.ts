@@ -16,12 +16,11 @@ import {
   Post,
   Query,
   Req,
-  UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { isPrismaMissingStorageError } from '../common/prisma-soft-fail';
-import { getRequestIdentity } from '../auth/request-identity.util';
+import { TenantCrudControllerCoreBase } from '../common/tenant-crud.controller-core-base';
 import { type FinanceListQuery, FinanceService } from './finance.service';
 
 const financeIdSchema = z
@@ -31,23 +30,19 @@ const financeIdSchema = z
   .refine((value) => value.length > 0, 'Finance operation id is required');
 
 @Controller('finance')
-export class FinanceController {
-  constructor(private readonly financeService: FinanceService) {}
-
+export class FinanceController extends TenantCrudControllerCoreBase<
+  Record<string, unknown>,
+  Record<string, unknown>
+> {
   private isFinanceStorageUnavailable(error: unknown): boolean {
     return isPrismaMissingStorageError(error);
   }
 
-  private ensureAuthHeader(authorization: string | undefined): void {
-    if (!authorization) {
-      throw new UnauthorizedException({
-        code: 'MISSING_BEARER_TOKEN',
-        message: 'Missing bearer token',
-      });
-    }
+  constructor(private readonly financeService: FinanceService) {
+    super();
   }
 
-  private parseId(id: string): string {
+  protected parseId(id: string): string {
     const parsed = financeIdSchema.safeParse(String(id || ''));
     if (!parsed.success) {
       throw new BadRequestException({
@@ -71,7 +66,7 @@ export class FinanceController {
     return parsed.data;
   }
 
-  private parseCreateBody(body: unknown): Record<string, unknown> {
+  protected parseCreateBody(body: unknown): Record<string, unknown> {
     const parsed = financeOperationCreateSchema.safeParse(body ?? {});
     if (!parsed.success) {
       throw new BadRequestException({
@@ -83,7 +78,7 @@ export class FinanceController {
     return parsed.data;
   }
 
-  private parsePatchBody(body: unknown): Record<string, unknown> {
+  protected parseUpdateBody(body: unknown): Record<string, unknown> {
     const parsed = financeOperationPatchSchema.safeParse(body ?? {});
     if (!parsed.success) {
       throw new BadRequestException({
@@ -93,6 +88,33 @@ export class FinanceController {
       });
     }
     return parsed.data;
+  }
+
+  protected getNotFoundPayload(): { code: string; message: string } {
+    return {
+      code: 'FINANCE_OPERATION_NOT_FOUND',
+      message: 'Finance operation not found',
+    };
+  }
+
+  protected getEntityById(id: string, tenantId: string) {
+    return this.financeService.getById(id, tenantId);
+  }
+
+  protected createEntity(
+    body: Record<string, unknown>,
+    explicitId: string | undefined,
+    tenantId: string,
+  ) {
+    return this.financeService.create(body, explicitId, tenantId);
+  }
+
+  protected updateEntity(id: string, body: Record<string, unknown>, tenantId: string) {
+    return this.financeService.patch(id, body, tenantId);
+  }
+
+  protected removeEntity(id: string, tenantId: string) {
+    return this.financeService.remove(id, tenantId);
   }
 
   @Get('operations')
@@ -107,10 +129,10 @@ export class FinanceController {
   }> {
     this.ensureAuthHeader(authorization);
     const parsedQuery = this.parseListQuery(query);
-    const identity = getRequestIdentity(req);
+    const tenantId = this.getTenantId(req);
     let result: Awaited<ReturnType<FinanceService['list']>>;
     try {
-      result = await this.financeService.list(parsedQuery, identity.tenantId);
+      result = await this.financeService.list(parsedQuery, tenantId);
     } catch (error) {
       if (!this.isFinanceStorageUnavailable(error)) {
         throw error;
@@ -141,10 +163,10 @@ export class FinanceController {
   ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
     const parsedId = this.parseId(id);
-    const identity = getRequestIdentity(req);
+    const tenantId = this.getTenantId(req);
     let operation: Awaited<ReturnType<FinanceService['getById']>>;
     try {
-      operation = await this.financeService.getById(parsedId, identity.tenantId);
+      operation = await this.financeService.getById(parsedId, tenantId);
     } catch (error) {
       if (!this.isFinanceStorageUnavailable(error)) {
         throw error;
@@ -152,10 +174,7 @@ export class FinanceController {
       operation = null;
     }
     if (!operation) {
-      throw new NotFoundException({
-        code: 'FINANCE_OPERATION_NOT_FOUND',
-        message: 'Finance operation not found',
-      });
+      throw new NotFoundException(this.getNotFoundPayload());
     }
     return {
       success: true,
@@ -169,14 +188,7 @@ export class FinanceController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedBody = this.parseCreateBody(body);
-    const explicitId = typeof parsedBody.id === 'string' ? parsedBody.id.trim() : undefined;
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.financeService.create(parsedBody, explicitId, identity.tenantId),
-    };
+    return this.createCore(authorization, body, req);
   }
 
   @Patch('operations/:id')
@@ -186,21 +198,7 @@ export class FinanceController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
-    const parsedBody = this.parsePatchBody(body);
-    const identity = getRequestIdentity(req);
-    const updated = await this.financeService.patch(parsedId, parsedBody, identity.tenantId);
-    if (!updated) {
-      throw new NotFoundException({
-        code: 'FINANCE_OPERATION_NOT_FOUND',
-        message: 'Finance operation not found',
-      });
-    }
-    return {
-      success: true,
-      data: updated,
-    };
+    return this.updateCore(authorization, id, body, req);
   }
 
   @Delete('operations/:id')
@@ -209,23 +207,10 @@ export class FinanceController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { id: string; deleted: boolean } }> {
-    this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
-    const identity = getRequestIdentity(req);
-    const deleted = await this.financeService.remove(parsedId, identity.tenantId);
-    if (!deleted) {
-      throw new NotFoundException({
-        code: 'FINANCE_OPERATION_NOT_FOUND',
-        message: 'Finance operation not found',
-      });
-    }
-    return {
-      success: true,
-      data: {
-        id: parsedId,
-        deleted: true,
-      },
-    };
+    return this.removeCore(authorization, id, req) as Promise<{
+      success: true;
+      data: { id: string; deleted: boolean };
+    }>;
   }
 
   @Get('daily-stats')
@@ -237,11 +222,11 @@ export class FinanceController {
     data: unknown;
   }> {
     this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
+    const tenantId = this.getTenantId(req);
     try {
       return {
         success: true,
-        data: await this.financeService.getDailyStats(identity.tenantId),
+        data: await this.financeService.getDailyStats(tenantId),
       };
     } catch (error) {
       if (!this.isFinanceStorageUnavailable(error)) {
@@ -263,11 +248,11 @@ export class FinanceController {
     data: unknown;
   }> {
     this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
+    const tenantId = this.getTenantId(req);
     try {
       return {
         success: true,
-        data: await this.financeService.getGoldPriceHistory(identity.tenantId),
+        data: await this.financeService.getGoldPriceHistory(tenantId),
       };
     } catch (error) {
       if (!this.isFinanceStorageUnavailable(error)) {

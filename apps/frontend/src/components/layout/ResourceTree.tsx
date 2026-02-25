@@ -5,11 +5,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
 import type { BotRecord } from '../../entities/bot/model/types';
 import { useProjectSettingsQuery } from '../../entities/settings/api/useProjectSettingsQuery';
-import { bindCssModuleCx } from '../../shared/lib/classNames';
 import {
   useResourceTreeSettingsQuery,
   useSaveResourceTreeSettingsMutation,
 } from '../../entities/settings/api/useResourceTreeSettings';
+import { bindCssModuleCx } from '../../shared/lib/classNames';
 import styles from './ResourceTree.module.css';
 import { buildUnifiedTreeData } from './resourceTree/builders';
 import { resolveStaticPathForTreeKey } from './resourceTree/navigation';
@@ -118,12 +118,7 @@ export const ResourceTree: React.FC = () => {
 
   useEffect(() => {
     const nextSelectedKeys = getSelectedKeysForLocation(location.pathname, location.search);
-    const frameId = window.requestAnimationFrame(() => {
-      setSelectedKeys(nextSelectedKeys);
-    });
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+    setSelectedKeys(nextSelectedKeys);
   }, [location.pathname, location.search]);
 
   const navigateByTreeKey = useCallback(
@@ -214,23 +209,17 @@ export const ResourceTree: React.FC = () => {
       found.node.children && found.node.children.length > 0 ? found.path : found.path.slice(0, -1);
     if (shouldExpand.length === 0) return;
 
-    const frameId = window.requestAnimationFrame(() => {
-      setExpandedKeys((prev) => {
-        const expandedSet = new Set(prev.map(String));
-        let changed = false;
-        shouldExpand.forEach((key) => {
-          if (!expandedSet.has(key)) {
-            expandedSet.add(key);
-            changed = true;
-          }
-        });
-        return changed ? Array.from(expandedSet) : prev;
+    setExpandedKeys((prev) => {
+      const expandedSet = new Set(prev.map(String));
+      let changed = false;
+      shouldExpand.forEach((key) => {
+        if (!expandedSet.has(key)) {
+          expandedSet.add(key);
+          changed = true;
+        }
       });
+      return changed ? Array.from(expandedSet) : prev;
     });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
   }, [selectedKeys, treeData, setExpandedKeys]);
 
   return (

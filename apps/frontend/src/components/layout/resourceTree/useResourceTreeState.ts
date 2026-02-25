@@ -78,27 +78,23 @@ export function useResourceTreeState(options: UseResourceTreeStateOptions): Reso
 
     const data = options.resourceTreeSettingsQuery.data;
     if (data) {
-      const frameId = window.requestAnimationFrame(() => {
-        lastPersistedSignatureRef.current = buildSettingsSignature({
-          expandedKeys: Array.isArray(data.expandedKeys) ? data.expandedKeys : [],
-          visibleStatuses: Array.isArray(data.visibleStatuses) ? data.visibleStatuses : [],
-          showFilters: typeof data.showFilters === 'boolean' ? data.showFilters : true,
-        });
-        setHasRemoteSettings(true);
-        if (data.visibleStatuses?.length) {
-          setVisibleStatuses(sanitizeBotStatuses(data.visibleStatuses));
-        }
-        if (Array.isArray(data.expandedKeys)) {
-          setExpandedKeys(data.expandedKeys);
-        }
-        if (typeof data.showFilters === 'boolean') {
-          setShowFilters(data.showFilters);
-        }
-        setSettingsLoaded(true);
+      lastPersistedSignatureRef.current = buildSettingsSignature({
+        expandedKeys: Array.isArray(data.expandedKeys) ? data.expandedKeys : [],
+        visibleStatuses: Array.isArray(data.visibleStatuses) ? data.visibleStatuses : [],
+        showFilters: typeof data.showFilters === 'boolean' ? data.showFilters : true,
       });
-      return () => {
-        window.cancelAnimationFrame(frameId);
-      };
+      setHasRemoteSettings(true);
+      if (data.visibleStatuses?.length) {
+        setVisibleStatuses(sanitizeBotStatuses(data.visibleStatuses));
+      }
+      if (Array.isArray(data.expandedKeys)) {
+        setExpandedKeys(data.expandedKeys);
+      }
+      if (typeof data.showFilters === 'boolean') {
+        setShowFilters(data.showFilters);
+      }
+      setSettingsLoaded(true);
+      return;
     }
 
     let nextVisibleStatuses: BotStatus[] | null = null;
@@ -122,26 +118,21 @@ export function useResourceTreeState(options: UseResourceTreeStateOptions): Reso
       console.warn('Failed to parse local resource tree settings:', error);
     }
 
-    const frameId = window.requestAnimationFrame(() => {
-      lastPersistedSignatureRef.current = buildSettingsSignature({
-        expandedKeys: nextExpandedKeys ?? [],
-        visibleStatuses: nextVisibleStatuses ?? DEFAULT_VISIBLE_STATUSES,
-        showFilters: typeof nextShowFilters === 'boolean' ? nextShowFilters : true,
-      });
-      if (nextVisibleStatuses) {
-        setVisibleStatuses(nextVisibleStatuses);
-      }
-      if (nextExpandedKeys) {
-        setExpandedKeys(nextExpandedKeys);
-      }
-      if (typeof nextShowFilters === 'boolean') {
-        setShowFilters(nextShowFilters);
-      }
-      setSettingsLoaded(true);
+    lastPersistedSignatureRef.current = buildSettingsSignature({
+      expandedKeys: nextExpandedKeys ?? [],
+      visibleStatuses: nextVisibleStatuses ?? DEFAULT_VISIBLE_STATUSES,
+      showFilters: typeof nextShowFilters === 'boolean' ? nextShowFilters : true,
     });
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+    if (nextVisibleStatuses) {
+      setVisibleStatuses(nextVisibleStatuses);
+    }
+    if (nextExpandedKeys) {
+      setExpandedKeys(nextExpandedKeys);
+    }
+    if (typeof nextShowFilters === 'boolean') {
+      setShowFilters(nextShowFilters);
+    }
+    setSettingsLoaded(true);
   }, [
     settingsLoaded,
     options.resourceTreeSettingsQuery.isFetched,
@@ -152,14 +143,7 @@ export function useResourceTreeState(options: UseResourceTreeStateOptions): Reso
   useEffect(() => {
     if (!settingsLoaded || hasRemoteSettings || options.loading) return;
     if (expandedKeys.length > 0) return;
-
-    const frameId = window.requestAnimationFrame(() => {
-      setExpandedKeys([...ROOT_SECTION_KEYS]);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+    setExpandedKeys([...ROOT_SECTION_KEYS]);
   }, [settingsLoaded, hasRemoteSettings, options.loading, expandedKeys.length]);
 
   useEffect(() => {

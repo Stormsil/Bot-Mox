@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: Platform Architecture  
-Last Updated: 2026-02-20  
+Last Updated: 2026-02-22  
 Applies To: `apps/backend`, `apps/agent`, `apps/frontend`
 
 ## Purpose
@@ -26,3 +26,5 @@ Operational evidence log for sustained prod-like smoke window before final stric
 | 2026-02-20T20:30:12.051Z | shadow | hybrid | shadow | pass | 4/4 passed |
 | 2026-02-20T20:32:49.332Z | (unset) | (unset) | (unset) | pass | 4/4 passed |
 | 2026-02-20T20:33:53.996Z | shadow | hybrid | shadow | pass | 4/4 passed |
+| 2026-02-22T06:37:04.440Z | (unset) | (unset) | (unset) | not-run | checks not executed |
+| 2026-02-22T10:07:27.098Z | enforced | ws | enforced | pass | 13/13 passed |

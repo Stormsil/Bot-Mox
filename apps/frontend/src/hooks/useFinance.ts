@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   calculateCategoryBreakdown,
   calculateFinanceSummary,
@@ -15,6 +15,7 @@ import type {
   TimeSeriesData,
 } from '../entities/finance/model/types';
 import { useFinanceOperations } from '../features/finance/model/useFinanceOperations';
+import { useCurrentTime } from '../shared/lib/hooks/useCurrentTime';
 
 interface UseFinanceOptions {
   days?: number;
@@ -48,7 +49,7 @@ export function useFinance(options: UseFinanceOptions = {}): UseFinanceReturn {
   const { days = 30 } = options;
   const { operations, loading, error, addOperation, updateOperation, deleteOperation } =
     useFinanceOperations();
-  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const currentTime = useCurrentTime();
 
   const summary = useMemo(() => calculateFinanceSummary(operations), [operations]);
   const incomeBreakdown = useMemo(
@@ -59,15 +60,6 @@ export function useFinance(options: UseFinanceOptions = {}): UseFinanceReturn {
     () => calculateCategoryBreakdown(operations, 'expense'),
     [operations],
   );
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 60_000);
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
 
   const timeSeriesData = useMemo(() => {
     const end = currentTime;
