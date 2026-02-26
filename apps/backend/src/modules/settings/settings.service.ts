@@ -66,7 +66,7 @@ export class SettingsService {
     if (value === null || value === undefined) {
       return value;
     }
-    return JSON.parse(JSON.stringify(value)) as T;
+    return structuredClone(value) as T;
   }
 
   private mapDbRowPayload(row: Record<string, unknown>): unknown {

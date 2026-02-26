@@ -104,6 +104,11 @@ export function extractContractQueryFromListParams(params: GetListParams): {
   sort?: string;
   order?: 'asc' | 'desc';
   q?: string;
+  status?: string;
+  type?: string;
+  country?: string;
+  country_code?: string;
+  bot_id?: string;
 } {
   const query: {
     page?: number;
@@ -111,6 +116,11 @@ export function extractContractQueryFromListParams(params: GetListParams): {
     sort?: string;
     order?: 'asc' | 'desc';
     q?: string;
+    status?: string;
+    type?: string;
+    country?: string;
+    country_code?: string;
+    bot_id?: string;
   } = {};
 
   const pagination = params.pagination as
@@ -135,11 +145,31 @@ export function extractContractQueryFromListParams(params: GetListParams): {
   }
 
   if (params.filters && params.filters.length > 0) {
-    const queryFilter = params.filters.find(
-      (item) => 'field' in item && String(item.field) === 'q',
-    );
-    if (queryFilter && 'value' in queryFilter && queryFilter.value) {
-      query.q = String(queryFilter.value);
+    for (const filter of params.filters) {
+      if (!('field' in filter) || !('value' in filter)) {
+        continue;
+      }
+
+      const field = String(filter.field);
+      const rawValue = filter.value;
+      if (rawValue === undefined || rawValue === null || rawValue === '') {
+        continue;
+      }
+
+      if (field === 'q') {
+        query.q = String(rawValue);
+        continue;
+      }
+
+      if (
+        field === 'status' ||
+        field === 'type' ||
+        field === 'country' ||
+        field === 'country_code' ||
+        field === 'bot_id'
+      ) {
+        query[field] = String(rawValue);
+      }
     }
   }
 

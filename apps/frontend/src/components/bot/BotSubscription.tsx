@@ -1,9 +1,13 @@
 import { CreditCardOutlined, PlusOutlined } from '@ant-design/icons';
+import { type HttpError, useCreate, useDelete, useList, useUpdate } from '@refinedev/core';
 import { Button, Card, Empty, List, Modal, message, Space, Spin, Typography } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
-import { useSubscriptions } from '../../hooks/useSubscriptions';
+import { enrichSubscriptionsWithDetails } from '../../entities/resources/api/subscriptionFacade';
+import type { Subscription } from '../../entities/resources/model/types';
+import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
+import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import type {
   BotSubscriptionProps,
   SubscriptionFormData,
@@ -20,10 +24,30 @@ import styles from './subscription/subscription.module.css';
 
 const { Text } = Typography;
 const { confirm } = Modal;
+const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
+const RESOURCE_LIST_PAGE_SIZE = 5_000;
+
+function parseDateToTimestamp(dateString: string): number {
+  const parts = String(dateString || '').split('.');
+  if (parts.length !== 3) return Number.NaN;
+  const [day, month, year] = parts.map(Number);
+  if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) {
+    return Number.NaN;
+  }
+  return new Date(year, month - 1, day, 23, 59, 59, 999).getTime();
+}
 
 export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
-  const { subscriptions, loading, addSubscription, updateSubscription, deleteSubscription } =
-    useSubscriptions({ botId: bot.id });
+  const subscriptionsList = useList<Subscription>({
+    resource: 'subscriptions',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    filters: [{ field: 'bot_id', operator: 'eq', value: bot.id }],
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
+  const settingsQuery = useSubscriptionSettingsQuery();
+  const createSubscriptionMutation = useCreate<Subscription, HttpError, Omit<Subscription, 'id'>>();
+  const updateSubscriptionMutation = useUpdate<Subscription, HttpError, Partial<Subscription>>();
+  const deleteSubscriptionMutation = useDelete<Subscription>();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithDetails | null>(
@@ -32,6 +56,37 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
   const [saving, setSaving] = useState(false);
   const [botAccountEmail, setBotAccountEmail] = useState<string | null>(null);
   const botQuery = useBotByIdQuery(bot.id);
+  const warningDays = settingsQuery.data?.warning_days ?? getDefaultSettings().warning_days;
+
+  const subscriptions = useMemo(() => {
+    const vmName =
+      'vm' in bot && bot.vm && typeof bot.vm === 'object' && 'name' in bot.vm
+        ? String((bot.vm as { name?: unknown }).name || '')
+        : undefined;
+    const botsMap = new Map([
+      [
+        bot.id,
+        {
+          name: bot.name || bot.id,
+          character: bot.character?.name,
+          status: bot.status,
+          vmName,
+        },
+      ],
+    ]);
+    return enrichSubscriptionsWithDetails(
+      subscriptionsList.result.data || [],
+      warningDays,
+      botsMap,
+    );
+  }, [bot, subscriptionsList.result.data, warningDays]);
+  const loading = subscriptionsList.query.isLoading || settingsQuery.isLoading;
+
+  useEffect(() => {
+    if (!subscriptionsList.query.error) return;
+    console.error('Error loading subscriptions:', subscriptionsList.query.error);
+    message.error('Failed to load subscriptions');
+  }, [subscriptionsList.query.error]);
 
   useEffect(() => {
     if (!botQuery.data?.account || typeof botQuery.data.account !== 'object') {
@@ -70,9 +125,47 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
     setSaving(true);
     try {
       if (editingSubscription) {
-        await updateSubscription(editingSubscription.id, data);
+        const expiresAt = parseDateToTimestamp(data.expires_at);
+        if (!Number.isFinite(expiresAt)) {
+          throw new Error('Invalid expires_at format');
+        }
+        await updateSubscriptionMutation.mutateAsync({
+          resource: 'subscriptions',
+          id: editingSubscription.id,
+          values: {
+            bot_id: data.bot_id,
+            type: data.type,
+            expires_at: expiresAt,
+            account_email: data.account_email,
+            auto_renew: data.auto_renew,
+            project_id: data.project_id,
+            notes: data.notes,
+            updated_at: Date.now(),
+          },
+          invalidates: ['resourceAll'],
+        });
       } else {
-        await addSubscription(data);
+        const expiresAt = parseDateToTimestamp(data.expires_at);
+        if (!Number.isFinite(expiresAt)) {
+          throw new Error('Invalid expires_at format');
+        }
+        const now = Date.now();
+        await createSubscriptionMutation.mutateAsync({
+          resource: 'subscriptions',
+          values: {
+            bot_id: data.bot_id,
+            type: data.type,
+            status: 'active',
+            expires_at: expiresAt,
+            created_at: now,
+            updated_at: now,
+            ...(data.account_email && { account_email: data.account_email }),
+            auto_renew: data.auto_renew ?? false,
+            ...(data.project_id && { project_id: data.project_id }),
+            ...(data.notes && { notes: data.notes }),
+          },
+          invalidates: ['resourceAll'],
+        });
       }
       closeModal();
     } catch (error) {
@@ -91,7 +184,11 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await deleteSubscription(subscription.id);
+          await deleteSubscriptionMutation.mutateAsync({
+            resource: 'subscriptions',
+            id: subscription.id,
+            invalidates: ['resourceAll'],
+          });
           message.success('Subscription deleted');
         } catch (error) {
           console.error('Error deleting subscription:', error);

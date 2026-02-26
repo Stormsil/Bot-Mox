@@ -11,6 +11,11 @@ export interface ResourceListQuery {
   sort?: string | undefined;
   order?: 'asc' | 'desc' | undefined;
   q?: string | undefined;
+  status?: string | undefined;
+  type?: string | undefined;
+  country?: string | undefined;
+  country_code?: string | undefined;
+  bot_id?: string | undefined;
 }
 
 export interface ResourceListResult {
@@ -54,8 +59,28 @@ export class ResourcesService {
       .trim()
       .toLowerCase();
     const sort = String(query.sort || '').trim();
+    const equalityFilters = {
+      status: typeof query.status === 'string' ? query.status.trim() : '',
+      type: typeof query.type === 'string' ? query.type.trim() : '',
+      country: typeof query.country === 'string' ? query.country.trim() : '',
+      country_code: typeof query.country_code === 'string' ? query.country_code.trim() : '',
+      bot_id: typeof query.bot_id === 'string' ? query.bot_id.trim() : '',
+    };
 
     let data = [...items];
+
+    data = data.filter((item) => {
+      for (const [key, expected] of Object.entries(equalityFilters)) {
+        if (!expected) {
+          continue;
+        }
+        const actual = String(item?.[key] ?? '').trim();
+        if (actual !== expected) {
+          return false;
+        }
+      }
+      return true;
+    });
 
     if (q) {
       data = data.filter((item) =>

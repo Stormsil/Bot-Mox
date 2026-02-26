@@ -56,7 +56,7 @@ export class ThemeAssetsService {
     if (value === null || value === undefined) {
       return value;
     }
-    return JSON.parse(JSON.stringify(value)) as T;
+    return structuredClone(value) as T;
   }
 
   private toStoredPayload(payload: ThemeAsset): Prisma.InputJsonValue {

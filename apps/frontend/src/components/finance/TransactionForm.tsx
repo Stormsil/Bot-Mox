@@ -1,26 +1,29 @@
 import { financeOperationCreateSchema } from '@botmox/api-contract';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Divider, Form, Radio, Space, Typography, theme } from 'antd';
+import {
+  DatePicker,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  Radio,
+  Select,
+  Space,
+  Typography,
+  theme,
+} from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
-import { useEffect, useMemo } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import type {
   FinanceOperation,
   FinanceOperationFormData,
   FinanceOperationType,
 } from '../../entities/finance/model/types';
-import {
-  RHFDatePicker,
-  RHFFormItem,
-  RHFInputNumber,
-  RHFSelect,
-  RHFTextArea,
-} from '../../shared/ui/form';
 import { ThemeModal } from '../ui';
 
 const { Text } = Typography;
+const { TextArea } = Input;
 
 interface TransactionFormProps {
   visible: boolean;
@@ -131,24 +134,17 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 }) => {
   const { token } = theme.useToken();
   const isEdit = !!operation;
+  const [form] = Form.useForm();
+  const [submitting, setSubmitting] = useState(false);
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { isSubmitting },
-  } = useForm<TransactionFormValues>({
-    resolver: zodResolver(transactionFormSchema),
-    mode: 'onBlur',
-    reValidateMode: 'onChange',
-    defaultValues: getCreateDefaults(),
-  });
-
-  const transactionType = useWatch({ control, name: 'type' }) ?? 'expense';
-  const selectedCategory = useWatch({ control, name: 'category' }) ?? '';
-  const goldAmount = Number(useWatch({ control, name: 'gold_amount' }) ?? 0);
-  const goldPrice = Number(useWatch({ control, name: 'gold_price_at_time' }) ?? 0);
+  const transactionType =
+    (Form.useWatch('type', form) as TransactionFormValues['type'] | undefined) ?? 'expense';
+  const selectedCategory =
+    (Form.useWatch('category', form) as TransactionFormValues['category'] | undefined) ?? '';
+  const goldAmount = Number((Form.useWatch('gold_amount', form) as number | null | undefined) ?? 0);
+  const goldPrice = Number(
+    (Form.useWatch('gold_price_at_time', form) as number | null | undefined) ?? 0,
+  );
 
   const isGoldSale = selectedCategory === 'sale';
   const calculatedAmount = goldAmount * (goldPrice / 1000);
@@ -160,29 +156,67 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
   useEffect(() => {
     if (!visible) return;
-    reset(operation ? getEditDefaults(operation) : getCreateDefaults());
-  }, [visible, operation, reset]);
+    const defaults = operation ? getEditDefaults(operation) : getCreateDefaults();
+    form.setFieldsValue({
+      ...defaults,
+      date: defaults.date,
+    } as Record<string, unknown>);
+    form.setFields([]);
+  }, [visible, operation, form]);
 
-  const submitForm = handleSubmit(async (values) => {
-    const formData: FinanceOperationFormData = {
-      type: values.type as FinanceOperationType,
-      category: values.category as FinanceOperationFormData['category'],
-      bot_id: null,
-      project_id: (values.project_id ?? null) as FinanceOperationFormData['project_id'],
-      description: values.description ?? '',
-      amount: values.category === 'sale' ? calculatedAmount : values.amount,
-      currency: 'USD',
-      gold_price_at_time: values.category === 'sale' ? (values.gold_price_at_time ?? null) : null,
-      gold_amount:
-        values.category === 'sale'
-          ? ((values.gold_amount ?? undefined) as FinanceOperationFormData['gold_amount'])
-          : undefined,
-      date: dayjs(values.date).format('YYYY-MM-DD HH:mm:ss'),
-    };
+  const submitForm = async () => {
+    try {
+      setSubmitting(true);
+      const values = (await form.validateFields()) as TransactionFormValues & { date: unknown };
+      const normalizedValues: TransactionFormValues = {
+        ...getCreateDefaults(),
+        ...values,
+        date: dayjs.isDayjs(values.date) ? values.date.valueOf() : Number(values.date),
+      };
 
-    await onSubmit(formData);
-    reset(getCreateDefaults());
-  });
+      const parsed = transactionFormSchema.parse(normalizedValues as unknown);
+
+      const formData: FinanceOperationFormData = {
+        type: parsed.type as FinanceOperationType,
+        category: parsed.category as FinanceOperationFormData['category'],
+        bot_id: null,
+        project_id: (parsed.project_id ?? null) as FinanceOperationFormData['project_id'],
+        description: parsed.description ?? '',
+        amount: parsed.category === 'sale' ? calculatedAmount : parsed.amount,
+        currency: 'USD',
+        gold_price_at_time: parsed.category === 'sale' ? (parsed.gold_price_at_time ?? null) : null,
+        gold_amount:
+          parsed.category === 'sale'
+            ? ((parsed.gold_amount ?? undefined) as FinanceOperationFormData['gold_amount'])
+            : undefined,
+        date: dayjs(parsed.date).format('YYYY-MM-DD HH:mm:ss'),
+      };
+
+      await onSubmit(formData);
+      form.setFieldsValue(getCreateDefaults() as unknown as Record<string, unknown>);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        form.setFields(
+          error.issues.map((issue) => ({
+            name: issue.path,
+            errors: [issue.message],
+          })),
+        );
+        return;
+      }
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'errorFields' in error &&
+        Array.isArray((error as { errorFields?: unknown[] }).errorFields)
+      ) {
+        return;
+      }
+      throw error;
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <ThemeModal
@@ -196,61 +230,62 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         void submitForm();
       }}
       onCancel={onCancel}
-      confirmLoading={loading || isSubmitting}
+      confirmLoading={loading || submitting}
       width={600}
     >
-      <Form layout="vertical" initialValues={{ type: 'expense', currency: 'USD' }}>
-        <RHFFormItem<TransactionFormValues, 'type'>
-          control={control}
-          name="type"
-          label="Transaction Type"
-        >
-          {({ field }) => (
-            <Radio.Group
-              value={field.value}
-              disabled={isEdit}
-              buttonStyle="solid"
-              style={{ display: 'flex', gap: 8 }}
-              onChange={(e) => {
-                const nextType = e.target.value as FinanceOperationType;
-                field.onChange(nextType);
-                if (nextType === 'income') {
-                  setValue('category', 'sale', { shouldDirty: true, shouldValidate: true });
-                  setValue('project_id', null, { shouldDirty: true, shouldValidate: true });
-                } else {
-                  setValue('category', 'other', { shouldDirty: true, shouldValidate: true });
-                  setValue('project_id', null, { shouldDirty: true, shouldValidate: false });
-                }
-              }}
-            >
-              <Radio.Button value="income">Income</Radio.Button>
-              <Radio.Button value="expense">Expense</Radio.Button>
-            </Radio.Group>
-          )}
-        </RHFFormItem>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ type: 'expense', currency: 'USD' }}
+        preserve
+      >
+        <Form.Item name="type" label="Transaction Type">
+          <Radio.Group
+            disabled={isEdit}
+            buttonStyle="solid"
+            style={{ display: 'flex', gap: 8 }}
+            onChange={(e) => {
+              const nextType = e.target.value as FinanceOperationType;
+              if (nextType === 'income') {
+                form.setFieldsValue({
+                  type: nextType,
+                  category: 'sale',
+                  project_id: null,
+                } as Record<string, unknown>);
+              } else {
+                form.setFieldsValue({
+                  type: nextType,
+                  category: 'other',
+                  project_id: null,
+                } as Record<string, unknown>);
+              }
+            }}
+          >
+            <Radio.Button value="income">Income</Radio.Button>
+            <Radio.Button value="expense">Expense</Radio.Button>
+          </Radio.Group>
+        </Form.Item>
 
         {transactionType === 'expense' && (
-          <RHFSelect<TransactionFormValues, 'category'>
-            control={control}
-            name="category"
-            label="Category"
-            placeholder="Select category"
-            disabled={isEdit}
-            options={categories.map((cat) => ({ value: cat.value, label: cat.label }))}
-          />
+          <Form.Item name="category" label="Category">
+            <Select
+              placeholder="Select category"
+              disabled={isEdit}
+              options={categories.map((cat) => ({ value: cat.value, label: cat.label }))}
+            />
+          </Form.Item>
         )}
 
         {isGoldSale && (
-          <RHFSelect<TransactionFormValues, 'project_id'>
-            control={control}
-            name="project_id"
-            label="Project"
-            placeholder="Select project"
-            options={[
-              { value: 'wow_tbc', label: 'WoW TBC Classic' },
-              { value: 'wow_midnight', label: 'WoW Midnight' },
-            ]}
-          />
+          <Form.Item name="project_id" label="Project">
+            <Select
+              placeholder="Select project"
+              options={[
+                { value: 'wow_tbc', label: 'WoW TBC Classic' },
+                { value: 'wow_midnight', label: 'WoW Midnight' },
+              ]}
+            />
+          </Form.Item>
         )}
 
         {isGoldSale && (
@@ -261,25 +296,19 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
             </Text>
 
             <Space direction="vertical" style={{ width: '100%' }} size="middle">
-              <RHFInputNumber<TransactionFormValues, 'gold_amount'>
-                control={control}
-                name="gold_amount"
-                label="Gold Amount (g)"
-                style={{ width: '100%' }}
-                min={0}
-                placeholder="Enter gold amount"
-              />
+              <Form.Item name="gold_amount" label="Gold Amount (g)">
+                <InputNumber style={{ width: '100%' }} min={0} placeholder="Enter gold amount" />
+              </Form.Item>
 
-              <RHFInputNumber<TransactionFormValues, 'gold_price_at_time'>
-                control={control}
-                name="gold_price_at_time"
-                label="Gold Price (per 1000g)"
-                style={{ width: '100%' }}
-                min={0}
-                step={0.01}
-                placeholder="Enter gold price"
-                prefix="$"
-              />
+              <Form.Item name="gold_price_at_time" label="Gold Price (per 1000g)">
+                <InputNumber
+                  style={{ width: '100%' }}
+                  min={0}
+                  step={0.01}
+                  placeholder="Enter gold price"
+                  prefix="$"
+                />
+              </Form.Item>
 
               <div
                 style={{
@@ -303,36 +332,37 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         )}
 
         {!isGoldSale && (
-          <RHFInputNumber<TransactionFormValues, 'amount'>
-            control={control}
-            name="amount"
-            label="Amount (USD)"
-            style={{ width: '100%' }}
-            min={0}
-            step={0.01}
-            placeholder="Enter amount"
-            prefix="$"
-          />
+          <Form.Item name="amount" label="Amount (USD)">
+            <InputNumber
+              style={{ width: '100%' }}
+              min={0}
+              step={0.01}
+              placeholder="Enter amount"
+              prefix="$"
+            />
+          </Form.Item>
         )}
 
-        <RHFDatePicker<TransactionFormValues, 'date', number>
-          control={control}
-          name="date"
-          label="Date & Time"
-          style={{ width: '100%' }}
-          format="DD.MM.YYYY HH:mm"
-          showTime={{ format: 'HH:mm' }}
-          toFormValue={(date) => (date ? date.valueOf() : Date.now())}
-          fromFormValue={(value) => (typeof value === 'number' ? dayjs(value) : null)}
-        />
+        <Form.Item name="date" label="Date & Time" tooltip="Format: DD.MM.YYYY HH:mm">
+          <DatePicker
+            style={{ width: '100%' }}
+            format="DD.MM.YYYY HH:mm"
+            showTime={{ format: 'HH:mm' }}
+            value={(() => {
+              const current = form.getFieldValue('date');
+              if (dayjs.isDayjs(current)) return current;
+              if (typeof current === 'number') return dayjs(current);
+              return null;
+            })()}
+            onChange={(date) => {
+              form.setFieldValue('date', date ? date.valueOf() : Date.now());
+            }}
+          />
+        </Form.Item>
 
-        <RHFTextArea<TransactionFormValues, 'description'>
-          control={control}
-          name="description"
-          label="Description"
-          rows={2}
-          placeholder="Enter transaction description (optional)"
-        />
+        <Form.Item name="description" label="Description">
+          <TextArea rows={2} placeholder="Enter transaction description (optional)" />
+        </Form.Item>
       </Form>
     </ThemeModal>
   );

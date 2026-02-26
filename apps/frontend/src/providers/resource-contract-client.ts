@@ -13,6 +13,11 @@ interface ResourceListQuery {
   sort?: string;
   order?: 'asc' | 'desc';
   q?: string;
+  status?: string;
+  type?: string;
+  country?: string;
+  country_code?: string;
+  bot_id?: string;
 }
 
 export async function listResourcesViaContract(

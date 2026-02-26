@@ -89,7 +89,7 @@ export class ProvisioningService {
   }
 
   private clone<TValue>(value: TValue): TValue {
-    return JSON.parse(JSON.stringify(value)) as TValue;
+    return structuredClone(value) as TValue;
   }
 
   private mapProfilePayload(payload: unknown): UnattendProfileRecord {

@@ -4,6 +4,8 @@ import {
   botListQuerySchema,
   botMutationSchema,
 } from '@botmox/api-contract';
+import { Transform, Type } from 'class-transformer';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 import {
   BadRequestException,
   Body,
@@ -17,10 +19,15 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { z } from 'zod';
-import { TenantCrudControllerCoreBase } from '../common/tenant-crud.controller-core-base';
+import { getRequestIdentity } from '../auth/request-identity.util';
+import {
+  createBadRequestValidationPipe,
+  ZodSchemaValidationPipe,
+} from '../common/http-validation.util';
 import { type BotsListQuery, BotsService, BotsServiceValidationError } from './bots.service';
 
 const botIdSchema = z
@@ -28,17 +35,155 @@ const botIdSchema = z
   .min(1)
   .transform((value) => value.trim())
   .refine((value) => value.length > 0, 'Bot id is required');
+const botIdParamPipe = createBadRequestValidationPipe('BOTS_INVALID_ID', 'Invalid bot id');
+const botListQueryPipe = createBadRequestValidationPipe(
+  'BOTS_INVALID_LIST_QUERY',
+  'Invalid bots list query payload',
+);
+const botMutationBodyPipe = new ZodSchemaValidationPipe(
+  botMutationSchema,
+  'BOTS_INVALID_MUTATION_BODY',
+  'Invalid bot mutation payload',
+);
+const botTransitionBodyPipe = new ZodSchemaValidationPipe(
+  botLifecycleTransitionSchema,
+  'BOTS_INVALID_TRANSITION_BODY',
+  'Invalid bot transition payload',
+);
+const botBanBodyPipe = new ZodSchemaValidationPipe(
+  botBanDetailsSchema,
+  'BOTS_INVALID_BAN_BODY',
+  'Invalid bot ban payload',
+);
+
+class BotIdParamDto {
+  @Transform(({ value }) => String(value ?? '').trim())
+  @IsString()
+  @MinLength(1)
+  id!: string;
+}
+
+class BotListQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  limit?: number;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value)))
+  @IsString()
+  @MinLength(1)
+  sort?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value)))
+  @IsIn(['asc', 'desc'])
+  order?: 'asc' | 'desc';
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value).trim()))
+  @IsString()
+  q?: string;
+}
 
 @Controller('bots')
-export class BotsController extends TenantCrudControllerCoreBase<
-  Record<string, unknown>,
-  Record<string, unknown>
-> {
+export class BotsController {
   constructor(private readonly botsService: BotsService) {
-    super();
+    // no-op
   }
 
-  protected parseId(id: string): string {
+  private ensureAuthHeader(authorization: string | undefined): void {
+    if (!authorization) {
+      throw new UnauthorizedException({
+        code: 'MISSING_BEARER_TOKEN',
+        message: 'Missing bearer token',
+      });
+    }
+  }
+
+  private getTenantId(req: Request): string {
+    return getRequestIdentity(req).tenantId;
+  }
+
+  private getExplicitIdFromBody(body: Record<string, unknown>): string | undefined {
+    return typeof body.id === 'string' ? body.id.trim() : undefined;
+  }
+
+  private buildDeleteResponseData(id: string): { id: string; deleted: boolean } {
+    return { id, deleted: true };
+  }
+
+  private async getOneCore(
+    authorization: string | undefined,
+    id: string,
+    req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    this.ensureAuthHeader(authorization);
+    const parsedId = this.parseId(id);
+    const tenantId = this.getTenantId(req);
+    const entity = await this.getEntityById(parsedId, tenantId);
+    if (!entity) {
+      throw new NotFoundException(this.getNotFoundPayload());
+    }
+    return { success: true, data: entity };
+  }
+
+  private async createCore(
+    authorization: string | undefined,
+    body: unknown,
+    req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    this.ensureAuthHeader(authorization);
+    const parsedBody = this.parseCreateBody(body);
+    const tenantId = this.getTenantId(req);
+    const explicitId = this.getExplicitIdFromBody(parsedBody);
+    return {
+      success: true,
+      data: await this.createEntity(parsedBody, explicitId, tenantId),
+    };
+  }
+
+  private async updateCore(
+    authorization: string | undefined,
+    id: string,
+    body: unknown,
+    req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    this.ensureAuthHeader(authorization);
+    const parsedId = this.parseId(id);
+    const parsedBody = this.parseUpdateBody(body);
+    const tenantId = this.getTenantId(req);
+    const updated = await this.updateEntity(parsedId, parsedBody, tenantId);
+    if (!updated) {
+      throw new NotFoundException(this.getNotFoundPayload());
+    }
+    return { success: true, data: updated };
+  }
+
+  private async removeCore(
+    authorization: string | undefined,
+    id: string,
+    req: Request,
+  ): Promise<{ success: true; data: { id: string; deleted: boolean } }> {
+    this.ensureAuthHeader(authorization);
+    const parsedId = this.parseId(id);
+    const tenantId = this.getTenantId(req);
+    const deleted = await this.removeEntity(parsedId, tenantId);
+    if (!deleted) {
+      throw new NotFoundException(this.getNotFoundPayload());
+    }
+    return { success: true, data: this.buildDeleteResponseData(parsedId) };
+  }
+
+  private parseId(id: string): string {
     const parsed = botIdSchema.safeParse(String(id || ''));
     if (!parsed.success) {
       throw new BadRequestException({
@@ -62,7 +207,7 @@ export class BotsController extends TenantCrudControllerCoreBase<
     return parsed.data;
   }
 
-  protected parseCreateBody(body: unknown): Record<string, unknown> {
+  private parseCreateBody(body: unknown): Record<string, unknown> {
     const parsed = botMutationSchema.safeParse(body ?? {});
     if (!parsed.success) {
       throw new BadRequestException({
@@ -74,7 +219,7 @@ export class BotsController extends TenantCrudControllerCoreBase<
     return parsed.data;
   }
 
-  protected parseUpdateBody(body: unknown): Record<string, unknown> {
+  private parseUpdateBody(body: unknown): Record<string, unknown> {
     return this.parseCreateBody(body);
   }
 
@@ -104,18 +249,18 @@ export class BotsController extends TenantCrudControllerCoreBase<
     return parsed.data;
   }
 
-  protected getNotFoundPayload(): { code: string; message: string } {
+  private getNotFoundPayload(): { code: string; message: string } {
     return {
       code: 'BOT_NOT_FOUND',
       message: 'Bot not found',
     };
   }
 
-  protected getEntityById(id: string, tenantId: string) {
+  private getEntityById(id: string, tenantId: string) {
     return this.botsService.getById(id, tenantId);
   }
 
-  protected createEntity(
+  private createEntity(
     body: Record<string, unknown>,
     explicitId: string | undefined,
     tenantId: string,
@@ -123,18 +268,18 @@ export class BotsController extends TenantCrudControllerCoreBase<
     return this.botsService.create(body, explicitId, tenantId);
   }
 
-  protected updateEntity(id: string, body: Record<string, unknown>, tenantId: string) {
+  private updateEntity(id: string, body: Record<string, unknown>, tenantId: string) {
     return this.botsService.patch(id, body, tenantId);
   }
 
-  protected removeEntity(id: string, tenantId: string) {
+  private removeEntity(id: string, tenantId: string) {
     return this.botsService.remove(id, tenantId);
   }
 
   @Get()
   async list(
     @Headers('authorization') authorization: string | undefined,
-    @Query() query: Record<string, unknown>,
+    @Query(botListQueryPipe) query: BotListQueryDto,
     @Req() req: Request,
   ): Promise<{
     success: true;
@@ -142,7 +287,7 @@ export class BotsController extends TenantCrudControllerCoreBase<
     meta: { total: number; page: number; limit: number };
   }> {
     this.ensureAuthHeader(authorization);
-    const parsedQuery = this.parseListQuery(query);
+    const parsedQuery = this.parseListQuery(query as Record<string, unknown>);
     const tenantId = this.getTenantId(req);
     const result = await this.botsService.list(parsedQuery, tenantId);
     return {
@@ -159,16 +304,16 @@ export class BotsController extends TenantCrudControllerCoreBase<
   @Get(':id')
   async getOne(
     @Headers('authorization') authorization: string | undefined,
-    @Param('id') id: string,
+    @Param(botIdParamPipe) params: BotIdParamDto | string,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    return this.getOneCore(authorization, id, req);
+    return this.getOneCore(authorization, typeof params === 'string' ? params : params.id, req);
   }
 
   @Post()
   async create(
     @Headers('authorization') authorization: string | undefined,
-    @Body() body: unknown,
+    @Body(botMutationBodyPipe) body: Record<string, unknown>,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
     return this.createCore(authorization, body, req);
@@ -177,21 +322,21 @@ export class BotsController extends TenantCrudControllerCoreBase<
   @Patch(':id')
   async patch(
     @Headers('authorization') authorization: string | undefined,
-    @Param('id') id: string,
-    @Body() body: unknown,
+    @Param(botIdParamPipe) params: BotIdParamDto | string,
+    @Body(botMutationBodyPipe) body: Record<string, unknown>,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    return this.updateCore(authorization, id, body, req);
+    return this.updateCore(authorization, typeof params === 'string' ? params : params.id, body, req);
   }
 
   @Get(':id/lifecycle')
   async getLifecycle(
     @Headers('authorization') authorization: string | undefined,
-    @Param('id') id: string,
+    @Param(botIdParamPipe) params: BotIdParamDto | string,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
+    const parsedId = this.parseId(typeof params === 'string' ? params : params.id);
     const tenantId = this.getTenantId(req);
     const entity = await this.botsService.getById(parsedId, tenantId);
     if (!entity) {
@@ -209,11 +354,11 @@ export class BotsController extends TenantCrudControllerCoreBase<
   @Get(':id/lifecycle/transitions')
   async getLifecycleTransitions(
     @Headers('authorization') authorization: string | undefined,
-    @Param('id') id: string,
+    @Param(botIdParamPipe) params: BotIdParamDto | string,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown[] }> {
     this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
+    const parsedId = this.parseId(typeof params === 'string' ? params : params.id);
     const tenantId = this.getTenantId(req);
     const transitions = await this.botsService.getStageTransitions(parsedId, tenantId);
     if (!transitions) {
@@ -231,11 +376,11 @@ export class BotsController extends TenantCrudControllerCoreBase<
   @Get(':id/lifecycle/is-banned')
   async isLifecycleBanned(
     @Headers('authorization') authorization: string | undefined,
-    @Param('id') id: string,
+    @Param(botIdParamPipe) params: BotIdParamDto | string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { banned: boolean } }> {
     this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
+    const parsedId = this.parseId(typeof params === 'string' ? params : params.id);
     const tenantId = this.getTenantId(req);
     const banned = await this.botsService.isBanned(parsedId, tenantId);
     if (banned === null) {
@@ -255,13 +400,15 @@ export class BotsController extends TenantCrudControllerCoreBase<
   @Post(':id/lifecycle/transition')
   async transitionLifecycle(
     @Headers('authorization') authorization: string | undefined,
-    @Param('id') id: string,
-    @Body() body: unknown,
+    @Param(botIdParamPipe) params: BotIdParamDto | string,
+    @Body(botTransitionBodyPipe) body: {
+      status: 'offline' | 'prepare' | 'leveling' | 'profession' | 'farming' | 'banned';
+    },
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
-    const parsedBody = this.parseTransitionBody(body);
+    const parsedId = this.parseId(typeof params === 'string' ? params : params.id);
+    const parsedBody = body;
     const tenantId = this.getTenantId(req);
 
     try {
@@ -291,13 +438,13 @@ export class BotsController extends TenantCrudControllerCoreBase<
   @Post(':id/lifecycle/ban')
   async banLifecycle(
     @Headers('authorization') authorization: string | undefined,
-    @Param('id') id: string,
-    @Body() body: unknown,
+    @Param(botIdParamPipe) params: BotIdParamDto | string,
+    @Body(botBanBodyPipe) body: Record<string, unknown>,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
-    const parsedBody = this.parseBanBody(body);
+    const parsedId = this.parseId(typeof params === 'string' ? params : params.id);
+    const parsedBody = body;
     const tenantId = this.getTenantId(req);
     const updated = await this.botsService.ban(parsedId, parsedBody, tenantId);
     if (!updated) {
@@ -315,11 +462,11 @@ export class BotsController extends TenantCrudControllerCoreBase<
   @Post(':id/lifecycle/unban')
   async unbanLifecycle(
     @Headers('authorization') authorization: string | undefined,
-    @Param('id') id: string,
+    @Param(botIdParamPipe) params: BotIdParamDto | string,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
+    const parsedId = this.parseId(typeof params === 'string' ? params : params.id);
     const tenantId = this.getTenantId(req);
 
     try {
@@ -349,10 +496,10 @@ export class BotsController extends TenantCrudControllerCoreBase<
   @Delete(':id')
   async remove(
     @Headers('authorization') authorization: string | undefined,
-    @Param('id') id: string,
+    @Param(botIdParamPipe) params: BotIdParamDto | string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { id: string; deleted: boolean } }> {
-    return this.removeCore(authorization, id, req) as Promise<{
+    return this.removeCore(authorization, typeof params === 'string' ? params : params.id, req) as Promise<{
       success: true;
       data: { id: string; deleted: boolean };
     }>;

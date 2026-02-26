@@ -93,6 +93,11 @@ export const resourceListQuerySchema = z.object({
   sort: z.string().min(1).optional(),
   order: z.enum(['asc', 'desc']).optional(),
   q: z.string().trim().optional(),
+  status: z.string().trim().min(1).optional(),
+  type: z.string().trim().min(1).optional(),
+  country: z.string().trim().min(1).optional(),
+  country_code: z.string().trim().min(1).optional(),
+  bot_id: z.string().trim().min(1).optional(),
 });
 
 export const resourceMutationSchema = z

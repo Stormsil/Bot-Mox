@@ -1,4 +1,4 @@
-import { useInfiniteList } from '@refinedev/core';
+import { useInfiniteList, useList } from '@refinedev/core';
 import { Spin } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -10,11 +10,6 @@ import { calculateFinanceSummary } from '../../entities/finance/lib/analytics';
 import { mapFinanceOperationsFromInfinitePages } from '../../entities/finance/lib/financeOperationMapper';
 import { useNotesIndexQuery } from '../../entities/notes/api/useNotesIndexQuery';
 import type { NoteIndex } from '../../entities/notes/model/types';
-import {
-  useLicensesQuery,
-  useProxiesQuery,
-  useSubscriptionsQuery,
-} from '../../entities/resources/api/useResourcesQueries';
 import type {
   BotLicense,
   Proxy as ProxyResource,
@@ -30,15 +25,29 @@ import { useDatacenterCollapsedSections, useDatacenterCurrentTime } from './useD
 
 const FINANCE_PAGE_SIZE = 200;
 const FINANCE_REFETCH_INTERVAL_MS = 4_000;
+const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
+const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 export const DatacenterPage: React.FC = () => {
   const navigate = useNavigate();
   const currentTime = useDatacenterCurrentTime();
   const [isFinanceInitialLoadComplete, setIsFinanceInitialLoadComplete] = useState(false);
   const botsMapQuery = useBotsMapQuery();
-  const licensesQuery = useLicensesQuery();
-  const proxiesQuery = useProxiesQuery();
-  const subscriptionsQuery = useSubscriptionsQuery();
+  const licensesList = useList<BotLicense>({
+    resource: 'licenses',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
+  const proxiesList = useList<ProxyResource>({
+    resource: 'proxies',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
+  const subscriptionsList = useList<Subscription>({
+    resource: 'subscriptions',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
   const notesIndexQuery = useNotesIndexQuery();
   const subscriptionSettingsQuery = useSubscriptionSettingsQuery();
 
@@ -111,15 +120,21 @@ export const DatacenterPage: React.FC = () => {
     [botsMapQuery.data],
   );
   const botsLoading = botsMapQuery.isLoading;
-  const licenses = useMemo<BotLicense[]>(() => licensesQuery.data || [], [licensesQuery.data]);
-  const licensesLoading = licensesQuery.isLoading;
-  const proxies = useMemo<ProxyResource[]>(() => proxiesQuery.data || [], [proxiesQuery.data]);
-  const proxiesLoading = proxiesQuery.isLoading;
-  const subscriptions = useMemo<Subscription[]>(
-    () => subscriptionsQuery.data || [],
-    [subscriptionsQuery.data],
+  const licenses = useMemo<BotLicense[]>(
+    () => licensesList.result.data || [],
+    [licensesList.result.data],
   );
-  const subscriptionsLoading = subscriptionsQuery.isLoading;
+  const licensesLoading = licensesList.query.isLoading;
+  const proxies = useMemo<ProxyResource[]>(
+    () => proxiesList.result.data || [],
+    [proxiesList.result.data],
+  );
+  const proxiesLoading = proxiesList.query.isLoading;
+  const subscriptions = useMemo<Subscription[]>(
+    () => subscriptionsList.result.data || [],
+    [subscriptionsList.result.data],
+  );
+  const subscriptionsLoading = subscriptionsList.query.isLoading;
   const notesIndex = useMemo<NoteIndex[]>(() => notesIndexQuery.data || [], [notesIndexQuery.data]);
   const notesLoading = notesIndexQuery.isLoading;
   const warningDays = subscriptionSettingsQuery.data?.warning_days || 7;
@@ -131,17 +146,17 @@ export const DatacenterPage: React.FC = () => {
     uiLogger.error('Error loading bots:', botsMapQuery.error);
   }, [botsMapQuery.error]);
   useEffect(() => {
-    if (!licensesQuery.error) return;
-    uiLogger.error('Error loading licenses:', licensesQuery.error);
-  }, [licensesQuery.error]);
+    if (!licensesList.query.error) return;
+    uiLogger.error('Error loading licenses:', licensesList.query.error);
+  }, [licensesList.query.error]);
   useEffect(() => {
-    if (!proxiesQuery.error) return;
-    uiLogger.error('Error loading proxies:', proxiesQuery.error);
-  }, [proxiesQuery.error]);
+    if (!proxiesList.query.error) return;
+    uiLogger.error('Error loading proxies:', proxiesList.query.error);
+  }, [proxiesList.query.error]);
   useEffect(() => {
-    if (!subscriptionsQuery.error) return;
-    uiLogger.error('Error loading subscriptions:', subscriptionsQuery.error);
-  }, [subscriptionsQuery.error]);
+    if (!subscriptionsList.query.error) return;
+    uiLogger.error('Error loading subscriptions:', subscriptionsList.query.error);
+  }, [subscriptionsList.query.error]);
   useEffect(() => {
     if (!notesIndexQuery.error) return;
     uiLogger.error('Error loading notes index:', notesIndexQuery.error);
