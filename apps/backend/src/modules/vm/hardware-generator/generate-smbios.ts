@@ -1,9 +1,6 @@
-// SMBIOS Config Generator — port of generator_v3.py to JavaScript/TypeScript
-// Full platform-grouped SMBIOS args generator for QEMU/KVM VMs
-
-import dayjs from 'dayjs';
-import { PLATFORM_GROUPS } from './smbiosPlatformGroups';
-import { RAM_DB } from './smbiosRamDb';
+import { randomUUID } from 'node:crypto';
+import { PLATFORM_GROUPS } from './smbios-platform-groups';
+import { RAM_DB } from './smbios-ram-db';
 
 export interface BrandMeta {
   family: string;
@@ -12,15 +9,13 @@ export interface BrandMeta {
   biosVersions: string[];
 }
 
-export interface RamEntry {
-  manufacturer: string;
-  partNumber: string;
-}
-
 const ALLOWED_RAM_SPEEDS = [2133, 2666] as const;
 
 function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+  if (arr.length === 0) {
+    throw new Error('cannot pick from empty array');
+  }
+  return arr[Math.floor(Math.random() * arr.length)] as T;
 }
 
 function pickRamSpeed(groupSpeeds: number[]): number {
@@ -47,15 +42,10 @@ function fallbackUuidV4(): string {
 
 function generateUuidV4(): string {
   try {
-    const cryptoApi = globalThis.crypto;
-    if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
-      return cryptoApi.randomUUID();
-    }
+    return randomUUID();
   } catch {
-    // Fall through to non-crypto fallback in insecure environments.
+    return fallbackUuidV4();
   }
-
-  return fallbackUuidV4();
 }
 
 function randHex8(): string {
@@ -71,11 +61,11 @@ function randAlphaNum(length: number): string {
   return result;
 }
 
-// --- SERIAL NUMBER GENERATORS ---
-
 function generateSerial(brand: string): string {
   if (['HUANANZHI', 'Machinist', 'Kllisre'].includes(brand)) {
-    if (Math.random() < 0.3) return 'Default string';
+    if (Math.random() < 0.3) {
+      return 'Default string';
+    }
     const year = randInt(2018, 2024);
     const month = String(randInt(1, 12)).padStart(2, '0');
     const day = String(randInt(1, 28)).padStart(2, '0');
@@ -89,11 +79,15 @@ function generateSerial(brand: string): string {
     return `MS-${randInt(1000, 9999)}${randInt(10000000, 99999999)}`;
   }
   if (brand === 'Gigabyte') {
-    if (Math.random() < 0.5) return 'Default string';
+    if (Math.random() < 0.5) {
+      return 'Default string';
+    }
     return `SN${randInt(1000000000, 9999999999)}`;
   }
   if (brand === 'ASRock') {
-    if (Math.random() < 0.7) return 'To be filled by O.E.M.';
+    if (Math.random() < 0.7) {
+      return 'To be filled by O.E.M.';
+    }
     return randAlphaNum(pick([10, 12]));
   }
   return 'Default string';
@@ -111,7 +105,9 @@ function generateMbSerial(brand: string, biosDateStr: string): string {
     return `MS-${randInt(1000, 9999)}${randInt(10000000, 99999999)}`;
   }
   if (brand === 'Gigabyte') {
-    if (Math.random() < 0.4) return 'Default string';
+    if (Math.random() < 0.4) {
+      return 'Default string';
+    }
     return `SN0803${randInt(100000, 999999)}`;
   }
   if (brand === 'ASRock') {
@@ -119,8 +115,6 @@ function generateMbSerial(brand: string, biosDateStr: string): string {
   }
   return 'Default string';
 }
-
-// --- BRAND METADATA ---
 
 const BRAND_META: Record<string, BrandMeta> = {
   ASUS: {
@@ -173,10 +167,6 @@ const BRAND_META: Record<string, BrandMeta> = {
   },
 };
 
-// --- PLATFORM/RAM DATA ---
-
-// --- MAIN GENERATOR ---
-
 export interface SmbiosResult {
   args: string;
   brand: string;
@@ -184,61 +174,61 @@ export interface SmbiosResult {
   cpu: string;
 }
 
-/**
- * Generate a full SMBIOS args string for QEMU/KVM VM.
- * Returns the generated args line with randomized hardware fingerprints.
- */
+function formatBiosDate(daysAgo: number): string {
+  const now = new Date();
+  const shifted = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+  const mm = String(shifted.getMonth() + 1).padStart(2, '0');
+  const dd = String(shifted.getDate()).padStart(2, '0');
+  const yyyy = shifted.getFullYear();
+  return `${mm}/${dd}/${yyyy}`;
+}
+
+function getRamParts(speed: number): [string, string][] {
+  const parts = RAM_DB[speed] ?? RAM_DB[2133];
+  if (!parts || parts.length === 0) {
+    throw new Error('ram dataset is not configured');
+  }
+  return parts;
+}
+
 export function generateSmbios(): SmbiosResult {
   const hvVendorId = 'GenuineIntel';
-
-  // Select platform group -> board + CPU + RAM
   const group = pick(PLATFORM_GROUPS);
   const [brand, product] = pick(group.boards);
   const cpu = pick(group.cpus);
   const ramSpeed = pickRamSpeed(group.ramSpeeds);
-  // Keep dual-channel layout to avoid synthetic extra DIMM slots (Bank 2/3).
   const ramCount = 2;
 
-  // Brand metadata
-  const meta = BRAND_META[brand];
+  const meta =
+    BRAND_META[brand] ??
+    ({
+      family: 'Default string',
+      biosVendor: 'American Megatrends Inc.',
+      type1Manufacturer: 'INTEL',
+      biosVersions: ['5.11'],
+    } satisfies BrandMeta);
   const vendor = meta.biosVendor;
   const type1Manufacturer = meta.type1Manufacturer;
   const family = meta.family;
   const biosVersion = pick(meta.biosVersions);
 
-  // BIOS release
   const biosReleases = ['5.11', '5.12', '5.13', '5.17', '5.19', '5.22', '6.00', '6.41', '6.52'];
   const release = pick(biosReleases);
+  const biosDate = formatBiosDate(randInt(100, 1800));
 
-  // BIOS date - 100 to 1800 days ago
-  const daysAgo = randInt(100, 1800);
-  const biosDateObj = dayjs().subtract(daysAgo, 'day').toDate();
-  const mm = String(biosDateObj.getMonth() + 1).padStart(2, '0');
-  const dd = String(biosDateObj.getDate()).padStart(2, '0');
-  const yyyy = biosDateObj.getFullYear();
-  const biosDate = `${mm}/${dd}/${yyyy}`;
-
-  // RAM
-  const ramParts = RAM_DB[ramSpeed];
+  const ramParts = getRamParts(ramSpeed);
   const [ramMfg, ramPart] = pick(ramParts);
 
-  // Serials
   const generatedUuid = generateUuidV4();
   const serialSys = generateSerial(brand);
   const serialMb = generateMbSerial(brand, biosDate);
   const serialChassis = generateSerial(brand);
 
-  // type=3 varied values
   const chassisVersion = pick(['1.0', 'Default string', 'Not Specified', '2021']);
   const chassisSku = pick(['Default string', 'SKU', 'To be filled by O.E.M.']);
-
-  // type=1 version
   const type1Version = pick(['1.0', 'Default string', 'Not Specified']);
-
-  // VNC port placeholder
   const vncString = '0.0.0.0:00';
 
-  // RAM SMBIOS entries
   const dimmLabels = ['DIMM_A1', 'DIMM_B1', 'DIMM_C1', 'DIMM_D1'];
   const ramEntries: string[] = [];
   for (let i = 0; i < ramCount; i++) {
@@ -252,7 +242,6 @@ export function generateSmbios(): SmbiosResult {
   }
   const ramSmbios = ramEntries.join(' ');
 
-  // Build full args string
   const params =
     `args: -cpu 'host,hypervisor=off,kvm=off,rdtscp=off,migratable=off,hv-vendor-id=${hvVendorId}' ` +
     `-smbios 'type=0,version=BIOS Date: ${biosDate} Ver: ${biosVersion},vendor=${vendor},uefi=on,release=${release},date=AMI ${biosDate}' ` +

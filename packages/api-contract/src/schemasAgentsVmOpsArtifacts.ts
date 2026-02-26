@@ -262,6 +262,23 @@ export const vmResolvePathSchema = z.object({
   uuid: z.string().trim().min(1),
 });
 
+export const vmHardwareFingerprintQuerySchema = z.object({}).strict();
+
+export const vmHardwareFingerprintMetaSchema = z
+  .object({
+    brand: z.string().trim().min(1).optional(),
+    product: z.string().trim().min(1).optional(),
+    cpu: z.string().trim().min(1).optional(),
+  })
+  .catchall(jsonValueSchema);
+
+export const vmHardwareFingerprintResponseSchema = z.object({
+  mac: z.string().trim().min(1),
+  ssdSerial: z.string().trim().min(1),
+  smbiosArgs: z.string().trim().min(1),
+  meta: vmHardwareFingerprintMetaSchema,
+});
+
 export const vmRecordSchema = z
   .object({
     tenant_id: z.string().trim().min(1),

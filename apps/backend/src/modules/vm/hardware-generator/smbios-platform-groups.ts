@@ -6,7 +6,6 @@ export interface PlatformGroup {
 }
 
 export const PLATFORM_GROUPS: PlatformGroup[] = [
-  // X99 (LGA2011-3)
   {
     boards: [
       ['ASUS', 'X99-DELUXE'],
@@ -92,8 +91,6 @@ export const PLATFORM_GROUPS: PlatformGroup[] = [
     ramSpeeds: [2133, 2400],
     dimmCounts: [2, 4],
   },
-
-  // Z97 / H97 (LGA1150, Haswell Refresh)
   {
     boards: [
       ['ASUS', 'Z97-A'],
@@ -127,8 +124,6 @@ export const PLATFORM_GROUPS: PlatformGroup[] = [
     ramSpeeds: [1600, 1866, 2133],
     dimmCounts: [2, 4],
   },
-
-  // Z170 / B150 (LGA1151, Skylake)
   {
     boards: [
       ['ASUS', 'Z170-A'],
@@ -162,8 +157,6 @@ export const PLATFORM_GROUPS: PlatformGroup[] = [
     ramSpeeds: [2133, 2400],
     dimmCounts: [2, 4],
   },
-
-  // Z270 / B250 (LGA1151, Kaby Lake)
   {
     boards: [
       ['ASUS', 'PRIME Z270-A'],
@@ -196,8 +189,6 @@ export const PLATFORM_GROUPS: PlatformGroup[] = [
     ramSpeeds: [2133, 2400, 2666],
     dimmCounts: [2, 4],
   },
-
-  // Z370 / Z390 / B360 / B365 (LGA1151v2, Coffee Lake)
   {
     boards: [
       ['ASUS', 'ROG STRIX Z390-E GAMING'],
@@ -239,8 +230,6 @@ export const PLATFORM_GROUPS: PlatformGroup[] = [
     ramSpeeds: [2400, 2666, 3200],
     dimmCounts: [2, 4],
   },
-
-  // Z490 / Z590 / B460 / B560 (LGA1200, Comet/Rocket Lake)
   {
     boards: [
       ['ASUS', 'ROG STRIX Z490-E GAMING'],

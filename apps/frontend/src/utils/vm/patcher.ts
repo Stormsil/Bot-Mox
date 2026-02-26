@@ -1,10 +1,6 @@
 // VM Config Patcher — TypeScript port of Patcher.cs
 // Patches QEMU VM config with spoofed hardware (SMBIOS, MAC, serial)
 
-import { generateMac } from './generateMac';
-import { generateSmbios } from './generateSmbios';
-import { generateSsdSerial } from './generateSsdSerial';
-
 export interface PatchChange {
   field: string;
   oldValue: string;
@@ -19,6 +15,12 @@ export interface PatchResult {
   generatedSerial: string;
   vncPort: number;
   argsBlock: string;
+}
+
+export interface PatchHardwareValues {
+  mac: string;
+  ssdSerial: string;
+  smbiosArgs: string;
 }
 
 const RX_ARGS_PORT = /0\.0\.0\.0:(\d{2})/;
@@ -75,7 +77,12 @@ function extractPort(argsLine: string): string {
  * Patch a QEMU VM config with new hardware identifiers.
  * Direct port of Patcher.cs BuildPatchedAsync.
  */
-export function patchConfig(cfg: string, vmName: string, vmSeedId?: number): PatchResult {
+export function patchConfig(
+  cfg: string,
+  vmName: string,
+  hardware: PatchHardwareValues,
+  vmSeedId?: number,
+): PatchResult {
   // 1. Resolve VM index from name suffix, fallback to VM ID.
   const vmNumber = deriveVmNumber(vmName, vmSeedId);
   const vmbr = Math.max(1, vmNumber);
@@ -85,11 +92,10 @@ export function patchConfig(cfg: string, vmName: string, vmSeedId?: number): Pat
   const host = Math.floor(Math.random() * 81) + 10; // [10, 90]
   const targetIp = `192.168.${subnet}.${host}`;
 
-  // 3. Generate SMBIOS, MAC, serial (replaces .exe execution)
-  const smbiosResult = generateSmbios();
-  let argsBlock = smbiosResult.args;
-  const newMac = generateMac();
-  const newSn = generateSsdSerial();
+  // 3. Use pre-fetched SMBIOS, MAC, serial
+  let argsBlock = hardware.smbiosArgs;
+  const newMac = hardware.mac;
+  const newSn = hardware.ssdSerial;
 
   // Normalize line endings in argsBlock
   const eol = cfg.includes('\r\n') ? '\r\n' : '\n';

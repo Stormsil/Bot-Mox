@@ -23,6 +23,12 @@ export {
   updateUnattendProfile,
 } from './unattendProfileFacade';
 export {
+  getVmHardwareFingerprint,
+  getVmHardwareFingerprintEnvelope,
+  type VmHardwareFingerprintMeta,
+  type VmHardwareFingerprintPayload,
+} from './vmHardwareFingerprintFacade';
+export {
   getClusterResources,
   getVMConfig,
   listVMs,
