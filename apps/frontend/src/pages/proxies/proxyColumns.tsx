@@ -5,6 +5,7 @@ import {
   RobotOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
+import { DeleteButton, EditButton } from '@refinedev/antd';
 import { Button, Progress, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -46,7 +47,6 @@ interface BuildProxyColumnsParams {
   copyProxyString: (proxy: ProxyResource, event?: React.MouseEvent) => void;
   handleRecheckIPQS: (proxy: ProxyWithBot) => void;
   onEdit: (proxyId: string) => void;
-  handleDelete: (proxy: ProxyWithBot) => void;
 }
 
 export function buildProxyColumns({
@@ -56,7 +56,6 @@ export function buildProxyColumns({
   copyProxyString,
   handleRecheckIPQS,
   onEdit,
-  handleDelete,
 }: BuildProxyColumnsParams): ColumnsType<ProxyWithBot> {
   return [
     {
@@ -276,21 +275,41 @@ export function buildProxyColumns({
               disabled={checkingProxyId === record.id}
               tooltip="Recheck IPQS"
             />
-            <TableActionButton
+            <EditButton
+              hideText
+              size="small"
+              shape="circle"
               icon={<EditOutlined />}
-              onClick={() => onEdit(record.id)}
-              tooltip="Edit"
+              resource="proxies"
+              recordItemId={record.id}
+              onClick={(event) => {
+                event.preventDefault();
+                onEdit(String(record.id));
+              }}
             />
             <TableActionButton
               icon={<CopyOutlined />}
               onClick={() => copyProxyString(record)}
               tooltip="Copy"
             />
-            <TableActionButton
-              danger
+            <DeleteButton
+              hideText
+              size="small"
+              shape="circle"
               icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record)}
-              tooltip="Delete"
+              resource="proxies"
+              recordItemId={record.id}
+              confirmTitle="Delete Proxy?"
+              confirmOkText="Delete"
+              confirmCancelText="Cancel"
+              successNotification={() => ({
+                message: 'Proxy deleted',
+                type: 'success',
+              })}
+              errorNotification={() => ({
+                message: 'Failed to delete proxy',
+                type: 'error',
+              })}
             />
           </TableActionGroup>
         </div>

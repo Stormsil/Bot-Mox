@@ -9,6 +9,7 @@ import { DeleteButton } from '@refinedev/antd';
 import type { TableColumnsType } from 'antd';
 import { Button, Popover, Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
+import type { MouseEvent } from 'react';
 import { TableActionButton, TableActionGroup } from '../../../components/ui/TableActionButton';
 import type { LicenseWithBots } from '../../../entities/resources/model/types';
 import styles from '../LicensesPage.module.css';
@@ -245,8 +246,13 @@ export const buildLicenseColumns = ({
       <TableActionGroup>
         <TableActionButton
           icon={<EditOutlined />}
-          onClick={() => handlers.onEdit(record)}
+          aria-label="edit"
           tooltip="Edit"
+          onClick={(event: MouseEvent<HTMLElement>) => {
+            event.preventDefault();
+            event.stopPropagation();
+            handlers.onEdit(record);
+          }}
         />
         <TableActionButton
           icon={<CopyOutlined />}

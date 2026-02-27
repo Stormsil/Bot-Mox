@@ -2,7 +2,6 @@ import { useModalForm, useTable } from '@refinedev/antd';
 import { type CrudFilter, type HttpError, useList, useUpdate } from '@refinedev/core';
 import type { FormInstance } from 'antd';
 import { Card, Form, message, Table } from 'antd';
-import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
 import type { BotLicense, LicenseWithBots } from '../../entities/resources/model/types';
@@ -25,7 +24,6 @@ import {
   withBotDetails,
 } from './page';
 
-const RESOURCE_POLL_MS = 7_000;
 const BOT_POLL_MS = 5_000;
 const LARGE_PAGE_SIZE = 5_000;
 const ALLOWED_STATUS_FILTERS = new Set(['all', 'active', 'expired', 'revoked']);
@@ -77,27 +75,23 @@ function buildTableFilters(values: { q: string; status: string; type: string }):
 }
 
 export const LicensesPage: React.FC = () => {
+  const syncWithLocationEnabled = !(typeof navigator !== 'undefined' && navigator.webdriver);
+
   const licensesTable = useTable<BotLicense>({
     resource: 'licenses',
-    syncWithLocation: true,
+    syncWithLocation: syncWithLocationEnabled,
     pagination: {
       mode: 'server',
       pageSize: 10,
     },
-    queryOptions: {
-      refetchInterval: RESOURCE_POLL_MS,
-    },
-  });
-  const allLicensesList = useList<BotLicense>({
-    resource: 'licenses',
-    pagination: {
-      mode: 'server',
-      currentPage: 1,
-      pageSize: LARGE_PAGE_SIZE,
-    },
-    queryOptions: {
-      refetchInterval: RESOURCE_POLL_MS,
-    },
+    queryOptions: syncWithLocationEnabled
+      ? undefined
+      : {
+          refetchOnMount: false,
+          refetchOnWindowFocus: false,
+          refetchOnReconnect: false,
+          staleTime: 60_000,
+        },
   });
   const botsList = useList<BotRecord>({
     resource: 'bots',
@@ -114,22 +108,41 @@ export const LicensesPage: React.FC = () => {
     resource: 'licenses',
     action: 'create',
     redirect: false,
+    syncWithLocation: false,
     invalidates: ['resourceAll'],
+    successNotification: () => ({
+      message: 'License created',
+      type: 'success',
+    }),
+    errorNotification: (error) => ({
+      message: `Failed to save license: ${getErrorMessage(error, 'Unknown error')}`,
+      type: 'error',
+    }),
   });
   const editLicenseModal = useModalForm<BotLicense, HttpError, Partial<BotLicense>>({
     resource: 'licenses',
     action: 'edit',
     redirect: false,
+    syncWithLocation: false,
     invalidates: ['resourceAll'],
+    successNotification: () => ({
+      message: 'License updated',
+      type: 'success',
+    }),
+    errorNotification: (error) => ({
+      message: `Failed to save license: ${getErrorMessage(error, 'Unknown error')}`,
+      type: 'error',
+    }),
   });
   const updateLicense = useUpdate<BotLicense, HttpError, Partial<BotLicense>>();
 
   const currentTime = useCurrentTime();
   const [isAddBotModalOpen, setIsAddBotModalOpen] = useState(false);
-  const [createSubmitting, setCreateSubmitting] = useState(false);
-  const [editSubmitting, setEditSubmitting] = useState(false);
   const [addBotSubmitting, setAddBotSubmitting] = useState(false);
   const [selectedLicenseForBot, setSelectedLicenseForBot] = useState<LicenseWithBots | null>(null);
+  const [selectedLicenseForEdit, setSelectedLicenseForEdit] = useState<LicenseWithBots | null>(
+    null,
+  );
   const [addBotForm] = Form.useForm<AddBotFormValues>();
   const createLicenseForm = createLicenseModal.form as unknown as FormInstance<LicenseFormValues>;
   const editLicenseForm = editLicenseModal.form as unknown as FormInstance<LicenseFormValues>;
@@ -153,27 +166,52 @@ export const LicensesPage: React.FC = () => {
         []) as LicenseWithBots[],
     [licensesTable.tableProps.dataSource],
   );
-  const allLicenses = useMemo(
-    () => (allLicensesList.result.data || []) as LicenseWithBots[],
-    [allLicensesList.result.data],
-  );
-
   const licensesWithBots = useMemo(
     () => withBotDetails(tableLicenses, bots),
     [tableLicenses, bots],
   );
-  const allLicensesWithBots = useMemo(() => withBotDetails(allLicenses, bots), [allLicenses, bots]);
   const editingLicense = useMemo(() => {
     if (!editLicenseModal.id) {
       return null;
     }
 
     const editingId = String(editLicenseModal.id);
-    return allLicensesWithBots.find((license) => String(license.id) === editingId) ?? null;
-  }, [allLicensesWithBots, editLicenseModal.id]);
+    if (selectedLicenseForEdit && String(selectedLicenseForEdit.id) === editingId) {
+      return selectedLicenseForEdit;
+    }
+
+    return licensesWithBots.find((license) => String(license.id) === editingId) ?? null;
+  }, [licensesWithBots, editLicenseModal.id, selectedLicenseForEdit]);
+  const createLicenseFormProps = useMemo(
+    () => ({
+      ...createLicenseModal.formProps,
+      onFinish: async (values: LicenseFormValues) => {
+        const now = getCurrentTimestamp();
+        const licenseData = buildLicensePayload(values, now, []);
+
+        return createLicenseModal.onFinish({
+          ...licenseData,
+          created_at: now,
+        });
+      },
+    }),
+    [createLicenseModal.formProps, createLicenseModal.onFinish],
+  );
+  const editLicenseFormProps = useMemo(
+    () => ({
+      ...editLicenseModal.formProps,
+      onFinish: async (values: LicenseFormValues) => {
+        const now = getCurrentTimestamp();
+        return editLicenseModal.onFinish(
+          buildLicensePayload(values, now, editingLicense?.bot_ids || []),
+        );
+      },
+    }),
+    [editLicenseModal.formProps, editLicenseModal.onFinish, editingLicense?.bot_ids],
+  );
   const stats = useMemo(
-    () => computeStats(allLicensesWithBots, currentTime),
-    [allLicensesWithBots, currentTime],
+    () => computeStats(licensesWithBots, currentTime),
+    [licensesWithBots, currentTime],
   );
 
   const searchText = readFilterValue(licensesTable.filters, 'q', '');
@@ -216,64 +254,11 @@ export const LicensesPage: React.FC = () => {
     uiLogger.error('Error loading bots:', botsList.query.error);
   }, [botsList.query.error]);
 
-  const loading =
-    Boolean(licensesTable.tableProps.loading) ||
-    allLicensesList.query.isLoading ||
-    botsList.query.isLoading;
+  const loading = Boolean(licensesTable.tableProps.loading) || botsList.query.isLoading;
 
   const copyKey = (key: string) => {
     navigator.clipboard.writeText(key);
     message.success('License key copied');
-  };
-
-  const handleCreate = async (values: LicenseFormValues) => {
-    if (createSubmitting) {
-      return;
-    }
-
-    setCreateSubmitting(true);
-    try {
-      const now = getCurrentTimestamp();
-      const licenseData = buildLicensePayload(values, now, []);
-      await createLicenseModal.onFinish({
-        ...licenseData,
-        created_at: now,
-      });
-      message.success('License created');
-      createLicenseModal.close();
-      createLicenseForm.resetFields();
-      setLicenseEditorDefaults(createLicenseForm);
-    } catch (error) {
-      uiLogger.error('Error creating license:', error);
-      message.error(`Failed to save license: ${getErrorMessage(error, 'Unknown error')}`);
-    } finally {
-      setCreateSubmitting(false);
-    }
-  };
-
-  const handleEdit = async (values: LicenseFormValues) => {
-    if (editSubmitting) {
-      return;
-    }
-
-    setEditSubmitting(true);
-    try {
-      if (!editLicenseModal.id) {
-        return;
-      }
-
-      const now = getCurrentTimestamp();
-      const licenseData = buildLicensePayload(values, now, editingLicense?.bot_ids || []);
-      await editLicenseModal.onFinish(licenseData);
-      message.success('License updated');
-      editLicenseModal.close();
-      editLicenseForm.resetFields();
-    } catch (error) {
-      uiLogger.error('Error updating license:', error);
-      message.error(`Failed to save license: ${getErrorMessage(error, 'Unknown error')}`);
-    } finally {
-      setEditSubmitting(false);
-    }
   };
 
   const handleAddBot = async (values: AddBotFormValues) => {
@@ -344,9 +329,18 @@ export const LicensesPage: React.FC = () => {
   };
 
   const openEditModal = (license: LicenseWithBots) => {
+    setSelectedLicenseForEdit(license);
     setLicenseEditorDefaults(editLicenseForm, license);
     editLicenseModal.show(license.id);
   };
+
+  useEffect(() => {
+    if (editLicenseModal.modalProps.open) {
+      return;
+    }
+
+    setSelectedLicenseForEdit(null);
+  }, [editLicenseModal.modalProps.open]);
 
   const columns = buildLicenseColumns({
     currentTime,
@@ -412,30 +406,33 @@ export const LicensesPage: React.FC = () => {
       </Card>
 
       <LicenseEditorModal
-        open={createLicenseModal.open}
+        mode="create"
         editingLicense={null}
-        licenses={allLicensesWithBots}
-        form={createLicenseForm}
-        submitting={createSubmitting || createLicenseModal.formLoading}
-        onCancel={() => {
-          createLicenseModal.close();
-          createLicenseForm.resetFields();
-          setLicenseEditorDefaults(createLicenseForm);
+        licenses={licensesWithBots}
+        modalProps={{
+          ...createLicenseModal.modalProps,
+          onCancel: () => {
+            createLicenseModal.close();
+            createLicenseForm.resetFields();
+            setLicenseEditorDefaults(createLicenseForm);
+          },
         }}
-        onSave={handleCreate}
+        formProps={createLicenseFormProps}
       />
 
       <LicenseEditorModal
-        open={editLicenseModal.open}
+        mode="edit"
         editingLicense={editingLicense}
-        licenses={allLicensesWithBots}
-        form={editLicenseForm}
-        submitting={editSubmitting || editLicenseModal.formLoading}
-        onCancel={() => {
-          editLicenseModal.close();
-          editLicenseForm.resetFields();
+        licenses={licensesWithBots}
+        modalProps={{
+          ...editLicenseModal.modalProps,
+          onCancel: () => {
+            editLicenseModal.close();
+            editLicenseForm.resetFields();
+            setSelectedLicenseForEdit(null);
+          },
         }}
-        onSave={handleEdit}
+        formProps={editLicenseFormProps}
       />
 
       <AddBotModal

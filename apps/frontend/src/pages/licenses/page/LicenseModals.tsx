@@ -1,41 +1,45 @@
-import type { FormInstance } from 'antd';
+import type { FormInstance, FormProps, ModalProps } from 'antd';
 import { AutoComplete, DatePicker, Form, Input, Modal, Select } from 'antd';
+import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import type { LicenseWithBots } from '../../../entities/resources/model/types';
 import type { AddBotFormValues, BotsMap, LicenseFormValues } from './types';
 
 const { Option } = Select;
 
+function toDayjsValue(value: unknown): Dayjs | null {
+  if (dayjs.isDayjs(value)) {
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'string') {
+    const parsed = dayjs(value);
+    return parsed.isValid() ? parsed : null;
+  }
+  return null;
+}
+
 interface LicenseEditorModalProps {
-  open: boolean;
+  mode: 'create' | 'edit';
   editingLicense: LicenseWithBots | null;
   licenses: LicenseWithBots[];
-  form: FormInstance<LicenseFormValues>;
-  submitting: boolean;
-  onCancel: () => void;
-  onSave: (values: LicenseFormValues) => Promise<void>;
+  modalProps: ModalProps;
+  formProps: FormProps;
 }
 
 export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
-  open,
+  mode,
   editingLicense,
   licenses,
-  form,
-  submitting,
-  onCancel,
-  onSave,
+  modalProps,
+  formProps,
 }) => (
   <Modal
-    title={editingLicense ? 'Edit License' : 'Add License'}
-    open={open}
-    onOk={() => form.submit()}
-    onCancel={onCancel}
-    okText={editingLicense ? 'Update' : 'Create'}
+    {...modalProps}
+    title={mode === 'edit' ? 'Edit License' : 'Add License'}
+    okText={mode === 'edit' ? 'Update' : 'Create'}
     width={500}
-    confirmLoading={submitting}
-    okButtonProps={{ disabled: submitting }}
   >
-    <Form form={form} layout="vertical" onFinish={(values) => void onSave(values)}>
+    <Form {...formProps} layout="vertical">
       <Form.Item
         name="key"
         label="License Key"
@@ -69,6 +73,7 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
         label="Expiration Date"
         rules={[{ required: true, message: 'Please select expiration date' }]}
         tooltip="Format: DD.MM.YYYY"
+        getValueProps={(value) => ({ value: toDayjsValue(value) })}
       >
         <DatePicker
           style={{ width: '100%' }}

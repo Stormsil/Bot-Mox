@@ -1,8 +1,8 @@
 import { DeleteOutlined, EditOutlined, RobotOutlined } from '@ant-design/icons';
+import { DeleteButton, EditButton } from '@refinedev/antd';
 import type { TableColumnsType } from 'antd';
 import { Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
-import { TableActionButton, TableActionGroup } from '../../components/ui/TableActionButton';
 import type { SubscriptionWithDetails } from '../../entities/resources/model/types';
 import { getSubscriptionStatusColor, getSubscriptionStatusText } from './subscription-status';
 
@@ -10,12 +10,10 @@ const { Text } = Typography;
 
 interface BuildSubscriptionColumnsParams {
   onEdit: (subscriptionId: string) => void;
-  onDelete: (subscription: SubscriptionWithDetails) => void;
 }
 
 export const buildSubscriptionColumns = ({
   onEdit,
-  onDelete,
 }: BuildSubscriptionColumnsParams): TableColumnsType<SubscriptionWithDetails> => [
   {
     title: 'Status',
@@ -108,19 +106,39 @@ export const buildSubscriptionColumns = ({
     key: 'actions',
     width: 100,
     render: (_value: unknown, record) => (
-      <TableActionGroup>
-        <TableActionButton
+      <Space size={6}>
+        <EditButton
+          hideText
+          size="small"
+          shape="circle"
           icon={<EditOutlined />}
-          onClick={() => onEdit(record.id)}
-          tooltip="Edit"
+          resource="subscriptions"
+          recordItemId={record.id}
+          onClick={(event) => {
+            event.preventDefault();
+            onEdit(record.id);
+          }}
         />
-        <TableActionButton
-          danger
+        <DeleteButton
+          hideText
+          size="small"
+          shape="circle"
           icon={<DeleteOutlined />}
-          onClick={() => onDelete(record)}
-          tooltip="Delete"
+          resource="subscriptions"
+          recordItemId={record.id}
+          confirmTitle="Delete Subscription?"
+          confirmOkText="Delete"
+          confirmCancelText="Cancel"
+          successNotification={() => ({
+            message: 'Subscription deleted',
+            type: 'success',
+          })}
+          errorNotification={() => ({
+            message: 'Failed to delete subscription',
+            type: 'error',
+          })}
         />
-      </TableActionGroup>
+      </Space>
     ),
   },
 ];
