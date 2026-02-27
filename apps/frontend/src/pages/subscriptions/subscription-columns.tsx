@@ -9,7 +9,7 @@ import { getSubscriptionStatusColor, getSubscriptionStatusText } from './subscri
 const { Text } = Typography;
 
 interface BuildSubscriptionColumnsParams {
-  onEdit: (subscription: SubscriptionWithDetails) => void;
+  onEdit: (subscriptionId: string) => void;
   onDelete: (subscription: SubscriptionWithDetails) => void;
 }
 
@@ -109,7 +109,11 @@ export const buildSubscriptionColumns = ({
     width: 100,
     render: (_value: unknown, record) => (
       <TableActionGroup>
-        <TableActionButton icon={<EditOutlined />} onClick={() => onEdit(record)} tooltip="Edit" />
+        <TableActionButton
+          icon={<EditOutlined />}
+          onClick={() => onEdit(record.id)}
+          tooltip="Edit"
+        />
         <TableActionButton
           danger
           icon={<DeleteOutlined />}

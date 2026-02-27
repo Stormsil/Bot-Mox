@@ -1,5 +1,6 @@
 import { useNotificationProvider } from '@refinedev/antd';
 import { Authenticated, Refine, useGetIdentity } from '@refinedev/core';
+import routerProvider from '@refinedev/react-router';
 import { App as AntdApp, Button, ConfigProvider, Spin, Tag, Typography } from 'antd';
 import type React from 'react';
 import { lazy, Suspense, useEffect, useMemo } from 'react';
@@ -234,12 +235,31 @@ function AppWithTheme() {
           <Refine
             dataProvider={dataProvider}
             authProvider={authProvider}
+            routerProvider={routerProvider}
             notificationProvider={useNotificationProvider}
             resources={[
               { name: 'bots', list: '/' },
-              { name: 'licenses', list: '/licenses' },
-              { name: 'proxies', list: '/proxies' },
-              { name: 'subscriptions', list: '/subscriptions' },
+              {
+                name: 'licenses',
+                list: '/licenses',
+                create: '/licenses',
+                edit: '/licenses',
+                show: '/licenses',
+              },
+              {
+                name: 'proxies',
+                list: '/proxies',
+                create: '/proxies',
+                edit: '/proxies',
+                show: '/proxies',
+              },
+              {
+                name: 'subscriptions',
+                list: '/subscriptions',
+                create: '/subscriptions',
+                edit: '/subscriptions',
+                show: '/subscriptions',
+              },
               { name: 'notes', list: '/notes' },
             ]}
             options={{

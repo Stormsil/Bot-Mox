@@ -6,15 +6,9 @@ import {
   RightOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { useTable } from '@refinedev/antd';
-import {
-  type CrudFilter,
-  type HttpError,
-  useCreate,
-  useDelete,
-  useList,
-  useUpdate,
-} from '@refinedev/core';
+import { useModalForm, useTable } from '@refinedev/antd';
+import { type CrudFilter, type HttpError, useList, useUpdate } from '@refinedev/core';
+import type { FormInstance } from 'antd';
 import { Button, Card, Form, Input, message, Select, Space, Table, Typography } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -43,6 +37,8 @@ const { Option } = Select;
 const RESOURCE_POLL_MS = 7_000;
 const BOT_POLL_MS = 5_000;
 const LARGE_PAGE_SIZE = 5_000;
+const ALLOWED_STATUS_FILTERS = new Set(['all', 'active', 'expired', 'revoked']);
+const ALLOWED_TYPE_FILTERS = new Set(['all', 'sin', 'other']);
 
 function readFilterValue(filters: CrudFilter[], field: string, fallback: string): string {
   const match = filters.find(
@@ -56,6 +52,23 @@ function readFilterValue(filters: CrudFilter[], field: string, fallback: string)
     return fallback;
   }
   return String(value);
+}
+
+function readEnumFilterValue(
+  filters: CrudFilter[],
+  field: string,
+  fallback: string,
+  allowedValues: Set<string>,
+): string {
+  const value = readFilterValue(filters, field, fallback);
+  return allowedValues.has(value) ? value : fallback;
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+  return fallback;
 }
 
 function buildTableFilters(values: { q: string; status: string; type: string }): CrudFilter[] {
@@ -106,17 +119,29 @@ export const LicensesPage: React.FC = () => {
       refetchInterval: BOT_POLL_MS,
     },
   });
-  const createLicense = useCreate<BotLicense, HttpError, Omit<BotLicense, 'id'>>();
+  const createLicenseModal = useModalForm<BotLicense, HttpError, Omit<BotLicense, 'id'>>({
+    resource: 'licenses',
+    action: 'create',
+    redirect: false,
+    invalidates: ['resourceAll'],
+  });
+  const editLicenseModal = useModalForm<BotLicense, HttpError, Partial<BotLicense>>({
+    resource: 'licenses',
+    action: 'edit',
+    redirect: false,
+    invalidates: ['resourceAll'],
+  });
   const updateLicense = useUpdate<BotLicense, HttpError, Partial<BotLicense>>();
-  const deleteLicense = useDelete<BotLicense>();
 
   const currentTime = useCurrentTime();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddBotModalOpen, setIsAddBotModalOpen] = useState(false);
-  const [editingLicense, setEditingLicense] = useState<LicenseWithBots | null>(null);
+  const [createSubmitting, setCreateSubmitting] = useState(false);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [addBotSubmitting, setAddBotSubmitting] = useState(false);
   const [selectedLicenseForBot, setSelectedLicenseForBot] = useState<LicenseWithBots | null>(null);
-  const [form] = Form.useForm<LicenseFormValues>();
   const [addBotForm] = Form.useForm<AddBotFormValues>();
+  const createLicenseForm = createLicenseModal.form as unknown as FormInstance<LicenseFormValues>;
+  const editLicenseForm = editLicenseModal.form as unknown as FormInstance<LicenseFormValues>;
   const [statsCollapsed, setStatsCollapsed] = useState<boolean>(() => {
     const saved = localStorage.getItem(STATS_COLLAPSED_KEY);
     return saved ? Boolean(JSON.parse(saved)) : false;
@@ -147,14 +172,32 @@ export const LicensesPage: React.FC = () => {
     [tableLicenses, bots],
   );
   const allLicensesWithBots = useMemo(() => withBotDetails(allLicenses, bots), [allLicenses, bots]);
+  const editingLicense = useMemo(() => {
+    if (!editLicenseModal.id) {
+      return null;
+    }
+
+    const editingId = String(editLicenseModal.id);
+    return allLicensesWithBots.find((license) => String(license.id) === editingId) ?? null;
+  }, [allLicensesWithBots, editLicenseModal.id]);
   const stats = useMemo(
     () => computeStats(allLicensesWithBots, currentTime),
     [allLicensesWithBots, currentTime],
   );
 
   const searchText = readFilterValue(licensesTable.filters, 'q', '');
-  const statusFilter = readFilterValue(licensesTable.filters, 'status', 'all');
-  const typeFilter = readFilterValue(licensesTable.filters, 'type', 'all');
+  const statusFilter = readEnumFilterValue(
+    licensesTable.filters,
+    'status',
+    'all',
+    ALLOWED_STATUS_FILTERS,
+  );
+  const typeFilter = readEnumFilterValue(
+    licensesTable.filters,
+    'type',
+    'all',
+    ALLOWED_TYPE_FILTERS,
+  );
 
   const setMergedFilters = (partial: Partial<{ q: string; status: string; type: string }>) => {
     licensesTable.setFilters(
@@ -192,51 +235,53 @@ export const LicensesPage: React.FC = () => {
     message.success('License key copied');
   };
 
-  const handleDelete = async (license: LicenseWithBots) => {
+  const handleCreate = async (values: LicenseFormValues) => {
+    if (createSubmitting) {
+      return;
+    }
+
+    setCreateSubmitting(true);
     try {
-      await deleteLicense.mutateAsync({
-        resource: 'licenses',
-        id: license.id,
-        invalidates: ['resourceAll'],
+      const now = getCurrentTimestamp();
+      const licenseData = buildLicensePayload(values, now, []);
+      await createLicenseModal.onFinish({
+        ...licenseData,
+        created_at: now,
       });
-      message.success('License deleted');
+      message.success('License created');
+      createLicenseModal.close();
+      createLicenseForm.resetFields();
+      setLicenseEditorDefaults(createLicenseForm);
     } catch (error) {
-      uiLogger.error('Error deleting license:', error);
-      message.error('Failed to delete license');
+      uiLogger.error('Error creating license:', error);
+      message.error(`Failed to save license: ${getErrorMessage(error, 'Unknown error')}`);
+    } finally {
+      setCreateSubmitting(false);
     }
   };
 
-  const handleSave = async (values: LicenseFormValues) => {
-    try {
-      const now = getCurrentTimestamp();
-      const licenseData = buildLicensePayload(values, now, editingLicense?.bot_ids || []);
+  const handleEdit = async (values: LicenseFormValues) => {
+    if (editSubmitting) {
+      return;
+    }
 
-      if (editingLicense) {
-        await updateLicense.mutateAsync({
-          resource: 'licenses',
-          id: editingLicense.id,
-          values: licenseData,
-          invalidates: ['resourceAll'],
-        });
-        message.success('License updated');
-      } else {
-        await createLicense.mutateAsync({
-          resource: 'licenses',
-          values: {
-            ...licenseData,
-            created_at: now,
-          },
-          invalidates: ['resourceAll'],
-        });
-        message.success('License created');
+    setEditSubmitting(true);
+    try {
+      if (!editLicenseModal.id) {
+        return;
       }
 
-      setIsModalOpen(false);
-      setEditingLicense(null);
-      form.resetFields();
+      const now = getCurrentTimestamp();
+      const licenseData = buildLicensePayload(values, now, editingLicense?.bot_ids || []);
+      await editLicenseModal.onFinish(licenseData);
+      message.success('License updated');
+      editLicenseModal.close();
+      editLicenseForm.resetFields();
     } catch (error) {
-      uiLogger.error('Error saving license:', error);
-      message.error('Failed to save license');
+      uiLogger.error('Error updating license:', error);
+      message.error(`Failed to save license: ${getErrorMessage(error, 'Unknown error')}`);
+    } finally {
+      setEditSubmitting(false);
     }
   };
 
@@ -244,7 +289,11 @@ export const LicensesPage: React.FC = () => {
     if (!selectedLicenseForBot) {
       return;
     }
+    if (addBotSubmitting) {
+      return;
+    }
 
+    setAddBotSubmitting(true);
     try {
       const botId = values.bot_id;
       const currentBotIds = selectedLicenseForBot.bot_ids || [];
@@ -264,7 +313,9 @@ export const LicensesPage: React.FC = () => {
       addBotForm.resetFields();
     } catch (error) {
       uiLogger.error('Error adding bot:', error);
-      message.error('Failed to add bot');
+      message.error(`Failed to add bot: ${getErrorMessage(error, 'Unknown error')}`);
+    } finally {
+      setAddBotSubmitting(false);
     }
   };
 
@@ -296,15 +347,14 @@ export const LicensesPage: React.FC = () => {
     setIsAddBotModalOpen(true);
   };
 
-  const openEditModal = (license?: LicenseWithBots) => {
-    if (license) {
-      setEditingLicense(license);
-      setLicenseEditorDefaults(form, license);
-    } else {
-      setEditingLicense(null);
-      setLicenseEditorDefaults(form);
-    }
-    setIsModalOpen(true);
+  const openCreateModal = () => {
+    setLicenseEditorDefaults(createLicenseForm);
+    createLicenseModal.show();
+  };
+
+  const openEditModal = (license: LicenseWithBots) => {
+    setLicenseEditorDefaults(editLicenseForm, license);
+    editLicenseModal.show(license.id);
   };
 
   const columns = buildLicenseColumns({
@@ -312,7 +362,6 @@ export const LicensesPage: React.FC = () => {
     handlers: {
       onEdit: openEditModal,
       onCopyKey: copyKey,
-      onDelete: handleDelete,
       onAddBot: openAddBotModal,
       onRemoveBot: handleRemoveBot,
     },
@@ -338,7 +387,7 @@ export const LicensesPage: React.FC = () => {
             >
               Stats
             </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditModal()}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
               Add License
             </Button>
           </Space>
@@ -409,10 +458,12 @@ export const LicensesPage: React.FC = () => {
           className={styles.table}
           size="small"
           pagination={
-            licensesTable.tableProps.pagination
+            licensesTable.tableProps.pagination &&
+            typeof licensesTable.tableProps.pagination === 'object'
               ? {
                   ...licensesTable.tableProps.pagination,
-                  pageSize: licensesTable.tableProps.pagination.pageSize ?? 10,
+                  current: Math.max(1, Number(licensesTable.tableProps.pagination.current) || 1),
+                  pageSize: Math.max(1, Number(licensesTable.tableProps.pagination.pageSize) || 10),
                   showSizeChanger: true,
                   showTotal: (total) => `Total ${total} licenses`,
                 }
@@ -426,22 +477,37 @@ export const LicensesPage: React.FC = () => {
       </Card>
 
       <LicenseEditorModal
-        open={isModalOpen}
+        open={createLicenseModal.open}
+        editingLicense={null}
+        licenses={allLicensesWithBots}
+        form={createLicenseForm}
+        submitting={createSubmitting || createLicenseModal.formLoading}
+        onCancel={() => {
+          createLicenseModal.close();
+          createLicenseForm.resetFields();
+          setLicenseEditorDefaults(createLicenseForm);
+        }}
+        onSave={handleCreate}
+      />
+
+      <LicenseEditorModal
+        open={editLicenseModal.open}
         editingLicense={editingLicense}
         licenses={allLicensesWithBots}
-        form={form}
+        form={editLicenseForm}
+        submitting={editSubmitting || editLicenseModal.formLoading}
         onCancel={() => {
-          setIsModalOpen(false);
-          setEditingLicense(null);
-          form.resetFields();
+          editLicenseModal.close();
+          editLicenseForm.resetFields();
         }}
-        onSave={handleSave}
+        onSave={handleEdit}
       />
 
       <AddBotModal
         open={isAddBotModalOpen}
         bots={bots}
         form={addBotForm}
+        submitting={addBotSubmitting || updateLicense.mutation.isPending}
         onCancel={() => {
           setIsAddBotModalOpen(false);
           setSelectedLicenseForBot(null);

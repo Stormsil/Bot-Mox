@@ -1,0 +1,141 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "startedAt": "2026-02-27T06:39:57.901Z",
+  "runtimeReachable": true,
+  "authSeeded": true,
+  "blocker": null,
+  "checks": [
+    {
+      "viewport": "desktop",
+      "route": "/",
+      "pageType": "root-shell",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\.sisyphus\\notepads\\metric-cards-unification\\artifacts\\desktop-dashboard.png",
+      "renderOk": true,
+      "layout": null,
+      "toggle": null,
+      "colors": null,
+      "notes": [
+        "Root shell markers: {\"hasOverview\":true,\"hasDashboard\":false,\"hasSummary\":true,\"hasBotList\":false}"
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "route": "/licenses",
+      "pageType": "licenses",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\.sisyphus\\notepads\\metric-cards-unification\\artifacts\\desktop-licenses.png",
+      "renderOk": true,
+      "layout": null,
+      "toggle": {
+        "before": 5,
+        "afterCollapse": 0,
+        "afterExpand": 5,
+        "collapseWorked": true,
+        "restoreWorked": true
+      },
+      "colors": {
+        "byLabel": {
+          "Active": "rgb(46, 204, 113)",
+          "Expiring Soon": "rgb(243, 156, 18)",
+          "Expired": "rgb(231, 76, 60)"
+        },
+        "hasAllLabels": true,
+        "distinctCount": 3,
+        "semanticsOk": true
+      },
+      "notes": []
+    },
+    {
+      "viewport": "desktop",
+      "route": "/subscriptions",
+      "pageType": "subscriptions",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\.sisyphus\\notepads\\metric-cards-unification\\artifacts\\desktop-subscriptions.png",
+      "renderOk": true,
+      "layout": null,
+      "toggle": {
+        "before": 4,
+        "afterCollapse": 0,
+        "afterExpand": 4,
+        "collapseWorked": true,
+        "restoreWorked": true
+      },
+      "colors": {
+        "byLabel": {
+          "Active": "rgb(46, 204, 113)",
+          "Expiring Soon": "rgb(243, 156, 18)",
+          "Expired": "rgb(231, 76, 60)"
+        },
+        "hasAllLabels": true,
+        "distinctCount": 3,
+        "semanticsOk": true
+      },
+      "notes": []
+    },
+    {
+      "viewport": "mobile",
+      "route": "/",
+      "pageType": "root-shell",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\.sisyphus\\notepads\\metric-cards-unification\\artifacts\\mobile-dashboard.png",
+      "renderOk": true,
+      "layout": null,
+      "toggle": null,
+      "colors": null,
+      "notes": [
+        "Root shell markers: {\"hasOverview\":true,\"hasDashboard\":false,\"hasSummary\":true,\"hasBotList\":false}"
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "route": "/licenses",
+      "pageType": "licenses",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\.sisyphus\\notepads\\metric-cards-unification\\artifacts\\mobile-licenses.png",
+      "renderOk": true,
+      "layout": null,
+      "toggle": {
+        "before": 5,
+        "afterCollapse": 0,
+        "afterExpand": 5,
+        "collapseWorked": true,
+        "restoreWorked": true
+      },
+      "colors": {
+        "byLabel": {
+          "Active": "rgb(46, 204, 113)",
+          "Expiring Soon": "rgb(243, 156, 18)",
+          "Expired": "rgb(231, 76, 60)"
+        },
+        "hasAllLabels": true,
+        "distinctCount": 3,
+        "semanticsOk": true
+      },
+      "notes": []
+    },
+    {
+      "viewport": "mobile",
+      "route": "/subscriptions",
+      "pageType": "subscriptions",
+      "screenshot": "E:\\Боттинг\\source\\repos\\Bot-Mox\\.sisyphus\\notepads\\metric-cards-unification\\artifacts\\mobile-subscriptions.png",
+      "renderOk": true,
+      "layout": null,
+      "toggle": {
+        "before": 4,
+        "afterCollapse": 0,
+        "afterExpand": 4,
+        "collapseWorked": true,
+        "restoreWorked": true
+      },
+      "colors": {
+        "byLabel": {
+          "Active": "rgb(46, 204, 113)",
+          "Expiring Soon": "rgb(243, 156, 18)",
+          "Expired": "rgb(231, 76, 60)"
+        },
+        "hasAllLabels": true,
+        "distinctCount": 3,
+        "semanticsOk": true
+      },
+      "notes": []
+    }
+  ],
+  "errors": [],
+  "finishedAt": "2026-02-27T06:40:09.437Z"
+}

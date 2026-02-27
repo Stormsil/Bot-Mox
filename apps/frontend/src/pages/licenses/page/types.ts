@@ -23,7 +23,6 @@ export interface LicensesStats {
 export interface LicenseColumnsHandlers {
   onEdit: (license: LicenseWithBots) => void;
   onCopyKey: (key: string) => void;
-  onDelete: (license: LicenseWithBots) => Promise<void>;
   onAddBot: (license: LicenseWithBots) => void;
   onRemoveBot: (license: LicenseWithBots, botIndex: number) => Promise<void>;
 }

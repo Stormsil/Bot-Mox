@@ -1,5 +1,4 @@
 import { proxyResourceCreateSchema, proxyResourceUpdateSchema } from '@botmox/api-contract';
-import { type HttpError, useCreate, useUpdate } from '@refinedev/core';
 import { DatePicker, Form, Input, Modal, message, Select } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
@@ -11,17 +10,22 @@ import {
 } from '../../entities/resources/api/ipqsFacade';
 import type { IPQSResponse, Proxy as ProxyResource } from '../../entities/resources/model/types';
 import { parseProxyString } from '../../utils/proxyUtils';
-import type { ProxyWithBot } from './proxyColumns';
 import { ParsedProxyAlert, ProxyIpqsLoadingAlert, ProxyIpqsResultAlert } from './proxyCrudAlerts';
 
 interface ProxyCrudModalProps {
-  open: boolean;
-  editingProxy: ProxyWithBot | null;
+  createOpen: boolean;
+  editOpen: boolean;
+  editingProxy: ProxyResource | null;
   bots: ProxiesBotMap;
   providers: string[];
   onProviderCreated: (providerName: string) => void;
-  onClose: () => void;
+  onCreateFinish: (values: Omit<ProxyResource, 'id'>) => Promise<unknown>;
+  onEditFinish: (values: Partial<ProxyResource>) => Promise<unknown>;
+  onCloseCreate: () => void;
+  onCloseEdit: () => void;
   onSaved: () => void;
+  createSubmitting: boolean;
+  editSubmitting: boolean;
 }
 
 type ProxiesBotMap = Record<
@@ -66,7 +70,7 @@ function getCreateDefaults(): ProxyCrudFormValues {
   };
 }
 
-function getEditDefaults(editingProxy: ProxyWithBot): ProxyCrudFormValues {
+function getEditDefaults(editingProxy: ProxyResource): ProxyCrudFormValues {
   return {
     proxyString: `${editingProxy.ip}:${editingProxy.port}:${editingProxy.login}:${editingProxy.password}`,
     bot_id: editingProxy.bot_id ?? '',
@@ -78,16 +82,22 @@ function getEditDefaults(editingProxy: ProxyWithBot): ProxyCrudFormValues {
 }
 
 export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
-  open,
+  createOpen,
+  editOpen,
   editingProxy,
   bots,
   providers,
   onProviderCreated,
-  onClose,
+  onCreateFinish,
+  onEditFinish,
+  onCloseCreate,
+  onCloseEdit,
   onSaved,
+  createSubmitting,
+  editSubmitting,
 }) => {
-  const createProxyMutation = useCreate<ProxyResource, HttpError, Omit<ProxyResource, 'id'>>();
-  const updateProxyMutation = useUpdate<ProxyResource, HttpError, Partial<ProxyResource>>();
+  const open = createOpen || editOpen;
+  const isEditMode = editOpen;
   const [checkingIPQS, setCheckingIPQS] = useState(false);
   const [ipqsData, setIpqsData] = useState<IPQSResponse | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -102,8 +112,18 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
     setIpqsData(null);
     setCheckingIPQS(false);
     setShowPassword(false);
-    form.setFieldsValue(editingProxy ? getEditDefaults(editingProxy) : getCreateDefaults());
-  }, [editingProxy, form, open]);
+
+    if (isEditMode) {
+      if (!editingProxy) {
+        form.resetFields();
+        return;
+      }
+      form.setFieldsValue(getEditDefaults(editingProxy));
+      return;
+    }
+
+    form.setFieldsValue(getCreateDefaults());
+  }, [editingProxy, form, isEditMode, open]);
 
   useEffect(() => {
     if (proxyInput.trim() === '') {
@@ -114,7 +134,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
   }, [proxyInput]);
 
   useEffect(() => {
-    if (!open || editingProxy || !parsedProxy) return;
+    if (!open || isEditMode || !parsedProxy) return;
 
     let active = true;
     void (async () => {
@@ -139,7 +159,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
       active = false;
       setCheckingIPQS(false);
     };
-  }, [editingProxy, open, parsedProxy]);
+  }, [isEditMode, open, parsedProxy]);
 
   const submitForm = async () => {
     try {
@@ -160,7 +180,12 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
         return;
       }
 
-      if (editingProxy) {
+      if (isEditMode) {
+        if (!editingProxy) {
+          message.error('Failed to load proxy for editing');
+          return;
+        }
+
         const proxyData: Partial<ProxyResource> = {
           ip: parsedProxy.ip,
           port: parsedProxy.port,
@@ -173,12 +198,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
         };
 
         proxyResourceUpdateSchema.parse(proxyData);
-        await updateProxyMutation.mutateAsync({
-          resource: 'proxies',
-          id: editingProxy.id,
-          values: proxyData,
-          invalidates: ['resourceAll'],
-        });
+        await onEditFinish(proxyData);
         message.success('');
       } else {
         const hasIPQSData = Boolean(ipqsData && ipqsData.fraud_score !== undefined);
@@ -229,11 +249,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           );
         }
 
-        await createProxyMutation.mutateAsync({
-          resource: 'proxies',
-          values: proxyData,
-          invalidates: ['resourceAll'],
-        });
+        await onCreateFinish(proxyData);
         message.success('');
       }
 
@@ -254,18 +270,16 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
 
   return (
     <Modal
-      title={editingProxy ? '' : ''}
+      title={isEditMode ? '' : ''}
       open={open}
       onOk={() => {
         void submitForm();
       }}
-      onCancel={onClose}
-      okText={editingProxy ? 'Update' : 'Create'}
+      onCancel={isEditMode ? onCloseEdit : onCloseCreate}
+      okText={isEditMode ? 'Update' : 'Create'}
       width={700}
-      okButtonProps={{ disabled: !editingProxy && !parsedProxy }}
-      confirmLoading={
-        createProxyMutation.mutation.isPending || updateProxyMutation.mutation.isPending
-      }
+      okButtonProps={{ disabled: !isEditMode && !parsedProxy }}
+      confirmLoading={isEditMode ? editSubmitting : createSubmitting}
     >
       <Form form={form} layout="vertical">
         <Form.Item
@@ -302,9 +316,9 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           />
         )}
 
-        {!editingProxy && checkingIPQS && <ProxyIpqsLoadingAlert />}
+        {!isEditMode && checkingIPQS && <ProxyIpqsLoadingAlert />}
 
-        {!editingProxy && ipqsData && <ProxyIpqsResultAlert ipqsData={ipqsData} />}
+        {!isEditMode && ipqsData && <ProxyIpqsResultAlert ipqsData={ipqsData} />}
 
         <Form.Item name="bot_id" label="Assign to Bot">
           <Select

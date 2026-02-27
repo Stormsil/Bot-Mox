@@ -11,6 +11,7 @@ interface LicenseEditorModalProps {
   editingLicense: LicenseWithBots | null;
   licenses: LicenseWithBots[];
   form: FormInstance<LicenseFormValues>;
+  submitting: boolean;
   onCancel: () => void;
   onSave: (values: LicenseFormValues) => Promise<void>;
 }
@@ -20,6 +21,7 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
   editingLicense,
   licenses,
   form,
+  submitting,
   onCancel,
   onSave,
 }) => (
@@ -30,6 +32,8 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
     onCancel={onCancel}
     okText={editingLicense ? 'Update' : 'Create'}
     width={500}
+    confirmLoading={submitting}
+    okButtonProps={{ disabled: submitting }}
   >
     <Form form={form} layout="vertical" onFinish={(values) => void onSave(values)}>
       <Form.Item
@@ -81,11 +85,19 @@ interface AddBotModalProps {
   open: boolean;
   bots: BotsMap;
   form: FormInstance<AddBotFormValues>;
+  submitting: boolean;
   onCancel: () => void;
   onSave: (values: AddBotFormValues) => Promise<void>;
 }
 
-export const AddBotModal: React.FC<AddBotModalProps> = ({ open, bots, form, onCancel, onSave }) => (
+export const AddBotModal: React.FC<AddBotModalProps> = ({
+  open,
+  bots,
+  form,
+  submitting,
+  onCancel,
+  onSave,
+}) => (
   <Modal
     title="Add Bot to License"
     open={open}
@@ -93,6 +105,8 @@ export const AddBotModal: React.FC<AddBotModalProps> = ({ open, bots, form, onCa
     onCancel={onCancel}
     okText="Add Bot"
     width={400}
+    confirmLoading={submitting}
+    okButtonProps={{ disabled: submitting }}
   >
     <Form form={form} layout="vertical" onFinish={(values) => void onSave(values)}>
       <Form.Item

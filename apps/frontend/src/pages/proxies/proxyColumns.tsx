@@ -45,7 +45,7 @@ interface BuildProxyColumnsParams {
   isExpiringSoon: (expiresAt: number) => boolean;
   copyProxyString: (proxy: ProxyResource, event?: React.MouseEvent) => void;
   handleRecheckIPQS: (proxy: ProxyWithBot) => void;
-  openEditModal: (proxy?: ProxyWithBot) => void;
+  onEdit: (proxyId: string) => void;
   handleDelete: (proxy: ProxyWithBot) => void;
 }
 
@@ -55,7 +55,7 @@ export function buildProxyColumns({
   isExpiringSoon,
   copyProxyString,
   handleRecheckIPQS,
-  openEditModal,
+  onEdit,
   handleDelete,
 }: BuildProxyColumnsParams): ColumnsType<ProxyWithBot> {
   return [
@@ -278,7 +278,7 @@ export function buildProxyColumns({
             />
             <TableActionButton
               icon={<EditOutlined />}
-              onClick={() => openEditModal(record)}
+              onClick={() => onEdit(record.id)}
               tooltip="Edit"
             />
             <TableActionButton

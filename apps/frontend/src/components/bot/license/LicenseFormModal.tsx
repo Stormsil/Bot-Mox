@@ -9,6 +9,7 @@ interface LicenseFormModalProps {
   okText: string;
   form: FormInstance<LicenseFormValues>;
   typeOptions: Array<{ value: string; label: string }>;
+  submitting: boolean;
   onCancel: () => void;
   onSubmit: (values: LicenseFormValues) => Promise<void>;
 }
@@ -19,6 +20,7 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
   okText,
   form,
   typeOptions,
+  submitting,
   onCancel,
   onSubmit,
 }) => (
@@ -29,6 +31,8 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
     onCancel={onCancel}
     okText={okText}
     width={500}
+    confirmLoading={submitting}
+    okButtonProps={{ disabled: submitting }}
   >
     <Form form={form} layout="vertical" onFinish={(values) => void onSubmit(values)}>
       <Form.Item

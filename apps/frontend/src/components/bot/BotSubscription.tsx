@@ -1,5 +1,6 @@
 import { CreditCardOutlined, PlusOutlined } from '@ant-design/icons';
-import { type HttpError, useCreate, useDelete, useList, useUpdate } from '@refinedev/core';
+import { useModalForm } from '@refinedev/antd';
+import { type HttpError, useDelete, useList } from '@refinedev/core';
 import { Button, Card, Empty, List, Modal, message, Space, Spin, Typography } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -27,6 +28,13 @@ const { confirm } = Modal;
 const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+  return fallback;
+}
+
 function parseDateToTimestamp(dateString: string): number {
   const parts = String(dateString || '').split('.');
   if (parts.length !== 3) return Number.NaN;
@@ -45,15 +53,22 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
     queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const settingsQuery = useSubscriptionSettingsQuery();
-  const createSubscriptionMutation = useCreate<Subscription, HttpError, Omit<Subscription, 'id'>>();
-  const updateSubscriptionMutation = useUpdate<Subscription, HttpError, Partial<Subscription>>();
+  const createSubscriptionModal = useModalForm<Subscription, HttpError, Omit<Subscription, 'id'>>({
+    resource: 'subscriptions',
+    action: 'create',
+    redirect: false,
+    invalidates: ['resourceAll'],
+    syncWithLocation: false,
+  });
+  const editSubscriptionModal = useModalForm<Subscription, HttpError, Partial<Subscription>>({
+    resource: 'subscriptions',
+    action: 'edit',
+    redirect: false,
+    invalidates: ['resourceAll'],
+    syncWithLocation: false,
+  });
   const deleteSubscriptionMutation = useDelete<Subscription>();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithDetails | null>(
-    null,
-  );
-  const [saving, setSaving] = useState(false);
   const [botAccountEmail, setBotAccountEmail] = useState<string | null>(null);
   const botQuery = useBotByIdQuery(bot.id);
   const warningDays = settingsQuery.data?.warning_days ?? getDefaultSettings().warning_days;
@@ -103,75 +118,77 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
   );
 
   const botOption = useMemo(() => buildBotOption(bot, botAccountEmail), [bot, botAccountEmail]);
+  const editingSubscription = useMemo(() => {
+    if (editSubscriptionModal.id === undefined || editSubscriptionModal.id === null) {
+      return null;
+    }
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingSubscription(null);
-  };
+    const targetId = String(editSubscriptionModal.id);
+    return subscriptions.find((item) => String(item.id) === targetId) ?? null;
+  }, [editSubscriptionModal.id, subscriptions]);
+
+  const closeCreateModal = () => createSubscriptionModal.close();
+  const closeEditModal = () => editSubscriptionModal.close();
 
   const openCreateModal = () => {
-    setEditingSubscription(null);
-    setTimeout(() => {
-      setIsModalOpen(true);
-    }, 0);
+    createSubscriptionModal.show();
   };
 
   const openEditModal = (subscription: SubscriptionWithDetails) => {
-    setEditingSubscription(subscription);
-    setIsModalOpen(true);
+    editSubscriptionModal.show(subscription.id);
   };
 
-  const handleSaveSubscription = async (data: SubscriptionFormData) => {
-    setSaving(true);
+  const handleCreateSubscription = async (data: SubscriptionFormData) => {
     try {
-      if (editingSubscription) {
-        const expiresAt = parseDateToTimestamp(data.expires_at);
-        if (!Number.isFinite(expiresAt)) {
-          throw new Error('Invalid expires_at format');
-        }
-        await updateSubscriptionMutation.mutateAsync({
-          resource: 'subscriptions',
-          id: editingSubscription.id,
-          values: {
-            bot_id: data.bot_id,
-            type: data.type,
-            expires_at: expiresAt,
-            account_email: data.account_email,
-            auto_renew: data.auto_renew,
-            project_id: data.project_id,
-            notes: data.notes,
-            updated_at: Date.now(),
-          },
-          invalidates: ['resourceAll'],
-        });
-      } else {
-        const expiresAt = parseDateToTimestamp(data.expires_at);
-        if (!Number.isFinite(expiresAt)) {
-          throw new Error('Invalid expires_at format');
-        }
-        const now = Date.now();
-        await createSubscriptionMutation.mutateAsync({
-          resource: 'subscriptions',
-          values: {
-            bot_id: data.bot_id,
-            type: data.type,
-            status: 'active',
-            expires_at: expiresAt,
-            created_at: now,
-            updated_at: now,
-            ...(data.account_email && { account_email: data.account_email }),
-            auto_renew: data.auto_renew ?? false,
-            ...(data.project_id && { project_id: data.project_id }),
-            ...(data.notes && { notes: data.notes }),
-          },
-          invalidates: ['resourceAll'],
-        });
+      const expiresAt = parseDateToTimestamp(data.expires_at);
+      if (!Number.isFinite(expiresAt)) {
+        throw new Error('Invalid expires_at format');
       }
-      closeModal();
+      const now = Date.now();
+      await createSubscriptionModal.onFinish({
+        bot_id: data.bot_id,
+        type: data.type,
+        status: 'active',
+        expires_at: expiresAt,
+        created_at: now,
+        updated_at: now,
+        ...(data.account_email && { account_email: data.account_email }),
+        auto_renew: data.auto_renew ?? false,
+        ...(data.project_id && { project_id: data.project_id }),
+        ...(data.notes && { notes: data.notes }),
+      });
+      closeCreateModal();
     } catch (error) {
       console.error('Error saving subscription:', error);
-    } finally {
-      setSaving(false);
+      message.error(`Failed to save subscription: ${getErrorMessage(error, 'Unknown error')}`);
+    }
+  };
+
+  const handleEditSubscription = async (data: SubscriptionFormData) => {
+    if (!editingSubscription) {
+      message.error('Subscription is not available for editing');
+      return;
+    }
+
+    try {
+      const expiresAt = parseDateToTimestamp(data.expires_at);
+      if (!Number.isFinite(expiresAt)) {
+        throw new Error('Invalid expires_at format');
+      }
+      await editSubscriptionModal.onFinish({
+        bot_id: data.bot_id,
+        type: data.type,
+        expires_at: expiresAt,
+        account_email: data.account_email,
+        auto_renew: data.auto_renew,
+        project_id: data.project_id,
+        notes: data.notes,
+        updated_at: Date.now(),
+      });
+      closeEditModal();
+    } catch (error) {
+      console.error('Error saving subscription:', error);
+      message.error(`Failed to save subscription: ${getErrorMessage(error, 'Unknown error')}`);
     }
   };
 
@@ -251,13 +268,23 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
       </Card>
 
       <SubscriptionModal
-        open={isModalOpen}
+        open={createSubscriptionModal.open}
+        editingSubscription={null}
+        presetBotId={bot.id}
+        botOption={botOption}
+        loading={createSubscriptionModal.formLoading}
+        onSave={handleCreateSubscription}
+        onCancel={closeCreateModal}
+      />
+
+      <SubscriptionModal
+        open={editSubscriptionModal.open}
         editingSubscription={editingSubscription}
         presetBotId={bot.id}
         botOption={botOption}
-        loading={saving}
-        onSave={handleSaveSubscription}
-        onCancel={closeModal}
+        loading={editSubscriptionModal.formLoading}
+        onSave={handleEditSubscription}
+        onCancel={closeEditModal}
       />
     </div>
   );

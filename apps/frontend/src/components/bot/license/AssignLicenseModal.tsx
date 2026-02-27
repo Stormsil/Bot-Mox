@@ -8,6 +8,7 @@ interface AssignLicenseModalProps {
   open: boolean;
   form: FormInstance<AssignLicenseFormValues>;
   availableLicenses: LicenseInfo[];
+  submitting: boolean;
   onCancel: () => void;
   onSubmit: (values: AssignLicenseFormValues) => Promise<void>;
 }
@@ -16,6 +17,7 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
   open,
   form,
   availableLicenses,
+  submitting,
   onCancel,
   onSubmit,
 }) => (
@@ -26,6 +28,8 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
     onCancel={onCancel}
     okText="Assign"
     width={500}
+    confirmLoading={submitting}
+    okButtonProps={{ disabled: submitting }}
   >
     <Form form={form} layout="vertical" onFinish={(values) => void onSubmit(values)}>
       <Form.Item

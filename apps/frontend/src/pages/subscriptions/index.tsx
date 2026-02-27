@@ -6,15 +6,8 @@ import {
   RightOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { useTable } from '@refinedev/antd';
-import {
-  type CrudFilter,
-  type HttpError,
-  useCreate,
-  useDelete,
-  useList,
-  useUpdate,
-} from '@refinedev/core';
+import { useModalForm, useTable } from '@refinedev/antd';
+import { type CrudFilter, type HttpError, useDelete, useList } from '@refinedev/core';
 import type { TableProps } from 'antd';
 import { Button, Card, Input, Modal, message, Select, Space, Table, Typography } from 'antd';
 import type React from 'react';
@@ -136,6 +129,13 @@ function toUpdateSubscriptionPayload(data: Partial<SubscriptionFormData>): Parti
   return updates;
 }
 
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+  return fallback;
+}
+
 export const SubscriptionsPage: React.FC = () => {
   const botsList = useList<BotRecord>({
     resource: 'bots',
@@ -171,16 +171,23 @@ export const SubscriptionsPage: React.FC = () => {
       refetchInterval: RESOURCE_POLL_MS,
     },
   });
-  const createSubscriptionMutation = useCreate<Subscription, HttpError, Omit<Subscription, 'id'>>();
-  const updateSubscriptionMutation = useUpdate<Subscription, HttpError, Partial<Subscription>>();
+  const createSubscriptionForm = useModalForm<Subscription, HttpError, Omit<Subscription, 'id'>>({
+    resource: 'subscriptions',
+    action: 'create',
+    redirect: false,
+    invalidates: ['resourceAll'],
+    syncWithLocation: false,
+  });
+  const editSubscriptionForm = useModalForm<Subscription, HttpError, Partial<Subscription>>({
+    resource: 'subscriptions',
+    action: 'edit',
+    redirect: false,
+    invalidates: ['resourceAll'],
+    syncWithLocation: false,
+  });
   const deleteSubscriptionMutation = useDelete<Subscription>();
 
   const [statusFilter, setStatusFilter] = useState<ComputedSubscriptionStatus | 'all'>('all');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithDetails | null>(
-    null,
-  );
-  const [saving, setSaving] = useState(false);
   const [statsCollapsed, setStatsCollapsed] = useState<boolean>(() => {
     const saved = localStorage.getItem(STATS_COLLAPSED_KEY);
     return saved ? Boolean(JSON.parse(saved)) : false;
@@ -245,6 +252,14 @@ export const SubscriptionsPage: React.FC = () => {
     () => enrichSubscriptionsWithDetails(allSubscriptions, warningDays, botsMap),
     [allSubscriptions, warningDays, botsMap],
   );
+  const editingSubscription = useMemo(() => {
+    if (editSubscriptionForm.id === undefined || editSubscriptionForm.id === null) {
+      return null;
+    }
+    return (
+      subscriptionsWithDetails.find((sub) => sub.id === String(editSubscriptionForm.id)) ?? null
+    );
+  }, [editSubscriptionForm.id, subscriptionsWithDetails]);
 
   useEffect(() => {
     localStorage.setItem(STATS_COLLAPSED_KEY, JSON.stringify(statsCollapsed));
@@ -283,7 +298,8 @@ export const SubscriptionsPage: React.FC = () => {
     allSubscriptionsList.query.isLoading ||
     botsList.query.isLoading ||
     settingsQuery.isLoading ||
-    saving;
+    createSubscriptionForm.formLoading ||
+    editSubscriptionForm.formLoading;
 
   const handleDelete = (sub: SubscriptionWithDetails) => {
     confirm({
@@ -294,54 +310,59 @@ export const SubscriptionsPage: React.FC = () => {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
+          const paginationConfig = subscriptionsTableProps.pagination;
+          const currentPage = Number(
+            paginationConfig && typeof paginationConfig === 'object'
+              ? (paginationConfig.current ?? 1)
+              : 1,
+          );
           await deleteSubscriptionMutation.mutateAsync({
             resource: 'subscriptions',
             id: sub.id,
             invalidates: ['resourceAll'],
           });
+
+          if (tableSubscriptions.length <= 1 && currentPage > 1) {
+            (subscriptionsTable as { setCurrent?: (page: number) => void }).setCurrent?.(
+              currentPage - 1,
+            );
+          }
           message.success('Subscription deleted');
         } catch (error) {
           uiLogger.error('Error deleting subscription:', error);
-          message.error('Error deleting subscription');
+          message.error(`Error deleting subscription: ${getErrorMessage(error, 'Unknown error')}`);
         }
       },
     });
   };
 
-  const openEditModal = (sub?: SubscriptionWithDetails) => {
-    setEditingSubscription(sub ?? null);
-    setIsModalOpen(true);
+  const handleCreateSubscription = async (data: SubscriptionFormData) => {
+    try {
+      await createSubscriptionForm.onFinish(toCreateSubscriptionPayload(data));
+      createSubscriptionForm.close();
+    } catch (error) {
+      uiLogger.error('Error creating subscription:', error);
+      message.error(`Error saving subscription: ${getErrorMessage(error, 'Unknown error')}`);
+    }
   };
 
-  const handleSaveSubscription = async (data: SubscriptionFormData) => {
-    setSaving(true);
+  const handleEditSubscription = async (data: SubscriptionFormData) => {
+    if (!editingSubscription) {
+      message.error('Subscription is not available for editing');
+      return;
+    }
+
     try {
-      if (editingSubscription) {
-        await updateSubscriptionMutation.mutateAsync({
-          resource: 'subscriptions',
-          id: editingSubscription.id,
-          values: toUpdateSubscriptionPayload(data),
-          invalidates: ['resourceAll'],
-        });
-      } else {
-        await createSubscriptionMutation.mutateAsync({
-          resource: 'subscriptions',
-          values: toCreateSubscriptionPayload(data),
-          invalidates: ['resourceAll'],
-        });
-      }
-      setIsModalOpen(false);
-      setEditingSubscription(null);
+      await editSubscriptionForm.onFinish(toUpdateSubscriptionPayload(data));
+      editSubscriptionForm.close();
     } catch (error) {
-      uiLogger.error('Error saving subscription:', error);
-      message.error('Error saving subscription');
-    } finally {
-      setSaving(false);
+      uiLogger.error('Error updating subscription:', error);
+      message.error(`Error saving subscription: ${getErrorMessage(error, 'Unknown error')}`);
     }
   };
 
   const rawColumns = buildSubscriptionColumns({
-    onEdit: openEditModal,
+    onEdit: (subscriptionId) => editSubscriptionForm.show(subscriptionId),
     onDelete: handleDelete,
   });
   const columns = rawColumns;
@@ -372,7 +393,11 @@ export const SubscriptionsPage: React.FC = () => {
             >
               Stats
             </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditModal()}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => createSubscriptionForm.show()}
+            >
               Add Subscription
             </Button>
           </Space>
@@ -428,9 +453,12 @@ export const SubscriptionsPage: React.FC = () => {
           rowKey="id"
           loading={loading}
           pagination={
-            subscriptionsTableProps.pagination
+            subscriptionsTableProps.pagination &&
+            typeof subscriptionsTableProps.pagination === 'object'
               ? {
                   ...subscriptionsTableProps.pagination,
+                  current: Math.max(1, Number(subscriptionsTableProps.pagination.current) || 1),
+                  pageSize: Math.max(1, Number(subscriptionsTableProps.pagination.pageSize) || 10),
                   showSizeChanger: true,
                   showTotal: (total) => `Total ${total} subscriptions`,
                 }
@@ -445,24 +473,32 @@ export const SubscriptionsPage: React.FC = () => {
       </Card>
 
       <Modal
-        title={editingSubscription ? 'Edit Subscription' : 'Add Subscription'}
-        open={isModalOpen}
-        onCancel={() => {
-          setIsModalOpen(false);
-          setEditingSubscription(null);
-        }}
+        {...createSubscriptionForm.modalProps}
+        title="Add Subscription"
+        footer={null}
+        width={500}
+      >
+        <SubscriptionForm
+          editingSubscription={null}
+          bots={bots}
+          onSave={handleCreateSubscription}
+          onCancel={createSubscriptionForm.close}
+          loading={createSubscriptionForm.formLoading}
+        />
+      </Modal>
+
+      <Modal
+        {...editSubscriptionForm.modalProps}
+        title="Edit Subscription"
         footer={null}
         width={500}
       >
         <SubscriptionForm
           editingSubscription={editingSubscription}
           bots={bots}
-          onSave={handleSaveSubscription}
-          onCancel={() => {
-            setIsModalOpen(false);
-            setEditingSubscription(null);
-          }}
-          loading={saving}
+          onSave={handleEditSubscription}
+          onCancel={editSubscriptionForm.close}
+          loading={editSubscriptionForm.formLoading}
         />
       </Modal>
     </div>

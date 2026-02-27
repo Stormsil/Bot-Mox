@@ -5,8 +5,9 @@ import {
   PlusCircleOutlined,
   RobotOutlined,
 } from '@ant-design/icons';
+import { DeleteButton } from '@refinedev/antd';
 import type { TableColumnsType } from 'antd';
-import { Button, Popconfirm, Popover, Space, Tag, Typography } from 'antd';
+import { Button, Popover, Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { TableActionButton, TableActionGroup } from '../../../components/ui/TableActionButton';
 import type { LicenseWithBots } from '../../../entities/resources/model/types';
@@ -252,16 +253,25 @@ export const buildLicenseColumns = ({
           onClick={() => handlers.onCopyKey(record.key)}
           tooltip="Copy Key"
         />
-        <Popconfirm
-          title="Delete License?"
-          description="Are you sure you want to delete this license?"
-          onConfirm={() => void handlers.onDelete(record)}
-          okText="Delete"
-          cancelText="Cancel"
-          okButtonProps={{ danger: true }}
-        >
-          <TableActionButton danger icon={<DeleteOutlined />} tooltip="Delete" />
-        </Popconfirm>
+        <DeleteButton
+          hideText
+          size="small"
+          shape="circle"
+          icon={<DeleteOutlined />}
+          resource="licenses"
+          recordItemId={record.id}
+          confirmTitle="Delete License?"
+          confirmOkText="Delete"
+          confirmCancelText="Cancel"
+          successNotification={() => ({
+            message: 'License deleted',
+            type: 'success',
+          })}
+          errorNotification={() => ({
+            message: 'Failed to delete license',
+            type: 'error',
+          })}
+        />
       </TableActionGroup>
     ),
   },
