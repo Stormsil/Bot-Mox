@@ -46,6 +46,11 @@
 - Critical redirect parity is still explicit in route tree (`/notes/reminders`, `/vms/list`, `/vms/unattend-profiles`, wildcard `*`) and `/admin/*` still external-redirects via `AdminRedirectPage`.
 - For licenses/proxies/subscriptions and bot tabs, command + static parity checks confirm expected architecture wiring, while browser-interaction parity remains a separate manual step.
 
+## 2026-02-27T10:50:10Z Task: 9-run-full-verification-and-capture-evidence (manual parity continuation)
+- In current Refine URL sync shape, table state persisted as `currentPage`/`pageSize` and `filters[0][...]` + `sorters[0][...]` query keys; refresh preserved exact full URL for `/licenses`, `/proxies`, and `/subscriptions`.
+- Page-level modal parity validated interactively with seeded auth: `show()` create and `show(id)` edit flows opened/closed successfully on all three routes.
+- Bot-resource interactive reachability validated for proxy parse + IPQS request path and subscription bot-account hydration request path, while write-mutation confirmation branches required separate blocker handling.
+
 ## 2026-02-27T09:48:00Z Task: 9-verification-recovery-interactive-playwright
 - Authenticated localStorage seeding (`botmox.auth.token`, `botmox.auth.identity`, `botmox.auth.verify_at`) is sufficient to exercise protected Refine resource routes in headless Playwright without login form flow.
 - `/licenses` interactive parity checks (load, URL sync refresh, create/edit modal open-close, delete confirm visibility) passed end-to-end in recovery run.
@@ -62,3 +67,13 @@
 ## 2026-02-27T12:18:00Z Task: 9-evidence-closure-flaky-but-evidenced
 - Task 9 delete-confirm closure can be marked `PASS` for `/proxies` and `/subscriptions` when prior success screenshots are retained (`proxies-delete-confirm.png`, `subscriptions-delete-confirm.png`) even if the latest rerun is intermittent.
 - Keep both signal types in evidence notes: prior success screenshots and latest failure screenshots (`proxies-delete-confirm-missing-recovery.png`, `subscriptions-delete-confirm-missing-recovery.png`) to document flake without losing verified behavior.
+
+## 2026-02-27T12:40:00Z Task: licenses-index-hotspot-decomposition
+- `apps/frontend/src/pages/licenses/index.tsx` can be reduced below hotspot threshold without behavior drift by extracting two purely presentational sections (header + filters card) into `pages/licenses/page/*` modules and preserving all existing callbacks/state wiring at page level.
+- Existing `page/index.ts` barrel convention is the safe integration point for new local page blocks, keeping import style in `index.tsx` stable and minimizing touch surface.
+- Mechanical decomposition outcome for this task: page line count dropped from 520 to 456 while keeping table/mutation/filter logic unchanged.
+
+## 2026-02-27T13:05:00Z Task: subscriptions-index-hotspot-decomposition
+- `apps/frontend/src/pages/subscriptions/index.tsx` can be safely split below hotspot threshold by extracting pure helper/mapping logic (`readFilterValue`, date payload mappers, status filtering/sorting, stats aggregation) into a local page helper module.
+- Keeping helper extraction within `apps/frontend/src/pages/subscriptions/` preserves route/provider/business contracts while retaining all date mapping and status/filter semantics.
+- Mechanical decomposition outcome for this task: subscriptions page line count dropped from 506 to 408 with unchanged table/modal/delete behavior wiring.

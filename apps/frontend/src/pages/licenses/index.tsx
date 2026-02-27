@@ -1,15 +1,7 @@
-import {
-  DownOutlined,
-  KeyOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  RightOutlined,
-  SearchOutlined,
-} from '@ant-design/icons';
 import { useModalForm, useTable } from '@refinedev/antd';
 import { type CrudFilter, type HttpError, useList, useUpdate } from '@refinedev/core';
 import type { FormInstance } from 'antd';
-import { Button, Card, Form, Input, message, Select, Space, Table, Typography } from 'antd';
+import { Card, Form, message, Table } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
@@ -25,14 +17,13 @@ import {
   computeStats,
   getCurrentTimestamp,
   LicenseEditorModal,
+  LicensePageHeader,
+  LicensesFiltersCard,
   LicensesStatsPanel,
   STATS_COLLAPSED_KEY,
   setLicenseEditorDefaults,
   withBotDetails,
 } from './page';
-
-const { Title, Text } = Typography;
-const { Option } = Select;
 
 const RESOURCE_POLL_MS = 7_000;
 const BOT_POLL_MS = 5_000;
@@ -369,84 +360,28 @@ export const LicensesPage: React.FC = () => {
 
   return (
     <div className={styles.root}>
-      <Card className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerTitle}>
-            <Title level={4} className={styles.headerHeading}>
-              <KeyOutlined /> Bot Licenses
-            </Title>
-            <Text type="secondary" className={styles.headerSubtitle}>
-              Manage bot software licenses
-            </Text>
-          </div>
-          <Space>
-            <Button
-              type="text"
-              icon={statsCollapsed ? <RightOutlined /> : <DownOutlined />}
-              onClick={() => setStatsCollapsed((prev) => !prev)}
-            >
-              Stats
-            </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
-              Add License
-            </Button>
-          </Space>
-        </div>
-      </Card>
+      <LicensePageHeader
+        statsCollapsed={statsCollapsed}
+        onToggleStats={() => setStatsCollapsed((prev) => !prev)}
+        onCreate={openCreateModal}
+      />
 
       <LicensesStatsPanel stats={stats} collapsed={statsCollapsed} />
 
-      <Card className={styles.filters}>
-        <Space wrap className={styles.filtersSpace}>
-          <Input
-            placeholder="Search by key or bot..."
-            prefix={<SearchOutlined />}
-            size="small"
-            value={searchText}
-            onChange={(event) => setMergedFilters({ q: event.target.value })}
-            className={styles.filterSearch}
-            variant="filled"
-          />
-          <Select
-            placeholder="Status"
-            size="small"
-            value={statusFilter}
-            onChange={(value) => setMergedFilters({ status: value })}
-            className={styles.filterSelect}
-            variant="filled"
-          >
-            <Option value="all">All Statuses</Option>
-            <Option value="active">Active</Option>
-            <Option value="expired">Expired</Option>
-            <Option value="revoked">Revoked</Option>
-          </Select>
-          <Select
-            placeholder="Type"
-            size="small"
-            value={typeFilter}
-            onChange={(value) => setMergedFilters({ type: value })}
-            className={styles.filterSelect}
-            variant="filled"
-          >
-            <Option value="all">All Types</Option>
-            <Option value="sin">SIN</Option>
-            <Option value="other">Other</Option>
-          </Select>
-          <Button
-            icon={<ReloadOutlined />}
-            size="small"
-            onClick={() =>
-              licensesTable.setFilters(
-                buildTableFilters({ q: '', status: 'all', type: 'all' }),
-                'replace',
-              )
-            }
-            className={styles.resetButton}
-          >
-            Reset
-          </Button>
-        </Space>
-      </Card>
+      <LicensesFiltersCard
+        searchText={searchText}
+        statusFilter={statusFilter}
+        typeFilter={typeFilter}
+        onSearchChange={(value) => setMergedFilters({ q: value })}
+        onStatusChange={(value) => setMergedFilters({ status: value })}
+        onTypeChange={(value) => setMergedFilters({ type: value })}
+        onReset={() =>
+          licensesTable.setFilters(
+            buildTableFilters({ q: '', status: 'all', type: 'all' }),
+            'replace',
+          )
+        }
+      />
 
       <Card className={styles.tableCard}>
         <Table

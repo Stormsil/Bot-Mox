@@ -45,3 +45,13 @@
 - Decision: treat `pnpm --filter @botmox/frontend typecheck`, `build`, and `test:e2e` as the required command gates for this task and record timestamped outcomes in dedicated evidence.
 - Decision: classify parity items as `PARTIAL` unless proven by interactive manual walkthrough; use explicit reason statements instead of inferring manual pass from code alone.
 - Decision: record `/admin/*` parity from unchanged `App.tsx` route wiring (`AdminRedirectPage` -> `${ADMIN_APP_URL}/admin/access`) as a route-tree statement in verification evidence.
+
+## 2026-02-27T10:50:10Z Task: 9-run-full-verification-and-capture-evidence (manual parity continuation)
+- Decision: use seeded-auth Playwright walkthrough (`localStorage`) with API interception to capture concrete interactive parity evidence and route URL before/after refresh snapshots.
+- Decision: mark `/licenses`, `/proxies`, `/subscriptions` parity as `PASS` based on captured interactive evidence, while keeping only unresolved bot write-confirm branches as `PARTIAL` with explicit blocker text.
+- Decision: keep findings append-only in evidence artifacts (`walkthrough-findings.json`, screenshots) and reference those paths from `verification.md` instead of duplicating raw logs.
+
+## 2026-02-27T13:05:00Z Task: subscriptions-index-hotspot-decomposition
+- Decision: move only deterministic helpers from `apps/frontend/src/pages/subscriptions/index.tsx` into `apps/frontend/src/pages/subscriptions/subscription-page.helpers.ts`; keep all hooks, modal orchestration, and UI markup in page component.
+- Decision: preserve payload/date contract by reusing unchanged `DD.MM.YYYY` -> end-of-day timestamp conversion in extracted helper functions for create/update flows.
+- Decision: replace inline derived list/stat computations with helper calls only (no algorithm changes) to reduce hotspot length while keeping status filtering and expiring sort behavior identical.

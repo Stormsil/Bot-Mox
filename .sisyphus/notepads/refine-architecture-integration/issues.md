@@ -38,6 +38,10 @@
 - No command-gate blockers: required frontend verification commands all passed.
 - Environment limitation captured: full interactive manual parity walkthrough was not executed in this CLI-only run, so manual-only checklist items are recorded as `PARTIAL` (not fabricated as pass).
 
+## 2026-02-27T10:50:10Z Task: 9-run-full-verification-and-capture-evidence (manual parity continuation)
+- Blocker (scoped): BotLicense/BotProxy unassign confirmation branches did not emit write mutations in the mocked headless walkthrough (`mutationLog` remained empty), so delete-vs-update and `bot_id: null` write outcomes remain `PARTIAL`.
+- Non-blocking: route parity checks and page modal parity are fully verified with screenshots and concrete before/after refresh URLs.
+
 ## 2026-02-27T09:48:00Z Task: 9-verification-recovery-interactive-playwright
 - `BLOCKER /proxies :: delete-confirm-open :: locator.waitFor: Timeout 5000ms exceeded.`
 - `BLOCKER /subscriptions :: delete-confirm-open :: locator.waitFor: Timeout 5000ms exceeded.`
@@ -51,3 +55,11 @@
 ## 2026-02-27T12:18:00Z Task: 9-evidence-closure-flaky-but-evidenced
 - Latest rerun remains flaky/intermittent for `/proxies` and `/subscriptions` delete-confirm visibility in mocked/headless mode.
 - Closure decision is evidence-backed: prior success artifacts (`proxies-delete-confirm.png`, `subscriptions-delete-confirm.png`) confirm expected behavior, while latest failure artifacts are retained for traceability (`proxies-delete-confirm-missing-recovery.png`, `subscriptions-delete-confirm-missing-recovery.png`).
+
+## 2026-02-27T12:40:00Z Task: licenses-index-hotspot-decomposition
+- No blockers for this refactor; extraction stayed within `apps/frontend/src/pages/licenses/` and preserved route/data-provider contracts.
+- Constraint noted: hotspot threshold can force mechanical decomposition even when logic is already separated; safest path is extracting small presentational blocks first to avoid mutation/filter behavior regressions.
+
+## 2026-02-27T13:05:00Z Task: subscriptions-index-hotspot-decomposition
+- No blockers for this refactor; extraction was limited to helper logic in local subscriptions page module scope.
+- Type caveat retained: `useTable` pagination underflow fallback still depends on optional narrowed `setCurrent` access and remains unchanged by this decomposition.

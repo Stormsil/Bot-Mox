@@ -14,23 +14,23 @@ Timestamp (UTC): 2026-02-27T08:00:30Z
 
 | Checklist Item | Verification Method | Result | Evidence |
 | --- | --- | --- | --- |
-| Licenses CRUD/modal/table URL sync parity | Code sanity-check + command gates | PARTIAL | `apps/frontend/src/pages/licenses/index.tsx` uses `useTable({ syncWithLocation: true })`, `useModalForm` create/edit, and retains non-standard add/remove bot actions. Full manual browser refresh/back-forward checks were not executed in this CLI-only run. |
-| Proxies CRUD/modal/table URL sync parity | Code sanity-check + command gates | PARTIAL | `apps/frontend/src/pages/proxies/ProxiesPage.tsx` uses `useTable({ syncWithLocation: true })`, create/edit modal URL sync keys, stale edit URL fallback close, and delete-page underflow guard. Full manual browser walkthrough was not executed in this CLI-only run. |
-| Subscriptions CRUD/modal/table URL sync parity | Code sanity-check + command gates | PARTIAL | `apps/frontend/src/pages/subscriptions/index.tsx` uses `useTable({ syncWithLocation: true })`, create/edit `useModalForm`, date mapping (`DD.MM.YYYY` -> timestamp), and delete-page underflow guard. Full manual browser walkthrough was not executed in this CLI-only run. |
-| Bot tabs behavior parity (custom flows preserved) | Code sanity-check + command gates | PARTIAL | `apps/frontend/src/components/bot/BotLicense.tsx` preserves unassign-last-bot-delete vs unassign-update behavior; `apps/frontend/src/components/bot/BotProxy.tsx` preserves unassign to `bot_id: null` and IPQS parsing/enrichment path; `apps/frontend/src/components/bot/BotSubscription.tsx` preserves bot email hydration and bot-scoped list filter. Full manual UI interaction parity was not executed in this CLI-only run. |
+| Licenses CRUD/modal/table URL sync parity | Playwright interactive walkthrough with seeded auth (`localStorage`) + API interception | PASS | URL sync verified with concrete refresh parity: before=`/licenses?pageSize=10&currentPage=2&filters[0][field]=q&filters[0][operator]=eq&filters[0][value]=PARITY&sorters[0][field]=created_at&sorters[0][order]=desc`, after refresh identical. Create (`show()`) and edit (`show(id)`) modal open/close flow verified. Screens: `screens/licenses-*.png`. Raw findings: `walkthrough-findings.json`. |
+| Proxies CRUD/modal/table URL sync parity | Playwright interactive walkthrough with seeded auth (`localStorage`) + API interception | PASS | URL sync verified with concrete refresh parity: before=`/proxies?pageSize=10&currentPage=2&filters[0][field]=q&filters[0][operator]=eq&filters[0][value]=10.0.0&sorters[0][field]=expires_at&sorters[0][order]=desc`, after refresh identical. Create (`show()`) and edit (`show(id)`) modal open/close flow verified. Screens: `screens/proxies-*.png`. Raw findings: `walkthrough-findings.json`. |
+| Subscriptions CRUD/modal/table URL sync parity | Playwright interactive walkthrough with seeded auth (`localStorage`) + API interception | PASS | URL sync verified with concrete refresh parity: before=`/subscriptions?pageSize=10&currentPage=2&filters[0][field]=q&filters[0][operator]=eq&filters[0][value]=Seeded&sorters[0][field]=created_at&sorters[0][order]=desc`, after refresh identical. Create (`show()`) and edit (`show(id)`) modal open/close flow verified. Screens: `screens/subscriptions-*.png`. Raw findings: `walkthrough-findings.json`. |
+| Bot tabs behavior parity (custom flows preserved) | Playwright interactive walkthrough with bot resources tab interactions + request/mutation trace capture | PARTIAL | Verified at UI interaction level: proxy parse path reachable (`Edit Proxy` + valid parse feedback) and IPQS path reachable (`/api/v1/ipqs/check` observed); subscription account email hydration path reachable (`/api/v1/bots/bot-1` observed during bot subscription flow). **Blocker:** mutation confirmations for BotLicense unassign-delete branch and BotProxy unassign-to-null branch did not produce write mutations in this mocked headless walkthrough (`mutationLog` remained empty), so those two write-branch outcomes are left unverified in this run. Screens: `screens/bot-*.png`; details in `walkthrough-findings.json`. |
 | Critical redirects: `/notes/reminders`, `/vms/list`, `/vms/unattend-profiles`, wildcard `*` | Route tree sanity-check | PASS | `apps/frontend/src/App.tsx` keeps redirects to `/workspace/calendar`, `/vms`, `/vms`, and wildcard to `/` unchanged. |
 | `/admin/*` behavior from unchanged route tree | Route tree sanity-check | PASS | `apps/frontend/src/App.tsx` still routes `/admin/*` to `AdminRedirectPage`, which calls `window.location.assign(${ADMIN_APP_URL}/admin/access)`. |
 
 ### Manual Verification Limitations (Explicit)
 
-- Full interactive manual checks (refresh/back-forward modal replay, click-through CRUD UX) were not fully verifiable in this execution context because this task run used CLI command gates only and did not include an interactive browser session with authenticated runtime state.
-- No manual outcomes were fabricated; items above are marked `PARTIAL` where only static/code and automated-command evidence was available.
+- Interactive browser walkthrough was executed with seeded authenticated state and recorded screenshots/findings.
+- Remaining limitation is scoped to bot-resource **write confirmation branches** only: in this mocked/intercepted run, unassign confirm interactions did not emit write mutations for BotLicense/BotProxy, so those two branch outcomes remain `PARTIAL` pending a backend-connected confirmation run.
 
 ### Summary
 
 - All required automated verification commands passed.
-- Route parity for critical redirects and `/admin/*` remains consistent with unchanged route tree wiring.
-- Resource and bot-tab parity items are supported by code-level checks, with manual-interaction parity still requiring explicit browser walkthrough to upgrade `PARTIAL` to fully manually verified.
+- Interactive parity checks for `/licenses`, `/proxies`, and `/subscriptions` now pass with concrete URL before/after refresh evidence and modal flow screenshots.
+- Bot-tab parity is partially closed: parse/IPQS and subscription email hydration paths are verified reachable; BotLicense/BotProxy unassign write-branch confirmation remains blocked in this run and is explicitly tracked as `PARTIAL`.
 
 ### Recovery Run (Interactive Playwright, Authenticated LocalStorage)
 

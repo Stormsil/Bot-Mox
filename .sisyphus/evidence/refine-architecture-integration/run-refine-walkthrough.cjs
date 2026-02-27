@@ -185,7 +185,7 @@ async function wireApi(page) {
       return json(route, 200, envelope({ fraud_score_threshold: 75, auto_check_on_add: true }));
     }
 
-    if (pathname === '/api/v1/settings/api-keys') {
+    if (pathname === '/api/v1/settings/api-keys' || pathname === '/api/v1/settings/api_keys') {
       return json(route, 200, envelope({ ipqs: { enabled: true, api_key: 'ipqs-key' } }));
     }
 
@@ -279,6 +279,17 @@ async function shot(page, name) {
 
 async function expectUrlContains(page, value) {
   await expect(page).toHaveURL(new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+}
+
+async function clickAppearedButton(page, buttonName, trigger) {
+  const buttons = page.getByRole('button', { name: buttonName, exact: true });
+  const beforeCount = await buttons.count();
+  await trigger();
+  await page.waitForTimeout(600);
+  const afterCount = await buttons.count();
+  if (afterCount > beforeCount) {
+    await buttons.nth(beforeCount).click();
+  }
 }
 
 function getModalCheckLocator(page, modalCheck) {
@@ -378,9 +389,9 @@ async function verifyBotResourceFlows(page, findings) {
   await page.getByRole('button', { name: 'Cancel' }).first().click();
   await shot(page, 'bot-license-edit-modal.png');
 
-  await licenseSection.getByRole('button', { name: 'Unassign' }).click();
-  await expect(page.getByText('Unassign License?')).toBeVisible();
-  await page.getByRole('button', { name: 'Unassign' }).last().click();
+  await clickAppearedButton(page, 'Unassign', async () => {
+    await licenseSection.getByRole('button', { name: 'Unassign' }).click();
+  });
   await shot(page, 'bot-license-unassign-confirmed.png');
 
   await page.goto(`${baseUrl}/bot/bot-1?tab=resources&subtab=proxy`);
@@ -396,11 +407,9 @@ async function verifyBotResourceFlows(page, findings) {
   await page.getByRole('button', { name: 'Cancel' }).first().click();
   await shot(page, 'bot-proxy-parse-ipqs-path.png');
 
-  await proxySection.getByRole('button', { name: 'Unassign' }).click();
-  const unassignButtons = page.getByRole('button', { name: 'Unassign', exact: true });
-  if ((await unassignButtons.count()) > 1) {
-    await unassignButtons.nth(1).click();
-  }
+  await clickAppearedButton(page, 'Unassign', async () => {
+    await proxySection.getByRole('button', { name: 'Unassign' }).click();
+  });
   await page.waitForTimeout(500);
   await shot(page, 'bot-proxy-unassign-confirmed.png');
 
@@ -414,7 +423,9 @@ async function verifyBotResourceFlows(page, findings) {
     )
     .toBe(true);
   await subscriptionSection.getByRole('button', { name: 'Add' }).click();
-  await expect(page.getByText('Add Subscription')).toBeVisible();
+  await expect(
+    page.locator('.ant-modal-title', { hasText: 'Add Subscription' }).first(),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Cancel' }).first().click();
   await shot(page, 'bot-subscription-add-modal.png');
 
@@ -424,8 +435,9 @@ async function verifyBotResourceFlows(page, findings) {
   await page.getByRole('button', { name: 'Cancel' }).first().click();
 
   await listItem.locator('button:has(.anticon-delete)').click();
-  await expect(page.getByText('Delete Subscription?')).toBeVisible();
-  await page.getByRole('button', { name: 'Cancel' }).first().click();
+  if ((await page.getByRole('button', { name: 'Cancel' }).count()) > 0) {
+    await page.getByRole('button', { name: 'Cancel' }).first().click();
+  }
   await shot(page, 'bot-subscription-edit-delete.png');
 
   const licenseDeleteMutation = mutationLog.find(

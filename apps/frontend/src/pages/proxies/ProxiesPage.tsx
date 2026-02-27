@@ -1,14 +1,6 @@
-import {
-  DownOutlined,
-  GlobalOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  RightOutlined,
-  SearchOutlined,
-} from '@ant-design/icons';
 import { useModalForm, useTable } from '@refinedev/antd';
-import { type CrudFilter, type HttpError, useDelete, useList, useUpdate } from '@refinedev/core';
-import { Button, Card, Input, Modal, message, Select, Table, Typography } from 'antd';
+import { type HttpError, useDelete, useList, useUpdate } from '@refinedev/core';
+import { Card, Modal, message, Table } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
@@ -19,7 +11,9 @@ import {
   updateProxyWithIPQSData,
 } from '../../entities/resources/api/ipqsFacade';
 import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
+import { ProxiesFiltersCard } from './ProxiesFiltersCard';
 import styles from './ProxiesPage.module.css';
+import { ProxiesPageHeader } from './ProxiesPageHeader';
 import { ProxiesStatsCards } from './ProxiesStatsCards';
 import { ProxyCrudModal } from './ProxyCrudModal';
 import {
@@ -30,71 +24,25 @@ import {
   type ProxiesBotMap,
   STATS_COLLAPSED_KEY,
 } from './proxiesPageModel';
+import {
+  buildProxiesTableFilters,
+  DEFAULT_PROXIES_TABLE_FILTERS,
+  type ProxiesTableFilterValues,
+  readProxiesTableFilterValues,
+} from './proxiesTableFilters';
 import { buildProxyColumns, type ProxyWithBot } from './proxyColumns';
 
-const { Title, Text } = Typography;
-const { Option } = Select;
 const { confirm } = Modal;
 
 const RESOURCE_POLL_MS = 7_000;
 const BOT_POLL_MS = 5_000;
 const LARGE_PAGE_SIZE = 5_000;
-const ALLOWED_STATUS_FILTERS = new Set(['all', 'active', 'expired', 'banned']);
-const ALLOWED_TYPE_FILTERS = new Set(['all', 'http', 'socks5']);
-
-function readFilterValue(filters: CrudFilter[], field: string, fallback: string): string {
-  const match = filters.find(
-    (item) => 'field' in item && String(item.field) === field && 'value' in item,
-  );
-  if (!match || !('value' in match)) {
-    return fallback;
-  }
-  const value = match.value;
-  if (value === undefined || value === null || value === '') {
-    return fallback;
-  }
-  return String(value);
-}
-
-function readEnumFilterValue(
-  filters: CrudFilter[],
-  field: string,
-  fallback: string,
-  allowedValues: Set<string>,
-): string {
-  const value = readFilterValue(filters, field, fallback);
-  return allowedValues.has(value) ? value : fallback;
-}
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error && error.message.trim()) {
     return error.message;
   }
   return fallback;
-}
-
-function buildTableFilters(values: {
-  q: string;
-  status: string;
-  type: string;
-  country: string;
-}): CrudFilter[] {
-  const next: CrudFilter[] = [];
-
-  if (values.q.trim()) {
-    next.push({ field: 'q', operator: 'eq', value: values.q.trim() });
-  }
-  if (values.status !== 'all') {
-    next.push({ field: 'status', operator: 'eq', value: values.status });
-  }
-  if (values.type !== 'all') {
-    next.push({ field: 'type', operator: 'eq', value: values.type });
-  }
-  if (values.country !== 'all') {
-    next.push({ field: 'country', operator: 'eq', value: values.country });
-  }
-
-  return next;
 }
 
 export const ProxiesPage: React.FC = () => {
@@ -181,30 +129,29 @@ export const ProxiesPage: React.FC = () => {
     [allProxiesList.result.data, bots],
   );
 
-  const searchText = readFilterValue(proxiesTable.filters, 'q', '');
-  const statusFilter = readEnumFilterValue(
-    proxiesTable.filters,
-    'status',
-    'all',
-    ALLOWED_STATUS_FILTERS,
+  const tableFilters = useMemo(
+    () => readProxiesTableFilterValues(proxiesTable.filters),
+    [proxiesTable.filters],
   );
-  const typeFilter = readEnumFilterValue(proxiesTable.filters, 'type', 'all', ALLOWED_TYPE_FILTERS);
-  const countryFilter = readFilterValue(proxiesTable.filters, 'country', 'all');
 
   const setMergedFilters = useCallback(
-    (nextPartial: Partial<{ q: string; status: string; type: string; country: string }>) => {
+    (nextPartial: Partial<ProxiesTableFilterValues>) => {
       proxiesTable.setFilters(
-        buildTableFilters({
-          q: nextPartial.q ?? searchText,
-          status: nextPartial.status ?? statusFilter,
-          type: nextPartial.type ?? typeFilter,
-          country: nextPartial.country ?? countryFilter,
+        buildProxiesTableFilters({
+          q: nextPartial.q ?? tableFilters.q,
+          status: nextPartial.status ?? tableFilters.status,
+          type: nextPartial.type ?? tableFilters.type,
+          country: nextPartial.country ?? tableFilters.country,
         }),
         'replace',
       );
     },
-    [countryFilter, proxiesTable, searchText, statusFilter, typeFilter],
+    [proxiesTable, tableFilters],
   );
+
+  const resetFilters = useCallback(() => {
+    proxiesTable.setFilters(buildProxiesTableFilters(DEFAULT_PROXIES_TABLE_FILTERS), 'replace');
+  }, [proxiesTable]);
 
   const loading =
     Boolean(proxiesTable.tableProps.loading) ||
@@ -425,95 +372,20 @@ export const ProxiesPage: React.FC = () => {
 
   return (
     <div className={styles.root}>
-      <Card className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerTitle}>
-            <Title level={4} className={styles.pageTitle}>
-              <GlobalOutlined /> Proxies
-            </Title>
-            <Text type="secondary" className={styles.headerSubtitle}>
-              Manage proxy servers for bots
-            </Text>
-          </div>
-          <div className={styles.headerActions}>
-            <Button
-              type="text"
-              size="small"
-              icon={statsCollapsed ? <RightOutlined /> : <DownOutlined />}
-              onClick={() => setStatsCollapsed((prev) => !prev)}
-            >
-              Stats
-            </Button>
-            <Button type="primary" size="small" icon={<PlusOutlined />} onClick={openCreateModal}>
-              Add Proxy
-            </Button>
-          </div>
-        </div>
-      </Card>
+      <ProxiesPageHeader
+        statsCollapsed={statsCollapsed}
+        onToggleStats={() => setStatsCollapsed((prev) => !prev)}
+        onOpenCreate={openCreateModal}
+      />
 
       {!statsCollapsed && <ProxiesStatsCards stats={stats} />}
 
-      <Card className={styles.filters}>
-        <div className={styles.filtersRow}>
-          <Input
-            placeholder="Search by IP, provider, country, ISP..."
-            prefix={<SearchOutlined />}
-            size="small"
-            value={searchText}
-            onChange={(event) => setMergedFilters({ q: event.target.value })}
-            className={styles.filterSearch}
-          />
-          <Select
-            placeholder="Status"
-            size="small"
-            value={statusFilter}
-            onChange={(value) => setMergedFilters({ status: value })}
-            className={styles.filterSelectMd}
-          >
-            <Option value="all">All Statuses</Option>
-            <Option value="active">Active</Option>
-            <Option value="expired">Expired</Option>
-            <Option value="banned">Banned</Option>
-          </Select>
-          <Select
-            placeholder="Type"
-            size="small"
-            value={typeFilter}
-            onChange={(value) => setMergedFilters({ type: value })}
-            className={styles.filterSelectSm}
-          >
-            <Option value="all">All Types</Option>
-            <Option value="http">HTTP</Option>
-            <Option value="socks5">SOCKS5</Option>
-          </Select>
-          <Select
-            placeholder="Country"
-            size="small"
-            value={countryFilter}
-            onChange={(value) => setMergedFilters({ country: value })}
-            className={styles.filterSelectMd}
-          >
-            <Option value="all">All Countries</Option>
-            {countries.map((country) => (
-              <Option key={country} value={country}>
-                {country}
-              </Option>
-            ))}
-          </Select>
-          <Button
-            size="small"
-            icon={<ReloadOutlined />}
-            onClick={() =>
-              proxiesTable.setFilters(
-                buildTableFilters({ q: '', status: 'all', type: 'all', country: 'all' }),
-                'replace',
-              )
-            }
-          >
-            Reset
-          </Button>
-        </div>
-      </Card>
+      <ProxiesFiltersCard
+        filters={tableFilters}
+        countries={countries}
+        onChange={setMergedFilters}
+        onReset={resetFilters}
+      />
 
       <Card className={styles.tableCard}>
         <Table

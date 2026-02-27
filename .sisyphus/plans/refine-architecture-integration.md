@@ -557,3 +557,9 @@ pnpm run test:e2e
 - [x] No banned manual modal state/mutation patterns remain in agreed scope.
 - [x] Visual behavior parity preserved.
 - [x] All verification commands pass.
+
+## Refine Notepad Updates
+
+- 2026-02-27: Reduced `apps/frontend/src/pages/proxies/ProxiesPage.tsx` from 564 lines to 437 lines to satisfy hotspot limit while preserving existing flows (IPQS recheck, delete pagination underflow handling, modal URL behavior, unassign-compatible edit path in `ProxyCrudModal`).
+- 2026-02-27: Extracted table filter parsing/building into `apps/frontend/src/pages/proxies/proxiesTableFilters.ts` and extracted presentational sections into `apps/frontend/src/pages/proxies/ProxiesPageHeader.tsx` and `apps/frontend/src/pages/proxies/ProxiesFiltersCard.tsx` with no route/provider/business contract changes.
+- 2026-02-27: Verification for this split passed: clean LSP diagnostics on touched files and `pnpm --filter @botmox/frontend typecheck` completed successfully.
