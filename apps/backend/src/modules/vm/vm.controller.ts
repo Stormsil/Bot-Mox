@@ -1,4 +1,9 @@
-import { vmRegisterSchema, vmResolvePathSchema } from '@botmox/api-contract';
+import {
+  vmHardwareFingerprintQuerySchema,
+  vmHardwareFingerprintResponseSchema,
+  vmRegisterSchema,
+  vmResolvePathSchema,
+} from '@botmox/api-contract';
 import {
   BadRequestException,
   Body,
@@ -8,16 +13,21 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { getRequestIdentity } from '../auth/request-identity.util';
+import { VmHardwareService } from './hardware-generator/vm-hardware.service';
 import { VmService } from './vm.service';
 
 @Controller('vm')
 export class VmController {
-  constructor(private readonly vmService: VmService) {}
+  constructor(
+    private readonly vmService: VmService,
+    private readonly vmHardwareService: VmHardwareService,
+  ) {}
 
   private ensureAuthHeader(authorization: string | undefined): void {
     if (!authorization) {
@@ -99,6 +109,38 @@ export class VmController {
     return {
       success: true,
       data: record,
+    };
+  }
+
+  @Get('hardware-fingerprint')
+  getHardwareFingerprint(
+    @Headers('authorization') authorization: string | undefined,
+    @Query() query: Record<string, unknown>,
+  ): { success: true; data: unknown } {
+    this.ensureAuthHeader(authorization);
+
+    const parsedQuery = vmHardwareFingerprintQuerySchema.safeParse(query ?? {});
+    if (!parsedQuery.success) {
+      throw new BadRequestException({
+        code: 'VM_HARDWARE_FINGERPRINT_INVALID_QUERY',
+        message: 'Invalid VM hardware fingerprint query',
+        details: parsedQuery.error.flatten(),
+      });
+    }
+
+    const generated = this.vmHardwareService.generateFingerprint();
+    const parsedResponse = vmHardwareFingerprintResponseSchema.safeParse(generated);
+    if (!parsedResponse.success) {
+      throw new BadRequestException({
+        code: 'VM_HARDWARE_FINGERPRINT_INVALID_RESPONSE',
+        message: 'Invalid VM hardware fingerprint response payload',
+        details: parsedResponse.error.flatten(),
+      });
+    }
+
+    return {
+      success: true,
+      data: parsedResponse.data,
     };
   }
 }

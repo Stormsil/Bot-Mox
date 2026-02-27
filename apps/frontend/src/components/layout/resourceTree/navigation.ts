@@ -12,9 +12,6 @@ const PATH_BY_TREE_KEY: Record<string, string> = {
   vms: '/vms',
   vms_list: '/vms',
   vms_unattend_profiles: '/vms',
-  vms_site_proxmox: '/vms/sites/proxmox',
-  vms_site_tinyfm: '/vms/sites/tinyfm',
-  vms_site_syncthing: '/vms/sites/syncthing',
 };
 
 export function resolveStaticPathForTreeKey(key: string): string | null {

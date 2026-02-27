@@ -246,12 +246,9 @@ export interface VMGeneratorSettings {
     proxmoxUrl: string;
     tinyFmUrl: string;
     syncThingUrl: string;
-    proxmoxAutoLogin: boolean;
-    tinyFmAutoLogin: boolean;
     tinyFmUsername: string;
     /** @deprecated Use secret binding instead. */
     tinyFmPassword?: string;
-    syncThingAutoLogin: boolean;
     syncThingUsername: string;
     /** @deprecated Use secret binding instead. */
     syncThingPassword?: string;
@@ -270,4 +267,3 @@ export interface VMGeneratorSettings {
     };
   };
 }
-

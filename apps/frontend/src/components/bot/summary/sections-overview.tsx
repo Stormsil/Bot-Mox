@@ -14,7 +14,6 @@ import { StatusBadge } from '../../ui/StatusBadge';
 import { BotCharacter } from '../BotCharacter';
 import styles from '../BotSummary.module.css';
 import { SummaryStatItem } from './stat-item';
-import { detailCardStyles } from './summaryUi';
 import type { BotStatusInfo, BotSummaryBot, HealthStatus } from './types';
 
 interface SummaryOverviewSectionProps {
@@ -153,7 +152,6 @@ export const SummaryBotInfoSection: React.FC<SummaryBotInfoSectionProps> = ({
         <Card
           title={<span className={styles['detail-card-title']}>Bot Info</span>}
           className={styles['detail-card']}
-          styles={detailCardStyles}
         >
           <div className={styles['summary-stats-grid']}>
             <SummaryStatItem

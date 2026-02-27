@@ -80,7 +80,7 @@ export function buildProxyColumns({
         }
 
         return (
-          <Tag color={color} style={tagStyle}>
+          <Tag bordered={false} color={color} style={tagStyle}>
             {text.toUpperCase()}
           </Tag>
         );
@@ -98,11 +98,11 @@ export function buildProxyColumns({
             onClick={(e) => copyProxyString(record, e)}
             icon={<CopyOutlined />}
           >
-            <Text strong className={styles.proxyCopyText}>
+            <Text code className={styles.proxyCopyText}>
               {record.ip}:{record.port}
             </Text>
           </Button>
-          <Text type="secondary" className={styles.proxyCredentials}>
+          <Text code type="secondary" className={styles.proxyCredentials}>
             {record.login}:{record.password}
           </Text>
         </div>
@@ -123,17 +123,17 @@ export function buildProxyColumns({
             <Text strong>{countryCode}</Text>
             <div className={styles.inlineTags}>
               {record.vpn && (
-                <Tag color="orange" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="orange" style={{ ...tagStyle, fontSize: 9 }}>
                   VPN
                 </Tag>
               )}
               {record.proxy && (
-                <Tag color="blue" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="blue" style={{ ...tagStyle, fontSize: 9 }}>
                   PROXY
                 </Tag>
               )}
               {record.tor && (
-                <Tag color="red" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="red" style={{ ...tagStyle, fontSize: 9 }}>
                   TOR
                 </Tag>
               )}
@@ -153,8 +153,8 @@ export function buildProxyColumns({
 
         if (!hasBeenChecked) {
           return (
-            <Tag color="default" style={tagStyle}>
-              Unknown
+            <Tag bordered={false} color="default" style={tagStyle}>
+              UNKNOWN
             </Tag>
           );
         }
@@ -183,17 +183,17 @@ export function buildProxyColumns({
             </div>
             <div className={styles.inlineTags}>
               {record.vpn && (
-                <Tag color="orange" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="orange" style={{ ...tagStyle, fontSize: 9 }}>
                   VPN
                 </Tag>
               )}
               {record.proxy && (
-                <Tag color="blue" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="blue" style={{ ...tagStyle, fontSize: 9 }}>
                   PROXY
                 </Tag>
               )}
               {record.tor && (
-                <Tag color="red" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="red" style={{ ...tagStyle, fontSize: 9 }}>
                   TOR
                 </Tag>
               )}
@@ -208,10 +208,10 @@ export function buildProxyColumns({
       width: 280,
       render: (_: unknown, record: ProxyWithBot) => (
         <div style={{ textAlign: 'left' }}>
-          <Text style={{ fontSize: '12px', fontWeight: 500, display: 'block' }}>
+          <Typography.Paragraph style={{ marginBottom: 0 }}>
             <RobotOutlined style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }} />
-            {record.bot_id}
-          </Text>
+            <Text code>{record.bot_id}</Text>
+          </Typography.Paragraph>
           <Text type="secondary" style={{ fontSize: '11px', display: 'block' }}>
             {record.botCharacter || record.botName}
             {record.botVMName && ` (${record.botVMName})`}

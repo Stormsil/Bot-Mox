@@ -1,54 +1,76 @@
 import { CopyOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import { Button, Space } from 'antd';
+import { Alert, Button, Space } from 'antd';
 import type React from 'react';
 import { useState } from 'react';
-import type { SmbiosResult } from '../../utils/vm';
-import { generateMac, generateSmbios, generateSsdSerial } from '../../utils/vm';
+import { useVmHardwareFingerprintMutation } from '../../entities/vm/api/useVmActionMutations';
 import styles from './VMConfigPreview.module.css';
 
 export const VMConfigPreview: React.FC = () => {
-  const [smbiosResult, setSmbiosResult] = useState<SmbiosResult | null>(null);
-  const [mac, setMac] = useState('');
-  const [serial, setSerial] = useState('');
+  const vmHardwareFingerprintMutation = useVmHardwareFingerprintMutation();
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
-  const handleGenerate = () => {
-    setSmbiosResult(generateSmbios());
-    setMac(generateMac());
-    setSerial(generateSsdSerial());
+  const handleGenerate = async () => {
+    setPreviewError(null);
+    try {
+      await vmHardwareFingerprintMutation.mutateAsync();
+    } catch (error) {
+      setPreviewError(error instanceof Error ? error.message : 'Failed to generate preview');
+    }
   };
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
+  const preview = vmHardwareFingerprintMutation.data;
+  const meta = preview?.meta ?? {};
+  const brand =
+    typeof meta.brand === 'string' && meta.brand.trim().length > 0
+      ? meta.brand.trim()
+      : typeof meta.manufacturer === 'string' && meta.manufacturer.trim().length > 0
+        ? meta.manufacturer.trim()
+        : '-';
+  const product =
+    typeof meta.product === 'string' && meta.product.trim().length > 0 ? meta.product.trim() : '-';
+  const cpu = typeof meta.cpu === 'string' && meta.cpu.trim().length > 0 ? meta.cpu.trim() : '-';
+
   return (
     <div className={styles.root}>
       <Space>
-        <Button type="primary" icon={<ThunderboltOutlined />} onClick={handleGenerate}>
+        <Button
+          type="primary"
+          icon={<ThunderboltOutlined />}
+          onClick={() => {
+            void handleGenerate();
+          }}
+          loading={vmHardwareFingerprintMutation.isPending}
+          disabled={vmHardwareFingerprintMutation.isPending}
+        >
           Generate Preview
         </Button>
       </Space>
+      {previewError && <Alert type="error" showIcon message={previewError} />}
 
-      {smbiosResult && (
+      {preview && (
         <>
           <div className={styles.details}>
             <div className={styles.detail}>
               <div className={styles.detailLabel}>Brand / Board</div>
               <div className={styles.detailValue}>
-                {smbiosResult.brand} / {smbiosResult.product}
+                {brand} / {product}
               </div>
             </div>
             <div className={styles.detail}>
               <div className={styles.detailLabel}>CPU</div>
-              <div className={styles.detailValue}>{smbiosResult.cpu}</div>
+              <div className={styles.detailValue}>{cpu}</div>
             </div>
             <div className={styles.detail}>
               <div className={styles.detailLabel}>MAC Address</div>
-              <div className={styles.detailValue}>{mac}</div>
+              <div className={styles.detailValue}>{preview.mac}</div>
             </div>
             <div className={styles.detail}>
               <div className={styles.detailLabel}>SSD Serial</div>
-              <div className={styles.detailValue}>{serial}</div>
+              <div className={styles.detailValue}>{preview.ssdSerial}</div>
             </div>
           </div>
 
@@ -56,13 +78,14 @@ export const VMConfigPreview: React.FC = () => {
             <Button
               size="small"
               icon={<CopyOutlined />}
-              onClick={() => handleCopy(smbiosResult.args)}
+              onClick={() => handleCopy(preview.smbiosArgs)}
+              disabled={vmHardwareFingerprintMutation.isPending}
             >
               Copy Args
             </Button>
           </div>
 
-          <div className={styles.output}>{smbiosResult.args}</div>
+          <div className={styles.output}>{preview.smbiosArgs}</div>
         </>
       )}
     </div>

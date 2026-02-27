@@ -3,15 +3,6 @@ import { AutoComplete, DatePicker, Form, Input, Modal } from 'antd';
 import type React from 'react';
 import type { LicenseFormValues } from './types';
 
-const modalStyles = {
-  content: { background: 'var(--boxmox-color-surface-panel)' },
-  header: {
-    background: 'var(--boxmox-color-surface-muted)',
-    borderBottom: '1px solid var(--boxmox-color-border-default)',
-  },
-  footer: { borderTop: '1px solid var(--boxmox-color-border-default)' },
-};
-
 interface LicenseFormModalProps {
   open: boolean;
   title: string;
@@ -32,13 +23,12 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
   onSubmit,
 }) => (
   <Modal
-    title={<span style={{ color: 'var(--boxmox-color-text-primary)' }}>{title}</span>}
+    title={title}
     open={open}
     onOk={() => form.submit()}
     onCancel={onCancel}
     okText={okText}
     width={500}
-    styles={modalStyles}
   >
     <Form form={form} layout="vertical" onFinish={(values) => void onSubmit(values)}>
       <Form.Item
@@ -46,14 +36,7 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
         label="License Key"
         rules={[{ required: true, message: 'Please enter license key' }]}
       >
-        <Input
-          placeholder="Enter license key (e.g., SIN-ABC123-DEF456)"
-          style={{
-            background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
-            color: 'var(--boxmox-color-text-primary)',
-          }}
-        />
+        <Input placeholder="Enter license key (e.g., SIN-ABC123-DEF456)" variant="filled" />
       </Form.Item>
 
       <Form.Item
@@ -64,11 +47,7 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
         <AutoComplete
           placeholder="Enter type (e.g., SIN, Baneto)"
           options={typeOptions}
-          style={{
-            background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
-            color: 'var(--boxmox-color-text-primary)',
-          }}
+          variant="filled"
           filterOption={(inputValue, option) =>
             option?.value?.toLowerCase().includes(inputValue.toLowerCase()) ?? false
           }
@@ -81,9 +60,10 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
         rules={[{ required: true, message: 'Please select expiration date' }]}
       >
         <DatePicker
-          style={{ width: '100%', background: 'var(--boxmox-color-surface-muted)' }}
+          style={{ width: '100%' }}
           placeholder="DD.MM.YYYY"
           format="DD.MM.YYYY"
+          variant="filled"
         />
       </Form.Item>
     </Form>

@@ -1,6 +1,7 @@
 export { VMCommandPanel } from './VMCommandPanel';
 export { VMConfigPreview } from './VMConfigPreview';
 export { VMList, VMListView } from './VMList';
+export { VMListContainer } from './VMListContainer';
 export { VMOperationLog } from './VMOperationLog';
 export { VMQueuePanel } from './VMQueuePanel';
 export { VMServicesPanel } from './VMServicesPanel';

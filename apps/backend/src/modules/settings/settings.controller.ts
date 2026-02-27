@@ -16,6 +16,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import type { ZodType } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
 import { SettingsService } from './settings.service';
 
@@ -32,14 +33,51 @@ export class SettingsController {
     }
   }
 
-  private parseApiKeysBody(
+  private success<T>(data: T): { success: true; data: T } {
+    return { success: true, data };
+  }
+
+  private getTenantIdFromRequest(authorization: string | undefined, req: Request): string {
+    this.ensureAuthHeader(authorization);
+    return getRequestIdentity(req).tenantId;
+  }
+
+  private async withTenant<T>(
+    authorization: string | undefined,
+    req: Request,
+    action: (tenantId: string) => Promise<T> | T,
+  ): Promise<T> {
+    const tenantId = this.getTenantIdFromRequest(authorization, req);
+    return await action(tenantId);
+  }
+
+  private async readWithTenant(
+    authorization: string | undefined,
+    req: Request,
+    action: (tenantId: string) => Promise<unknown> | unknown,
+  ): Promise<{ success: true; data: unknown }> {
+    return this.success(await this.withTenant(authorization, req, action));
+  }
+
+  private async writeWithTenant<TParsed>(
+    authorization: string | undefined,
     body: unknown,
-  ): import('zod').infer<typeof settingsApiKeysMutationSchema> {
-    const parsed = settingsApiKeysMutationSchema.safeParse(body ?? {});
+    req: Request,
+    parse: (input: unknown) => TParsed,
+    action: (parsed: TParsed, tenantId: string) => Promise<unknown> | unknown,
+  ): Promise<{ success: true; data: unknown }> {
+    const parsed = parse(body);
+    return this.success(
+      await this.withTenant(authorization, req, (tenantId) => action(parsed, tenantId)),
+    );
+  }
+
+  private parseWithSchema<T>(schema: ZodType<T>, body: unknown, code: string, message: string): T {
+    const parsed = schema.safeParse(body ?? {});
     if (!parsed.success) {
       throw new BadRequestException({
-        code: 'SETTINGS_INVALID_API_KEYS_BODY',
-        message: 'Invalid settings api_keys payload',
+        code,
+        message,
         details: parsed.error.flatten(),
       });
     }
@@ -47,29 +85,34 @@ export class SettingsController {
   }
 
   private parseProxyBody(body: unknown): import('zod').infer<typeof settingsProxyMutationSchema> {
-    const parsed = settingsProxyMutationSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'SETTINGS_INVALID_PROXY_BODY',
-        message: 'Invalid settings proxy payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return this.parseWithSchema(
+      settingsProxyMutationSchema,
+      body,
+      'SETTINGS_INVALID_PROXY_BODY',
+      'Invalid settings proxy payload',
+    );
   }
 
   private parseNotificationEventsBody(
     body: unknown,
   ): import('zod').infer<typeof settingsNotificationEventsMutationSchema> {
-    const parsed = settingsNotificationEventsMutationSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'SETTINGS_INVALID_NOTIFICATION_EVENTS_BODY',
-        message: 'Invalid settings notification events payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+    return this.parseWithSchema(
+      settingsNotificationEventsMutationSchema,
+      body,
+      'SETTINGS_INVALID_NOTIFICATION_EVENTS_BODY',
+      'Invalid settings notification events payload',
+    );
+  }
+
+  private parseApiKeysBody(
+    body: unknown,
+  ): import('zod').infer<typeof settingsApiKeysMutationSchema> {
+    return this.parseWithSchema(
+      settingsApiKeysMutationSchema,
+      body,
+      'SETTINGS_INVALID_API_KEYS_BODY',
+      'Invalid settings api_keys payload',
+    );
   }
 
   @Get('api_keys')
@@ -80,12 +123,9 @@ export class SettingsController {
     success: true;
     data: unknown;
   }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.getApiKeys(identity.tenantId),
-    };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.getApiKeys(tenantId),
+    );
   }
 
   @Put('api_keys')
@@ -97,13 +137,13 @@ export class SettingsController {
     success: true;
     data: unknown;
   }> {
-    this.ensureAuthHeader(authorization);
-    const parsed = this.parseApiKeysBody(body);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.updateApiKeys(parsed, identity.tenantId),
-    };
+    return this.writeWithTenant(
+      authorization,
+      body,
+      req,
+      this.parseApiKeysBody.bind(this),
+      (parsed, tenantId) => this.settingsService.updateApiKeys(parsed, tenantId),
+    );
   }
 
   @Get('proxy')
@@ -114,12 +154,9 @@ export class SettingsController {
     success: true;
     data: unknown;
   }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.getProxy(identity.tenantId),
-    };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.getProxy(tenantId),
+    );
   }
 
   @Put('proxy')
@@ -131,13 +168,13 @@ export class SettingsController {
     success: true;
     data: unknown;
   }> {
-    this.ensureAuthHeader(authorization);
-    const parsed = this.parseProxyBody(body);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.updateProxy(parsed, identity.tenantId),
-    };
+    return this.writeWithTenant(
+      authorization,
+      body,
+      req,
+      this.parseProxyBody.bind(this),
+      (parsed, tenantId) => this.settingsService.updateProxy(parsed, tenantId),
+    );
   }
 
   @Get('notifications/events')
@@ -148,12 +185,9 @@ export class SettingsController {
     success: true;
     data: unknown;
   }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.getNotificationEvents(identity.tenantId),
-    };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.getNotificationEvents(tenantId),
+    );
   }
 
   @Put('notifications/events')
@@ -165,13 +199,13 @@ export class SettingsController {
     success: true;
     data: unknown;
   }> {
-    this.ensureAuthHeader(authorization);
-    const parsed = this.parseNotificationEventsBody(body);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.updateNotificationEvents(parsed, identity.tenantId),
-    };
+    return this.writeWithTenant(
+      authorization,
+      body,
+      req,
+      this.parseNotificationEventsBody.bind(this),
+      (parsed, tenantId) => this.settingsService.updateNotificationEvents(parsed, tenantId),
+    );
   }
 
   @Get('theme')
@@ -179,9 +213,9 @@ export class SettingsController {
     @Headers('authorization') authorization: string | undefined,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return { success: true, data: await this.settingsService.getTheme(identity.tenantId) };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.getTheme(tenantId),
+    );
   }
 
   @Put('theme')
@@ -190,9 +224,13 @@ export class SettingsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return { success: true, data: await this.settingsService.updateTheme(body, identity.tenantId) };
+    return this.writeWithTenant(
+      authorization,
+      body,
+      req,
+      (input) => input,
+      (parsed, tenantId) => this.settingsService.updateTheme(parsed, tenantId),
+    );
   }
 
   @Get('projects')
@@ -200,9 +238,9 @@ export class SettingsController {
     @Headers('authorization') authorization: string | undefined,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return { success: true, data: await this.settingsService.getProjects(identity.tenantId) };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.getProjects(tenantId),
+    );
   }
 
   @Put('projects/:id')
@@ -212,12 +250,9 @@ export class SettingsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.upsertProject(id, body, identity.tenantId),
-    };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.upsertProject(id, body, tenantId),
+    );
   }
 
   @Patch('projects')
@@ -226,12 +261,9 @@ export class SettingsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.patchProjects(body, identity.tenantId),
-    };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.patchProjects(body, tenantId),
+    );
   }
 
   @Get('ui/resource_tree')
@@ -239,12 +271,9 @@ export class SettingsController {
     @Headers('authorization') authorization: string | undefined,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.getResourceTree(identity.tenantId),
-    };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.getResourceTree(tenantId),
+    );
   }
 
   @Put('ui/resource_tree')
@@ -253,12 +282,13 @@ export class SettingsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.updateResourceTree(body, identity.tenantId),
-    };
+    return this.writeWithTenant(
+      authorization,
+      body,
+      req,
+      (input) => input,
+      (parsed, tenantId) => this.settingsService.updateResourceTree(parsed, tenantId),
+    );
   }
 
   @Get('alerts')
@@ -266,9 +296,9 @@ export class SettingsController {
     @Headers('authorization') authorization: string | undefined,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return { success: true, data: await this.settingsService.getAlerts(identity.tenantId) };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.getAlerts(tenantId),
+    );
   }
 
   @Put('alerts')
@@ -277,12 +307,13 @@ export class SettingsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.updateAlerts(body, identity.tenantId),
-    };
+    return this.writeWithTenant(
+      authorization,
+      body,
+      req,
+      (input) => input,
+      (parsed, tenantId) => this.settingsService.updateAlerts(parsed, tenantId),
+    );
   }
 
   @Get('storage_policy')
@@ -290,12 +321,9 @@ export class SettingsController {
     @Headers('authorization') authorization: string | undefined,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.getStoragePolicy(identity.tenantId),
-    };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.getStoragePolicy(tenantId),
+    );
   }
 
   @Put('storage_policy')
@@ -304,12 +332,13 @@ export class SettingsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.updateStoragePolicy(body, identity.tenantId),
-    };
+    return this.writeWithTenant(
+      authorization,
+      body,
+      req,
+      (input) => input,
+      (parsed, tenantId) => this.settingsService.updateStoragePolicy(parsed, tenantId),
+    );
   }
 
   @Get('vmgenerator')
@@ -317,9 +346,9 @@ export class SettingsController {
     @Headers('authorization') authorization: string | undefined,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return { success: true, data: await this.settingsService.getVmGenerator(identity.tenantId) };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.getVmGenerator(tenantId),
+    );
   }
 
   @Put('vmgenerator')
@@ -328,12 +357,13 @@ export class SettingsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.updateVmGenerator(body, identity.tenantId),
-    };
+    return this.writeWithTenant(
+      authorization,
+      body,
+      req,
+      (input) => input,
+      (parsed, tenantId) => this.settingsService.updateVmGenerator(parsed, tenantId),
+    );
   }
 
   @Get('vmgenerator/task_logs')
@@ -341,12 +371,9 @@ export class SettingsController {
     @Headers('authorization') authorization: string | undefined,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.getVmGeneratorTaskLogs(identity.tenantId),
-    };
+    return this.readWithTenant(authorization, req, (tenantId) =>
+      this.settingsService.getVmGeneratorTaskLogs(tenantId),
+    );
   }
 
   @Put('vmgenerator/task_logs')
@@ -355,11 +382,12 @@ export class SettingsController {
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.settingsService.updateVmGeneratorTaskLogs(body, identity.tenantId),
-    };
+    return this.writeWithTenant(
+      authorization,
+      body,
+      req,
+      (input) => input,
+      (parsed, tenantId) => this.settingsService.updateVmGeneratorTaskLogs(parsed, tenantId),
+    );
   }
 }

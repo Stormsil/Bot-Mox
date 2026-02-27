@@ -1,7 +1,6 @@
 import { CheckOutlined, ExclamationOutlined, RightOutlined } from '@ant-design/icons';
 import { Collapse } from 'antd';
 import {
-  BotAccount,
   BotCharacter,
   BotLicense,
   BotLifeStages,
@@ -12,6 +11,7 @@ import {
   BotSummary,
   BotVMInfo,
 } from '../../../components/bot';
+import { BotAccount } from '../../../features/bot-account';
 import type { Bot } from '../../../types';
 import styles from '../BotPage.module.css';
 import type {

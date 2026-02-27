@@ -8,9 +8,8 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import { Spin } from 'antd';
-import dayjs from 'dayjs';
-import { formatDateDotted } from '../../../shared/lib/date';
 import type { Subscription } from '../../../entities/resources/model/types';
+import { formatDateDotted } from '../../../shared/lib/date';
 import type {
   BotStatusInfo,
   BotSummaryBot,

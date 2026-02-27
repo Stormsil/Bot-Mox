@@ -149,6 +149,7 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({
       </Form.Item>
 
       <Form.Item label="Timezone">
+        {/* Intentionally using Windows timezone IDs here: unattend.xml and provisioning expect Windows IDs, not IANA names from Intl APIs. */}
         <Select
           showSearch
           value={config.locale.timeZone}

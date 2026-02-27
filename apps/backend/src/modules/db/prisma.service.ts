@@ -1,9 +1,41 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
+import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
+
+type ExtendableTransactionClient = Prisma.TransactionClient & {
+  $extends?: (extension: unknown) => unknown;
+};
+
+type ExtendablePrismaClient = {
+  $extends?: (extension: unknown) => unknown;
+};
+
+type QueryHookParams = {
+  args: unknown;
+  query: (args: unknown) => Promise<unknown>;
+};
+
+const PAYLOAD_MODEL_NAMES = [
+  'financeOperation',
+  'resourceItem',
+  'botEntity',
+  'playbookItem',
+  'workspaceItem',
+  'themeAssetItem',
+  'settingsItem',
+  'provisioningProfileItem',
+  'provisioningProgressItem',
+  'licenseLeaseItem',
+  'artifactReleaseItem',
+  'artifactAssignmentItem',
+  'provisioningTokenItem',
+] as const;
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleDestroy {
+  private readonly dataAtRestCrypto = new DataAtRestCrypto();
+  private payloadCryptoClientCache: unknown | null = null;
   private readonly enforceTenantContext = String(process.env.ENFORCE_TENANT_CONTEXT || 'true')
     .trim()
     .toLowerCase();
@@ -95,7 +127,7 @@ export class PrismaService extends PrismaClient implements OnModuleDestroy {
       async () => {
         return this.$transaction(async (tx) => {
           await tx.$executeRaw`select set_config('app.tenant_id', ${normalizedTenantId}, true)`;
-          return handler(tx);
+          return handler(this.withPayloadCryptoExtension(tx));
         });
       },
     );
@@ -111,6 +143,14 @@ export class PrismaService extends PrismaClient implements OnModuleDestroy {
     );
   }
 
+  getPayloadCryptoClient<T>(): T {
+    if (this.payloadCryptoClientCache) {
+      return this.payloadCryptoClientCache as T;
+    }
+    this.payloadCryptoClientCache = this.withPayloadCryptoExtension(this);
+    return this.payloadCryptoClientCache as T;
+  }
+
   private async runInContext<T>(
     context: { tenantId: string | null; system: boolean },
     handler: () => Promise<T>,
@@ -120,5 +160,79 @@ export class PrismaService extends PrismaClient implements OnModuleDestroy {
         void Promise.resolve(handler()).then(resolve).catch(reject);
       });
     });
+  }
+
+  private withPayloadCryptoExtension<T>(tx: T): T {
+    const extendableTx = tx as T & ExtendablePrismaClient & ExtendableTransactionClient;
+    if (typeof extendableTx.$extends !== 'function') {
+      return tx;
+    }
+
+    const crypto = this.dataAtRestCrypto;
+    const isEncryptedPayloadWrapper = (value: unknown): boolean =>
+      Boolean(
+        value &&
+          typeof value === 'object' &&
+          '__enc_payload_v1' in (value as Record<string, unknown>),
+      );
+
+    const decryptRowPayload = (row: unknown): unknown => {
+      if (!row || typeof row !== 'object') return row;
+      const record = row as Record<string, unknown>;
+      const payload = record.payload;
+      if (!payload || typeof payload !== 'object') return row;
+
+      const wrapped = (payload as Record<string, unknown>).__enc_payload_v1;
+      if (wrapped === undefined) return row;
+
+      const decrypted = crypto.decryptJson<Record<string, unknown>>(wrapped);
+      if (!decrypted || typeof decrypted !== 'object') return row;
+      return { ...record, payload: decrypted };
+    };
+
+    const decryptQueryResult = (result: unknown): unknown =>
+      Array.isArray(result)
+        ? result.map((row) => decryptRowPayload(row))
+        : decryptRowPayload(result);
+
+    const encryptPayloadField = (input: unknown): unknown => {
+      if (!input || typeof input !== 'object') return input;
+
+      const record = input as Record<string, unknown>;
+      if (!('payload' in record)) return input;
+
+      const payload = record.payload;
+      if (!payload || typeof payload !== 'object' || isEncryptedPayloadWrapper(payload))
+        return input;
+      return { ...record, payload: { __enc_payload_v1: crypto.encryptJson(payload) } };
+    };
+
+    const encryptArgsPayload = (args: unknown): unknown => {
+      if (!args || typeof args !== 'object') return args;
+      const record = args as Record<string, unknown>;
+      const next = { ...record };
+      if ('create' in next) next.create = encryptPayloadField(next.create);
+      if ('update' in next) next.update = encryptPayloadField(next.update);
+      if ('data' in next) next.data = encryptPayloadField(next.data);
+      return next;
+    };
+
+    const readQuery = ({ args, query }: QueryHookParams) => query(args).then(decryptQueryResult);
+    const writeQuery = async ({ args, query }: QueryHookParams) =>
+      decryptQueryResult(await query(encryptArgsPayload(args)));
+
+    const payloadModelHooks = {
+      findMany: readQuery,
+      findFirst: readQuery,
+      upsert: writeQuery,
+      create: writeQuery,
+      update: writeQuery,
+    };
+
+    const extension = {
+      query: Object.fromEntries(PAYLOAD_MODEL_NAMES.map((model) => [model, payloadModelHooks])),
+    };
+
+    return extendableTx.$extends(extension) as T;
   }
 }

@@ -64,9 +64,17 @@ export function normalizeListResponse<TData extends BaseRecord = BaseRecord>(
 export function extractQueryFromListParams(params: GetListParams): string {
   const search = new URLSearchParams();
 
-  if (params.pagination && 'current' in params.pagination) {
-    const current = params.pagination.current ?? 1;
-    const pageSize = params.pagination.pageSize ?? 20;
+  const pagination = params.pagination as
+    | { current?: number; currentPage?: number; pageSize?: number }
+    | undefined;
+  if (
+    pagination &&
+    (pagination.current !== undefined ||
+      pagination.currentPage !== undefined ||
+      pagination.pageSize !== undefined)
+  ) {
+    const current = pagination.current ?? pagination.currentPage ?? 1;
+    const pageSize = pagination.pageSize ?? 20;
     search.set('page', String(current));
     search.set('limit', String(pageSize));
   }
@@ -96,6 +104,11 @@ export function extractContractQueryFromListParams(params: GetListParams): {
   sort?: string;
   order?: 'asc' | 'desc';
   q?: string;
+  status?: string;
+  type?: string;
+  country?: string;
+  country_code?: string;
+  bot_id?: string;
 } {
   const query: {
     page?: number;
@@ -103,11 +116,24 @@ export function extractContractQueryFromListParams(params: GetListParams): {
     sort?: string;
     order?: 'asc' | 'desc';
     q?: string;
+    status?: string;
+    type?: string;
+    country?: string;
+    country_code?: string;
+    bot_id?: string;
   } = {};
 
-  if (params.pagination && 'current' in params.pagination) {
-    const current = Number(params.pagination.current ?? 1);
-    const pageSize = Number(params.pagination.pageSize ?? 20);
+  const pagination = params.pagination as
+    | { current?: number; currentPage?: number; pageSize?: number }
+    | undefined;
+  if (
+    pagination &&
+    (pagination.current !== undefined ||
+      pagination.currentPage !== undefined ||
+      pagination.pageSize !== undefined)
+  ) {
+    const current = Number(pagination.current ?? pagination.currentPage ?? 1);
+    const pageSize = Number(pagination.pageSize ?? 20);
     query.page = Number.isFinite(current) && current > 0 ? current : 1;
     query.limit = Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 20;
   }
@@ -119,11 +145,31 @@ export function extractContractQueryFromListParams(params: GetListParams): {
   }
 
   if (params.filters && params.filters.length > 0) {
-    const queryFilter = params.filters.find(
-      (item) => 'field' in item && String(item.field) === 'q',
-    );
-    if (queryFilter && 'value' in queryFilter && queryFilter.value) {
-      query.q = String(queryFilter.value);
+    for (const filter of params.filters) {
+      if (!('field' in filter) || !('value' in filter)) {
+        continue;
+      }
+
+      const field = String(filter.field);
+      const rawValue = filter.value;
+      if (rawValue === undefined || rawValue === null || rawValue === '') {
+        continue;
+      }
+
+      if (field === 'q') {
+        query.q = String(rawValue);
+        continue;
+      }
+
+      if (
+        field === 'status' ||
+        field === 'type' ||
+        field === 'country' ||
+        field === 'country_code' ||
+        field === 'bot_id'
+      ) {
+        query[field] = String(rawValue);
+      }
     }
   }
 

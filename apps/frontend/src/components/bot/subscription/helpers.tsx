@@ -3,8 +3,8 @@ import {
   ClockCircleOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
-import type { Bot } from '../../../types';
 import type { SubscriptionWithDetails } from '../../../entities/resources/model/types';
+import type { Bot } from '../../../types';
 import type {
   BotOption,
   ComputedSubscriptionStatus,

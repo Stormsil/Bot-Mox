@@ -8,6 +8,7 @@ import {
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Get,
   Headers,
@@ -16,16 +17,15 @@ import {
   Post,
   Query,
   Req,
-  ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import type { z } from 'zod';
 import { AdminAuditService } from '../admin-audit/admin-audit.service';
 import { AuthService } from '../auth/auth.service';
-import { isPrismaMissingStorageError } from '../common/prisma-soft-fail';
 import { setRequestTenantId } from '../auth/request-context';
 import { getRequestIdentity } from '../auth/request-identity.util';
+import { isPrismaMissingStorageError } from '../common/prisma-soft-fail';
 import { AgentsService } from './agents.service';
 
 type AgentListQuery = z.infer<typeof agentListQuerySchema>;
@@ -233,17 +233,17 @@ export class AgentsController {
       pairedByUserId: signedIn.identity.uid,
     });
     await this.logAuditBestEffort({
-        actorUserId: signedIn.identity.uid,
-        actorTenantId: signedIn.identity.tenantId,
-        action: 'agents.quick_pair',
-        targetTenantId: signedIn.identity.tenantId,
-        payload: {
-          agent_id: created.id,
-          machine_name: payload.machine_name ?? null,
-          platform: payload.platform ?? null,
-          version: payload.version ?? null,
-        },
-      });
+      actorUserId: signedIn.identity.uid,
+      actorTenantId: signedIn.identity.tenantId,
+      action: 'agents.quick_pair',
+      targetTenantId: signedIn.identity.tenantId,
+      payload: {
+        agent_id: created.id,
+        machine_name: payload.machine_name ?? null,
+        platform: payload.platform ?? null,
+        version: payload.version ?? null,
+      },
+    });
 
     return {
       success: true,
@@ -283,15 +283,15 @@ export class AgentsController {
         : {}),
     });
     await this.logAuditBestEffort({
-        actorUserId: identity.userId,
-        actorTenantId: identity.tenantId,
-        action: 'agents.repair',
-        targetTenantId: identity.tenantId,
-        payload: {
-          agent_id: payload.agent_id,
-          reason: payload.reason ?? null,
-        },
-      });
+      actorUserId: identity.userId,
+      actorTenantId: identity.tenantId,
+      action: 'agents.repair',
+      targetTenantId: identity.tenantId,
+      payload: {
+        agent_id: payload.agent_id,
+        reason: payload.reason ?? null,
+      },
+    });
     return {
       success: true,
       data: repaired,

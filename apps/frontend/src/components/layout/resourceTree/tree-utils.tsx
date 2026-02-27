@@ -157,10 +157,6 @@ export const getIcon = (
       );
     case 'vms':
     case 'vms_list':
-    case 'vms_sites':
-    case 'vms_site_proxmox':
-    case 'vms_site_tinyfm':
-    case 'vms_site_syncthing':
       return (
         <CloudServerOutlined
           style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }}
@@ -265,9 +261,5 @@ export const getSelectedKeysForLocation = (pathname: string, search: string): st
   if (pathname === '/vms') return ['vms'];
   if (pathname === '/vms/list') return ['vms'];
   if (pathname === '/vms/unattend-profiles') return ['vms'];
-  if (pathname === '/vms/sites/proxmox' || pathname === '/vms/proxmox') return ['vms_site_proxmox'];
-  if (pathname === '/vms/sites/tinyfm' || pathname === '/vms/tinyfm') return ['vms_site_tinyfm'];
-  if (pathname === '/vms/sites/syncthing' || pathname === '/vms/syncthing')
-    return ['vms_site_syncthing'];
   return [];
 };

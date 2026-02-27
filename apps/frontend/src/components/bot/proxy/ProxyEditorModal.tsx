@@ -1,5 +1,5 @@
 import type { FormInstance } from 'antd';
-import { DatePicker, Form, Input, Modal, Spin, Typography, theme } from 'antd';
+import { DatePicker, Form, Input, Modal, Spin, Typography } from 'antd';
 import type React from 'react';
 import type { IPQSResponse } from '../../../entities/resources/model/types';
 import type { ParsedProxy } from '../../../utils/proxyUtils';
@@ -44,34 +44,15 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
   onProxyInputChange,
   onTogglePassword,
 }) => {
-  const { token } = theme.useToken();
-
   return (
     <Modal
-      title={
-        <span className={styles['modal-title']} style={{ color: token.colorText }}>
-          {editing ? 'Edit Proxy' : 'Add Proxy'}
-        </span>
-      }
+      title={editing ? 'Edit Proxy' : 'Add Proxy'}
       open={open}
       onOk={onSubmit}
       onCancel={onCancel}
       okText={editing ? 'Update' : 'Add'}
       width={600}
       okButtonProps={{ disabled: !parsedProxy }}
-      styles={{
-        content: {
-          background: token.colorBgElevated,
-          border: `1px solid ${token.colorBorderSecondary}`,
-        },
-        header: {
-          background: token.colorBgElevated,
-          borderBottom: `1px solid ${token.colorBorderSecondary}`,
-        },
-        footer: {
-          borderTop: `1px solid ${token.colorBorderSecondary}`,
-        },
-      }}
     >
       <Form form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item

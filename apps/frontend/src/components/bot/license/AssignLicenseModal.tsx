@@ -4,15 +4,6 @@ import dayjs from 'dayjs';
 import type React from 'react';
 import type { AssignLicenseFormValues, LicenseInfo } from './types';
 
-const modalStyles = {
-  content: { background: 'var(--boxmox-color-surface-panel)' },
-  header: {
-    background: 'var(--boxmox-color-surface-muted)',
-    borderBottom: '1px solid var(--boxmox-color-border-default)',
-  },
-  footer: { borderTop: '1px solid var(--boxmox-color-border-default)' },
-};
-
 interface AssignLicenseModalProps {
   open: boolean;
   form: FormInstance<AssignLicenseFormValues>;
@@ -29,15 +20,12 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
   onSubmit,
 }) => (
   <Modal
-    title={
-      <span style={{ color: 'var(--boxmox-color-text-primary)' }}>Assign Existing License</span>
-    }
+    title="Assign Existing License"
     open={open}
     onOk={() => form.submit()}
     onCancel={onCancel}
     okText="Assign"
     width={500}
-    styles={modalStyles}
   >
     <Form form={form} layout="vertical" onFinish={(values) => void onSubmit(values)}>
       <Form.Item
@@ -47,11 +35,7 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
       >
         <AutoComplete
           placeholder="Search and select license"
-          style={{
-            background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
-            color: 'var(--boxmox-color-text-primary)',
-          }}
+          variant="filled"
           options={availableLicenses.map((license) => ({
             value: license.id,
             label: `${license.key.substring(0, 30)}... (${license.type}) - Expires: ${dayjs(license.expires_at).format('DD.MM.YYYY')}`,

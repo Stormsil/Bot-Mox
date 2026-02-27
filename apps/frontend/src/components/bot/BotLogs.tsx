@@ -2,6 +2,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import { Button, Card, List, Tag, Typography } from 'antd';
 import type React from 'react';
 import { useState } from 'react';
+import { subtractNow } from '../../shared/lib/date';
 import type { Bot, LogEntry, LogEventType } from '../../types';
 import styles from './BotLogs.module.css';
 
@@ -18,7 +19,7 @@ const mockLogs: LogEntry[] = [
     bot_id: 'bot_101',
     type: 'level_up',
     message: 'Level up: 67 -> 68',
-    timestamp: Date.now() - 86400000,
+    timestamp: subtractNow(1, 'day'),
     details: { old_level: 67, new_level: 68 },
   },
   {
@@ -26,7 +27,7 @@ const mockLogs: LogEntry[] = [
     bot_id: 'bot_101',
     type: 'death',
     message: 'Died in Shadowmoon Valley',
-    timestamp: Date.now() - 172800000,
+    timestamp: subtractNow(2, 'day'),
     details: { location: 'Shadowmoon Valley' },
   },
   {
@@ -34,7 +35,7 @@ const mockLogs: LogEntry[] = [
     bot_id: 'bot_101',
     type: 'level_up',
     message: 'Level up: 66 -> 67',
-    timestamp: Date.now() - 259200000,
+    timestamp: subtractNow(3, 'day'),
     details: { old_level: 66, new_level: 67 },
   },
 ];
@@ -91,17 +92,6 @@ export const BotLogs: React.FC<BotLogsProps> = ({ bot }) => {
       <Card
         className={styles['logs-card']}
         title="Important Events"
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
-          },
-          title: {
-            color: 'var(--boxmox-color-text-primary)',
-            fontSize: 'var(--text-sm)',
-            fontWeight: 600,
-          },
-        }}
         extra={
           <Button type="text" size="small" icon={<DownloadOutlined />} onClick={handleExport}>
             Export

@@ -1,7 +1,8 @@
-import { ApiClientError, type ApiSuccessEnvelope } from '../shared/api/apiClient';
+import type { ApiSuccessEnvelope } from '../shared/api/apiClient';
 import {
   createContractRuntimeClient,
   resolveContractAuthorizationHeader,
+  toContractApiClientError,
 } from '../shared/api/contracts/runtimeClient';
 
 export type VmOpsDispatchTarget = 'proxmox' | 'syncthing';
@@ -20,31 +21,6 @@ export interface ContractVmOpsDispatchPayload {
   params?: Record<string, unknown>;
 }
 
-function toApiClientError(path: string, status: number, body: unknown): ApiClientError {
-  const envelope = body && typeof body === 'object' ? (body as { error?: unknown }) : {};
-  const payload =
-    envelope.error && typeof envelope.error === 'object'
-      ? (envelope.error as { code?: unknown; message?: unknown; details?: unknown })
-      : {};
-
-  const code = String(payload.code || 'API_CONTRACT_ERROR');
-  const rawMessage = String(payload.message || '').trim();
-  const normalizedMessage =
-    code === 'AGENTS_STORAGE_UNAVAILABLE'
-      ? 'Agent pairing storage is not ready yet. Retry after backend startup completes.'
-      : code === 'VM_OPS_UNAVAILABLE'
-        ? 'VM operations storage is not ready yet. Retry after backend startup completes.'
-        : code === 'AGENT_OFFLINE'
-          ? 'Agent is offline or not paired yet.'
-          : rawMessage || `Contract request failed: ${path}`;
-
-  return new ApiClientError(normalizedMessage, {
-    status,
-    code,
-    details: payload.details ?? body,
-  });
-}
-
 export async function listAgentsViaContract(
   query: ContractAgentListQuery,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>[]>> {
@@ -56,7 +32,7 @@ export async function listAgentsViaContract(
   });
 
   if (response.status !== 200) {
-    throw toApiClientError('/api/v1/agents', response.status, response.body);
+    throw toContractApiClientError('/api/v1/agents', response.status, response.body);
   }
 
   return response.body as ApiSuccessEnvelope<Record<string, unknown>[]>;
@@ -73,7 +49,7 @@ export async function createAgentPairingViaContract(
   });
 
   if (response.status !== 201) {
-    throw toApiClientError('/api/v1/agents/pairings', response.status, response.body);
+    throw toContractApiClientError('/api/v1/agents/pairings', response.status, response.body);
   }
 
   return response.body as ApiSuccessEnvelope<Record<string, unknown>>;
@@ -95,7 +71,11 @@ export async function dispatchVmOpsViaContract(
   });
 
   if (response.status !== 200 && response.status !== 202) {
-    throw toApiClientError(`/api/v1/vm-ops/${target}/${action}`, response.status, response.body);
+    throw toContractApiClientError(
+      `/api/v1/vm-ops/${target}/${action}`,
+      response.status,
+      response.body,
+    );
   }
 
   return response.body as ApiSuccessEnvelope<Record<string, unknown>>;
@@ -112,7 +92,11 @@ export async function getVmOpsCommandViaContract(
   });
 
   if (response.status !== 200) {
-    throw toApiClientError(`/api/v1/vm-ops/commands/${commandId}`, response.status, response.body);
+    throw toContractApiClientError(
+      `/api/v1/vm-ops/commands/${commandId}`,
+      response.status,
+      response.body,
+    );
   }
 
   return response.body as ApiSuccessEnvelope<Record<string, unknown>>;

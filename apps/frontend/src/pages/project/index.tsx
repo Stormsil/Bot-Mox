@@ -1,16 +1,11 @@
 import { DesktopOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { useDelete, useList } from '@refinedev/core';
 import { Alert, Button, Card, Input, message, Select, Space, Table, Typography } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ContentPanel } from '../../components/layout/ContentPanel';
-import { useDeleteBotMutation } from '../../entities/bot/api/useBotMutations';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
-import {
-  useLicensesQuery,
-  useProxiesQuery,
-  useSubscriptionsQuery,
-} from '../../entities/resources/api/useResourcesQueries';
 import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
 import { useProjectSettingsQuery } from '../../entities/settings/api/useProjectSettingsQuery';
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
@@ -34,6 +29,8 @@ import { formatProjectTitle, parseStatusFilterFromParams } from './utils';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
+const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 export const ProjectPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,10 +38,22 @@ export const ProjectPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const projectId = (id || '').trim();
   const botsMapQuery = useBotsMapQuery();
-  const proxiesQuery = useProxiesQuery();
-  const subscriptionsQuery = useSubscriptionsQuery();
-  const licensesQuery = useLicensesQuery();
-  const deleteBotMutation = useDeleteBotMutation();
+  const proxiesList = useList<ProxyResource>({
+    resource: 'proxies',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
+  const subscriptionsList = useList<Subscription>({
+    resource: 'subscriptions',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
+  const licensesList = useList<BotLicense>({
+    resource: 'licenses',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
+  const deleteBotMutation = useDelete();
   const subscriptionSettingsQuery = useSubscriptionSettingsQuery();
   const projectSettingsQuery = useProjectSettingsQuery();
 
@@ -62,21 +71,27 @@ export const ProjectPage: React.FC = () => {
       ),
     [projectSettingsQuery.data],
   );
-  const proxies = useMemo<ProxyResource[]>(() => proxiesQuery.data || [], [proxiesQuery.data]);
-  const subscriptions = useMemo<Subscription[]>(
-    () => subscriptionsQuery.data || [],
-    [subscriptionsQuery.data],
+  const proxies = useMemo<ProxyResource[]>(
+    () => proxiesList.result.data || [],
+    [proxiesList.result.data],
   );
-  const licenses = useMemo<BotLicense[]>(() => licensesQuery.data || [], [licensesQuery.data]);
+  const subscriptions = useMemo<Subscription[]>(
+    () => subscriptionsList.result.data || [],
+    [subscriptionsList.result.data],
+  );
+  const licenses = useMemo<BotLicense[]>(
+    () => licensesList.result.data || [],
+    [licensesList.result.data],
+  );
   const settings = useMemo<SubscriptionSettings>(
     () => subscriptionSettingsQuery.data || getDefaultSettings(),
     [subscriptionSettingsQuery.data],
   );
 
   const loadingBots = botsMapQuery.isLoading;
-  const loadingProxies = proxiesQuery.isLoading;
-  const loadingSubscriptions = subscriptionsQuery.isLoading;
-  const loadingLicenses = licensesQuery.isLoading;
+  const loadingProxies = proxiesList.query.isLoading;
+  const loadingSubscriptions = subscriptionsList.query.isLoading;
+  const loadingLicenses = licensesList.query.isLoading;
   const loadingSettings = subscriptionSettingsQuery.isLoading;
 
   const [searchText, setSearchText] = useState('');
@@ -110,20 +125,20 @@ export const ProjectPage: React.FC = () => {
     }
   }, [botsMapQuery.error]);
   useEffect(() => {
-    if (proxiesQuery.error) {
-      uiLogger.error('Error loading proxies:', proxiesQuery.error);
+    if (proxiesList.query.error) {
+      uiLogger.error('Error loading proxies:', proxiesList.query.error);
     }
-  }, [proxiesQuery.error]);
+  }, [proxiesList.query.error]);
   useEffect(() => {
-    if (subscriptionsQuery.error) {
-      uiLogger.error('Error loading subscriptions:', subscriptionsQuery.error);
+    if (subscriptionsList.query.error) {
+      uiLogger.error('Error loading subscriptions:', subscriptionsList.query.error);
     }
-  }, [subscriptionsQuery.error]);
+  }, [subscriptionsList.query.error]);
   useEffect(() => {
-    if (licensesQuery.error) {
-      uiLogger.error('Error loading licenses:', licensesQuery.error);
+    if (licensesList.query.error) {
+      uiLogger.error('Error loading licenses:', licensesList.query.error);
     }
-  }, [licensesQuery.error]);
+  }, [licensesList.query.error]);
 
   useEffect(() => {
     if (!projectSettingsQuery.error) {
@@ -194,7 +209,11 @@ export const ProjectPage: React.FC = () => {
 
       setDeletingBotIds((prev) => ({ ...prev, [botId]: true }));
       try {
-        await deleteBotMutation.mutateAsync(botId);
+        await deleteBotMutation.mutateAsync({
+          resource: 'bots',
+          id: botId,
+          invalidates: ['resourceAll'],
+        });
         message.success(`Account ${botId.slice(0, 8)} deleted`);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -284,6 +303,7 @@ export const ProjectPage: React.FC = () => {
             <Input
               placeholder="Search by ID, character, email, server..."
               prefix={<SearchOutlined />}
+              size="small"
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
               className={styles.filterSearch}
@@ -291,6 +311,7 @@ export const ProjectPage: React.FC = () => {
             />
             <Select
               placeholder="Bot Status"
+              size="small"
               value={statusFilter}
               onChange={(value) => updateStatusFilter(value as StatusFilter)}
               className={styles.filterStatus}
@@ -306,6 +327,7 @@ export const ProjectPage: React.FC = () => {
             </Select>
             <Button
               icon={<ReloadOutlined />}
+              size="small"
               onClick={() => {
                 setSearchText('');
                 updateStatusFilter('all');
@@ -320,15 +342,10 @@ export const ProjectPage: React.FC = () => {
         <Card className={styles.tableCard}>
           <Table
             dataSource={filteredRows}
-            columns={columns.map((column) => ({
-              ...column,
-              onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-              onCell: () => ({ className: styles.tableCell }),
-            }))}
+            columns={columns}
             rowKey="id"
             loading={loading}
             className={styles.table}
-            rowClassName={() => styles.tableRow}
             pagination={{
               pageSize: 15,
               showSizeChanger: true,

@@ -33,12 +33,6 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
         <span className={styles['card-title']}>Proxy Information</span>
       </Space>
     }
-    styles={{
-      header: {
-        background: 'var(--boxmox-color-surface-muted)',
-        borderBottom: '1px solid var(--boxmox-color-border-default)',
-      },
-    }}
     extra={
       <Space>
         <Button type="primary" icon={<EditOutlined />} size="small" onClick={onEdit}>
@@ -56,7 +50,7 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
           Proxy String
         </Text>
         <div className={styles['proxy-string-container']}>
-          <Text strong className={styles['proxy-string']} copyable>
+          <Text code className={styles['proxy-string']} copyable>
             {proxy.ip}:{proxy.port}:{proxy.login}:{proxy.password}
           </Text>
         </div>
@@ -69,10 +63,11 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
           </Text>
           <div>
             <Tag
+              bordered={false}
               color={proxy.type === 'socks5' ? 'blue' : 'cyan'}
               style={{ textTransform: 'uppercase' }}
             >
-              {proxy.type}
+              {proxy.type.toUpperCase()}
             </Tag>
           </div>
         </div>
@@ -82,8 +77,12 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
             Status
           </Text>
           <div>
-            <Tag color={getProxyStatusColor(proxy)} icon={getProxyStatusIcon(proxy)}>
-              {getProxyStatusText(proxy)}
+            <Tag
+              bordered={false}
+              color={getProxyStatusColor(proxy)}
+              icon={getProxyStatusIcon(proxy)}
+            >
+              {getProxyStatusText(proxy).toUpperCase()}
             </Tag>
           </div>
         </div>

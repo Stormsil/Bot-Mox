@@ -30,8 +30,8 @@ export { generateScheduleForLauncher } from './schedule/launcher';
 export { createDefaultSchedule, createEmptySchedule, migrateSchedule } from './schedule/migration';
 export type {
   BotScheduleV2,
-  DayScheduleStats,
   CompatScheduleSlot,
+  DayScheduleStats,
   GeneratedSchedule,
   LauncherScheduleDay,
   LauncherSchedulePayload,

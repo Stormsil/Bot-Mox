@@ -7,6 +7,22 @@ const { DataAtRestCrypto } = require('../common/data-at-rest-crypto.ts');
 
 function createRepositoryWithInMemoryStore() {
   const store = new Map<string, Record<string, unknown>>();
+  const crypto = new DataAtRestCrypto();
+  const wrapPayload = (payload: unknown) =>
+    payload &&
+    typeof payload === 'object' &&
+    !Object.hasOwn(payload as Record<string, unknown>, '__enc_payload_v1')
+      ? { __enc_payload_v1: crypto.encryptJson(payload) }
+      : payload;
+  const unwrapRow = (row: Record<string, unknown> | null) => {
+    if (!row || !row.payload || typeof row.payload !== 'object') return row;
+    const payloadObj = row.payload as Record<string, unknown>;
+    if (!Object.hasOwn(payloadObj, '__enc_payload_v1')) return row;
+    return {
+      ...row,
+      payload: crypto.decryptJson(payloadObj.__enc_payload_v1),
+    };
+  };
   const prisma = {
     licenseLeaseItem: {
       findFirst: async ({ where }: { where: { tenantId: string; id: string } }) => {
@@ -46,6 +62,30 @@ function createRepositoryWithInMemoryStore() {
         store.set(key, next);
         return next;
       },
+    },
+    getPayloadCryptoClient() {
+      return {
+        licenseLeaseItem: {
+          findFirst: async (args: { where: { tenantId: string; id: string } }) =>
+            unwrapRow(await prisma.licenseLeaseItem.findFirst(args)),
+          findMany: async (args: { where: { tenantId: string } }) =>
+            (await prisma.licenseLeaseItem.findMany(args)).map(
+              (row) => unwrapRow(row) as Record<string, unknown>,
+            ),
+          upsert: async (args: {
+            where: { tenantId_id: { tenantId: string; id: string } };
+            create: { payload: unknown };
+            update: { payload: unknown };
+          }) =>
+            unwrapRow(
+              await prisma.licenseLeaseItem.upsert({
+                ...args,
+                create: { ...args.create, payload: wrapPayload(args.create.payload) },
+                update: { ...args.update, payload: wrapPayload(args.update.payload) },
+              }),
+            ) as Record<string, unknown>,
+        },
+      };
     },
   };
   const repository = new LicenseRepository(prisma);

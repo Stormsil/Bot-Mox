@@ -6,21 +6,18 @@ import {
   RightOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
+import { useTable } from '@refinedev/antd';
+import { type CrudFilter, type HttpError, useDelete, useList, useUpdate } from '@refinedev/core';
 import { Button, Card, Input, Modal, message, Select, Table, Typography } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
+import type { BotRecord } from '../../entities/bot/model/types';
 import {
   checkIPQuality,
   isIPQSCheckEnabled,
   isProxySuspicious,
   updateProxyWithIPQSData,
 } from '../../entities/resources/api/ipqsFacade';
-import {
-  useDeleteProxyMutation,
-  useUpdateProxyMutation,
-} from '../../entities/resources/api/useProxyMutations';
-import { useProxiesQuery } from '../../entities/resources/api/useResourcesQueries';
 import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
 import styles from './ProxiesPage.module.css';
 import { ProxiesStatsCards } from './ProxiesStatsCards';
@@ -29,7 +26,6 @@ import {
   buildProxyStats,
   DEFAULT_PROVIDERS,
   extractCountries,
-  filterProxies,
   mapProxiesWithBots,
   type ProxiesBotMap,
   STATS_COLLAPSED_KEY,
@@ -40,15 +36,85 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { confirm } = Modal;
 
+const RESOURCE_POLL_MS = 7_000;
+const BOT_POLL_MS = 5_000;
+const LARGE_PAGE_SIZE = 5_000;
+
+function readFilterValue(filters: CrudFilter[], field: string, fallback: string): string {
+  const match = filters.find(
+    (item) => 'field' in item && String(item.field) === field && 'value' in item,
+  );
+  if (!match || !('value' in match)) {
+    return fallback;
+  }
+  const value = match.value;
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
+  return String(value);
+}
+
+function buildTableFilters(values: {
+  q: string;
+  status: string;
+  type: string;
+  country: string;
+}): CrudFilter[] {
+  const next: CrudFilter[] = [];
+
+  if (values.q.trim()) {
+    next.push({ field: 'q', operator: 'eq', value: values.q.trim() });
+  }
+  if (values.status !== 'all') {
+    next.push({ field: 'status', operator: 'eq', value: values.status });
+  }
+  if (values.type !== 'all') {
+    next.push({ field: 'type', operator: 'eq', value: values.type });
+  }
+  if (values.country !== 'all') {
+    next.push({ field: 'country', operator: 'eq', value: values.country });
+  }
+
+  return next;
+}
+
 export const ProxiesPage: React.FC = () => {
-  const botsMapQuery = useBotsMapQuery();
-  const proxiesQuery = useProxiesQuery();
-  const updateProxyMutation = useUpdateProxyMutation();
-  const deleteProxyMutation = useDeleteProxyMutation();
-  const [searchText, setSearchText] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [countryFilter, setCountryFilter] = useState<string>('all');
+  const proxiesTable = useTable<ProxyResource>({
+    resource: 'proxies',
+    syncWithLocation: true,
+    pagination: {
+      mode: 'server',
+      pageSize: 10,
+    },
+    queryOptions: {
+      refetchInterval: RESOURCE_POLL_MS,
+    },
+  });
+  const allProxiesList = useList<ProxyResource>({
+    resource: 'proxies',
+    pagination: {
+      mode: 'server',
+      currentPage: 1,
+      pageSize: LARGE_PAGE_SIZE,
+    },
+    queryOptions: {
+      refetchInterval: RESOURCE_POLL_MS,
+    },
+  });
+  const botsList = useList<BotRecord>({
+    resource: 'bots',
+    pagination: {
+      mode: 'server',
+      currentPage: 1,
+      pageSize: LARGE_PAGE_SIZE,
+    },
+    queryOptions: {
+      refetchInterval: BOT_POLL_MS,
+    },
+  });
+  const updateProxy = useUpdate<ProxyResource, HttpError, Partial<ProxyResource>>();
+  const deleteProxy = useDelete<ProxyResource>();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProxy, setEditingProxy] = useState<ProxyWithBot | null>(null);
   const [checkingProxyId, setCheckingProxyId] = useState<string | null>(null);
@@ -59,40 +125,84 @@ export const ProxiesPage: React.FC = () => {
   });
 
   const bots = useMemo<ProxiesBotMap>(() => {
-    const source = botsMapQuery.data || {};
-    return source as unknown as ProxiesBotMap;
-  }, [botsMapQuery.data]);
+    const list = botsList.result.data || [];
+    return list.reduce<ProxiesBotMap>((acc, bot) => {
+      acc[bot.id] = bot;
+      return acc;
+    }, {});
+  }, [botsList.result.data]);
 
-  const proxies = useMemo<ProxyWithBot[]>(
-    () => mapProxiesWithBots(proxiesQuery.data || [], bots),
-    [bots, proxiesQuery.data],
+  const tableProxies = useMemo<ProxyWithBot[]>(
+    () =>
+      mapProxiesWithBots(
+        (proxiesTable.tableProps.dataSource as ProxyResource[] | undefined) ?? [],
+        bots,
+      ),
+    [bots, proxiesTable.tableProps.dataSource],
   );
 
-  const loading = proxiesQuery.isLoading || botsMapQuery.isLoading;
+  const allProxies = useMemo<ProxyWithBot[]>(
+    () => mapProxiesWithBots(allProxiesList.result.data || [], bots),
+    [allProxiesList.result.data, bots],
+  );
+
+  const searchText = readFilterValue(proxiesTable.filters, 'q', '');
+  const statusFilter = readFilterValue(proxiesTable.filters, 'status', 'all');
+  const typeFilter = readFilterValue(proxiesTable.filters, 'type', 'all');
+  const countryFilter = readFilterValue(proxiesTable.filters, 'country', 'all');
+
+  const setMergedFilters = useCallback(
+    (nextPartial: Partial<{ q: string; status: string; type: string; country: string }>) => {
+      proxiesTable.setFilters(
+        buildTableFilters({
+          q: nextPartial.q ?? searchText,
+          status: nextPartial.status ?? statusFilter,
+          type: nextPartial.type ?? typeFilter,
+          country: nextPartial.country ?? countryFilter,
+        }),
+        'replace',
+      );
+    },
+    [countryFilter, proxiesTable, searchText, statusFilter, typeFilter],
+  );
+
+  const loading =
+    Boolean(proxiesTable.tableProps.loading) ||
+    botsList.query.isLoading ||
+    allProxiesList.query.isLoading;
 
   useEffect(() => {
-    if (!proxiesQuery.error) {
+    if (!proxiesTable.tableQuery.error) {
       return;
     }
     message.error('Failed to load proxies');
-  }, [proxiesQuery.error]);
+  }, [proxiesTable.tableQuery.error]);
 
   useEffect(() => {
-    if (!botsMapQuery.error) {
+    if (!botsList.query.error) {
       return;
     }
     message.error('Failed to load bots');
-  }, [botsMapQuery.error]);
+  }, [botsList.query.error]);
 
   useEffect(() => {
-    const existingProviders = [...new Set(proxies.map((proxy) => proxy.provider).filter(Boolean))];
+    if (!allProxiesList.query.error) {
+      return;
+    }
+    message.error('Failed to load proxy stats');
+  }, [allProxiesList.query.error]);
+
+  useEffect(() => {
+    const existingProviders = [
+      ...new Set(allProxies.map((proxy) => proxy.provider).filter(Boolean)),
+    ];
     if (existingProviders.length > 0) {
       setProviders(existingProviders);
       return;
     }
 
     setProviders(DEFAULT_PROVIDERS);
-  }, [proxies]);
+  }, [allProxies]);
 
   useEffect(() => {
     localStorage.setItem(STATS_COLLAPSED_KEY, JSON.stringify(statsCollapsed));
@@ -115,7 +225,11 @@ export const ProxiesPage: React.FC = () => {
         cancelText: 'Cancel',
         onOk: async () => {
           try {
-            await deleteProxyMutation.mutateAsync(proxy.id);
+            await deleteProxy.mutateAsync({
+              resource: 'proxies',
+              id: proxy.id,
+              invalidates: ['resourceAll'],
+            });
             message.success('');
           } catch {
             message.error('Failed to delete proxy');
@@ -123,7 +237,7 @@ export const ProxiesPage: React.FC = () => {
         },
       });
     },
-    [deleteProxyMutation],
+    [deleteProxy],
   );
 
   const handleProviderCreated = useCallback((providerName: string) => {
@@ -164,12 +278,17 @@ export const ProxiesPage: React.FC = () => {
         }
 
         const suspicious = await isProxySuspicious(data.fraud_score);
-        const updates = updateProxyWithIPQSData(proxy, data);
+        const updates = updateProxyWithIPQSData(proxy, data) as Partial<ProxyResource>;
         if (suspicious) {
           updates.status = 'banned';
         }
 
-        await updateProxyMutation.mutateAsync({ id: proxy.id, payload: updates });
+        await updateProxy.mutateAsync({
+          resource: 'proxies',
+          id: proxy.id,
+          values: updates,
+          invalidates: ['resourceAll'],
+        });
         const statusMessage = suspicious ? '' : '';
         message.success(`Proxy checked! Fraud Score: ${data.fraud_score}${statusMessage}`);
       } catch {
@@ -178,7 +297,7 @@ export const ProxiesPage: React.FC = () => {
         setCheckingProxyId(null);
       }
     },
-    [updateProxyMutation],
+    [updateProxy],
   );
 
   const openEditModal = useCallback((proxy?: ProxyWithBot) => {
@@ -213,23 +332,12 @@ export const ProxiesPage: React.FC = () => {
     ],
   );
 
-  const filteredProxies = useMemo(
-    () =>
-      filterProxies(proxies, {
-        searchText,
-        statusFilter,
-        typeFilter,
-        countryFilter,
-      }),
-    [countryFilter, proxies, searchText, statusFilter, typeFilter],
-  );
-
   const stats = useMemo(
-    () => buildProxyStats(proxies, { isExpired, isExpiringSoon }),
-    [isExpired, isExpiringSoon, proxies],
+    () => buildProxyStats(allProxies, { isExpired, isExpiringSoon }),
+    [allProxies, isExpired, isExpiringSoon],
   );
 
-  const countries = useMemo(() => extractCountries(proxies), [proxies]);
+  const countries = useMemo(() => extractCountries(allProxies), [allProxies]);
 
   return (
     <div className={styles.root}>
@@ -246,12 +354,18 @@ export const ProxiesPage: React.FC = () => {
           <div className={styles.headerActions}>
             <Button
               type="text"
+              size="small"
               icon={statsCollapsed ? <RightOutlined /> : <DownOutlined />}
               onClick={() => setStatsCollapsed((prev) => !prev)}
             >
               Stats
             </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditModal()}>
+            <Button
+              type="primary"
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={() => openEditModal()}
+            >
               Add Proxy
             </Button>
           </div>
@@ -265,14 +379,16 @@ export const ProxiesPage: React.FC = () => {
           <Input
             placeholder="Search by IP, provider, country, ISP..."
             prefix={<SearchOutlined />}
+            size="small"
             value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
+            onChange={(event) => setMergedFilters({ q: event.target.value })}
             className={styles.filterSearch}
           />
           <Select
             placeholder="Status"
+            size="small"
             value={statusFilter}
-            onChange={setStatusFilter}
+            onChange={(value) => setMergedFilters({ status: value })}
             className={styles.filterSelectMd}
           >
             <Option value="all">All Statuses</Option>
@@ -282,8 +398,9 @@ export const ProxiesPage: React.FC = () => {
           </Select>
           <Select
             placeholder="Type"
+            size="small"
             value={typeFilter}
-            onChange={setTypeFilter}
+            onChange={(value) => setMergedFilters({ type: value })}
             className={styles.filterSelectSm}
           >
             <Option value="all">All Types</Option>
@@ -292,8 +409,9 @@ export const ProxiesPage: React.FC = () => {
           </Select>
           <Select
             placeholder="Country"
+            size="small"
             value={countryFilter}
-            onChange={setCountryFilter}
+            onChange={(value) => setMergedFilters({ country: value })}
             className={styles.filterSelectMd}
           >
             <Option value="all">All Countries</Option>
@@ -304,13 +422,14 @@ export const ProxiesPage: React.FC = () => {
             ))}
           </Select>
           <Button
+            size="small"
             icon={<ReloadOutlined />}
-            onClick={() => {
-              setSearchText('');
-              setStatusFilter('all');
-              setTypeFilter('all');
-              setCountryFilter('all');
-            }}
+            onClick={() =>
+              proxiesTable.setFilters(
+                buildTableFilters({ q: '', status: 'all', type: 'all', country: 'all' }),
+                'replace',
+              )
+            }
           >
             Reset
           </Button>
@@ -319,15 +438,24 @@ export const ProxiesPage: React.FC = () => {
 
       <Card className={styles.tableCard}>
         <Table
-          dataSource={filteredProxies}
+          {...proxiesTable.tableProps}
+          dataSource={tableProxies}
           columns={columns}
           rowKey="id"
           loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} proxies`,
-          }}
+          pagination={
+            proxiesTable.tableProps.pagination
+              ? {
+                  ...proxiesTable.tableProps.pagination,
+                  showSizeChanger: true,
+                  showTotal: (total) => `Total ${total} proxies`,
+                }
+              : {
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showTotal: (total) => `Total ${total} proxies`,
+                }
+          }
           size="small"
           tableLayout="fixed"
           scroll={{ x: 1170 }}

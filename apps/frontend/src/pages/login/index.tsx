@@ -19,6 +19,13 @@ const passwordRules = [
   { pattern: /[0-9]/, message: 'At least one digit' },
 ];
 
+function isValidAuthEmail(value: string): boolean {
+  const email = String(value || '').trim();
+  if (!email) return false;
+  // Allow local prod-like account format (admin@localhost) and normal domains.
+  return /^[^\s@]+@localhost$/i.test(email) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 function parseAuthErrorMessage(error: unknown, mode: 'signin' | 'signup'): string {
   const fallback = mode === 'signup' ? 'Unable to create account' : 'Invalid email or password';
   const raw = error instanceof Error ? error.message : '';
@@ -105,7 +112,12 @@ export const LoginPage: React.FC = () => {
             name="email"
             rules={[
               { required: true, message: 'Email is required' },
-              { type: 'email', message: 'Enter a valid email' },
+              {
+                validator: (_, value: string) =>
+                  !value || isValidAuthEmail(value)
+                    ? Promise.resolve()
+                    : Promise.reject(new Error('Enter a valid email')),
+              },
             ]}
           >
             <Input prefix={<MailOutlined />} autoComplete="username" />

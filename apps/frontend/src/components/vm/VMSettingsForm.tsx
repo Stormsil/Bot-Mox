@@ -239,7 +239,7 @@ export const VMSettingsForm: React.FC<VMSettingsFormProps> = ({ storageOptions =
 
   return (
     <div className={styles.root}>
-      <Tabs defaultActiveKey="proxmox" items={tabItems} />
+      <Tabs defaultActiveKey="proxmox" items={tabItems} className={styles.switcherTabs} />
     </div>
   );
 };

@@ -179,15 +179,6 @@ const SubscriptionsPage = lazy(async () => ({
   default: (await import('./pages/subscriptions')).SubscriptionsPage,
 }));
 const VMsPage = lazy(async () => ({ default: (await import('./pages/vms')).VMsPage }));
-const VMProxmoxPage = lazy(async () => ({
-  default: (await import('./pages/vms/sites')).VMProxmoxPage,
-}));
-const VMTinyFMPage = lazy(async () => ({
-  default: (await import('./pages/vms/sites')).VMTinyFMPage,
-}));
-const VMSyncThingPage = lazy(async () => ({
-  default: (await import('./pages/vms/sites')).VMSyncThingPage,
-}));
 const SettingsPage = lazy(async () => ({
   default: (await import('./pages/settings')).SettingsPage,
 }));
@@ -303,18 +294,6 @@ function AppWithTheme() {
                   <Route path="/vms" element={<VMsPage />} />
                   <Route path="/vms/list" element={<Navigate to="/vms" replace />} />
                   <Route path="/vms/unattend-profiles" element={<Navigate to="/vms" replace />} />
-                  <Route path="/vms/sites/proxmox" element={<VMProxmoxPage />} />
-                  <Route path="/vms/sites/tinyfm" element={<VMTinyFMPage />} />
-                  <Route path="/vms/sites/syncthing" element={<VMSyncThingPage />} />
-                  <Route
-                    path="/vms/proxmox"
-                    element={<Navigate to="/vms/sites/proxmox" replace />}
-                  />
-                  <Route path="/vms/tinyfm" element={<Navigate to="/vms/sites/tinyfm" replace />} />
-                  <Route
-                    path="/vms/syncthing"
-                    element={<Navigate to="/vms/sites/syncthing" replace />}
-                  />
                 </Route>
 
                 <Route

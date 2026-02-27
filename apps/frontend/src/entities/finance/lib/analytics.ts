@@ -1,11 +1,4 @@
 export {
-  createFinanceOperation,
-  deleteFinanceOperation,
-  getFinanceOperations,
-  normalizeFinanceOperationRecord,
-  updateFinanceOperation,
-} from './analyticsApi';
-export {
   calculateCategoryBreakdown,
   calculateFinanceSummary,
   filterOperations,
@@ -13,3 +6,4 @@ export {
   prepareTimeSeriesData,
 } from './analyticsCalculations';
 export { formatTimestampToDay, parseDateToTimestamp } from './analyticsDate';
+export { normalizeFinanceOperationRecord } from './financeOperationMapper';

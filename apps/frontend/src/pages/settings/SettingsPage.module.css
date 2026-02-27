@@ -191,12 +191,6 @@
   gap: 10px;
 }
 
-.theme-shape-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
 .theme-form-item {
   display: flex;
   flex-direction: column;
@@ -244,10 +238,6 @@
 
   .theme-color-input {
     width: 100%;
-  }
-
-  .theme-shape-grid {
-    grid-template-columns: 1fr;
   }
 
   .project-settings-item-header {

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { ResourcesRepository } from './resources.repository';
 
 type ResourceKind = 'licenses' | 'proxies' | 'subscriptions';
@@ -12,6 +11,11 @@ export interface ResourceListQuery {
   sort?: string | undefined;
   order?: 'asc' | 'desc' | undefined;
   q?: string | undefined;
+  status?: string | undefined;
+  type?: string | undefined;
+  country?: string | undefined;
+  country_code?: string | undefined;
+  bot_id?: string | undefined;
 }
 
 export interface ResourceListResult {
@@ -23,8 +27,6 @@ export interface ResourceListResult {
 
 @Injectable()
 export class ResourcesService {
-  private readonly atRestCrypto = new DataAtRestCrypto();
-
   constructor(private readonly repository: ResourcesRepository) {}
 
   private normalizeSearchValue(value: unknown): string {
@@ -57,8 +59,28 @@ export class ResourcesService {
       .trim()
       .toLowerCase();
     const sort = String(query.sort || '').trim();
+    const equalityFilters = {
+      status: typeof query.status === 'string' ? query.status.trim() : '',
+      type: typeof query.type === 'string' ? query.type.trim() : '',
+      country: typeof query.country === 'string' ? query.country.trim() : '',
+      country_code: typeof query.country_code === 'string' ? query.country_code.trim() : '',
+      bot_id: typeof query.bot_id === 'string' ? query.bot_id.trim() : '',
+    };
 
     let data = [...items];
+
+    data = data.filter((item) => {
+      for (const [key, expected] of Object.entries(equalityFilters)) {
+        if (!expected) {
+          continue;
+        }
+        const actual = String(item?.[key] ?? '').trim();
+        if (actual !== expected) {
+          return false;
+        }
+      }
+      return true;
+    });
 
     if (q) {
       data = data.filter((item) =>
@@ -95,22 +117,9 @@ export class ResourcesService {
     const id = String(row.id || '').trim();
     const payload = row.payload;
     if (payload && typeof payload === 'object') {
-      const wrapped = (payload as ResourceRecord).__enc_payload_v1;
-      const decryptedPayload =
-        wrapped !== undefined ? this.atRestCrypto.decryptJson<ResourceRecord>(wrapped) : null;
-      const materialized =
-        decryptedPayload && typeof decryptedPayload === 'object'
-          ? decryptedPayload
-          : (payload as ResourceRecord);
-      return { ...materialized, ...(id ? { id } : {}) };
+      return { ...(payload as ResourceRecord), ...(id ? { id } : {}) };
     }
     return id ? { id } : {};
-  }
-
-  private encryptResourcePayload(input: ResourceRecord): ResourceRecord {
-    return {
-      __enc_payload_v1: this.atRestCrypto.encryptJson(input),
-    };
   }
 
   async list(
@@ -152,7 +161,7 @@ export class ResourcesService {
       tenantId,
       kind,
       id,
-      payload: this.encryptResourcePayload(nextRecord as ResourceRecord) as Prisma.InputJsonValue,
+      payload: nextRecord as Prisma.InputJsonValue,
     });
     return this.mapDbRowToRecord(row);
   }
@@ -180,7 +189,7 @@ export class ResourcesService {
       tenantId,
       kind,
       id,
-      payload: this.encryptResourcePayload(nextRecord as ResourceRecord) as Prisma.InputJsonValue,
+      payload: nextRecord as Prisma.InputJsonValue,
     });
     return this.mapDbRowToRecord(row);
   }

@@ -29,18 +29,7 @@ export const CalendarMainPanel: React.FC<CalendarMainPanelProps> = ({
   onSelectDate,
   onShiftWeek,
 }) => (
-  <Card
-    className={styles.main}
-    loading={loading}
-    styles={{
-      body: {
-        padding: '10px 12px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-      },
-    }}
-  >
+  <Card className={styles.main} loading={loading}>
     <div className={styles.legend}>
       <Space size={16}>
         <span className={styles.legendItem}>

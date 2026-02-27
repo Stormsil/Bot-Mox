@@ -65,12 +65,6 @@ export const StageProfessionsPanel: React.FC = () => {
       <Card
         className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')}
         title={<span className={styles['detail-card-title']}>Professions Analytics</span>}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-panel)',
-            borderBottom: '1px solid var(--boxmox-color-border-default)',
-          },
-        }}
       >
         <Row gutter={[16, 16]}>
           <Col span={8}>

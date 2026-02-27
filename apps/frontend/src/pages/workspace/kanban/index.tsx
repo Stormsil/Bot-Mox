@@ -224,7 +224,6 @@ export const WorkspaceKanbanPage: React.FC = () => {
                 </Button>
               }
               loading={loading}
-              styles={{ body: { paddingTop: 12, paddingBottom: 12 } }}
             >
               {columnTasks.length === 0 ? (
                 <Empty

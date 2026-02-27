@@ -11,6 +11,7 @@ import { Segmented } from 'antd';
 import type React from 'react';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
 import styles from './ContentPanel.module.css';
+
 const cx = bindCssModuleCx(styles);
 
 export type TabType =

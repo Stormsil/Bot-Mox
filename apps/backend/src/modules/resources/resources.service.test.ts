@@ -95,7 +95,7 @@ test('ResourcesService create/get/update/remove use repository only', async () =
   assert.equal(deleted, true);
 });
 
-test('ResourcesService stores encrypted payload and returns decrypted shape', async () => {
+test('ResourcesService passes plain payload to repository and returns record shape', async () => {
   let lastUpsertPayload: Record<string, unknown> | null = null;
   const dbRows = new Map<string, Record<string, unknown>>();
   const repository: RepositoryStub = {
@@ -120,8 +120,11 @@ test('ResourcesService stores encrypted payload and returns decrypted shape', as
   );
   assert.equal(created.id, 'sub-1');
   assert.equal(created.token, 'top-secret');
-  assert.ok(lastUpsertPayload && Object.hasOwn(lastUpsertPayload, '__enc_payload_v1'));
-  assert.equal(Object.hasOwn(lastUpsertPayload || {}, 'token'), false);
+  assert.equal(
+    Boolean(lastUpsertPayload && Object.hasOwn(lastUpsertPayload, '__enc_payload_v1')),
+    false,
+  );
+  assert.equal((lastUpsertPayload as Record<string, unknown> | null)?.token, 'top-secret');
 
   const listed = await service.list('subscriptions', {}, 'tenant-a');
   assert.equal(listed.items[0].token, 'top-secret');

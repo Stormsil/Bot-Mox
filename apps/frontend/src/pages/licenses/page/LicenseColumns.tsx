@@ -60,14 +60,11 @@ export const buildLicenseColumns = ({
   currentTime,
   handlers,
 }: BuildLicenseColumnsOptions): TableColumnsType<LicenseWithBots> => [
-  // Table visuals are intentionally local to LicensesPage.module.css via column/table classNames.
   {
     title: 'Status',
     dataIndex: 'status',
     key: 'status',
     width: 120,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (status: string, record) => {
       let color = 'default';
 
@@ -82,8 +79,8 @@ export const buildLicenseColumns = ({
       }
 
       return (
-        <Tag color={color} className={styles.statusTag}>
-          {isExpired(record.expires_at, currentTime) ? 'expired' : status}
+        <Tag bordered={false} color={color} className={styles.statusTag}>
+          {(isExpired(record.expires_at, currentTime) ? 'expired' : status).toUpperCase()}
         </Tag>
       );
     },
@@ -92,15 +89,9 @@ export const buildLicenseColumns = ({
     title: 'License Key',
     dataIndex: 'key',
     key: 'key',
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (key: string, record) => (
       <Space direction="vertical" size={0}>
-        <Text
-          copyable={{ text: key, icon: <CopyOutlined /> }}
-          className={styles.licenseKey}
-          style={{ fontSize: '12px' }}
-        >
+        <Text code copyable={{ text: key, icon: <CopyOutlined /> }} className={styles.licenseKey}>
           {key}
         </Text>
         {record.type && (
@@ -115,8 +106,6 @@ export const buildLicenseColumns = ({
     title: 'Bot',
     key: 'bot',
     width: 400,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (_value, record) => {
       const botCount = record.botDetails?.length || 0;
 
@@ -141,12 +130,12 @@ export const buildLicenseColumns = ({
         return (
           <Space align="start">
             <Space direction="vertical" size={0}>
-              <Text style={{ fontSize: '12px', fontWeight: 500 }}>
+              <Space size={4}>
                 <RobotOutlined
                   style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }}
                 />
-                {bot.id}
-              </Text>
+                <Text code>{bot.id}</Text>
+              </Space>
               <Text type="secondary" style={{ fontSize: '11px' }}>
                 {bot.characterName || bot.name}
                 {bot.vmName && ` (${bot.vmName})`}
@@ -208,8 +197,6 @@ export const buildLicenseColumns = ({
     dataIndex: 'expires_at',
     key: 'expires_at',
     width: 120,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (expiresAt: number) => {
       const expired = isExpired(expiresAt, currentTime);
       const expiringSoon = isExpiringSoon(expiresAt, currentTime);
@@ -225,16 +212,12 @@ export const buildLicenseColumns = ({
     dataIndex: 'created_at',
     key: 'created_at',
     width: 120,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (createdAt: number) => dayjs(createdAt).format('DD.MM.YYYY'),
   },
   {
     title: 'Days Left',
     key: 'days_left',
     width: 100,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (_value, record) => {
       const expired = isExpired(record.expires_at, currentTime);
       const daysLeft = Math.ceil((record.expires_at - currentTime) / ONE_DAY_MS);
@@ -257,8 +240,6 @@ export const buildLicenseColumns = ({
     title: 'Actions',
     key: 'actions',
     width: 150,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (_value, record) => (
       <TableActionGroup>
         <TableActionButton

@@ -1,14 +1,10 @@
+import { type HttpError, useCreate, useDelete, useList, useUpdate } from '@refinedev/core';
 import type { MenuProps } from 'antd';
 import { Form, message } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  useCreateLicenseMutation,
-  useDeleteLicenseMutation,
-  useUpdateLicenseMutation,
-} from '../../entities/resources/api/useLicenseMutations';
-import { useLicensesQuery } from '../../entities/resources/api/useResourcesQueries';
+import type { BotLicense as BotLicenseRecord } from '../../entities/resources/model/types';
 import type {
   AssignLicenseFormValues,
   BotLicenseProps,
@@ -29,11 +25,22 @@ import {
 } from './license';
 import styles from './license/license.module.css';
 
+const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
+const RESOURCE_LIST_PAGE_SIZE = 5_000;
+
 export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
-  const licensesQuery = useLicensesQuery();
-  const createLicenseMutation = useCreateLicenseMutation();
-  const updateLicenseMutation = useUpdateLicenseMutation();
-  const deleteLicenseMutation = useDeleteLicenseMutation();
+  const licensesList = useList<BotLicenseRecord>({
+    resource: 'licenses',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
+  const createLicenseMutation = useCreate<
+    BotLicenseRecord,
+    HttpError,
+    Omit<BotLicenseRecord, 'id'>
+  >();
+  const updateLicenseMutation = useUpdate<BotLicenseRecord, HttpError, Partial<BotLicenseRecord>>();
+  const deleteLicenseMutation = useDelete<BotLicenseRecord>();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -42,22 +49,22 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
   const [assignForm] = Form.useForm<AssignLicenseFormValues>();
 
   useEffect(() => {
-    if (!licensesQuery.error) {
+    if (!licensesList.query.error) {
       return;
     }
-    console.error('Error loading license:', licensesQuery.error);
+    console.error('Error loading license:', licensesList.query.error);
     message.error('Failed to load license data');
-  }, [licensesQuery.error]);
+  }, [licensesList.query.error]);
 
   const allLicenses = useMemo(
-    () => (licensesQuery.data || []).map(withLicenseRuntimeState) as LicenseInfo[],
-    [licensesQuery.data],
+    () => (licensesList.result.data || []).map(withLicenseRuntimeState) as LicenseInfo[],
+    [licensesList.result.data],
   );
   const license = useMemo(
     () => allLicenses.find((item) => item.bot_ids?.includes(bot.id)) || null,
     [allLicenses, bot.id],
   );
-  const loading = licensesQuery.isLoading;
+  const loading = licensesList.query.isLoading;
 
   const availableLicenses = useMemo(
     () => getAvailableLicenses(allLicenses, bot.id),
@@ -102,7 +109,12 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
     if (!license) return;
     try {
       const payload = buildLicensePayload(values, license.bot_ids || []);
-      await updateLicenseMutation.mutateAsync({ id: license.id, payload });
+      await updateLicenseMutation.mutateAsync({
+        resource: 'licenses',
+        id: license.id,
+        values: payload,
+        invalidates: ['resourceAll'],
+      });
       message.success('License updated');
       setIsEditModalOpen(false);
       editForm.resetFields();
@@ -117,8 +129,12 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
       const now = Date.now();
       const payload = buildLicensePayload(values, [bot.id], now);
       await createLicenseMutation.mutateAsync({
-        ...payload,
-        created_at: now,
+        resource: 'licenses',
+        values: {
+          ...payload,
+          created_at: now,
+        },
+        invalidates: ['resourceAll'],
       });
       message.success('License created and assigned to bot');
       setIsCreateModalOpen(false);
@@ -141,11 +157,13 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
       }
 
       await updateLicenseMutation.mutateAsync({
+        resource: 'licenses',
         id: selectedLicense.id,
-        payload: {
+        values: {
           bot_ids: [...currentBotIds, bot.id],
           updated_at: Date.now(),
         },
+        invalidates: ['resourceAll'],
       });
       message.success('Bot assigned to license');
       setIsAssignModalOpen(false);
@@ -161,15 +179,21 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
     try {
       const newBotIds = (license.bot_ids || []).filter((id) => id !== bot.id);
       if (newBotIds.length === 0) {
-        await deleteLicenseMutation.mutateAsync(license.id);
+        await deleteLicenseMutation.mutateAsync({
+          resource: 'licenses',
+          id: license.id,
+          invalidates: ['resourceAll'],
+        });
         message.success('License deleted (no bots assigned)');
       } else {
         await updateLicenseMutation.mutateAsync({
+          resource: 'licenses',
           id: license.id,
-          payload: {
+          values: {
             bot_ids: newBotIds,
             updated_at: Date.now(),
           },
+          invalidates: ['resourceAll'],
         });
         message.success('Bot unassigned from license');
       }

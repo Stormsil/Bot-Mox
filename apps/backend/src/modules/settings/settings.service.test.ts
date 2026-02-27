@@ -52,7 +52,7 @@ test('SettingsService uses repository storage for proxy settings', async () => {
   assert.equal((await service.getProxy('tenant-b'))?.host, 'proxy-b.local');
 });
 
-test('SettingsService stores encrypted payload and returns decrypted settings', async () => {
+test('SettingsService passes plain payload to repository and returns settings shape', async () => {
   let lastPayload: Record<string, unknown> | null = null;
   const dbRows = new Map<string, Record<string, unknown>>();
   const repositoryStub: RepositoryStub = {
@@ -70,8 +70,8 @@ test('SettingsService stores encrypted payload and returns decrypted settings', 
 
   const updated = await service.updateApiKeys({ openai_api_key: 'super-secret' }, 'tenant-a');
   assert.equal(updated.openai_api_key, 'super-secret');
-  assert.ok(lastPayload && Object.hasOwn(lastPayload, '__enc_payload_v1'));
-  assert.equal(Object.hasOwn(lastPayload || {}, 'openai_api_key'), false);
+  assert.equal(Boolean(lastPayload && Object.hasOwn(lastPayload, '__enc_payload_v1')), false);
+  assert.equal((lastPayload as Record<string, unknown> | null)?.openai_api_key, 'super-secret');
 
   const read = await service.getApiKeys('tenant-a');
   assert.equal(read?.openai_api_key, 'super-secret');

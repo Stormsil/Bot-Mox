@@ -4,6 +4,7 @@ import { patchConfig } from '../../../utils/vm';
 import type { VMLog } from '../../useVMLog';
 import { runConfigureResourcesPhase } from './configureResourcesPhase';
 import { finalizeVmConfiguration } from './configureVmFinalization';
+import { fetchVmHardwareFingerprint } from './hardwareFingerprint';
 import type { ClonedVmQueueItem } from './phaseTypes';
 import {
   buildMutableConfigPatch,
@@ -19,6 +20,9 @@ import {
   proxmoxConfigToText,
   sleep,
 } from './utils';
+
+const FINGERPRINT_FETCH_MAX_ATTEMPTS = 3;
+const FINGERPRINT_FETCH_BACKOFF_MS = [800, 1_600];
 
 interface ConfigureVmItemParams {
   clonedItem: ClonedVmQueueItem;
@@ -93,6 +97,77 @@ export async function configureVmItem(params: ConfigureVmItemParams): Promise<nu
     `Config loaded after ${readAttempts} attempt${readAttempts === 1 ? '' : 's'}`,
   );
 
+  const ensureNotCancelled = (stage: string): void => {
+    if (!cancelRef.current) {
+      return;
+    }
+    const message = `Cancelled by user during hardware fingerprint fetch (${stage})`;
+    log.warn(`VM ${vmId}: ${message}`, item.name);
+    log.taskLog(vmTaskKey, message, 'warn');
+    throw new Error(message);
+  };
+
+  log.step(`VM ${vmId}: fetching hardware fingerprint`, item.name);
+  let hardwareFingerprint: Awaited<ReturnType<typeof fetchVmHardwareFingerprint>> | null = null;
+  let fingerprintFailureReason = 'Unknown error';
+
+  for (let attempt = 1; attempt <= FINGERPRINT_FETCH_MAX_ATTEMPTS; attempt += 1) {
+    ensureNotCancelled(`before attempt ${attempt}`);
+    log.taskLog(
+      vmTaskKey,
+      `Hardware fingerprint fetch attempt ${attempt}/${FINGERPRINT_FETCH_MAX_ATTEMPTS}`,
+    );
+    try {
+      hardwareFingerprint = await fetchVmHardwareFingerprint();
+      ensureNotCancelled(`after attempt ${attempt}`);
+      log.taskLog(
+        vmTaskKey,
+        `Hardware fingerprint fetched on attempt ${attempt}: mac=${hardwareFingerprint.mac}, serial=${hardwareFingerprint.ssdSerial}, argsLength=${hardwareFingerprint.smbiosArgs.length}`,
+      );
+      break;
+    } catch (fingerprintErr) {
+      fingerprintFailureReason =
+        fingerprintErr instanceof Error ? fingerprintErr.message : 'Unknown error';
+      if (cancelRef.current) {
+        ensureNotCancelled(`attempt ${attempt} error`);
+      }
+      log.warn(
+        `VM ${vmId}: hardware fingerprint fetch failed (attempt ${attempt}/${FINGERPRINT_FETCH_MAX_ATTEMPTS}): ${fingerprintFailureReason}`,
+        item.name,
+      );
+      log.taskLog(
+        vmTaskKey,
+        `Hardware fingerprint attempt ${attempt} failed: ${fingerprintFailureReason}`,
+        'warn',
+      );
+
+      if (attempt >= FINGERPRINT_FETCH_MAX_ATTEMPTS) {
+        break;
+      }
+
+      const backoffMs =
+        FINGERPRINT_FETCH_BACKOFF_MS[attempt - 1] ??
+        FINGERPRINT_FETCH_BACKOFF_MS[FINGERPRINT_FETCH_BACKOFF_MS.length - 1];
+      log.taskLog(vmTaskKey, `Hardware fingerprint retry scheduled after ${backoffMs}ms`);
+      ensureNotCancelled(`before backoff after attempt ${attempt}`);
+      await sleep(backoffMs);
+      ensureNotCancelled(`after backoff after attempt ${attempt}`);
+    }
+  }
+
+  if (!hardwareFingerprint) {
+    const failMessage = `Hardware fingerprint fetch failed after ${FINGERPRINT_FETCH_MAX_ATTEMPTS} attempts: ${fingerprintFailureReason}`;
+    log.taskLog(vmTaskKey, failMessage, 'error');
+    throw new Error(failMessage);
+  }
+
+  if (cancelRef.current) {
+    const cancelMessage = 'Cancelled by user before patch generation';
+    log.warn(`VM ${vmId}: ${cancelMessage}`, item.name);
+    log.taskLog(vmTaskKey, cancelMessage, 'warn');
+    throw new Error(cancelMessage);
+  }
+
   let generatedIp = '';
   const originalMeta = extractUuidAndIp(configText);
   const effectiveUuid = originalMeta.uuid;
@@ -120,7 +195,16 @@ export async function configureVmItem(params: ConfigureVmItemParams): Promise<nu
   );
 
   log.step(`VM ${vmId}: patching config (name=${item.name})`, item.name);
-  const patchResult = patchConfig(configText, item.name, vmId);
+  const patchResult = patchConfig(
+    configText,
+    item.name,
+    {
+      mac: hardwareFingerprint.mac,
+      ssdSerial: hardwareFingerprint.ssdSerial,
+      smbiosArgs: hardwareFingerprint.smbiosArgs,
+    },
+    vmId,
+  );
   generatedIp = patchResult.generatedIp;
   const vmIndex = extractVmIndex(item.name) ?? Math.max(1, vmId - 100);
   log.taskLog(

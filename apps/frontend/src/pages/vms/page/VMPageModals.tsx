@@ -41,39 +41,12 @@ export const VMPageModals: React.FC<VMPageModalsProps> = ({
     />
 
     <Modal
-      title={
-        <span style={{ color: 'var(--boxmox-color-text-primary)', fontWeight: 700, fontSize: 13 }}>
-          Virtual Machines Settings
-        </span>
-      }
+      title="Virtual Machines Settings"
       open={panelOpen === 'settings'}
       onCancel={() => setPanelOpen(null)}
       footer={null}
       width={1100}
       destroyOnHidden
-      styles={{
-        mask: {
-          background: 'rgba(var(--boxmox-color-brand-primary-rgb), 0.08)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-        },
-        content: {
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--boxmox-color-border-default)',
-          background: 'var(--boxmox-color-surface-panel)',
-          overflow: 'hidden',
-        },
-        header: {
-          borderBottom: '1px solid var(--boxmox-color-border-default)',
-          background: 'var(--boxmox-color-surface-muted)',
-          padding: '10px 14px',
-        },
-        body: {
-          maxHeight: '74vh',
-          overflow: 'auto',
-          background: 'var(--boxmox-color-surface-panel)',
-        },
-      }}
     >
       <VMSettingsForm storageOptions={storageOptions} />
     </Modal>

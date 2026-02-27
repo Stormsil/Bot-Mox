@@ -39,7 +39,6 @@ const columns: ColumnsType<Transaction> = [
     dataIndex: 'date',
     key: 'date',
     width: 120,
-    onCell: () => ({ className: styles.tableCell }),
   },
   {
     title: <span className={styles.tableHeader}>Type</span>,
@@ -47,26 +46,31 @@ const columns: ColumnsType<Transaction> = [
     key: 'type',
     width: 100,
     render: (type: string) => (
-      <Tag color={type === 'income' ? 'green' : 'red'} className={styles['transaction-type-tag']}>
-        {type === 'income' ? 'Income' : 'Expense'}
+      <Tag
+        bordered={false}
+        color={type === 'income' ? 'green' : 'red'}
+        className={styles['transaction-type-tag']}
+      >
+        {(type === 'income' ? 'Income' : 'Expense').toUpperCase()}
       </Tag>
     ),
-    onCell: () => ({ className: styles.tableCell }),
   },
   {
     title: <span className={styles.tableHeader}>Category</span>,
     dataIndex: 'category',
     key: 'category',
     width: 120,
-    render: (category: string) => <Tag className={styles['category-tag']}>{category}</Tag>,
-    onCell: () => ({ className: styles.tableCell }),
+    render: (category: string) => (
+      <Tag bordered={false} className={styles['category-tag']}>
+        {category.toUpperCase()}
+      </Tag>
+    ),
   },
   {
     title: <span className={styles.tableHeader}>Description</span>,
     dataIndex: 'description',
     key: 'description',
     ellipsis: true,
-    onCell: () => ({ className: styles.tableCell }),
   },
   {
     title: <span className={styles.tableHeader}>Amount</span>,
@@ -82,7 +86,6 @@ const columns: ColumnsType<Transaction> = [
         {amount.toLocaleString()} {record.currency}
       </Text>
     ),
-    onCell: () => ({ className: styles.tableCell }),
   },
 ];
 
@@ -106,7 +109,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
     <div className={styles['bot-finance']}>
       <Row gutter={[16, 16]} className={styles['finance-summary']}>
         <Col span={8}>
-          <Card className={styles['finance-stat-card']} styles={{ body: { padding: 20 } }}>
+          <Card className={styles['finance-stat-card']}>
             <Statistic
               title={<span className={styles.statTitle}>Total Income</span>}
               value={totalIncome}
@@ -126,7 +129,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card className={styles['finance-stat-card']} styles={{ body: { padding: 20 } }}>
+          <Card className={styles['finance-stat-card']}>
             <Statistic
               title={<span className={styles.statTitle}>Total Expenses</span>}
               value={totalExpenses}
@@ -146,7 +149,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card className={styles['finance-stat-card']} styles={{ body: { padding: 20 } }}>
+          <Card className={styles['finance-stat-card']}>
             <Statistic
               title={<span className={styles.statTitle}>Net Profit</span>}
               value={netProfit}
@@ -172,16 +175,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
 
       <Row gutter={[16, 16]} className={styles['costs-breakdown']}>
         <Col span={12}>
-          <Card
-            className={styles['costs-card']}
-            title="Cost Breakdown"
-            styles={{
-              header: {
-                background: 'var(--boxmox-color-surface-muted)',
-                borderBottom: '1px solid var(--boxmox-color-border-default)',
-              },
-            }}
-          >
+          <Card className={styles['costs-card']} title="Cost Breakdown">
             <div className={styles['cost-item']}>
               <Text className={styles.lineLabel}>Proxy Costs</Text>
               <Text className={styles.lineValue}>$15.00</Text>
@@ -202,16 +196,7 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
           </Card>
         </Col>
         <Col span={12}>
-          <Card
-            className={styles['roi-card']}
-            title="ROI Analysis"
-            styles={{
-              header: {
-                background: 'var(--boxmox-color-surface-muted)',
-                borderBottom: '1px solid var(--boxmox-color-border-default)',
-              },
-            }}
-          >
+          <Card className={styles['roi-card']} title="ROI Analysis">
             <div className={styles['roi-item']}>
               <Text className={styles.lineLabel}>Total Invested</Text>
               <Text className={styles.lineValue}>$120.00</Text>
@@ -235,12 +220,6 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
 
       <Card
         className={styles['transactions-card']}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-muted)',
-            borderBottom: '1px solid var(--boxmox-color-border-default)',
-          },
-        }}
         title={
           <div className={styles['transactions-header']}>
             <span>Transaction History</span>
@@ -271,7 +250,6 @@ export const BotFinance: React.FC<BotFinanceProps> = () => {
           pagination={{ pageSize: 10, className: styles.tablePagination }}
           size="small"
           className={styles['transactions-table']}
-          rowClassName={() => styles['transaction-row']}
         />
       </Card>
     </div>

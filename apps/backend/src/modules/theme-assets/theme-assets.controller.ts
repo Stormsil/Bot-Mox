@@ -15,12 +15,17 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import type { ZodType, z } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
 import { ThemeAssetsService } from './theme-assets.service';
 
 @Controller('theme-assets')
 export class ThemeAssetsController {
   constructor(private readonly themeAssetsService: ThemeAssetsService) {}
+
+  private success<T>(data: T): { success: true; data: T } {
+    return { success: true, data };
+  }
 
   private ensureAuthHeader(authorization: string | undefined): void {
     if (!authorization) {
@@ -31,30 +36,33 @@ export class ThemeAssetsController {
     }
   }
 
-  private parsePresignBody(
-    body: unknown,
-  ): import('zod').infer<typeof themeAssetPresignUploadSchema> {
-    const parsed = themeAssetPresignUploadSchema.safeParse(body ?? {});
+  private getTenantId(authorization: string | undefined, req: Request): string {
+    this.ensureAuthHeader(authorization);
+    return getRequestIdentity(req).tenantId;
+  }
+
+  private parseWithSchema<TSchema extends ZodType>(
+    schema: TSchema,
+    input: unknown,
+    code: string,
+    message: string,
+  ): z.output<TSchema> {
+    const parsed = schema.safeParse(input ?? {});
     if (!parsed.success) {
       throw new BadRequestException({
-        code: 'THEME_ASSET_INVALID_PRESIGN_BODY',
-        message: 'Invalid theme asset presign payload',
+        code,
+        message,
         details: parsed.error.flatten(),
       });
     }
     return parsed.data;
   }
 
-  private parseCompleteBody(body: unknown): import('zod').infer<typeof themeAssetCompleteSchema> {
-    const parsed = themeAssetCompleteSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'THEME_ASSET_INVALID_COMPLETE_BODY',
-        message: 'Invalid theme asset complete payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+  private notFoundThemeAsset(): never {
+    throw new NotFoundException({
+      code: 'THEME_ASSET_NOT_FOUND',
+      message: 'Theme asset not found',
+    });
   }
 
   @Get()
@@ -65,12 +73,8 @@ export class ThemeAssetsController {
     success: true;
     data: unknown;
   }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.themeAssetsService.listAssets(identity.tenantId),
-    };
+    const tenantId = this.getTenantId(authorization, req);
+    return this.success(await this.themeAssetsService.listAssets(tenantId));
   }
 
   @Post('presign-upload')
@@ -83,13 +87,14 @@ export class ThemeAssetsController {
     success: true;
     data: unknown;
   }> {
-    this.ensureAuthHeader(authorization);
-    const parsedBody = this.parsePresignBody(body);
-    const identity = getRequestIdentity(req);
-    return {
-      success: true,
-      data: await this.themeAssetsService.createPresignedUpload(parsedBody, identity.tenantId),
-    };
+    const parsedBody = this.parseWithSchema(
+      themeAssetPresignUploadSchema,
+      body,
+      'THEME_ASSET_INVALID_PRESIGN_BODY',
+      'Invalid theme asset presign payload',
+    );
+    const tenantId = this.getTenantId(authorization, req);
+    return this.success(await this.themeAssetsService.createPresignedUpload(parsedBody, tenantId));
   }
 
   @Post('complete')
@@ -101,20 +106,18 @@ export class ThemeAssetsController {
     success: true;
     data: unknown;
   }> {
-    this.ensureAuthHeader(authorization);
-    const parsedBody = this.parseCompleteBody(body);
-    const identity = getRequestIdentity(req);
-    const completed = await this.themeAssetsService.completeUpload(parsedBody, identity.tenantId);
+    const parsedBody = this.parseWithSchema(
+      themeAssetCompleteSchema,
+      body,
+      'THEME_ASSET_INVALID_COMPLETE_BODY',
+      'Invalid theme asset complete payload',
+    );
+    const tenantId = this.getTenantId(authorization, req);
+    const completed = await this.themeAssetsService.completeUpload(parsedBody, tenantId);
     if (!completed) {
-      throw new NotFoundException({
-        code: 'THEME_ASSET_NOT_FOUND',
-        message: 'Theme asset not found',
-      });
+      this.notFoundThemeAsset();
     }
-    return {
-      success: true,
-      data: completed,
-    };
+    return this.success(completed);
   }
 
   @Delete(':id')
@@ -126,18 +129,11 @@ export class ThemeAssetsController {
     success: true;
     data: unknown;
   }> {
-    this.ensureAuthHeader(authorization);
-    const identity = getRequestIdentity(req);
-    const deleted = await this.themeAssetsService.deleteAsset(id, identity.tenantId);
+    const tenantId = this.getTenantId(authorization, req);
+    const deleted = await this.themeAssetsService.deleteAsset(id, tenantId);
     if (!deleted) {
-      throw new NotFoundException({
-        code: 'THEME_ASSET_NOT_FOUND',
-        message: 'Theme asset not found',
-      });
+      this.notFoundThemeAsset();
     }
-    return {
-      success: true,
-      data: deleted,
-    };
+    return this.success(deleted);
   }
 }

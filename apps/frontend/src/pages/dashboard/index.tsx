@@ -6,6 +6,7 @@ import {
 } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
 import { Card, Col, Row, Spin, Table, Typography } from 'antd';
+import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo } from 'react';
 import { MetricCard } from '../../components/ui/MetricCard';
@@ -15,6 +16,7 @@ import { uiLogger } from '../../observability/uiLogger';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
 import type { Bot } from '../../types';
 import styles from './Dashboard.module.css';
+
 const cx = bindCssModuleCx(styles);
 
 const { Title } = Typography;
@@ -35,12 +37,12 @@ const columns: TableColumnsType<BotData> = [
     title: 'Name',
     dataIndex: 'character',
     key: 'name',
-    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
-    onCell: () => ({ className: cx('tableCell') }),
     render: (character: BotData['character'], record: BotData) => (
       <div>
         <div className={cx('bot-name')}>{character.name}</div>
-        <div className={cx('bot-id')}>{record.id.substring(0, 8)}...</div>
+        <Typography.Text code className={cx('bot-id')}>
+          {record.id.substring(0, 8)}...
+        </Typography.Text>
       </div>
     ),
   },
@@ -48,16 +50,12 @@ const columns: TableColumnsType<BotData> = [
     title: 'Status',
     dataIndex: 'status',
     key: 'status',
-    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
-    onCell: () => ({ className: cx('tableCell') }),
     render: (status: Bot['status']) => <StatusBadge status={status} size="small" />,
   },
   {
     title: 'Character',
     dataIndex: 'character',
     key: 'character',
-    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
-    onCell: () => ({ className: cx('tableCell') }),
     render: (character: BotData['character']) => (
       <div>
         <div className={cx('char-name')}>{character.name}</div>
@@ -71,29 +69,21 @@ const columns: TableColumnsType<BotData> = [
     title: 'Server',
     dataIndex: ['character', 'server'],
     key: 'server',
-    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
-    onCell: () => ({ className: cx('tableCell') }),
   },
   {
     title: 'Project',
     dataIndex: 'project_id',
     key: 'project_id',
-    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
-    onCell: () => ({ className: cx('tableCell') }),
     render: (projectId: string) => (projectId === 'wow_tbc' ? 'WoW TBC' : 'WoW Midnight'),
   },
   {
     title: 'Last Seen',
     dataIndex: 'last_seen',
     key: 'last_seen',
-    onHeaderCell: () => ({ className: cx('tableHeaderCell') }),
-    onCell: () => ({ className: cx('tableCell') }),
     render: (timestamp: number) => {
       if (!timestamp) return 'Never';
       const date = new Date(timestamp);
-      const now = new Date();
-      const diff = now.getTime() - date.getTime();
-      const minutes = Math.floor(diff / 60000);
+      const minutes = dayjs().diff(timestamp, 'minute');
 
       if (minutes < 1) return 'Just now';
       if (minutes < 60) return `${minutes} min ago`;
@@ -147,7 +137,7 @@ export const DashboardPage: React.FC = () => {
         Dashboard
       </Title>
 
-      <Row gutter={[16, 16]} className={cx('metrics-row')}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col span={6}>
           <MetricCard label="Total Bots" value={metrics.totalBots} icon={<RobotOutlined />} />
         </Col>
@@ -166,30 +156,13 @@ export const DashboardPage: React.FC = () => {
         </Col>
       </Row>
 
-      <Card
-        title={`Bot List (${bots.length})`}
-        className={cx('bot-list-card')}
-        style={{
-          background: 'var(--boxmox-color-surface-panel)',
-          border: '1px solid var(--boxmox-color-border-default)',
-          borderRadius: 'var(--radius-sm)',
-        }}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-muted)',
-            borderBottom: '1px solid var(--boxmox-color-border-default)',
-            color: 'var(--boxmox-color-text-primary)',
-          },
-          body: { padding: 0 },
-        }}
-      >
+      <Card title={`Bot List (${bots.length})`} className={cx('bot-list-card')}>
         <Table
           dataSource={bots}
           columns={columns}
           rowKey="id"
           pagination={{ pageSize: 10 }}
           size="small"
-          rowClassName={() => cx('tableRow')}
         />
       </Card>
     </div>

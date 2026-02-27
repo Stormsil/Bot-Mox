@@ -20,7 +20,8 @@ export const VMQueuePanelRowActions: React.FC<VMQueuePanelRowActionsProps> = ({
   statusTone,
   canRemove,
 }) => {
-  const { isProcessing, isStartActionRunning, onStartOne, onRemove, className } = useVMQueueContext();
+  const { isProcessing, isStartActionRunning, onStartOne, onRemove, className } =
+    useVMQueueContext();
   return (
     <>
       {canStartItem ? (

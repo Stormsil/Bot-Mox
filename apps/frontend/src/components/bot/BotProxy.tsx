@@ -1,4 +1,5 @@
 import { WarningOutlined } from '@ant-design/icons';
+import { type HttpError, useCreate, useList, useUpdate } from '@refinedev/core';
 import { Card, Form, Modal, message, Spin } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
@@ -8,11 +9,6 @@ import {
   isAutoCheckEnabled,
   updateProxyWithIPQSData,
 } from '../../entities/resources/api/ipqsFacade';
-import {
-  useCreateProxyMutation,
-  useUpdateProxyMutation,
-} from '../../entities/resources/api/useProxyMutations';
-import { useProxiesQuery } from '../../entities/resources/api/useResourcesQueries';
 import type { IPQSResponse, Proxy as ProxyResource } from '../../entities/resources/model/types';
 import { parseProxyString } from '../../utils/proxyUtils';
 import type { BotProxyProps, ProxyInfo, ProxyModalFormValues } from './proxy';
@@ -26,6 +22,8 @@ import {
 import styles from './proxy/proxy.module.css';
 
 const { confirm } = Modal;
+const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
+const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,13 +35,16 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [checkingIPQS, setCheckingIPQS] = useState(false);
   const [ipqsData, setIpqsData] = useState<IPQSResponse | null>(null);
-  const createProxyMutation = useCreateProxyMutation();
-  const updateProxyMutation = useUpdateProxyMutation();
-  const {
-    data: proxies = [],
-    isLoading: isProxiesLoading,
-    error: proxiesError,
-  } = useProxiesQuery();
+  const createProxyMutation = useCreate<ProxyResource, HttpError, Omit<ProxyResource, 'id'>>();
+  const updateProxyMutation = useUpdate<ProxyResource, HttpError, Partial<ProxyResource>>();
+  const proxiesList = useList<ProxyResource>({
+    resource: 'proxies',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
+  const proxies = proxiesList.result.data || [];
+  const isProxiesLoading = proxiesList.query.isLoading;
+  const proxiesError = proxiesList.query.error;
 
   const proxy = useMemo<ProxyInfo | null>(() => {
     const foundProxy = proxies.find((item) => item.bot_id === bot.id);
@@ -157,11 +158,13 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
       onOk: async () => {
         try {
           await updateProxyMutation.mutateAsync({
+            resource: 'proxies',
             id: proxy.id,
-            payload: {
+            values: {
               bot_id: null,
               updated_at: Date.now(),
             },
+            invalidates: ['resourceAll'],
           });
           message.success('');
         } catch (error) {
@@ -202,11 +205,20 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
       }
 
       if (isEditing && proxy) {
-        await updateProxyMutation.mutateAsync({ id: proxy.id, payload: proxyData });
+        await updateProxyMutation.mutateAsync({
+          resource: 'proxies',
+          id: proxy.id,
+          values: proxyData,
+          invalidates: ['resourceAll'],
+        });
         message.success('');
       } else {
         proxyData.created_at = Date.now();
-        await createProxyMutation.mutateAsync(proxyData as Omit<ProxyResource, 'id'>);
+        await createProxyMutation.mutateAsync({
+          resource: 'proxies',
+          values: proxyData as Omit<ProxyResource, 'id'>,
+          invalidates: ['resourceAll'],
+        });
         message.success('');
       }
 

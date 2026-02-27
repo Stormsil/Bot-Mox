@@ -30,7 +30,7 @@ export function isPrismaMissingStorageError(error: unknown): boolean {
   }
 
   if (
-    message.includes("cannot read properties of undefined") &&
+    message.includes('cannot read properties of undefined') &&
     (message.includes('findmany') ||
       message.includes('findfirst') ||
       message.includes('findunique') ||

@@ -1,13 +1,14 @@
+import { useList } from '@refinedev/core';
 import { Card, message, Spin } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  useLicensesQuery,
-  useProxiesQuery,
-  useSubscriptionsQuery,
-} from '../../entities/resources/api/useResourcesQueries';
-import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../entities/resources/model/types';
+import type {
+  BotLicense,
+  Proxy as ProxyResource,
+  Subscription,
+} from '../../entities/resources/model/types';
+import { useCurrentTime } from '../../shared/lib/hooks/useCurrentTime';
 import styles from './BotSummary.module.css';
 import {
   calculateScheduleStats,
@@ -36,24 +37,32 @@ import type {
   SummaryResourcesTab,
 } from './summary/types';
 
+const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
+const RESOURCE_LIST_PAGE_SIZE = 5_000;
+
 export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
   const [activeSection, setActiveSection] = useState('overview');
-  const [currentTime, setCurrentTime] = useState(() => Date.now());
-  const licensesQuery = useLicensesQuery();
-  const proxiesQuery = useProxiesQuery();
-  const subscriptionsQuery = useSubscriptionsQuery();
+  const currentTime = useCurrentTime();
+  const licensesList = useList<BotLicense>({
+    resource: 'licenses',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
+  const proxiesList = useList<ProxyResource>({
+    resource: 'proxies',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
+  const subscriptionsList = useList<Subscription>({
+    resource: 'subscriptions',
+    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
+    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
+  });
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 60_000);
-
-    return () => window.clearInterval(intervalId);
-  }, []);
-
-  useEffect(() => {
-    const resourcesError = licensesQuery.error ?? proxiesQuery.error ?? subscriptionsQuery.error;
+    const resourcesError =
+      licensesList.query.error ?? proxiesList.query.error ?? subscriptionsList.query.error;
     if (!resourcesError) {
       return;
     }
@@ -63,12 +72,12 @@ export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
       content: 'Failed to load bot summary resources',
       key: 'bot-summary-resources-error',
     });
-  }, [licensesQuery.error, proxiesQuery.error, subscriptionsQuery.error]);
+  }, [licensesList.query.error, proxiesList.query.error, subscriptionsList.query.error]);
 
   const linkedResources = useMemo<LinkedResources>(() => {
-    const licenses = (licensesQuery.data || []) as BotLicense[];
-    const proxies = (proxiesQuery.data || []) as ProxyResource[];
-    const subscriptions = (subscriptionsQuery.data || []) as Subscription[];
+    const licenses = (licensesList.result.data || []) as BotLicense[];
+    const proxies = (proxiesList.result.data || []) as ProxyResource[];
+    const subscriptions = (subscriptionsList.result.data || []) as Subscription[];
     const linkedLicense = licenses.find((license) => license.bot_ids?.includes(bot.id)) || null;
     let linkedProxy: ProxyDetails | null = bot.proxy?.ip
       ? {
@@ -100,7 +109,13 @@ export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
       proxy: linkedProxy,
       subscriptions: subscriptions.filter((sub) => sub.bot_id === bot.id),
     };
-  }, [bot.id, bot.proxy, licensesQuery.data, proxiesQuery.data, subscriptionsQuery.data]);
+  }, [
+    bot.id,
+    bot.proxy,
+    licensesList.result.data,
+    proxiesList.result.data,
+    subscriptionsList.result.data,
+  ]);
 
   const statusInfo = useMemo<BotStatusInfo>(() => {
     const info: BotStatusInfo = {
@@ -150,7 +165,10 @@ export const BotSummary: React.FC<BotSummaryProps> = ({ bot }) => {
   }, [bot.last_seen, currentTime, linkedResources]);
 
   const health = getHealthStatus(statusInfo);
-  const loading = licensesQuery.isLoading || proxiesQuery.isLoading || subscriptionsQuery.isLoading;
+  const loading =
+    licensesList.query.isLoading ||
+    proxiesList.query.isLoading ||
+    subscriptionsList.query.isLoading;
 
   const handleSummaryNavClick = (key: string) => {
     setActiveSection(key);

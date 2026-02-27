@@ -261,7 +261,6 @@ export const WorkspaceCalendarPage: React.FC = () => {
             </Space>
           }
           loading={loading}
-          styles={{ body: { maxHeight: '100%', overflowY: 'auto' } }}
         >
           <CalendarEventList
             events={selectedDateEvents}

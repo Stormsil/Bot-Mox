@@ -6,8 +6,6 @@
 
 .header {
   margin-bottom: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .headerContent {
@@ -36,8 +34,6 @@
 }
 
 .statCard {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
   text-align: center;
 }
 
@@ -72,33 +68,6 @@
 
 .filters {
   margin-bottom: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-}
-
-.tableCard {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-}
-
-.tableHeaderCell {
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-secondary);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.4px;
-  white-space: nowrap;
-}
-
-.tableCell {
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
-  vertical-align: middle;
-}
-
-.tableRow:hover .tableCell {
-  background: var(--boxmox-color-surface-hover);
 }
 
 .cellStack {
@@ -169,7 +138,6 @@
 }
 
 .statusTag {
-  border-radius: 2px;
   font-size: 10px;
   text-transform: uppercase;
   font-weight: 500;
