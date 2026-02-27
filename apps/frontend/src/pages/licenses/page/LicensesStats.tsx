@@ -1,6 +1,6 @@
-import { Card } from 'antd';
+import { Col, Row } from 'antd';
 import type React from 'react';
-import styles from '../LicensesPage.module.css';
+import { MetricCard } from '../../../components/ui/MetricCard';
 import type { LicensesStats } from './types';
 
 interface LicensesStatsProps {
@@ -14,27 +14,34 @@ export const LicensesStatsPanel: React.FC<LicensesStatsProps> = ({ stats, collap
   }
 
   return (
-    <div className={styles.stats}>
-      <Card className={styles.statCard}>
-        <div className={styles.statValue}>{stats.total}</div>
-        <div className={styles.statLabel}>Total</div>
-      </Card>
-      <Card className={`${styles.statCard} ${styles.statCardActive}`}>
-        <div className={styles.statValue}>{stats.active}</div>
-        <div className={styles.statLabel}>Active</div>
-      </Card>
-      <Card className={`${styles.statCard} ${styles.statCardWarning}`}>
-        <div className={styles.statValue}>{stats.expiringSoon}</div>
-        <div className={styles.statLabel}>Expiring Soon</div>
-      </Card>
-      <Card className={`${styles.statCard} ${styles.statCardExpired}`}>
-        <div className={styles.statValue}>{stats.expired}</div>
-        <div className={styles.statLabel}>Expired</div>
-      </Card>
-      <Card className={styles.statCard}>
-        <div className={styles.statValue}>{stats.unassigned}</div>
-        <div className={styles.statLabel}>Unassigned</div>
-      </Card>
-    </div>
+    <Row gutter={[16, 16]}>
+      <Col xs={12} sm={8} md={4}>
+        <MetricCard label="Total" value={stats.total} />
+      </Col>
+      <Col xs={12} sm={8} md={4}>
+        <MetricCard
+          label="Active"
+          value={stats.active}
+          color="var(--boxmox-color-status-success)"
+        />
+      </Col>
+      <Col xs={12} sm={8} md={4}>
+        <MetricCard
+          label="Expiring Soon"
+          value={stats.expiringSoon}
+          color="var(--boxmox-color-status-warning)"
+        />
+      </Col>
+      <Col xs={12} sm={8} md={4}>
+        <MetricCard
+          label="Expired"
+          value={stats.expired}
+          color="var(--boxmox-color-status-danger)"
+        />
+      </Col>
+      <Col xs={12} sm={8} md={4}>
+        <MetricCard label="Unassigned" value={stats.unassigned} />
+      </Col>
+    </Row>
   );
 };
