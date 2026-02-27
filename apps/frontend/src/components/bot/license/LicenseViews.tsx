@@ -28,15 +28,6 @@ import styles from './license.module.css';
 import type { BotLicenseProps, LicenseInfo } from './types';
 
 const { Text } = Typography;
-const cardStyles = {
-  header: {
-    background: 'var(--boxmox-color-surface-muted)',
-    borderBottom: '1px solid var(--boxmox-color-border-default)',
-  },
-  body: {
-    background: 'var(--boxmox-color-surface-panel)',
-  },
-};
 
 export const LicenseLoadingCard: React.FC = () => (
   <div className={styles['bot-license']}>
@@ -57,7 +48,6 @@ export const LicenseEmptyCard: React.FC<LicenseEmptyCardProps> = ({
 }) => (
   <Card
     className={styles['license-card']}
-    styles={cardStyles}
     title={
       <Space>
         <KeyOutlined />
@@ -117,7 +107,6 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
 
     <Card
       className={styles['license-card']}
-      styles={cardStyles}
       title={
         <Space>
           <KeyOutlined />
@@ -150,6 +139,7 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
           </Text>
           <div className={styles['license-key-container']}>
             <Text
+              code
               className={styles['license-key']}
               copyable={{ text: license.key, icon: <CopyOutlined /> }}
             >
@@ -177,6 +167,7 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
             </Text>
             <div>
               <Tag
+                bordered={false}
                 color={getLicenseStatusColor(license)}
                 icon={
                   license.isExpired ? (
@@ -188,7 +179,7 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
                   )
                 }
               >
-                {getLicenseStatusText(license)}
+                {getLicenseStatusText(license).toUpperCase()}
               </Tag>
             </div>
           </div>

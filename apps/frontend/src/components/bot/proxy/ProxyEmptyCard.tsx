@@ -18,12 +18,6 @@ export const ProxyEmptyCard: React.FC<ProxyEmptyCardProps> = ({ onAdd }) => (
         <span className={styles['card-title']}>Proxy Information</span>
       </Space>
     }
-    styles={{
-      header: {
-        background: 'var(--boxmox-color-surface-muted)',
-        borderBottom: '1px solid var(--boxmox-color-border-default)',
-      },
-    }}
     extra={
       <Button type="primary" size="small" icon={<PlusOutlined />} onClick={onAdd}>
         Add

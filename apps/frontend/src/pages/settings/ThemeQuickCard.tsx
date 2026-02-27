@@ -27,10 +27,7 @@ export const ThemeQuickCard: React.FC<ThemeQuickCardProps> = ({
 }) => {
   return (
     <Col span={24}>
-      <Card
-        className={cx('settings-card theme-quick-card')}
-        styles={{ body: { padding: '12px 16px' } }}
-      >
+      <Card className={cx('settings-card theme-quick-card')}>
         <div className={cx('theme-quick-card-content')}>
           <div>
             <Text strong>

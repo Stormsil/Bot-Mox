@@ -92,17 +92,6 @@ export const BotLogs: React.FC<BotLogsProps> = ({ bot }) => {
       <Card
         className={styles['logs-card']}
         title="Important Events"
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
-          },
-          title: {
-            color: 'var(--boxmox-color-text-primary)',
-            fontSize: 'var(--text-sm)',
-            fontWeight: 600,
-          },
-        }}
         extra={
           <Button type="text" size="small" icon={<DownloadOutlined />} onClick={handleExport}>
             Export

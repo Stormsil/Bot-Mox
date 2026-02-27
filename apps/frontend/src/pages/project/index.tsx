@@ -303,6 +303,7 @@ export const ProjectPage: React.FC = () => {
             <Input
               placeholder="Search by ID, character, email, server..."
               prefix={<SearchOutlined />}
+              size="small"
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
               className={styles.filterSearch}
@@ -310,6 +311,7 @@ export const ProjectPage: React.FC = () => {
             />
             <Select
               placeholder="Bot Status"
+              size="small"
               value={statusFilter}
               onChange={(value) => updateStatusFilter(value as StatusFilter)}
               className={styles.filterStatus}
@@ -325,6 +327,7 @@ export const ProjectPage: React.FC = () => {
             </Select>
             <Button
               icon={<ReloadOutlined />}
+              size="small"
               onClick={() => {
                 setSearchText('');
                 updateStatusFilter('all');
@@ -339,15 +342,10 @@ export const ProjectPage: React.FC = () => {
         <Card className={styles.tableCard}>
           <Table
             dataSource={filteredRows}
-            columns={columns.map((column) => ({
-              ...column,
-              onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-              onCell: () => ({ className: styles.tableCell }),
-            }))}
+            columns={columns}
             rowKey="id"
             loading={loading}
             className={styles.table}
-            rowClassName={() => styles.tableRow}
             pagination={{
               pageSize: 15,
               showSizeChanger: true,

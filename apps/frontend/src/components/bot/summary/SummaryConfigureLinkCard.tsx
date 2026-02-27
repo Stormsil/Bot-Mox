@@ -1,7 +1,6 @@
 import { Card, Col } from 'antd';
 import type React from 'react';
 import styles from '../BotSummary.module.css';
-import { detailCardStyles } from './summaryUi';
 
 interface SummaryConfigureLinkCardProps {
   icon: React.ReactNode;
@@ -27,7 +26,6 @@ export const SummaryConfigureLinkCard: React.FC<SummaryConfigureLinkCardProps> =
         </div>
       }
       className={[styles['detail-card'], styles['link-card']].join(' ')}
-      styles={detailCardStyles}
       hoverable
     >
       <div className={styles['link-card-header']}>

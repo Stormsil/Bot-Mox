@@ -298,11 +298,7 @@ export const FinancePage: React.FC = () => {
   return (
     <div className={styles.root}>
       {/* Global Filter Bar */}
-      <Card
-        variant="borderless"
-        className={styles.filterBar}
-        styles={{ body: { padding: '14px 16px' } }}
-      >
+      <Card variant="borderless" className={styles.filterBar}>
         <div className={styles.toolbar}>
           <div className={styles.toolbarLeft}>
             <Title level={4} className={styles.title}>

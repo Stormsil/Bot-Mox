@@ -4,7 +4,7 @@ import {
   PoweroffOutlined,
   RedoOutlined,
 } from '@ant-design/icons';
-import { Tag } from 'antd';
+import { Tag, Typography } from 'antd';
 import type React from 'react';
 import type { ProxmoxVM } from '../../types';
 import { TableActionButton, TableActionGroup } from '../ui/TableActionButton';
@@ -43,6 +43,7 @@ export function buildVmListColumns({
       dataIndex: 'vmid',
       key: 'vmid',
       width: 80,
+      render: (vmid: number) => <Typography.Text code>{vmid}</Typography.Text>,
       sorter: (a: ProxmoxVM, b: ProxmoxVM) => a.vmid - b.vmid,
       defaultSortOrder: 'ascend' as const,
     },
@@ -63,7 +64,11 @@ export function buildVmListColumns({
           stopped: 'default',
           paused: 'warning',
         };
-        return <Tag color={colorMap[status] || 'default'}>{status}</Tag>;
+        return (
+          <Tag bordered={false} color={colorMap[status] || 'default'}>
+            {status.toUpperCase()}
+          </Tag>
+        );
       },
       filters: [
         { text: 'Running', value: 'running' },

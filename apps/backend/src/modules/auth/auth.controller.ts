@@ -23,15 +23,22 @@ const passwordSchema = z
   .regex(/[A-Z]/, 'Password must include an uppercase letter')
   .regex(/[0-9]/, 'Password must include a digit');
 
+const authEmailSchema = z
+  .string()
+  .trim()
+  .refine((value) => /^[^\s@]+@localhost$/i.test(value) || z.string().email().safeParse(value).success, {
+    message: 'Invalid email',
+  });
+
 const adminCreateUserSchema = z.object({
-  email: z.string().trim().email(),
+  email: authEmailSchema,
   password: passwordSchema,
   tenant_id: z.string().trim().min(3).max(128).optional(),
   roles: z.array(z.string().trim().min(1).max(64)).max(16).optional(),
 });
 
 const signUpSchema = z.object({
-  email: z.string().trim().email(),
+  email: authEmailSchema,
   password: passwordSchema,
 });
 

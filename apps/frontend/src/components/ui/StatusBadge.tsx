@@ -1,4 +1,4 @@
-import { Badge } from 'antd';
+import { Tag } from 'antd';
 import type React from 'react';
 import type { BotStatus } from '../../types';
 import styles from './StatusBadge.module.css';
@@ -10,12 +10,12 @@ interface StatusBadgeProps {
 }
 
 const statusConfig: Record<BotStatus, { color: string; text: string }> = {
-  offline: { color: '#8c8c8c', text: 'OFFLINE' },
-  prepare: { color: '#1890ff', text: 'PREPARE' },
-  leveling: { color: '#722ed1', text: 'LEVELING' },
-  profession: { color: '#eb2f96', text: 'PROFESSION' },
-  farming: { color: '#52c41a', text: 'FARMING' },
-  banned: { color: '#f5222d', text: 'BANNED' },
+  offline: { color: 'default', text: 'OFFLINE' },
+  prepare: { color: 'processing', text: 'PREPARE' },
+  leveling: { color: 'purple', text: 'LEVELING' },
+  profession: { color: 'magenta', text: 'PROFESSION' },
+  farming: { color: 'success', text: 'FARMING' },
+  banned: { color: 'error', text: 'BANNED' },
 };
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({
@@ -27,7 +27,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
   return (
     <span className={styles.statusBadge} data-status={status} data-size={size}>
-      <Badge color={config.color} text={showText ? config.text : undefined} />
+      {showText ? (
+        <Tag bordered={false} color={config.color}>
+          {config.text}
+        </Tag>
+      ) : null}
     </span>
   );
 };

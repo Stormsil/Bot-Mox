@@ -17,7 +17,6 @@ import styles from '../BotSummary.module.css';
 import { ResourceStatusCard } from './ResourceStatusCard';
 import { SummaryConfigureLinkCard } from './SummaryConfigureLinkCard';
 import { SummaryStatItem } from './stat-item';
-import { statusSummaryCardStyles } from './summaryUi';
 import type {
   BotStatusInfo,
   BotSummaryBot,
@@ -63,8 +62,8 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
         icon={<MailOutlined />}
         title="Account"
         statusTag={
-          <Tag color={accountComplete ? 'success' : 'warning'}>
-            {accountComplete ? 'Complete' : 'Incomplete'}
+          <Tag bordered={false} color={accountComplete ? 'success' : 'warning'}>
+            {(accountComplete ? 'Complete' : 'Incomplete').toUpperCase()}
           </Tag>
         }
         onOpen={() => goToConfigure('account')}
@@ -120,8 +119,8 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
         icon={<IdcardOutlined />}
         title="Person"
         statusTag={
-          <Tag color={personComplete ? 'success' : 'warning'}>
-            {personComplete ? 'Complete' : 'Incomplete'}
+          <Tag bordered={false} color={personComplete ? 'success' : 'warning'}>
+            {(personComplete ? 'Complete' : 'Incomplete').toUpperCase()}
           </Tag>
         }
         onOpen={() => goToConfigure('person')}
@@ -157,8 +156,8 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
         icon={<CalendarOutlined />}
         title="Schedule"
         statusTag={
-          <Tag color={scheduleStats.enabledSessions > 0 ? 'success' : undefined}>
-            {scheduleStats.enabledSessions > 0 ? 'Configured' : 'Not Set'}
+          <Tag bordered={false} color={scheduleStats.enabledSessions > 0 ? 'success' : undefined}>
+            {(scheduleStats.enabledSessions > 0 ? 'Configured' : 'Not Set').toUpperCase()}
           </Tag>
         }
         onOpen={() => goToConfigure('schedule')}
@@ -203,7 +202,6 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
     <Card
       className={styles['status-summary-card']}
       title={<span className={styles['detail-card-title']}>Status Summary</span>}
-      styles={statusSummaryCardStyles}
     >
       <Row gutter={[16, 16]}>
         <ResourceStatusCard
@@ -211,19 +209,29 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
           title="License"
           statusTag={
             !linkedResources.license ? (
-              <Tag>Not Assigned</Tag>
+              <Tag bordered={false}>NOT ASSIGNED</Tag>
             ) : statusInfo.licenseExpired ? (
-              <Tag color="error">Expired</Tag>
+              <Tag bordered={false} color="error">
+                EXPIRED
+              </Tag>
             ) : statusInfo.licenseExpiringSoon ? (
-              <Tag color="warning">Expiring Soon</Tag>
+              <Tag bordered={false} color="warning">
+                EXPIRING SOON
+              </Tag>
             ) : (
-              <Tag color="success">Active</Tag>
+              <Tag bordered={false} color="success">
+                ACTIVE
+              </Tag>
             )
           }
           metaRows={[
             {
               key: 'license-key',
-              content: <span>Key: {formatCompactKey(linkedResources.license?.key)}</span>,
+              content: (
+                <span>
+                  Key: <Text code>{formatCompactKey(linkedResources.license?.key)}</Text>
+                </span>
+              ),
             },
             {
               key: 'license-expires',
@@ -238,15 +246,23 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
           title="Proxy"
           statusTag={
             !linkedResources.proxy?.ip ? (
-              <Tag>Not Assigned</Tag>
+              <Tag bordered={false}>NOT ASSIGNED</Tag>
             ) : statusInfo.proxyExpired ? (
-              <Tag color="error">Expired</Tag>
+              <Tag bordered={false} color="error">
+                EXPIRED
+              </Tag>
             ) : statusInfo.proxyBanned ? (
-              <Tag color="error">Banned</Tag>
+              <Tag bordered={false} color="error">
+                BANNED
+              </Tag>
             ) : statusInfo.proxyExpiringSoon ? (
-              <Tag color="warning">Expiring Soon</Tag>
+              <Tag bordered={false} color="warning">
+                EXPIRING SOON
+              </Tag>
             ) : (
-              <Tag color="success">Active</Tag>
+              <Tag bordered={false} color="success">
+                ACTIVE
+              </Tag>
             )
           }
           metaRows={[
@@ -255,9 +271,13 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
               content: (
                 <span>
                   IP:{' '}
-                  {linkedResources.proxy?.ip
-                    ? `${linkedResources.proxy.ip}${linkedResources.proxy.port ? `:${linkedResources.proxy.port}` : ''}`
-                    : '—'}
+                  {linkedResources.proxy?.ip ? (
+                    <Text code>
+                      {`${linkedResources.proxy.ip}${linkedResources.proxy.port ? `:${linkedResources.proxy.port}` : ''}`}
+                    </Text>
+                  ) : (
+                    '—'
+                  )}
                 </span>
               ),
             },
@@ -274,13 +294,21 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
           title="Subscriptions"
           statusTag={
             subscriptionSummary.total === 0 ? (
-              <Tag>None</Tag>
+              <Tag bordered={false}>NONE</Tag>
             ) : statusInfo.subscriptionsExpired > 0 ? (
-              <Tag color="error">{statusInfo.subscriptionsExpired} Expired</Tag>
+              <Tag
+                bordered={false}
+                color="error"
+              >{`${statusInfo.subscriptionsExpired} EXPIRED`}</Tag>
             ) : statusInfo.subscriptionsExpiringSoon > 0 ? (
-              <Tag color="warning">{statusInfo.subscriptionsExpiringSoon} Expiring</Tag>
+              <Tag
+                bordered={false}
+                color="warning"
+              >{`${statusInfo.subscriptionsExpiringSoon} EXPIRING`}</Tag>
             ) : (
-              <Tag color="success">All Active</Tag>
+              <Tag bordered={false} color="success">
+                ALL ACTIVE
+              </Tag>
             )
           }
           metaRows={[

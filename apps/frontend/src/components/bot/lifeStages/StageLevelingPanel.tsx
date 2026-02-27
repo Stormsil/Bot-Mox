@@ -57,12 +57,6 @@ export const StageLevelingPanel: React.FC = () => {
       <Card
         className={styles['stage-detail-card']}
         title={<span className={styles['detail-card-title']}>Experience Progress</span>}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-panel)',
-            borderBottom: '1px solid var(--boxmox-color-border-default)',
-          },
-        }}
       >
         <div className={styles['xp-progress-section']}>
           <div className={styles['xp-info']}>
@@ -84,12 +78,6 @@ export const StageLevelingPanel: React.FC = () => {
       <Card
         className={styles['stage-detail-card']}
         title={<span className={styles['detail-card-title']}>Current Location</span>}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-panel)',
-            borderBottom: '1px solid var(--boxmox-color-border-default)',
-          },
-        }}
       >
         <div className={styles['location-info']}>
           <AimOutlined className={styles['location-icon']} />
@@ -103,12 +91,6 @@ export const StageLevelingPanel: React.FC = () => {
       <Card
         className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')}
         title={<span className={styles['detail-card-title']}>Leveling Analytics</span>}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-panel)',
-            borderBottom: '1px solid var(--boxmox-color-border-default)',
-          },
-        }}
       >
         <Row gutter={[16, 16]}>
           <Col span={8}>

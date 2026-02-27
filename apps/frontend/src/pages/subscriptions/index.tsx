@@ -343,15 +343,8 @@ export const SubscriptionsPage: React.FC = () => {
   const rawColumns = buildSubscriptionColumns({
     onEdit: openEditModal,
     onDelete: handleDelete,
-    cellClassName: styles.tableCell,
-    headerClassName: styles.tableHeaderCell,
   });
-
-  const columns = rawColumns.map((column) => ({
-    ...column,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-    onCell: () => ({ className: styles.tableCell }),
-  }));
+  const columns = rawColumns;
 
   const expiringSoon = allSubscriptionsWithDetails
     .filter((sub) => sub.computedStatus === 'expiring_soon')
@@ -395,6 +388,7 @@ export const SubscriptionsPage: React.FC = () => {
           <Input
             placeholder="Search by bot or character..."
             prefix={<SearchOutlined />}
+            size="small"
             value={searchText}
             onChange={(event) =>
               subscriptionsTable.setFilters(buildTableFilters({ q: event.target.value }), 'replace')
@@ -403,6 +397,7 @@ export const SubscriptionsPage: React.FC = () => {
           />
           <Select
             placeholder="Status"
+            size="small"
             value={statusFilter}
             onChange={setStatusFilter}
             style={{ width: 150 }}
@@ -414,6 +409,7 @@ export const SubscriptionsPage: React.FC = () => {
           </Select>
           <Button
             icon={<ReloadOutlined />}
+            size="small"
             onClick={() => {
               subscriptionsTable.setFilters([], 'replace');
               setStatusFilter('all');
@@ -431,7 +427,6 @@ export const SubscriptionsPage: React.FC = () => {
           columns={columns}
           rowKey="id"
           loading={loading}
-          rowClassName={() => styles.tableRow}
           pagination={
             subscriptionsTableProps.pagination
               ? {

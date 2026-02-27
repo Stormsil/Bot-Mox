@@ -81,9 +81,6 @@ const MetricBlock: React.FC<MetricBlockProps> = ({ label, value, unit, hint, ton
     ].join(' ')}
     loading={loading}
     variant="borderless"
-    styles={{
-      body: { padding: '4px 2px' },
-    }}
   >
     <div className={styles.metricHeader}>
       <Text className={styles.metricTitle}>{label}</Text>

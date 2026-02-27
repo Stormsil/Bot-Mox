@@ -57,7 +57,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
     <div className={styles['bot-farm']}>
       <Row gutter={[16, 16]}>
         <Col span={8}>
-          <Card className={styles['farm-stat-card']} styles={{ body: { padding: 16 } }}>
+          <Card className={styles['farm-stat-card']}>
             <Statistic
               title={<span className={styles.farmStatTitle}>Total Gold</span>}
               value={farmStats.total_gold.toLocaleString()}
@@ -68,7 +68,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card className={styles['farm-stat-card']} styles={{ body: { padding: 16 } }}>
+          <Card className={styles['farm-stat-card']}>
             <Statistic
               title={<span className={styles.farmStatTitle}>Gold per Hour</span>}
               value={farmStats.gold_per_hour.toFixed(1)}
@@ -79,7 +79,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card className={styles['farm-stat-card']} styles={{ body: { padding: 16 } }}>
+          <Card className={styles['farm-stat-card']}>
             <Statistic
               title={<span className={styles.farmStatTitle}>Session Time</span>}
               value={formatDurationHoursMinutes(sessionDuration)}
@@ -90,21 +90,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
         </Col>
       </Row>
 
-      <Card
-        className={styles['inventory-card']}
-        title="Inventory"
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
-          },
-          title: {
-            color: 'var(--boxmox-color-text-primary)',
-            fontSize: 'var(--text-sm)',
-            fontWeight: 600,
-          },
-        }}
-      >
+      <Card className={styles['inventory-card']} title="Inventory">
         <List
           dataSource={inventory}
           renderItem={(item) => (

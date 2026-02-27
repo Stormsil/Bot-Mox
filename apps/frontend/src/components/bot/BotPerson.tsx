@@ -155,13 +155,6 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
       <Card
         title={<PersonCardTitle hasIncompleteData={hasIncompleteData} />}
         className={styles['person-card']}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
-            color: 'var(--boxmox-color-text-primary)',
-          },
-        }}
       >
         <PersonStatusAlerts
           hasIncompleteData={hasIncompleteData}

@@ -354,12 +354,18 @@ export const ProxiesPage: React.FC = () => {
           <div className={styles.headerActions}>
             <Button
               type="text"
+              size="small"
               icon={statsCollapsed ? <RightOutlined /> : <DownOutlined />}
               onClick={() => setStatsCollapsed((prev) => !prev)}
             >
               Stats
             </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditModal()}>
+            <Button
+              type="primary"
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={() => openEditModal()}
+            >
               Add Proxy
             </Button>
           </div>
@@ -373,12 +379,14 @@ export const ProxiesPage: React.FC = () => {
           <Input
             placeholder="Search by IP, provider, country, ISP..."
             prefix={<SearchOutlined />}
+            size="small"
             value={searchText}
             onChange={(event) => setMergedFilters({ q: event.target.value })}
             className={styles.filterSearch}
           />
           <Select
             placeholder="Status"
+            size="small"
             value={statusFilter}
             onChange={(value) => setMergedFilters({ status: value })}
             className={styles.filterSelectMd}
@@ -390,6 +398,7 @@ export const ProxiesPage: React.FC = () => {
           </Select>
           <Select
             placeholder="Type"
+            size="small"
             value={typeFilter}
             onChange={(value) => setMergedFilters({ type: value })}
             className={styles.filterSelectSm}
@@ -400,6 +409,7 @@ export const ProxiesPage: React.FC = () => {
           </Select>
           <Select
             placeholder="Country"
+            size="small"
             value={countryFilter}
             onChange={(value) => setMergedFilters({ country: value })}
             className={styles.filterSelectMd}
@@ -412,6 +422,7 @@ export const ProxiesPage: React.FC = () => {
             ))}
           </Select>
           <Button
+            size="small"
             icon={<ReloadOutlined />}
             onClick={() =>
               proxiesTable.setFilters(

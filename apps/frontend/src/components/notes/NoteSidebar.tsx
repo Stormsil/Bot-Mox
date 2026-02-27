@@ -216,18 +216,6 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                     collapsed && styles.collapsed,
                   )}
                   onClick={() => onSelectNote(note.id)}
-                  styles={{
-                    body: {
-                      padding: collapsed ? '8px' : '12px 16px',
-                      display: 'flex',
-                      alignItems: collapsed ? 'center' : 'flex-start',
-                      justifyContent: collapsed ? 'center' : 'flex-start',
-                      gap: collapsed ? 0 : 8,
-                      overflow: 'hidden',
-                      width: '100%',
-                      boxSizing: 'border-box',
-                    },
-                  }}
                   style={{ borderRadius: collapsed ? 4 : 8, width: '100%' }}
                 >
                   {collapsed ? (

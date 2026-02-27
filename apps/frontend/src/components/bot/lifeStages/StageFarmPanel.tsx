@@ -68,12 +68,6 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
       <Card
         className={styles['stage-detail-card']}
         title={<span className={styles['detail-card-title']}>Inventory</span>}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-panel)',
-            borderBottom: '1px solid var(--boxmox-color-border-default)',
-          },
-        }}
       >
         <List
           dataSource={inventory}
@@ -102,12 +96,6 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
       <Card
         className={[styles['stage-detail-card'], styles['analytics-card']].join(' ')}
         title={<span className={styles['detail-card-title']}>Farm Analytics</span>}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-panel)',
-            borderBottom: '1px solid var(--boxmox-color-border-default)',
-          },
-        }}
       >
         <Row gutter={[16, 16]}>
           <Col span={8}>

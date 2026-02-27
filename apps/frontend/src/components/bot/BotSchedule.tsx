@@ -274,12 +274,6 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
       <Card
         title={<span className={styles['schedule-card-title']}>Schedule</span>}
         className={styles['schedule-card']}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-muted)',
-            borderBottom: '1px solid var(--boxmox-color-border-default)',
-          },
-        }}
         extra={
           <BotScheduleActions
             viewMode={viewMode}

@@ -111,19 +111,6 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
       onOk={handleOk}
       onCancel={handleCancel}
       okText={isEditing ? 'Save' : 'Add'}
-      styles={{
-        content: {
-          background: token.colorBgElevated,
-          border: `1px solid ${token.colorBorderSecondary}`,
-        },
-        header: {
-          background: token.colorFillTertiary,
-          borderBottom: `1px solid ${token.colorBorderSecondary}`,
-        },
-        footer: {
-          borderTop: `1px solid ${token.colorBorderSecondary}`,
-        },
-      }}
     >
       {error && (
         <Alert

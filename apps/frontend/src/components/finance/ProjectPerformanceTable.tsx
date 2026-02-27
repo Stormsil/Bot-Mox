@@ -90,16 +90,12 @@ const ProjectPerformanceTableImpl: React.FC<ProjectPerformanceTableProps> = ({
         title: 'Project / Scope',
         dataIndex: 'project',
         key: 'project',
-        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-        onCell: () => ({ className: styles.tableCell }),
         render: (text: string) => <Text strong>{text}</Text>,
       },
       {
         title: 'Income',
         dataIndex: 'income',
         key: 'income',
-        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-        onCell: () => ({ className: styles.tableCell }),
         render: (val: number) => (
           <Text>
             ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -111,8 +107,6 @@ const ProjectPerformanceTableImpl: React.FC<ProjectPerformanceTableProps> = ({
         title: 'Expenses',
         dataIndex: 'expense',
         key: 'expense',
-        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-        onCell: () => ({ className: styles.tableCell }),
         render: (val: number) => (
           <Text>
             ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -124,8 +118,6 @@ const ProjectPerformanceTableImpl: React.FC<ProjectPerformanceTableProps> = ({
         title: 'Net Profit',
         dataIndex: 'profit',
         key: 'profit',
-        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-        onCell: () => ({ className: styles.tableCell }),
         render: (val: number) => (
           <Text style={{ fontWeight: 600 }}>
             {val >= 0 ? '+' : ''}$
@@ -142,8 +134,6 @@ const ProjectPerformanceTableImpl: React.FC<ProjectPerformanceTableProps> = ({
         title: 'Margin',
         dataIndex: 'margin',
         key: 'margin',
-        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-        onCell: () => ({ className: styles.tableCell }),
         render: (val: number, record: ProjectStats) => {
           if (record.income === 0) return <Tag className={commonStyles.financeTag}>N/A</Tag>;
           return <Tag className={commonStyles.financeTag}>{val.toFixed(1)}%</Tag>;
@@ -153,9 +143,7 @@ const ProjectPerformanceTableImpl: React.FC<ProjectPerformanceTableProps> = ({
         title: 'Gold Sold',
         dataIndex: 'goldVolume',
         key: 'goldVolume',
-        onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-        onCell: () => ({ className: styles.tableCell }),
-        render: (val: number) => (val > 0 ? `${val.toLocaleString()} g` : '-'),
+        render: (val: number) => (val > 0 ? <Text code>{`${val.toLocaleString()} g`}</Text> : '-'),
       },
     ],
     [],
@@ -174,7 +162,6 @@ const ProjectPerformanceTableImpl: React.FC<ProjectPerformanceTableProps> = ({
         columns={columns}
         pagination={false}
         size="small"
-        rowClassName={() => styles.tableRow}
       />
     </Card>
   );

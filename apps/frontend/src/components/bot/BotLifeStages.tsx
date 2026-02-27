@@ -208,12 +208,6 @@ export const BotLifeStages: React.FC<BotLifeStagesProps> = ({ botId }) => {
           <Card
             className={styles['timeline-card']}
             title={<span className={styles['detail-card-title']}>Life Cycle</span>}
-            styles={{
-              header: {
-                background: 'var(--boxmox-color-surface-panel)',
-                borderBottom: '1px solid var(--boxmox-color-border-default)',
-              },
-            }}
           >
             <StageTimeline currentStage={currentStage} />
             <Divider />

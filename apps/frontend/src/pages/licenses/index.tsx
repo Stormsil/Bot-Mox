@@ -352,6 +352,7 @@ export const LicensesPage: React.FC = () => {
           <Input
             placeholder="Search by key or bot..."
             prefix={<SearchOutlined />}
+            size="small"
             value={searchText}
             onChange={(event) => setMergedFilters({ q: event.target.value })}
             className={styles.filterSearch}
@@ -359,6 +360,7 @@ export const LicensesPage: React.FC = () => {
           />
           <Select
             placeholder="Status"
+            size="small"
             value={statusFilter}
             onChange={(value) => setMergedFilters({ status: value })}
             className={styles.filterSelect}
@@ -371,6 +373,7 @@ export const LicensesPage: React.FC = () => {
           </Select>
           <Select
             placeholder="Type"
+            size="small"
             value={typeFilter}
             onChange={(value) => setMergedFilters({ type: value })}
             className={styles.filterSelect}
@@ -382,6 +385,7 @@ export const LicensesPage: React.FC = () => {
           </Select>
           <Button
             icon={<ReloadOutlined />}
+            size="small"
             onClick={() =>
               licensesTable.setFilters(
                 buildTableFilters({ q: '', status: 'all', type: 'all' }),
@@ -399,15 +403,11 @@ export const LicensesPage: React.FC = () => {
         <Table
           {...licensesTable.tableProps}
           dataSource={licensesWithBots}
-          columns={columns.map((column) => ({
-            ...column,
-            onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-            onCell: () => ({ className: styles.tableCell }),
-          }))}
+          columns={columns}
           rowKey="id"
           loading={loading}
           className={styles.table}
-          rowClassName={() => styles.tableRow}
+          size="small"
           pagination={
             licensesTable.tableProps.pagination
               ? {
