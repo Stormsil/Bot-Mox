@@ -87,10 +87,13 @@ function buildThemeConfig(
       colorFillContent: palette['--boxmox-color-surface-muted'],
       colorFillContentHover: palette['--boxmox-color-surface-hover'],
       controlOutline: 'rgba(var(--boxmox-color-brand-primary-rgb), 0.22)',
-      borderRadius: safeShape.radiusMd,
-      borderRadiusSM: safeShape.radiusSm,
-      borderRadiusLG: safeShape.radiusLg,
-      wireframe: false,
+      borderRadius: 0,
+      borderRadiusSM: 0,
+      borderRadiusLG: 0,
+      borderRadiusXS: 0,
+      borderRadiusOuter: 0,
+      boxShadow: 'none',
+      wireframe: true,
     },
     components: {
       Layout: {
@@ -142,6 +145,11 @@ function buildThemeConfig(
       Modal: {
         contentBg: palette['--boxmox-color-surface-panel'],
         headerBg: palette['--boxmox-color-surface-muted'],
+        footerBg: palette['--boxmox-color-surface-muted'],
+        titleColor: palette['--boxmox-color-text-primary'],
+        colorText: palette['--boxmox-color-text-primary'],
+        borderRadius: safeShape.radiusMd,
+        boxShadow: '0 20px 54px rgba(0, 0, 0, 0.35)',
       },
       Drawer: {
         colorBgElevated: palette['--boxmox-color-surface-panel'],
@@ -180,6 +188,10 @@ function buildThemeConfig(
         itemMarginInline: 0,
         itemMarginBlock: 0,
         itemPaddingInline: 0,
+      },
+      Button: {
+        defaultShadow: 'none',
+        primaryShadow: 'none',
       },
     },
   };
