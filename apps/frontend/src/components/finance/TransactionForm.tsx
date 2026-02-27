@@ -5,6 +5,7 @@ import {
   Form,
   Input,
   InputNumber,
+  Modal,
   Radio,
   Select,
   Space,
@@ -20,7 +21,6 @@ import type {
   FinanceOperationFormData,
   FinanceOperationType,
 } from '../../entities/finance/model/types';
-import { ThemeModal } from '../ui';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -219,12 +219,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   };
 
   return (
-    <ThemeModal
-      title={
-        <span style={{ color: token.colorText }}>
-          {isEdit ? 'Edit Transaction' : 'Add Transaction'}
-        </span>
-      }
+    <Modal
+      title={isEdit ? 'Edit Transaction' : 'Add Transaction'}
       open={visible}
       onOk={() => {
         void submitForm();
@@ -364,6 +360,6 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
           <TextArea rows={2} placeholder="Enter transaction description (optional)" />
         </Form.Item>
       </Form>
-    </ThemeModal>
+    </Modal>
   );
 };
