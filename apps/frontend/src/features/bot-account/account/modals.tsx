@@ -1,5 +1,4 @@
-import { Alert } from 'antd';
-import { ThemeModal } from '../../../components/ui';
+import { Alert, Modal } from 'antd';
 
 interface ConfirmGenerationModalProps {
   open: boolean;
@@ -17,16 +16,13 @@ export function ConfirmGenerationModal({
   onCancel,
 }: ConfirmGenerationModalProps) {
   return (
-    <ThemeModal
-      title={<span style={{ color: 'var(--boxmox-color-text-primary)' }}>Confirm Generation</span>}
+    <Modal
+      title="Confirm Generation"
       open={open}
       onOk={onConfirm}
       onCancel={onCancel}
       okText="Generate"
       cancelText="Cancel"
-      styles={{
-        body: { color: 'var(--boxmox-color-text-primary)' },
-      }}
     >
       <Alert
         message="Warning"
@@ -53,6 +49,6 @@ export function ConfirmGenerationModal({
           showIcon
         />
       )}
-    </ThemeModal>
+    </Modal>
   );
 }

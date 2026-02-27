@@ -1,7 +1,6 @@
 import type { FormInstance } from 'antd';
-import { AutoComplete, DatePicker, Form, Input } from 'antd';
+import { AutoComplete, DatePicker, Form, Input, Modal } from 'antd';
 import type React from 'react';
-import { ThemeModal } from '../../ui';
 import type { LicenseFormValues } from './types';
 
 interface LicenseFormModalProps {
@@ -23,8 +22,8 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
   onCancel,
   onSubmit,
 }) => (
-  <ThemeModal
-    title={<span style={{ color: 'var(--boxmox-color-text-primary)' }}>{title}</span>}
+  <Modal
+    title={title}
     open={open}
     onOk={() => form.submit()}
     onCancel={onCancel}
@@ -37,14 +36,7 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
         label="License Key"
         rules={[{ required: true, message: 'Please enter license key' }]}
       >
-        <Input
-          placeholder="Enter license key (e.g., SIN-ABC123-DEF456)"
-          style={{
-            background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
-            color: 'var(--boxmox-color-text-primary)',
-          }}
-        />
+        <Input placeholder="Enter license key (e.g., SIN-ABC123-DEF456)" variant="filled" />
       </Form.Item>
 
       <Form.Item
@@ -55,11 +47,7 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
         <AutoComplete
           placeholder="Enter type (e.g., SIN, Baneto)"
           options={typeOptions}
-          style={{
-            background: 'var(--boxmox-color-surface-muted)',
-            borderColor: 'var(--boxmox-color-border-default)',
-            color: 'var(--boxmox-color-text-primary)',
-          }}
+          variant="filled"
           filterOption={(inputValue, option) =>
             option?.value?.toLowerCase().includes(inputValue.toLowerCase()) ?? false
           }
@@ -72,11 +60,12 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
         rules={[{ required: true, message: 'Please select expiration date' }]}
       >
         <DatePicker
-          style={{ width: '100%', background: 'var(--boxmox-color-surface-muted)' }}
+          style={{ width: '100%' }}
           placeholder="DD.MM.YYYY"
           format="DD.MM.YYYY"
+          variant="filled"
         />
       </Form.Item>
     </Form>
-  </ThemeModal>
+  </Modal>
 );
