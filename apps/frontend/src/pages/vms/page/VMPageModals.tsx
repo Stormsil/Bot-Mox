@@ -1,5 +1,5 @@
+import { Modal } from 'antd';
 import type React from 'react';
-import { ThemeModal } from '../../../components/ui';
 import { VMSettingsForm } from '../../../components/vm';
 import type { VMStorageOption } from '../../../types';
 import { DeleteVmModal } from '../DeleteVmModal';
@@ -40,28 +40,15 @@ export const VMPageModals: React.FC<VMPageModalsProps> = ({
       onClearSelection={deleteVm.handleClearDeleteVmSelection}
     />
 
-    <ThemeModal
-      title={
-        <span style={{ color: 'var(--boxmox-color-text-primary)', fontWeight: 700, fontSize: 13 }}>
-          Virtual Machines Settings
-        </span>
-      }
+    <Modal
+      title="Virtual Machines Settings"
       open={panelOpen === 'settings'}
       onCancel={() => setPanelOpen(null)}
       footer={null}
       width={1100}
       destroyOnHidden
-      styles={{
-        header: {
-          padding: '10px 14px',
-        },
-        body: {
-          maxHeight: '74vh',
-          overflow: 'auto',
-        },
-      }}
     >
       <VMSettingsForm storageOptions={storageOptions} />
-    </ThemeModal>
+    </Modal>
   </>
 );

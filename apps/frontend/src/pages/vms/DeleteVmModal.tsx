@@ -1,7 +1,6 @@
 import { DownOutlined, FilterOutlined } from '@ant-design/icons';
-import { Button, Popover } from 'antd';
+import { Button, Modal, Popover } from 'antd';
 import type React from 'react';
-import { ThemeModal } from '../../components/ui';
 import type { DeleteVmCandidateRow, DeleteVmFilters } from './deleteVmRules';
 import { cx } from './page/cx';
 import { DeleteVmCandidateItem } from './page/DeleteVmCandidateItem';
@@ -58,7 +57,7 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
   };
 
   return (
-    <ThemeModal
+    <Modal
       title={
         <div className={cx('vm-delete-vm-modal-title-wrap')}>
           <span className={cx('vm-delete-vm-modal-title-main')}>Delete Existing VMs</span>
@@ -77,20 +76,6 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
       width={980}
       className={cx('vm-generator-modal vm-delete-vm-modal')}
       destroyOnHidden
-      styles={{
-        header: {
-          minHeight: 38,
-          padding: '8px 12px',
-          display: 'flex',
-          alignItems: 'flex-start',
-        },
-        body: {
-          padding: '12px 14px 14px',
-        },
-        footer: {
-          padding: '8px 12px',
-        },
-      }}
     >
       <div className={cx('vm-delete-vm-modal-layout')}>
         <div className={cx('vm-delete-vm-modal-summary')}>
@@ -225,6 +210,6 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
           </div>
         </div>
       </div>
-    </ThemeModal>
+    </Modal>
   );
 };
