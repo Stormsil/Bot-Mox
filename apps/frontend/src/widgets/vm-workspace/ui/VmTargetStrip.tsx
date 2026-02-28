@@ -1,33 +1,23 @@
 import { Button, Select, Tag, Typography } from 'antd';
 import type React from 'react';
-
-interface VmTargetOption {
-  id: string;
-  label: string;
-  isActive?: boolean;
-}
+import { useVmTargetStripModel } from './useVmTargetStripModel';
 
 interface VmTargetStripProps {
-  targets: VmTargetOption[];
-  selectedTargetId?: string;
-  loading: boolean;
   sshConfigured: boolean;
   sshConnected: boolean;
   sshStatusCode?: string | number | null;
-  onChange: (value?: string) => void;
-  onRefresh: () => void;
+  onTargetChanged?: (options: { isCurrent: () => boolean }) => Promise<unknown> | unknown;
 }
 
 export const VmTargetStrip: React.FC<VmTargetStripProps> = ({
-  targets,
-  selectedTargetId,
-  loading,
   sshConfigured,
   sshConnected,
   sshStatusCode,
-  onChange,
-  onRefresh,
+  onTargetChanged,
 }) => {
+  const { targets, selectedTargetId, loading, handleTargetChange, handleRefresh } =
+    useVmTargetStripModel({ onTargetChanged });
+
   return (
     <div className="vm-generator-target-strip">
       <Typography.Text
@@ -53,10 +43,10 @@ export const VmTargetStrip: React.FC<VmTargetStripProps> = ({
           label: `${target.label}${target.isActive ? ' (active)' : ''}`,
         }))}
         loading={loading}
-        onChange={(value) => onChange(value)}
+        onChange={(value) => handleTargetChange(value)}
         style={{ minWidth: 320, maxWidth: 520 }}
       />
-      <Button size="small" onClick={onRefresh} loading={loading}>
+      <Button size="small" onClick={handleRefresh} loading={loading}>
         Refresh Computers
       </Button>
       {!sshConfigured && (

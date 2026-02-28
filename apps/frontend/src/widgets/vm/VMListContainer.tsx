@@ -1,27 +1,17 @@
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import { useProxmox } from '../../features/vm-management/model/useProxmox';
 import type { ProxmoxVM } from '../../shared/types';
 import { useVmListController } from './useVmListController';
 import { VMListView } from './VMListView';
 import { buildVmListColumns } from './vmListColumns';
 
 export interface VMListContainerProps {
-  vms: ProxmoxVM[];
-  loading: boolean;
-  connected: boolean;
-  node: string;
-  refreshVMs: () => Promise<void> | void;
   onRecreate?: (vm: ProxmoxVM) => void;
 }
 
-export const VMListContainer: React.FC<VMListContainerProps> = ({
-  vms,
-  loading,
-  connected,
-  node,
-  refreshVMs,
-  onRecreate,
-}) => {
+export const VMListContainer: React.FC<VMListContainerProps> = ({ onRecreate }) => {
+  const proxmox = useProxmox();
   const [tableHeight, setTableHeight] = useState(() =>
     typeof window === 'undefined' ? 520 : Math.max(260, window.innerHeight - 300),
   );
@@ -36,7 +26,11 @@ export const VMListContainer: React.FC<VMListContainerProps> = ({
     return () => window.removeEventListener('resize', updateHeight);
   }, []);
 
-  const controller = useVmListController({ vms, node, refreshVMs });
+  const controller = useVmListController({
+    vms: proxmox.vms,
+    node: proxmox.node,
+    refreshVMs: proxmox.refreshVMs,
+  });
 
   const columns = useMemo(
     () =>
@@ -70,10 +64,10 @@ export const VMListContainer: React.FC<VMListContainerProps> = ({
 
   return (
     <VMListView
-      vms={vms}
-      loading={loading}
-      connected={connected}
-      refreshVMs={refreshVMs}
+      vms={proxmox.vms}
+      loading={proxmox.loading}
+      connected={proxmox.connected}
+      refreshVMs={proxmox.refreshVMs}
       tableHeight={tableHeight}
       runningCount={controller.runningCount}
       stoppedCount={controller.stoppedCount}

@@ -1,94 +1,32 @@
 import type React from 'react';
 import { useRef, useState } from 'react';
-import type { ProxmoxTargetInfo } from '../../../entities/vm/api/vmReadFacade';
-import type { ProxmoxVM, VMStorageOption } from '../../../entities/vm/model/types';
-import { VMListContainer, VMOperationLog, VMQueuePanel, VMStatusBar } from '../../../widgets/vm';
 import { useVmWorkspaceLayout } from '../model/useVmWorkspaceLayout';
 import { cx } from './cx';
-import { VMPageModals } from './VMPageModals';
-import { VmTargetStrip } from './VmTargetStrip';
 
 type PanelOpenState = 'settings' | null;
 
-interface VmWorkspaceStatusProps {
-  uiState: 'ready' | 'working' | 'success' | 'error';
-  operationText: string;
-  isProcessing: boolean;
-  hasPending: boolean;
-  queueStats: {
-    total: number;
-    pending: number;
-    active: number;
-    done: number;
-    error: number;
-  };
-  processQueue: () => void;
-  cancelProcessing: () => void;
-}
-
-interface VmWorkspaceTargetsProps {
-  proxmoxTargets: ProxmoxTargetInfo[];
-  selectedTargetId?: string;
-  targetsLoading: boolean;
-  sshConfigured: boolean;
-  sshConnected: boolean;
-  sshStatusCode: string | null;
-  onTargetChange: (targetId?: string) => void | Promise<void>;
-  onTargetsRefresh: () => void;
-}
-
-interface VmWorkspaceProxmoxPaneProps {
-  proxmoxVms: ProxmoxVM[];
-  proxmoxLoading: boolean;
-  proxmoxConnected: boolean;
-  proxmoxNode: string;
-  refreshVMs: () => Promise<void>;
-  onRecreateVm: (vm: ProxmoxVM) => void;
-}
-
-interface VmWorkspaceQueueProps {
-  queueItems: Parameters<typeof VMQueuePanel>[0]['queue'];
-  isStartActionRunning: boolean;
-  canStartAll: boolean;
-  startingQueueItemId: string | null;
-  storageOptions: VMStorageOption[];
-  projectOptions: Parameters<typeof VMQueuePanel>[0]['projectOptions'];
-  resourcePresets: Parameters<typeof VMQueuePanel>[0]['resourcePresets'];
-  onAddVm: () => void;
-  onAddDelete?: () => void;
-  onClearQueue: () => void;
-  onStartAll?: () => void;
-  onStartOne?: (id: string) => void;
-  onRemoveQueueItem: (id: string) => void;
-  onUpdateQueueItem: (
-    id: string,
-    updates: Partial<Parameters<typeof VMQueuePanel>[0]['queue'][number]>,
-  ) => void;
-}
-
-interface VmWorkspaceLogProps {
-  logTasks: Parameters<typeof VMOperationLog>[0]['tasks'];
-  onClearLog: () => void | Promise<void>;
-  onCancelTask: (taskId: string) => void;
-  getFullLog: () => string;
+export interface VMWorkspaceShellRenderContext {
+  panelOpen: PanelOpenState;
+  setPanelOpen: React.Dispatch<React.SetStateAction<PanelOpenState>>;
+  openSettings: () => void;
 }
 
 interface VMWorkspaceProps {
-  status: VmWorkspaceStatusProps;
-  targets: VmWorkspaceTargetsProps;
-  proxmoxPane: VmWorkspaceProxmoxPaneProps;
-  queuePanel: VmWorkspaceQueueProps;
-  logPanel: VmWorkspaceLogProps;
-  deleteVm: React.ComponentProps<typeof VMPageModals>['deleteVm'];
+  renderStatusBar: (context: VMWorkspaceShellRenderContext) => React.ReactNode;
+  targetStrip: React.ReactNode;
+  servicePane: React.ReactNode;
+  queuePane: React.ReactNode;
+  logPane: React.ReactNode;
+  renderModals: (context: VMWorkspaceShellRenderContext) => React.ReactNode;
 }
 
 export const VMWorkspace: React.FC<VMWorkspaceProps> = ({
-  status,
-  targets,
-  proxmoxPane,
-  queuePanel,
-  logPanel,
-  deleteVm,
+  renderStatusBar,
+  targetStrip,
+  servicePane,
+  queuePane,
+  logPane,
+  renderModals,
 }) => {
   const [panelOpen, setPanelOpen] = useState<PanelOpenState>(null);
   const workspaceLayoutRef = useRef<HTMLDivElement | null>(null);
@@ -105,36 +43,19 @@ export const VMWorkspace: React.FC<VMWorkspaceProps> = ({
     workspaceRef,
   });
 
+  const renderContext: VMWorkspaceShellRenderContext = {
+    panelOpen,
+    setPanelOpen,
+    openSettings: () => {
+      setPanelOpen('settings');
+    },
+  };
+
   return (
     <div className={cx(`vm-generator ${isLogResizing ? 'vm-generator--resizing' : ''}`)}>
-      <VMStatusBar
-        uiState={status.uiState}
-        operationText={status.operationText}
-        isProcessing={status.isProcessing}
-        hasPending={status.hasPending}
-        queueTotal={status.queueStats.total}
-        pendingCount={status.queueStats.pending}
-        activeCount={status.queueStats.active}
-        doneCount={status.queueStats.done}
-        errorCount={status.queueStats.error}
-        onStart={status.processQueue}
-        onStop={status.cancelProcessing}
-        onOpenSettings={() => {
-          setPanelOpen('settings');
-        }}
-        activeTopPanel={panelOpen}
-      />
+      {renderStatusBar(renderContext)}
 
-      <VmTargetStrip
-        targets={targets.proxmoxTargets}
-        selectedTargetId={targets.selectedTargetId}
-        loading={targets.targetsLoading}
-        sshConfigured={targets.sshConfigured}
-        sshConnected={targets.sshConnected}
-        sshStatusCode={targets.sshStatusCode}
-        onChange={targets.onTargetChange}
-        onRefresh={targets.onTargetsRefresh}
-      />
+      {targetStrip}
 
       <div
         ref={workspaceLayoutRef}
@@ -143,16 +64,7 @@ export const VMWorkspace: React.FC<VMWorkspaceProps> = ({
         )}
         style={{ gridTemplateColumns: workspaceGridTemplateColumns }}
       >
-        <div className={cx('vm-generator-service-pane')}>
-          <VMListContainer
-            vms={proxmoxPane.proxmoxVms}
-            loading={proxmoxPane.proxmoxLoading}
-            connected={proxmoxPane.proxmoxConnected}
-            node={proxmoxPane.proxmoxNode}
-            refreshVMs={proxmoxPane.refreshVMs}
-            onRecreate={proxmoxPane.onRecreateVm}
-          />
-        </div>
+        <div className={cx('vm-generator-service-pane')}>{servicePane}</div>
 
         <button
           type="button"
@@ -162,25 +74,7 @@ export const VMWorkspace: React.FC<VMWorkspaceProps> = ({
         />
 
         <div ref={workspaceRef} className={cx('vm-generator-main')}>
-          <div className={cx('vm-generator-queue-wrap')}>
-            <VMQueuePanel
-              queue={queuePanel.queueItems}
-              isProcessing={status.isProcessing}
-              isStartActionRunning={queuePanel.isStartActionRunning}
-              canStartAll={queuePanel.canStartAll}
-              startingItemId={queuePanel.startingQueueItemId}
-              storageOptions={queuePanel.storageOptions}
-              projectOptions={queuePanel.projectOptions}
-              resourcePresets={queuePanel.resourcePresets}
-              onAdd={queuePanel.onAddVm}
-              onAddDelete={queuePanel.onAddDelete}
-              onClear={queuePanel.onClearQueue}
-              onStartAll={queuePanel.onStartAll}
-              onStartOne={queuePanel.onStartOne}
-              onRemove={queuePanel.onRemoveQueueItem}
-              onUpdate={queuePanel.onUpdateQueueItem}
-            />
-          </div>
+          <div className={cx('vm-generator-queue-wrap')}>{queuePane}</div>
 
           <button
             type="button"
@@ -190,22 +84,12 @@ export const VMWorkspace: React.FC<VMWorkspaceProps> = ({
           />
 
           <div className={cx('vm-generator-log-wrap')} style={{ height: logHeight }}>
-            <VMOperationLog
-              tasks={logPanel.logTasks}
-              onClear={logPanel.onClearLog}
-              onCancelTask={logPanel.onCancelTask}
-              getFullLog={logPanel.getFullLog}
-            />
+            {logPane}
           </div>
         </div>
       </div>
 
-      <VMPageModals
-        panelOpen={panelOpen}
-        setPanelOpen={setPanelOpen}
-        deleteVm={deleteVm}
-        storageOptions={queuePanel.storageOptions}
-      />
+      {renderModals(renderContext)}
     </div>
   );
 };

@@ -1,18 +1,20 @@
 import { message } from 'antd';
 import { useCallback } from 'react';
 import type { VMQueueItemStatus } from '../../../shared/types';
+import { useVmWorkspaceLogTasks } from '../../../widgets/vm-workspace/model/useVmWorkspaceStore';
 
 interface VmLogTask {
   id: string;
   key?: string;
   status: string;
+  vmName?: string;
 }
 
 interface VmLogPort {
-  tasks: VmLogTask[];
   clear: () => void;
   getFullLog: () => string;
   cancelTask: (taskId: string, reason: string) => boolean;
+  warn: (message: string, itemName?: string) => void;
 }
 
 interface VmQueuePort {
@@ -50,6 +52,8 @@ export function useVmOperationLogActions({
   proxmox,
   refreshStorageOptions,
 }: UseVmOperationLogActionsParams): UseVmOperationLogActionsResult {
+  const tasks = useVmWorkspaceLogTasks();
+
   const handleReset = useCallback(() => {
     log.clear();
     void proxmox.checkConnections();
@@ -66,7 +70,7 @@ export function useVmOperationLogActions({
 
   const handleCancelTask = useCallback(
     (taskId: string) => {
-      const task = log.tasks.find((entry) => entry.id === taskId);
+      const task: VmLogTask | undefined = tasks.find((entry) => entry.id === taskId);
       if (!task || task.status !== 'running') {
         return;
       }
@@ -77,15 +81,30 @@ export function useVmOperationLogActions({
         return;
       }
 
-      const queueItemId = String(task.key || '').startsWith('vm:') ? String(task.key).slice(3) : '';
-      if (queueItemId) {
-        queue.updateQueueItem(queueItemId, {
-          status: 'error',
-          error: 'Cancelled by user',
-        });
+      const taskKey = String(task.key || '').trim();
+      if (!taskKey.startsWith('vm:')) {
+        log.warn(
+          `Task ${task.id} cancellation has no queue link key; queue item patch skipped.`,
+          task.vmName,
+        );
+        return;
       }
+
+      const queueItemId = taskKey.slice(3).trim();
+      if (!queueItemId) {
+        log.warn(
+          `Task ${task.id} cancellation has malformed queue link key; patch skipped.`,
+          task.vmName,
+        );
+        return;
+      }
+
+      queue.updateQueueItem(queueItemId, {
+        status: 'error',
+        error: 'Cancelled by user',
+      });
     },
-    [log, queue],
+    [log, queue, tasks],
   );
 
   return {

@@ -2,6 +2,7 @@ import type React from 'react';
 import { VMQueueContextProvider } from '../../features/vm-queue/model/VMQueueContext';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
 import type { VMQueueItem, VMStorageOption } from '../../shared/types';
+import { useVmWorkspaceQueueItems } from '../vm-workspace/model/useVmWorkspaceStore';
 import { useVMQueuePanelState } from './useVMQueuePanelState';
 import { VMQueueColumnsHeader } from './VMQueueColumnsHeader';
 import { VMQueueCustomResourcesModal } from './VMQueueCustomResourcesModal';
@@ -25,7 +26,6 @@ interface QueueResourcePreset {
 }
 
 interface VMQueuePanelProps {
-  queue: VMQueueItem[];
   isProcessing: boolean;
   isStartActionRunning?: boolean;
   canStartAll?: boolean;
@@ -43,7 +43,6 @@ interface VMQueuePanelProps {
 }
 
 export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
-  queue,
   isProcessing,
   isStartActionRunning = false,
   canStartAll = false,
@@ -59,6 +58,8 @@ export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
   onRemove,
   onUpdate,
 }) => {
+  const queue = useVmWorkspaceQueueItems();
+
   const state = useVMQueuePanelState({
     queue,
     projectOptions,

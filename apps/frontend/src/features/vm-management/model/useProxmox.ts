@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { subscribeToVmOpsEvents } from '../../../entities/vm/api/vmRuntimeFacade';
 import { getSelectedProxmoxTargetNode } from '../../../entities/vm/api/vmSelectionFacade';
 import { getVMSettings } from '../../../entities/vm/api/vmSettingsFacade';
 import { ApiClientError } from '../../../shared/api/apiClient';
@@ -7,16 +6,6 @@ import { getProxmoxConnectionSnapshot, listVMs } from '../../../shared/api/servi
 import { getSshConnectionStatus } from '../../../shared/api/services/vm/sshOps';
 import type { ProxmoxVM } from '../../../shared/types';
 
-const VM_MUTATION_COMMANDS = new Set([
-  'proxmox.clone',
-  'proxmox.delete',
-  'proxmox.start',
-  'proxmox.stop',
-  'proxmox.update-config',
-  'proxmox.ssh-write-config',
-]);
-const TERMINAL_COMMAND_STATUSES = new Set(['succeeded', 'failed', 'cancelled', 'expired']);
-const REFRESH_DEBOUNCE_MS = 500;
 const CONNECTIVITY_ERROR_CODES = new Set([
   'AGENT_OFFLINE',
   'AGENT_NOT_FOUND',
@@ -34,7 +23,6 @@ export function useProxmox() {
   const [error, setError] = useState<string | null>(null);
   const [node, setNode] = useState('h1');
   const refreshInFlightRef = useRef(false);
-  const refreshDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const checkConnections = useCallback(async () => {
     const [status, sshStatus] = await Promise.all([
@@ -79,17 +67,6 @@ export function useProxmox() {
     }
   }, []);
 
-  const scheduleRefreshVMs = useCallback(() => {
-    if (refreshDebounceRef.current) {
-      return;
-    }
-
-    refreshDebounceRef.current = setTimeout(() => {
-      refreshDebounceRef.current = null;
-      void refreshVMs();
-    }, REFRESH_DEBOUNCE_MS);
-  }, [refreshVMs]);
-
   // Computed sets for smart VM name generation
   const usedIds = useMemo(() => new Set(vms.map((vm) => vm.vmid)), [vms]);
   const usedNames = useMemo(() => new Set(vms.map((vm) => (vm.name || '').toLowerCase())), [vms]);
@@ -98,31 +75,7 @@ export function useProxmox() {
   useEffect(() => {
     void checkConnections();
     void refreshVMs();
-
-    const unsubscribe = subscribeToVmOpsEvents((event) => {
-      const commandType = String(event.command?.command_type || '')
-        .trim()
-        .toLowerCase();
-      const commandStatus = String(event.command?.status || '')
-        .trim()
-        .toLowerCase();
-      if (!VM_MUTATION_COMMANDS.has(commandType)) {
-        return;
-      }
-      if (!TERMINAL_COMMAND_STATUSES.has(commandStatus)) {
-        return;
-      }
-      scheduleRefreshVMs();
-    });
-
-    return () => {
-      unsubscribe();
-      if (refreshDebounceRef.current) {
-        clearTimeout(refreshDebounceRef.current);
-        refreshDebounceRef.current = null;
-      }
-    };
-  }, [checkConnections, refreshVMs, scheduleRefreshVMs]);
+  }, [checkConnections, refreshVMs]);
 
   return {
     connected,
