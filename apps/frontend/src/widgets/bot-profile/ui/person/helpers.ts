@@ -1,4 +1,4 @@
-import type { PersonData } from '../../../../types';
+import type { PersonData } from '../../../../shared/types';
 import { countries } from './data';
 import type { BotWithPerson, PersonFormValues } from './types';
 

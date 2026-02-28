@@ -1,4 +1,4 @@
-import type { VMQueueItemStatus, VMStorageOption } from '../../types';
+import type { VMQueueItemStatus, VMStorageOption } from '../../shared/types';
 
 export function toMemoryMb(memory?: number): number | null {
   if (!Number.isFinite(memory)) return null;

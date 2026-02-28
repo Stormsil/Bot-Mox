@@ -1,4 +1,4 @@
-import type { PersonData } from '../../../../types';
+import type { PersonData } from '../../../../shared/types';
 import { turkeyAddresses, ukraineAddresses } from './data/addresses';
 import { countries } from './data/countries';
 import {

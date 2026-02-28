@@ -14,7 +14,7 @@ import {
 } from 'antd';
 import type React from 'react';
 import { useEffect } from 'react';
-import type { VMGeneratorSettings, VMStorageOption } from '../../../types';
+import type { VMGeneratorSettings, VMStorageOption } from '../../../shared/types';
 import { VMConfigPreview } from '../VMConfigPreview';
 import styles from './ProxmoxTab.module.css';
 import {

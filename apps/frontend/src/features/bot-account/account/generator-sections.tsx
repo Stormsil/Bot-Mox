@@ -17,8 +17,8 @@ import {
   Row,
   Select,
 } from 'antd';
+import type { PasswordOptions } from '../../../shared/lib/utils/accountGenerators';
 import { TableActionButton } from '../../../shared/ui/TableActionButton';
-import type { PasswordOptions } from '../../../utils/accountGenerators';
 import styles from './account.module.css';
 import { ActionButtonsSection } from './action-buttons-section';
 import type { AccountGeneratorTemplate } from './types';

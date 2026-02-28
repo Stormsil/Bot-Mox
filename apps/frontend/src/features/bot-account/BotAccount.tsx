@@ -3,7 +3,7 @@ import { Card, Form, message } from 'antd';
 import type React from 'react';
 import { useState } from 'react';
 import { useUpdateBotMutation } from '../../entities/bot/api/useBotMutations';
-import { isPersonDataComplete } from '../../utils/accountGenerators';
+import { isPersonDataComplete } from '../../shared/lib/utils/accountGenerators';
 import styles from './account/account.module.css';
 import {
   AccountCardTitle,

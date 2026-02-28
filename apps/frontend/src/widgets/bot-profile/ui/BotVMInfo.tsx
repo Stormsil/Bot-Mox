@@ -2,7 +2,7 @@ import { DesktopOutlined } from '@ant-design/icons';
 import { Card, Empty, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
-import type { Bot } from '../../../types';
+import type { Bot } from '../../../shared/types';
 import styles from './BotVMInfo.module.css';
 
 const { Text } = Typography;

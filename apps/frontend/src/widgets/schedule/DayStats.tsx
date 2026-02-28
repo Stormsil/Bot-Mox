@@ -1,6 +1,6 @@
 import type React from 'react';
-import type { ScheduleSession } from '../../types';
-import { calculateDayStats, formatDuration } from '../../utils/scheduleUtils';
+import { calculateDayStats, formatDuration } from '../../shared/lib/utils/scheduleUtils';
+import type { ScheduleSession } from '../../shared/types';
 import styles from './DayStats.module.css';
 
 interface DayStatsProps {

@@ -1,4 +1,4 @@
-import type { BotStatus } from '../../../types/core';
+import type { BotStatus } from '../../../shared/types/core';
 
 export type ResourceKind = 'licenses' | 'proxies' | 'subscriptions';
 

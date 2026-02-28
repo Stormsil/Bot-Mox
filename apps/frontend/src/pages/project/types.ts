@@ -16,7 +16,7 @@ import type {
   Proxy as ProxyResource,
   Subscription,
 } from '../../entities/resources/model/types';
-import type { BotStatus } from '../../types/core';
+import type { BotStatus } from '../../shared/types/core';
 
 export type StatusFilter = 'all' | BotStatus;
 

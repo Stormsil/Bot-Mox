@@ -1,8 +1,8 @@
 import { DeleteOutlined } from '@ant-design/icons';
 import { Popconfirm, Tag, Tooltip, Typography } from 'antd';
+import type { BotStatus } from '../../shared/types';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
 import { TableActionButton } from '../../shared/ui/TableActionButton';
-import type { BotStatus } from '../../types';
 import styles from './ProjectPage.module.css';
 import type { BotRow } from './types';
 import { BOT_STATUS_ORDER } from './types';

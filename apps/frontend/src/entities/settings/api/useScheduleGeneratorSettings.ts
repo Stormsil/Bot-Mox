@@ -5,7 +5,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import type { ScheduleGenerationParams, ScheduleTemplate } from '../../../types';
+import type { ScheduleGenerationParams, ScheduleTemplate } from '../../../shared/types';
 import { apiGet, apiPatch, apiPut } from './settingsPathClient';
 import { settingsQueryKeys } from './settingsQueryKeys';
 

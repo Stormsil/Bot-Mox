@@ -8,13 +8,13 @@ import {
   migrateProfileConfig,
   type UnattendProfile,
 } from '../../entities/vm/api/unattendProfileFacade';
-import type { VMQueueItem } from '../../types';
 import {
   buildFinalUnattendXml,
   DEFAULT_UNATTEND_XML_TEMPLATE,
   triggerXmlDownload,
   validateUnattendXml,
-} from '../../utils/unattendXml';
+} from '../../shared/lib/utils/unattendXml';
+import type { VMQueueItem } from '../../shared/types';
 import { toMemoryMb } from './queuePanelUtils';
 import type { CustomEditorState } from './VMQueueCustomResourcesModal';
 

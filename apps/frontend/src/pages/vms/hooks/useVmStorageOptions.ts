@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { getClusterResources, getVMConfig, listVMs } from '../../../entities/vm/api/vmReadFacade';
-import type { ProxmoxVM, VMGeneratorSettings, VMStorageOption } from '../../../types';
+import type { ProxmoxVM, VMGeneratorSettings, VMStorageOption } from '../../../shared/types';
 import {
   buildStorageDetails,
   extractStorageFromVolume,

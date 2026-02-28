@@ -1,6 +1,10 @@
 import type React from 'react';
-import type { BotScheduleV2, ScheduleDay } from '../../types';
-import { calculateDayStats, formatDuration, timeToMinutes } from '../../utils/scheduleUtils';
+import {
+  calculateDayStats,
+  formatDuration,
+  timeToMinutes,
+} from '../../shared/lib/utils/scheduleUtils';
+import type { BotScheduleV2, ScheduleDay } from '../../shared/types';
 import styles from './WeekPanel.module.css';
 
 interface WeekPanelProps {

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { VMGeneratorSettings, VMQueueItem } from '../../../types';
+import type { VMGeneratorSettings, VMQueueItem } from '../../../shared/types';
 import { syncTemplateHardwareFromApi as syncTemplateHardwareFromApiAction } from '../page/templateHardwareSync';
 
 interface UseVmTemplateHardwareSyncParams {

@@ -8,7 +8,7 @@ import { Card, Col, List, Row, Statistic, Tag, Typography } from 'antd';
 import type React from 'react';
 import { formatDurationHoursMinutes, subtractNow } from '../../../shared/lib/date';
 import { useCurrentTime } from '../../../shared/lib/hooks/useCurrentTime';
-import type { Bot, InventoryItem } from '../../../types';
+import type { Bot, InventoryItem } from '../../../shared/types';
 import styles from './BotFarm.module.css';
 
 const { Text } = Typography;

@@ -1,6 +1,6 @@
 import { Popconfirm } from 'antd';
 import type React from 'react';
-import type { VMTaskDetailEntry, VMTaskEntry } from '../../types';
+import type { VMTaskDetailEntry, VMTaskEntry } from '../../shared/types';
 import { formatClock, formatTaskDate, splitDiffMessage, statusLabel } from './vmOperationLogUtils';
 
 interface VMTaskLogModalProps {

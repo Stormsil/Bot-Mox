@@ -3,7 +3,7 @@ import { Button, Card, List, Tag, Typography } from 'antd';
 import type React from 'react';
 import { useState } from 'react';
 import { subtractNow } from '../../../shared/lib/date';
-import type { Bot, LogEntry, LogEventType } from '../../../types';
+import type { Bot, LogEntry, LogEventType } from '../../../shared/types';
 import styles from './BotLogs.module.css';
 
 const { Text } = Typography;

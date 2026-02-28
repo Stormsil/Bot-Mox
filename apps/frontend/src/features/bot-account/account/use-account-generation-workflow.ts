@@ -7,7 +7,7 @@ import {
   isPersonDataComplete,
   loadBackup,
   saveBackup,
-} from '../../../utils/accountGenerators';
+} from '../../../shared/lib/utils/accountGenerators';
 import type {
   AccountFormValues,
   AccountGenerationLocks,

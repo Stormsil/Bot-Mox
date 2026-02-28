@@ -1,7 +1,12 @@
 import type React from 'react';
 import { useCallback } from 'react';
-import type { BotScheduleV2, ScheduleSession } from '../../types';
-import { formatDateShort, getDayName, getWeekDates, sortSessions } from '../../utils/scheduleUtils';
+import {
+  formatDateShort,
+  getDayName,
+  getWeekDates,
+  sortSessions,
+} from '../../shared/lib/utils/scheduleUtils';
+import type { BotScheduleV2, ScheduleSession } from '../../shared/types';
 import { TimelineVisualizer } from './TimelineVisualizer';
 import styles from './WeekOverview.module.css';
 

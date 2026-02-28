@@ -12,9 +12,9 @@ import { useEffect, useMemo } from 'react';
 import { useBotsListQuery } from '../../entities/bot/api/useBotQueries';
 import { uiLogger } from '../../observability/uiLogger';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
+import type { Bot } from '../../shared/types';
 import { MetricCard } from '../../shared/ui/MetricCard';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
-import type { Bot } from '../../types';
 import styles from './Dashboard.module.css';
 
 const cx = bindCssModuleCx(styles);

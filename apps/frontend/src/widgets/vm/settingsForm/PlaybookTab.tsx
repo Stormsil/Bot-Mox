@@ -9,7 +9,6 @@ import Editor from '@monaco-editor/react';
 import { Button, Card, Checkbox, Input, message, Space, Spin, Typography } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DEFAULT_PLAYBOOK_CONTENT } from '../../../data/default-playbook';
 import {
   createPlaybook,
   deletePlaybook,
@@ -19,6 +18,7 @@ import {
   updatePlaybook,
   validatePlaybook,
 } from '../../../entities/vm/api/playbookFacade';
+import { DEFAULT_PLAYBOOK_CONTENT } from '../../../shared/config/data/default-playbook';
 import styles from './PlaybookTab.module.css';
 
 const { Text } = Typography;

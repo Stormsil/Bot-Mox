@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import type { VMGeneratorSettings, VMResourceMode } from '../../../types';
+import type { VMGeneratorSettings, VMResourceMode } from '../../../shared/types';
 import { buildResourcePresets, getProjectOptions } from '../page/resourcePresets';
 import { normalizeCores, normalizeMemory } from '../vmPageUtils';
 

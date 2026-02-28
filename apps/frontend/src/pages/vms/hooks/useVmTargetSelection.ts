@@ -13,7 +13,7 @@ import {
   setSelectedProxmoxTargetId,
   setSelectedProxmoxTargetNode,
 } from '../../../entities/vm/api/vmSelectionFacade';
-import type { VMGeneratorSettings } from '../../../types';
+import type { VMGeneratorSettings } from '../../../shared/types';
 import { showTargetLoadError } from '../page/templateHardwareSync';
 
 interface UseVmTargetSelectionParams {

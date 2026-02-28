@@ -1,4 +1,4 @@
-import type { BotStatus } from '../../../types/core';
+import type { BotStatus } from '../../../shared/types/core';
 import type { Proxy as ProxyResource } from '../../resources/model/types';
 
 export const OFFLINE_THRESHOLD_MS = 5 * 60 * 1000;

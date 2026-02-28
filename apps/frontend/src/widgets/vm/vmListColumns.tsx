@@ -6,8 +6,8 @@ import {
 } from '@ant-design/icons';
 import { Tag, Typography } from 'antd';
 import type React from 'react';
+import type { ProxmoxVM } from '../../shared/types';
 import { TableActionButton, TableActionGroup } from '../../shared/ui/TableActionButton';
-import type { ProxmoxVM } from '../../types';
 
 const headerTitle = (text: string) => (
   <span style={{ textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: 11 }}>{text}</span>

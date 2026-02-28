@@ -12,7 +12,7 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
-import type { ScheduleGenerationParams } from '../../types';
+import type { ScheduleGenerationParams } from '../../shared/types';
 import { CONSTRAINTS } from './generator-config';
 import styles from './ScheduleGenerator.module.css';
 

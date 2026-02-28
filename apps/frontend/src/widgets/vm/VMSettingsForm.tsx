@@ -8,7 +8,7 @@ import {
   stripPasswords,
   updateVMSettings,
 } from '../../entities/vm/api/vmSettingsFacade';
-import type { VMGeneratorSettings, VMStorageOption } from '../../types';
+import type { VMGeneratorSettings, VMStorageOption } from '../../shared/types';
 import type { TemplateSyncState, TemplateVmSummary } from './settingsForm';
 import {
   normalizeTemplateCores,

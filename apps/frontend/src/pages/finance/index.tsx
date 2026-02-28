@@ -19,7 +19,7 @@ import type {
   FinanceOperationFormData,
 } from '../../entities/finance/model/types';
 import { uiLogger } from '../../observability/uiLogger';
-import type { FinanceOperationContractRecord } from '../../providers/finance-contract-client';
+import type { FinanceOperationContractRecord } from '../../shared/api/providers/finance-contract-client';
 import { FinanceSummary, FinanceTransactions, TransactionForm } from '../../widgets/finance';
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import styles from './FinancePage.module.css';

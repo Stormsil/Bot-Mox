@@ -1,4 +1,4 @@
-import type { BotStatus } from '../../../types';
+import type { BotStatus } from '../../../shared/types';
 import type {
   ComputedSubscriptionStatus,
   Subscription,

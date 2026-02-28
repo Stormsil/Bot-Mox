@@ -9,7 +9,7 @@ import {
   ToolOutlined,
 } from '@ant-design/icons';
 import { subtractNow } from '../../../../shared/lib/date';
-import type { InventoryItem, LevelingProgress, ProfessionProgress } from '../../../../types';
+import type { InventoryItem, LevelingProgress, ProfessionProgress } from '../../../../shared/types';
 
 export type LifeStage = 'prepare' | 'leveling' | 'professions' | 'farm' | 'banned';
 

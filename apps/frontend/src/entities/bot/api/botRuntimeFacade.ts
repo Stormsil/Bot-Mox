@@ -1,5 +1,8 @@
-import { banBotViaContract, unbanBotViaContract } from '../../../providers/bot-contract-client';
-import { getWowNamesViaContract } from '../../../providers/wow-names-contract-client';
+import {
+  banBotViaContract,
+  unbanBotViaContract,
+} from '../../../shared/api/providers/bot-contract-client';
+import { getWowNamesViaContract } from '../../../shared/api/providers/wow-names-contract-client';
 import type { BanDetails } from '../model/lifecycleTypes';
 
 interface WowNamesPayload {

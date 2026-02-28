@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import type { ProxmoxVM } from '../../types';
+import type { ProxmoxVM } from '../../shared/types';
 import { useVmListController } from './useVmListController';
 import { VMListView } from './VMListView';
 import { buildVmListColumns } from './vmListColumns';

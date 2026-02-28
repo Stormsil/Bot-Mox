@@ -1,5 +1,5 @@
 import type { Dayjs } from 'dayjs';
-import type { PasswordOptions } from '../../../utils/accountGenerators';
+import type { PasswordOptions } from '../../../shared/lib/utils/accountGenerators';
 
 export interface BotWithAccount {
   id: string;

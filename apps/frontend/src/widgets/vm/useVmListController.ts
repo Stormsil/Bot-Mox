@@ -6,7 +6,7 @@ import {
   useUpdateVmConfigMutation,
   useWaitForVmTaskMutation,
 } from '../../entities/vm/api/useVmActionMutations';
-import type { ProxmoxVM } from '../../types';
+import type { ProxmoxVM } from '../../shared/types';
 
 interface UseVmListControllerArgs {
   vms: ProxmoxVM[];

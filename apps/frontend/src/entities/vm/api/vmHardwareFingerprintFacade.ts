@@ -3,4 +3,4 @@ export {
   getVmHardwareFingerprintEnvelope,
   type VmHardwareFingerprintMeta,
   type VmHardwareFingerprintPayload,
-} from '../../../providers/vm-hardware-fingerprint-client';
+} from '../../../shared/api/providers/vm-hardware-fingerprint-client';

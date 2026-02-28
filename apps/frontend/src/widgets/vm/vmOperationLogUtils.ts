@@ -1,4 +1,4 @@
-import type { VMTaskDetailEntry, VMTaskEntry, VMTaskStatus } from '../../types';
+import type { VMTaskDetailEntry, VMTaskEntry, VMTaskStatus } from '../../shared/types';
 
 export function formatClock(ts: number): string {
   return new Date(ts).toLocaleTimeString();

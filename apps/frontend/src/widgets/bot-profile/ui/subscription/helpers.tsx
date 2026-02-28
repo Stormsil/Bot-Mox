@@ -4,7 +4,7 @@ import {
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import type { SubscriptionWithDetails } from '../../../../entities/resources/model/types';
-import type { Bot } from '../../../../types';
+import type { Bot } from '../../../../shared/types';
 import type {
   BotOption,
   ComputedSubscriptionStatus,

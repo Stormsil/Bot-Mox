@@ -2,7 +2,7 @@ import { Modal } from 'antd';
 import type React from 'react';
 import type { UseDeleteVmWorkflowResult } from '../../../features/vm-management';
 import { DeleteVmModal } from '../../../features/vm-management/ui/DeleteVmModal';
-import type { VMStorageOption } from '../../../types';
+import type { VMStorageOption } from '../../../shared/types';
 import { VMSettingsForm } from '../../../widgets/vm';
 
 interface VMPageModalsProps {

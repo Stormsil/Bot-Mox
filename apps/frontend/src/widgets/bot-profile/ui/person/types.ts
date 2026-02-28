@@ -1,4 +1,4 @@
-import type { PersonData } from '../../../../types';
+import type { PersonData } from '../../../../shared/types';
 
 export interface BotWithPerson {
   id: string;

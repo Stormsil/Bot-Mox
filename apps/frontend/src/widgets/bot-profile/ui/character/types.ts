@@ -5,7 +5,7 @@ import type {
   GameFaction,
   GameRace,
   GameServer,
-} from '../../../../types';
+} from '../../../../shared/types';
 export interface BotCharacterProps {
   bot: Bot;
   mode?: 'view' | 'edit';

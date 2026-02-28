@@ -14,4 +14,4 @@ export {
   type UnattendWindowsSettings,
   updateUnattendProfile,
   type VmSetupProgressEntry,
-} from '../../../providers/unattend-profile-client';
+} from '../../../shared/api/providers/unattend-profile-client';

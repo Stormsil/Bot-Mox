@@ -1,4 +1,4 @@
-import type { VMGeneratorSettings } from '../../../types';
+import type { VMGeneratorSettings } from '../../../shared/types';
 
 export const updateSettingsByPath = (
   settings: VMGeneratorSettings,

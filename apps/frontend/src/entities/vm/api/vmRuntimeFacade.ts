@@ -1,4 +1,4 @@
-export { subscribeToVmOpsEvents } from '../../../providers/vm-ops-events-client';
+export { subscribeToVmOpsEvents } from '../../../shared/api/providers/vm-ops-events-client';
 export type { Playbook, PlaybookValidationResult } from './playbookFacade';
 export {
   createPlaybook,

@@ -25,7 +25,7 @@ import {
   DEFAULT_UNATTEND_XML_TEMPLATE,
   triggerXmlDownload,
   validateUnattendXml,
-} from '../../../utils/unattendXml';
+} from '../../../shared/lib/utils/unattendXml';
 import styles from './UnattendTab.module.css';
 import { buildUnattendSectionCards } from './unattend/sectionCards';
 

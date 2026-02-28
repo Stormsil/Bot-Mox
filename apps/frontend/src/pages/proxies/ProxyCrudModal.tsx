@@ -20,7 +20,7 @@ import {
   isProxySuspicious,
 } from '../../entities/resources/api/ipqsFacade';
 import type { IPQSResponse, Proxy as ProxyResource } from '../../entities/resources/model/types';
-import { parseProxyString } from '../../utils/proxyUtils';
+import { parseProxyString } from '../../shared/lib/utils/proxyUtils';
 import { ParsedProxyAlert, ProxyIpqsLoadingAlert, ProxyIpqsResultAlert } from './proxyCrudAlerts';
 
 interface ProxyCrudModalProps {

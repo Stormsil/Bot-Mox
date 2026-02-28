@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import { useCallback } from 'react';
-import type { VMQueueItemStatus } from '../../../types';
+import type { VMQueueItemStatus } from '../../../shared/types';
 
 interface VmLogTask {
   id: string;

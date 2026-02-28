@@ -8,8 +8,8 @@ import {
   useSaveScheduleTemplateMutation,
   useScheduleGeneratorSettingsQuery,
 } from '../../entities/settings/api/useScheduleGeneratorSettings';
-import type { ScheduleGenerationParams, ScheduleTemplate } from '../../types';
-import { validateGenerationParams } from '../../utils/scheduleUtils';
+import { validateGenerationParams } from '../../shared/lib/utils/scheduleUtils';
+import type { ScheduleGenerationParams, ScheduleTemplate } from '../../shared/types';
 import { DEFAULT_PARAMS } from './generator-config';
 import styles from './ScheduleGenerator.module.css';
 import { ScheduleGeneratorForm } from './ScheduleGeneratorForm';

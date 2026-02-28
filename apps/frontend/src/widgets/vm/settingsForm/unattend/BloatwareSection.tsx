@@ -1,7 +1,10 @@
 import { Button, Divider, Form, Radio, Select, Slider, Space, Typography } from 'antd';
 import type React from 'react';
-import { BLOATWARE_PACKAGES, WINDOWS_CAPABILITIES } from '../../../../data/windows-bloatware';
 import type { UnattendProfileConfig } from '../../../../entities/vm/model/unattend';
+import {
+  BLOATWARE_PACKAGES,
+  WINDOWS_CAPABILITIES,
+} from '../../../../shared/config/data/windows-bloatware';
 
 const { Text } = Typography;
 

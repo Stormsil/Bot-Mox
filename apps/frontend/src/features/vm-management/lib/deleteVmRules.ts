@@ -1,5 +1,5 @@
 import type { DeleteVmBotRecord } from '../../../entities/vm/api/vmDeleteContextFacade';
-import type { ProxmoxVM, VMGeneratorSettings } from '../../../types';
+import type { ProxmoxVM, VMGeneratorSettings } from '../../../shared/types';
 
 export interface DeleteVmBotEvaluation {
   bot: DeleteVmBotRecord;

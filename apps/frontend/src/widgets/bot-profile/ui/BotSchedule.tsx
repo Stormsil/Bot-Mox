@@ -4,18 +4,18 @@ import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useUpdateBotMutation } from '../../../entities/bot/api/useBotMutations';
 import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
-import type {
-  BotScheduleV2,
-  ScheduleDay,
-  ScheduleGenerationParams,
-  ScheduleSession,
-} from '../../../types';
 import {
   createEmptySchedule,
   generateSchedule,
   migrateSchedule,
   sortSessions,
-} from '../../../utils/scheduleUtils';
+} from '../../../shared/lib/utils/scheduleUtils';
+import type {
+  BotScheduleV2,
+  ScheduleDay,
+  ScheduleGenerationParams,
+  ScheduleSession,
+} from '../../../shared/types';
 import { SessionEditor } from '../../../widgets/schedule';
 import styles from './BotSchedule.module.css';
 import { BotScheduleActions } from './BotScheduleActions';

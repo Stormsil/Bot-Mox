@@ -1,7 +1,7 @@
 import { PlayCircleOutlined, StopOutlined } from '@ant-design/icons';
 import type React from 'react';
 import { cx } from '../../shared/lib/classNames';
-import type { VMUiState } from '../../types';
+import type { VMUiState } from '../../shared/types';
 import styles from './VMStatusBar.module.css';
 
 interface VMStatusBarProps {

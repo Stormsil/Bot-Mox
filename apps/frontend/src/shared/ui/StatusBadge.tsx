@@ -1,6 +1,6 @@
 import { Tag } from 'antd';
 import type React from 'react';
-import type { BotStatus } from '../../types';
+import type { BotStatus } from '../types';
 import styles from './StatusBadge.module.css';
 
 interface StatusBadgeProps {

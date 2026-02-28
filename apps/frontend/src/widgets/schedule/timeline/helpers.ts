@@ -1,5 +1,5 @@
-import type { ScheduleSession } from '../../../types';
-import { timeToMinutes } from '../../../utils/scheduleUtils';
+import { timeToMinutes } from '../../../shared/lib/utils/scheduleUtils';
+import type { ScheduleSession } from '../../../shared/types';
 
 export interface AllowedWindow {
   start: string;

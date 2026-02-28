@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { popularEmailDomains } from '../../../utils/accountGenerators';
+import { popularEmailDomains } from '../../../shared/lib/utils/accountGenerators';
 import {
   accountGeneratorPaths,
   loadCompatTemplateSnapshot,

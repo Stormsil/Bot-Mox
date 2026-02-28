@@ -20,7 +20,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import type React from 'react';
 import { useState } from 'react';
-import type { Bot } from '../../../types';
+import type { Bot } from '../../../shared/types';
 import styles from './BotFinance.module.css';
 import { mockTransactions } from './botFinanceWidgetData';
 

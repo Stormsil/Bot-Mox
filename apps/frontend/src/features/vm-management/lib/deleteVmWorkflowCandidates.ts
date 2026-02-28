@@ -4,7 +4,7 @@ import type {
   DeleteVmProxyRecord,
   DeleteVmSubscriptionRecord,
 } from '../../../entities/vm/api/vmDeleteContextFacade';
-import type { ProxmoxVM } from '../../../types';
+import type { ProxmoxVM } from '../../../shared/types';
 import {
   type DeleteVmCandidateRow,
   type DeleteVmFilters,

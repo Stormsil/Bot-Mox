@@ -1,8 +1,8 @@
 import { DeleteOutlined, FolderOpenOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Button, List, Space } from 'antd';
 import type React from 'react';
+import type { ScheduleTemplate } from '../../shared/types';
 import { TableActionButton } from '../../shared/ui/TableActionButton';
-import type { ScheduleTemplate } from '../../types';
 import styles from './ScheduleGenerator.module.css';
 
 interface ScheduleTemplateListProps {

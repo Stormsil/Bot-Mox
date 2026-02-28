@@ -1,7 +1,7 @@
 import type React from 'react';
 import { VMQueueContextProvider } from '../../features/vm-queue/model/VMQueueContext';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
-import type { VMQueueItem, VMStorageOption } from '../../types';
+import type { VMQueueItem, VMStorageOption } from '../../shared/types';
 import { useVMQueuePanelState } from './useVMQueuePanelState';
 import { VMQueueColumnsHeader } from './VMQueueColumnsHeader';
 import { VMQueueCustomResourcesModal } from './VMQueueCustomResourcesModal';

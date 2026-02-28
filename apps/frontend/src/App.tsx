@@ -13,10 +13,10 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom';
+import { authProvider } from './app/providers/auth-provider';
+import { dataProvider } from './app/providers/data-provider';
 import { QueryProvider } from './app/providers/QueryProvider';
 import { ADMIN_APP_URL } from './config/env';
-import { authProvider } from './providers/auth-provider';
-import { dataProvider } from './providers/data-provider';
 import { ThemeRuntimeProvider, useThemeRuntime } from './theme/themeRuntime';
 import { Header } from './widgets/layout/Header';
 import { ResourceTree } from './widgets/layout/ResourceTree';

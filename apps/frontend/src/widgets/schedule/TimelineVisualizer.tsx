@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { cx } from '../../shared/lib/classNames';
-import type { ScheduleSession } from '../../types';
-import { minutesToTime, timeToMinutes } from '../../utils/scheduleUtils';
+import { minutesToTime, timeToMinutes } from '../../shared/lib/utils/scheduleUtils';
+import type { ScheduleSession } from '../../shared/types';
 import { getRestrictedSegments, getSessionSegments, HOURS } from './timeline/helpers';
 import { TimelineHeader } from './timeline/TimelineHeader';
 import { TimelineScale } from './timeline/TimelineScale';

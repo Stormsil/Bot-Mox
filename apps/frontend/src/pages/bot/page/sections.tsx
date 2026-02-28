@@ -1,7 +1,7 @@
 import { CheckOutlined, ExclamationOutlined, RightOutlined } from '@ant-design/icons';
 import { Collapse } from 'antd';
 import { BotAccount } from '../../../features/bot-account';
-import type { Bot } from '../../../types';
+import type { Bot } from '../../../shared/types';
 import {
   BotCharacterWidget,
   BotLicense,

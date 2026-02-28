@@ -1,5 +1,5 @@
-import type { VMGeneratorSettings } from '../../../types';
-import type { SecretBindingsMap } from '../../../types/secrets';
+import type { VMGeneratorSettings } from '../../../shared/types';
+import type { SecretBindingsMap } from '../../../shared/types/secrets';
 
 export type TemplateSyncState = 'idle' | 'loading' | 'ok' | 'error';
 
@@ -20,6 +20,6 @@ export interface SettingsSectionProps {
   secretBindings?: SecretBindingsMap;
   onSecretBindingChange?: (
     fieldName: string,
-    binding: import('../../../types/secrets').SecretBinding,
+    binding: import('../../../shared/types/secrets').SecretBinding,
   ) => void;
 }

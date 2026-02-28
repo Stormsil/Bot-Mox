@@ -6,7 +6,7 @@ import { useUpdateBotMutation } from '../../../entities/bot/api/useBotMutations'
 import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
 import { useBotReferenceDataQuery } from '../../../entities/bot/api/useBotReferenceDataQuery';
 import { useWowNamesMutation } from '../../../entities/bot/api/useWowNamesMutation';
-import type { FactionType } from '../../../types';
+import type { FactionType } from '../../../shared/types';
 import type { BotCharacterProps, CharacterFormData, ReferenceData } from './character';
 import {
   CharacterEditForm,

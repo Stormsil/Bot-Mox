@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
 import { uiLogger } from '../../observability/uiLogger';
-import type { Bot } from '../../types';
+import type { Bot } from '../../shared/types';
 import type { TabType } from '../../widgets/layout/ContentPanel';
 import type { ConfigureTab, ExtendedBot, MainTab } from './page';
 import {

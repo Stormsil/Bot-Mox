@@ -5,7 +5,7 @@ import type {
   Proxy as ProxyResource,
   Subscription,
 } from '../../../../entities/resources/model/types';
-import type { Bot } from '../../../../types';
+import type { Bot } from '../../../../shared/types';
 
 export interface BotSummaryBot extends Bot {
   account?: {

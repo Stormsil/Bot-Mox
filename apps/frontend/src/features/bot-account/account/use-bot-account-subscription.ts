@@ -3,7 +3,7 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
-import { hasBackup as checkHasBackup } from '../../../utils/accountGenerators';
+import { hasBackup as checkHasBackup } from '../../../shared/lib/utils/accountGenerators';
 import type { AccountFormValues, AccountGenerationLocks } from './types';
 
 interface UseBotAccountSubscriptionParams {

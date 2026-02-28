@@ -4,7 +4,7 @@ import {
   readSettingsPath,
   writeSettingsPath,
 } from '../../../entities/settings/api/settingsPathClient';
-import { popularEmailDomains } from '../../../utils/accountGenerators';
+import { popularEmailDomains } from '../../../shared/lib/utils/accountGenerators';
 import type { AccountGeneratorSettings, AccountGeneratorTemplate } from './types';
 import {
   ACCOUNT_DEFAULT_TEMPLATE_MIGRATION_KEY,

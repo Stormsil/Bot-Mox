@@ -1,4 +1,4 @@
-import type { VMStorageOption } from '../../../types';
+import type { VMStorageOption } from '../../../shared/types';
 
 export interface StorageRow {
   key: string;

@@ -1,4 +1,4 @@
-import { fetchBotsListViaContract } from '../../../providers/bot-contract-client';
+import { fetchBotsListViaContract } from '../../../shared/api/providers/bot-contract-client';
 import type { BotRecord } from '../model/types';
 
 export async function fetchBotsMapViaContract(): Promise<Record<string, BotRecord>> {

@@ -16,7 +16,7 @@ import type {
 } from '../../entities/resources/model/types';
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
-import type { FinanceOperationContractRecord } from '../../providers/finance-contract-client';
+import type { FinanceOperationContractRecord } from '../../shared/api/providers/finance-contract-client';
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import { DatacenterContentMap, type ExpiringItem } from './content-map';
 import { cx } from './datacenterUi';

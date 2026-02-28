@@ -10,4 +10,4 @@ export {
   stopVM,
   updateVMConfig,
   waitForTask,
-} from '../../../providers/vm-read-client';
+} from '../../../shared/api/providers/vm-read-client';

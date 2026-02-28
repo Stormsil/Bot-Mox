@@ -1,4 +1,4 @@
-import type { ScheduleGenerationParams, ScheduleTemplate } from '../../types';
+import type { ScheduleGenerationParams, ScheduleTemplate } from '../../shared/types';
 
 export const DEFAULT_PARAMS: ScheduleGenerationParams = {
   startTime: '07:00',

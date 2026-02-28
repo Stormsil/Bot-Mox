@@ -1,4 +1,4 @@
-import { fetchBotsListViaContract } from '../../../providers/bot-contract-client';
+import { fetchBotsListViaContract } from '../../../shared/api/providers/bot-contract-client';
 import { fetchResourcesViaContract } from '../../resources/api/resourceContractFacade';
 
 export interface DeleteVmBotRecord {

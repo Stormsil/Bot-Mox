@@ -1,4 +1,4 @@
-import type { BotStatus } from '../../types/core';
+import type { BotStatus } from '../../shared/types/core';
 import { STATUS_FILTER_VALUES, type StatusFilter } from './types';
 
 export const formatProjectTitle = (projectId: string) =>

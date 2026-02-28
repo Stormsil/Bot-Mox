@@ -14,7 +14,7 @@ import type {
   Proxy as ProxyResource,
   Subscription,
   SubscriptionSettings,
-} from '../../types';
+} from '../../shared/types';
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import { createProjectColumns } from './columns';
 import styles from './ProjectPage.module.css';

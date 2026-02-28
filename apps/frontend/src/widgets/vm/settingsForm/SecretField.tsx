@@ -3,7 +3,7 @@ import { Button, Input, Modal, message, Tag } from 'antd';
 import type React from 'react';
 import { useState } from 'react';
 import { setVmSettingsSecret } from '../../../entities/vm/api/secretsFacade';
-import type { SecretBinding } from '../../../types';
+import type { SecretBinding } from '../../../shared/types';
 import layout from './SettingsSectionLayout.module.css';
 
 interface SecretFieldProps {

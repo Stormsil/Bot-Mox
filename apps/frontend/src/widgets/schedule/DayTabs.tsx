@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { ScheduleDay } from '../../types';
-import { formatDateShort, getDayName } from '../../utils/scheduleUtils';
+import { formatDateShort, getDayName } from '../../shared/lib/utils/scheduleUtils';
+import type { ScheduleDay } from '../../shared/types';
 import styles from './DayTabs.module.css';
 
 interface DayTabsProps {

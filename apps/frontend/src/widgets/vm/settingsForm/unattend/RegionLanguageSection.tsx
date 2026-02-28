@@ -1,14 +1,17 @@
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Form, Select, Space, Typography } from 'antd';
 import type React from 'react';
-import { WINDOWS_GEOLOCATIONS } from '../../../../data/windows-geolocations';
-import { getKeyboardLayoutsForLanguage, KEYBOARD_GROUPS } from '../../../../data/windows-keyboards';
-import { WINDOWS_LANGUAGES } from '../../../../data/windows-languages';
-import { WINDOWS_TIMEZONES } from '../../../../data/windows-timezones';
 import type {
   KeyboardLayoutPair,
   UnattendProfileConfig,
 } from '../../../../entities/vm/model/unattend';
+import { WINDOWS_GEOLOCATIONS } from '../../../../shared/config/data/windows-geolocations';
+import {
+  getKeyboardLayoutsForLanguage,
+  KEYBOARD_GROUPS,
+} from '../../../../shared/config/data/windows-keyboards';
+import { WINDOWS_LANGUAGES } from '../../../../shared/config/data/windows-languages';
+import { WINDOWS_TIMEZONES } from '../../../../shared/config/data/windows-timezones';
 
 const { Text } = Typography;
 

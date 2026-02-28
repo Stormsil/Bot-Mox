@@ -1,7 +1,7 @@
 import { BuildOutlined, ExperimentOutlined, FireOutlined, ToolOutlined } from '@ant-design/icons';
 import { Card, Col, Progress, Row, Tag, Typography } from 'antd';
 import type React from 'react';
-import type { Bot, ProfessionProgress } from '../../../types';
+import type { Bot, ProfessionProgress } from '../../../shared/types';
 import styles from './BotProfession.module.css';
 
 const { Text } = Typography;

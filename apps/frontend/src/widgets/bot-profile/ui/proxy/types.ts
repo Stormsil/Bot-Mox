@@ -3,8 +3,8 @@ import type {
   IPQSResponse,
   Proxy as ProxyResource,
 } from '../../../../entities/resources/model/types';
-import type { Bot } from '../../../../types';
-import type { ParsedProxy } from '../../../../utils/proxyUtils';
+import type { ParsedProxy } from '../../../../shared/lib/utils/proxyUtils';
+import type { Bot } from '../../../../shared/types';
 
 export interface BotProxyProps {
   bot: Bot;

@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { BotScheduleV2, ScheduleDay, ScheduleSession } from '../../../types';
+import type { BotScheduleV2, ScheduleDay, ScheduleSession } from '../../../shared/types';
 import {
   DayStats,
   DayTabs,

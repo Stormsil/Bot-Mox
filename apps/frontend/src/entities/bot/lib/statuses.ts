@@ -1,21 +1,25 @@
 import dayjs from 'dayjs';
-import type { BotStatus } from '../../../types/core';
+import type { BotStatus } from '../../../shared/types/core';
 import type { BotLicense, Subscription } from '../../resources/model/types';
 import { type BotRecord, OFFLINE_THRESHOLD_MS, type ProxyLike } from './statuses.types';
 
 // TODO: @backend-migration - This logic should be computed on backend.
-export const computeBotStatus = (bot: BotRecord): BotStatus => {
+export const computeBotStatusAt = (bot: BotRecord, currentTime: number): BotStatus => {
   if (bot.status === 'banned') return 'banned';
   const lastSeen = bot.last_seen;
   if (
     typeof lastSeen === 'number' &&
     lastSeen > 0 &&
-    dayjs().diff(lastSeen, 'millisecond') > OFFLINE_THRESHOLD_MS
+    currentTime - lastSeen > OFFLINE_THRESHOLD_MS
   ) {
     return 'offline';
   }
   return bot.status || 'offline';
 };
+
+// TODO: @backend-migration - This logic should be computed on backend.
+export const computeBotStatus = (bot: BotRecord): BotStatus =>
+  computeBotStatusAt(bot, dayjs().valueOf());
 
 // TODO: @backend-migration - This logic should be computed on backend.
 export const computeProxyStatus = (proxy?: ProxyLike) => {

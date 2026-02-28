@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useVMQueueContext } from '../../features/vm-queue/model/VMQueueContext';
-import type { VMQueueItem } from '../../types';
+import type { VMQueueItem } from '../../shared/types';
 
 interface VMQueuePanelRowNameCellProps {
   item: VMQueueItem;

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useProxmox } from '../../hooks/useProxmox';
+import { useProxmox } from '../../features/vm-management/model/useProxmox';
 import { VMListContainer } from './VMListContainer';
 
 export type { VMListContainerProps } from './VMListContainer';

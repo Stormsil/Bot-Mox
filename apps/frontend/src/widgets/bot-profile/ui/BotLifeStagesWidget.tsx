@@ -30,7 +30,7 @@ import {
 } from '../../../entities/bot/api/useBotLifecycleMutations';
 import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
 import { formatDurationHoursMinutes } from '../../../shared/lib/date';
-import type { BanDetails, Bot } from '../../../types';
+import type { BanDetails, Bot } from '../../../shared/types';
 import type { LifeStage } from './lifeStages/config';
 import { formatDate, getStageColor, getStageIcon, getStageLabel } from './lifeStages/config';
 import styles from './lifeStages/lifeStages.module.css';

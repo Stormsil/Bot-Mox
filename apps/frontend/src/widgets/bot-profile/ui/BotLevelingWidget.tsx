@@ -1,7 +1,7 @@
 import { AimOutlined, ClockCircleOutlined, RiseOutlined } from '@ant-design/icons';
 import { Card, Col, Progress, Row, Statistic, Tag, Typography } from 'antd';
 import type React from 'react';
-import type { Bot, LevelingProgress } from '../../../types';
+import type { Bot, LevelingProgress } from '../../../shared/types';
 import styles from './BotLeveling.module.css';
 
 const { Text } = Typography;

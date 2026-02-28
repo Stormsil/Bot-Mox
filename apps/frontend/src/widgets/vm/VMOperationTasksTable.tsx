@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { VMTaskEntry } from '../../types';
+import type { VMTaskEntry } from '../../shared/types';
 import { formatTaskDate, statusLabel } from './vmOperationLogUtils';
 
 interface VMOperationTasksTableProps {

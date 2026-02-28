@@ -4,7 +4,7 @@ import type {
   SubscriptionFormData,
   SubscriptionType,
   SubscriptionWithDetails,
-} from '../../../../types';
+} from '../../../../shared/types';
 export interface BotSubscriptionProps {
   bot: Bot;
 }

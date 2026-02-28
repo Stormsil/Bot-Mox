@@ -3,7 +3,7 @@ import { DatePicker, Form, Input, Modal, Spin, Typography } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import type { IPQSResponse } from '../../../../entities/resources/model/types';
-import type { ParsedProxy } from '../../../../utils/proxyUtils';
+import type { ParsedProxy } from '../../../../shared/lib/utils/proxyUtils';
 import { ProxyIpqsResults } from './ProxyIpqsResults';
 import { ProxyParsedAlert } from './ProxyParsedAlert';
 import styles from './proxy.module.css';

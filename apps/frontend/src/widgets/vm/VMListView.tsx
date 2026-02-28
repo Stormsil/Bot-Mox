@@ -1,7 +1,7 @@
 import { ReloadOutlined } from '@ant-design/icons';
 import { Button, Table, Tag } from 'antd';
 import React from 'react';
-import type { ProxmoxVM } from '../../types';
+import type { ProxmoxVM } from '../../shared/types';
 import styles from './VMList.module.css';
 import { VmRenameModal } from './VmRenameModal';
 
