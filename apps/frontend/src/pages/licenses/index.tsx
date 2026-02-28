@@ -406,11 +406,10 @@ export const LicensesPage: React.FC = () => {
       </Card>
 
       <LicenseEditorModal
-        mode="create"
-        editingLicense={null}
-        licenses={licensesWithBots}
         modalProps={{
           ...createLicenseModal.modalProps,
+          title: 'Add License',
+          okText: 'Create',
           onCancel: () => {
             createLicenseModal.close();
             createLicenseForm.resetFields();
@@ -421,11 +420,10 @@ export const LicensesPage: React.FC = () => {
       />
 
       <LicenseEditorModal
-        mode="edit"
-        editingLicense={editingLicense}
-        licenses={licensesWithBots}
         modalProps={{
           ...editLicenseModal.modalProps,
+          title: 'Edit License',
+          okText: 'Update',
           onCancel: () => {
             editLicenseModal.close();
             editLicenseForm.resetFields();

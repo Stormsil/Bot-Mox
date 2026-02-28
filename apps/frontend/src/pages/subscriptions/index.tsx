@@ -356,9 +356,8 @@ export const SubscriptionsPage: React.FC = () => {
         <SubscriptionForm
           editingSubscription={null}
           bots={bots}
-          onSave={createSubscriptionFormProps.onFinish}
+          formProps={createSubscriptionFormProps}
           onCancel={createSubscriptionForm.close}
-          loading={createSubscriptionForm.formLoading}
         />
       </Modal>
 
@@ -371,9 +370,8 @@ export const SubscriptionsPage: React.FC = () => {
         <SubscriptionForm
           editingSubscription={editingSubscription}
           bots={bots}
-          onSave={editSubscriptionFormProps.onFinish}
+          formProps={editSubscriptionFormProps}
           onCancel={editSubscriptionForm.close}
-          loading={editSubscriptionForm.formLoading}
         />
       </Modal>
     </div>

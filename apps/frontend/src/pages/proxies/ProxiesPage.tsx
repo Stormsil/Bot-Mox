@@ -69,13 +69,13 @@ export const ProxiesPage: React.FC = () => {
   const createProxyModal = useModalForm<ProxyResource, HttpError, Omit<ProxyResource, 'id'>>({
     resource: 'proxies',
     action: 'create',
-    autoSubmitClose: false,
+    autoSubmitClose: true,
     syncWithLocation: false,
   });
   const editProxyModal = useModalForm<ProxyResource, HttpError, Partial<ProxyResource>>({
     resource: 'proxies',
     action: 'edit',
-    autoSubmitClose: false,
+    autoSubmitClose: true,
     syncWithLocation: false,
   });
 
@@ -326,20 +326,21 @@ export const ProxiesPage: React.FC = () => {
       </Card>
 
       <ProxyCrudModal
-        createModalProps={createProxyModal.modalProps}
-        createFormProps={createProxyModal.formProps}
-        editModalProps={editProxyModal.modalProps}
-        editFormProps={editProxyModal.formProps}
+        mode="create"
+        modalProps={createProxyModal.modalProps}
+        formProps={createProxyModal.formProps}
+        bots={bots}
+        providers={providers}
+        onProviderCreated={handleProviderCreated}
+      />
+      <ProxyCrudModal
+        mode="edit"
+        modalProps={editProxyModal.modalProps}
+        formProps={editProxyModal.formProps}
         editingProxy={editingProxy}
         bots={bots}
         providers={providers}
         onProviderCreated={handleProviderCreated}
-        onCreateFinish={createProxyModal.onFinish}
-        onEditFinish={editProxyModal.onFinish}
-        onCloseCreate={createProxyModal.close}
-        onCloseEdit={editProxyModal.close}
-        createSubmitting={createProxyModal.formLoading}
-        editSubmitting={editProxyModal.formLoading}
       />
     </div>
   );

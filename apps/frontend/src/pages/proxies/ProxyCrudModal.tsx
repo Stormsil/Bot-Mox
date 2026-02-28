@@ -1,5 +1,6 @@
 import { proxyResourceCreateSchema, proxyResourceUpdateSchema } from '@botmox/api-contract';
 import {
+  Button,
   DatePicker,
   Form,
   type FormInstance,
@@ -23,20 +24,13 @@ import { parseProxyString } from '../../utils/proxyUtils';
 import { ParsedProxyAlert, ProxyIpqsLoadingAlert, ProxyIpqsResultAlert } from './proxyCrudAlerts';
 
 interface ProxyCrudModalProps {
-  createModalProps: ModalProps;
-  editModalProps: ModalProps;
-  createFormProps: FormProps<Omit<ProxyResource, 'id'>>;
-  editFormProps: FormProps<Partial<ProxyResource>>;
-  editingProxy: ProxyResource | null;
+  mode: 'create' | 'edit';
+  modalProps: ModalProps;
+  formProps: FormProps<Omit<ProxyResource, 'id'>> | FormProps<Partial<ProxyResource>>;
+  editingProxy?: ProxyResource | null;
   bots: ProxiesBotMap;
   providers: string[];
   onProviderCreated: (providerName: string) => void;
-  onCreateFinish: (values: Omit<ProxyResource, 'id'>) => Promise<unknown>;
-  onEditFinish: (values: Partial<ProxyResource>) => Promise<unknown>;
-  onCloseCreate: () => void;
-  onCloseEdit: () => void;
-  createSubmitting: boolean;
-  editSubmitting: boolean;
 }
 
 type ProxiesBotMap = Record<
@@ -59,6 +53,17 @@ interface ProxyCrudFormValues {
 }
 
 const DEFAULT_PROVIDER = 'IPRoyal';
+
+function toDayjsValue(value: unknown): Dayjs | null {
+  if (dayjs.isDayjs(value)) {
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'string') {
+    const parsed = dayjs(value);
+    return parsed.isValid() ? parsed : null;
+  }
+  return null;
+}
 
 const getProviderValue = (providerValue: string | string[] | undefined | null): string => {
   if (Array.isArray(providerValue)) {
@@ -93,33 +98,22 @@ function getEditDefaults(editingProxy: ProxyResource): ProxyCrudFormValues {
 }
 
 export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
-  createModalProps,
-  editModalProps,
-  createFormProps,
-  editFormProps,
+  mode,
+  modalProps,
+  formProps,
   editingProxy,
   bots,
   providers,
   onProviderCreated,
-  onCreateFinish,
-  onEditFinish,
-  onCloseCreate,
-  onCloseEdit,
-  createSubmitting,
-  editSubmitting,
 }) => {
-  const createOpen = Boolean(createModalProps.open);
-  const editOpen = Boolean(editModalProps.open);
-  const open = createOpen || editOpen;
-  const isEditMode = editOpen;
+  const open = Boolean(modalProps.open);
+  const isEditMode = mode === 'edit';
   const formId = isEditMode ? 'proxy-edit-form' : 'proxy-create-form';
   const [checkingIPQS, setCheckingIPQS] = useState(false);
   const [ipqsData, setIpqsData] = useState<IPQSResponse | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [fallbackForm] = Form.useForm<ProxyCrudFormValues>();
-  const createForm = createFormProps.form as FormInstance<ProxyCrudFormValues> | undefined;
-  const editForm = editFormProps.form as FormInstance<ProxyCrudFormValues> | undefined;
-  const form = (isEditMode ? editForm : createForm) ?? fallbackForm;
+  const form = (formProps.form as FormInstance<ProxyCrudFormValues> | undefined) ?? fallbackForm;
 
   const proxyInput = Form.useWatch('proxyString', form) ?? '';
   const parsedProxy = useMemo(() => parseProxyString(proxyInput), [proxyInput]);
@@ -219,9 +213,13 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
         return;
       }
 
-      await onEditFinish(parsedPayload.data);
-      message.success('');
-      onCloseEdit();
+      const onFinish = formProps.onFinish as
+        | ((values: Partial<ProxyResource>) => Promise<unknown>)
+        | undefined;
+      if (!onFinish) {
+        return;
+      }
+      await onFinish(parsedPayload.data);
       return;
     }
 
@@ -277,27 +275,46 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
       );
     }
 
-    await onCreateFinish(parsedPayload.data);
-    message.success('');
-    onCloseCreate();
+    const onFinish = formProps.onFinish as
+      | ((values: Omit<ProxyResource, 'id'>) => Promise<unknown>)
+      | undefined;
+    if (!onFinish) {
+      return;
+    }
+    await onFinish(parsedPayload.data);
   };
 
   return (
     <Modal
-      {...(isEditMode ? editModalProps : createModalProps)}
+      {...modalProps}
       title={isEditMode ? 'Edit Proxy' : 'Add Proxy'}
-      open={open}
-      onCancel={isEditMode ? onCloseEdit : onCloseCreate}
       okText={isEditMode ? 'Update' : 'Create'}
+      footer={[
+        <Button key="cancel" onClick={(event) => modalProps.onCancel?.(event as never)}>
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          htmlType="submit"
+          form={formId}
+          loading={Boolean(modalProps.confirmLoading)}
+          disabled={!isEditMode && !parsedProxy}
+        >
+          {isEditMode ? 'Update' : 'Create'}
+        </Button>,
+      ]}
       width={700}
       okButtonProps={{
+        ...(modalProps.okButtonProps ?? {}),
         htmlType: 'submit',
         form: formId,
         disabled: !isEditMode && !parsedProxy,
       }}
-      confirmLoading={isEditMode ? editSubmitting : createSubmitting}
+      confirmLoading={Boolean(modalProps.confirmLoading)}
     >
       <Form<ProxyCrudFormValues>
+        {...(formProps as unknown as FormProps<ProxyCrudFormValues>)}
         id={formId}
         form={form}
         layout="vertical"
@@ -357,6 +374,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           name="expires_at"
           label="Expiration Date"
           rules={[{ required: true, message: 'Please select expiration date' }]}
+          getValueProps={(value) => ({ value: toDayjsValue(value) })}
         >
           <DatePicker style={{ width: '100%' }} showTime={false} />
         </Form.Item>

@@ -1,5 +1,5 @@
 import { EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, Button, DatePicker, Form, Select } from 'antd';
+import { Alert, Button, DatePicker, Form, type FormProps, Select } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import type React from 'react';
@@ -23,23 +23,27 @@ interface BotOption {
 }
 
 interface SubscriptionFormProps {
-  // Edit mode
   editingSubscription?: SubscriptionWithDetails | null;
-  // Preset bot_id (when form is opened from bot page)
   presetBotId?: string;
-  // List of bots for selection
   bots: BotOption[];
-  // Callback on save
-  onSave: (data: SubscriptionFormData) => void;
-  // Callback on cancel
+  formProps: FormProps;
   onCancel?: () => void;
-  // Loading state
-  loading?: boolean;
 }
 
 interface SubscriptionFormValues {
   bot_id?: string;
   expires_at: Dayjs;
+}
+
+function toDayjsValue(value: unknown): Dayjs | null {
+  if (dayjs.isDayjs(value)) {
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'string') {
+    const parsed = dayjs(value);
+    return parsed.isValid() ? parsed : null;
+  }
+  return null;
 }
 
 /**
@@ -50,11 +54,11 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
   editingSubscription,
   presetBotId,
   bots,
-  onSave,
+  formProps,
   onCancel,
-  loading = false,
 }) => {
-  const [form] = Form.useForm();
+  const [fallbackForm] = Form.useForm<SubscriptionFormValues>();
+  const form = formProps.form ?? fallbackForm;
   const [dateError, setDateError] = useState<string | null>(null);
 
   const isEditing = !!editingSubscription;
@@ -84,7 +88,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
   }, [editingSubscription, presetBotId, form]);
 
   // Form submission handler
-  const handleSubmit = (values: SubscriptionFormValues) => {
+  const handleSubmit = async (values: SubscriptionFormValues) => {
     setDateError(null);
 
     // Check date
@@ -110,11 +114,23 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
       expires_at: formattedDate,
     };
 
-    onSave(formData);
+    if (!formProps.onFinish) {
+      return;
+    }
+
+    await formProps.onFinish(formData as never);
   };
 
   return (
-    <Form form={form} layout="vertical" onFinish={handleSubmit} className={styles.root}>
+    <Form
+      {...formProps}
+      form={form}
+      layout="vertical"
+      onFinish={(values) => {
+        void handleSubmit(values);
+      }}
+      className={styles.root}
+    >
       {dateError && (
         <Alert
           message={dateError}
@@ -133,7 +149,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
           label="Bot"
           rules={[{ required: true, message: 'Please select a bot' }]}
         >
-          <Select placeholder="Select bot" showSearch optionFilterProp="label" disabled={loading}>
+          <Select placeholder="Select bot" showSearch optionFilterProp="label">
             {availableBots.map((bot) => {
               const vmName = bot.vmName || bot.name || 'Unknown';
               const characterName = bot.character || 'Unknown';
@@ -160,12 +176,12 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         label="Expiration Date"
         rules={[{ required: true, message: 'Please select an expiration date' }]}
         tooltip="Format: DD.MM.YYYY"
+        getValueProps={(value) => ({ value: toDayjsValue(value) })}
       >
         <DatePicker
           format="DD.MM.YYYY"
           style={{ width: '100%' }}
           placeholder="DD.MM.YYYY"
-          disabled={loading}
           disabledDate={(current) => {
             // Disallow past dates
             return current && current < dayjs().startOf('day');
@@ -180,15 +196,10 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             type="primary"
             htmlType="submit"
             icon={isEditing ? <EditOutlined /> : <PlusOutlined />}
-            loading={loading}
           >
             {isEditing ? 'Save Changes' : 'Add Subscription'}
           </Button>
-          {onCancel && (
-            <Button onClick={onCancel} disabled={loading}>
-              Cancel
-            </Button>
-          )}
+          {onCancel && <Button onClick={onCancel}>Cancel</Button>}
         </div>
       </Form.Item>
     </Form>

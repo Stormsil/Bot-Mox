@@ -192,6 +192,12 @@ const WorkspaceKanbanPage = lazy(async () => ({
 }));
 const LoginPage = lazy(async () => ({ default: (await import('./pages/login')).LoginPage }));
 
+const refineResourcePages = [
+  { name: 'licenses', path: '/licenses', component: LicensesPage },
+  { name: 'proxies', path: '/proxies', component: ProxiesPage },
+  { name: 'subscriptions', path: '/subscriptions', component: SubscriptionsPage },
+] as const;
+
 const RouteFallback: React.FC = () => (
   <div style={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
     <Spin size="large" />
@@ -239,27 +245,13 @@ function AppWithTheme() {
             notificationProvider={useNotificationProvider}
             resources={[
               { name: 'bots', list: '/' },
-              {
-                name: 'licenses',
-                list: '/licenses',
-                create: '/licenses',
-                edit: '/licenses',
-                show: '/licenses',
-              },
-              {
-                name: 'proxies',
-                list: '/proxies',
-                create: '/proxies',
-                edit: '/proxies',
-                show: '/proxies',
-              },
-              {
-                name: 'subscriptions',
-                list: '/subscriptions',
-                create: '/subscriptions',
-                edit: '/subscriptions',
-                show: '/subscriptions',
-              },
+              ...refineResourcePages.map((resourcePage) => ({
+                name: resourcePage.name,
+                list: resourcePage.path,
+                create: resourcePage.path,
+                edit: resourcePage.path,
+                show: resourcePage.path,
+              })),
               { name: 'notes', list: '/notes' },
             ]}
             options={{
@@ -308,9 +300,13 @@ function AppWithTheme() {
                   />
 
                   {/* Licenses, Proxies, Subscriptions, VMs */}
-                  <Route path="/licenses" element={<LicensesPage />} />
-                  <Route path="/proxies" element={<ProxiesPage />} />
-                  <Route path="/subscriptions" element={<SubscriptionsPage />} />
+                  {refineResourcePages.map((resourcePage) => (
+                    <Route
+                      key={resourcePage.path}
+                      path={resourcePage.path}
+                      element={<resourcePage.component />}
+                    />
+                  ))}
                   <Route path="/vms" element={<VMsPage />} />
                   <Route path="/vms/list" element={<Navigate to="/vms" replace />} />
                   <Route path="/vms/unattend-profiles" element={<Navigate to="/vms" replace />} />

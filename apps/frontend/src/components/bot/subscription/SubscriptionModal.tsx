@@ -1,31 +1,27 @@
+import type { FormProps, ModalProps } from 'antd';
 import { Modal } from 'antd';
 import type React from 'react';
 import { SubscriptionForm } from '../../subscriptions/SubscriptionForm';
-import type { BotOption, SubscriptionFormData, SubscriptionWithDetails } from './types';
+import type { BotOption, SubscriptionWithDetails } from './types';
 
 interface SubscriptionModalProps {
-  open: boolean;
+  modalProps: ModalProps;
+  formProps: FormProps;
   editingSubscription: SubscriptionWithDetails | null;
   presetBotId: string;
   botOption: BotOption;
-  loading: boolean;
-  onSave: (data: SubscriptionFormData) => Promise<void>;
-  onCancel: () => void;
 }
 
 export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
-  open,
+  modalProps,
+  formProps,
   editingSubscription,
   presetBotId,
   botOption,
-  loading,
-  onSave,
-  onCancel,
 }) => (
   <Modal
+    {...modalProps}
     title={editingSubscription ? 'Edit Subscription' : 'Add Subscription'}
-    open={open}
-    onCancel={onCancel}
     footer={null}
     width={500}
   >
@@ -33,9 +29,8 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
       editingSubscription={editingSubscription}
       presetBotId={presetBotId}
       bots={[botOption]}
-      onSave={onSave}
-      onCancel={onCancel}
-      loading={loading}
+      formProps={formProps}
+      onCancel={modalProps.onCancel as (() => void) | undefined}
     />
   </Modal>
 );

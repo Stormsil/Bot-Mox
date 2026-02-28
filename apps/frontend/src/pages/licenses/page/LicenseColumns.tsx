@@ -5,11 +5,10 @@ import {
   PlusCircleOutlined,
   RobotOutlined,
 } from '@ant-design/icons';
-import { DeleteButton } from '@refinedev/antd';
+import { DeleteButton, EditButton } from '@refinedev/antd';
 import type { TableColumnsType } from 'antd';
 import { Button, Popover, Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
-import type { MouseEvent } from 'react';
 import { TableActionButton, TableActionGroup } from '../../../components/ui/TableActionButton';
 import type { LicenseWithBots } from '../../../entities/resources/model/types';
 import styles from '../LicensesPage.module.css';
@@ -244,11 +243,14 @@ export const buildLicenseColumns = ({
     width: 150,
     render: (_value, record) => (
       <TableActionGroup>
-        <TableActionButton
+        <EditButton
+          hideText
+          size="small"
+          shape="circle"
           icon={<EditOutlined />}
-          aria-label="edit"
-          tooltip="Edit"
-          onClick={(event: MouseEvent<HTMLElement>) => {
+          resource="licenses"
+          recordItemId={record.id}
+          onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
             handlers.onEdit(record);

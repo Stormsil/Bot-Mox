@@ -28,13 +28,6 @@ const { confirm } = Modal;
 const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error && error.message.trim()) {
-    return error.message;
-  }
-  return fallback;
-}
-
 function parseDateToTimestamp(dateString: string): number {
   const parts = String(dateString || '').split('.');
   if (parts.length !== 3) return Number.NaN;
@@ -126,9 +119,55 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
     const targetId = String(editSubscriptionModal.id);
     return subscriptions.find((item) => String(item.id) === targetId) ?? null;
   }, [editSubscriptionModal.id, subscriptions]);
+  const createSubscriptionFormProps = useMemo(
+    () => ({
+      ...createSubscriptionModal.formProps,
+      onFinish: async (data: SubscriptionFormData) => {
+        const expiresAt = parseDateToTimestamp(data.expires_at);
+        if (!Number.isFinite(expiresAt)) {
+          throw new Error('Invalid expires_at format');
+        }
 
-  const closeCreateModal = () => createSubscriptionModal.close();
-  const closeEditModal = () => editSubscriptionModal.close();
+        const now = Date.now();
+        return createSubscriptionModal.onFinish({
+          bot_id: data.bot_id,
+          type: data.type,
+          status: 'active',
+          expires_at: expiresAt,
+          created_at: now,
+          updated_at: now,
+          ...(data.account_email && { account_email: data.account_email }),
+          auto_renew: data.auto_renew ?? false,
+          ...(data.project_id && { project_id: data.project_id }),
+          ...(data.notes && { notes: data.notes }),
+        });
+      },
+    }),
+    [createSubscriptionModal.formProps, createSubscriptionModal.onFinish],
+  );
+  const editSubscriptionFormProps = useMemo(
+    () => ({
+      ...editSubscriptionModal.formProps,
+      onFinish: async (data: SubscriptionFormData) => {
+        const expiresAt = parseDateToTimestamp(data.expires_at);
+        if (!Number.isFinite(expiresAt)) {
+          throw new Error('Invalid expires_at format');
+        }
+
+        return editSubscriptionModal.onFinish({
+          bot_id: data.bot_id,
+          type: data.type,
+          expires_at: expiresAt,
+          account_email: data.account_email,
+          auto_renew: data.auto_renew,
+          project_id: data.project_id,
+          notes: data.notes,
+          updated_at: Date.now(),
+        });
+      },
+    }),
+    [editSubscriptionModal.formProps, editSubscriptionModal.onFinish],
+  );
 
   const openCreateModal = () => {
     createSubscriptionModal.show();
@@ -136,60 +175,6 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
 
   const openEditModal = (subscription: SubscriptionWithDetails) => {
     editSubscriptionModal.show(subscription.id);
-  };
-
-  const handleCreateSubscription = async (data: SubscriptionFormData) => {
-    try {
-      const expiresAt = parseDateToTimestamp(data.expires_at);
-      if (!Number.isFinite(expiresAt)) {
-        throw new Error('Invalid expires_at format');
-      }
-      const now = Date.now();
-      await createSubscriptionModal.onFinish({
-        bot_id: data.bot_id,
-        type: data.type,
-        status: 'active',
-        expires_at: expiresAt,
-        created_at: now,
-        updated_at: now,
-        ...(data.account_email && { account_email: data.account_email }),
-        auto_renew: data.auto_renew ?? false,
-        ...(data.project_id && { project_id: data.project_id }),
-        ...(data.notes && { notes: data.notes }),
-      });
-      closeCreateModal();
-    } catch (error) {
-      console.error('Error saving subscription:', error);
-      message.error(`Failed to save subscription: ${getErrorMessage(error, 'Unknown error')}`);
-    }
-  };
-
-  const handleEditSubscription = async (data: SubscriptionFormData) => {
-    if (!editingSubscription) {
-      message.error('Subscription is not available for editing');
-      return;
-    }
-
-    try {
-      const expiresAt = parseDateToTimestamp(data.expires_at);
-      if (!Number.isFinite(expiresAt)) {
-        throw new Error('Invalid expires_at format');
-      }
-      await editSubscriptionModal.onFinish({
-        bot_id: data.bot_id,
-        type: data.type,
-        expires_at: expiresAt,
-        account_email: data.account_email,
-        auto_renew: data.auto_renew,
-        project_id: data.project_id,
-        notes: data.notes,
-        updated_at: Date.now(),
-      });
-      closeEditModal();
-    } catch (error) {
-      console.error('Error saving subscription:', error);
-      message.error(`Failed to save subscription: ${getErrorMessage(error, 'Unknown error')}`);
-    }
   };
 
   const handleDelete = (subscription: SubscriptionWithDetails) => {
@@ -268,23 +253,19 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
       </Card>
 
       <SubscriptionModal
-        open={createSubscriptionModal.open}
+        modalProps={createSubscriptionModal.modalProps}
+        formProps={createSubscriptionFormProps}
         editingSubscription={null}
         presetBotId={bot.id}
         botOption={botOption}
-        loading={createSubscriptionModal.formLoading}
-        onSave={handleCreateSubscription}
-        onCancel={closeCreateModal}
       />
 
       <SubscriptionModal
-        open={editSubscriptionModal.open}
+        modalProps={editSubscriptionModal.modalProps}
+        formProps={editSubscriptionFormProps}
         editingSubscription={editingSubscription}
         presetBotId={bot.id}
         botOption={botOption}
-        loading={editSubscriptionModal.formLoading}
-        onSave={handleEditSubscription}
-        onCancel={closeEditModal}
       />
     </div>
   );
