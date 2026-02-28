@@ -1,3 +1,9 @@
+import {
+  computeBotStatus,
+  computeLicenseStatus,
+  computeProxyStatus,
+  computeSubscriptionStatus,
+} from '../../entities/bot/lib/statuses';
 import type {
   BotLicense,
   Proxy as ProxyResource,
@@ -11,12 +17,6 @@ import type {
   ResourcesByBotMaps,
   StatusFilter,
 } from './types';
-import {
-  computeBotStatus,
-  computeLicenseStatus,
-  computeProxyStatus,
-  computeSubscriptionStatus,
-} from './utils';
 
 export function buildResourcesByBotMaps({
   proxies,

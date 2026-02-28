@@ -3,7 +3,6 @@ import { Spin } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ContentPanel } from '../../components/layout/ContentPanel';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
 import type { BotRecord } from '../../entities/bot/model/types';
 import { calculateFinanceSummary } from '../../entities/finance/lib/analytics';
@@ -18,6 +17,7 @@ import type {
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
 import type { FinanceOperationContractRecord } from '../../providers/finance-contract-client';
+import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import { DatacenterContentMap, type ExpiringItem } from './content-map';
 import { cx } from './datacenterUi';
 import { buildProjectStats, FINANCE_WINDOW_DAYS, MS_PER_DAY } from './page-helpers';

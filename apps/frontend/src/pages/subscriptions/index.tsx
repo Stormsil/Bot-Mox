@@ -12,7 +12,6 @@ import type { TableProps } from 'antd';
 import { Button, Card, Input, Modal, message, Select, Space, Table, Typography } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { SubscriptionForm } from '../../components/subscriptions/SubscriptionForm';
 import type { BotRecord } from '../../entities/bot/model/types';
 import { enrichSubscriptionsWithDetails } from '../../entities/resources/api/subscriptionFacade';
 import type {
@@ -24,6 +23,7 @@ import type {
 import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
+import { SubscriptionForm } from '../../widgets/subscriptions/SubscriptionForm';
 import { ExpiringSubscriptionsAlert } from './ExpiringSubscriptionsAlert';
 import styles from './SubscriptionsPage.module.css';
 import { SubscriptionsStats } from './SubscriptionsStats';

@@ -1,6 +1,6 @@
 import { Col, Row } from 'antd';
 import type React from 'react';
-import { MetricCard } from '../../../components/ui/MetricCard';
+import { MetricCard } from '../../../shared/ui/MetricCard';
 import type { LicensesStats } from './types';
 
 interface LicensesStatsProps {

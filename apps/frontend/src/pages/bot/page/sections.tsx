@@ -1,18 +1,18 @@
 import { CheckOutlined, ExclamationOutlined, RightOutlined } from '@ant-design/icons';
 import { Collapse } from 'antd';
+import { BotAccount } from '../../../features/bot-account';
+import type { Bot } from '../../../types';
 import {
-  BotCharacter,
+  BotCharacterWidget,
   BotLicense,
-  BotLifeStages,
+  BotLifeStagesWidget,
   BotPerson,
   BotProxy,
   BotSchedule,
   BotSubscription,
-  BotSummary,
+  BotSummaryWidget,
   BotVMInfo,
-} from '../../../components/bot';
-import { BotAccount } from '../../../features/bot-account';
-import type { Bot } from '../../../types';
+} from '../../../widgets/bot-profile';
 import styles from '../BotPage.module.css';
 import type {
   ConfigureSection,
@@ -58,7 +58,7 @@ export const buildConfigureSections = ({
     label: 'Character',
     description: 'Configure in-game character details',
     complete: characterComplete,
-    content: <BotCharacter bot={baseBot} mode="edit" />,
+    content: <BotCharacterWidget bot={baseBot} mode="edit" />,
   },
   {
     key: 'schedule',
@@ -95,11 +95,11 @@ export const renderTabContent = ({
   resourcesSections,
 }: RenderTabContentOptions) => {
   if (activeTab === 'summary') {
-    return <BotSummary bot={bot} />;
+    return <BotSummaryWidget bot={bot} />;
   }
 
   if (activeTab === 'monitoring') {
-    return <BotLifeStages bot={baseBot} botId={bot.id} />;
+    return <BotLifeStagesWidget bot={baseBot} botId={bot.id} />;
   }
 
   if (activeTab === 'configure') {
@@ -190,5 +190,5 @@ export const renderTabContent = ({
     return <BotVMInfo bot={bot} />;
   }
 
-  return <BotSummary bot={bot} />;
+  return <BotSummaryWidget bot={bot} />;
 };

@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRefreshOnVmMutationEvents } from '../../../entities/vm/api/useRefreshOnVmMutationEvents';
 import { useProxmoxTargetsQuery, useVmSettingsQuery } from '../../../entities/vm/api/useVmQueries';
+import { useDeleteVmWorkflow } from '../../../features/vm-management';
 import { useProxmox } from '../../../hooks/useProxmox';
 import { useVMKeyboardShortcuts } from '../../../hooks/useVMKeyboardShortcuts';
 import { useVMLog } from '../../../hooks/useVMLog';
@@ -10,7 +11,6 @@ import type { ProxmoxVM, VMGeneratorSettings, VMResourceMode } from '../../../ty
 import type { VMWorkspace } from '../../../widgets/vm-workspace';
 import { enqueueVmRecreate } from '../page/recreateVm';
 import { selectStorageForNewVm } from '../page/storageSelection';
-import { useDeleteVmWorkflow } from './useDeleteVmWorkflow';
 import { useVmOperationLogActions } from './useVmOperationLogActions';
 import { useVmPageLiveRefs } from './useVmPageLiveRefs';
 import { useVmResourcePresets } from './useVmResourcePresets';

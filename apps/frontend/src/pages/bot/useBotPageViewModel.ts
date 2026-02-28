@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import type { TabType } from '../../components/layout/ContentPanel';
 import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
 import { uiLogger } from '../../observability/uiLogger';
 import type { Bot } from '../../types';
+import type { TabType } from '../../widgets/layout/ContentPanel';
 import type { ConfigureTab, ExtendedBot, MainTab } from './page';
 import {
   buildConfigureSections,

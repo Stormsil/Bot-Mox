@@ -8,8 +8,8 @@ import {
 import { Button, Divider, Empty, List, Popconfirm, Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
-import { TableActionButton } from '../../../../components/ui/TableActionButton';
 import type { WorkspaceCalendarEvent } from '../../../../entities/workspace/model/types';
+import { TableActionButton } from '../../../../shared/ui/TableActionButton';
 import styles from '../WorkspaceCalendarPage.module.css';
 import type { CalendarEventListHandlers, SidebarMode } from './types';
 

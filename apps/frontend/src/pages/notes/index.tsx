@@ -7,13 +7,13 @@ import { Empty, message, Spin } from 'antd';
 import type React from 'react';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { NoteSidebar } from '../../components/notes';
 import { useNoteByIdQuery } from '../../entities/notes/api/useNoteByIdQuery';
 import type { Note } from '../../entities/notes/model/types';
+import { NoteSidebar } from '../../widgets/notes-editor';
 import styles from './NotesPage.module.css';
 
 const NoteEditor = lazy(async () => ({
-  default: (await import('../../components/notes/NoteEditor')).NoteEditor,
+  default: (await import('../../widgets/notes-editor/NoteEditor')).NoteEditor,
 }));
 
 const SIDEBAR_COLLAPSED_KEY = 'notes_sidebar_collapsed';

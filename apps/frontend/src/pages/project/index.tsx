@@ -4,7 +4,6 @@ import { Alert, Button, Card, Input, message, Select, Space, Table, Typography }
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ContentPanel } from '../../components/layout/ContentPanel';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
 import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
 import { useProjectSettingsQuery } from '../../entities/settings/api/useProjectSettingsQuery';
@@ -16,6 +15,7 @@ import type {
   Subscription,
   SubscriptionSettings,
 } from '../../types';
+import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import { createProjectColumns } from './columns';
 import styles from './ProjectPage.module.css';
 import {

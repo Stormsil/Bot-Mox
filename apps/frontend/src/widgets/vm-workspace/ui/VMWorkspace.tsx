@@ -1,12 +1,12 @@
 import type React from 'react';
 import { useRef, useState } from 'react';
-import { VMListContainer, VMOperationLog, VMQueuePanel, VMStatusBar } from '../../../components/vm';
 import type { ProxmoxTargetInfo } from '../../../entities/vm/api/vmReadFacade';
 import type { ProxmoxVM, VMStorageOption } from '../../../entities/vm/model/types';
-import { cx } from '../../../pages/vms/page/cx';
-import { VMPageModals } from '../../../pages/vms/page/VMPageModals';
-import { VmTargetStrip } from '../../../pages/vms/page/VmTargetStrip';
+import { VMListContainer, VMOperationLog, VMQueuePanel, VMStatusBar } from '../../../widgets/vm';
 import { useVmWorkspaceLayout } from '../model/useVmWorkspaceLayout';
+import { cx } from './cx';
+import { VMPageModals } from './VMPageModals';
+import { VmTargetStrip } from './VmTargetStrip';
 
 type PanelOpenState = 'settings' | null;
 

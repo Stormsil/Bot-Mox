@@ -3,8 +3,6 @@ import { Card, DatePicker, message, Select, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { FinanceSummary, FinanceTransactions, TransactionForm } from '../../components/finance';
-import { ContentPanel } from '../../components/layout/ContentPanel';
 import {
   calculateCategoryBreakdown,
   calculateFinanceSummary,
@@ -22,6 +20,8 @@ import type {
 } from '../../entities/finance/model/types';
 import { uiLogger } from '../../observability/uiLogger';
 import type { FinanceOperationContractRecord } from '../../providers/finance-contract-client';
+import { FinanceSummary, FinanceTransactions, TransactionForm } from '../../widgets/finance';
+import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import styles from './FinancePage.module.css';
 
 const { RangePicker } = DatePicker;

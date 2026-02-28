@@ -1,6 +1,6 @@
 import type React from 'react';
-import type { TabType } from '../../../components/layout/ContentPanel';
-import { ContentPanel } from '../../../components/layout/ContentPanel';
+import type { TabType } from '../../../widgets/layout/ContentPanel';
+import { ContentPanel } from '../../../widgets/layout/ContentPanel';
 import styles from '../BotPage.module.css';
 import type { MainTab } from '../page';
 import { BotPageAlertState, BotPageLoading } from '../page';

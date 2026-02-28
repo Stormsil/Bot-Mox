@@ -14,12 +14,12 @@ import {
   useParams,
 } from 'react-router-dom';
 import { QueryProvider } from './app/providers/QueryProvider';
-import { Header } from './components/layout/Header';
-import { ResourceTree } from './components/layout/ResourceTree';
 import { ADMIN_APP_URL } from './config/env';
 import { authProvider } from './providers/auth-provider';
 import { dataProvider } from './providers/data-provider';
 import { ThemeRuntimeProvider, useThemeRuntime } from './theme/themeRuntime';
+import { Header } from './widgets/layout/Header';
+import { ResourceTree } from './widgets/layout/ResourceTree';
 import './styles/global.css';
 import shellStyles from './AppShell.module.css';
 
