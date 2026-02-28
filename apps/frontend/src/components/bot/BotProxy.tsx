@@ -5,7 +5,7 @@ import type { FormInstance } from 'antd';
 import { Card, Modal, message, Spin } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   checkIPQuality,
   isAutoCheckEnabled,
@@ -202,74 +202,73 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
     });
   };
 
-  const buildProxyPayload = (
-    values: ProxyModalFormValues,
-    parsed: NonNullable<ReturnType<typeof parseProxyString>>,
-  ) => {
-    const expiresAt = values.expires_at
-      ? values.expires_at.valueOf()
-      : Date.now() + 30 * 24 * 60 * 60 * 1000;
+  const buildProxyPayload = useCallback(
+    (values: ProxyModalFormValues, parsed: NonNullable<ReturnType<typeof parseProxyString>>) => {
+      const expiresAt = values.expires_at
+        ? values.expires_at.valueOf()
+        : Date.now() + 30 * 24 * 60 * 60 * 1000;
 
-    let proxyData: Partial<ProxyResource> = {
-      ip: parsed.ip,
-      port: parsed.port,
-      login: parsed.login,
-      password: parsed.password,
-      type: parsed.type,
-      bot_id: bot.id,
-      expires_at: expiresAt,
-      status: 'active',
-      provider: 'Unknown',
-      country: 'Unknown',
-      updated_at: Date.now(),
-    };
+      let proxyData: Partial<ProxyResource> = {
+        ip: parsed.ip,
+        port: parsed.port,
+        login: parsed.login,
+        password: parsed.password,
+        type: parsed.type,
+        bot_id: bot.id,
+        expires_at: expiresAt,
+        status: 'active',
+        provider: 'Unknown',
+        country: 'Unknown',
+        updated_at: Date.now(),
+      };
 
-    if (ipqsData) {
-      proxyData = updateProxyWithIPQSData(proxyData, ipqsData);
-    }
+      if (ipqsData) {
+        proxyData = updateProxyWithIPQSData(proxyData, ipqsData);
+      }
 
-    return proxyData;
-  };
+      return proxyData;
+    },
+    [bot.id, ipqsData],
+  );
 
-  const handleCreateSave = async (values: ProxyModalFormValues) => {
-    if (!parsedProxy) {
-      message.error('Please enter a valid proxy string');
-      return;
-    }
+  const createProxyFormProps = useMemo(
+    () => ({
+      ...createProxyModal.formProps,
+      onFinish: async (values: ProxyModalFormValues) => {
+        if (!parsedProxy) {
+          throw new Error('Please enter a valid proxy string');
+        }
+        const proxyData = buildProxyPayload(values, parsedProxy);
+        proxyData.created_at = Date.now();
+        return createProxyModal.onFinish(proxyData as Omit<ProxyResource, 'id'>);
+      },
+    }),
+    [buildProxyPayload, createProxyModal.formProps, createProxyModal.onFinish, parsedProxy],
+  );
 
-    try {
-      const proxyData = buildProxyPayload(values, parsedProxy);
-      proxyData.created_at = Date.now();
-      await createProxyModal.onFinish(proxyData as Omit<ProxyResource, 'id'>);
-      message.success('');
-      closeCreateModal();
-    } catch (error) {
-      console.error('Error saving proxy:', error);
-      message.error('Failed to save proxy');
-    }
-  };
+  const editProxyFormProps = useMemo(
+    () => ({
+      ...editProxyModal.formProps,
+      onFinish: async (values: ProxyModalFormValues) => {
+        if (!parsedProxy) {
+          throw new Error('Please enter a valid proxy string');
+        }
+        if (!editingProxy) {
+          throw new Error('Proxy is not available for editing');
+        }
 
-  const handleEditSave = async (values: ProxyModalFormValues) => {
-    if (!parsedProxy) {
-      message.error('Please enter a valid proxy string');
-      return;
-    }
-
-    if (!editingProxy) {
-      message.error('Proxy is not available for editing');
-      return;
-    }
-
-    try {
-      const proxyData = buildProxyPayload(values, parsedProxy);
-      await editProxyModal.onFinish(proxyData);
-      message.success('');
-      closeEditModal();
-    } catch (error) {
-      console.error('Error saving proxy:', error);
-      message.error('Failed to save proxy');
-    }
-  };
+        const proxyData = buildProxyPayload(values, parsedProxy);
+        return editProxyModal.onFinish(proxyData);
+      },
+    }),
+    [
+      buildProxyPayload,
+      editProxyModal.formProps,
+      editProxyModal.onFinish,
+      editingProxy,
+      parsedProxy,
+    ],
+  );
 
   if (isProxiesLoading) {
     return (
@@ -293,35 +292,37 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
       )}
 
       <ProxyEditorModal
-        open={createProxyModal.open}
+        modalProps={{
+          ...createProxyModal.modalProps,
+          onCancel: closeCreateModal,
+          onOk: () => createForm.submit(),
+        }}
+        formProps={createProxyFormProps}
         editing={false}
-        form={createForm}
         parsedProxy={parsedProxy}
         proxyInput={proxyInput}
         parseError={parseError}
         showPassword={showPassword}
         checkingIPQS={checkingIPQS}
         ipqsData={ipqsData}
-        onCancel={closeCreateModal}
-        onSubmit={createForm.submit}
-        onFinish={handleCreateSave}
         onProxyInputChange={handleProxyInputChange}
         onTogglePassword={() => setShowPassword((prev) => !prev)}
       />
 
       <ProxyEditorModal
-        open={editProxyModal.open}
+        modalProps={{
+          ...editProxyModal.modalProps,
+          onCancel: closeEditModal,
+          onOk: () => editForm.submit(),
+        }}
+        formProps={editProxyFormProps}
         editing
-        form={editForm}
         parsedProxy={parsedProxy}
         proxyInput={proxyInput}
         parseError={parseError}
         showPassword={showPassword}
         checkingIPQS={checkingIPQS}
         ipqsData={ipqsData}
-        onCancel={closeEditModal}
-        onSubmit={editForm.submit}
-        onFinish={handleEditSave}
         onProxyInputChange={handleProxyInputChange}
         onTogglePassword={() => setShowPassword((prev) => !prev)}
       />

@@ -63,9 +63,6 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
   const updateLicenseMutation = useUpdate<BotLicenseRecord, HttpError, Partial<BotLicenseRecord>>();
   const deleteLicenseMutation = useDelete<BotLicenseRecord>();
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  const [createSubmitting, setCreateSubmitting] = useState(false);
-  const [editSubmitting, setEditSubmitting] = useState(false);
-  const [assignSubmitting, setAssignSubmitting] = useState(false);
   const createForm = createLicenseModal.form as unknown as FormInstance<LicenseFormValues>;
   const editForm = editLicenseModal.form as unknown as FormInstance<LicenseFormValues>;
   const [assignForm] = Form.useForm<AssignLicenseFormValues>();
@@ -127,57 +124,35 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
     setIsAssignModalOpen(true);
   };
 
-  const handleEditSave = async (values: LicenseFormValues) => {
-    if (!license || !editLicenseModal.id) return;
-    if (editSubmitting) {
-      return;
-    }
+  const createLicenseFormProps = useMemo(
+    () => ({
+      ...createLicenseModal.formProps,
+      onFinish: async (values: LicenseFormValues) => {
+        const now = Date.now();
+        const payload = buildLicensePayload(values, [bot.id], now);
+        return createLicenseModal.onFinish({
+          ...payload,
+          created_at: now,
+        });
+      },
+    }),
+    [bot.id, createLicenseModal.formProps, createLicenseModal.onFinish],
+  );
 
-    setEditSubmitting(true);
-    try {
-      const payload = buildLicensePayload(values, license.bot_ids || []);
-      await editLicenseModal.onFinish(payload);
-      message.success('License updated');
-      editLicenseModal.close();
-      editForm.resetFields();
-    } catch (error) {
-      console.error('Error saving license:', error);
-      message.error(`Failed to save license: ${getErrorMessage(error, 'Unknown error')}`);
-    } finally {
-      setEditSubmitting(false);
-    }
-  };
-
-  const handleCreate = async (values: LicenseFormValues) => {
-    if (createSubmitting) {
-      return;
-    }
-
-    setCreateSubmitting(true);
-    try {
-      const now = Date.now();
-      const payload = buildLicensePayload(values, [bot.id], now);
-      await createLicenseModal.onFinish({
-        ...payload,
-        created_at: now,
-      });
-      message.success('License created and assigned to bot');
-      createLicenseModal.close();
-      createForm.resetFields();
-    } catch (error) {
-      console.error('Error creating license:', error);
-      message.error(`Failed to create license: ${getErrorMessage(error, 'Unknown error')}`);
-    } finally {
-      setCreateSubmitting(false);
-    }
-  };
+  const editLicenseFormProps = useMemo(
+    () => ({
+      ...editLicenseModal.formProps,
+      onFinish: async (values: LicenseFormValues) => {
+        if (!license || !editLicenseModal.id) {
+          throw new Error('License is not available for editing');
+        }
+        return editLicenseModal.onFinish(buildLicensePayload(values, license.bot_ids || []));
+      },
+    }),
+    [editLicenseModal.formProps, editLicenseModal.id, editLicenseModal.onFinish, license],
+  );
 
   const handleAssign = async (values: AssignLicenseFormValues) => {
-    if (assignSubmitting) {
-      return;
-    }
-
-    setAssignSubmitting(true);
     try {
       const selectedLicense = allLicenses.find((item) => item.id === values.license_id);
       if (!selectedLicense) return;
@@ -203,8 +178,6 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
     } catch (error) {
       console.error('Error assigning license:', error);
       message.error(`Failed to assign license: ${getErrorMessage(error, 'Unknown error')}`);
-    } finally {
-      setAssignSubmitting(false);
     }
   };
 
@@ -255,24 +228,24 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
         <LicenseEmptyCard addMenuItems={addMenuItems} onAddMenuClick={handleAddMenuClick} />
 
         <LicenseFormModal
-          open={createLicenseModal.open}
-          title="Create New License"
-          okText="Create"
-          form={createForm}
-          typeOptions={typeOptions}
-          submitting={createSubmitting || createLicenseModal.formLoading}
-          onCancel={() => {
-            createLicenseModal.close();
-            createForm.resetFields();
+          modalProps={{
+            ...createLicenseModal.modalProps,
+            title: 'Create New License',
+            okText: 'Create',
+            onCancel: () => {
+              createLicenseModal.close();
+              createForm.resetFields();
+            },
           }}
-          onSubmit={handleCreate}
+          formProps={createLicenseFormProps}
+          typeOptions={typeOptions}
         />
 
         <AssignLicenseModal
           open={isAssignModalOpen}
           form={assignForm}
           availableLicenses={availableLicenses}
-          submitting={assignSubmitting || updateLicenseMutation.mutation.isPending}
+          submitting={updateLicenseMutation.mutation.isPending}
           onCancel={() => {
             setIsAssignModalOpen(false);
             assignForm.resetFields();
@@ -294,17 +267,17 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
       />
 
       <LicenseFormModal
-        open={editLicenseModal.open}
-        title="Edit License"
-        okText="Update"
-        form={editForm}
-        typeOptions={typeOptions}
-        submitting={editSubmitting || editLicenseModal.formLoading}
-        onCancel={() => {
-          editLicenseModal.close();
-          editForm.resetFields();
+        modalProps={{
+          ...editLicenseModal.modalProps,
+          title: 'Edit License',
+          okText: 'Update',
+          onCancel: () => {
+            editLicenseModal.close();
+            editForm.resetFields();
+          },
         }}
-        onSubmit={handleEditSave}
+        formProps={editLicenseFormProps}
+        typeOptions={typeOptions}
       />
     </div>
   );

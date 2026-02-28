@@ -1,40 +1,20 @@
-import type { FormInstance } from 'antd';
+import type { FormProps, ModalProps } from 'antd';
 import { AutoComplete, DatePicker, Form, Input, Modal } from 'antd';
 import type React from 'react';
-import type { LicenseFormValues } from './types';
 
 interface LicenseFormModalProps {
-  open: boolean;
-  title: string;
-  okText: string;
-  form: FormInstance<LicenseFormValues>;
+  modalProps: ModalProps;
+  formProps: FormProps;
   typeOptions: Array<{ value: string; label: string }>;
-  submitting: boolean;
-  onCancel: () => void;
-  onSubmit: (values: LicenseFormValues) => Promise<void>;
 }
 
 export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
-  open,
-  title,
-  okText,
-  form,
+  modalProps,
+  formProps,
   typeOptions,
-  submitting,
-  onCancel,
-  onSubmit,
 }) => (
-  <Modal
-    title={title}
-    open={open}
-    onOk={() => form.submit()}
-    onCancel={onCancel}
-    okText={okText}
-    width={500}
-    confirmLoading={submitting}
-    okButtonProps={{ disabled: submitting }}
-  >
-    <Form form={form} layout="vertical" onFinish={(values) => void onSubmit(values)}>
+  <Modal {...modalProps} width={500}>
+    <Form {...formProps} layout="vertical">
       <Form.Item
         name="key"
         label="License Key"

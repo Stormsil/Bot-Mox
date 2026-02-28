@@ -4,7 +4,15 @@ import routerProvider from '@refinedev/react-router';
 import { App as AntdApp, Button, ConfigProvider, Spin, Tag, Typography } from 'antd';
 import type React from 'react';
 import { lazy, Suspense, useEffect, useMemo } from 'react';
-import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
 import { QueryProvider } from './app/providers/QueryProvider';
 import { Header } from './components/layout/Header';
 import { ResourceTree } from './components/layout/ResourceTree';
@@ -192,11 +200,25 @@ const WorkspaceKanbanPage = lazy(async () => ({
 }));
 const LoginPage = lazy(async () => ({ default: (await import('./pages/login')).LoginPage }));
 
-const refineResourcePages = [
-  { name: 'licenses', path: '/licenses', component: LicensesPage },
-  { name: 'proxies', path: '/proxies', component: ProxiesPage },
-  { name: 'subscriptions', path: '/subscriptions', component: SubscriptionsPage },
-] as const;
+const refineCrudPages = {
+  licenses: LicensesPage,
+  proxies: ProxiesPage,
+  subscriptions: SubscriptionsPage,
+} as const;
+
+const RefineCrudPageRoute: React.FC = () => {
+  const { resourceName } = useParams<{ resourceName: string }>();
+  if (!resourceName) {
+    return <Navigate to="/" replace />;
+  }
+
+  const PageComponent = refineCrudPages[resourceName as keyof typeof refineCrudPages];
+  if (!PageComponent) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <PageComponent />;
+};
 
 const RouteFallback: React.FC = () => (
   <div style={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -245,13 +267,27 @@ function AppWithTheme() {
             notificationProvider={useNotificationProvider}
             resources={[
               { name: 'bots', list: '/' },
-              ...refineResourcePages.map((resourcePage) => ({
-                name: resourcePage.name,
-                list: resourcePage.path,
-                create: resourcePage.path,
-                edit: resourcePage.path,
-                show: resourcePage.path,
-              })),
+              {
+                name: 'licenses',
+                list: '/licenses',
+                create: '/licenses',
+                edit: '/licenses',
+                show: '/licenses',
+              },
+              {
+                name: 'proxies',
+                list: '/proxies',
+                create: '/proxies',
+                edit: '/proxies',
+                show: '/proxies',
+              },
+              {
+                name: 'subscriptions',
+                list: '/subscriptions',
+                create: '/subscriptions',
+                edit: '/subscriptions',
+                show: '/subscriptions',
+              },
               { name: 'notes', list: '/notes' },
             ]}
             options={{
@@ -299,14 +335,8 @@ function AppWithTheme() {
                     element={<Navigate to="/workspace/calendar" replace />}
                   />
 
-                  {/* Licenses, Proxies, Subscriptions, VMs */}
-                  {refineResourcePages.map((resourcePage) => (
-                    <Route
-                      key={resourcePage.path}
-                      path={resourcePage.path}
-                      element={<resourcePage.component />}
-                    />
-                  ))}
+                  {/* Refine CRUD resources + VMs */}
+                  <Route path="/:resourceName" element={<RefineCrudPageRoute />} />
                   <Route path="/vms" element={<VMsPage />} />
                   <Route path="/vms/list" element={<Navigate to="/vms" replace />} />
                   <Route path="/vms/unattend-profiles" element={<Navigate to="/vms" replace />} />

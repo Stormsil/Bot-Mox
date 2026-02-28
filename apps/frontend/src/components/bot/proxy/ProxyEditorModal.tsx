@@ -1,60 +1,66 @@
-import type { FormInstance } from 'antd';
+import type { FormProps, ModalProps } from 'antd';
 import { DatePicker, Form, Input, Modal, Spin, Typography } from 'antd';
+import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import type { IPQSResponse } from '../../../entities/resources/model/types';
 import type { ParsedProxy } from '../../../utils/proxyUtils';
 import { ProxyIpqsResults } from './ProxyIpqsResults';
 import { ProxyParsedAlert } from './ProxyParsedAlert';
 import styles from './proxy.module.css';
-import type { ProxyModalFormValues } from './types';
 
 const { TextArea } = Input;
 const { Text } = Typography;
 
 interface ProxyEditorModalProps {
-  open: boolean;
+  modalProps: ModalProps;
+  formProps: FormProps;
   editing: boolean;
-  form: FormInstance<ProxyModalFormValues>;
   parsedProxy: ParsedProxy | null;
   proxyInput: string;
   parseError: string;
   showPassword: boolean;
   checkingIPQS: boolean;
   ipqsData: IPQSResponse | null;
-  onCancel: () => void;
-  onSubmit: () => void;
-  onFinish: (values: ProxyModalFormValues) => Promise<void>;
   onProxyInputChange: (value: string) => void;
   onTogglePassword: () => void;
 }
 
+function toDayjsValue(value: unknown): Dayjs | null {
+  if (dayjs.isDayjs(value)) {
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'string') {
+    const parsed = dayjs(value);
+    return parsed.isValid() ? parsed : null;
+  }
+  return null;
+}
+
 export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
-  open,
+  modalProps,
+  formProps,
   editing,
-  form,
   parsedProxy,
   proxyInput,
   parseError,
   showPassword,
   checkingIPQS,
   ipqsData,
-  onCancel,
-  onSubmit,
-  onFinish,
   onProxyInputChange,
   onTogglePassword,
 }) => {
   return (
     <Modal
+      {...modalProps}
       title={editing ? 'Edit Proxy' : 'Add Proxy'}
-      open={open}
-      onOk={onSubmit}
-      onCancel={onCancel}
       okText={editing ? 'Update' : 'Add'}
       width={600}
-      okButtonProps={{ disabled: !parsedProxy }}
+      okButtonProps={{
+        ...(modalProps.okButtonProps ?? {}),
+        disabled: !parsedProxy || Boolean(modalProps.okButtonProps?.disabled),
+      }}
     >
-      <Form form={form} layout="vertical" onFinish={onFinish}>
+      <Form {...formProps} layout="vertical">
         <Form.Item
           label="Proxy String"
           required
@@ -95,6 +101,7 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
           name="expires_at"
           label="Expiration Date"
           rules={[{ required: true, message: 'Please select expiration date' }]}
+          getValueProps={(value) => ({ value: toDayjsValue(value) })}
         >
           <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" variant="filled" />
         </Form.Item>

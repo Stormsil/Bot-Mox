@@ -2,7 +2,7 @@ import type { FormInstance, FormProps, ModalProps } from 'antd';
 import { DatePicker, Form, Input, Modal, Select } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
-import type { AddBotFormValues, BotsMap, LicenseFormValues } from './types';
+import type { AddBotFormValues, BotsMap } from './types';
 
 const { Option } = Select;
 
