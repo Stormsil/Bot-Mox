@@ -17,7 +17,7 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
     log,
     usedIds,
     node,
-    queueRef,
+    getQueueItems,
     cancelRef,
     setIsProcessing,
     setUiState,
@@ -52,7 +52,7 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
       log,
     });
 
-    const pendingItems = queueRef.current.filter((item) => item.status === 'pending');
+    const pendingItems = getQueueItems().filter((item) => item.status === 'pending');
     if (pendingItems.length === 0) {
       log.warn('No pending items in queue');
       setIsProcessing(false);
@@ -155,7 +155,7 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
       completedVmIds,
       clonedItems,
       cancelRef,
-      queueRef,
+      getQueueItems,
       updateQueueItem,
       setOperationText,
       log,
@@ -186,7 +186,7 @@ export async function processVmQueue(context: ProcessVmQueueContext): Promise<vo
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unexpected queue processing error';
     const fallbackStatus = cancelRef.current ? 'cancelled' : 'error';
-    for (const queueItem of queueRef.current) {
+    for (const queueItem of getQueueItems()) {
       if (queueItem.status === 'done' || queueItem.status === 'error') {
         continue;
       }

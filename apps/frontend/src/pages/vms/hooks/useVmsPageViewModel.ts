@@ -4,10 +4,14 @@ import { useDeleteVmWorkflow } from '../../../features/vm-management';
 import { useProxmox } from '../../../features/vm-management/model/useProxmox';
 import { useVMLog } from '../../../features/vm-management/model/useVMLog';
 import { useVMQueue } from '../../../features/vm-management/model/useVMQueue';
+import {
+  resetVMQueuePanelBridgeValue,
+  setVMQueuePanelBridgeValue,
+} from '../../../features/vm-queue/model/VMQueueContext';
 import type { ProxmoxVM, VMGeneratorSettings, VMResourceMode } from '../../../shared/types';
 import {
   useVmWorkspaceLogsActions,
-  useVmWorkspaceQueueActions,
+  useVmWorkspaceQueueItems,
 } from '../../../widgets/vm-workspace/model/useVmWorkspaceStore';
 import { enqueueVmRecreate } from '../page/recreateVm';
 import { selectStorageForNewVm } from '../page/storageSelection';
@@ -25,14 +29,13 @@ export function useVmWorkspaceController() {
   const refreshVMs = proxmox.refreshVMs;
   const log = useVMLog();
   const { setOperationApi: setWorkspaceLogOperationApi } = useVmWorkspaceLogsActions();
-  const { setItems: setWorkspaceQueueItems } = useVmWorkspaceQueueActions();
   const queue = useVMQueue({
     log,
     usedIds: proxmox.usedIds,
     usedNames: proxmox.usedNames,
     node: proxmox.node,
   });
-  const queueItems = queue.queue;
+  const workspaceQueueItems = useVmWorkspaceQueueItems();
   const updateQueueItem = queue.updateQueueItem;
   const addToQueue = queue.addToQueue;
 
@@ -46,7 +49,7 @@ export function useVmWorkspaceController() {
 
   const { proxmoxVmsRef, queueItemsRef, settingsRef, templateHardwareLiveRef } = useVmPageLiveRefs({
     proxmoxVms: proxmox.vms,
-    queueItems,
+    workspaceQueueItems,
     settings,
     templateHardwareLive,
   });
@@ -56,10 +59,6 @@ export function useVmWorkspaceController() {
     proxmoxNode: proxmox.node,
     proxmoxVmsRef,
   });
-
-  useEffect(() => {
-    setWorkspaceQueueItems(queue.queue);
-  }, [queue.queue, setWorkspaceQueueItems]);
 
   useEffect(() => {
     if (!settings) {
@@ -137,9 +136,10 @@ export function useVmWorkspaceController() {
 
   const deleteVm = useDeleteVmWorkflow({
     queue: {
-      queue: queue.queue,
+      queue: workspaceQueueItems,
       addDeleteTasks: queue.addDeleteTasks,
     },
+    queueItems: workspaceQueueItems,
     proxmoxVms: proxmox.vms,
     refreshVms: proxmox.refreshVMs,
     templateVmId,
@@ -174,11 +174,11 @@ export function useVmWorkspaceController() {
     shortcutActions,
   } = useVmStartAndQueueActions({
     queue: {
-      queue: queue.queue,
       processQueue: queue.processQueue,
       cancelProcessing: queue.cancelProcessing,
       updateQueueItem: queue.updateQueueItem,
     },
+    queueItems: workspaceQueueItems,
     settings,
     proxmoxNode: proxmox.node,
     refreshVms: proxmox.refreshVMs,
@@ -213,26 +213,53 @@ export function useVmWorkspaceController() {
     [proxmox.sshConfigured, proxmox.sshConnected, proxmox.sshStatusCode],
   );
 
+  useEffect(() => {
+    setVMQueuePanelBridgeValue({
+      isProcessing: queue.isProcessing,
+      isStartActionRunning,
+      canStartAll: startableQueueItems.length > 0,
+      startingItemId: startingQueueItemId,
+      storageOptions,
+      projectOptions,
+      resourcePresets,
+      onAdd: handleAddVM,
+      onAddDelete: deleteVm.handleOpenDeleteVmModal,
+      onClear: queue.clearQueue,
+      onStartAll: handleStartAllReady,
+      onStartOne: handleStartOneReady,
+      onRemove: queue.removeFromQueue,
+      onUpdate: handleQueueUpdate,
+    });
+  }, [
+    deleteVm.handleOpenDeleteVmModal,
+    handleAddVM,
+    handleQueueUpdate,
+    handleStartAllReady,
+    handleStartOneReady,
+    isStartActionRunning,
+    projectOptions,
+    queue.clearQueue,
+    queue.isProcessing,
+    queue.removeFromQueue,
+    resourcePresets,
+    startableQueueItems.length,
+    startingQueueItemId,
+    storageOptions,
+  ]);
+
+  useEffect(() => () => resetVMQueuePanelBridgeValue(), []);
+
   return {
     proxmoxStatus,
     queue,
     log,
     deleteVm,
     storageOptions,
-    projectOptions,
-    resourcePresets,
     refreshAfterTargetChange,
     handleRecreateVm,
-    handleAddVM,
-    handleQueueUpdate,
-    handleStartAllReady,
-    handleStartOneReady,
     handleCancelTask,
     hasPending,
     queueStats,
-    isStartActionRunning,
-    startableQueueItems,
-    startingQueueItemId,
     shortcutActions,
     handleVmMutationTerminalEvent,
   };

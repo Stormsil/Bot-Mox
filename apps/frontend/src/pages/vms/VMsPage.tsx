@@ -53,24 +53,7 @@ export const VMsPage: React.FC = () => {
         />
       }
       servicePane={<VMListContainer onRecreate={controller.handleRecreateVm} />}
-      queuePane={
-        <VMQueuePanel
-          isProcessing={controller.queue.isProcessing}
-          isStartActionRunning={controller.isStartActionRunning}
-          canStartAll={controller.startableQueueItems.length > 0}
-          startingItemId={controller.startingQueueItemId}
-          storageOptions={controller.storageOptions}
-          projectOptions={controller.projectOptions}
-          resourcePresets={controller.resourcePresets}
-          onAdd={controller.handleAddVM}
-          onAddDelete={controller.deleteVm.handleOpenDeleteVmModal}
-          onClear={controller.queue.clearQueue}
-          onStartAll={controller.handleStartAllReady}
-          onStartOne={controller.handleStartOneReady}
-          onRemove={controller.queue.removeFromQueue}
-          onUpdate={controller.handleQueueUpdate}
-        />
-      }
+      queuePane={<VMQueuePanel />}
       logPane={<VMOperationLog />}
       renderModals={({ panelOpen, setPanelOpen }) => (
         <VMPageModals

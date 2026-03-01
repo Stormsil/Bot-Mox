@@ -1,30 +1,27 @@
 import { useCallback, useRef, useState } from 'react';
 import type { ProxmoxVM, VMQueueItem, VMUiState } from '../../../../shared/types';
+import { useVmWorkspaceStore } from '../../../../widgets/vm-workspace/model/useVmWorkspaceStore';
 import { processVmQueue } from './queue/processor';
 import type { AddDeleteTaskOverrides, AddToQueueOverrides, UseVMQueueParams } from './queue/types';
 import { generateNextVmName, normalizeVmId } from './queue/utils';
 export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) {
-  const [queue, setQueue] = useState<VMQueueItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [uiState, setUiState] = useState<VMUiState>('ready');
   const [operationText, setOperationText] = useState('');
   const [readyVmIds, setReadyVmIds] = useState<number[]>([]);
   const cancelRef = useRef(false);
-  const queueRef = useRef<VMQueueItem[]>([]);
   const processLockRef = useRef(false);
 
   const syncQueue = useCallback((updater: (prev: VMQueueItem[]) => VMQueueItem[]) => {
-    setQueue((prev) => {
-      const next = updater(prev);
-      queueRef.current = next;
-      return next;
-    });
+    const currentItems = useVmWorkspaceStore.getState().queue.items;
+    const next = updater(currentItems);
+    useVmWorkspaceStore.getState().queueActions.setItems(next);
   }, []);
 
   const addToQueue = useCallback(
     (overrides?: AddToQueueOverrides) => {
       const prefix = overrides?.prefix || 'WoW';
-      const queueNames = queueRef.current.map((i) => i.name);
+      const queueNames = useVmWorkspaceStore.getState().queue.items.map((i) => i.name);
       const generated = generateNextVmName(prefix, usedIds, usedNames, queueNames);
       const name = String(overrides?.name || '').trim() || generated.name;
 
@@ -57,11 +54,13 @@ export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) 
 
       const rawName = String(overrides.name || '').trim();
       const name = rawName || `VM ${vmid}`;
-      const existingDeleteTask = queueRef.current.some(
-        (item) =>
-          (item.action || 'create') === 'delete' &&
-          normalizeVmId(item.targetVmId ?? item.vmId) === vmid,
-      );
+      const existingDeleteTask = useVmWorkspaceStore
+        .getState()
+        .queue.items.some(
+          (item) =>
+            (item.action || 'create') === 'delete' &&
+            normalizeVmId(item.targetVmId ?? item.vmId) === vmid,
+        );
       if (existingDeleteTask) return null;
 
       const newItem: VMQueueItem = {
@@ -142,7 +141,7 @@ export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) 
         log,
         usedIds,
         node,
-        queueRef,
+        getQueueItems: () => useVmWorkspaceStore.getState().queue.items,
         cancelRef,
         setIsProcessing,
         setUiState,
@@ -156,7 +155,6 @@ export function useVMQueue({ log, usedIds, usedNames, node }: UseVMQueueParams) 
   }, [log, usedIds, node, updateQueueItem]);
 
   return {
-    queue,
     isProcessing,
     uiState,
     operationText,

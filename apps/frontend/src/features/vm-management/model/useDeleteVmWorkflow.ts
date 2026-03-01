@@ -8,6 +8,7 @@ import {
   type DeleteVmSubscriptionRecord,
   fetchDeleteVmContext,
 } from '../../../entities/vm/api/vmDeleteContextFacade';
+import type { VMQueueItem } from '../../../shared/types';
 import {
   type DeleteVmCandidateRow,
   type DeleteVmFilters,
@@ -25,12 +26,13 @@ import type {
 
 export const useDeleteVmWorkflow = ({
   queue,
+  queueItems,
   proxmoxVms,
   refreshVms,
   templateVmId,
   settings,
   setSettings,
-}: UseDeleteVmWorkflowParams): UseDeleteVmWorkflowResult => {
+}: UseDeleteVmWorkflowParams & { queueItems: VMQueueItem[] }): UseDeleteVmWorkflowResult => {
   const updateVmSettingsMutation = useUpdateVmSettingsMutation();
   const [deleteVmModalOpen, setDeleteVmModalOpen] = useState(false);
   const [deleteVmSelection, setDeleteVmSelection] = useState<number[]>([]);
@@ -50,7 +52,7 @@ export const useDeleteVmWorkflow = ({
 
   const queuedDeleteVmIds = useMemo(() => {
     const ids = new Set<number>();
-    queue.queue.forEach((item) => {
+    queueItems.forEach((item) => {
       if ((item.action || 'create') !== 'delete') {
         return;
       }
@@ -62,7 +64,7 @@ export const useDeleteVmWorkflow = ({
     });
 
     return ids;
-  }, [queue.queue]);
+  }, [queueItems]);
 
   const updateDeleteVmFilters = useCallback(
     async (updater: (current: DeleteVmFilters) => DeleteVmFilters) => {

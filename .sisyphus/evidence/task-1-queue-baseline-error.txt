@@ -1,0 +1,51 @@
+# Task 1 Failure Mode Baseline
+
+Purpose: demonstrate expected non-zero/fail output shape for guardrails before refactor.
+GeneratedAt: 2026-03-01T21:27:46.356Z
+
+Expected overall result: FAIL (non-zero) while legacy symbols remain.
+
+## Simulated Guardrail Outcomes Against Current Snapshot
+
+Check: queueRef forbidden symbol
+Result: FAIL (exit 1 expected)
+apps/frontend/src/features/vm-management/model/vm/queue/processor.ts:20: queueRef,
+apps/frontend/src/features/vm-management/model/vm/queue/processor.ts:55: const pendingItems = queueRef.current.filter((item) => item.status === 'pending');
+apps/frontend/src/features/vm-management/model/vm/queue/processor.ts:158: queueRef,
+apps/frontend/src/features/vm-management/model/vm/queue/processor.ts:189: for (const queueItem of queueRef.current) {
+apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts:11: queueRef: { current: VMQueueItem[] };
+apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts:26: queueRef,
+apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts:48: const currentItem = queueRef.current.find((qi) => qi.id === item.id);
+apps/frontend/src/features/vm-management/model/vm/queue/types.ts:42: queueRef: { current: VMQueueItem[] };
+apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:13: const queueRef = useRef<VMQueueItem[]>([]);
+apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:19: queueRef.current = next;
+apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:27: const queueNames = queueRef.current.map((i) => i.name);
+apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:60: const existingDeleteTask = queueRef.current.some(
+apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:145: queueRef,
+
+Check: mirror effect setWorkspaceQueueItems(queue.queue)
+Result: FAIL (exit 1 expected)
+apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts:61: setWorkspaceQueueItems(queue.queue);
+
+Check: bare <VMQueuePanel /> callsite (no business props)
+Result: FAIL (exit 1 expected)
+apps/frontend/src/pages/vms/VMsPage.tsx:57: <VMQueuePanel
+apps/frontend/src/pages/vms/VMsPage.tsx:58: isProcessing={controller.queue.isProcessing}
+apps/frontend/src/pages/vms/VMsPage.tsx:59: isStartActionRunning={controller.isStartActionRunning}
+apps/frontend/src/pages/vms/VMsPage.tsx:60: canStartAll={controller.startableQueueItems.length > 0}
+apps/frontend/src/pages/vms/VMsPage.tsx:61: startingItemId={controller.startingQueueItemId}
+apps/frontend/src/pages/vms/VMsPage.tsx:62: storageOptions={controller.storageOptions}
+apps/frontend/src/pages/vms/VMsPage.tsx:63: projectOptions={controller.projectOptions}
+apps/frontend/src/pages/vms/VMsPage.tsx:64: resourcePresets={controller.resourcePresets}
+apps/frontend/src/pages/vms/VMsPage.tsx:65: onAdd={controller.handleAddVM}
+apps/frontend/src/pages/vms/VMsPage.tsx:66: onAddDelete={controller.deleteVm.handleOpenDeleteVmModal}
+apps/frontend/src/pages/vms/VMsPage.tsx:67: onClear={controller.queue.clearQueue}
+apps/frontend/src/pages/vms/VMsPage.tsx:68: onStartAll={controller.handleStartAllReady}
+apps/frontend/src/pages/vms/VMsPage.tsx:69: onStartOne={controller.handleStartOneReady}
+apps/frontend/src/pages/vms/VMsPage.tsx:70: onRemove={controller.queue.removeFromQueue}
+apps/frontend/src/pages/vms/VMsPage.tsx:71: onUpdate={controller.handleQueueUpdate}
+apps/frontend/src/pages/vms/VMsPage.tsx:72: />
+
+## Expected Operator Interpretation
+- Any FAIL above should block completion of migration tasks until symbols are removed.
+- Post-refactor, rerun commands in task-1-queue-baseline.txt; all checks must print PASS and exit 0.

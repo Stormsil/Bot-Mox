@@ -1,7 +1,9 @@
 import type React from 'react';
-import { VMQueueContextProvider } from '../../features/vm-queue/model/VMQueueContext';
+import {
+  useVMQueuePanelBridgeValue,
+  VMQueueContextProvider,
+} from '../../features/vm-queue/model/VMQueueContext';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
-import type { VMQueueItem, VMStorageOption } from '../../shared/types';
 import { useVmWorkspaceQueueItems } from '../vm-workspace/model/useVmWorkspaceStore';
 import { useVMQueuePanelState } from './useVMQueuePanelState';
 import { VMQueueColumnsHeader } from './VMQueueColumnsHeader';
@@ -16,49 +18,32 @@ const styles = { ...coreStyles, ...modalStyles };
 
 const cx = bindCssModuleCx(styles);
 
-type VMProjectId = 'wow_tbc' | 'wow_midnight';
-
-interface QueueResourcePreset {
-  label: string;
-  cores: number;
-  memoryMb: number;
-  diskGiB: number;
-}
-
-interface VMQueuePanelProps {
-  isProcessing: boolean;
-  isStartActionRunning?: boolean;
-  canStartAll?: boolean;
-  startingItemId?: string | null;
-  storageOptions: VMStorageOption[];
-  projectOptions: Array<{ value: VMProjectId; label: string }>;
-  resourcePresets: Record<VMProjectId, QueueResourcePreset>;
-  onAdd: () => void;
-  onAddDelete?: () => void;
-  onClear: () => void;
-  onStartAll?: () => void;
-  onStartOne?: (id: string) => void;
-  onRemove: (id: string) => void;
-  onUpdate: (id: string, updates: Partial<VMQueueItem>) => void;
-}
-
-export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
-  isProcessing,
-  isStartActionRunning = false,
-  canStartAll = false,
-  startingItemId = null,
-  storageOptions,
-  projectOptions,
-  resourcePresets,
-  onAdd,
-  onAddDelete,
-  onClear,
-  onStartAll,
-  onStartOne,
-  onRemove,
-  onUpdate,
-}) => {
+export const VMQueuePanel: React.FC = () => {
   const queue = useVmWorkspaceQueueItems();
+  const bridge = useVMQueuePanelBridgeValue();
+
+  const isProcessing = bridge.isProcessing;
+  const isStartActionRunning = bridge.isStartActionRunning;
+  const startingItemId = bridge.startingItemId;
+  const storageOptions = bridge.storageOptions;
+  const projectOptions = bridge.projectOptions;
+  const resourcePresets = bridge.resourcePresets;
+  const onAdd = bridge.onAdd;
+  const onAddDelete = bridge.onAddDelete;
+  const onClear = bridge.onClear;
+  const onStartAll = bridge.onStartAll;
+  const onStartOne = bridge.onStartOne;
+  const onRemove = bridge.onRemove;
+  const onUpdate = bridge.onUpdate;
+
+  const canStartAllFromQueue = queue.some(
+    (item) =>
+      (item.action || 'create') === 'create' &&
+      item.status === 'done' &&
+      Number.isInteger(Number(item.vmId)) &&
+      Number(item.vmId) > 0,
+  );
+  const canStartAll = bridge.canStartAll ?? canStartAllFromQueue;
 
   const state = useVMQueuePanelState({
     queue,

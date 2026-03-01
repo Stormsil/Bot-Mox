@@ -3,19 +3,19 @@ import type { ProxmoxVM, VMGeneratorSettings, VMQueueItem } from '../../../share
 
 interface UseVmPageLiveRefsParams {
   proxmoxVms: ProxmoxVM[];
-  queueItems: VMQueueItem[];
+  workspaceQueueItems: VMQueueItem[];
   settings: VMGeneratorSettings | null;
   templateHardwareLive: { cores: number; memory: number } | null;
 }
 
 export function useVmPageLiveRefs({
   proxmoxVms,
-  queueItems,
+  workspaceQueueItems,
   settings,
   templateHardwareLive,
 }: UseVmPageLiveRefsParams) {
   const proxmoxVmsRef = useRef(proxmoxVms);
-  const queueItemsRef = useRef<VMQueueItem[]>(queueItems);
+  const queueItemsRef = useRef<VMQueueItem[]>(workspaceQueueItems);
   const settingsRef = useRef<VMGeneratorSettings | null>(settings);
   const templateHardwareLiveRef = useRef<{ cores: number; memory: number } | null>(
     templateHardwareLive,
@@ -26,8 +26,8 @@ export function useVmPageLiveRefs({
   }, [proxmoxVms]);
 
   useEffect(() => {
-    queueItemsRef.current = queueItems;
-  }, [queueItems]);
+    queueItemsRef.current = workspaceQueueItems;
+  }, [workspaceQueueItems]);
 
   useEffect(() => {
     settingsRef.current = settings;

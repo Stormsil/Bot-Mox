@@ -14,7 +14,6 @@ interface QueueStats {
 }
 
 interface VmQueueController {
-  queue: VMQueueItem[];
   processQueue: () => void;
   cancelProcessing: () => void;
   updateQueueItem: (id: string, updates: Partial<VMQueueItem>) => void;
@@ -22,6 +21,7 @@ interface VmQueueController {
 
 interface UseVmStartAndQueueActionsParams {
   queue: VmQueueController;
+  queueItems: VMQueueItem[];
   settings: VMGeneratorSettings | null;
   proxmoxNode: string;
   refreshVms: () => Promise<void> | void;
@@ -55,6 +55,7 @@ interface UseVmStartAndQueueActionsResult {
 
 export const useVmStartAndQueueActions = ({
   queue,
+  queueItems,
   settings,
   proxmoxNode,
   refreshVms,
@@ -71,7 +72,7 @@ export const useVmStartAndQueueActions = ({
 
   const handleQueueUpdate = useCallback(
     (id: string, updates: Partial<VMQueueItem>) => {
-      const currentItem = queue.queue.find((item) => item.id === id);
+      const currentItem = queueItems.find((item) => item.id === id);
       if (!currentItem) {
         return;
       }
@@ -134,19 +135,19 @@ export const useVmStartAndQueueActions = ({
         resourceMode: nextMode,
       });
     },
-    [getResourcePreset, queue, syncTemplateHardwareFromApi],
+    [getResourcePreset, queue, queueItems, syncTemplateHardwareFromApi],
   );
 
   const startableQueueItems = useMemo(
     () =>
-      queue.queue.filter(
+      queueItems.filter(
         (item) =>
           (item.action || 'create') === 'create' &&
           item.status === 'done' &&
           Number.isInteger(Number(item.vmId)) &&
           Number(item.vmId) > 0,
       ),
-    [queue.queue],
+    [queueItems],
   );
 
   const runVmStartAction = useCallback(
@@ -214,7 +215,7 @@ export const useVmStartAndQueueActions = ({
         return;
       }
 
-      const queueItem = queue.queue.find((item) => item.id === queueItemId);
+      const queueItem = queueItems.find((item) => item.id === queueItemId);
       if (
         !queueItem ||
         (queueItem.action || 'create') !== 'create' ||
@@ -231,24 +232,24 @@ export const useVmStartAndQueueActions = ({
       setStartingQueueItemId(queueItem.id);
       void runVmStartAction([vmid], `VM ${vmid} start completed`);
     },
-    [isStartActionRunning, queue.queue, runVmStartAction],
+    [isStartActionRunning, queueItems, runVmStartAction],
   );
 
-  const hasPending = queue.queue.some((item) => item.status === 'pending');
+  const hasPending = queueItems.some((item) => item.status === 'pending');
   const queueStats = useMemo(() => {
-    const total = queue.queue.length;
-    const pending = queue.queue.filter((item) => item.status === 'pending').length;
-    const active = queue.queue.filter(
+    const total = queueItems.length;
+    const pending = queueItems.filter((item) => item.status === 'pending').length;
+    const active = queueItems.filter(
       (item) =>
         item.status === 'cloning' ||
         item.status === 'configuring' ||
         item.status === 'provisioning' ||
         item.status === 'deleting',
     ).length;
-    const done = queue.queue.filter((item) => item.status === 'done').length;
-    const error = queue.queue.filter((item) => item.status === 'error').length;
+    const done = queueItems.filter((item) => item.status === 'done').length;
+    const error = queueItems.filter((item) => item.status === 'error').length;
     return { total, pending, active, done, error };
-  }, [queue.queue]);
+  }, [queueItems]);
 
   const shortcutActions = useMemo(
     () => ({

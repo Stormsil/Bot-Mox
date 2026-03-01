@@ -1,0 +1,22 @@
+F1 Plan Compliance Audit - vm-queue-zustand-phase-2
+
+Audit basis:
+- Reviewed working diff scope using git diff --name-only and targeted git diff for VM queue phase-2 touched frontend files.
+- Ran symbol compliance checks for required and forbidden patterns (queueRef, useState<VMQueueItem[]>, setWorkspaceQueueItems(queue.queue), bare <VMQueuePanel />).
+- Validated gate evidence for architectural checks and regression wave outcomes (task-9 and task-10 evidence files).
+
+PASS/FAIL matrix (task groups 1-10):
+| Task Group | Scope Intent | Result | Rationale |
+|---|---|---|---|
+| T1-T3 (ownership + pipeline contract) | Make Zustand the sole queue owner and remove queueRef contract | PASS | useVMQueue no longer keeps local queue state/ref; queue processor contracts use getQueueItems accessor in types/processor/provisioning; queueRef symbol is absent in vm queue path. |
+| T4-T5 (mirror removal + workflow realign) | Remove page mirror sync and rewire queue consumers to canonical source | PASS | useVmsPageViewModel no longer mirrors queue into store and no queue.queue usage remains; delete/start/live-ref flows now consume workspaceQueueItems/queueItems directly. |
+| T6-T8 (smart panel + bare callsite + cleanup) | Decouple VMQueuePanel from page prop-drilling and clean stale contracts | PASS | VMsPage renders queuePane={<VMQueuePanel />}; panel reads actions/state through bridge plus store; controller return surface removed panel-only prop-drill outputs. |
+| T9-T10 (guardrails + full regression) | Static architectural guardrails and required frontend gates all green | PASS | task-9 evidence shows all four guardrails PASS with FINAL_EXIT_CODE=0; task-10 evidence records final PASS for lint/typecheck/build and VM|queue Playwright after deterministic port-based rerun. |
+
+Deviation and scope-creep check:
+- No blocking scope deviation found in product code; touched implementation files remain within planned frontend VM queue/page/widget boundaries.
+- Observed non-product metadata drift: .sisyphus/boulder.json; excluded from implementation compliance verdict.
+
+Final verdict:
+- COMPLIANT with plan intent for completed tasks 1-10.
+- F1 checkbox is eligible and marked complete.

@@ -8,7 +8,7 @@ interface RunProvisioningIsoPhaseParams {
   completedVmIds: number[];
   clonedItems: ClonedVmQueueItem[];
   cancelRef: { current: boolean };
-  queueRef: { current: VMQueueItem[] };
+  getQueueItems: () => VMQueueItem[];
   updateQueueItem: (id: string, updates: Partial<VMQueueItem>) => void;
   setOperationText: (next: string) => void;
   log: VMLog;
@@ -23,7 +23,7 @@ export async function runProvisioningIsoPhase(params: RunProvisioningIsoPhasePar
     completedVmIds,
     clonedItems,
     cancelRef,
-    queueRef,
+    getQueueItems,
     updateQueueItem,
     setOperationText,
     log,
@@ -45,7 +45,7 @@ export async function runProvisioningIsoPhase(params: RunProvisioningIsoPhasePar
       break;
     }
 
-    const currentItem = queueRef.current.find((qi) => qi.id === item.id);
+    const currentItem = getQueueItems().find((qi) => qi.id === item.id);
     if (!currentItem || currentItem.status !== 'done') {
       continue;
     }

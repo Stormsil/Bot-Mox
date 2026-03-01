@@ -1,0 +1,33 @@
+F3 Real UI QA (agent-executed)
+Date: 2026-03-02
+Workspace: apps/frontend
+
+Scenario 1 (targeted VM queue entry-point visibility)
+Command:
+  E2E_FRONTEND_PORT=4273 pnpm exec playwright test e2e/f3-real-ui-qa.spec.ts
+
+Result:
+  PASS
+  1 passed (28.7s)
+
+Validated visible queue interactions:
+  - Queue panel rendered: "VM Queue" text visible on /vms.
+  - Add entry point visible: button "+ VM".
+  - Start entry point visible: button "Start all".
+  - Delete entry point visible: button "Delete VM".
+
+Notable observations:
+  - With auth/local API mocks in place, /vms route remained stable and queue header controls were visible without runtime errors.
+  - Start action was present in idle state as expected (no processing lock active at initial render).
+
+Scenario 2 (repo-standard VM/queue filtered regression spot-check)
+Command:
+  E2E_FRONTEND_PORT=4273 pnpm exec playwright test --grep "VM|queue"
+
+Result:
+  PASS
+  2 passed (9.0s)
+
+  Included tests:
+  - authenticated-shell.spec.ts: vm settings preview requests hardware fingerprint and renders response data
+  - fsd-boundaries-migration.spec.ts: vms delete modal opens and renders candidate list

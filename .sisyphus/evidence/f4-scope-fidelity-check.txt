@@ -1,0 +1,84 @@
+F4 Scope Fidelity Check (deep)
+Plan: .sisyphus/plans/vm-queue-zustand-phase-2.md
+Date: 2026-03-02
+
+Audit objective
+- Verify all current diff changes stay within epic scope: VM queue ownership migration to Zustand and page/panel decoupling.
+- Verify no unintended product feature expansion.
+
+Required command evidence
+1) git diff --name-only
+   .sisyphus/boulder.json
+   apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
+   apps/frontend/src/features/vm-management/model/vm/queue/processor.ts
+   apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts
+   apps/frontend/src/features/vm-management/model/vm/queue/types.ts
+   apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts
+   apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx
+   apps/frontend/src/pages/vms/VMsPage.tsx
+   apps/frontend/src/pages/vms/hooks/useVmPageLiveRefs.ts
+   apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts
+   apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts
+   apps/frontend/src/widgets/vm/VMQueuePanel.tsx
+
+2) git diff --stat
+   12 files changed, 202 insertions(+), 138 deletions(-)
+
+3) grep spot-check for unrelated domains on all touched product files
+   Pattern: finance|billing|kanban|datacenter|ipqs|bot-profile
+   Result: No matches found in each touched VM queue/product file.
+
+File-by-file scope classification
+1. .sisyphus/boulder.json
+   Classification: IN SCOPE (non-product orchestration metadata)
+   Reason: switches active plan/session metadata to vm-queue-zustand-phase-2; no runtime/product behavior.
+
+2. apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts
+   Classification: IN SCOPE
+   Reason: removes local queue ownership and queueRef path; reads/writes queue via Zustand store actions.
+
+3. apps/frontend/src/features/vm-management/model/vm/queue/types.ts
+   Classification: IN SCOPE
+   Reason: processing contract migration from queueRef to getQueueItems accessor.
+
+4. apps/frontend/src/features/vm-management/model/vm/queue/processor.ts
+   Classification: IN SCOPE
+   Reason: replaces queueRef reads with fresh getQueueItems reads in processing/catch paths.
+
+5. apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts
+   Classification: IN SCOPE
+   Reason: provisioning phase now uses getQueueItems instead of queueRef.current.
+
+6. apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts
+   Classification: IN SCOPE
+   Reason: removes queue mirror effect, consumes canonical workspace queue items, and wires smart panel bridge.
+
+7. apps/frontend/src/pages/vms/VMsPage.tsx
+   Classification: IN SCOPE
+   Reason: queue pane callsite collapsed to bare <VMQueuePanel /> (prop drilling removed).
+
+8. apps/frontend/src/widgets/vm/VMQueuePanel.tsx
+   Classification: IN SCOPE
+   Reason: panel converted to smart component via bridge/store reads; queue actions no longer page-propped.
+
+9. apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx
+   Classification: IN SCOPE
+   Reason: introduces bridge state plumbing required by smart panel decoupling.
+
+10. apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts
+    Classification: IN SCOPE
+    Reason: queue consumers realigned from queue.queue wrapper to canonical queueItems input.
+
+11. apps/frontend/src/pages/vms/hooks/useVmPageLiveRefs.ts
+    Classification: IN SCOPE
+    Reason: naming/wiring cleanup to reflect canonical workspaceQueueItems source.
+
+12. apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
+    Classification: IN SCOPE
+    Reason: queued-delete dedupe now reads explicit canonical queueItems input rather than wrapper queue.queue.
+
+Scope-fidelity conclusion
+- Out-of-scope product changes detected: NONE.
+- Product code changes map to queue ownership migration and queue panel/page decoupling only.
+- .sisyphus/boulder.json is acceptable orchestration metadata and not product scope creep.
+- F4 may be marked complete.

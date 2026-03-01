@@ -1,0 +1,60 @@
+F2 Code Quality Review - vm-queue-zustand-phase-2
+Date: 2026-03-02
+Reviewer: OpenCode (unspecified-high)
+
+Scope reviewed (current diff implementation files):
+- apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
+- apps/frontend/src/features/vm-management/model/vm/queue/processor.ts
+- apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts
+- apps/frontend/src/features/vm-management/model/vm/queue/types.ts
+- apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts
+- apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx
+- apps/frontend/src/pages/vms/VMsPage.tsx
+- apps/frontend/src/pages/vms/hooks/useVmPageLiveRefs.ts
+- apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts
+- apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts
+- apps/frontend/src/widgets/vm/VMQueuePanel.tsx
+
+Required command evidence:
+- git diff --stat: 12 files changed, 202 insertions, 138 deletions.
+- git diff --name-only: reviewed all changed implementation files above.
+- Anti-pattern scans (as any, @ts-ignore, TODO/FIXME/HACK/console.log): no matches in reviewed implementation files.
+
+Findings (PASS/FAIL with severity):
+
+PASS [HIGH] Single-source queue ownership and type-safe pipeline access are consistent.
+- Evidence refs:
+  - apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:15
+  - apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:144
+  - apps/frontend/src/features/vm-management/model/vm/queue/types.ts:37
+  - apps/frontend/src/features/vm-management/model/vm/queue/processor.ts:55
+  - apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts:48
+- Notes: queue reads/writes are routed through Zustand store accessors and fresh-read accessor (`getQueueItems`) instead of `queueRef`, reducing stale snapshot risk and improving boundary hygiene.
+
+PASS [MEDIUM] Wrapper-only residue check: no legacy prop-drill or dead compatibility path found at page -> panel boundary.
+- Evidence refs:
+  - apps/frontend/src/pages/vms/VMsPage.tsx:56
+  - apps/frontend/src/widgets/vm/VMQueuePanel.tsx:21
+  - apps/frontend/src/widgets/vm/VMQueuePanel.tsx:23
+- Notes: page callsite is bare `<VMQueuePanel />`; panel no longer exposes legacy business props surface.
+
+PASS [MEDIUM] Smart panel bridge is coherent and minimal for current architecture.
+- Evidence refs:
+  - apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx:19
+  - apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx:70
+  - apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts:217
+  - apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts:250
+- Notes: single producer (`setVMQueuePanelBridgeValue`) and single consumer hook (`useVMQueuePanelBridgeValue`) are present, with explicit unmount reset to prevent stale bridge state leakage.
+
+PASS [LOW] Readability and maintainability remain acceptable after contract cleanup.
+- Evidence refs:
+  - apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts:73
+  - apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts:53
+  - apps/frontend/src/pages/vms/hooks/useVmPageLiveRefs.ts:11
+- Notes: queue-dependent hooks now consume explicit `queueItems` inputs, making data dependencies clearer and reducing implicit coupling.
+
+FAIL findings:
+- None.
+
+Overall verdict: PASS
+- F2 can be marked complete.

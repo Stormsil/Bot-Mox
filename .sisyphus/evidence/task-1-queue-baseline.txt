@@ -1,0 +1,71 @@
+# Task 1 Baseline - Queue Ownership and Forbidden Symbols
+
+Scope: apps/frontend/src
+GeneratedAt: 2026-03-01T21:28:58.401Z
+
+## Pre-refactor Matches
+
+### queueRef
+- apps/frontend/src/features/vm-management/model/vm/queue/processor.ts:20: queueRef,
+- apps/frontend/src/features/vm-management/model/vm/queue/processor.ts:55: const pendingItems = queueRef.current.filter((item) => item.status === 'pending');
+- apps/frontend/src/features/vm-management/model/vm/queue/processor.ts:158: queueRef,
+- apps/frontend/src/features/vm-management/model/vm/queue/processor.ts:189: for (const queueItem of queueRef.current) {
+- apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts:11: queueRef: { current: VMQueueItem[] };
+- apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts:26: queueRef,
+- apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts:48: const currentItem = queueRef.current.find((qi) => qi.id === item.id);
+- apps/frontend/src/features/vm-management/model/vm/queue/types.ts:42: queueRef: { current: VMQueueItem[] };
+- apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:13: const queueRef = useRef<VMQueueItem[]>([]);
+- apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:19: queueRef.current = next;
+- apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:27: const queueNames = queueRef.current.map((i) => i.name);
+- apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:60: const existingDeleteTask = queueRef.current.some(
+- apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:145: queueRef,
+Total: 13
+
+### setWorkspaceQueueItems(queue.queue)
+- apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts:61: setWorkspaceQueueItems(queue.queue);
+Total: 1
+
+### <VMQueuePanel props usage>
+- apps/frontend/src/pages/vms/VMsPage.tsx:57: <VMQueuePanel
+- apps/frontend/src/widgets/vm/VMQueuePanel.tsx:45: export const VMQueuePanel: React.FC<VMQueuePanelProps> = ({
+- apps/frontend/src/widgets/vm/VMQueuePanel.tsx:94: <VMQueuePanelHeader
+- apps/frontend/src/widgets/vm/VMQueuePanel.tsx:114: <VMQueuePanelRow key={item.id} item={item} />
+- apps/frontend/src/widgets/vm/VMQueuePanelHeader.tsx:14: export const VMQueuePanelHeader: React.FC<VMQueuePanelHeaderProps> = ({
+- apps/frontend/src/widgets/vm/VMQueuePanelRow.tsx:24: export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({ item }) => {
+- apps/frontend/src/widgets/vm/VMQueuePanelRow.tsx:84: <VMQueuePanelRowNameCell
+- apps/frontend/src/widgets/vm/VMQueuePanelRow.tsx:235: <VMQueuePanelRowResourcesCell
+- apps/frontend/src/widgets/vm/VMQueuePanelRow.tsx:303: <VMQueuePanelRowActions
+- apps/frontend/src/widgets/vm/VMQueuePanelRowActions.tsx:14: export const VMQueuePanelRowActions: React.FC<VMQueuePanelRowActionsProps> = ({
+- apps/frontend/src/widgets/vm/VMQueuePanelRowNameCell.tsx:13: export const VMQueuePanelRowNameCell: React.FC<VMQueuePanelRowNameCellProps> = ({
+- apps/frontend/src/widgets/vm/VMQueuePanelRowResourcesCell.tsx:15: export const VMQueuePanelRowResourcesCell: React.FC<VMQueuePanelRowResourcesCellProps> = ({
+Total: 12
+
+## VMQueuePanel Callsite Shape Baseline
+- apps/frontend/src/pages/vms/VMsPage.tsx:57: <VMQueuePanel
+- apps/frontend/src/pages/vms/VMsPage.tsx:58: isProcessing={controller.queue.isProcessing}
+- apps/frontend/src/pages/vms/VMsPage.tsx:59: isStartActionRunning={controller.isStartActionRunning}
+- apps/frontend/src/pages/vms/VMsPage.tsx:60: canStartAll={controller.startableQueueItems.length > 0}
+- apps/frontend/src/pages/vms/VMsPage.tsx:61: startingItemId={controller.startingQueueItemId}
+- apps/frontend/src/pages/vms/VMsPage.tsx:62: storageOptions={controller.storageOptions}
+- apps/frontend/src/pages/vms/VMsPage.tsx:63: projectOptions={controller.projectOptions}
+- apps/frontend/src/pages/vms/VMsPage.tsx:64: resourcePresets={controller.resourcePresets}
+- apps/frontend/src/pages/vms/VMsPage.tsx:65: onAdd={controller.handleAddVM}
+- apps/frontend/src/pages/vms/VMsPage.tsx:66: onAddDelete={controller.deleteVm.handleOpenDeleteVmModal}
+- apps/frontend/src/pages/vms/VMsPage.tsx:67: onClear={controller.queue.clearQueue}
+- apps/frontend/src/pages/vms/VMsPage.tsx:68: onStartAll={controller.handleStartAllReady}
+- apps/frontend/src/pages/vms/VMsPage.tsx:69: onStartOne={controller.handleStartOneReady}
+- apps/frontend/src/pages/vms/VMsPage.tsx:70: onRemove={controller.queue.removeFromQueue}
+- apps/frontend/src/pages/vms/VMsPage.tsx:71: onUpdate={controller.handleQueueUpdate}
+- apps/frontend/src/pages/vms/VMsPage.tsx:72: />
+
+## Reusable Fail-fast Commands (post-refactor should PASS with exit 0)
+
+```bash
+node -e 'const fs=require("fs");const path=require("path");const root="apps/frontend/src";const files=[];const walk=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);if(e.isDirectory())walk(p);else if(/\.(ts|tsx|js|jsx)$/.test(e.name))files.push(p);}};walk(root);const hits=[];for(const f of files){const ls=fs.readFileSync(f,"utf8").split(/\r?\n/);ls.forEach((line,i)=>{if(/queueRef/.test(line))hits.push(f.split("\\\\").join("/")+":"+(i+1)+": "+line.trim());});}if(hits.length){console.error("FAIL queueRef\n"+hits.join("\n"));process.exit(1);}console.log("PASS queueRef");'
+
+node -e 'const f="apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts";const ls=require("fs").readFileSync(f,"utf8").split(/\r?\n/);const i=ls.findIndex(l=>/setWorkspaceQueueItems\(queue\.queue\)/.test(l));if(i>=0){console.error("FAIL mirror "+f+":"+(i+1)+": "+ls[i].trim());process.exit(1);}console.log("PASS mirror");'
+
+node -e 'const f="apps/frontend/src/pages/vms/VMsPage.tsx";const ls=require("fs").readFileSync(f,"utf8").split(/\r?\n/);const s=ls.findIndex(l=>l.includes("<VMQueuePanel"));if(s<0){console.error("FAIL missing <VMQueuePanel> callsite");process.exit(1);}let e=s;for(;e<ls.length;e++){if(ls[e].includes("/>"))break;}const block=ls.slice(s,e+1).join("\n");if(/isProcessing=|isStartActionRunning=|canStartAll=|startingItemId=|storageOptions=|projectOptions=|resourcePresets=|onAdd=|onAddDelete=|onClear=|onStartAll=|onStartOne=|onRemove=|onUpdate=/.test(block)){console.error("FAIL prop-drilled VMQueuePanel callsite\n"+block);process.exit(1);}console.log("PASS bare <VMQueuePanel /> callsite");'
+```
+
+Note: In current baseline snapshot, these commands are expected to fail until refactor tasks remove legacy paths.

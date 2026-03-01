@@ -1,9 +1,4 @@
-import type {
-  ProxmoxVM,
-  VMQueueItem,
-  VMResourceMode,
-  VMUiState,
-} from '../../../../../shared/types';
+import type { VMQueueItem, VMResourceMode, VMUiState } from '../../../../../shared/types';
 import type { VMLog } from '../../useVMLog';
 
 export interface UseVMQueueParams {
@@ -39,7 +34,7 @@ export interface ProcessVmQueueContext {
   log: VMLog;
   usedIds: Set<number>;
   node: string;
-  queueRef: { current: VMQueueItem[] };
+  getQueueItems: () => VMQueueItem[];
   cancelRef: { current: boolean };
   setIsProcessing: (next: boolean) => void;
   setUiState: (next: VMUiState) => void;
@@ -47,5 +42,3 @@ export interface ProcessVmQueueContext {
   setReadyVmIds: (next: number[]) => void;
   updateQueueItem: (id: string, updates: Partial<VMQueueItem>) => void;
 }
-
-export type VmDeleteCandidate = Pick<ProxmoxVM, 'vmid' | 'name'>;
