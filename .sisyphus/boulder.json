@@ -1,6 +1,9 @@
 {
-  "active_plan": "E:\\Боттинг\\source\\repos\\Bot-Mox\\.sisyphus\\plans\\archive\\vm-workspace-zustand-refactor.md",
-  "started_at": "2026-02-28T20:41:07.494Z",
-  "session_ids": ["ses_35a464955ffewjwRlElUl20ENP", "ses_35a464955ffewjwRlElUl20ENP"],
-  "plan_name": "vm-workspace-zustand-refactor"
+  "active_plan": "E:\\Боттинг\\source\\repos\\Bot-Mox\\.sisyphus\\plans\\vm-logs-zustand-surgical-refactor.md",
+  "started_at": "2026-03-01T20:18:30.000Z",
+  "session_ids": [
+    "ses_3550d9845ffeG1z6wmCaQez39B"
+  ],
+  "plan_name": "vm-logs-zustand-surgical-refactor",
+  "worktree_path": "E:\\Боттинг\\source\\repos\\Bot-Mox"
 }

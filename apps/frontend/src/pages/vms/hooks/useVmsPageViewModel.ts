@@ -24,8 +24,7 @@ export function useVmWorkspaceController() {
   const proxmox = useProxmox();
   const refreshVMs = proxmox.refreshVMs;
   const log = useVMLog();
-  const { setTasks: setWorkspaceLogTasks, setOperationApi: setWorkspaceLogOperationApi } =
-    useVmWorkspaceLogsActions();
+  const { setOperationApi: setWorkspaceLogOperationApi } = useVmWorkspaceLogsActions();
   const { setItems: setWorkspaceQueueItems } = useVmWorkspaceQueueActions();
   const queue = useVMQueue({
     log,
@@ -57,10 +56,6 @@ export function useVmWorkspaceController() {
     proxmoxNode: proxmox.node,
     proxmoxVmsRef,
   });
-
-  useEffect(() => {
-    setWorkspaceLogTasks(log.tasks);
-  }, [log.tasks, setWorkspaceLogTasks]);
 
   useEffect(() => {
     setWorkspaceQueueItems(queue.queue);

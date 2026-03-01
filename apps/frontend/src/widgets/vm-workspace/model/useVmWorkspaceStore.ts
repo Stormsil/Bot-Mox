@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { VMQueueItem, VMTaskEntry } from '../../../shared/types';
+import type { VMLogEntry, VMQueueItem, VMTaskEntry } from '../../../shared/types';
 
 type WorkspaceStateOwner = 'zustand' | 'react-query' | 'local';
 
@@ -73,6 +73,7 @@ export interface VmWorkspaceLogsState {
   activeTaskKey: string | null;
   filterText: string;
   isAutoFollowEnabled: boolean;
+  entries: VMLogEntry[];
   tasks: VMTaskEntry[];
   operationApi: VmWorkspaceLogOperationApi;
 }
@@ -101,6 +102,8 @@ interface VmWorkspaceLogsActions {
   setActiveTaskKey: (activeTaskKey: string | null) => void;
   setFilterText: (filterText: string) => void;
   setAutoFollowEnabled: (isAutoFollowEnabled: boolean) => void;
+  setEntries: (entries: VMLogEntry[]) => void;
+  addLogEntry: (entry: VMLogEntry) => void;
   setTasks: (tasks: VMTaskEntry[]) => void;
   setOperationApi: (operationApi: VmWorkspaceLogOperationApi) => void;
   reset: () => void;
@@ -132,6 +135,7 @@ const INITIAL_LOGS_STATE: VmWorkspaceLogsState = {
   activeTaskKey: null,
   filterText: '',
   isAutoFollowEnabled: true,
+  entries: [],
   tasks: [],
   operationApi: {
     clear: () => undefined,
@@ -225,6 +229,20 @@ export const useVmWorkspaceStore = create<VmWorkspaceStoreState>((set) => ({
         logs: {
           ...state.logs,
           isAutoFollowEnabled,
+        },
+      })),
+    setEntries: (entries) =>
+      set((state) => ({
+        logs: {
+          ...state.logs,
+          entries,
+        },
+      })),
+    addLogEntry: (entry) =>
+      set((state) => ({
+        logs: {
+          ...state.logs,
+          entries: [...state.logs.entries, entry],
         },
       })),
     setTasks: (tasks) =>

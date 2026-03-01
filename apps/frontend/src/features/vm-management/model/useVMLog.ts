@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { uiLogger } from '../../../observability/uiLogger';
 import { apiPut } from '../../../shared/api/apiClient';
 import type {
@@ -8,6 +8,7 @@ import type {
   VMTaskEntry,
   VMTaskStatus,
 } from '../../../shared/types';
+import { useVmWorkspaceStore } from '../../../widgets/vm-workspace/model/useVmWorkspaceStore';
 import {
   formatFullLog,
   hasTaskTimedOut,
@@ -36,10 +37,6 @@ interface PersistSnapshot {
 }
 
 export function useVMLog() {
-  const [entries, setEntries] = useState<VMLogEntry[]>([]);
-  const [tasks, setTasks] = useState<VMTaskEntry[]>([]);
-  const entriesRef = useRef<VMLogEntry[]>([]);
-  const tasksRef = useRef<VMTaskEntry[]>([]);
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydratedRef = useRef(false);
   const lastPersistedHashRef = useRef('');
@@ -164,8 +161,7 @@ export function useVMLog() {
       if (hydratedRef.current && serialized === lastPersistedHashRef.current) {
         return;
       }
-      tasksRef.current = parsed;
-      setTasks(parsed);
+      useVmWorkspaceStore.getState().logsActions.setTasks(parsed);
       lastPersistedHashRef.current = serialized;
       lastQueuedHashRef.current = serialized;
       hydratedRef.current = true;
@@ -192,30 +188,36 @@ export function useVMLog() {
   );
 
   const push = useCallback((entry: VMLogEntry) => {
-    entriesRef.current = [...entriesRef.current, entry];
-    setEntries(entriesRef.current);
+    useVmWorkspaceStore.getState().logsActions.addLogEntry(entry);
+  }, []);
+
+  const getTasks = useCallback((): VMTaskEntry[] => useVmWorkspaceStore.getState().logs.tasks, []);
+
+  const setStoreTasks = useCallback((nextTasks: VMTaskEntry[]) => {
+    useVmWorkspaceStore.getState().logsActions.setTasks(nextTasks);
   }, []);
 
   const updateTask = useCallback(
     (taskKey: string, updater: (task: VMTaskEntry) => VMTaskEntry) => {
-      const idx = tasksRef.current.findIndex((task) => task.key === taskKey);
+      const currentTasks = getTasks();
+      const idx = currentTasks.findIndex((task) => task.key === taskKey);
       if (idx < 0) return;
-      const current = tasksRef.current[idx];
+      const current = currentTasks[idx];
       const next = updater(current);
-      const cloned = [...tasksRef.current];
+      const cloned = [...currentTasks];
       cloned[idx] = next;
-      tasksRef.current = cloned;
-      setTasks(cloned);
+      setStoreTasks(cloned);
       persistTasks(cloned);
     },
-    [persistTasks],
+    [getTasks, persistTasks, setStoreTasks],
   );
 
   const closeRunningTaskById = useCallback(
     (taskId: string, status: VMTaskStatus, summary: string, level: VMTaskDetailLevel): boolean => {
-      const idx = tasksRef.current.findIndex((task) => task.id === taskId);
+      const currentTasks = getTasks();
+      const idx = currentTasks.findIndex((task) => task.id === taskId);
       if (idx < 0) return false;
-      const current = tasksRef.current[idx];
+      const current = currentTasks[idx];
       if (current.status !== 'running') return false;
 
       const now = Date.now();
@@ -234,23 +236,23 @@ export function useVMLog() {
         ],
       };
 
-      const cloned = [...tasksRef.current];
+      const cloned = [...currentTasks];
       cloned[idx] = updated;
-      tasksRef.current = cloned;
-      setTasks(cloned);
+      setStoreTasks(cloned);
       persistTasks(cloned);
       return true;
     },
-    [persistTasks],
+    [getTasks, persistTasks, setStoreTasks],
   );
 
   const startTask = useCallback(
     (taskKey: string, description: string, meta?: StartTaskMeta) => {
       const now = Date.now();
-      const idx = tasksRef.current.findIndex((task) => task.key === taskKey);
+      const currentTasks = getTasks();
+      const idx = currentTasks.findIndex((task) => task.key === taskKey);
 
       if (idx >= 0) {
-        const existing = tasksRef.current[idx];
+        const existing = currentTasks[idx];
         const updated: VMTaskEntry = {
           ...existing,
           description,
@@ -262,10 +264,9 @@ export function useVMLog() {
           status: 'running',
           details: [],
         };
-        const cloned = [...tasksRef.current];
+        const cloned = [...currentTasks];
         cloned[idx] = updated;
-        tasksRef.current = cloned;
-        setTasks(cloned);
+        setStoreTasks(cloned);
         persistTasks(cloned);
         return;
       }
@@ -281,16 +282,16 @@ export function useVMLog() {
         status: 'running',
         details: [],
       };
-      tasksRef.current = [...tasksRef.current, created];
-      setTasks(tasksRef.current);
-      persistTasks(tasksRef.current);
+      const nextTasks = [...currentTasks, created];
+      setStoreTasks(nextTasks);
+      persistTasks(nextTasks);
     },
-    [persistTasks],
+    [getTasks, persistTasks, setStoreTasks],
   );
 
   const taskLog = useCallback(
     (taskKey: string, message: string, level: VMTaskDetailLevel = 'info') => {
-      const idx = tasksRef.current.findIndex((task) => task.key === taskKey);
+      const idx = getTasks().findIndex((task) => task.key === taskKey);
       if (idx < 0) return;
 
       updateTask(taskKey, (task) => ({
@@ -306,7 +307,7 @@ export function useVMLog() {
         ],
       }));
     },
-    [updateTask],
+    [getTasks, updateTask],
   );
 
   const finishTask = useCallback(
@@ -349,7 +350,8 @@ export function useVMLog() {
     const now = Date.now();
     let changed = false;
 
-    const nextTasks = tasksRef.current.map((task) => {
+    const currentTasks = getTasks();
+    const nextTasks = currentTasks.map((task) => {
       if (!hasTaskTimedOut(task, now)) {
         return task;
       }
@@ -375,21 +377,18 @@ export function useVMLog() {
       return;
     }
 
-    tasksRef.current = nextTasks;
-    setTasks(nextTasks);
+    setStoreTasks(nextTasks);
     persistTasks(nextTasks);
-  }, [persistTasks]);
+  }, [getTasks, persistTasks, setStoreTasks]);
 
   const { info, warn, error, debug, step, table, diffTable } = useVmLogWriters({ push });
 
   const clear = useCallback(async () => {
-    entriesRef.current = [];
-    tasksRef.current = [];
-    setEntries([]);
-    setTasks([]);
+    useVmWorkspaceStore.getState().logsActions.setEntries([]);
+    setStoreTasks([]);
     hydratedRef.current = true;
     await persistTasksImmediately([]);
-  }, [persistTasksImmediately]);
+  }, [persistTasksImmediately, setStoreTasks]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -401,11 +400,12 @@ export function useVMLog() {
     return () => clearInterval(timer);
   }, [timeoutStaleRunningTasks]);
 
-  const getFullLog = useCallback((): string => formatFullLog(entriesRef.current), []);
+  const getFullLog = useCallback(
+    (): string => formatFullLog(useVmWorkspaceStore.getState().logs.entries),
+    [],
+  );
 
   return {
-    entries,
-    tasks,
     startTask,
     taskLog,
     finishTask,
