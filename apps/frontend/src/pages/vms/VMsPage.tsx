@@ -5,13 +5,21 @@ import { VMListContainer, VMOperationLog, VMQueuePanel, VMStatusBar } from '../.
 import { VMWorkspace } from '../../widgets/vm-workspace';
 import { VMPageModals } from '../../widgets/vm-workspace/ui/VMPageModals';
 import { VmTargetStrip } from '../../widgets/vm-workspace/ui/VmTargetStrip';
-import { useVmsPageViewModel, VM_COMMAND_REFRESH_DEBOUNCE_MS } from './hooks/useVmsPageViewModel';
+import {
+  useVmsPageViewModel,
+  useVmWorkspaceController,
+  VM_COMMAND_REFRESH_DEBOUNCE_MS,
+} from './hooks/useVmsPageViewModel';
 
 export const VMsPage: React.FC = () => {
-  const bridge = useVmsPageViewModel();
+  const controller = useVmWorkspaceController();
+  const bridge = useVmsPageViewModel({
+    shortcutActions: controller.shortcutActions,
+    onMutationTerminalEvent: controller.handleVmMutationTerminalEvent,
+  });
 
   useRefreshOnVmMutationEvents({
-    onMutationTerminalEvent: bridge.handleVmMutationTerminalEvent,
+    onMutationTerminalEvent: bridge.onMutationTerminalEvent,
     debounceMs: VM_COMMAND_REFRESH_DEBOUNCE_MS,
   });
 
@@ -21,59 +29,53 @@ export const VMsPage: React.FC = () => {
     <VMWorkspace
       renderStatusBar={({ openSettings, panelOpen }) => (
         <VMStatusBar
-          uiState={bridge.queue.uiState}
-          operationText={bridge.queue.operationText}
-          isProcessing={bridge.queue.isProcessing}
-          hasPending={bridge.hasPending}
-          queueTotal={bridge.queueStats.total}
-          pendingCount={bridge.queueStats.pending}
-          activeCount={bridge.queueStats.active}
-          doneCount={bridge.queueStats.done}
-          errorCount={bridge.queueStats.error}
-          onStart={bridge.queue.processQueue}
-          onStop={bridge.queue.cancelProcessing}
+          uiState={controller.queue.uiState}
+          operationText={controller.queue.operationText}
+          isProcessing={controller.queue.isProcessing}
+          hasPending={controller.hasPending}
+          queueTotal={controller.queueStats.total}
+          pendingCount={controller.queueStats.pending}
+          activeCount={controller.queueStats.active}
+          doneCount={controller.queueStats.done}
+          errorCount={controller.queueStats.error}
+          onStart={controller.queue.processQueue}
+          onStop={controller.queue.cancelProcessing}
           onOpenSettings={openSettings}
           activeTopPanel={panelOpen}
         />
       )}
       targetStrip={
         <VmTargetStrip
-          sshConfigured={bridge.proxmoxStatus.sshConfigured}
-          sshConnected={bridge.proxmoxStatus.sshConnected}
-          sshStatusCode={bridge.proxmoxStatus.sshStatusCode}
-          onTargetChanged={bridge.refreshAfterTargetChange}
+          sshConfigured={controller.proxmoxStatus.sshConfigured}
+          sshConnected={controller.proxmoxStatus.sshConnected}
+          sshStatusCode={controller.proxmoxStatus.sshStatusCode}
+          onTargetChanged={controller.refreshAfterTargetChange}
         />
       }
-      servicePane={<VMListContainer onRecreate={bridge.handleRecreateVm} />}
+      servicePane={<VMListContainer onRecreate={controller.handleRecreateVm} />}
       queuePane={
         <VMQueuePanel
-          isProcessing={bridge.queue.isProcessing}
-          isStartActionRunning={bridge.isStartActionRunning}
-          canStartAll={bridge.startableQueueItems.length > 0}
-          startingItemId={bridge.startingQueueItemId}
-          storageOptions={bridge.storageOptions}
-          projectOptions={bridge.projectOptions}
-          resourcePresets={bridge.resourcePresets}
-          onAdd={bridge.handleAddVM}
-          onAddDelete={bridge.deleteVm.handleOpenDeleteVmModal}
-          onClear={bridge.queue.clearQueue}
-          onStartAll={bridge.handleStartAllReady}
-          onStartOne={bridge.handleStartOneReady}
-          onRemove={bridge.queue.removeFromQueue}
-          onUpdate={bridge.handleQueueUpdate}
+          isProcessing={controller.queue.isProcessing}
+          isStartActionRunning={controller.isStartActionRunning}
+          canStartAll={controller.startableQueueItems.length > 0}
+          startingItemId={controller.startingQueueItemId}
+          storageOptions={controller.storageOptions}
+          projectOptions={controller.projectOptions}
+          resourcePresets={controller.resourcePresets}
+          onAdd={controller.handleAddVM}
+          onAddDelete={controller.deleteVm.handleOpenDeleteVmModal}
+          onClear={controller.queue.clearQueue}
+          onStartAll={controller.handleStartAllReady}
+          onStartOne={controller.handleStartOneReady}
+          onRemove={controller.queue.removeFromQueue}
+          onUpdate={controller.handleQueueUpdate}
         />
       }
-      logPane={
-        <VMOperationLog
-          onClear={bridge.log.clear}
-          onCancelTask={bridge.handleCancelTask}
-          getFullLog={bridge.log.getFullLog}
-        />
-      }
+      logPane={<VMOperationLog />}
       renderModals={({ panelOpen, setPanelOpen }) => (
         <VMPageModals
-          deleteVm={bridge.deleteVm}
-          storageOptions={bridge.storageOptions}
+          deleteVm={controller.deleteVm}
+          storageOptions={controller.storageOptions}
           panelOpen={panelOpen}
           setPanelOpen={setPanelOpen}
         />

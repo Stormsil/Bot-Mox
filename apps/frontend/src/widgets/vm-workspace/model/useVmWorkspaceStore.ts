@@ -74,6 +74,13 @@ export interface VmWorkspaceLogsState {
   filterText: string;
   isAutoFollowEnabled: boolean;
   tasks: VMTaskEntry[];
+  operationApi: VmWorkspaceLogOperationApi;
+}
+
+export interface VmWorkspaceLogOperationApi {
+  clear: () => void | Promise<void>;
+  cancelTask: (taskId: string) => void;
+  getFullLog: () => string;
 }
 
 interface VmWorkspaceLayoutActions {
@@ -95,6 +102,7 @@ interface VmWorkspaceLogsActions {
   setFilterText: (filterText: string) => void;
   setAutoFollowEnabled: (isAutoFollowEnabled: boolean) => void;
   setTasks: (tasks: VMTaskEntry[]) => void;
+  setOperationApi: (operationApi: VmWorkspaceLogOperationApi) => void;
   reset: () => void;
 }
 
@@ -125,6 +133,11 @@ const INITIAL_LOGS_STATE: VmWorkspaceLogsState = {
   filterText: '',
   isAutoFollowEnabled: true,
   tasks: [],
+  operationApi: {
+    clear: () => undefined,
+    cancelTask: () => undefined,
+    getFullLog: () => '',
+  },
 };
 
 export const useVmWorkspaceStore = create<VmWorkspaceStoreState>((set) => ({
@@ -221,6 +234,13 @@ export const useVmWorkspaceStore = create<VmWorkspaceStoreState>((set) => ({
           tasks,
         },
       })),
+    setOperationApi: (operationApi) =>
+      set((state) => ({
+        logs: {
+          ...state.logs,
+          operationApi,
+        },
+      })),
     reset: () =>
       set((state) => ({
         logs: {
@@ -245,6 +265,7 @@ const VmWorkspaceStoreSelectors = {
   logFilterText: (state: VmWorkspaceStoreState) => state.logs.filterText,
   isAutoFollowEnabled: (state: VmWorkspaceStoreState) => state.logs.isAutoFollowEnabled,
   logTasks: (state: VmWorkspaceStoreState) => state.logs.tasks,
+  logOperationApi: (state: VmWorkspaceStoreState) => state.logs.operationApi,
   logsActions: (state: VmWorkspaceStoreState) => state.logsActions,
 } as const;
 
@@ -275,5 +296,7 @@ export const useVmWorkspaceLogFilterText = () =>
 export const useVmWorkspaceIsAutoFollowEnabled = () =>
   useVmWorkspaceStore(VmWorkspaceStoreSelectors.isAutoFollowEnabled);
 export const useVmWorkspaceLogTasks = () => useVmWorkspaceStore(VmWorkspaceStoreSelectors.logTasks);
+export const useVmWorkspaceLogOperationApi = () =>
+  useVmWorkspaceStore(VmWorkspaceStoreSelectors.logOperationApi);
 export const useVmWorkspaceLogsActions = () =>
   useVmWorkspaceStore(VmWorkspaceStoreSelectors.logsActions);

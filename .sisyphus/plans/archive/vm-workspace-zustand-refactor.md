@@ -208,10 +208,10 @@ Critical Path: 1 -> 3 -> 6/7/8 -> 10
   - `apps/frontend/src/entities/vm/api/useVmQueries.ts:8` - server query hooks to keep outside Zustand.
 
   **Acceptance Criteria**:
-  - [ ] `zustand` present in `apps/frontend/package.json`
-  - [ ] `useVmWorkspaceStore.ts` exists with typed slices/actions
-  - [ ] No server state fields introduced in store
-  - [ ] `pnpm --filter @botmox/frontend typecheck` passes
+  - [x] `zustand` present in `apps/frontend/package.json`
+  - [x] `useVmWorkspaceStore.ts` exists with typed slices/actions
+  - [x] No server state fields introduced in store
+  - [x] `pnpm --filter @botmox/frontend typecheck` passes
 
   **Commit**: YES
   - Message: `refactor(vms): add zustand workspace store foundation`
@@ -249,9 +249,9 @@ Critical Path: 1 -> 3 -> 6/7/8 -> 10
   - `apps/frontend/src/features/vm-management/model/useProxmox.ts:27` - runtime server-data hook currently mixed with UI orchestration.
 
   **Acceptance Criteria**:
-  - [ ] `WorkspaceStateOwnership` exported from `useVmWorkspaceStore.ts`
-  - [ ] Entries exist for `layout`, `queue`, `logs`, `targets`, `vms`, `settings`, `shortcuts`
-  - [ ] No field appears with two owners in the artifact
+  - [x] `WorkspaceStateOwnership` exported from `useVmWorkspaceStore.ts`
+  - [x] Entries exist for `layout`, `queue`, `logs`, `targets`, `vms`, `settings`, `shortcuts`
+  - [x] No field appears with two owners in the artifact
 
   **Commit**: NO
 
@@ -284,9 +284,9 @@ Critical Path: 1 -> 3 -> 6/7/8 -> 10
   - `apps/frontend/src/widgets/vm-workspace/ui/VMPageModals.tsx:8` - modal dependencies currently supplied via parent props.
 
   **Acceptance Criteria**:
-  - [ ] `VMWorkspaceProps` is empty/minimal layout-only
-  - [ ] Resizers and modal toggles still behave identically
-  - [ ] No panel business data passed as nested props from workspace
+  - [x] `VMWorkspaceProps` is empty/minimal layout-only
+  - [x] Resizers and modal toggles still behave identically
+  - [x] No panel business data passed as nested props from workspace
 
   **Commit**: YES
   - Message: `refactor(vms): turn vmworkspace into pure layout shell`
@@ -323,10 +323,10 @@ Critical Path: 1 -> 3 -> 6/7/8 -> 10
   - `apps/frontend/src/features/vm-management/model/useVMKeyboardShortcuts.ts:11` - shortcut behavior to preserve when moving responsibilities.
 
   **Acceptance Criteria**:
-  - [ ] `VMsPage` renders workspace without `workspaceProps`
-  - [ ] `useVmsPageViewModel` removed or reduced to narrow bridge role
-  - [ ] F5/F6/F7/Ctrl+N/Ctrl+L still function as before
-  - [ ] No new hook returning aggregated panel props object
+  - [x] `VMsPage` renders workspace without `workspaceProps`
+  - [x] `useVmsPageViewModel` removed or reduced to narrow bridge role
+  - [x] F5/F6/F7/Ctrl+N/Ctrl+L still function as before
+  - [x] No new hook returning aggregated panel props object
 
   **Commit**: YES
   - Message: `refactor(vms): remove vmpage god-viewmodel aggregation`
@@ -358,9 +358,9 @@ Critical Path: 1 -> 3 -> 6/7/8 -> 10
   - `apps/frontend/src/pages/vms/hooks/useVmTargetSelection.ts:36` - current behavior for selection + refresh sequencing.
 
   **Acceptance Criteria**:
-  - [ ] Panel fetches targets directly
-  - [ ] Selected target resolution unchanged (state -> localStorage -> active fallback)
-  - [ ] Changing target refreshes dependent data exactly once
+  - [x] Panel fetches targets directly
+  - [x] Selected target resolution unchanged (state -> localStorage -> active fallback)
+  - [x] Changing target refreshes dependent data exactly once
 
   **Commit**: YES
   - Message: `refactor(vms): make target strip self-sufficient`
@@ -391,9 +391,9 @@ Critical Path: 1 -> 3 -> 6/7/8 -> 10
   - `apps/frontend/src/widgets/vm/useVmListController.ts` - action controller dependency chain.
 
   **Acceptance Criteria**:
-  - [ ] VM list panel obtains data without parent drilling
-  - [ ] Node-sensitive operations remain correct after target changes
-  - [ ] Recreate/start/stop/rename behavior unchanged
+  - [x] VM list panel obtains data without parent drilling
+  - [x] Node-sensitive operations remain correct after target changes
+  - [x] Recreate/start/stop/rename behavior unchanged
 
   **Commit**: YES
   - Message: `refactor(vms): localize vm list data access`
@@ -424,12 +424,12 @@ Critical Path: 1 -> 3 -> 6/7/8 -> 10
   - `apps/frontend/src/pages/vms/hooks/useVmOperationLogActions.ts:67` - cancel-flow coupling with queue state.
 
   **Acceptance Criteria**:
-  - [ ] `VMOperationLog` consumes tasks via store selector
-  - [ ] Clear action empties task list and success toast still shown
-  - [ ] Cancel action on running task sets task status to `cancelled`
-  - [ ] If `task.key` matches `vm:{id}`, corresponding queue item patched to `status=error` and `error="Cancelled by user"`
-  - [ ] If `task.key` missing/malformed, queue is unchanged and warning is appended to operation log
-  - [ ] No parent log prop drilling remains
+  - [x] `VMOperationLog` consumes tasks via store selector
+  - [x] Clear action empties task list and success toast still shown
+  - [x] Cancel action on running task sets task status to `cancelled`
+  - [x] If `task.key` matches `vm:{id}`, corresponding queue item patched to `status=error` and `error="Cancelled by user"`
+  - [x] If `task.key` missing/malformed, queue is unchanged and warning is appended to operation log
+  - [x] No parent log prop drilling remains
 
   **Commit**: YES
   - Message: `refactor(vms): connect operation log directly to workspace store`
@@ -461,12 +461,12 @@ Critical Path: 1 -> 3 -> 6/7/8 -> 10
   - `apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx` - internal table context boundary.
 
   **Acceptance Criteria**:
-  - [ ] Panel queue data comes from store, not parent props
-  - [ ] `onAdd` creates one new pending queue item with generated id/name
-  - [ ] `onRemove` removes exactly one item by id
-  - [ ] `onUpdate` mutates only addressed item and preserves other items
-  - [ ] `onStartAll` and `onStartOne` availability flags are unchanged versus pre-refactor behavior
-  - [ ] Queue context remains internally consistent
+  - [x] Panel queue data comes from store, not parent props
+  - [x] `onAdd` creates one new pending queue item with generated id/name
+  - [x] `onRemove` removes exactly one item by id
+  - [x] `onUpdate` mutates only addressed item and preserves other items
+  - [x] `onStartAll` and `onStartOne` availability flags are unchanged versus pre-refactor behavior
+  - [x] Queue context remains internally consistent
 
   **Commit**: YES
   - Message: `refactor(vms): wire queue panel to zustand queue slice`
@@ -498,10 +498,10 @@ Critical Path: 1 -> 3 -> 6/7/8 -> 10
   - `apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts:89` - current integration point of refresh hook.
 
   **Acceptance Criteria**:
-  - [ ] `useProxmox.ts` no longer subscribes to terminal mutation events
-  - [ ] Exactly one subscription call remains in page-level bridge path
-  - [ ] Triggering one terminal event produces one debounced refresh sequence
-  - [ ] Targeted refresh behavior preserved after terminal events
+  - [x] `useProxmox.ts` no longer subscribes to terminal mutation events
+  - [x] Exactly one subscription call remains in page-level bridge path
+  - [x] Triggering one terminal event produces one debounced refresh sequence
+  - [x] Targeted refresh behavior preserved after terminal events
 
   **Commit**: YES
   - Message: `refactor(vms): unify vm mutation event refresh bridge`
@@ -532,10 +532,10 @@ Critical Path: 1 -> 3 -> 6/7/8 -> 10
   - `apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts:1` - ensure removed/slimmed and no god-object reintroduction.
 
   **Acceptance Criteria**:
-  - [ ] No prop drilling chain for workspace business state beyond one level
-  - [ ] `pnpm --filter @botmox/frontend typecheck` -> PASS
-  - [ ] `pnpm --filter @botmox/frontend build` -> PASS
-  - [ ] Manual parity checklist complete (resizers, shortcuts, queue/log, target switching)
+  - [x] No prop drilling chain for workspace business state beyond one level
+  - [x] `pnpm --filter @botmox/frontend typecheck` -> PASS
+  - [x] `pnpm --filter @botmox/frontend build` -> PASS
+  - [x] Manual parity checklist complete (resizers, shortcuts, queue/log, target switching)
 
   **Commit**: YES
   - Message: `refactor(vms): finalize workspace decoupling and parity checks`

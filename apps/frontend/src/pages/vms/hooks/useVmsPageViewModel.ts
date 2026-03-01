@@ -20,11 +20,12 @@ import { useVmTemplateHardwareSync } from './useVmTemplateHardwareSync';
 
 export const VM_COMMAND_REFRESH_DEBOUNCE_MS = 500;
 
-export function useVmsPageViewModel() {
+export function useVmWorkspaceController() {
   const proxmox = useProxmox();
   const refreshVMs = proxmox.refreshVMs;
   const log = useVMLog();
-  const { setTasks: setWorkspaceLogTasks } = useVmWorkspaceLogsActions();
+  const { setTasks: setWorkspaceLogTasks, setOperationApi: setWorkspaceLogOperationApi } =
+    useVmWorkspaceLogsActions();
   const { setItems: setWorkspaceQueueItems } = useVmWorkspaceQueueActions();
   const queue = useVMQueue({
     log,
@@ -158,6 +159,14 @@ export function useVmsPageViewModel() {
     refreshStorageOptions,
   });
 
+  useEffect(() => {
+    setWorkspaceLogOperationApi({
+      clear: log.clear,
+      cancelTask: handleCancelTask,
+      getFullLog: log.getFullLog,
+    });
+  }, [handleCancelTask, log.clear, log.getFullLog, setWorkspaceLogOperationApi]);
+
   const {
     isStartActionRunning,
     startingQueueItemId,
@@ -232,4 +241,21 @@ export function useVmsPageViewModel() {
     shortcutActions,
     handleVmMutationTerminalEvent,
   };
+}
+
+type UseVmsPageBridgeParams = {
+  shortcutActions: ReturnType<typeof useVmWorkspaceController>['shortcutActions'];
+  onMutationTerminalEvent: () => void;
+};
+
+export function useVmsPageViewModel(params: UseVmsPageBridgeParams) {
+  const { shortcutActions, onMutationTerminalEvent } = params;
+
+  return useMemo(
+    () => ({
+      shortcutActions,
+      onMutationTerminalEvent,
+    }),
+    [onMutationTerminalEvent, shortcutActions],
+  );
 }

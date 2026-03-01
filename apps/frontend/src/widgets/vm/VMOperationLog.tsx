@@ -2,7 +2,10 @@ import { message, Popconfirm } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
-import { useVmWorkspaceLogTasks } from '../vm-workspace/model/useVmWorkspaceStore';
+import {
+  useVmWorkspaceLogOperationApi,
+  useVmWorkspaceLogTasks,
+} from '../vm-workspace/model/useVmWorkspaceStore';
 import coreStyles from './VMOperationLogCore.module.css';
 import modalStyles from './VMOperationLogModal.module.css';
 import { VMOperationTasksTable } from './VMOperationTasksTable';
@@ -13,18 +16,9 @@ const styles = { ...coreStyles, ...modalStyles };
 
 const cx = bindCssModuleCx(styles);
 
-interface VMOperationLogProps {
-  onClear: () => void | Promise<void>;
-  onCancelTask: (taskId: string) => void;
-  getFullLog: () => string;
-}
-
-export const VMOperationLog: React.FC<VMOperationLogProps> = ({
-  onClear,
-  onCancelTask,
-  getFullLog,
-}) => {
+export const VMOperationLog: React.FC = () => {
   const tasks = useVmWorkspaceLogTasks();
+  const { clear, cancelTask, getFullLog } = useVmWorkspaceLogOperationApi();
   const [expanded, setExpanded] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [taskModalOpen, setTaskModalOpen] = useState(false);
@@ -100,14 +94,14 @@ export const VMOperationLog: React.FC<VMOperationLogProps> = ({
     if (!selectedTask || selectedTask.status !== 'running') {
       return;
     }
-    onCancelTask(selectedTask.id);
+    cancelTask(selectedTask.id);
     message.info('Cancellation requested');
   };
 
   const handleClear = async () => {
     try {
       setIsClearing(true);
-      await onClear();
+      await clear();
       setTaskModalOpen(false);
       message.success('Operation history cleared');
     } catch (error) {

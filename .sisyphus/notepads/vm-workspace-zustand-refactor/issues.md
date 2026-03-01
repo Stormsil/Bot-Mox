@@ -42,3 +42,16 @@
 ## 2026-03-01 Task 10: final hardening and regression verification
 - No new blockers introduced during dead-code cleanup and final gates.
 - Remaining known risk intentionally unchanged: queue/log coupling via `task.key`.
+
+## 2026-03-01 Acceptance block re-check: Task 1 criteria
+- No new blockers found while verifying the first unchecked acceptance block.
+- Remaining known risk unchanged and out of scope for this acceptance step: queue/log coupling via `task.key`.
+
+## 2026-03-01 Acceptance block re-check: Task 4 criteria
+- Blocker: `apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts` is still a wide orchestration hook (queue/log/proxmox/settings/storage/start actions/delete workflow), so the criterion "removed or reduced to narrow bridge role" is not yet met.
+
+## 2026-03-01 Acceptance block re-check: Task 7 criteria
+- Blocker: parent log prop drilling remains. `VMOperationLog` still requires parent callbacks (`onClear`, `onCancelTask`, `getFullLog`) (`apps/frontend/src/widgets/vm/VMOperationLog.tsx:17`), and `VMsPage` still injects them from controller/log ports (`apps/frontend/src/pages/vms/VMsPage.tsx:76`, `apps/frontend/src/pages/vms/VMsPage.tsx:77`, `apps/frontend/src/pages/vms/VMsPage.tsx:78`).
+
+## 2026-03-01 Task 10 acceptance finalization blocker
+- Target-switching manual parity verification could not be completed due selector interaction timeout in automation.
