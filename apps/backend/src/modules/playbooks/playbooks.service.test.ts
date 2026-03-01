@@ -65,7 +65,7 @@ test('PlaybooksService uses repository list results', async () => {
   assert.equal(list[0].name, 'Tenant A');
 });
 
-test('PlaybooksService stores encrypted payload and returns decrypted shape', async () => {
+test('PlaybooksService passes plain payload to repository and returns record shape', async () => {
   let lastUpsertPayload: Record<string, unknown> | null = null;
   const dbRows = new Map<string, Record<string, unknown>>();
   const repositoryStub: RepositoryStub = {
@@ -87,8 +87,11 @@ test('PlaybooksService stores encrypted payload and returns decrypted shape', as
   );
   assert.equal(created.id, 'pb-sec-1');
   assert.equal(created.content, 'private content');
-  assert.ok(lastUpsertPayload && Object.hasOwn(lastUpsertPayload, '__enc_payload_v1'));
-  assert.equal(Object.hasOwn(lastUpsertPayload || {}, 'content'), false);
+  assert.equal(
+    Boolean(lastUpsertPayload && Object.hasOwn(lastUpsertPayload, '__enc_payload_v1')),
+    false,
+  );
+  assert.equal((lastUpsertPayload as Record<string, unknown> | null)?.content, 'private content');
 
   const listed = await service.list('tenant-a');
   assert.equal(listed.length, 1);

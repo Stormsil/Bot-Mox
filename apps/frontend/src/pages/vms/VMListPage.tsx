@@ -1,5 +1,5 @@
 import type React from 'react';
-import { VMList } from '../../components/vm';
+import { VMList } from '../../widgets/vm';
 import styles from './VMListPage.module.css';
 
 export const VMListPage: React.FC = () => {

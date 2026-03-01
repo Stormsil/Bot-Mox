@@ -3,6 +3,16 @@ import {
   resourceListQuerySchema,
   resourceMutationSchema,
 } from '@botmox/api-contract';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  MinLength,
+} from 'class-validator';
 import {
   BadRequestException,
   Body,
@@ -20,15 +30,90 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { z } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
+import { createBadRequestValidationPipe, ZodSchemaValidationPipe } from '../common/http-validation.util';
+import { buildTrimmedIdSchema } from '../common/zod-http-parse';
 import { type ResourceListQuery, ResourcesService } from './resources.service';
 
-const resourceIdSchema = z
-  .string()
-  .min(1)
-  .transform((value) => value.trim())
-  .refine((value) => value.length > 0, 'Resource id is required');
+type ResourceKind = 'licenses' | 'proxies' | 'subscriptions';
+
+const resourceListQueryPipe = createBadRequestValidationPipe('RESOURCES_INVALID_LIST_QUERY', 'Invalid resources list query');
+const resourceKindBodylessPipe = new ZodSchemaValidationPipe(
+  resourceKindSchema,
+  'RESOURCES_INVALID_KIND',
+  'Invalid resource kind',
+);
+const resourceIdStringPipe = new ZodSchemaValidationPipe(
+  buildTrimmedIdSchema('Resource id'),
+  'RESOURCES_INVALID_ID',
+  'Invalid resource id',
+);
+const resourceMutationBodyPipe = new ZodSchemaValidationPipe(
+  resourceMutationSchema,
+  'RESOURCES_INVALID_BODY',
+  'Invalid resource payload',
+);
+
+class ResourceListQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  limit?: number;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value)))
+  @IsString()
+  @MinLength(1)
+  sort?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value)))
+  @IsIn(['asc', 'desc'])
+  order?: 'asc' | 'desc';
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value).trim()))
+  @IsString()
+  q?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value).trim()))
+  @IsString()
+  @MinLength(1)
+  status?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value).trim()))
+  @IsString()
+  @MinLength(1)
+  type?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value).trim()))
+  @IsString()
+  @MinLength(1)
+  country?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value).trim()))
+  @IsString()
+  @MinLength(1)
+  country_code?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value).trim()))
+  @IsString()
+  @MinLength(1)
+  bot_id?: string;
+}
 
 @Controller('resources')
 export class ResourcesController {
@@ -43,59 +128,26 @@ export class ResourcesController {
     }
   }
 
-  private parseKind(kind: string): 'licenses' | 'proxies' | 'subscriptions' {
-    const parsed = resourceKindSchema.safeParse(String(kind || '').trim());
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'RESOURCES_INVALID_KIND',
-        message: 'Invalid resource kind',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+  private getTenantId(req: Request): string {
+    return getRequestIdentity(req).tenantId;
   }
 
-  private parseId(id: string): string {
-    const parsed = resourceIdSchema.safeParse(String(id || ''));
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'RESOURCES_INVALID_ID',
-        message: 'Invalid resource id',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+  private getExplicitIdFromBody(body: Record<string, unknown>): string | undefined {
+    return typeof body.id === 'string' ? body.id.trim() : undefined;
   }
 
-  private parseBody(body: unknown): Record<string, unknown> {
-    const parsed = resourceMutationSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'RESOURCES_INVALID_BODY',
-        message: 'Invalid resource payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
-  }
-
-  private parseListQuery(query: Record<string, unknown>): ResourceListQuery {
-    const parsed = resourceListQuerySchema.safeParse(query ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'RESOURCES_INVALID_LIST_QUERY',
-        message: 'Invalid resources list query',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
+  private getNotFoundPayload(): { code: string; message: string } {
+    return {
+      code: 'RESOURCE_NOT_FOUND',
+      message: 'Resource not found',
+    };
   }
 
   @Get(':kind')
   async list(
     @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Query() query: Record<string, unknown>,
+    @Param('kind', resourceKindBodylessPipe) kind: string,
+    @Query(resourceListQueryPipe) query: ResourceListQueryDto,
     @Req() req: Request,
   ): Promise<{
     success: true;
@@ -103,11 +155,10 @@ export class ResourcesController {
     meta: { total: number; page: number; limit: number };
   }> {
     this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedQuery = this.parseListQuery(query);
-    const identity = getRequestIdentity(req);
-    const result = await this.resourcesService.list(parsedKind, parsedQuery, identity.tenantId);
-
+    const parsedKind = this.parseZodKind(kind);
+    const parsedQuery = this.parseZodListQuery(query);
+    const tenantId = this.getTenantId(req);
+    const result = await this.resourcesService.list(parsedKind, parsedQuery, tenantId);
     return {
       success: true,
       data: result.items,
@@ -122,117 +173,74 @@ export class ResourcesController {
   @Get(':kind/:id')
   async getOne(
     @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Param('id') id: string,
+    @Param('kind', resourceKindBodylessPipe) kind: string,
+    @Param('id', resourceIdStringPipe) id: string,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedId = this.parseId(id);
-    const identity = getRequestIdentity(req);
-    const entity = await this.resourcesService.getById(parsedKind, parsedId, identity.tenantId);
-
+    const parsedKind = this.parseZodKind(kind);
+    const parsedId = id;
+    const tenantId = this.getTenantId(req);
+    const entity = await this.resourcesService.getById(parsedKind, parsedId, tenantId);
     if (!entity) {
-      throw new NotFoundException({
-        code: 'RESOURCE_NOT_FOUND',
-        message: 'Resource not found',
-      });
+      throw new NotFoundException(this.getNotFoundPayload());
     }
-
-    return {
-      success: true,
-      data: entity,
-    };
+    return { success: true, data: entity };
   }
 
   @Post(':kind')
   async create(
     @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Body() body: unknown,
+    @Param('kind', resourceKindBodylessPipe) kind: string,
+    @Body(resourceMutationBodyPipe) body: Record<string, unknown>,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedBody = this.parseBody(body);
-    const explicitId = typeof parsedBody.id === 'string' ? parsedBody.id : undefined;
-    const identity = getRequestIdentity(req);
-
+    const parsedKind = this.parseZodKind(kind);
+    const parsedBody = body;
+    const tenantId = this.getTenantId(req);
+    const explicitId = this.getExplicitIdFromBody(parsedBody);
     return {
       success: true,
-      data: await this.resourcesService.create(
-        parsedKind,
-        parsedBody,
-        explicitId,
-        identity.tenantId,
-      ),
+      data: await this.resourcesService.create(parsedKind, parsedBody, explicitId, tenantId),
     };
   }
 
   @Patch(':kind/:id')
   async update(
     @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Param('id') id: string,
-    @Body() body: unknown,
+    @Param('kind', resourceKindBodylessPipe) kind: string,
+    @Param('id', resourceIdStringPipe) id: string,
+    @Body(resourceMutationBodyPipe) body: Record<string, unknown>,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
     this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedId = this.parseId(id);
-    const parsedBody = this.parseBody(body);
-    const identity = getRequestIdentity(req);
-    const updated = await this.resourcesService.update(
-      parsedKind,
-      parsedId,
-      parsedBody,
-      identity.tenantId,
-    );
-
+    const parsedKind = this.parseZodKind(kind);
+    const parsedId = id;
+    const parsedBody = body;
+    const tenantId = this.getTenantId(req);
+    const updated = await this.resourcesService.update(parsedKind, parsedId, parsedBody, tenantId);
     if (!updated) {
-      throw new NotFoundException({
-        code: 'RESOURCE_NOT_FOUND',
-        message: 'Resource not found',
-      });
+      throw new NotFoundException(this.getNotFoundPayload());
     }
-
-    return {
-      success: true,
-      data: updated,
-    };
-  }
-
-  @Put(':kind/:id')
-  upsertAlias(
-    @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Param('id') id: string,
-    @Body() body: unknown,
-    @Req() req: Request,
-  ): Promise<{ success: true; data: unknown }> {
-    return this.update(authorization, kind, id, body, req);
+    return { success: true, data: updated };
   }
 
   @Delete(':kind/:id')
   async remove(
     @Headers('authorization') authorization: string | undefined,
-    @Param('kind') kind: string,
-    @Param('id') id: string,
+    @Param('kind', resourceKindBodylessPipe) kind: string,
+    @Param('id', resourceIdStringPipe) id: string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { id: string; deleted: boolean } }> {
     this.ensureAuthHeader(authorization);
-    const parsedKind = this.parseKind(kind);
-    const parsedId = this.parseId(id);
-    const identity = getRequestIdentity(req);
-    const deleted = await this.resourcesService.remove(parsedKind, parsedId, identity.tenantId);
-
+    const parsedKind = this.parseZodKind(kind);
+    const parsedId = id;
+    const tenantId = this.getTenantId(req);
+    const deleted = await this.resourcesService.remove(parsedKind, parsedId, tenantId);
     if (!deleted) {
-      throw new NotFoundException({
-        code: 'RESOURCE_NOT_FOUND',
-        message: 'Resource not found',
-      });
+      throw new NotFoundException(this.getNotFoundPayload());
     }
-
     return {
       success: true,
       data: {
@@ -240,5 +248,40 @@ export class ResourcesController {
         deleted: true,
       },
     };
+  }
+
+  @Put(':kind/:id')
+  upsertAlias(
+    @Headers('authorization') authorization: string | undefined,
+    @Param('kind', resourceKindBodylessPipe) kind: string,
+    @Param('id', resourceIdStringPipe) id: string,
+    @Body(resourceMutationBodyPipe) body: Record<string, unknown>,
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    return this.update(authorization, kind, id, body, req);
+  }
+
+  private parseZodKind(kind: string): ResourceKind {
+    const parsed = resourceKindSchema.safeParse(kind);
+    if (!parsed.success) {
+      throw new BadRequestException({
+        code: 'RESOURCES_INVALID_KIND',
+        message: 'Invalid resource kind',
+        details: parsed.error.flatten(),
+      });
+    }
+    return parsed.data;
+  }
+
+  private parseZodListQuery(query: ResourceListQueryDto): ResourceListQuery {
+    const parsed = resourceListQuerySchema.safeParse(query);
+    if (!parsed.success) {
+      throw new BadRequestException({
+        code: 'RESOURCES_INVALID_LIST_QUERY',
+        message: 'Invalid resources list query',
+        details: parsed.error.flatten(),
+      });
+    }
+    return parsed.data;
   }
 }

@@ -2,4 +2,4 @@ export {
   getVMSettings,
   stripPasswords,
   updateVMSettings,
-} from '../../../providers/vm-settings-client';
+} from '../../../shared/api/providers/vm-settings-client';

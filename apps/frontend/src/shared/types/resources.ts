@@ -1,0 +1,16 @@
+export type {
+  BotLicense,
+  ComputedSubscriptionStatus,
+  IPQSResponse,
+  LicenseBotName,
+  LicenseWithBots,
+  Proxy,
+  ResourceKind,
+  Subscription,
+  SubscriptionDbStatus,
+  SubscriptionFormData,
+  SubscriptionSettings,
+  SubscriptionSummary,
+  SubscriptionType,
+  SubscriptionWithDetails,
+} from '../../entities/resources/model/types';

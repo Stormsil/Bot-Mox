@@ -1,5 +1,7 @@
 import { type UseMutationResult, useMutation } from '@tanstack/react-query';
+import { vmQueryKeys } from './vmQueryKeys';
 import {
+  getVmHardwareFingerprint,
   proxmoxLogin,
   startAndSendKeyBatch,
   startVM,
@@ -90,6 +92,17 @@ export function useStartAndSendKeyBatchMutation(): UseMutationResult<
 export function useProxmoxLoginMutation(): UseMutationResult<boolean, Error, void> {
   return useMutation<boolean, Error, void>({
     mutationFn: async () => proxmoxLogin(),
+  });
+}
+
+export function useVmHardwareFingerprintMutation(): UseMutationResult<
+  Awaited<ReturnType<typeof getVmHardwareFingerprint>>,
+  Error,
+  void
+> {
+  return useMutation<Awaited<ReturnType<typeof getVmHardwareFingerprint>>, Error, void>({
+    mutationKey: vmQueryKeys.hardwareFingerprint(),
+    mutationFn: async () => getVmHardwareFingerprint(),
   });
 }
 

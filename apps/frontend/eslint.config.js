@@ -29,6 +29,29 @@ export default defineConfig([
     rules: {
       // Prevent accidental form submissions (default type is "submit").
       'react/button-has-type': 'error',
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: 'Literal[value=3600000]',
+          message:
+            'Use dayjs/shared date helpers instead of magic millisecond literals (3600000 = 1 hour).',
+        },
+        {
+          selector: 'Literal[value=86400000]',
+          message:
+            "Use dayjs().add/subtract(..., 'day') or shared date helpers instead of 86400000.",
+        },
+        {
+          selector: 'Literal[value=172800000]',
+          message:
+            "Use dayjs().add/subtract(..., 'day') or shared date helpers instead of 172800000.",
+        },
+        {
+          selector: 'Literal[value=259200000]',
+          message:
+            "Use dayjs().add/subtract(..., 'day') or shared date helpers instead of 259200000.",
+        },
+      ],
     },
   },
   {

@@ -1,0 +1,1147 @@
+{
+  "timestampUtc": "2026-02-27T10:50:10.629Z",
+  "runtime": {
+    "baseUrl": "http://127.0.0.1:5173"
+  },
+  "authenticatedSessionSeeded": true,
+  "routes": {
+    "/licenses": {
+      "urlSync": {
+        "beforeRefresh": "http://127.0.0.1:5173/licenses?pageSize=10&currentPage=2&filters[0][field]=q&filters[0][operator]=eq&filters[0][value]=PARITY&sorters[0][field]=created_at&sorters[0][order]=desc",
+        "afterRefresh": "http://127.0.0.1:5173/licenses?pageSize=10&currentPage=2&filters[0][field]=q&filters[0][operator]=eq&filters[0][value]=PARITY&sorters[0][field]=created_at&sorters[0][order]=desc",
+        "pass": true
+      },
+      "sorterSync": {
+        "sorterField": "created_at",
+        "sorterOrder": "desc",
+        "pass": true
+      },
+      "modalOpenClose": true,
+      "deleteDialogVisible": "not-checked"
+    },
+    "/proxies": {
+      "urlSync": {
+        "beforeRefresh": "http://127.0.0.1:5173/proxies?pageSize=10&currentPage=2&filters[0][field]=q&filters[0][operator]=eq&filters[0][value]=10.0.0&sorters[0][field]=expires_at&sorters[0][order]=desc",
+        "afterRefresh": "http://127.0.0.1:5173/proxies?pageSize=10&currentPage=2&filters[0][field]=q&filters[0][operator]=eq&filters[0][value]=10.0.0&sorters[0][field]=expires_at&sorters[0][order]=desc",
+        "pass": true
+      },
+      "sorterSync": {
+        "sorterField": "expires_at",
+        "sorterOrder": "desc",
+        "pass": true
+      },
+      "modalOpenClose": true,
+      "deleteDialogVisible": "not-checked"
+    },
+    "/subscriptions": {
+      "urlSync": {
+        "beforeRefresh": "http://127.0.0.1:5173/subscriptions?pageSize=10&currentPage=2&filters[0][field]=q&filters[0][operator]=eq&filters[0][value]=Seeded&sorters[0][field]=created_at&sorters[0][order]=desc",
+        "afterRefresh": "http://127.0.0.1:5173/subscriptions?pageSize=10&currentPage=2&filters[0][field]=q&filters[0][operator]=eq&filters[0][value]=Seeded&sorters[0][field]=created_at&sorters[0][order]=desc",
+        "pass": true
+      },
+      "sorterSync": {
+        "sorterField": "created_at",
+        "sorterOrder": "desc",
+        "pass": true
+      },
+      "modalOpenClose": true,
+      "deleteDialogVisible": "not-checked"
+    }
+  },
+  "botResources": {
+    "licenseUnassignDeletesSingleBotLicense": false,
+    "proxyUnassignSendsNullBotId": false,
+    "proxyParseAndIpqsPathReachable": true,
+    "subscriptionAccountEmailHydrationPathReachable": true,
+    "subscriptionModalOpenClose": true,
+    "subscriptionDeleteConfirmVisible": true
+  },
+  "mutationLog": [],
+  "requestLog": [
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=10&q=PARITY"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=2&limit=10&q=PARITY"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=PARITY"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=PARITY"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=PARITY"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=PARITY"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=PARITY"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=PARITY"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=PARITY"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=PARITY"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses/lic-11",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=10&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&sort=expires_at&order=desc&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&sort=expires_at&order=desc&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&sort=expires_at&order=desc&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&sort=expires_at&order=desc&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&sort=expires_at&order=desc&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&sort=expires_at&order=desc&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&sort=expires_at&order=desc&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&sort=expires_at&order=desc&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies/proxy-11",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&sort=expires_at&order=desc&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=2&limit=10&sort=expires_at&order=desc&q=10.0.0"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/alerts",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=10"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=10&q=Seeded"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=2&limit=10&q=Seeded"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/alerts",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=Seeded"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=Seeded"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=Seeded"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=Seeded"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/alerts",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=Seeded"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=Seeded"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=Seeded"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=2&limit=10&sort=created_at&order=desc&q=Seeded"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions/sub-11",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots/bot-1",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000&bot_id=bot-1"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/alerts",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots/bot-1",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000&bot_id=bot-1"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses/lic-1",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots/bot-1",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000&bot_id=bot-1"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/alerts",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots/bot-1",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000&bot_id=bot-1"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies/proxy-1",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/api_keys",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/proxy",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/ipqs/status",
+      "search": ""
+    },
+    {
+      "method": "POST",
+      "pathname": "/api/v1/ipqs/check",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/theme",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots/bot-1",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots",
+      "search": "?page=1&limit=200&sort=updated_at&order=desc"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/projects",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/ui/resource_tree",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000&bot_id=bot-1"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/settings/alerts",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/bots/bot-1",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/licenses",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/proxies",
+      "search": "?page=1&limit=5000"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions",
+      "search": "?page=1&limit=5000&bot_id=bot-1"
+    },
+    {
+      "method": "GET",
+      "pathname": "/api/v1/resources/subscriptions/sub-1",
+      "search": ""
+    }
+  ]
+}

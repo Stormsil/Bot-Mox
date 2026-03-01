@@ -6,8 +6,6 @@
 
 .header {
   margin-bottom: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
 }
 
 .headerContent {
@@ -29,43 +27,6 @@
 
 .headerSubtitle {
   color: var(--boxmox-color-text-secondary);
-}
-
-.stats {
-  margin-bottom: 16px;
-  width: 100%;
-}
-
-.statCard {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-  text-align: center;
-  width: 100%;
-}
-
-.statValue {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--boxmox-color-text-primary);
-}
-
-.statLabel {
-  font-size: 12px;
-  color: var(--boxmox-color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.statCardActive .statValue {
-  color: #52c41a;
-}
-
-.statCardExpired .statValue {
-  color: #ff4d4f;
-}
-
-.statCardWarning .statValue {
-  color: #faad14;
 }
 
 .expiringAlert {
@@ -101,30 +62,4 @@
 
 .filters {
   margin-bottom: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-}
-
-.tableCard {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-}
-
-.tableHeaderCell {
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-secondary);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-  font-weight: 500;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.tableCell {
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
-}
-
-.tableRow:hover .tableCell {
-  background: var(--boxmox-color-surface-hover);
 }

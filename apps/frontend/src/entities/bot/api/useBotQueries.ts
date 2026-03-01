@@ -2,7 +2,7 @@ import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 import {
   fetchBotByIdViaContract,
   fetchBotsListViaContract,
-} from '../../../providers/bot-contract-client';
+} from '../../../shared/api/providers/bot-contract-client';
 import type { BotRecord } from '../model/types';
 import { botQueryKeys } from './botQueryKeys';
 

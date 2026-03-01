@@ -1,1 +1,1 @@
-export { setVmSettingsSecret } from '../../../providers/vm-secrets-client';
+export { setVmSettingsSecret } from '../../../shared/api/providers/vm-secrets-client';

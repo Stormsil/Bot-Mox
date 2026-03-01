@@ -1,5 +1,8 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteBotViaContract, patchBotViaContract } from '../../../providers/bot-contract-client';
+import {
+  deleteBotViaContract,
+  patchBotViaContract,
+} from '../../../shared/api/providers/bot-contract-client';
 import { botQueryKeys } from './botQueryKeys';
 
 interface UpdateBotPayload {

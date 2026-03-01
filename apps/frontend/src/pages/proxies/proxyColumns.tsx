@@ -5,13 +5,14 @@ import {
   RobotOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
+import { DeleteButton, EditButton } from '@refinedev/antd';
 import { Button, Progress, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import type React from 'react';
-import { TableActionButton, TableActionGroup } from '../../components/ui/TableActionButton';
 import { getFraudScoreColor } from '../../entities/resources/api/ipqsFacade';
 import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
+import { TableActionButton, TableActionGroup } from '../../shared/ui/TableActionButton';
 import styles from './ProxiesPage.module.css';
 
 const { Text } = Typography;
@@ -45,8 +46,7 @@ interface BuildProxyColumnsParams {
   isExpiringSoon: (expiresAt: number) => boolean;
   copyProxyString: (proxy: ProxyResource, event?: React.MouseEvent) => void;
   handleRecheckIPQS: (proxy: ProxyWithBot) => void;
-  openEditModal: (proxy?: ProxyWithBot) => void;
-  handleDelete: (proxy: ProxyWithBot) => void;
+  onEdit: (proxyId: string) => void;
 }
 
 export function buildProxyColumns({
@@ -55,8 +55,7 @@ export function buildProxyColumns({
   isExpiringSoon,
   copyProxyString,
   handleRecheckIPQS,
-  openEditModal,
-  handleDelete,
+  onEdit,
 }: BuildProxyColumnsParams): ColumnsType<ProxyWithBot> {
   return [
     {
@@ -80,7 +79,7 @@ export function buildProxyColumns({
         }
 
         return (
-          <Tag color={color} style={tagStyle}>
+          <Tag bordered={false} color={color} style={tagStyle}>
             {text.toUpperCase()}
           </Tag>
         );
@@ -98,11 +97,11 @@ export function buildProxyColumns({
             onClick={(e) => copyProxyString(record, e)}
             icon={<CopyOutlined />}
           >
-            <Text strong className={styles.proxyCopyText}>
+            <Text code className={styles.proxyCopyText}>
               {record.ip}:{record.port}
             </Text>
           </Button>
-          <Text type="secondary" className={styles.proxyCredentials}>
+          <Text code type="secondary" className={styles.proxyCredentials}>
             {record.login}:{record.password}
           </Text>
         </div>
@@ -123,17 +122,17 @@ export function buildProxyColumns({
             <Text strong>{countryCode}</Text>
             <div className={styles.inlineTags}>
               {record.vpn && (
-                <Tag color="orange" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="orange" style={{ ...tagStyle, fontSize: 9 }}>
                   VPN
                 </Tag>
               )}
               {record.proxy && (
-                <Tag color="blue" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="blue" style={{ ...tagStyle, fontSize: 9 }}>
                   PROXY
                 </Tag>
               )}
               {record.tor && (
-                <Tag color="red" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="red" style={{ ...tagStyle, fontSize: 9 }}>
                   TOR
                 </Tag>
               )}
@@ -153,8 +152,8 @@ export function buildProxyColumns({
 
         if (!hasBeenChecked) {
           return (
-            <Tag color="default" style={tagStyle}>
-              Unknown
+            <Tag bordered={false} color="default" style={tagStyle}>
+              UNKNOWN
             </Tag>
           );
         }
@@ -183,17 +182,17 @@ export function buildProxyColumns({
             </div>
             <div className={styles.inlineTags}>
               {record.vpn && (
-                <Tag color="orange" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="orange" style={{ ...tagStyle, fontSize: 9 }}>
                   VPN
                 </Tag>
               )}
               {record.proxy && (
-                <Tag color="blue" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="blue" style={{ ...tagStyle, fontSize: 9 }}>
                   PROXY
                 </Tag>
               )}
               {record.tor && (
-                <Tag color="red" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} color="red" style={{ ...tagStyle, fontSize: 9 }}>
                   TOR
                 </Tag>
               )}
@@ -208,10 +207,10 @@ export function buildProxyColumns({
       width: 280,
       render: (_: unknown, record: ProxyWithBot) => (
         <div style={{ textAlign: 'left' }}>
-          <Text style={{ fontSize: '12px', fontWeight: 500, display: 'block' }}>
+          <Typography.Paragraph style={{ marginBottom: 0 }}>
             <RobotOutlined style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }} />
-            {record.bot_id}
-          </Text>
+            <Text code>{record.bot_id}</Text>
+          </Typography.Paragraph>
           <Text type="secondary" style={{ fontSize: '11px', display: 'block' }}>
             {record.botCharacter || record.botName}
             {record.botVMName && ` (${record.botVMName})`}
@@ -276,21 +275,41 @@ export function buildProxyColumns({
               disabled={checkingProxyId === record.id}
               tooltip="Recheck IPQS"
             />
-            <TableActionButton
+            <EditButton
+              hideText
+              size="small"
+              shape="circle"
               icon={<EditOutlined />}
-              onClick={() => openEditModal(record)}
-              tooltip="Edit"
+              resource="proxies"
+              recordItemId={record.id}
+              onClick={(event) => {
+                event.preventDefault();
+                onEdit(String(record.id));
+              }}
             />
             <TableActionButton
               icon={<CopyOutlined />}
               onClick={() => copyProxyString(record)}
               tooltip="Copy"
             />
-            <TableActionButton
-              danger
+            <DeleteButton
+              hideText
+              size="small"
+              shape="circle"
               icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record)}
-              tooltip="Delete"
+              resource="proxies"
+              recordItemId={record.id}
+              confirmTitle="Delete Proxy?"
+              confirmOkText="Delete"
+              confirmCancelText="Cancel"
+              successNotification={() => ({
+                message: 'Proxy deleted',
+                type: 'success',
+              })}
+              errorNotification={() => ({
+                message: 'Failed to delete proxy',
+                type: 'error',
+              })}
             />
           </TableActionGroup>
         </div>

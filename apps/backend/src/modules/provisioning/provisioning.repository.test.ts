@@ -3,9 +3,23 @@ export {};
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { ProvisioningRepository } = require('./provisioning.repository.ts');
+const { DataAtRestCrypto } = require('../common/data-at-rest-crypto.ts');
 
 function createRepositoryWithInMemoryStore() {
   const tokens = new Map<string, Record<string, unknown>>();
+  const crypto = new DataAtRestCrypto();
+  const wrapPayload = (payload: unknown) =>
+    payload &&
+    typeof payload === 'object' &&
+    !Object.hasOwn(payload as Record<string, unknown>, '__enc_payload_v1')
+      ? { __enc_payload_v1: crypto.encryptJson(payload) }
+      : payload;
+  const unwrapRow = (row: Record<string, unknown> | null) => {
+    if (!row || !row.payload || typeof row.payload !== 'object') return row;
+    const payloadObj = row.payload as Record<string, unknown>;
+    if (!Object.hasOwn(payloadObj, '__enc_payload_v1')) return row;
+    return { ...row, payload: crypto.decryptJson(payloadObj.__enc_payload_v1) };
+  };
   const prisma = {
     provisioningProfileItem: {
       findMany: async () => [],
@@ -46,6 +60,29 @@ function createRepositoryWithInMemoryStore() {
     provisioningProgressItem: {
       findMany: async () => [],
       create: async () => ({}),
+    },
+    getPayloadCryptoClient() {
+      return {
+        provisioningProfileItem: prisma.provisioningProfileItem,
+        provisioningProgressItem: prisma.provisioningProgressItem,
+        provisioningTokenItem: {
+          findFirst: async (args: { where: { token: string } }) =>
+            unwrapRow(await prisma.provisioningTokenItem.findFirst(args)),
+          upsert: async (args: {
+            where: { token: string };
+            create: Record<string, unknown>;
+            update: Record<string, unknown>;
+          }) =>
+            unwrapRow(
+              await prisma.provisioningTokenItem.upsert({
+                ...args,
+                create: { ...args.create, payload: wrapPayload(args.create.payload) },
+                update: { ...args.update, payload: wrapPayload(args.update.payload) },
+              }),
+            ),
+          delete: prisma.provisioningTokenItem.delete,
+        },
+      };
     },
   };
 

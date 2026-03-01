@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Bot } from '../../../types';
+import type { Bot } from '../../../shared/types';
 
 export interface ExtendedBot extends Bot {
   vm?: {

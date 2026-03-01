@@ -4,7 +4,6 @@ export {};
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { ProvisioningService } = require('./provisioning.service.ts');
-const { DataAtRestCrypto } = require('../common/data-at-rest-crypto.ts');
 
 function createRepositoryStub(overrides = {}) {
   const profiles = new Map();
@@ -179,8 +178,7 @@ test('ProvisioningService uses repository and fails hard on repository errors', 
   await assert.rejects(() => failing.listProfiles('tenant-a'), /db unavailable/);
 });
 
-test('ProvisioningService stores encrypted profile payload and reads legacy plaintext', async () => {
-  const crypto = new DataAtRestCrypto();
+test('ProvisioningService passes plain profile payload and reads legacy plaintext', async () => {
   let capturedPayload = null;
 
   const service = createService({
@@ -205,16 +203,14 @@ test('ProvisioningService stores encrypted profile payload and reads legacy plai
 
   assert.equal(created.name, 'enc profile');
   assert.ok(capturedPayload);
-  assert.ok(capturedPayload.__enc_payload_v1);
-  const decrypted = crypto.decryptJson(capturedPayload.__enc_payload_v1);
-  assert.equal(decrypted.name, 'enc profile');
+  assert.equal(Object.hasOwn(capturedPayload, '__enc_payload_v1'), false);
+  assert.equal(capturedPayload.name, 'enc profile');
 
   const legacy = await service.getProfile('legacy-1', 'tenant-a');
   assert.equal(legacy?.name, 'legacy profile');
 });
 
-test('ProvisioningService stores encrypted progress payload and reads legacy plaintext progress', async () => {
-  const crypto = new DataAtRestCrypto();
+test('ProvisioningService passes plain progress payload and reads legacy plaintext progress', async () => {
   let capturedProgressPayload = null;
 
   const tokenRecord = {
@@ -251,10 +247,8 @@ test('ProvisioningService stores encrypted progress payload and reads legacy pla
   });
   assert.equal(saved?.vm_uuid, 'vm-a');
   assert.ok(capturedProgressPayload);
-  assert.ok(capturedProgressPayload.__enc_payload_v1);
-
-  const decrypted = crypto.decryptJson(capturedProgressPayload.__enc_payload_v1);
-  assert.equal(decrypted.vm_uuid, 'vm-a');
+  assert.equal(Object.hasOwn(capturedProgressPayload, '__enc_payload_v1'), false);
+  assert.equal(capturedProgressPayload.vm_uuid, 'vm-a');
 
   const progress = await service.getProgress('vm-a', 'tenant-a');
   assert.equal(progress.events.length, 1);

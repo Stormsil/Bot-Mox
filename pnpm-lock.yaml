@@ -251,6 +251,9 @@ importers:
       '@refinedev/core':
         specifier: ^5.0.8
         version: 5.0.9(@tanstack/react-query@5.90.21(react@19.2.4))(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@refinedev/react-router':
+        specifier: ^2.0.3
+        version: 2.0.3(@refinedev/core@5.0.9(@tanstack/react-query@5.90.21(react@19.2.4))(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react-router@7.13.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
       '@supabase/supabase-js':
         specifier: ^2.95.3
         version: 2.96.0
@@ -263,6 +266,9 @@ importers:
       antd:
         specifier: ^5.29.3
         version: 5.29.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       dayjs:
         specifier: ^1.11.13
         version: 1.11.19
@@ -287,9 +293,15 @@ importers:
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
       zone.js:
         specifier: ^0.16.0
         version: 0.16.0
+      zustand:
+        specifier: ^5.0.11
+        version: 5.0.11(@types/react@19.2.14)(immer@11.1.4)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.1
@@ -1446,6 +1458,17 @@ packages:
       '@types/react-dom': ^18.0.0 || ^19.0.0
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
+
+  '@refinedev/react-router@2.0.3':
+    resolution: {integrity: sha512-pQ/IOJJckXHIVQD2+Q220pOlGfLcDPJgpmyI4SzAhfuISeQprWsZrPDL/uLuqYosjJ+T5fWSq67tj1Bq0GMAsA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@refinedev/core': ^5.0.0
+      '@types/react': ^18.0.0 || ^19.0.0
+      '@types/react-dom': ^18.0.0 || ^19.0.0
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+      react-router: ^7.0.2
 
   '@refinedev/ui-types@2.0.1':
     resolution: {integrity: sha512-Fxsgr2JEsyEVGr5rMvOasQP5tj/1yD2m4M9XqDZQ+65B/ZB/vbkbB5+ltAhNlX2UwX8jr1mo8fnutHBltYxwfA==}
@@ -5988,6 +6011,24 @@ packages:
   zone.js@0.16.0:
     resolution: {integrity: sha512-LqLPpIQANebrlxY6jKcYKdgN5DTXyyHAKnnWWjE5pPfEQ4n7j5zn7mOEEpwNZVKGqx3kKKmvplEmoBrvpgROTA==}
 
+  zustand@5.0.11:
+    resolution: {integrity: sha512-fdZY+dk7zn/vbWNCYmzZULHRrss0jx5pPFiOuMZ/5HJN6Yv3u+1Wswy/4MpZEkEGhtNH+pwxZB8OKgUBPzYAGg==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
+
   zwitch@1.0.5:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
 
@@ -7184,6 +7225,16 @@ snapshots:
       error-stack-parser: 2.1.4
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
+
+  '@refinedev/react-router@2.0.3(@refinedev/core@5.0.9(@tanstack/react-query@5.90.21(react@19.2.4))(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react-router@7.13.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)':
+    dependencies:
+      '@refinedev/core': 5.0.9(@tanstack/react-query@5.90.21(react@19.2.4))(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@types/react': 19.2.14
+      '@types/react-dom': 19.2.3(@types/react@19.2.14)
+      qs: 6.15.0
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+      react-router: 7.13.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
 
   '@refinedev/ui-types@2.0.1(@refinedev/core@5.0.9(@tanstack/react-query@5.90.21(react@19.2.4))(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
@@ -12916,6 +12967,13 @@ snapshots:
   zod@3.25.76: {}
 
   zone.js@0.16.0: {}
+
+  zustand@5.0.11(@types/react@19.2.14)(immer@11.1.4)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4)):
+    optionalDependencies:
+      '@types/react': 19.2.14
+      immer: 11.1.4
+      react: 19.2.4
+      use-sync-external-store: 1.6.0(react@19.2.4)
 
   zwitch@1.0.5: {}
 

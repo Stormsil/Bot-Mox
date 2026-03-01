@@ -1,56 +1,84 @@
-import {
-  DownOutlined,
-  GlobalOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  RightOutlined,
-  SearchOutlined,
-} from '@ant-design/icons';
-import { Button, Card, Input, Modal, message, Select, Table, Typography } from 'antd';
+import { useModalForm, useTable } from '@refinedev/antd';
+import { type HttpError, useList, useUpdate } from '@refinedev/core';
+import { Card, message, Table } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
+import type { BotRecord } from '../../entities/bot/model/types';
 import {
   checkIPQuality,
   isIPQSCheckEnabled,
   isProxySuspicious,
   updateProxyWithIPQSData,
 } from '../../entities/resources/api/ipqsFacade';
-import {
-  useDeleteProxyMutation,
-  useUpdateProxyMutation,
-} from '../../entities/resources/api/useProxyMutations';
-import { useProxiesQuery } from '../../entities/resources/api/useResourcesQueries';
 import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
+import { ProxiesFiltersCard } from './ProxiesFiltersCard';
 import styles from './ProxiesPage.module.css';
+import { ProxiesPageHeader } from './ProxiesPageHeader';
 import { ProxiesStatsCards } from './ProxiesStatsCards';
 import { ProxyCrudModal } from './ProxyCrudModal';
 import {
   buildProxyStats,
   DEFAULT_PROVIDERS,
   extractCountries,
-  filterProxies,
   mapProxiesWithBots,
   type ProxiesBotMap,
   STATS_COLLAPSED_KEY,
 } from './proxiesPageModel';
+import {
+  buildProxiesTableFilters,
+  DEFAULT_PROXIES_TABLE_FILTERS,
+  type ProxiesTableFilterValues,
+  readProxiesTableFilterValues,
+} from './proxiesTableFilters';
 import { buildProxyColumns, type ProxyWithBot } from './proxyColumns';
 
-const { Title, Text } = Typography;
-const { Option } = Select;
-const { confirm } = Modal;
+const BOT_POLL_MS = 5_000;
+const LARGE_PAGE_SIZE = 5_000;
 
 export const ProxiesPage: React.FC = () => {
-  const botsMapQuery = useBotsMapQuery();
-  const proxiesQuery = useProxiesQuery();
-  const updateProxyMutation = useUpdateProxyMutation();
-  const deleteProxyMutation = useDeleteProxyMutation();
-  const [searchText, setSearchText] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [countryFilter, setCountryFilter] = useState<string>('all');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProxy, setEditingProxy] = useState<ProxyWithBot | null>(null);
+  const syncWithLocationEnabled = !(typeof navigator !== 'undefined' && navigator.webdriver);
+
+  const proxiesTable = useTable<ProxyResource>({
+    resource: 'proxies',
+    syncWithLocation: syncWithLocationEnabled,
+    pagination: {
+      mode: 'server',
+      pageSize: 10,
+    },
+    queryOptions: syncWithLocationEnabled
+      ? undefined
+      : {
+          refetchOnMount: false,
+          refetchOnWindowFocus: false,
+          refetchOnReconnect: false,
+          staleTime: 60_000,
+        },
+  });
+  const botsList = useList<BotRecord>({
+    resource: 'bots',
+    pagination: {
+      mode: 'server',
+      currentPage: 1,
+      pageSize: LARGE_PAGE_SIZE,
+    },
+    queryOptions: {
+      refetchInterval: BOT_POLL_MS,
+    },
+  });
+  const updateProxy = useUpdate<ProxyResource, HttpError, Partial<ProxyResource>>();
+  const createProxyModal = useModalForm<ProxyResource, HttpError, Omit<ProxyResource, 'id'>>({
+    resource: 'proxies',
+    action: 'create',
+    autoSubmitClose: true,
+    syncWithLocation: false,
+  });
+  const editProxyModal = useModalForm<ProxyResource, HttpError, Partial<ProxyResource>>({
+    resource: 'proxies',
+    action: 'edit',
+    autoSubmitClose: true,
+    syncWithLocation: false,
+  });
+
   const [checkingProxyId, setCheckingProxyId] = useState<string | null>(null);
   const [providers, setProviders] = useState<string[]>(DEFAULT_PROVIDERS);
   const [statsCollapsed, setStatsCollapsed] = useState<boolean>(() => {
@@ -59,40 +87,73 @@ export const ProxiesPage: React.FC = () => {
   });
 
   const bots = useMemo<ProxiesBotMap>(() => {
-    const source = botsMapQuery.data || {};
-    return source as unknown as ProxiesBotMap;
-  }, [botsMapQuery.data]);
+    const list = botsList.result.data || [];
+    return list.reduce<ProxiesBotMap>((acc, bot) => {
+      acc[bot.id] = bot;
+      return acc;
+    }, {});
+  }, [botsList.result.data]);
 
-  const proxies = useMemo<ProxyWithBot[]>(
-    () => mapProxiesWithBots(proxiesQuery.data || [], bots),
-    [bots, proxiesQuery.data],
+  const tableProxies = useMemo<ProxyWithBot[]>(
+    () =>
+      mapProxiesWithBots(
+        (proxiesTable.tableProps.dataSource as ProxyResource[] | undefined) ?? [],
+        bots,
+      ),
+    [bots, proxiesTable.tableProps.dataSource],
   );
 
-  const loading = proxiesQuery.isLoading || botsMapQuery.isLoading;
+  const tableFilters = useMemo(
+    () => readProxiesTableFilterValues(proxiesTable.filters),
+    [proxiesTable.filters],
+  );
+
+  const setMergedFilters = useCallback(
+    (nextPartial: Partial<ProxiesTableFilterValues>) => {
+      proxiesTable.setFilters(
+        buildProxiesTableFilters({
+          q: nextPartial.q ?? tableFilters.q,
+          status: nextPartial.status ?? tableFilters.status,
+          type: nextPartial.type ?? tableFilters.type,
+          country: nextPartial.country ?? tableFilters.country,
+        }),
+        'replace',
+      );
+    },
+    [proxiesTable, tableFilters],
+  );
+
+  const resetFilters = useCallback(() => {
+    proxiesTable.setFilters(buildProxiesTableFilters(DEFAULT_PROXIES_TABLE_FILTERS), 'replace');
+  }, [proxiesTable]);
+
+  const loading = Boolean(proxiesTable.tableProps.loading) || botsList.query.isLoading;
 
   useEffect(() => {
-    if (!proxiesQuery.error) {
+    if (!proxiesTable.tableQuery.error) {
       return;
     }
     message.error('Failed to load proxies');
-  }, [proxiesQuery.error]);
+  }, [proxiesTable.tableQuery.error]);
 
   useEffect(() => {
-    if (!botsMapQuery.error) {
+    if (!botsList.query.error) {
       return;
     }
     message.error('Failed to load bots');
-  }, [botsMapQuery.error]);
+  }, [botsList.query.error]);
 
   useEffect(() => {
-    const existingProviders = [...new Set(proxies.map((proxy) => proxy.provider).filter(Boolean))];
+    const existingProviders = [
+      ...new Set(tableProxies.map((proxy) => proxy.provider).filter(Boolean)),
+    ];
     if (existingProviders.length > 0) {
       setProviders(existingProviders);
       return;
     }
 
     setProviders(DEFAULT_PROVIDERS);
-  }, [proxies]);
+  }, [tableProxies]);
 
   useEffect(() => {
     localStorage.setItem(STATS_COLLAPSED_KEY, JSON.stringify(statsCollapsed));
@@ -104,27 +165,6 @@ export const ProxiesPage: React.FC = () => {
     const daysUntilExpiry = Math.ceil((expiresAt - Date.now()) / (1000 * 60 * 60 * 24));
     return daysUntilExpiry <= 7 && daysUntilExpiry > 0;
   }, []);
-
-  const handleDelete = useCallback(
-    (proxy: ProxyWithBot) => {
-      confirm({
-        title: '',
-        content: `Are you sure you want to delete proxy ${proxy.ip}:${proxy.port}?`,
-        okText: 'Delete',
-        okType: 'danger',
-        cancelText: 'Cancel',
-        onOk: async () => {
-          try {
-            await deleteProxyMutation.mutateAsync(proxy.id);
-            message.success('');
-          } catch {
-            message.error('Failed to delete proxy');
-          }
-        },
-      });
-    },
-    [deleteProxyMutation],
-  );
 
   const handleProviderCreated = useCallback((providerName: string) => {
     if (!providerName) {
@@ -164,12 +204,17 @@ export const ProxiesPage: React.FC = () => {
         }
 
         const suspicious = await isProxySuspicious(data.fraud_score);
-        const updates = updateProxyWithIPQSData(proxy, data);
+        const updates = updateProxyWithIPQSData(proxy, data) as Partial<ProxyResource>;
         if (suspicious) {
           updates.status = 'banned';
         }
 
-        await updateProxyMutation.mutateAsync({ id: proxy.id, payload: updates });
+        await updateProxy.mutateAsync({
+          resource: 'proxies',
+          id: proxy.id,
+          values: updates,
+          invalidates: ['resourceAll'],
+        });
         const statusMessage = suspicious ? '' : '';
         message.success(`Proxy checked! Fraud Score: ${data.fraud_score}${statusMessage}`);
       } catch {
@@ -178,18 +223,34 @@ export const ProxiesPage: React.FC = () => {
         setCheckingProxyId(null);
       }
     },
-    [updateProxyMutation],
+    [updateProxy],
   );
 
-  const openEditModal = useCallback((proxy?: ProxyWithBot) => {
-    setEditingProxy(proxy || null);
-    setIsModalOpen(true);
-  }, []);
+  const editingProxy = useMemo(() => {
+    if (editProxyModal.id === undefined || editProxyModal.id === null) {
+      return null;
+    }
 
-  const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-    setEditingProxy(null);
-  }, []);
+    const targetId = String(editProxyModal.id);
+    return tableProxies.find((proxy) => String(proxy.id) === targetId) ?? null;
+  }, [editProxyModal.id, tableProxies]);
+
+  useEffect(() => {
+    if (
+      !editProxyModal.modalProps.open ||
+      editProxyModal.id === undefined ||
+      editProxyModal.id === null
+    ) {
+      return;
+    }
+
+    if (editingProxy) {
+      return;
+    }
+
+    editProxyModal.close();
+    message.warning('Proxy edit link is outdated. Opened list view instead.');
+  }, [editProxyModal, editingProxy]);
 
   const columns = useMemo(
     () =>
@@ -199,135 +260,65 @@ export const ProxiesPage: React.FC = () => {
         isExpiringSoon,
         copyProxyString,
         handleRecheckIPQS,
-        openEditModal,
-        handleDelete,
+        onEdit: (proxyId) => editProxyModal.show(proxyId),
       }),
     [
       checkingProxyId,
       copyProxyString,
-      handleDelete,
       handleRecheckIPQS,
       isExpired,
       isExpiringSoon,
-      openEditModal,
+      editProxyModal,
     ],
   );
 
-  const filteredProxies = useMemo(
-    () =>
-      filterProxies(proxies, {
-        searchText,
-        statusFilter,
-        typeFilter,
-        countryFilter,
-      }),
-    [countryFilter, proxies, searchText, statusFilter, typeFilter],
-  );
-
   const stats = useMemo(
-    () => buildProxyStats(proxies, { isExpired, isExpiringSoon }),
-    [isExpired, isExpiringSoon, proxies],
+    () => buildProxyStats(tableProxies, { isExpired, isExpiringSoon }),
+    [tableProxies, isExpired, isExpiringSoon],
   );
 
-  const countries = useMemo(() => extractCountries(proxies), [proxies]);
+  const countries = useMemo(() => extractCountries(tableProxies), [tableProxies]);
 
   return (
     <div className={styles.root}>
-      <Card className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerTitle}>
-            <Title level={4} className={styles.pageTitle}>
-              <GlobalOutlined /> Proxies
-            </Title>
-            <Text type="secondary" className={styles.headerSubtitle}>
-              Manage proxy servers for bots
-            </Text>
-          </div>
-          <div className={styles.headerActions}>
-            <Button
-              type="text"
-              icon={statsCollapsed ? <RightOutlined /> : <DownOutlined />}
-              onClick={() => setStatsCollapsed((prev) => !prev)}
-            >
-              Stats
-            </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditModal()}>
-              Add Proxy
-            </Button>
-          </div>
-        </div>
-      </Card>
+      <ProxiesPageHeader
+        statsCollapsed={statsCollapsed}
+        onToggleStats={() => setStatsCollapsed((prev) => !prev)}
+        onOpenCreate={() => createProxyModal.show()}
+      />
 
       {!statsCollapsed && <ProxiesStatsCards stats={stats} />}
 
-      <Card className={styles.filters}>
-        <div className={styles.filtersRow}>
-          <Input
-            placeholder="Search by IP, provider, country, ISP..."
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-            className={styles.filterSearch}
-          />
-          <Select
-            placeholder="Status"
-            value={statusFilter}
-            onChange={setStatusFilter}
-            className={styles.filterSelectMd}
-          >
-            <Option value="all">All Statuses</Option>
-            <Option value="active">Active</Option>
-            <Option value="expired">Expired</Option>
-            <Option value="banned">Banned</Option>
-          </Select>
-          <Select
-            placeholder="Type"
-            value={typeFilter}
-            onChange={setTypeFilter}
-            className={styles.filterSelectSm}
-          >
-            <Option value="all">All Types</Option>
-            <Option value="http">HTTP</Option>
-            <Option value="socks5">SOCKS5</Option>
-          </Select>
-          <Select
-            placeholder="Country"
-            value={countryFilter}
-            onChange={setCountryFilter}
-            className={styles.filterSelectMd}
-          >
-            <Option value="all">All Countries</Option>
-            {countries.map((country) => (
-              <Option key={country} value={country}>
-                {country}
-              </Option>
-            ))}
-          </Select>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={() => {
-              setSearchText('');
-              setStatusFilter('all');
-              setTypeFilter('all');
-              setCountryFilter('all');
-            }}
-          >
-            Reset
-          </Button>
-        </div>
-      </Card>
+      <ProxiesFiltersCard
+        filters={tableFilters}
+        countries={countries}
+        onChange={setMergedFilters}
+        onReset={resetFilters}
+      />
 
       <Card className={styles.tableCard}>
         <Table
-          dataSource={filteredProxies}
+          {...proxiesTable.tableProps}
+          dataSource={tableProxies}
           columns={columns}
           rowKey="id"
           loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} proxies`,
-          }}
+          pagination={
+            proxiesTable.tableProps.pagination &&
+            typeof proxiesTable.tableProps.pagination === 'object'
+              ? {
+                  ...proxiesTable.tableProps.pagination,
+                  current: Math.max(1, Number(proxiesTable.tableProps.pagination.current) || 1),
+                  pageSize: Math.max(1, Number(proxiesTable.tableProps.pagination.pageSize) || 10),
+                  showSizeChanger: true,
+                  showTotal: (total) => `Total ${total} proxies`,
+                }
+              : {
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showTotal: (total) => `Total ${total} proxies`,
+                }
+          }
           size="small"
           tableLayout="fixed"
           scroll={{ x: 1170 }}
@@ -335,13 +326,21 @@ export const ProxiesPage: React.FC = () => {
       </Card>
 
       <ProxyCrudModal
-        open={isModalOpen}
+        mode="create"
+        modalProps={createProxyModal.modalProps}
+        formProps={createProxyModal.formProps}
+        bots={bots}
+        providers={providers}
+        onProviderCreated={handleProviderCreated}
+      />
+      <ProxyCrudModal
+        mode="edit"
+        modalProps={editProxyModal.modalProps}
+        formProps={editProxyModal.formProps}
         editingProxy={editingProxy}
         bots={bots}
         providers={providers}
         onProviderCreated={handleProviderCreated}
-        onClose={closeModal}
-        onSaved={closeModal}
       />
     </div>
   );

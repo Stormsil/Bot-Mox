@@ -1,7 +1,7 @@
 import { CheckOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { Button, Input, Popconfirm, Select, Typography } from 'antd';
 import type { ReactElement } from 'react';
-import { TableActionButton } from '../../../components/ui/TableActionButton';
+import { TableActionButton } from '../../../shared/ui/TableActionButton';
 import { cx } from '../sections/classNames';
 import type { ThemeSettingsPanelProps } from '../ThemeSettingsPanel.types';
 

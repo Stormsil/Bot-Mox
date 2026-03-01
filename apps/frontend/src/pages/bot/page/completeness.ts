@@ -1,4 +1,4 @@
-import type { TabType } from '../../../components/layout/ContentPanel';
+import type { TabType } from '../../../widgets/layout/ContentPanel';
 import type { ExtendedBot, ScheduleEntryState, ScheduleSessionState } from './types';
 
 export const getScheduleStats = (bot: ExtendedBot | null) => {

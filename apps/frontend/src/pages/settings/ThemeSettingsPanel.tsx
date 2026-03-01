@@ -41,13 +41,6 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = (props) => 
         className={cx('theme-settings-drawer')}
         open={props.isThemeDrawerOpen}
         onClose={props.onCloseThemeEditor}
-        styles={{
-          header: {
-            background: 'var(--boxmox-color-surface-muted)',
-            borderBottom: '1px solid var(--boxmox-color-border-default)',
-          },
-          body: { background: 'var(--boxmox-color-surface-panel)' },
-        }}
         extra={
           <Button
             type="primary"

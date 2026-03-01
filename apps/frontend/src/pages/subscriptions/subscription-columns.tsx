@@ -1,40 +1,32 @@
 import { DeleteOutlined, EditOutlined, RobotOutlined } from '@ant-design/icons';
+import { DeleteButton, EditButton } from '@refinedev/antd';
 import type { TableColumnsType } from 'antd';
 import { Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
-import { TableActionButton, TableActionGroup } from '../../components/ui/TableActionButton';
 import type { SubscriptionWithDetails } from '../../entities/resources/model/types';
 import { getSubscriptionStatusColor, getSubscriptionStatusText } from './subscription-status';
 
 const { Text } = Typography;
 
 interface BuildSubscriptionColumnsParams {
-  onEdit: (subscription: SubscriptionWithDetails) => void;
-  onDelete: (subscription: SubscriptionWithDetails) => void;
-  cellClassName?: string;
-  headerClassName?: string;
+  onEdit: (subscriptionId: string) => void;
 }
 
 export const buildSubscriptionColumns = ({
   onEdit,
-  onDelete,
-  cellClassName,
-  headerClassName,
 }: BuildSubscriptionColumnsParams): TableColumnsType<SubscriptionWithDetails> => [
   {
     title: 'Status',
     dataIndex: 'computedStatus',
     key: 'computedStatus',
     width: 140,
-    ...(cellClassName ? { className: cellClassName } : {}),
-    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (status: SubscriptionWithDetails['computedStatus'], record) => (
       <Tag
+        bordered={false}
         color={getSubscriptionStatusColor(status)}
-        style={{ borderRadius: 2, fontSize: '11px', textTransform: 'uppercase' }}
+        style={{ fontSize: '11px', textTransform: 'uppercase' }}
       >
-        {getSubscriptionStatusText(status)}
-        {status === 'expiring_soon' && ` (${record.daysRemaining} days)`}
+        {`${getSubscriptionStatusText(status)}${status === 'expiring_soon' ? ` (${record.daysRemaining} days)` : ''}`.toUpperCase()}
       </Tag>
     ),
   },
@@ -42,14 +34,12 @@ export const buildSubscriptionColumns = ({
     title: 'Bot',
     key: 'bot',
     width: 200,
-    ...(cellClassName ? { className: cellClassName } : {}),
-    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (_value: unknown, record) => (
       <Space direction="vertical" size={0}>
-        <Text style={{ fontSize: '12px', fontWeight: 500 }}>
+        <Space size={4}>
           <RobotOutlined style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }} />
-          {record.bot_id}
-        </Text>
+          <Text code>{record.bot_id}</Text>
+        </Space>
         <Text type="secondary" style={{ fontSize: '11px' }}>
           {record.botCharacter || record.botName}
           {record.botVmName && ` (${record.botVmName})`}
@@ -62,8 +52,6 @@ export const buildSubscriptionColumns = ({
     dataIndex: 'expires_at',
     key: 'expires_at',
     width: 130,
-    ...(cellClassName ? { className: cellClassName } : {}),
-    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (expiresAt: number, record) => (
       <Text
         style={{
@@ -80,8 +68,6 @@ export const buildSubscriptionColumns = ({
     dataIndex: 'created_at',
     key: 'created_at',
     width: 100,
-    ...(cellClassName ? { className: cellClassName } : {}),
-    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (createdAt: number) => (
       <Text style={{ fontSize: '12px' }}>{dayjs(createdAt).format('DD.MM.YYYY')}</Text>
     ),
@@ -90,8 +76,6 @@ export const buildSubscriptionColumns = ({
     title: 'Days Left',
     key: 'days_left',
     width: 100,
-    ...(cellClassName ? { className: cellClassName } : {}),
-    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (_value: unknown, record) => {
       if (record.isExpired) {
         return <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>0</Text>;
@@ -121,18 +105,40 @@ export const buildSubscriptionColumns = ({
     title: 'Actions',
     key: 'actions',
     width: 100,
-    ...(cellClassName ? { className: cellClassName } : {}),
-    ...(headerClassName ? { onHeaderCell: () => ({ className: headerClassName }) } : {}),
     render: (_value: unknown, record) => (
-      <TableActionGroup>
-        <TableActionButton icon={<EditOutlined />} onClick={() => onEdit(record)} tooltip="Edit" />
-        <TableActionButton
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => onDelete(record)}
-          tooltip="Delete"
+      <Space size={6}>
+        <EditButton
+          hideText
+          size="small"
+          shape="circle"
+          icon={<EditOutlined />}
+          resource="subscriptions"
+          recordItemId={record.id}
+          onClick={(event) => {
+            event.preventDefault();
+            onEdit(record.id);
+          }}
         />
-      </TableActionGroup>
+        <DeleteButton
+          hideText
+          size="small"
+          shape="circle"
+          icon={<DeleteOutlined />}
+          resource="subscriptions"
+          recordItemId={record.id}
+          confirmTitle="Delete Subscription?"
+          confirmOkText="Delete"
+          confirmCancelText="Cancel"
+          successNotification={() => ({
+            message: 'Subscription deleted',
+            type: 'success',
+          })}
+          errorNotification={() => ({
+            message: 'Failed to delete subscription',
+            type: 'error',
+          })}
+        />
+      </Space>
     ),
   },
 ];

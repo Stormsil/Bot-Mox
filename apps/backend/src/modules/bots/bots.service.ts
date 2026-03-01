@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { buildBanPayload, buildTransitionPayload, buildUnbanPayload } from './bots.lifecycle';
 import { BotsRepository } from './bots.repository';
 import type {
@@ -24,30 +23,15 @@ export class BotsServiceValidationError extends Error {}
 
 @Injectable()
 export class BotsService {
-  private readonly atRestCrypto = new DataAtRestCrypto();
-
   constructor(private readonly repository: BotsRepository) {}
 
   private mapDbRow(row: Record<string, unknown>): BotRecord {
     const id = String(row.id || '').trim();
     const payload = row.payload;
     if (payload && typeof payload === 'object') {
-      const wrapped = (payload as Record<string, unknown>).__enc_payload_v1;
-      const decryptedPayload =
-        wrapped !== undefined ? this.atRestCrypto.decryptJson<BotRecord>(wrapped) : null;
-      const materialized =
-        decryptedPayload && typeof decryptedPayload === 'object'
-          ? decryptedPayload
-          : (payload as BotRecord);
-      return { ...materialized, ...(id ? { id } : {}) };
+      return { ...(payload as BotRecord), ...(id ? { id } : {}) };
     }
     return id ? { id } : {};
-  }
-
-  private encryptBotPayload(input: BotRecord): BotRecord {
-    return {
-      __enc_payload_v1: this.atRestCrypto.encryptJson(input),
-    };
   }
 
   async list(query: BotsListQuery, tenantId: string): Promise<BotsListResult> {
@@ -120,7 +104,7 @@ export class BotsService {
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: this.encryptBotPayload(nextRecord) as Prisma.InputJsonValue,
+      payload: nextRecord as Prisma.InputJsonValue,
     });
     return this.mapDbRow(row);
   }
@@ -140,7 +124,7 @@ export class BotsService {
     const updatedRow = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: this.encryptBotPayload(next) as Prisma.InputJsonValue,
+      payload: next as Prisma.InputJsonValue,
     });
     return this.mapDbRow(updatedRow);
   }
@@ -197,7 +181,7 @@ export class BotsService {
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: this.encryptBotPayload(updated) as unknown as Prisma.InputJsonValue,
+      payload: updated as unknown as Prisma.InputJsonValue,
     });
     return this.mapDbRow(row);
   }
@@ -216,7 +200,7 @@ export class BotsService {
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: this.encryptBotPayload(updated) as unknown as Prisma.InputJsonValue,
+      payload: updated as unknown as Prisma.InputJsonValue,
     });
     return this.mapDbRow(row);
   }
@@ -237,7 +221,7 @@ export class BotsService {
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: this.encryptBotPayload(updated) as unknown as Prisma.InputJsonValue,
+      payload: updated as unknown as Prisma.InputJsonValue,
     });
     return this.mapDbRow(row);
   }

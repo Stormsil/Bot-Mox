@@ -1,16 +1,25 @@
 import { useNotificationProvider } from '@refinedev/antd';
 import { Authenticated, Refine, useGetIdentity } from '@refinedev/core';
+import routerProvider from '@refinedev/react-router';
 import { App as AntdApp, Button, ConfigProvider, Spin, Tag, Typography } from 'antd';
 import type React from 'react';
 import { lazy, Suspense, useEffect, useMemo } from 'react';
-import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
+import { authProvider } from './app/providers/auth-provider';
+import { dataProvider } from './app/providers/data-provider';
 import { QueryProvider } from './app/providers/QueryProvider';
-import { Header } from './components/layout/Header';
-import { ResourceTree } from './components/layout/ResourceTree';
 import { ADMIN_APP_URL } from './config/env';
-import { authProvider } from './providers/auth-provider';
-import { dataProvider } from './providers/data-provider';
 import { ThemeRuntimeProvider, useThemeRuntime } from './theme/themeRuntime';
+import { Header } from './widgets/layout/Header';
+import { ResourceTree } from './widgets/layout/ResourceTree';
 import './styles/global.css';
 import shellStyles from './AppShell.module.css';
 
@@ -179,15 +188,6 @@ const SubscriptionsPage = lazy(async () => ({
   default: (await import('./pages/subscriptions')).SubscriptionsPage,
 }));
 const VMsPage = lazy(async () => ({ default: (await import('./pages/vms')).VMsPage }));
-const VMProxmoxPage = lazy(async () => ({
-  default: (await import('./pages/vms/sites')).VMProxmoxPage,
-}));
-const VMTinyFMPage = lazy(async () => ({
-  default: (await import('./pages/vms/sites')).VMTinyFMPage,
-}));
-const VMSyncThingPage = lazy(async () => ({
-  default: (await import('./pages/vms/sites')).VMSyncThingPage,
-}));
 const SettingsPage = lazy(async () => ({
   default: (await import('./pages/settings')).SettingsPage,
 }));
@@ -199,6 +199,26 @@ const WorkspaceKanbanPage = lazy(async () => ({
   default: (await import('./pages/workspace/kanban')).WorkspaceKanbanPage,
 }));
 const LoginPage = lazy(async () => ({ default: (await import('./pages/login')).LoginPage }));
+
+const refineCrudPages = {
+  licenses: LicensesPage,
+  proxies: ProxiesPage,
+  subscriptions: SubscriptionsPage,
+} as const;
+
+const RefineCrudPageRoute: React.FC = () => {
+  const { resourceName } = useParams<{ resourceName: string }>();
+  if (!resourceName) {
+    return <Navigate to="/" replace />;
+  }
+
+  const PageComponent = refineCrudPages[resourceName as keyof typeof refineCrudPages];
+  if (!PageComponent) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <PageComponent />;
+};
 
 const RouteFallback: React.FC = () => (
   <div style={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -243,12 +263,31 @@ function AppWithTheme() {
           <Refine
             dataProvider={dataProvider}
             authProvider={authProvider}
+            routerProvider={routerProvider}
             notificationProvider={useNotificationProvider}
             resources={[
               { name: 'bots', list: '/' },
-              { name: 'licenses', list: '/licenses' },
-              { name: 'proxies', list: '/proxies' },
-              { name: 'subscriptions', list: '/subscriptions' },
+              {
+                name: 'licenses',
+                list: '/licenses',
+                create: '/licenses',
+                edit: '/licenses',
+                show: '/licenses',
+              },
+              {
+                name: 'proxies',
+                list: '/proxies',
+                create: '/proxies',
+                edit: '/proxies',
+                show: '/proxies',
+              },
+              {
+                name: 'subscriptions',
+                list: '/subscriptions',
+                create: '/subscriptions',
+                edit: '/subscriptions',
+                show: '/subscriptions',
+              },
               { name: 'notes', list: '/notes' },
             ]}
             options={{
@@ -296,25 +335,11 @@ function AppWithTheme() {
                     element={<Navigate to="/workspace/calendar" replace />}
                   />
 
-                  {/* Licenses, Proxies, Subscriptions, VMs */}
-                  <Route path="/licenses" element={<LicensesPage />} />
-                  <Route path="/proxies" element={<ProxiesPage />} />
-                  <Route path="/subscriptions" element={<SubscriptionsPage />} />
+                  {/* Refine CRUD resources + VMs */}
+                  <Route path="/:resourceName" element={<RefineCrudPageRoute />} />
                   <Route path="/vms" element={<VMsPage />} />
                   <Route path="/vms/list" element={<Navigate to="/vms" replace />} />
                   <Route path="/vms/unattend-profiles" element={<Navigate to="/vms" replace />} />
-                  <Route path="/vms/sites/proxmox" element={<VMProxmoxPage />} />
-                  <Route path="/vms/sites/tinyfm" element={<VMTinyFMPage />} />
-                  <Route path="/vms/sites/syncthing" element={<VMSyncThingPage />} />
-                  <Route
-                    path="/vms/proxmox"
-                    element={<Navigate to="/vms/sites/proxmox" replace />}
-                  />
-                  <Route path="/vms/tinyfm" element={<Navigate to="/vms/sites/tinyfm" replace />} />
-                  <Route
-                    path="/vms/syncthing"
-                    element={<Navigate to="/vms/sites/syncthing" replace />}
-                  />
                 </Route>
 
                 <Route

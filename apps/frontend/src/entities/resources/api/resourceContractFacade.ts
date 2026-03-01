@@ -1,10 +1,10 @@
+import { ApiClientError } from '../../../shared/api/apiClient';
 import {
   createResourceViaContract,
   deleteResourceViaContract,
   listResourcesViaContract,
   updateResourceViaContract,
-} from '../../../providers/resource-contract-client';
-import { ApiClientError } from '../../../shared/api/apiClient';
+} from '../../../shared/api/providers/resource-contract-client';
 import type { ResourceKind } from '../model/types';
 
 const PAGE_LIMIT = 200;
