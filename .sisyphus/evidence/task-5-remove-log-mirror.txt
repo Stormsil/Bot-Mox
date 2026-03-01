@@ -1,0 +1,17 @@
+Task: 5. Remove page-level log mirror effect from viewmodel
+Target file: apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts
+
+Verification command:
+pnpm exec rg "setWorkspaceLogTasks\(" apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts
+
+Result:
+No matches.
+
+Verification command:
+pnpm --filter @botmox/frontend typecheck
+
+Result:
+> @botmox/frontend@0.0.0 typecheck E:\Боттинг\source\repos\Bot-Mox\apps\frontend
+> tsc -b --noEmit
+
+Exit status: 0 (successful typecheck)

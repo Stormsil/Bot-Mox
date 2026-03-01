@@ -108,9 +108,9 @@ Wave 2: page bridge cleanup + anti-pattern assertions + compile/build gate
   - API/Type: `apps/frontend/src/shared/types` — `VMLogEntry` type contract.
 
   **Acceptance Criteria** (agent-executable only):
-  - [ ] `addLogEntry` appears in `VmWorkspaceLogsActions` interface and logsActions implementation.
-  - [ ] Implementation uses functional updater and appends to `logs.entries` preserving prior entries.
-  - [ ] `pnpm --dir apps/frontend run typecheck` exits `0`.
+  - [x] `addLogEntry` appears in `VmWorkspaceLogsActions` interface and logsActions implementation.
+  - [x] Implementation uses functional updater and appends to `logs.entries` preserving prior entries.
+  - [x] `pnpm --dir apps/frontend run typecheck` exits `0`.
 
   **QA Scenarios** (MANDATORY — task incomplete without these):
   ```bash
@@ -148,9 +148,9 @@ Wave 2: page bridge cleanup + anti-pattern assertions + compile/build gate
   - API/Type: `apps/frontend/src/features/vm-management/model/useVMLog.ts:397` — writer integration call-site.
 
   **Acceptance Criteria** (agent-executable only):
-  - [ ] `push` writes via `logsActions.addLogEntry`.
-  - [ ] Legacy `nextEntries = [...getEntries(), entry]` pattern is removed.
-  - [ ] `vmLogWriters.ts` usage remains type-correct after change (`pnpm --dir apps/frontend run typecheck` exits `0`).
+  - [x] `push` writes via `logsActions.addLogEntry`.
+  - [x] Legacy `nextEntries = [...getEntries(), entry]` pattern is removed.
+  - [x] `vmLogWriters.ts` usage remains type-correct after change (`pnpm --dir apps/frontend run typecheck` exits `0`).
 
   **QA Scenarios** (MANDATORY — task incomplete without these):
   ```bash
@@ -189,9 +189,9 @@ Wave 2: page bridge cleanup + anti-pattern assertions + compile/build gate
   - External: `https://github.com/pmndrs/zustand/blob/main/README.md` — non-reactive reads via `getState` in action-time flows.
 
   **Acceptance Criteria** (agent-executable only):
-  - [ ] No `useVmWorkspaceStore(state => ...)` selector usage inside action callbacks in `useVMLog.ts`.
-  - [ ] Task reads in callbacks use action-time store snapshot (`getState().logs.tasks`) directly or via callback-safe helper.
-  - [ ] No business-data `useState<VMTaskEntry[]>` / `useRef<VMTaskEntry[]>` / `useState<VMLogEntry[]>` remains.
+  - [x] No `useVmWorkspaceStore(state => ...)` selector usage inside action callbacks in `useVMLog.ts`.
+  - [x] Task reads in callbacks use action-time store snapshot (`getState().logs.tasks`) directly or via callback-safe helper.
+  - [x] No business-data `useState<VMTaskEntry[]>` / `useRef<VMTaskEntry[]>` / `useState<VMLogEntry[]>` remains.
 
   **QA Scenarios** (MANDATORY — task incomplete without these):
   ```bash
@@ -228,8 +228,8 @@ Wave 2: page bridge cleanup + anti-pattern assertions + compile/build gate
   - Consumer: `apps/frontend/src/widgets/vm/VMOperationLog.tsx:35` — fallback copy path uses `getFullLog()`.
 
   **Acceptance Criteria** (agent-executable only):
-  - [ ] `getFullLog` callback reads from `getState().logs.entries` and returns `formatFullLog(...)`.
-  - [ ] Copy-log consumer path in `VMOperationLog.tsx` still compiles and typechecks.
+  - [x] `getFullLog` callback reads from `getState().logs.entries` and returns `formatFullLog(...)`.
+  - [x] Copy-log consumer path in `VMOperationLog.tsx` still compiles and typechecks.
 
   **QA Scenarios** (MANDATORY — task incomplete without these):
   ```bash
@@ -267,8 +267,8 @@ Wave 2: page bridge cleanup + anti-pattern assertions + compile/build gate
   - Consumer: `apps/frontend/src/features/vm-management/model/vm/queue/processor.ts` — queue runtime calls log action methods.
 
   **Acceptance Criteria** (agent-executable only):
-  - [ ] `VMLog` method names required by queue still exist.
-  - [ ] `pnpm --dir apps/frontend run typecheck` exits `0` with queue modules compiling.
+  - [x] `VMLog` method names required by queue still exist.
+  - [x] `pnpm --dir apps/frontend run typecheck` exits `0` with queue modules compiling.
 
   **QA Scenarios** (MANDATORY — task incomplete without these):
   ```bash
@@ -305,8 +305,8 @@ Wave 2: page bridge cleanup + anti-pattern assertions + compile/build gate
   - Requirement: remove log-task sync effect only, not unrelated orchestration effects.
 
   **Acceptance Criteria** (agent-executable only):
-  - [ ] No `setWorkspaceLogTasks(` usage exists in `useVmsPageViewModel.ts`.
-  - [ ] Queue sync and operation API sync effects still exist and typecheck.
+  - [x] No `setWorkspaceLogTasks(` usage exists in `useVmsPageViewModel.ts`.
+  - [x] Queue sync and operation API sync effects still exist and typecheck.
 
   **QA Scenarios** (MANDATORY — task incomplete without these):
   ```bash
@@ -343,9 +343,9 @@ Wave 2: page bridge cleanup + anti-pattern assertions + compile/build gate
   - Guardrail source: `apps/frontend/src/widgets/vm-workspace/model/useVmWorkspaceStore.ts` `addLogEntry` checks.
 
   **Acceptance Criteria** (agent-executable only):
-  - [ ] `pnpm --dir apps/frontend run typecheck` exits `0`.
-  - [ ] `pnpm --dir apps/frontend run build` exits `0`.
-  - [ ] Static assertions for `addLogEntry` presence, legacy append removal, and stale sync removal all pass.
+  - [x] `pnpm --dir apps/frontend run typecheck` exits `0`.
+  - [x] `pnpm --dir apps/frontend run build` exits `0`.
+  - [x] Static assertions for `addLogEntry` presence, legacy append removal, and stale sync removal all pass.
 
   **QA Scenarios** (MANDATORY — task incomplete without these):
   ```bash

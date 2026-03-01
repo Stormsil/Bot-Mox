@@ -4,3 +4,4 @@
 - Action-time reads in callbacks remain stable using `useVmWorkspaceStore.getState().logs.tasks`.
 - `getFullLog` stays store-backed via `formatFullLog(useVmWorkspaceStore.getState().logs.entries)`.
 - `useVmsPageViewModel` should keep queue sync and operation API bridge, while stale `setWorkspaceLogTasks(...)` sync must remain absent.
+- Remaining continuation counter (`11/29`) corresponded to unchecked acceptance-criteria boxes; after verification these were marked complete, bringing the plan to 29/29.

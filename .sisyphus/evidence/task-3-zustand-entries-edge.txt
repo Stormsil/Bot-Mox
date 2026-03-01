@@ -1,0 +1,4 @@
+  const entries = useVmWorkspaceStore((state) => state.logs.entries);
+    (): VMLogEntry[] => useVmWorkspaceStore.getState().logs.entries,
+    useVmWorkspaceStore.getState().logsActions.setEntries(nextEntries);
+    (): string => formatFullLog(useVmWorkspaceStore.getState().logs.entries),

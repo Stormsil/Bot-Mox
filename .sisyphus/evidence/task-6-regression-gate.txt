@@ -1,0 +1,15 @@
+Task 6 Regression Gate - VM log behavior parity
+Date: 2026-03-01
+
+Compile/build gate commands:
+1) pnpm --filter @botmox/frontend typecheck
+   Result: PASS (tsc -b --noEmit completed, exit 0)
+
+2) pnpm --filter @botmox/frontend build
+   Result: PASS (prebuild @botmox/api-contract build + frontend tsc -b && vite build, exit 0)
+
+Key build note:
+- Vite production bundle completed successfully (built in 18.29s).
+
+Conclusion:
+- Task 6 compile/build regression gate passed.
