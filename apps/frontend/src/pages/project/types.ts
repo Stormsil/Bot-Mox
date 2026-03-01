@@ -1,39 +1,24 @@
-import type { BotStatus } from '../../types/core';
-import type { BotLicense, Proxy as ProxyResource, Subscription } from '../../entities/resources/model/types';
+import type {
+  ProxyLike,
+  ProxyStatus,
+  SubscriptionStatus,
+} from '../../entities/bot/lib/statuses.types';
 
-export const OFFLINE_THRESHOLD_MS = 5 * 60 * 1000;
+export type {
+  BotRecord,
+  ProxyLike,
+  ProxyStatus,
+  SubscriptionStatus,
+} from '../../entities/bot/lib/statuses.types';
+
+import type {
+  BotLicense,
+  Proxy as ProxyResource,
+  Subscription,
+} from '../../entities/resources/model/types';
+import type { BotStatus } from '../../shared/types/core';
 
 export type StatusFilter = 'all' | BotStatus;
-
-export type ProxyStatus = 'none' | 'active' | 'expiring' | 'expired' | 'banned';
-export type SubscriptionStatus = 'none' | 'active' | 'expiring' | 'expired';
-
-export type ProxyLike = {
-  expires_at?: number;
-  status?: ProxyResource['status'];
-};
-
-export interface BotRecord {
-  id: string;
-  project_id: string;
-  status: BotStatus;
-  last_seen?: number;
-  name?: string;
-  character?: {
-    name?: string;
-    level?: number;
-    server?: string;
-    faction?: 'alliance' | 'horde';
-  };
-  account?: {
-    email?: string;
-    password?: string;
-  };
-  proxy?: ProxyLike;
-  vm?: {
-    name?: string;
-  };
-}
 
 export interface BotRow {
   id: string;

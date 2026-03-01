@@ -5,7 +5,7 @@ import {
   listThemeAssetsViaContract,
   type ThemeAssetMimeType,
   type ThemeAssetPayload,
-} from '../../../providers/theme-assets-contract-client';
+} from '../../../shared/api/providers/theme-assets-contract-client';
 
 export type ThemeBackgroundAsset = ThemeAssetPayload;
 

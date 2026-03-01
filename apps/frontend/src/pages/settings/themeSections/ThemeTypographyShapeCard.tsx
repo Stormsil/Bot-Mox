@@ -1,4 +1,4 @@
-import { Card, Input, InputNumber, Space, Typography } from 'antd';
+import { Card, Input, Space, Typography } from 'antd';
 import type { ReactElement } from 'react';
 import { cx } from '../sections/classNames';
 import type { ThemeSettingsPanelProps } from '../ThemeSettingsPanel.types';
@@ -7,10 +7,7 @@ const { Text } = Typography;
 
 type TypographyShapeProps = Pick<
   ThemeSettingsPanelProps,
-  | 'localTypographySettings'
-  | 'localShapeSettings'
-  | 'onTypographySettingsChange'
-  | 'onShapeSettingsChange'
+  'localTypographySettings' | 'onTypographySettingsChange'
 >;
 
 export function ThemeTypographyShapeCard(props: TypographyShapeProps): ReactElement {
@@ -47,48 +44,6 @@ export function ThemeTypographyShapeCard(props: TypographyShapeProps): ReactElem
                 props.onTypographySettingsChange({ fontMono: event.target.value })
               }
               placeholder='e.g. ui-monospace, "Cascadia Mono", monospace'
-            />
-          </div>
-        </div>
-        <div className={cx('theme-shape-grid')}>
-          <div className={cx('theme-form-item')}>
-            <Text type="secondary">Radius none (px)</Text>
-            <InputNumber
-              min={0}
-              max={24}
-              step={1}
-              value={props.localShapeSettings.radiusNone}
-              onChange={(value) => props.onShapeSettingsChange({ radiusNone: Number(value ?? 0) })}
-            />
-          </div>
-          <div className={cx('theme-form-item')}>
-            <Text type="secondary">Radius small (px)</Text>
-            <InputNumber
-              min={0}
-              max={24}
-              step={1}
-              value={props.localShapeSettings.radiusSm}
-              onChange={(value) => props.onShapeSettingsChange({ radiusSm: Number(value ?? 0) })}
-            />
-          </div>
-          <div className={cx('theme-form-item')}>
-            <Text type="secondary">Radius medium (px)</Text>
-            <InputNumber
-              min={0}
-              max={24}
-              step={1}
-              value={props.localShapeSettings.radiusMd}
-              onChange={(value) => props.onShapeSettingsChange({ radiusMd: Number(value ?? 0) })}
-            />
-          </div>
-          <div className={cx('theme-form-item')}>
-            <Text type="secondary">Radius large (px)</Text>
-            <InputNumber
-              min={0}
-              max={24}
-              step={1}
-              value={props.localShapeSettings.radiusLg}
-              onChange={(value) => props.onShapeSettingsChange({ radiusLg: Number(value ?? 0) })}
             />
           </div>
         </div>

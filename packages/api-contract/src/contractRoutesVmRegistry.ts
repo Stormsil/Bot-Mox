@@ -2,11 +2,28 @@ import {
   authHeaderSchema,
   errorEnvelopeSchema,
   successEnvelopeSchema,
+  vmHardwareFingerprintQuerySchema,
+  vmHardwareFingerprintResponseSchema,
   vmRecordSchema,
   vmResolvePathSchema,
 } from './schemas.js';
 
 export const contractRoutesVmRegistry = {
+  vmHardwareFingerprint: {
+    method: 'GET',
+    path: '/api/v1/vm/hardware-fingerprint',
+    headers: authHeaderSchema,
+    query: vmHardwareFingerprintQuerySchema,
+    responses: {
+      200: successEnvelopeSchema(vmHardwareFingerprintResponseSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      500: errorEnvelopeSchema,
+      503: errorEnvelopeSchema,
+    },
+    summary: 'Get generated VM hardware fingerprint values',
+  },
   vmResolve: {
     method: 'GET',
     path: '/api/v1/vm/:uuid/resolve',

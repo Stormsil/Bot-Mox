@@ -1,4 +1,4 @@
-import type { VMGeneratorSettings, VMQueueItem, VMStorageOption } from '../../../types';
+import type { VMGeneratorSettings, VMQueueItem, VMStorageOption } from '../../../shared/types';
 
 const VM_PROJECT_DISK_FALLBACK_GIB: Record<string, number> = {
   wow_tbc: 128,

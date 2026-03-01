@@ -6,75 +6,190 @@ import {
   RightOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
+import { useModalForm, useTable } from '@refinedev/antd';
+import { type HttpError, useList } from '@refinedev/core';
+import type { TableProps } from 'antd';
 import { Button, Card, Input, Modal, message, Select, Space, Table, Typography } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { SubscriptionForm } from '../../components/subscriptions/SubscriptionForm';
-import { useBotsListQuery } from '../../entities/bot/api/useBotQueries';
-import { useSubscriptions } from '../../hooks/useSubscriptions';
-import { uiLogger } from '../../observability/uiLogger';
+import type { BotRecord } from '../../entities/bot/model/types';
+import { enrichSubscriptionsWithDetails } from '../../entities/resources/api/subscriptionFacade';
 import type {
   ComputedSubscriptionStatus,
+  Subscription,
   SubscriptionFormData,
   SubscriptionWithDetails,
-} from '../../types';
+} from '../../entities/resources/model/types';
+import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
+import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
+import { uiLogger } from '../../observability/uiLogger';
+import { SubscriptionForm } from '../../widgets/subscriptions/SubscriptionForm';
 import { ExpiringSubscriptionsAlert } from './ExpiringSubscriptionsAlert';
 import styles from './SubscriptionsPage.module.css';
 import { SubscriptionsStats } from './SubscriptionsStats';
 import { buildSubscriptionColumns } from './subscription-columns';
+import {
+  type BotOption,
+  buildTableFilters,
+  computeSubscriptionsStats,
+  filterSubscriptionsByStatus,
+  getErrorMessage,
+  getExpiringSoonSubscriptions,
+  readFilterValue,
+  toCreateSubscriptionPayload,
+  toUpdateSubscriptionPayload,
+} from './subscription-page.helpers';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-const { confirm } = Modal;
 const STATS_COLLAPSED_KEY = 'subscriptionsStatsCollapsed';
 
-interface BotOption {
-  id: string;
-  name: string;
-  character?: string;
-  status: string;
-  account_email?: string;
-  vmName?: string;
-}
+const BOT_POLL_MS = 5_000;
+const LARGE_PAGE_SIZE = 5_000;
 
 export const SubscriptionsPage: React.FC = () => {
-  const botsQuery = useBotsListQuery();
-  const {
-    subscriptions,
-    loading,
-    addSubscription,
-    updateSubscription,
-    deleteSubscription,
-    getExpiringSoon,
-    getExpired,
-    getActive,
-  } = useSubscriptions();
+  const syncWithLocationEnabled = !(typeof navigator !== 'undefined' && navigator.webdriver);
 
-  const [searchText, setSearchText] = useState('');
+  const botsList = useList<BotRecord>({
+    resource: 'bots',
+    pagination: {
+      mode: 'server',
+      currentPage: 1,
+      pageSize: LARGE_PAGE_SIZE,
+    },
+    queryOptions: {
+      refetchInterval: BOT_POLL_MS,
+    },
+  });
+  const settingsQuery = useSubscriptionSettingsQuery();
+  const subscriptionsTable = useTable<Subscription>({
+    resource: 'subscriptions',
+    syncWithLocation: syncWithLocationEnabled,
+    pagination: {
+      mode: 'server',
+      pageSize: 10,
+    },
+    queryOptions: syncWithLocationEnabled
+      ? undefined
+      : {
+          refetchOnMount: false,
+          refetchOnWindowFocus: false,
+          refetchOnReconnect: false,
+          staleTime: 60_000,
+        },
+  });
+  const createSubscriptionForm = useModalForm<Subscription, HttpError, Omit<Subscription, 'id'>>({
+    resource: 'subscriptions',
+    action: 'create',
+    autoSubmitClose: true,
+    redirect: false,
+    invalidates: ['resourceAll'],
+    syncWithLocation: false,
+    successNotification: () => ({
+      message: 'Subscription created',
+      type: 'success',
+    }),
+    errorNotification: (error) => ({
+      message: `Error saving subscription: ${getErrorMessage(error, 'Unknown error')}`,
+      type: 'error',
+    }),
+  });
+  const editSubscriptionForm = useModalForm<Subscription, HttpError, Partial<Subscription>>({
+    resource: 'subscriptions',
+    action: 'edit',
+    autoSubmitClose: true,
+    redirect: false,
+    invalidates: ['resourceAll'],
+    syncWithLocation: false,
+    successNotification: () => ({
+      message: 'Subscription updated',
+      type: 'success',
+    }),
+    errorNotification: (error) => ({
+      message: `Error saving subscription: ${getErrorMessage(error, 'Unknown error')}`,
+      type: 'error',
+    }),
+  });
+
   const [statusFilter, setStatusFilter] = useState<ComputedSubscriptionStatus | 'all'>('all');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithDetails | null>(
-    null,
-  );
-  const [saving, setSaving] = useState(false);
   const [statsCollapsed, setStatsCollapsed] = useState<boolean>(() => {
     const saved = localStorage.getItem(STATS_COLLAPSED_KEY);
     return saved ? Boolean(JSON.parse(saved)) : false;
   });
-  const bots = useMemo<BotOption[]>(
-    () =>
-      (botsQuery.data || []).map((bot) => ({
-        id: bot.id,
+
+  const searchText = readFilterValue(subscriptionsTable.filters, 'q', '');
+  const warningDays = settingsQuery.data?.warning_days ?? getDefaultSettings().warning_days;
+
+  const botsMap = useMemo(() => {
+    const nextBotsMap = new Map<
+      string,
+      {
+        name: string;
+        character?: string;
+        status?: SubscriptionWithDetails['botStatus'];
+        vmName?: string;
+      }
+    >();
+
+    (botsList.result.data || []).forEach((bot) => {
+      nextBotsMap.set(bot.id, {
         name: bot.name || bot.id,
         character: bot.character?.name,
         status: bot.status,
+        vmName: bot.vm?.name,
+      });
+    });
+
+    return nextBotsMap;
+  }, [botsList.result.data]);
+
+  const bots = useMemo<BotOption[]>(
+    () =>
+      (botsList.result.data || []).map((bot) => ({
+        id: bot.id,
+        name: bot.name || bot.id,
+        character: bot.character?.name,
+        status: String(bot.status || ''),
         account_email:
           bot.account && typeof bot.account === 'object' && 'email' in bot.account
             ? String((bot.account as { email?: unknown }).email || '')
             : undefined,
         vmName: bot.vm?.name,
       })),
-    [botsQuery.data],
+    [botsList.result.data],
+  );
+
+  const tableSubscriptions = useMemo(
+    () => (subscriptionsTable.tableProps.dataSource as Subscription[] | undefined) ?? [],
+    [subscriptionsTable.tableProps.dataSource],
+  );
+  const subscriptionsWithDetails = useMemo(
+    () => enrichSubscriptionsWithDetails(tableSubscriptions, warningDays, botsMap),
+    [tableSubscriptions, warningDays, botsMap],
+  );
+  const editingSubscription = useMemo(() => {
+    if (editSubscriptionForm.id === undefined || editSubscriptionForm.id === null) {
+      return null;
+    }
+    return (
+      subscriptionsWithDetails.find((sub) => sub.id === String(editSubscriptionForm.id)) ?? null
+    );
+  }, [editSubscriptionForm.id, subscriptionsWithDetails]);
+  const createSubscriptionFormProps = useMemo(
+    () => ({
+      ...createSubscriptionForm.formProps,
+      onFinish: async (values: SubscriptionFormData) =>
+        createSubscriptionForm.onFinish(toCreateSubscriptionPayload(values)),
+    }),
+    [createSubscriptionForm.formProps, createSubscriptionForm.onFinish],
+  );
+  const editSubscriptionFormProps = useMemo(
+    () => ({
+      ...editSubscriptionForm.formProps,
+      onFinish: async (values: SubscriptionFormData) =>
+        editSubscriptionForm.onFinish(toUpdateSubscriptionPayload(values)),
+    }),
+    [editSubscriptionForm.formProps, editSubscriptionForm.onFinish],
   );
 
   useEffect(() => {
@@ -82,89 +197,56 @@ export const SubscriptionsPage: React.FC = () => {
   }, [statsCollapsed]);
 
   useEffect(() => {
-    if (!botsQuery.error) {
+    if (!botsList.query.error) {
       return;
     }
-    uiLogger.error('Error loading bots:', botsQuery.error);
-  }, [botsQuery.error]);
+    uiLogger.error('Error loading bots:', botsList.query.error);
+  }, [botsList.query.error]);
 
-  const filteredSubscriptions = subscriptions.filter((sub) => {
-    const normalizedSearch = searchText.toLowerCase();
-    const matchesSearch =
-      sub.botName?.toLowerCase().includes(normalizedSearch) ||
-      sub.botCharacter?.toLowerCase().includes(normalizedSearch) ||
-      false;
-
-    const matchesStatus = statusFilter === 'all' || sub.computedStatus === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const stats = {
-    total: subscriptions.length,
-    active: getActive().length,
-    expired: getExpired().length,
-    expiringSoon: getExpiringSoon().length,
-  };
-
-  const handleDelete = (sub: SubscriptionWithDetails) => {
-    confirm({
-      title: 'Delete Subscription?',
-      content: `Are you sure you want to delete ${sub.type.toUpperCase()} subscription for bot "${sub.botName || sub.bot_id}"?`,
-      okText: 'Delete',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          await deleteSubscription(sub.id);
-          message.success('Subscription deleted');
-        } catch (error) {
-          uiLogger.error('Error deleting subscription:', error);
-          message.error('Error deleting subscription');
-        }
-      },
-    });
-  };
-
-  const openEditModal = (sub?: SubscriptionWithDetails) => {
-    if (sub) {
-      setEditingSubscription(sub);
-    } else {
-      setEditingSubscription(null);
+  useEffect(() => {
+    if (!subscriptionsTable.tableQuery.error) {
+      return;
     }
-    setIsModalOpen(true);
-  };
+    uiLogger.error('Error loading subscriptions:', subscriptionsTable.tableQuery.error);
+    message.error('Failed to load subscriptions');
+  }, [subscriptionsTable.tableQuery.error]);
 
-  const handleSaveSubscription = async (data: SubscriptionFormData) => {
-    setSaving(true);
-    try {
-      if (editingSubscription) {
-        await updateSubscription(editingSubscription.id, data);
-      } else {
-        await addSubscription(data);
-      }
-      setIsModalOpen(false);
-      setEditingSubscription(null);
-    } catch (error) {
-      uiLogger.error('Error saving subscription:', error);
-    } finally {
-      setSaving(false);
+  useEffect(() => {
+    if (
+      !editSubscriptionForm.modalProps.open ||
+      editSubscriptionForm.id === undefined ||
+      editSubscriptionForm.id === null
+    ) {
+      return;
     }
-  };
+
+    if (editingSubscription) {
+      return;
+    }
+
+    editSubscriptionForm.close();
+    message.warning('Subscription edit link is outdated. Opened list view instead.');
+  }, [editSubscriptionForm, editingSubscription]);
+
+  const filteredSubscriptions = filterSubscriptionsByStatus(subscriptionsWithDetails, statusFilter);
+
+  const stats = computeSubscriptionsStats(subscriptionsWithDetails);
+
+  const loading =
+    Boolean(subscriptionsTable.tableProps.loading) ||
+    botsList.query.isLoading ||
+    settingsQuery.isLoading ||
+    createSubscriptionForm.formLoading ||
+    editSubscriptionForm.formLoading;
 
   const rawColumns = buildSubscriptionColumns({
-    onEdit: openEditModal,
-    onDelete: handleDelete,
-    cellClassName: styles.tableCell,
-    headerClassName: styles.tableHeaderCell,
+    onEdit: (subscriptionId) => editSubscriptionForm.show(subscriptionId),
   });
+  const columns = rawColumns;
 
-  const columns = rawColumns.map((column) => ({
-    ...column,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
-    onCell: () => ({ className: styles.tableCell }),
-  }));
-
-  const expiringSoon = getExpiringSoon().sort((a, b) => a.expires_at - b.expires_at);
+  const expiringSoon = getExpiringSoonSubscriptions(subscriptionsWithDetails);
+  const subscriptionsTableProps =
+    subscriptionsTable.tableProps as unknown as TableProps<SubscriptionWithDetails>;
 
   return (
     <div className={styles.root}>
@@ -186,7 +268,11 @@ export const SubscriptionsPage: React.FC = () => {
             >
               Stats
             </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditModal()}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => createSubscriptionForm.show()}
+            >
               Add Subscription
             </Button>
           </Space>
@@ -202,12 +288,16 @@ export const SubscriptionsPage: React.FC = () => {
           <Input
             placeholder="Search by bot or character..."
             prefix={<SearchOutlined />}
+            size="small"
             value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
+            onChange={(event) =>
+              subscriptionsTable.setFilters(buildTableFilters({ q: event.target.value }), 'replace')
+            }
             style={{ width: 300 }}
           />
           <Select
             placeholder="Status"
+            size="small"
             value={statusFilter}
             onChange={setStatusFilter}
             style={{ width: 150 }}
@@ -219,8 +309,9 @@ export const SubscriptionsPage: React.FC = () => {
           </Select>
           <Button
             icon={<ReloadOutlined />}
+            size="small"
             onClick={() => {
-              setSearchText('');
+              subscriptionsTable.setFilters([], 'replace');
               setStatusFilter('all');
             }}
           >
@@ -231,39 +322,56 @@ export const SubscriptionsPage: React.FC = () => {
 
       <Card className={styles.tableCard}>
         <Table
+          {...subscriptionsTableProps}
           dataSource={filteredSubscriptions}
           columns={columns}
           rowKey="id"
           loading={loading}
-          rowClassName={() => styles.tableRow}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} subscriptions`,
-          }}
+          pagination={
+            subscriptionsTableProps.pagination &&
+            typeof subscriptionsTableProps.pagination === 'object'
+              ? {
+                  ...subscriptionsTableProps.pagination,
+                  current: Math.max(1, Number(subscriptionsTableProps.pagination.current) || 1),
+                  pageSize: Math.max(1, Number(subscriptionsTableProps.pagination.pageSize) || 10),
+                  showSizeChanger: true,
+                  showTotal: (total) => `Total ${total} subscriptions`,
+                }
+              : {
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showTotal: (total) => `Total ${total} subscriptions`,
+                }
+          }
           size="small"
         />
       </Card>
 
       <Modal
-        title={editingSubscription ? 'Edit Subscription' : 'Add Subscription'}
-        open={isModalOpen}
-        onCancel={() => {
-          setIsModalOpen(false);
-          setEditingSubscription(null);
-        }}
+        {...createSubscriptionForm.modalProps}
+        title="Add Subscription"
+        footer={null}
+        width={500}
+      >
+        <SubscriptionForm
+          editingSubscription={null}
+          bots={bots}
+          formProps={createSubscriptionFormProps}
+          onCancel={createSubscriptionForm.close}
+        />
+      </Modal>
+
+      <Modal
+        {...editSubscriptionForm.modalProps}
+        title="Edit Subscription"
         footer={null}
         width={500}
       >
         <SubscriptionForm
           editingSubscription={editingSubscription}
           bots={bots}
-          onSave={handleSaveSubscription}
-          onCancel={() => {
-            setIsModalOpen(false);
-            setEditingSubscription(null);
-          }}
-          loading={saving}
+          formProps={editSubscriptionFormProps}
+          onCancel={editSubscriptionForm.close}
         />
       </Modal>
     </div>

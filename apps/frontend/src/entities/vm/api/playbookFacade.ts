@@ -4,7 +4,7 @@ import {
   listPlaybooksViaContract,
   updatePlaybookViaContract,
   validatePlaybookViaContract,
-} from '../../../providers/playbook-contract-client';
+} from '../../../shared/api/providers/playbook-contract-client';
 
 interface ApiSuccessEnvelope<T> {
   data: T;

@@ -15,8 +15,8 @@ import {
   jwtVerify,
   SignJWT,
 } from 'jose';
-import { PrismaService } from '../db/prisma.service';
 import { isPrismaMissingStorageError } from '../common/prisma-soft-fail';
+import { PrismaService } from '../db/prisma.service';
 
 export interface AccessProfile {
   tenantType: 'user';
@@ -1289,7 +1289,8 @@ export class AuthService {
       const trialEndsAtMs = existing.trialEndsAt ? existing.trialEndsAt.getTime() : null;
       const lifetimePremium = existing.lifetimePremium === true;
       const premiumActive =
-        lifetimePremium || (premiumUntilMs !== null && Number.isFinite(premiumUntilMs) && premiumUntilMs > Date.now());
+        lifetimePremium ||
+        (premiumUntilMs !== null && Number.isFinite(premiumUntilMs) && premiumUntilMs > Date.now());
       const activeTrial =
         trialEndsAtMs !== null && Number.isFinite(trialEndsAtMs) && trialEndsAtMs > Date.now();
 
@@ -1386,7 +1387,12 @@ export class AuthService {
     }
 
     await this.ensureTenantAccessCreated(tenantId);
-    let record: any = null;
+    let record: {
+      trialEndsAt?: Date | null;
+      premiumUntil?: Date | null;
+      lifetimePremium?: boolean | null;
+      trialUsedAt?: Date | null;
+    } | null = null;
     try {
       record = await this.prisma.withTenantContext(tenantId, async (tx) => {
         return tx.tenantAccountAccess.findUnique({

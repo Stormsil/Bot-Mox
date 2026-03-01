@@ -81,7 +81,7 @@ test('FinanceService CRUD/list use repository only', async () => {
   assert.equal(removed, true);
 });
 
-test('FinanceService stores encrypted payload and returns decrypted shape', async () => {
+test('FinanceService passes plain payload to repository and returns record shape', async () => {
   let lastUpsertPayload: Record<string, unknown> | null = null;
   const dbRows = new Map<string, Record<string, unknown>>();
   const repositoryStub: RepositoryStub = {
@@ -107,8 +107,8 @@ test('FinanceService stores encrypted payload and returns decrypted shape', asyn
   assert.equal(created.id, 'fin-sec-1');
   assert.equal(created.note, 'private note');
   assert.ok(lastUpsertPayload && typeof lastUpsertPayload === 'object');
-  assert.ok(Object.hasOwn(lastUpsertPayload || {}, '__enc_payload_v1'));
-  assert.equal(Object.hasOwn(lastUpsertPayload || {}, 'note'), false);
+  assert.equal(Object.hasOwn(lastUpsertPayload || {}, '__enc_payload_v1'), false);
+  assert.equal((lastUpsertPayload as Record<string, unknown> | null)?.note, 'private note');
 
   const listed = await service.list({}, 'tenant-a');
   assert.equal(listed.items.length, 1);

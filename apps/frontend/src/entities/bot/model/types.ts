@@ -1,4 +1,4 @@
-import type { Bot } from '../../../types';
+import type { Bot } from '../../../shared/types';
 
 export interface BotRecord extends Bot {
   vm?: {

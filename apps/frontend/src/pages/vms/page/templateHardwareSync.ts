@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { getVMConfig } from '../../../entities/vm/api/vmReadFacade';
-import type { VMGeneratorSettings, VMQueueItem } from '../../../types';
+import type { VMGeneratorSettings, VMQueueItem } from '../../../shared/types';
 import { normalizeCores, normalizeMemory } from '../vmPageUtils';
 
 interface SyncTemplateHardwareParams {

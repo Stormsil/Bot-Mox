@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useStartAndSendKeyBatchMutation } from '../../../entities/vm/api/useVmActionMutations';
-import type { VMGeneratorSettings, VMQueueItem, VMResourceMode } from '../../../types';
+import type { VMGeneratorSettings, VMQueueItem, VMResourceMode } from '../../../shared/types';
 
 type VMProjectId = 'wow_tbc' | 'wow_midnight';
 

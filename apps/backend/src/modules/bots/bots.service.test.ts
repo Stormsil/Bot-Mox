@@ -3,7 +3,6 @@ export {};
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { BotsService } = require('./bots.service.ts');
-const { DataAtRestCrypto } = require('../common/data-at-rest-crypto.ts');
 
 type RepositoryStub = {
   list: (...args: unknown[]) => Promise<Array<Record<string, unknown>>>;
@@ -80,8 +79,7 @@ test('BotsService CRUD/list use repository only', async () => {
   assert.equal(removed, true);
 });
 
-test('BotsService stores encrypted payload and returns decrypted shape', async () => {
-  const crypto = new DataAtRestCrypto();
+test('BotsService passes plain payload to repository and returns record shape', async () => {
   let persistedRow: Record<string, unknown> | null = null;
 
   const repositoryStub: RepositoryStub = {
@@ -106,11 +104,10 @@ test('BotsService stores encrypted payload and returns decrypted shape', async (
   assert.ok(persistedRow);
 
   const persisted = persistedRow as unknown as Record<string, unknown>;
-  const envelope = persisted.payload as Record<string, unknown>;
-  assert.ok(envelope.__enc_payload_v1);
-  const decrypted = crypto.decryptJson(envelope.__enc_payload_v1) as Record<string, unknown>;
-  assert.equal(decrypted.name, 'bot enc');
-  assert.equal(decrypted.id, 'b-enc');
+  const persistedPayload = persisted.payload as Record<string, unknown>;
+  assert.equal(Object.hasOwn(persistedPayload, '__enc_payload_v1'), false);
+  assert.equal(persistedPayload.name, 'bot enc');
+  assert.equal(persistedPayload.id, 'b-enc');
 });
 
 test('BotsService keeps legacy plaintext payload compatible', async () => {

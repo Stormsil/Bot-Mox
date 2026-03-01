@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import type { VMGeneratorSettings, VMQueueItem, VMResourceMode } from '../../../types';
+import type { VMGeneratorSettings, VMQueueItem, VMResourceMode } from '../../../shared/types';
 import type { VMProjectId } from './resourcePresets';
 
 interface RecreateVmInput {

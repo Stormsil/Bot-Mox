@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { ProxmoxVM, VMGeneratorSettings, VMQueueItem } from '../../../types';
+import type { ProxmoxVM, VMGeneratorSettings, VMQueueItem } from '../../../shared/types';
 
 interface UseVmPageLiveRefsParams {
   proxmoxVms: ProxmoxVM[];

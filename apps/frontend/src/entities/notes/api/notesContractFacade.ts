@@ -1,12 +1,12 @@
 import { uiLogger } from '../../../observability/uiLogger';
+import { ApiClientError } from '../../../shared/api/apiClient';
 import {
   createWorkspaceNoteViaContract,
   deleteWorkspaceNoteViaContract,
   getWorkspaceNoteViaContract,
   listWorkspaceNotesViaContract,
   patchWorkspaceNoteViaContract,
-} from '../../../providers/workspace-contract-client';
-import { ApiClientError } from '../../../shared/api/apiClient';
+} from '../../../shared/api/providers/workspace-contract-client';
 import type { CreateNoteData, Note, NoteBlock, NoteIndex, UpdateNoteData } from '../model/types';
 
 interface NoteDb {

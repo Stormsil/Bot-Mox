@@ -8,6 +8,19 @@ const { DataAtRestCrypto } = require('../common/data-at-rest-crypto.ts');
 function createRepositoryWithInMemoryStore() {
   const releases = new Map<string, Record<string, unknown>>();
   const assignments = new Map<string, Record<string, unknown>>();
+  const crypto = new DataAtRestCrypto();
+  const wrapPayload = (payload: unknown) =>
+    payload &&
+    typeof payload === 'object' &&
+    !Object.hasOwn(payload as Record<string, unknown>, '__enc_payload_v1')
+      ? { __enc_payload_v1: crypto.encryptJson(payload) }
+      : payload;
+  const unwrapRow = (row: Record<string, unknown> | null) => {
+    if (!row || !row.payload || typeof row.payload !== 'object') return row;
+    const payloadObj = row.payload as Record<string, unknown>;
+    if (!Object.hasOwn(payloadObj, '__enc_payload_v1')) return row;
+    return { ...row, payload: crypto.decryptJson(payloadObj.__enc_payload_v1) };
+  };
   const prisma = {
     artifactReleaseItem: {
       findFirst: async ({
@@ -112,6 +125,51 @@ function createRepositoryWithInMemoryStore() {
         assignments.set(key, next);
         return next;
       },
+    },
+    getPayloadCryptoClient() {
+      return {
+        artifactReleaseItem: {
+          findFirst: async (args: { where: Record<string, unknown>; orderBy?: unknown }) =>
+            unwrapRow(await prisma.artifactReleaseItem.findFirst(args)),
+          findMany: async () => [],
+          upsert: async (args: {
+            where: { tenantId_id: { tenantId: string; id: number } };
+            create: Record<string, unknown>;
+            update: Record<string, unknown>;
+          }) =>
+            unwrapRow(
+              await prisma.artifactReleaseItem.upsert({
+                ...args,
+                create: { ...args.create, payload: wrapPayload(args.create.payload) },
+                update: { ...args.update, payload: wrapPayload(args.update.payload) },
+              }),
+            ) as Record<string, unknown>,
+        },
+        artifactAssignmentItem: {
+          findFirst: async (args: { where: Record<string, unknown>; orderBy?: unknown }) =>
+            unwrapRow(await prisma.artifactAssignmentItem.findFirst(args)),
+          upsert: async (args: {
+            where: {
+              tenantId_module_platform_channel_userKey: {
+                tenantId: string;
+                module: string;
+                platform: string;
+                channel: string;
+                userKey: string;
+              };
+            };
+            create: Record<string, unknown>;
+            update: Record<string, unknown>;
+          }) =>
+            unwrapRow(
+              await prisma.artifactAssignmentItem.upsert({
+                ...args,
+                create: { ...args.create, payload: wrapPayload(args.create.payload) },
+                update: { ...args.update, payload: wrapPayload(args.update.payload) },
+              }),
+            ) as Record<string, unknown>,
+        },
+      };
     },
   };
 

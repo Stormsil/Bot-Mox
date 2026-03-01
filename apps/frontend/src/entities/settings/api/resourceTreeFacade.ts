@@ -1,4 +1,4 @@
-import type { BotStatus } from '../../../types';
+import type { BotStatus } from '../../../shared/types';
 import { readSettingsPath, writeSettingsPath } from './settingsPathClient';
 
 const RESOURCE_TREE_SETTINGS_PATH = 'ui/resource_tree';

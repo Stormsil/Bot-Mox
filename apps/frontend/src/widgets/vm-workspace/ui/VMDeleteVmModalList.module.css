@@ -1,0 +1,205 @@
+.vm-delete-vm-modal-list {
+  max-height: 56vh;
+  overflow: auto;
+  border: none;
+  background: transparent;
+}
+
+.vm-delete-vm-modal-list-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-height: 30px;
+  padding: 0 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--dvm-border);
+  background: var(--dvm-muted);
+  color: var(--dvm-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.vm-delete-vm-modal-empty {
+  padding: 16px 14px;
+  color: var(--dvm-text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.vm-delete-vm-modal-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 12px 9px 14px;
+  border-bottom: 1px solid var(--dvm-border-subtle);
+  background: var(--dvm-panel);
+}
+
+.vm-delete-vm-modal-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: transparent;
+}
+
+.vm-delete-vm-modal-item.is-allowed::before {
+  background: var(--dvm-success);
+}
+
+.vm-delete-vm-modal-item.is-blocked::before {
+  background: var(--dvm-warning);
+}
+
+.vm-delete-vm-modal-item.is-selected {
+  background: var(--dvm-accent-soft);
+}
+
+.vm-delete-vm-modal-item.is-selected::before {
+  background: var(--dvm-accent);
+}
+
+.vm-delete-vm-modal-item:last-child {
+  border-bottom: none;
+}
+
+.vm-delete-vm-modal-item:nth-child(even) {
+  background: color-mix(in srgb, var(--dvm-panel) 78%, var(--dvm-muted));
+}
+
+.vm-delete-vm-modal-item:hover:not(.is-disabled) {
+  background: var(--dvm-hover);
+}
+
+.vm-delete-vm-modal-check {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.vm-delete-vm-modal-check-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.vm-delete-vm-modal-item-main {
+  color: var(--dvm-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.vm-delete-vm-modal-item-sub {
+  color: var(--dvm-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.vm-delete-vm-modal-item-sub--account {
+  color: var(--dvm-text);
+}
+
+.vm-delete-vm-modal-item-sub--decision {
+  margin-top: 1px;
+  padding: 2px 6px;
+  border: 1px solid var(--dvm-border);
+  background: var(--dvm-muted);
+}
+
+.vm-delete-vm-modal-item-sub--is-allowed.vm-delete-vm-modal-item-sub--decision {
+  color: var(--dvm-success);
+  border-color: color-mix(in srgb, var(--dvm-success) 50%, var(--dvm-border));
+}
+
+.vm-delete-vm-modal-item-sub--is-blocked.vm-delete-vm-modal-item-sub--decision {
+  color: var(--dvm-warning);
+  border-color: color-mix(in srgb, var(--dvm-warning) 50%, var(--dvm-border));
+}
+
+.vm-delete-vm-modal-item-right {
+  display: inline-flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 172px;
+}
+
+.vm-delete-vm-status {
+  margin: 0;
+  border-radius: 0;
+  background: var(--dvm-muted);
+  border: 1px solid var(--dvm-border);
+  color: var(--dvm-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  padding-inline: 7px;
+}
+
+.vm-delete-vm-status.is-running {
+  color: var(--dvm-success);
+  border-color: color-mix(in srgb, var(--dvm-success) 65%, var(--dvm-border));
+  background: color-mix(in srgb, var(--dvm-success) 10%, var(--dvm-muted));
+}
+
+.vm-delete-vm-status.is-stopped {
+  color: var(--dvm-text-muted);
+  border-color: var(--dvm-border);
+  background: var(--dvm-muted);
+}
+
+.vm-delete-vm-status.is-neutral {
+  color: var(--dvm-warning);
+  border-color: color-mix(in srgb, var(--dvm-warning) 65%, var(--dvm-border));
+  background: color-mix(in srgb, var(--dvm-warning) 10%, var(--dvm-muted));
+}
+
+.vm-delete-vm-status.is-queued {
+  color: var(--dvm-accent);
+  border-color: color-mix(in srgb, var(--dvm-accent) 60%, var(--dvm-border));
+  background: color-mix(in srgb, var(--dvm-accent) 12%, var(--dvm-muted));
+}
+
+.vm-delete-vm-status.is-allowed {
+  color: var(--dvm-success);
+  border-color: color-mix(in srgb, var(--dvm-success) 65%, var(--dvm-border));
+  background: color-mix(in srgb, var(--dvm-success) 10%, var(--dvm-muted));
+}
+
+.vm-delete-vm-status.is-blocked {
+  color: var(--dvm-warning);
+  border-color: color-mix(in srgb, var(--dvm-warning) 65%, var(--dvm-border));
+  background: color-mix(in srgb, var(--dvm-warning) 10%, var(--dvm-muted));
+}
+
+.vm-delete-vm-modal-item.is-disabled {
+  opacity: 0.62;
+}
+
+@media (max-width: 980px) {
+  .vm-delete-vm-modal-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .vm-delete-vm-modal-item-right {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+}

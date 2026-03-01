@@ -1,4 +1,4 @@
-import type { BotStatus, Character } from '../../../types/core';
+import type { BotStatus, Character } from '../../../shared/types/core';
 
 export type BotLifecycleStage = 'prepare' | 'leveling' | 'profession' | 'farming';
 
@@ -42,4 +42,3 @@ export interface ArchiveEntry {
     total_runtime_hours: number;
   };
 }
-

@@ -2,7 +2,7 @@
 
 Status: Active  
 Owner: Platform Architecture  
-Last Updated: 2026-02-19  
+Last Updated: 2026-02-25  
 Applies To: `apps/frontend`, `apps/backend`, `apps/agent`, `packages/*`
 
 ## Start Here
@@ -55,3 +55,7 @@ Applies To: `apps/frontend`, `apps/backend`, `apps/agent`, `packages/*`
 All deprecated and historical plans/audits are archived under `docs/history/**`.
 These files are not source-of-truth for current implementation.
 
+## Local Snapshot Notes
+
+- 2026-02-25 local workspace snapshot prepared for external architecture review (Gemini).
+- Snapshot includes in-flight backend repository/storage refactors and frontend finance Refine data-layer pilot.

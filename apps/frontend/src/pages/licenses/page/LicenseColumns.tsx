@@ -5,11 +5,12 @@ import {
   PlusCircleOutlined,
   RobotOutlined,
 } from '@ant-design/icons';
+import { DeleteButton, EditButton } from '@refinedev/antd';
 import type { TableColumnsType } from 'antd';
-import { Button, Popconfirm, Popover, Space, Tag, Typography } from 'antd';
+import { Button, Popover, Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
-import { TableActionButton, TableActionGroup } from '../../../components/ui/TableActionButton';
 import type { LicenseWithBots } from '../../../entities/resources/model/types';
+import { TableActionButton, TableActionGroup } from '../../../shared/ui/TableActionButton';
 import styles from '../LicensesPage.module.css';
 import { isExpired, isExpiringSoon, ONE_DAY_MS } from './helpers';
 import type { LicenseColumnsHandlers } from './types';
@@ -60,14 +61,11 @@ export const buildLicenseColumns = ({
   currentTime,
   handlers,
 }: BuildLicenseColumnsOptions): TableColumnsType<LicenseWithBots> => [
-  // Table visuals are intentionally local to LicensesPage.module.css via column/table classNames.
   {
     title: 'Status',
     dataIndex: 'status',
     key: 'status',
     width: 120,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (status: string, record) => {
       let color = 'default';
 
@@ -82,8 +80,8 @@ export const buildLicenseColumns = ({
       }
 
       return (
-        <Tag color={color} className={styles.statusTag}>
-          {isExpired(record.expires_at, currentTime) ? 'expired' : status}
+        <Tag bordered={false} color={color} className={styles.statusTag}>
+          {(isExpired(record.expires_at, currentTime) ? 'expired' : status).toUpperCase()}
         </Tag>
       );
     },
@@ -92,15 +90,9 @@ export const buildLicenseColumns = ({
     title: 'License Key',
     dataIndex: 'key',
     key: 'key',
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (key: string, record) => (
       <Space direction="vertical" size={0}>
-        <Text
-          copyable={{ text: key, icon: <CopyOutlined /> }}
-          className={styles.licenseKey}
-          style={{ fontSize: '12px' }}
-        >
+        <Text code copyable={{ text: key, icon: <CopyOutlined /> }} className={styles.licenseKey}>
           {key}
         </Text>
         {record.type && (
@@ -115,8 +107,6 @@ export const buildLicenseColumns = ({
     title: 'Bot',
     key: 'bot',
     width: 400,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (_value, record) => {
       const botCount = record.botDetails?.length || 0;
 
@@ -141,12 +131,12 @@ export const buildLicenseColumns = ({
         return (
           <Space align="start">
             <Space direction="vertical" size={0}>
-              <Text style={{ fontSize: '12px', fontWeight: 500 }}>
+              <Space size={4}>
                 <RobotOutlined
                   style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }}
                 />
-                {bot.id}
-              </Text>
+                <Text code>{bot.id}</Text>
+              </Space>
               <Text type="secondary" style={{ fontSize: '11px' }}>
                 {bot.characterName || bot.name}
                 {bot.vmName && ` (${bot.vmName})`}
@@ -208,8 +198,6 @@ export const buildLicenseColumns = ({
     dataIndex: 'expires_at',
     key: 'expires_at',
     width: 120,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (expiresAt: number) => {
       const expired = isExpired(expiresAt, currentTime);
       const expiringSoon = isExpiringSoon(expiresAt, currentTime);
@@ -225,16 +213,12 @@ export const buildLicenseColumns = ({
     dataIndex: 'created_at',
     key: 'created_at',
     width: 120,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (createdAt: number) => dayjs(createdAt).format('DD.MM.YYYY'),
   },
   {
     title: 'Days Left',
     key: 'days_left',
     width: 100,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (_value, record) => {
       const expired = isExpired(record.expires_at, currentTime);
       const daysLeft = Math.ceil((record.expires_at - currentTime) / ONE_DAY_MS);
@@ -257,30 +241,45 @@ export const buildLicenseColumns = ({
     title: 'Actions',
     key: 'actions',
     width: 150,
-    className: styles.tableCell,
-    onHeaderCell: () => ({ className: styles.tableHeaderCell }),
     render: (_value, record) => (
       <TableActionGroup>
-        <TableActionButton
+        <EditButton
+          hideText
+          size="small"
+          shape="circle"
           icon={<EditOutlined />}
-          onClick={() => handlers.onEdit(record)}
-          tooltip="Edit"
+          resource="licenses"
+          recordItemId={record.id}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            handlers.onEdit(record);
+          }}
         />
         <TableActionButton
           icon={<CopyOutlined />}
           onClick={() => handlers.onCopyKey(record.key)}
           tooltip="Copy Key"
         />
-        <Popconfirm
-          title="Delete License?"
-          description="Are you sure you want to delete this license?"
-          onConfirm={() => void handlers.onDelete(record)}
-          okText="Delete"
-          cancelText="Cancel"
-          okButtonProps={{ danger: true }}
-        >
-          <TableActionButton danger icon={<DeleteOutlined />} tooltip="Delete" />
-        </Popconfirm>
+        <DeleteButton
+          hideText
+          size="small"
+          shape="circle"
+          icon={<DeleteOutlined />}
+          resource="licenses"
+          recordItemId={record.id}
+          confirmTitle="Delete License?"
+          confirmOkText="Delete"
+          confirmCancelText="Cancel"
+          successNotification={() => ({
+            message: 'License deleted',
+            type: 'success',
+          })}
+          errorNotification={() => ({
+            message: 'Failed to delete license',
+            type: 'error',
+          })}
+        />
       </TableActionGroup>
     ),
   },

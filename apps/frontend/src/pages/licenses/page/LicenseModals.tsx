@@ -1,37 +1,33 @@
-import type { FormInstance } from 'antd';
-import { AutoComplete, DatePicker, Form, Input, Modal, Select } from 'antd';
+import type { FormInstance, FormProps, ModalProps } from 'antd';
+import { DatePicker, Form, Input, Modal, Select } from 'antd';
+import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
-import type { LicenseWithBots } from '../../../entities/resources/model/types';
-import type { AddBotFormValues, BotsMap, LicenseFormValues } from './types';
+import type { AddBotFormValues, BotsMap } from './types';
 
 const { Option } = Select;
 
+function toDayjsValue(value: unknown): Dayjs | null {
+  if (dayjs.isDayjs(value)) {
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'string') {
+    const parsed = dayjs(value);
+    return parsed.isValid() ? parsed : null;
+  }
+  return null;
+}
+
 interface LicenseEditorModalProps {
-  open: boolean;
-  editingLicense: LicenseWithBots | null;
-  licenses: LicenseWithBots[];
-  form: FormInstance<LicenseFormValues>;
-  onCancel: () => void;
-  onSave: (values: LicenseFormValues) => Promise<void>;
+  modalProps: ModalProps;
+  formProps: FormProps;
 }
 
 export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
-  open,
-  editingLicense,
-  licenses,
-  form,
-  onCancel,
-  onSave,
+  modalProps,
+  formProps,
 }) => (
-  <Modal
-    title={editingLicense ? 'Edit License' : 'Add License'}
-    open={open}
-    onOk={() => form.submit()}
-    onCancel={onCancel}
-    okText={editingLicense ? 'Update' : 'Create'}
-    width={500}
-  >
-    <Form form={form} layout="vertical" onFinish={(values) => void onSave(values)}>
+  <Modal {...modalProps} width={500}>
+    <Form {...formProps} layout="vertical">
       <Form.Item
         name="key"
         label="License Key"
@@ -45,19 +41,7 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
         label="Type"
         rules={[{ required: true, message: 'Please enter license type' }]}
       >
-        <AutoComplete
-          placeholder="Enter type (e.g., SIN, Baneto)"
-          variant="filled"
-          options={Array.from(new Set(licenses.map((license) => license.type).filter(Boolean))).map(
-            (type) => ({
-              value: type,
-              label: type,
-            }),
-          )}
-          filterOption={(inputValue, option) =>
-            option?.value?.toLowerCase().includes(inputValue.toLowerCase()) ?? false
-          }
-        />
+        <Input placeholder="Enter type (e.g., SIN, Baneto)" variant="filled" />
       </Form.Item>
 
       <Form.Item
@@ -65,6 +49,7 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
         label="Expiration Date"
         rules={[{ required: true, message: 'Please select expiration date' }]}
         tooltip="Format: DD.MM.YYYY"
+        getValueProps={(value) => ({ value: toDayjsValue(value) })}
       >
         <DatePicker
           style={{ width: '100%' }}
@@ -81,11 +66,19 @@ interface AddBotModalProps {
   open: boolean;
   bots: BotsMap;
   form: FormInstance<AddBotFormValues>;
+  submitting: boolean;
   onCancel: () => void;
   onSave: (values: AddBotFormValues) => Promise<void>;
 }
 
-export const AddBotModal: React.FC<AddBotModalProps> = ({ open, bots, form, onCancel, onSave }) => (
+export const AddBotModal: React.FC<AddBotModalProps> = ({
+  open,
+  bots,
+  form,
+  submitting,
+  onCancel,
+  onSave,
+}) => (
   <Modal
     title="Add Bot to License"
     open={open}
@@ -93,6 +86,8 @@ export const AddBotModal: React.FC<AddBotModalProps> = ({ open, bots, form, onCa
     onCancel={onCancel}
     okText="Add Bot"
     width={400}
+    confirmLoading={submitting}
+    okButtonProps={{ disabled: submitting }}
   >
     <Form form={form} layout="vertical" onFinish={(values) => void onSave(values)}>
       <Form.Item

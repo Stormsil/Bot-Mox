@@ -1,4 +1,4 @@
-import type { ProxmoxClusterResource, VMStorageOption } from '../../../types';
+import type { ProxmoxClusterResource, VMStorageOption } from '../../../shared/types';
 
 export const STORAGE_VOLUME_KEY = /^(?:ide|sata|scsi|virtio|efidisk|tpmstate)\d+$/i;
 export const HIDDEN_STORAGE_NAMES = new Set(['local']);

@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import type {
   CategoryBreakdown,
   FinanceCategory,
@@ -103,7 +104,7 @@ export function prepareTimeSeriesData(
       expense: data.expense,
       dailyProfit: data.income - data.expense,
     }))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf());
 
   let runningTotal = 0;
   return sortedData.map((item) => {
@@ -144,7 +145,7 @@ export function getGoldPriceHistoryFromOperations(
   });
 
   return Array.from(grouped.values()).sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    (a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf(),
   );
 }
 

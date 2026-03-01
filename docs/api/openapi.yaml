@@ -258,6 +258,30 @@ components:
           type: object
           additionalProperties: true
       required: [vm_uuid]
+    VmHardwareFingerprintMeta:
+      type: object
+      properties:
+        brand:
+          type: string
+        product:
+          type: string
+        cpu:
+          type: string
+      required: [brand, product, cpu]
+    VmHardwareFingerprintResponse:
+      type: object
+      properties:
+        mac:
+          type: string
+          pattern: '^00:1B:21:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}$'
+        ssdSerial:
+          type: string
+          pattern: '^[0-9]{8}$'
+        smbiosArgs:
+          type: string
+        meta:
+          $ref: '#/components/schemas/VmHardwareFingerprintMeta'
+      required: [mac, ssdSerial, smbiosArgs, meta]
     LicenseLeaseRequest:
       type: object
       properties:
@@ -754,6 +778,23 @@ paths:
           description: VM registry entry
         '404':
           description: VM UUID not found
+  /api/v1/vm/hardware-fingerprint:
+    get:
+      summary: Generate backend VM hardware fingerprint values
+      responses:
+        '200':
+          description: VM hardware fingerprint payload
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/VmHardwareFingerprintResponse'
+        '400':
+          description: Invalid query or invalid generated fingerprint payload
   /api/v1/bots:
     get:
       summary: List bots

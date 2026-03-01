@@ -23,7 +23,6 @@ import {
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { TableActionButton } from '../../../components/ui/TableActionButton';
 import {
   useCreateKanbanTaskMutation,
   useDeleteKanbanTaskMutation,
@@ -32,6 +31,7 @@ import {
 import { useWorkspaceKanbanTasksQuery } from '../../../entities/workspace/api/useWorkspaceQueries';
 import type { KanbanStatus, KanbanTask } from '../../../entities/workspace/model/types';
 import { uiLogger } from '../../../observability/uiLogger';
+import { TableActionButton } from '../../../shared/ui/TableActionButton';
 import styles from './WorkspaceKanbanPage.module.css';
 
 const { Title, Text } = Typography;
@@ -224,7 +224,6 @@ export const WorkspaceKanbanPage: React.FC = () => {
                 </Button>
               }
               loading={loading}
-              styles={{ body: { paddingTop: 12, paddingBottom: 12 } }}
             >
               {columnTasks.length === 0 ? (
                 <Empty

@@ -1,4 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useVmWorkspaceIsLogResizing,
+  useVmWorkspaceIsWorkspaceResizing,
+  useVmWorkspaceLayoutActions,
+  useVmWorkspaceLogHeight,
+  useVmWorkspaceSplitRatio,
+  useVmWorkspaceStore,
+} from './useVmWorkspaceStore';
 
 const LOG_HEIGHT_STORAGE_KEY = 'vmGeneratorLogHeight';
 const LOG_DEFAULT_HEIGHT = 280;
@@ -65,13 +73,20 @@ export const useVmWorkspaceLayout = ({
   workspaceLayoutRef,
   workspaceRef,
 }: UseVmWorkspaceLayoutParams): UseVmWorkspaceLayoutResult => {
-  const [workspaceSplitRatio, setWorkspaceSplitRatio] = useState<number>(getInitialSplitRatio);
-  const [isWorkspaceResizing, setIsWorkspaceResizing] = useState(false);
-  const [logHeight, setLogHeight] = useState<number>(getInitialLogHeight);
-  const [isLogResizing, setIsLogResizing] = useState(false);
+  const workspaceSplitRatio = useVmWorkspaceSplitRatio();
+  const logHeight = useVmWorkspaceLogHeight();
+  const isWorkspaceResizing = useVmWorkspaceIsWorkspaceResizing();
+  const isLogResizing = useVmWorkspaceIsLogResizing();
+  const { setSplitRatio, setLogHeight, setWorkspaceResizing, setLogResizing } =
+    useVmWorkspaceLayoutActions();
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window === 'undefined' ? 9999 : window.innerWidth,
   );
+
+  useEffect(() => {
+    setSplitRatio(getInitialSplitRatio());
+    setLogHeight(getInitialLogHeight());
+  }, [setLogHeight, setSplitRatio]);
 
   const getPreferredRightPanelWidth = useCallback((): number => {
     const queuePanel = workspaceRef.current?.querySelector('.vm-queue-panel') as HTMLElement | null;
@@ -161,14 +176,18 @@ export const useVmWorkspaceLayout = ({
 
   useEffect(() => {
     const handleResize = () => {
+      const {
+        layout: { logHeight: currentLogHeight, splitRatio: currentSplitRatio },
+      } = useVmWorkspaceStore.getState();
+
       setViewportWidth(typeof window === 'undefined' ? 9999 : window.innerWidth);
-      setLogHeight((prev) => clampLogHeight(prev));
-      setWorkspaceSplitRatio((prev) => clampWorkspaceSplitRatio(prev));
+      setLogHeight(clampLogHeight(currentLogHeight));
+      setSplitRatio(clampWorkspaceSplitRatio(currentSplitRatio));
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [clampLogHeight, clampWorkspaceSplitRatio]);
+  }, [clampLogHeight, clampWorkspaceSplitRatio, setLogHeight, setSplitRatio]);
 
   useEffect(() => {
     return () => {
@@ -183,7 +202,7 @@ export const useVmWorkspaceLayout = ({
 
       const startY = event.clientY;
       const startHeight = logHeight;
-      setIsLogResizing(true);
+      setLogResizing(true);
       document.body.style.cursor = 'row-resize';
       document.body.style.userSelect = 'none';
 
@@ -193,7 +212,7 @@ export const useVmWorkspaceLayout = ({
       };
 
       const handleMouseUp = () => {
-        setIsLogResizing(false);
+        setLogResizing(false);
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
         window.removeEventListener('mousemove', handleMouseMove);
@@ -203,7 +222,7 @@ export const useVmWorkspaceLayout = ({
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     },
-    [clampLogHeight, logHeight],
+    [clampLogHeight, logHeight, setLogHeight, setLogResizing],
   );
 
   const startWorkspaceResize = useCallback(
@@ -219,7 +238,7 @@ export const useVmWorkspaceLayout = ({
         return;
       }
 
-      setIsWorkspaceResizing(true);
+      setWorkspaceResizing(true);
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
 
@@ -232,11 +251,11 @@ export const useVmWorkspaceLayout = ({
         const usableWidth = Math.max(2, liveRect.width - WORKSPACE_RESIZER_WIDTH_PX);
         const rawLeft = moveEvent.clientX - liveRect.left - WORKSPACE_RESIZER_WIDTH_PX / 2;
         const nextRatio = rawLeft / usableWidth;
-        setWorkspaceSplitRatio(clampWorkspaceSplitRatio(nextRatio));
+        setSplitRatio(clampWorkspaceSplitRatio(nextRatio));
       };
 
       const handleMouseUp = () => {
-        setIsWorkspaceResizing(false);
+        setWorkspaceResizing(false);
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
         window.removeEventListener('mousemove', handleMouseMove);
@@ -246,7 +265,7 @@ export const useVmWorkspaceLayout = ({
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     },
-    [clampWorkspaceSplitRatio, workspaceLayoutRef],
+    [clampWorkspaceSplitRatio, setSplitRatio, setWorkspaceResizing, workspaceLayoutRef],
   );
 
   const workspaceGridTemplateColumns = useMemo(() => {

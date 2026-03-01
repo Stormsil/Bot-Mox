@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { DataAtRestCrypto } from '../common/data-at-rest-crypto';
 import { PlaybooksRepository } from './playbooks.repository';
 
 type PlaybookRecord = Record<string, unknown>;
@@ -22,8 +21,6 @@ export interface PlaybookValidationResult {
 
 @Injectable()
 export class PlaybooksService {
-  private readonly atRestCrypto = new DataAtRestCrypto();
-
   constructor(private readonly repository: PlaybooksRepository) {}
 
   private normalizeTenantId(tenantId: string): string {
@@ -53,11 +50,11 @@ export class PlaybooksService {
       await this.repository.upsert({
         tenantId,
         id,
-        payload: this.encryptPlaybookPayload({
+        payload: {
           ...record,
           is_default: false,
           updated_at: new Date().toISOString(),
-        }) as Prisma.InputJsonValue,
+        } as Prisma.InputJsonValue,
       });
     }
   }
@@ -66,22 +63,9 @@ export class PlaybooksService {
     const id = String(row.id || '').trim();
     const payload = row.payload;
     if (payload && typeof payload === 'object') {
-      const wrapped = (payload as PlaybookRecord).__enc_payload_v1;
-      const decryptedPayload =
-        wrapped !== undefined ? this.atRestCrypto.decryptJson<PlaybookRecord>(wrapped) : null;
-      const materialized =
-        decryptedPayload && typeof decryptedPayload === 'object'
-          ? decryptedPayload
-          : (payload as PlaybookRecord);
-      return { ...materialized, ...(id ? { id } : {}) };
+      return { ...(payload as PlaybookRecord), ...(id ? { id } : {}) };
     }
     return id ? { id } : {};
-  }
-
-  private encryptPlaybookPayload(input: PlaybookRecord): PlaybookRecord {
-    return {
-      __enc_payload_v1: this.atRestCrypto.encryptJson(input),
-    };
   }
 
   async list(tenantId: string): Promise<PlaybookRecord[]> {
@@ -119,7 +103,7 @@ export class PlaybooksService {
     const row = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id,
-      payload: this.encryptPlaybookPayload(next) as Prisma.InputJsonValue,
+      payload: next as Prisma.InputJsonValue,
     });
     return this.mapDbRow(row);
   }
@@ -151,7 +135,7 @@ export class PlaybooksService {
     const updatedRow = await this.repository.upsert({
       tenantId: normalizedTenantId,
       id: normalizedId,
-      payload: this.encryptPlaybookPayload(next) as Prisma.InputJsonValue,
+      payload: next as Prisma.InputJsonValue,
     });
     return this.mapDbRow(updatedRow);
   }

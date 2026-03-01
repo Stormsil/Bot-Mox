@@ -1,17 +1,17 @@
+import { buildApiUrl } from '../../config/env';
 import { authFetch } from './authFetch';
-import {
-  clearGetCache,
-  clearInFlightGet,
-  getCachedGet,
-  getInFlightGet,
-  setCachedGet,
-  setInFlightGet,
-} from './internal/getCache';
-import { enqueueRequest, resolveRequestQos, resolveRequestUrl } from './internal/requestQueue';
 import { ApiClientError, type ApiSuccessEnvelope, parseEnvelope } from './internal/types';
 
 export type { ApiSuccessEnvelope } from './internal/types';
 export { ApiClientError } from './internal/types';
+
+function resolveRequestUrl(path: string): string {
+  const normalized = String(path || '').trim();
+  if (/^https?:\/\//i.test(normalized)) {
+    return normalized;
+  }
+  return buildApiUrl(normalized);
+}
 
 async function performRequest<T>(path: string, init: RequestInit): Promise<ApiSuccessEnvelope<T>> {
   const response = await authFetch(resolveRequestUrl(path), {
@@ -59,42 +59,15 @@ export async function apiRequest<T>(
   const method = String(init.method || 'GET')
     .trim()
     .toUpperCase();
-  const qos = resolveRequestQos(path, method);
 
   if (method !== 'GET') {
-    const result = await enqueueRequest(() => performRequest<T>(path, init), qos);
-    clearGetCache();
-    return result;
+    return performRequest<T>(path, init);
   }
 
-  const cached = getCachedGet<T>(path);
-  if (cached) {
-    return cached;
-  }
-
-  const inFlight = getInFlightGet<T>(path);
-  if (inFlight) {
-    return inFlight;
-  }
-
-  const requestPromise = enqueueRequest(
-    () =>
-      performRequest<T>(path, {
-        ...init,
-        method: 'GET',
-      }),
-    qos,
-  )
-    .then((result) => {
-      setCachedGet(path, result as ApiSuccessEnvelope<unknown>);
-      return result;
-    })
-    .finally(() => {
-      clearInFlightGet(path);
-    });
-
-  setInFlightGet(path, requestPromise);
-  return requestPromise;
+  return performRequest<T>(path, {
+    ...init,
+    method: 'GET',
+  });
 }
 
 export function buildQueryString(

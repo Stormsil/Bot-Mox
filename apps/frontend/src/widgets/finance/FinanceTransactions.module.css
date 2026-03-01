@@ -1,0 +1,22 @@
+.container {
+  padding: 16px;
+}
+
+.filtersCard {
+  margin-bottom: 16px;
+}
+
+.transactionsTable {
+  background: transparent;
+}
+
+.transactionTypeTag {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.amountNeutral {
+  color: var(--boxmox-color-text-primary);
+  font-weight: 500;
+}

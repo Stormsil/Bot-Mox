@@ -7,7 +7,7 @@ import {
   listWorkspaceKanbanViaContract,
   patchWorkspaceCalendarViaContract,
   patchWorkspaceKanbanViaContract,
-} from '../../../providers/workspace-contract-client';
+} from '../../../shared/api/providers/workspace-contract-client';
 import type {
   CreateCalendarEventData,
   CreateKanbanTaskData,

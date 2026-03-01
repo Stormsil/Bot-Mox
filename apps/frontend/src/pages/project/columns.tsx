@@ -1,8 +1,8 @@
 import { DeleteOutlined } from '@ant-design/icons';
 import { Popconfirm, Tag, Tooltip, Typography } from 'antd';
-import { StatusBadge } from '../../components/ui/StatusBadge';
-import { TableActionButton } from '../../components/ui/TableActionButton';
-import type { BotStatus } from '../../types';
+import type { BotStatus } from '../../shared/types';
+import { StatusBadge } from '../../shared/ui/StatusBadge';
+import { TableActionButton } from '../../shared/ui/TableActionButton';
 import styles from './ProjectPage.module.css';
 import type { BotRow } from './types';
 import { BOT_STATUS_ORDER } from './types';
@@ -46,17 +46,12 @@ export function createProjectColumns({
   deletingBotIds: Record<string, boolean>;
   onDeleteAccount: (botId: string) => void | Promise<void>;
 }) {
-  const cellClassName = styles.tableCell;
-  const headerCellProps = { className: styles.tableHeaderCell };
-
   return [
     {
       title: 'ID',
       dataIndex: 'idShort',
       key: 'idShort',
       width: 90,
-      className: cellClassName,
-      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.idShort.localeCompare(b.idShort),
       render: (_: string, record: BotRow) => (
         <button
@@ -65,7 +60,9 @@ export function createProjectColumns({
           onClick={() => goToBot(record.id, 'summary')}
         >
           <Tooltip title={record.id}>
-            <Text className={styles.id}>{record.idShort}</Text>
+            <Text code className={styles.id}>
+              {record.idShort}
+            </Text>
           </Tooltip>
         </button>
       ),
@@ -75,8 +72,6 @@ export function createProjectColumns({
       dataIndex: 'botStatus',
       key: 'botStatus',
       width: 130,
-      className: cellClassName,
-      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) =>
         BOT_STATUS_ORDER[a.botStatus] - BOT_STATUS_ORDER[b.botStatus],
       render: (status: BotStatus, record: BotRow) => (
@@ -94,8 +89,6 @@ export function createProjectColumns({
       dataIndex: 'vmName',
       key: 'vmName',
       width: 120,
-      className: cellClassName,
-      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => (a.vmName || '').localeCompare(b.vmName || ''),
       render: (value: string, record: BotRow) => (
         <button
@@ -111,8 +104,6 @@ export function createProjectColumns({
       title: 'Account',
       key: 'account',
       width: 220,
-      className: cellClassName,
-      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => (a.email || '').localeCompare(b.email || ''),
       render: (_: unknown, record: BotRow) => (
         <button
@@ -131,8 +122,6 @@ export function createProjectColumns({
       title: 'Character',
       key: 'character',
       width: 200,
-      className: cellClassName,
-      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.characterName.localeCompare(b.characterName),
       render: (_: unknown, record: BotRow) => {
         const factionLabel = formatFaction(record.faction);
@@ -165,8 +154,6 @@ export function createProjectColumns({
       dataIndex: 'licenseStatusLabel',
       key: 'licenseStatus',
       width: 120,
-      className: cellClassName,
-      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.licenseSort - b.licenseSort,
       render: (_: string, record: BotRow) =>
         renderStatusWithDays({
@@ -181,8 +168,6 @@ export function createProjectColumns({
       dataIndex: 'proxyStatusLabel',
       key: 'proxyStatus',
       width: 120,
-      className: cellClassName,
-      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.proxySort - b.proxySort,
       render: (_: string, record: BotRow) =>
         renderStatusWithDays({
@@ -197,8 +182,6 @@ export function createProjectColumns({
       dataIndex: 'subscriptionStatusLabel',
       key: 'subscriptionStatus',
       width: 140,
-      className: cellClassName,
-      onHeaderCell: () => headerCellProps,
       sorter: (a: BotRow, b: BotRow) => a.subscriptionSort - b.subscriptionSort,
       render: (_: string, record: BotRow) =>
         renderStatusWithDays({
@@ -213,8 +196,6 @@ export function createProjectColumns({
       key: 'action',
       width: 140,
       align: 'left' as const,
-      className: cellClassName,
-      onHeaderCell: () => headerCellProps,
       render: (_: unknown, record: BotRow) => {
         const isDeleting = Boolean(deletingBotIds[record.id]);
         return (
