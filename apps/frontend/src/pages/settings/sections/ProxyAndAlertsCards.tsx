@@ -1,6 +1,6 @@
 import { GlobalOutlined, SaveOutlined, WarningOutlined } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import { Button, Card, Col, Form, InputNumber, Space, Switch, Typography } from 'antd';
+import { Button, Card, Col, Flex, Form, InputNumber, Space, Switch, Typography } from 'antd';
 import type React from 'react';
 import type { ProxySettingsFormValues } from '../types';
 import { cx } from './classNames';
@@ -26,7 +26,7 @@ export const ProxyAndAlertsCards: React.FC<ProxyAndAlertsCardsProps> = ({
 }) => {
   return (
     <Col xs={24} lg={12}>
-      <div className={cx('settings-column-stack')}>
+      <Flex className={cx('settings-column-stack')} vertical gap={16}>
         <Card
           title={
             <Space>
@@ -109,7 +109,7 @@ export const ProxyAndAlertsCards: React.FC<ProxyAndAlertsCardsProps> = ({
             </Form.Item>
           </Form>
         </Card>
-      </div>
+      </Flex>
     </Col>
   );
 };

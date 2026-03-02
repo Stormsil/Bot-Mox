@@ -1,6 +1,6 @@
 import { DesktopOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { useDelete, useList } from '@refinedev/core';
-import { Alert, Button, Card, Input, Select, Space, Table, Typography } from 'antd';
+import { Alert, Button, Card, Flex, Input, Select, Space, Table, Typography } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -265,16 +265,16 @@ export const ProjectPage: React.FC = () => {
     <div className={styles.root}>
       <ContentPanel type="project" hideTabs>
         <Card className={styles.header}>
-          <div className={styles.headerContent}>
-            <div className={styles.headerTitle}>
+          <Flex justify="space-between" align="center">
+            <Flex vertical gap={2}>
               <Title level={4} className={styles.headerHeading}>
                 <DesktopOutlined /> {projectTitle}
               </Title>
               <Text type="secondary" className={styles.headerSubtitle}>
                 Accounts summary table
               </Text>
-            </div>
-          </div>
+            </Flex>
+          </Flex>
         </Card>
 
         <div className={styles.stats}>

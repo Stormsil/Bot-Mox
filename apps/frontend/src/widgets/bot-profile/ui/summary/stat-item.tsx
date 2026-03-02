@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import type React from 'react';
 import styles from '../BotSummary.module.css';
 
@@ -14,13 +15,13 @@ export const SummaryStatItem: React.FC<SummaryStatItemProps> = ({
   icon,
   valueClassName,
 }) => (
-  <div className={styles['summary-stat-item']}>
+  <Flex className={styles['summary-stat-item']} align="flex-start" gap={12}>
     <span className={styles['summary-stat-icon']}>{icon}</span>
-    <div className={styles['summary-stat-content']}>
+    <Flex vertical className={styles['summary-stat-content']} gap={4}>
       <span className={styles['summary-stat-label']}>{label}</span>
       <span className={[styles['summary-stat-value'], valueClassName].filter(Boolean).join(' ')}>
         {value}
       </span>
-    </div>
-  </div>
+    </Flex>
+  </Flex>
 );

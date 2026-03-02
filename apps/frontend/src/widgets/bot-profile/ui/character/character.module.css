@@ -15,9 +15,7 @@
 }
 
 .character-card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  min-width: 0;
 }
 
 .header-icon {
@@ -35,12 +33,7 @@
 
 /* Loading State */
 .loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   padding: 48px;
-  gap: 16px;
 }
 
 .loading-text {
@@ -49,24 +42,18 @@
 }
 
 /* View Mode */
+
 .character-view-mode {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  min-width: 0;
 }
 
 .character-header-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--boxmox-color-border-default);
 }
 
 .character-avatar-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  min-width: 0;
 }
 
 .character-avatar {
@@ -93,9 +80,7 @@
 }
 
 .character-title {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  min-width: 0;
 }
 
 .character-name {
@@ -112,16 +97,12 @@
 }
 
 /* Stats Grid */
+
 .character-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  min-width: 0;
 }
 
 .stat-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
   padding: 12px;
   background: var(--boxmox-color-surface-muted);
   border: 1px solid var(--boxmox-color-border-default);
@@ -136,9 +117,6 @@
 
 .stat-content {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .stat-label {
@@ -160,9 +138,6 @@
 
 /* Level display (read-only) */
 .level-display {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   padding: 4px 0;
 }
 
@@ -218,11 +193,6 @@
   padding: 0 8px;
 }
 
-.character-name-actions {
-  display: inline-flex;
-  align-items: center;
-}
-
 .character-unlock-btn {
   height: 28px;
   padding: 0 8px;
@@ -230,6 +200,10 @@
 
 .character-unlock-btn:hover {
   color: var(--boxmox-color-brand-primary);
+}
+
+.character-name-actions {
+  min-width: 0;
 }
 
 .field-label {
@@ -251,15 +225,11 @@
 }
 
 .form-actions-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  min-width: 0;
 }
 
 .form-actions-buttons {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  min-width: 0;
 }
 
 .unsaved-changes-text {
@@ -294,6 +264,6 @@
   }
 
   .character-stats-grid {
-    grid-template-columns: 1fr;
+    min-width: 0;
   }
 }

@@ -8,7 +8,7 @@ import {
   KeyOutlined,
   PoweroffOutlined,
 } from '@ant-design/icons';
-import { Alert, Card, Col, Row, Space, Tag, Tooltip } from 'antd';
+import { Alert, Card, Col, Flex, Row, Space, Tag, Tooltip } from 'antd';
 import type React from 'react';
 import { StatusBadge } from '../../../../shared/ui/StatusBadge';
 import { BotCharacterWidget } from '../BotCharacterWidget';
@@ -39,7 +39,7 @@ export const SummaryOverviewSection: React.FC<SummaryOverviewSectionProps> = ({
     />
 
     {statusInfo && (
-      <div className={styles['alerts-section']}>
+      <Flex vertical className={styles['alerts-section']} gap={8}>
         {statusInfo.licenseExpired && (
           <Alert
             className={styles['status-alert']}
@@ -120,7 +120,7 @@ export const SummaryOverviewSection: React.FC<SummaryOverviewSectionProps> = ({
             icon={<PoweroffOutlined />}
           />
         )}
-      </div>
+      </Flex>
     )}
   </section>
 );
@@ -153,7 +153,7 @@ export const SummaryBotInfoSection: React.FC<SummaryBotInfoSectionProps> = ({
           title={<span className={styles['detail-card-title']}>Bot Info</span>}
           className={styles['detail-card']}
         >
-          <div className={styles['summary-stats-grid']}>
+          <Flex wrap gap={16} className={styles['summary-stats-grid']}>
             <SummaryStatItem
               label="Bot ID"
               value={bot.id}
@@ -197,7 +197,7 @@ export const SummaryBotInfoSection: React.FC<SummaryBotInfoSectionProps> = ({
               }
               icon={<ClockCircleOutlined />}
             />
-          </div>
+          </Flex>
         </Card>
       </Col>
     </Row>

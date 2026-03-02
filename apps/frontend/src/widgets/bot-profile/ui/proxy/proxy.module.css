@@ -19,38 +19,14 @@
   color: var(--boxmox-color-brand-primary);
 }
 
-.proxy-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
 .proxy-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  font-size: inherit;
 }
 
 .proxy-field .field-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.proxy-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.fraud-score-container {
-  display: flex;
-  align-items: center;
-}
-
-.expiration-info {
-  display: flex;
-  align-items: center;
 }
 
 /* Proxy String field styles */

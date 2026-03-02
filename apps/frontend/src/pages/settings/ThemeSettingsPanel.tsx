@@ -1,5 +1,5 @@
 import { BgColorsOutlined, SaveOutlined } from '@ant-design/icons';
-import { Button, Drawer, Segmented, Space, Typography } from 'antd';
+import { Button, Drawer, Flex, Segmented, Space, Typography } from 'antd';
 import type React from 'react';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
 import type { ThemeMode } from '../../theme/themePalette';
@@ -56,7 +56,13 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = (props) => 
         <ThemeTypographyShapeCard {...props} />
         <ThemeVisualBackgroundCard {...props} />
 
-        <div className={cx('theme-settings-toolbar')}>
+        <Flex
+          className={cx('theme-settings-toolbar')}
+          align="center"
+          justify="space-between"
+          gap={12}
+          wrap
+        >
           <Segmented
             value={props.editingThemeMode}
             options={[
@@ -66,7 +72,7 @@ export const ThemeSettingsPanel: React.FC<ThemeSettingsPanelProps> = (props) => 
             onChange={(value) => props.onEditingThemeModeChange(value as ThemeMode)}
           />
           <Button onClick={props.onResetCurrentPalette}>Reset Selected Theme</Button>
-        </div>
+        </Flex>
 
         <Text type="secondary" className={cx('theme-settings-hint')}>
           Colors are stored separately for light/dark mode and are saved to the backend.

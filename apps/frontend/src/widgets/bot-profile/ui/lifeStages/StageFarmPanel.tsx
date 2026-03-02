@@ -5,7 +5,7 @@ import {
   ShoppingOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons';
-import { Card, Col, Divider, List, Row, Statistic, Tag, Typography } from 'antd';
+import { Card, Col, Divider, Flex, List, Row, Statistic, Tag, Typography } from 'antd';
 import type React from 'react';
 import { getQualityColor, mockAnalytics, mockFarmStats, mockInventory } from './config';
 import styles from './lifeStages.module.css';
@@ -29,7 +29,7 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
   const analytics = mockAnalytics.farm;
 
   return (
-    <div className={styles['stage-content']}>
+    <Flex vertical className={styles['stage-content']}>
       <Row gutter={[16, 16]}>
         <Col span={8}>
           <Card className={styles['stage-stat-card']}>
@@ -73,9 +73,9 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
           dataSource={inventory}
           renderItem={(item) => (
             <List.Item className={styles['inventory-item']}>
-              <div className={styles['inventory-item-info']}>
+              <Flex className={styles['inventory-item-info']} align="center" gap={12}>
                 <ShoppingOutlined className={styles['inventory-item-icon']} />
-                <div className={styles['inventory-item-details']}>
+                <Flex vertical className={styles['inventory-item-details']} gap={4}>
                   <Text strong style={{ color: getQualityColor(item.quality) }}>
                     {item.name}
                   </Text>
@@ -85,8 +85,8 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
                   >
                     {item.quality}
                   </Tag>
-                </div>
-              </div>
+                </Flex>
+              </Flex>
               <Text className={styles['inventory-item-quantity']}>x{item.quantity}</Text>
             </List.Item>
           )}
@@ -129,6 +129,6 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
         <Divider />
         <SimpleBarChart data={analytics.trend} color="#faad14" label="Gold/hour trend" />
       </Card>
-    </div>
+    </Flex>
   );
 };

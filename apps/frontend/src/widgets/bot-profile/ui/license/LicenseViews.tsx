@@ -12,9 +12,12 @@ import {
   Alert,
   Button,
   Card,
+  Col,
   Dropdown,
   Empty,
+  Flex,
   Popconfirm,
+  Row,
   Space,
   Spin,
   Tag,
@@ -132,12 +135,12 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
         </Space>
       }
     >
-      <div className={styles['license-content']}>
-        <div className={styles['license-field']}>
+      <Flex vertical gap={16}>
+        <Flex vertical gap={4} className={styles['license-field']}>
           <Text type="secondary" className={styles['field-label']}>
             License Key
           </Text>
-          <div className={styles['license-key-container']}>
+          <Flex align="center" gap={8} wrap>
             <Text
               code
               className={styles['license-key']}
@@ -148,84 +151,96 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
             <TableActionButton icon={<CopyOutlined />} onClick={onCopyKey} tooltip="Copy">
               Copy
             </TableActionButton>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
 
-        <div className={styles['license-row']}>
-          <div className={styles['license-field']}>
-            <Text type="secondary" className={styles['field-label']}>
-              Bot Name
-            </Text>
-            <div>
-              <Text strong>{bot.character?.name || bot.name || bot.id.substring(0, 8)}</Text>
-            </div>
-          </div>
-
-          <div className={styles['license-field']}>
-            <Text type="secondary" className={styles['field-label']}>
-              Status
-            </Text>
-            <div>
-              <Tag
-                bordered={false}
-                color={getLicenseStatusColor(license)}
-                icon={
-                  license.isExpired ? (
-                    <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
-                  ) : license.isExpiringSoon ? (
-                    <WarningOutlined style={{ color: '#faad14' }} />
-                  ) : (
-                    <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                  )
-                }
-              >
-                {getLicenseStatusText(license).toUpperCase()}
-              </Tag>
-            </div>
-          </div>
-        </div>
-
-        <div className={styles['license-row']}>
-          <div className={styles['license-field']}>
-            <Text type="secondary" className={styles['field-label']}>
-              Created
-            </Text>
-            <div>
-              <Text>{dayjs(license.created_at).format('DD.MM.YYYY')}</Text>
-            </div>
-          </div>
-
-          <div className={styles['license-field']}>
-            <Text type="secondary" className={styles['field-label']}>
-              Last Updated
-            </Text>
-            <div>
-              <Text>{dayjs(license.updated_at).format('DD.MM.YYYY')}</Text>
-            </div>
-          </div>
-        </div>
-
-        <div className={styles['license-row']}>
-          <div className={styles['license-field']}>
-            <Text type="secondary" className={styles['field-label']}>
-              Expiration Date
-            </Text>
-            <div>
-              <Text>{dayjs(license.expires_at).format('DD.MM.YYYY')}</Text>
-            </div>
-          </div>
-
-          <div className={styles['license-field']}>
-            <Text type="secondary" className={styles['field-label']}>
-              Days Left
-            </Text>
-            <div>
-              <Text strong style={{ color: getDaysLeftColor(license) }}>
-                {license.isExpired ? '0' : license.daysRemaining}
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={12}>
+            <Flex vertical gap={4} className={styles['license-field']}>
+              <Text type="secondary" className={styles['field-label']}>
+                Bot Name
               </Text>
-            </div>
-          </div>
-        </div>
+              <div>
+                <Text strong>{bot.character?.name || bot.name || bot.id.substring(0, 8)}</Text>
+              </div>
+            </Flex>
+          </Col>
+
+          <Col xs={24} md={12}>
+            <Flex vertical gap={4} className={styles['license-field']}>
+              <Text type="secondary" className={styles['field-label']}>
+                Status
+              </Text>
+              <div>
+                <Tag
+                  bordered={false}
+                  color={getLicenseStatusColor(license)}
+                  icon={
+                    license.isExpired ? (
+                      <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
+                    ) : license.isExpiringSoon ? (
+                      <WarningOutlined style={{ color: '#faad14' }} />
+                    ) : (
+                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                    )
+                  }
+                >
+                  {getLicenseStatusText(license).toUpperCase()}
+                </Tag>
+              </div>
+            </Flex>
+          </Col>
+        </Row>
+
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={12}>
+            <Flex vertical gap={4} className={styles['license-field']}>
+              <Text type="secondary" className={styles['field-label']}>
+                Created
+              </Text>
+              <div>
+                <Text>{dayjs(license.created_at).format('DD.MM.YYYY')}</Text>
+              </div>
+            </Flex>
+          </Col>
+
+          <Col xs={24} md={12}>
+            <Flex vertical gap={4} className={styles['license-field']}>
+              <Text type="secondary" className={styles['field-label']}>
+                Last Updated
+              </Text>
+              <div>
+                <Text>{dayjs(license.updated_at).format('DD.MM.YYYY')}</Text>
+              </div>
+            </Flex>
+          </Col>
+        </Row>
+
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={12}>
+            <Flex vertical gap={4} className={styles['license-field']}>
+              <Text type="secondary" className={styles['field-label']}>
+                Expiration Date
+              </Text>
+              <div>
+                <Text>{dayjs(license.expires_at).format('DD.MM.YYYY')}</Text>
+              </div>
+            </Flex>
+          </Col>
+
+          <Col xs={24} md={12}>
+            <Flex vertical gap={4} className={styles['license-field']}>
+              <Text type="secondary" className={styles['field-label']}>
+                Days Left
+              </Text>
+              <div>
+                <Text strong style={{ color: getDaysLeftColor(license) }}>
+                  {license.isExpired ? '0' : license.daysRemaining}
+                </Text>
+              </div>
+            </Flex>
+          </Col>
+        </Row>
 
         {license.isExpired && (
           <div className={styles['license-actions']}>
@@ -237,7 +252,7 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
             />
           </div>
         )}
-      </div>
+      </Flex>
     </Card>
   </>
 );

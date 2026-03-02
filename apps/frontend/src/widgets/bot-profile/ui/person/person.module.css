@@ -8,10 +8,13 @@
   border-color: var(--boxmox-color-border-default);
 }
 
+.person-loading-state {
+  text-align: center;
+  padding: 40px;
+}
+
 .person-card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  min-width: 0;
 }
 
 .warning-icon {
@@ -54,9 +57,7 @@
 }
 
 .person-workflow-message {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  min-width: 0;
 }
 
 .person-workflow-help-icon {
@@ -77,20 +78,13 @@
 }
 
 .person-form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-top: 24px;
   padding-top: 16px;
   border-top: 1px solid var(--boxmox-color-border-default);
   flex-wrap: wrap;
-  gap: 16px;
 }
 
 .generate-section {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
 }
 

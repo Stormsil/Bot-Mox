@@ -1,5 +1,5 @@
 import { CheckOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
-import { Button, Input, Popconfirm, Select, Typography } from 'antd';
+import { Button, Flex, Input, Popconfirm, Select, Typography } from 'antd';
 import type { ReactElement } from 'react';
 import { TableActionButton } from '../../../shared/ui/TableActionButton';
 import { cx } from '../sections/classNames';
@@ -28,7 +28,7 @@ export function ThemePresetPanel(props: PresetProps): ReactElement {
       <Text strong className={cx('theme-preset-title')}>
         Saved Themes
       </Text>
-      <div className={cx('theme-preset-row')}>
+      <Flex className={cx('theme-preset-row')} align="center" gap={8} wrap>
         <Select
           placeholder="Select saved theme"
           value={props.selectedPresetId}
@@ -63,8 +63,8 @@ export function ThemePresetPanel(props: PresetProps): ReactElement {
             Delete
           </TableActionButton>
         </Popconfirm>
-      </div>
-      <div className={cx('theme-preset-row')}>
+      </Flex>
+      <Flex className={cx('theme-preset-row')} align="center" gap={8} wrap>
         <Input
           placeholder="New theme name"
           value={props.newThemePresetName}
@@ -80,7 +80,7 @@ export function ThemePresetPanel(props: PresetProps): ReactElement {
         >
           Save As Theme
         </Button>
-      </div>
+      </Flex>
     </div>
   );
 }

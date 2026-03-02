@@ -1,5 +1,5 @@
 import { WarningOutlined } from '@ant-design/icons';
-import { Alert, Card, message, Spin } from 'antd';
+import { Alert, Card, Flex, message, Spin } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useUpdateBotMutation } from '../../../entities/bot/api/useBotMutations';
@@ -256,15 +256,15 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
 
   if (loading)
     return (
-      <div className={styles['bot-schedule-loading']}>
+      <Flex className={styles['bot-schedule-loading']} align="center" justify="center">
         <Spin size="large" />
-      </div>
+      </Flex>
     );
   if (error)
     return (
-      <div className={styles['bot-schedule-error']}>
+      <Flex vertical className={styles['bot-schedule-error']}>
         <Alert message="Error" description={error} type="error" showIcon />
-      </div>
+      </Flex>
     );
 
   const currentDay = getCurrentDaySchedule();

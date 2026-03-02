@@ -1,5 +1,5 @@
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { List, Tag, Typography } from 'antd';
+import { Flex, List, Space, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { TableActionButton } from '../../../../shared/ui/TableActionButton';
@@ -39,22 +39,22 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
       />,
     ]}
   >
-    <div className={styles['subscription-item-content']}>
-      <div className={styles['subscription-header']}>
-        <div className={styles['subscription-type']}>
+    <Flex vertical gap={8} className={styles['subscription-item-content']}>
+      <Flex justify="space-between" align="center">
+        <Space size={8}>
           <Tag
             color={getStatusColor(subscription.computedStatus)}
             icon={getStatusIcon(subscription.computedStatus)}
           >
             {getStatusText(subscription)}
           </Tag>
-        </div>
+        </Space>
         {subscription.type === 'wow' && subscription.auto_renew && (
           <Tag color="success" style={{ fontSize: '10px' }}>
             Auto-renewal
           </Tag>
         )}
-      </div>
+      </Flex>
 
       {subscription.type === 'wow' && subscription.account_email && (
         <div className="subscription-account" style={{ marginTop: 8 }}>
@@ -72,8 +72,8 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
         </div>
       )}
 
-      <div className={styles['subscription-details']}>
-        <div className={styles['detail-row']}>
+      <Space size={16}>
+        <Flex align="center" gap={6} className={styles['detail-row']}>
           <Text type="secondary">Expires:</Text>
           <Text
             strong
@@ -88,14 +88,14 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
           >
             {dayjs(subscription.expires_at).format('DD.MM.YYYY')}
           </Text>
-        </div>
-        <div className={styles['detail-row']}>
+        </Flex>
+        <Flex align="center" gap={6} className={styles['detail-row']}>
           <Text type="secondary">Created:</Text>
           <Text style={{ fontSize: '12px' }}>
             {dayjs(subscription.created_at).format('DD.MM.YYYY')}
           </Text>
-        </div>
-        <div className={styles['detail-row']}>
+        </Flex>
+        <Flex align="center" gap={6} className={styles['detail-row']}>
           <Text type="secondary">Days Left:</Text>
           <Text
             strong
@@ -106,10 +106,10 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
           >
             {subscription.isExpired ? 0 : subscription.daysRemaining}
           </Text>
-        </div>
-      </div>
+        </Flex>
+      </Space>
 
       <SubscriptionStatusAlert subscription={subscription} />
-    </div>
+    </Flex>
   </List.Item>
 );

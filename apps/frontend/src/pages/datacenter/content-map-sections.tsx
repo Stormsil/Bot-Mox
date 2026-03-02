@@ -5,7 +5,7 @@ import {
   KeyOutlined,
   RightOutlined,
 } from '@ant-design/icons';
-import { Card, Tag } from 'antd';
+import { Card, Flex, Tag } from 'antd';
 import type React from 'react';
 import { SectionToggle } from './content-map-toggle';
 import type {
@@ -33,14 +33,14 @@ export function ProjectsSection({
 }) {
   return (
     <div className={cx('content-map-section')}>
-      <div className={cx('content-map-section-head')}>
+      <Flex className={cx('content-map-section-head')} justify="space-between" align="center">
         <div className={cx('content-map-section-title')}>Projects</div>
         <SectionToggle
           section="projects"
           collapsedSections={collapsedSections}
           onToggle={toggleSection}
         />
-      </div>
+      </Flex>
       {!collapsedSections.projects && (
         <div className={cx('content-map-grid content-map-grid--projects')}>
           <Card
@@ -50,13 +50,13 @@ export function ProjectsSection({
             styles={mapCardStyles}
             {...navProps('/project/wow_tbc')}
           >
-            <div className={cx('map-card-head')}>
+            <Flex className={cx('map-card-head')} justify="space-between" align="center">
               <div className={cx('map-card-title')}>
                 <DesktopOutlined /> WoW TBC
               </div>
               <Tag className={cx('map-card-tag')}>{projectStats.wow_tbc.total} bots</Tag>
-            </div>
-            <div className={cx('map-stats-row')}>
+            </Flex>
+            <Flex className={cx('map-stats-row')} wrap>
               <div className={cx('map-stat-chip map-stat-chip--active')}>
                 <span className={cx('map-stat-value')}>{projectStats.wow_tbc.active}</span>
                 <span className={cx('map-stat-label')}>Active</span>
@@ -73,11 +73,11 @@ export function ProjectsSection({
                 <span className={cx('map-stat-value')}>{projectStats.wow_tbc.banned}</span>
                 <span className={cx('map-stat-label')}>Banned</span>
               </div>
-            </div>
-            <div className={cx('map-card-footer')}>
+            </Flex>
+            <Flex className={cx('map-card-footer')} justify="space-between" align="center">
               <span>Open project</span>
               <RightOutlined />
-            </div>
+            </Flex>
           </Card>
 
           <Card
@@ -87,13 +87,13 @@ export function ProjectsSection({
             styles={mapCardStyles}
             {...navProps('/project/wow_midnight')}
           >
-            <div className={cx('map-card-head')}>
+            <Flex className={cx('map-card-head')} justify="space-between" align="center">
               <div className={cx('map-card-title')}>
                 <DesktopOutlined /> WoW Midnight
               </div>
               <Tag className={cx('map-card-tag')}>{projectStats.wow_midnight.total} bots</Tag>
-            </div>
-            <div className={cx('map-stats-row')}>
+            </Flex>
+            <Flex className={cx('map-stats-row')} wrap>
               <div className={cx('map-stat-chip map-stat-chip--active')}>
                 <span className={cx('map-stat-value')}>{projectStats.wow_midnight.active}</span>
                 <span className={cx('map-stat-label')}>Active</span>
@@ -110,11 +110,11 @@ export function ProjectsSection({
                 <span className={cx('map-stat-value')}>{projectStats.wow_midnight.banned}</span>
                 <span className={cx('map-stat-label')}>Banned</span>
               </div>
-            </div>
-            <div className={cx('map-card-footer')}>
+            </Flex>
+            <Flex className={cx('map-card-footer')} justify="space-between" align="center">
               <span>Open project</span>
               <RightOutlined />
-            </div>
+            </Flex>
           </Card>
         </div>
       )}
@@ -149,13 +149,13 @@ function ResourceCard({
       styles={mapCardStyles}
       {...navPropsValue}
     >
-      <div className={cx('map-card-head')}>
+      <Flex className={cx('map-card-head')} justify="space-between" align="center">
         <div className={cx('map-card-title')}>
           {icon} {title}
         </div>
         <Tag className={cx('map-card-tag')}>{tagText}</Tag>
-      </div>
-      <div className={cx('map-stats-row')}>
+      </Flex>
+      <Flex className={cx('map-stats-row')} wrap>
         <div className={cx('map-stat-chip map-stat-chip--active')}>
           <span className={cx('map-stat-value')}>{stats.active}</span>
           <span className={cx('map-stat-label')}>Active</span>
@@ -174,11 +174,11 @@ function ResourceCard({
             <span className={cx('map-stat-label')}>Unassigned</span>
           </div>
         )}
-      </div>
-      <div className={cx('map-card-footer')}>
+      </Flex>
+      <Flex className={cx('map-card-footer')} justify="space-between" align="center">
         <span>{footerText}</span>
         <RightOutlined />
-      </div>
+      </Flex>
     </Card>
   );
 }
@@ -202,14 +202,14 @@ export function ResourcesSection({
 }) {
   return (
     <div className={cx('content-map-section')}>
-      <div className={cx('content-map-section-head')}>
+      <Flex className={cx('content-map-section-head')} justify="space-between" align="center">
         <div className={cx('content-map-section-title')}>Resources</div>
         <SectionToggle
           section="resources"
           collapsedSections={collapsedSections}
           onToggle={toggleSection}
         />
-      </div>
+      </Flex>
       {!collapsedSections.resources && (
         <div className={cx('content-map-grid content-map-grid--resources')}>
           <ResourceCard

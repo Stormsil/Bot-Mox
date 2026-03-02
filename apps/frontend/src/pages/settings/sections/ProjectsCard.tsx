@@ -1,5 +1,5 @@
 import { DesktopOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Space, Typography } from 'antd';
+import { Button, Card, Col, Flex, Space, Typography } from 'antd';
 import type React from 'react';
 import type { ProjectSettings } from '../../../entities/settings/model/projectSettings';
 import { cx } from './classNames';
@@ -40,12 +40,17 @@ export const ProjectsCard: React.FC<ProjectsCardProps> = ({
           <div className={cx('project-settings-list')}>
             {projectEntries.map(([projectId, project]) => (
               <div key={projectId} className={cx('project-settings-item')}>
-                <div className={cx('project-settings-item-header')}>
-                  <div className={cx('project-settings-item-title')}>
+                <Flex
+                  className={cx('project-settings-item-header')}
+                  align="flex-start"
+                  justify="space-between"
+                  gap={12}
+                >
+                  <Flex className={cx('project-settings-item-title')} vertical gap={4}>
                     <Text strong>{project.name || projectId}</Text>
                     <Text code>{projectId}</Text>
-                  </div>
-                </div>
+                  </Flex>
+                </Flex>
                 <div className={cx('project-settings-item-meta')}>
                   <Text type="secondary">Game: {project.game || '-'}</Text>
                   <Text type="secondary">Expansion: {project.expansion || '-'}</Text>

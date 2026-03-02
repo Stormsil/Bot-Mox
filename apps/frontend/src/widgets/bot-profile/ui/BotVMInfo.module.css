@@ -9,15 +9,17 @@
 }
 
 .vm-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  min-width: 0;
 }
 
 .vm-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  min-width: 0;
+}
+
+.vm-card-title {
+  color: var(--boxmox-color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
 }
 
 .field-label {

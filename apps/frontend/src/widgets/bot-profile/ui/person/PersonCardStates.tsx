@@ -1,5 +1,5 @@
 import { ExclamationCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { Alert, Badge, Card, Spin, Tooltip } from 'antd';
+import { Alert, Badge, Card, Flex, Spin, Tooltip } from 'antd';
 import type React from 'react';
 import styles from './person.module.css';
 
@@ -13,7 +13,7 @@ interface PersonStatusAlertsProps {
 }
 
 export const PersonCardTitle: React.FC<PersonCardTitleProps> = ({ hasIncompleteData }) => (
-  <div className={styles['person-card-header']}>
+  <Flex className={styles['person-card-header']} align="center" gap={12}>
     <span>Person Information</span>
     {hasIncompleteData && (
       <Tooltip title="Some fields are empty. Please fill in all person data.">
@@ -22,7 +22,7 @@ export const PersonCardTitle: React.FC<PersonCardTitleProps> = ({ hasIncompleteD
         </Badge>
       </Tooltip>
     )}
-  </div>
+  </Flex>
 );
 
 export const PersonStatusAlerts: React.FC<PersonStatusAlertsProps> = ({
@@ -51,12 +51,12 @@ export const PersonStatusAlerts: React.FC<PersonStatusAlertsProps> = ({
       <Alert
         className={styles['person-workflow-alert']}
         message={
-          <span className={styles['person-workflow-message']}>
+          <Flex className={styles['person-workflow-message']} align="center" gap={6}>
             Person data is locked
             <Tooltip title="Unlock -> edit or generate -> Save to lock again.">
               <QuestionCircleOutlined className={styles['person-workflow-help-icon']} />
             </Tooltip>
-          </span>
+          </Flex>
         }
         type="info"
         showIcon
@@ -75,12 +75,12 @@ export const PersonUnavailableState: React.FC = () => (
 export const PersonLoadingState: React.FC = () => (
   <div className={styles['bot-person']}>
     <Card title="Person Information" className={styles['person-card']}>
-      <div style={{ textAlign: 'center', padding: '40px' }}>
+      <Flex vertical align="center" className={styles['person-loading-state']}>
         <Spin size="large" />
         <p style={{ marginTop: '16px', color: 'var(--boxmox-color-text-secondary)' }}>
           Loading person data...
         </p>
-      </div>
+      </Flex>
     </Card>
   </div>
 );

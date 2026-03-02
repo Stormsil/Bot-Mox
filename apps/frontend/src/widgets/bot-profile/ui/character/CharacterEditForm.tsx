@@ -14,7 +14,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import { Alert, Button, Col, Form, Input, Row, Select, Tooltip, Typography } from 'antd';
+import { Alert, Button, Col, Flex, Form, Input, Row, Select, Tooltip, Typography } from 'antd';
 import type React from 'react';
 import styles from './character.module.css';
 import type { CharacterFormData, ReferenceData } from './types';
@@ -142,7 +142,7 @@ export const CharacterEditForm: React.FC<CharacterEditFormProps> = ({
                 maxLength={24}
                 disabled={nameLocked}
                 addonAfter={
-                  <div className={styles['character-name-actions']}>
+                  <Flex className={styles['character-name-actions']} align="center">
                     <Tooltip title={nameLocked ? 'Generation locked' : 'Generate random name'}>
                       <Button
                         type="text"
@@ -169,7 +169,7 @@ export const CharacterEditForm: React.FC<CharacterEditFormProps> = ({
                         </Button>
                       </Tooltip>
                     )}
-                  </div>
+                  </Flex>
                 }
               />
             </Form.Item>
@@ -183,10 +183,10 @@ export const CharacterEditForm: React.FC<CharacterEditFormProps> = ({
                 </span>
               }
             >
-              <div className={styles['level-display']}>
+              <Flex className={styles['level-display']} align="center" gap={12}>
                 <span className={styles['level-badge']}>{formData.level}</span>
                 <span className={styles['level-hint']}>Auto-updated from game</span>
-              </div>
+              </Flex>
             </Form.Item>
           </Col>
         </Row>
@@ -285,8 +285,8 @@ export const CharacterEditForm: React.FC<CharacterEditFormProps> = ({
         </Row>
 
         <Form.Item className={styles['form-actions']}>
-          <div className={styles['form-actions-row']}>
-            <div className={styles['form-actions-buttons']}>
+          <Flex className={styles['form-actions-row']} align="center" justify="space-between">
+            <Flex className={styles['form-actions-buttons']} align="center" gap={8}>
               <Button
                 type="primary"
                 htmlType="submit"
@@ -299,13 +299,13 @@ export const CharacterEditForm: React.FC<CharacterEditFormProps> = ({
               <Button onClick={onCancel} disabled={saving}>
                 Cancel
               </Button>
-            </div>
+            </Flex>
             {hasChanges && (
               <Text type="warning" className={styles['unsaved-changes-text']}>
                 Unsaved changes
               </Text>
             )}
-          </div>
+          </Flex>
         </Form.Item>
       </Form>
     </>

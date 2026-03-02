@@ -1,5 +1,5 @@
 import { EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { Card, Form, message, Tooltip } from 'antd';
+import { Card, Flex, Form, message, Tooltip } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useUpdateBotMutation } from '../../../entities/bot/api/useBotMutations';
@@ -265,7 +265,7 @@ export const BotCharacterWidget: React.FC<BotCharacterProps> = ({ bot, mode = 'e
       <Card
         className={styles['character-card']}
         title={
-          <div className={styles['character-card-header']}>
+          <Flex className={styles['character-card-header']} align="center" gap={12}>
             {mode === 'view' ? (
               <EyeOutlined className={styles['header-icon']} />
             ) : (
@@ -279,7 +279,7 @@ export const BotCharacterWidget: React.FC<BotCharacterProps> = ({ bot, mode = 'e
                 <span className={styles['incomplete-dot']} aria-hidden="true" />
               </Tooltip>
             )}
-          </div>
+          </Flex>
         }
         headStyle={{
           background: 'var(--boxmox-color-surface-muted)',

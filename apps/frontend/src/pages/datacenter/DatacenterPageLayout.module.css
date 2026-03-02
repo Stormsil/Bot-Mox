@@ -15,12 +15,6 @@
   gap: 16px;
 }
 
-.content-map-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-}
-
 .content-map-title {
   margin: 0;
 }
@@ -37,9 +31,6 @@
 }
 
 .content-map-section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 12px;
 }
 
@@ -113,9 +104,6 @@
 }
 
 .map-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
 }
@@ -136,9 +124,6 @@
 }
 
 .map-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin-top: 12px;
   color: var(--boxmox-color-text-secondary);
   font-size: 12px;

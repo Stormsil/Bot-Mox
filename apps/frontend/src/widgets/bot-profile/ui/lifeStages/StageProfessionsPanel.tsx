@@ -1,5 +1,5 @@
 import { ClockCircleOutlined, LineChartOutlined, ToolOutlined } from '@ant-design/icons';
-import { Card, Col, Divider, Progress, Row, Statistic, Tag, Typography } from 'antd';
+import { Card, Col, Divider, Flex, Progress, Row, Statistic, Tag, Typography } from 'antd';
 import type React from 'react';
 import { getProfessionColor, getProfessionIcon, mockAnalytics, mockProfessions } from './config';
 import styles from './lifeStages.module.css';
@@ -12,7 +12,7 @@ export const StageProfessionsPanel: React.FC = () => {
   const analytics = mockAnalytics.professions;
 
   return (
-    <div className={styles['stage-content']}>
+    <Flex vertical className={styles['stage-content']}>
       <Row gutter={[16, 16]}>
         {professions.map((profession) => {
           const percent =
@@ -30,7 +30,7 @@ export const StageProfessionsPanel: React.FC = () => {
                   isActive ? styles.active : styles.inactive,
                 ].join(' ')}
                 title={
-                  <div className={styles['profession-header']}>
+                  <Flex className={styles['profession-header']} align="center" gap={8}>
                     <span className={styles['profession-icon']} style={{ color }}>
                       {getProfessionIcon(profession.name)}
                     </span>
@@ -40,14 +40,14 @@ export const StageProfessionsPanel: React.FC = () => {
                         Active
                       </Tag>
                     )}
-                  </div>
+                  </Flex>
                 }
               >
-                <div className={styles['profession-progress']}>
-                  <div className={styles['skill-info']}>
+                <Flex vertical className={styles['profession-progress']}>
+                  <Flex className={styles['skill-info']} justify="space-between">
                     <Text strong>{profession.skill_points}</Text>
                     <Text type="secondary">/ {profession.max_skill_points}</Text>
-                  </div>
+                  </Flex>
                   <Progress
                     percent={percent}
                     strokeColor={color}
@@ -55,7 +55,7 @@ export const StageProfessionsPanel: React.FC = () => {
                     showInfo={false}
                   />
                   <div className={styles['skill-percent']}>{percent}%</div>
-                </div>
+                </Flex>
               </Card>
             </Col>
           );
@@ -96,6 +96,6 @@ export const StageProfessionsPanel: React.FC = () => {
         <Divider />
         <SimpleBarChart data={analytics.trend} color="#13c2c2" label="Skill points trend" />
       </Card>
-    </div>
+    </Flex>
   );
 };

@@ -5,9 +5,6 @@
 }
 
 .settings-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 16px;
   padding: 12px 16px;
   background: var(--boxmox-color-surface-panel);
@@ -28,13 +25,9 @@
 }
 
 .settings-column-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 
 .settings-notifications-col {
-  display: flex;
 }
 
 .settings-notifications-card {
@@ -55,17 +48,10 @@
 }
 
 .project-settings-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
   margin-bottom: 8px;
 }
 
 .project-settings-item-title {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .project-settings-item-meta {
@@ -82,27 +68,13 @@
 }
 
 .theme-settings-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
   margin-bottom: 12px;
 }
 
 .theme-quick-card-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .theme-quick-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
 }
 
 .theme-preset-panel {
@@ -118,10 +90,6 @@
 }
 
 .theme-preset-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
   margin-bottom: 8px;
 }
 
@@ -153,10 +121,6 @@
 }
 
 .theme-color-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   padding: 10px 12px;
   border: 1px solid var(--boxmox-color-border-default);
   background: var(--boxmox-color-surface-muted);
@@ -174,11 +138,6 @@
 }
 
 .theme-visual-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .theme-visual-slider {
@@ -186,15 +145,9 @@
 }
 
 .theme-form-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
 }
 
 .theme-form-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 
 .theme-assets-list {

@@ -4,7 +4,7 @@ import {
   LineChartOutlined,
   RiseOutlined,
 } from '@ant-design/icons';
-import { Card, Col, Divider, Progress, Row, Statistic, Tag, Typography } from 'antd';
+import { Card, Col, Divider, Flex, Progress, Row, Statistic, Tag, Typography } from 'antd';
 import type React from 'react';
 import { mockAnalytics, mockLeveling } from './config';
 import styles from './lifeStages.module.css';
@@ -19,7 +19,7 @@ export const StageLevelingPanel: React.FC = () => {
   const analytics = mockAnalytics.leveling;
 
   return (
-    <div className={styles['stage-content']}>
+    <Flex vertical className={styles['stage-content']}>
       <Row gutter={[16, 16]}>
         <Col span={8}>
           <Card className={styles['stage-stat-card']}>
@@ -58,13 +58,13 @@ export const StageLevelingPanel: React.FC = () => {
         className={styles['stage-detail-card']}
         title={<span className={styles['detail-card-title']}>Experience Progress</span>}
       >
-        <div className={styles['xp-progress-section']}>
-          <div className={styles['xp-info']}>
+        <Flex vertical className={styles['xp-progress-section']}>
+          <Flex className={styles['xp-info']} justify="space-between">
             <Text strong>Level {leveling.current_level}</Text>
             <Text type="secondary">
               {leveling.current_xp.toLocaleString()} / {leveling.max_xp.toLocaleString()} XP
             </Text>
-          </div>
+          </Flex>
           <Progress
             percent={xpPercent}
             strokeColor="#722ed1"
@@ -72,20 +72,20 @@ export const StageLevelingPanel: React.FC = () => {
             showInfo={false}
           />
           <div className={styles['xp-percent']}>{xpPercent}%</div>
-        </div>
+        </Flex>
       </Card>
 
       <Card
         className={styles['stage-detail-card']}
         title={<span className={styles['detail-card-title']}>Current Location</span>}
       >
-        <div className={styles['location-info']}>
+        <Flex className={styles['location-info']} align="center" gap={16}>
           <AimOutlined className={styles['location-icon']} />
-          <div className={styles['location-details']}>
+          <Flex vertical className={styles['location-details']} gap={4}>
             <Text type="secondary">Location</Text>
             <Tag className={styles['location-tag']}>{leveling.location}</Tag>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Card>
 
       <Card
@@ -126,6 +126,6 @@ export const StageLevelingPanel: React.FC = () => {
           label="XP/hour trend for recent sessions"
         />
       </Card>
-    </div>
+    </Flex>
   );
 };

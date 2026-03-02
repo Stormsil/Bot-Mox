@@ -8,18 +8,6 @@
   margin-bottom: 16px;
 }
 
-.headerContent {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.headerTitle {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
 .headerHeading {
   margin: 0;
   color: var(--boxmox-color-text-primary);
@@ -70,12 +58,6 @@
   margin-bottom: 16px;
 }
 
-.cellStack {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
 .cellLink {
   cursor: pointer;
 }
@@ -99,11 +81,6 @@
 
 .cellLink:hover .secondary {
   color: var(--boxmox-color-text-primary);
-}
-
-.rowActions {
-  display: flex;
-  justify-content: flex-start;
 }
 
 .deleteButton {

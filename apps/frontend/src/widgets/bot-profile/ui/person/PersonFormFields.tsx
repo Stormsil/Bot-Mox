@@ -6,7 +6,7 @@ import {
   UnlockOutlined,
 } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import { Button, Col, Form, Input, Row, Select } from 'antd';
+import { Button, Col, Flex, Form, Input, Row, Select } from 'antd';
 import type React from 'react';
 import styles from './person.module.css';
 import type { PersonFormValues } from './types';
@@ -124,8 +124,14 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
       </Col>
     </Row>
 
-    <div className={styles['person-form-actions']}>
-      <div className={styles['generate-section']}>
+    <Flex
+      className={styles['person-form-actions']}
+      align="center"
+      justify="space-between"
+      wrap
+      gap={16}
+    >
+      <Flex className={styles['generate-section']} align="center" wrap gap={12}>
         <span className={styles['generate-label']}>Generate random data for:</span>
         <Select
           value={selectedCountry}
@@ -153,7 +159,7 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
             Unlock
           </Button>
         )}
-      </div>
+      </Flex>
 
       <Button
         type="primary"
@@ -165,6 +171,6 @@ export const PersonFormFields: React.FC<PersonFormFieldsProps> = ({
       >
         Save Changes
       </Button>
-    </div>
+    </Flex>
   </>
 );

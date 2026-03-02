@@ -1,0 +1,51 @@
+Task: 7. Prune Datacenter CSS Layout Rules
+Date: 2026-03-02
+
+Scope files:
+- apps/frontend/src/pages/datacenter/DatacenterPageLayout.module.css
+- apps/frontend/src/pages/datacenter/DatacenterPageMetrics.module.css
+
+Layout property pattern used:
+display:|justify-content:|align-items:|gap:|flex-direction:|flex-wrap:|grid-template-columns:
+
+Before counts:
+- DatacenterPageLayout.module.css: 46
+- DatacenterPageMetrics.module.css: 32
+- Total: 78
+
+After counts:
+- DatacenterPageLayout.module.css: 34
+- DatacenterPageMetrics.module.css: 28
+- Total: 62
+
+Reduction:
+- DatacenterPageLayout.module.css: -12 (-26.09%)
+- DatacenterPageMetrics.module.css: -4 (-12.50%)
+- Total: -16 (-20.51%)
+
+Pruned migrated wrapper declarations:
+- DatacenterPageLayout.module.css
+  - .content-map-section-head: removed display/align-items/justify-content
+  - .map-card-head: removed display/align-items/justify-content
+  - .map-card-footer: removed display/align-items/justify-content
+  - .content-map-header empty base block removed (responsive media rule preserved)
+- DatacenterPageMetrics.module.css
+  - .map-stats-row: removed display/flex-wrap
+  - .expiring-row: removed display/align-items
+
+Preservation checks:
+- Kept auto-fit/minmax grid modifiers: content-map-grid--projects, --primary, --resources
+- Kept state/visual/status/typography classes intact
+- No TSX/datacenterUi.ts changes made
+
+Typecheck:
+- Command: pnpm run check:types
+- Result: PASS (exit code 0)
+
+Changed-file lint/syntax check:
+- Command: pnpm exec biome check "apps/frontend/src/pages/datacenter/DatacenterPageLayout.module.css" "apps/frontend/src/pages/datacenter/DatacenterPageMetrics.module.css"
+- Result: PASS
+
+LSP diagnostics attempt:
+- Tool call failed in environment because biome executable is unavailable to LSP server.
+- stderr: "biome" is not recognized as an internal or external command.

@@ -1,5 +1,5 @@
 import { StopOutlined } from '@ant-design/icons';
-import { Alert, Empty, Typography } from 'antd';
+import { Alert, Empty, Flex, Typography } from 'antd';
 import type React from 'react';
 import styles from './lifeStages.module.css';
 
@@ -10,7 +10,11 @@ interface StagePreparePanelProps {
 }
 
 export const StagePreparePanel: React.FC<StagePreparePanelProps> = ({ isBanned }) => (
-  <div className={[styles['stage-content'], styles['prepare-content']].join(' ')}>
+  <Flex
+    className={[styles['stage-content'], styles['prepare-content']].join(' ')}
+    align="center"
+    justify="center"
+  >
     {isBanned ? (
       <Alert
         message="Bot is Banned"
@@ -33,5 +37,5 @@ export const StagePreparePanel: React.FC<StagePreparePanelProps> = ({ isBanned }
         }
       />
     )}
-  </div>
+  </Flex>
 );

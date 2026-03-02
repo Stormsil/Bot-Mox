@@ -1,0 +1,24 @@
+Task 12 - Normalize AntD Layout Primitive Imports and Class Binding Cleanup
+
+Scope:
+- apps/frontend/src/pages/**
+- apps/frontend/src/widgets/bot-profile/ui/**
+
+Hygiene cleanup performed:
+- Removed stale className bindings left after wrapper migration in project page files:
+  - apps/frontend/src/pages/project/index.tsx: dropped `styles.headerContent` and `styles.headerTitle`
+  - apps/frontend/src/pages/project/columns.tsx: dropped `styles.rowActions`
+- Confirmed no remaining references to removed wrapper-era classes in touched scope:
+  - `headerContent`, `headerTitle`, `rowActions`, `cellStack`
+  - `license-content`, `license-row`, `license-key-container`, `expiration-info`
+  - `proxy-content`, `proxy-row`, `fraud-score-container`
+  - `subscription-header`, `subscription-type`, `subscription-details`
+
+Diagnostics:
+- lsp_diagnostics: clean
+  - apps/frontend/src/pages/project/index.tsx
+  - apps/frontend/src/pages/project/columns.tsx
+
+Verification commands:
+- pnpm run lint: passed (existing warnings only in apps/frontend/src/pages/settings/SettingsPage.module.css empty blocks)
+- pnpm run check:types: passed

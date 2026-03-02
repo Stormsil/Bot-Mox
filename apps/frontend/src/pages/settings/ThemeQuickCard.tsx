@@ -1,5 +1,5 @@
 import { BgColorsOutlined, CheckOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Select, Typography } from 'antd';
+import { Button, Card, Col, Flex, Select, Typography } from 'antd';
 import type React from 'react';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
 import styles from './SettingsPage.module.css';
@@ -28,7 +28,13 @@ export const ThemeQuickCard: React.FC<ThemeQuickCardProps> = ({
   return (
     <Col span={24}>
       <Card className={cx('settings-card theme-quick-card')}>
-        <div className={cx('theme-quick-card-content')}>
+        <Flex
+          className={cx('theme-quick-card-content')}
+          align="center"
+          justify="space-between"
+          gap={12}
+          wrap
+        >
           <div>
             <Text strong>
               <BgColorsOutlined /> Theme Colors
@@ -37,7 +43,7 @@ export const ThemeQuickCard: React.FC<ThemeQuickCardProps> = ({
               Save themes to database and apply in a few clicks.
             </Text>
           </div>
-          <div className={cx('theme-quick-actions')}>
+          <Flex className={cx('theme-quick-actions')} align="center" gap={8} wrap>
             <Select
               placeholder="Select saved theme"
               value={selectedPresetId}
@@ -57,8 +63,8 @@ export const ThemeQuickCard: React.FC<ThemeQuickCardProps> = ({
             <Button type="primary" icon={<BgColorsOutlined />} onClick={onOpenThemeEditor}>
               Open Theme Editor
             </Button>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Card>
     </Col>
   );

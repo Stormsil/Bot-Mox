@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import type React from 'react';
 import type { BotScheduleV2, ScheduleDay, ScheduleSession } from '../../../shared/types';
 import {
@@ -45,10 +46,10 @@ export const BotScheduleContent: React.FC<BotScheduleContentProps> = ({
   handleDeleteSession,
   handleToggleSession,
 }) => (
-  <div className={styles['schedule-content-wrapper']}>
+  <Flex className={styles['schedule-content-wrapper']}>
     <WeekPanel schedule={schedule} selectedDay={selectedDay} onDaySelect={setSelectedDay} />
 
-    <div className={styles['schedule-main-content']}>
+    <Flex vertical className={styles['schedule-main-content']}>
       <DayTabs selectedDay={selectedDay} onDayChange={setSelectedDay} days={schedule?.days || {}} />
 
       {viewMode === 'week' ? (
@@ -83,6 +84,6 @@ export const BotScheduleContent: React.FC<BotScheduleContentProps> = ({
           <DayStats sessions={currentDay.sessions} className={styles['panel-block']} />
         </>
       )}
-    </div>
-  </div>
+    </Flex>
+  </Flex>
 );

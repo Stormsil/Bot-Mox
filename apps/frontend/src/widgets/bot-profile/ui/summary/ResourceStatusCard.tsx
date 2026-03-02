@@ -1,4 +1,4 @@
-import { Col, Tag, Typography } from 'antd';
+import { Col, Flex, Tag, Typography } from 'antd';
 import type React from 'react';
 import styles from '../BotSummary.module.css';
 
@@ -23,7 +23,7 @@ export const ResourceStatusCard: React.FC<{
         onKeyDown={onKeyDown}
       >
         <span className={styles['status-icon']}>{icon}</span>
-        <div>
+        <Flex vertical>
           <Text type="secondary">{title}</Text>
           <br />
           {statusTag || <Tag>Not Assigned</Tag>}
@@ -32,7 +32,7 @@ export const ResourceStatusCard: React.FC<{
               {row.content}
             </div>
           ))}
-        </div>
+        </Flex>
       </button>
     </Col>
   );

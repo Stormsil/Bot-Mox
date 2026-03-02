@@ -1,0 +1,26 @@
+Task: 8. Migrate Bot-Profile Resource Detail Wrappers (Proxy/License/Subscription)
+Date: 2026-03-02
+
+Changed files:
+- apps/frontend/src/widgets/bot-profile/ui/proxy/ProxyDetailsCard.tsx
+- apps/frontend/src/widgets/bot-profile/ui/license/LicenseViews.tsx
+- apps/frontend/src/widgets/bot-profile/ui/subscription/SubscriptionListItem.tsx
+
+Verification:
+1) LSP diagnostics
+- ProxyDetailsCard.tsx: clean
+- LicenseViews.tsx: clean
+- SubscriptionListItem.tsx: clean
+
+2) No new inline layout styles
+- grep style={{ ... display|alignItems|justifyContent|gap|flexDirection|gridTemplateColumns }}: no matches in touched files
+
+3) Typecheck
+Command: pnpm run check:types
+Result: PASS (exit code 0)
+Output:
+> botmox-project@1.0.0 check:types E:\Боттинг\source\repos\Bot-Mox
+> pnpm --filter @botmox/frontend typecheck
+
+> @botmox/frontend@0.0.0 typecheck E:\Боттинг\source\repos\Bot-Mox\apps\frontend
+> tsc -b --noEmit

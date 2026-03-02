@@ -1,5 +1,5 @@
 import { useList } from '@refinedev/core';
-import { Card, message, Spin } from 'antd';
+import { Card, Flex, message, Spin } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -224,18 +224,18 @@ export const BotSummaryWidget: React.FC<BotSummaryProps> = ({ bot }) => {
 
   if (loading) {
     return (
-      <div className={styles['bot-summary']}>
+      <Flex vertical className={styles['bot-summary']}>
         <Card className={styles['summary-loading']}>
           <Spin size="large" />
         </Card>
-      </div>
+      </Flex>
     );
   }
 
   return (
-    <div className={styles['bot-summary']}>
-      <div className={styles['bot-subtabs-layout']}>
-        <div className={styles['bot-subtabs-nav']}>
+    <Flex vertical className={styles['bot-summary']}>
+      <Flex className={styles['bot-subtabs-layout']} align="flex-start" gap={16}>
+        <Flex vertical className={styles['bot-subtabs-nav']} gap={2}>
           {SUMMARY_SECTIONS.map((section) => (
             <button
               key={section.key}
@@ -249,9 +249,9 @@ export const BotSummaryWidget: React.FC<BotSummaryProps> = ({ bot }) => {
               <span className={styles['bot-subtab-label']}>{section.label}</span>
             </button>
           ))}
-        </div>
+        </Flex>
 
-        <div className={styles['bot-subtabs-content']}>
+        <Flex vertical className={styles['bot-subtabs-content']}>
           <SummaryOverviewSection health={health} statusInfo={statusInfo} />
           <SummaryCharacterSection bot={bot} />
           <SummaryBotInfoSection
@@ -282,8 +282,8 @@ export const BotSummaryWidget: React.FC<BotSummaryProps> = ({ bot }) => {
               formatDaysLeft={formatDaysLeft}
             />
           )}
-        </div>
-      </div>
-    </div>
+        </Flex>
+      </Flex>
+    </Flex>
   );
 };

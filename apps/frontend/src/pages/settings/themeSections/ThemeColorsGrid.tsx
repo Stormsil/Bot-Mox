@@ -1,5 +1,5 @@
 import { HighlightOutlined } from '@ant-design/icons';
-import { Button, ColorPicker, Input, Space, Typography } from 'antd';
+import { Button, ColorPicker, Flex, Input, Space, Typography } from 'antd';
 import type { ReactElement } from 'react';
 import { THEME_COLOR_DEFINITIONS } from '../../../theme/themePalette';
 import { cx } from '../sections/classNames';
@@ -22,7 +22,13 @@ export function ThemeColorsGrid(props: ColorsProps): ReactElement {
   return (
     <div className={cx('theme-colors-grid')}>
       {THEME_COLOR_DEFINITIONS.map(({ cssVar, label }) => (
-        <div key={cssVar} className={cx('theme-color-row')}>
+        <Flex
+          key={cssVar}
+          className={cx('theme-color-row')}
+          align="center"
+          justify="space-between"
+          gap={12}
+        >
           <div className={cx('theme-color-labels')}>
             <Text strong>{label}</Text>
             <Text code>{cssVar}</Text>
@@ -61,7 +67,7 @@ export function ThemeColorsGrid(props: ColorsProps): ReactElement {
               Pick Screen Color
             </Button>
           </Space>
-        </div>
+        </Flex>
       ))}
     </div>
   );

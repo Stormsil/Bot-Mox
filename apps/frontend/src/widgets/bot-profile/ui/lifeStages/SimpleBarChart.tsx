@@ -1,4 +1,4 @@
-import { Typography } from 'antd';
+import { Flex, Typography } from 'antd';
 import type React from 'react';
 import styles from './lifeStages.module.css';
 
@@ -15,11 +15,11 @@ export const SimpleBarChart: React.FC<SimpleBarChartProps> = ({ data, color, lab
   const barKeyCounts = new Map<number, number>();
 
   return (
-    <div className={styles['simple-bar-chart']}>
+    <Flex vertical className={styles['simple-bar-chart']}>
       <Text type="secondary" className={styles['chart-label']}>
         {label}
       </Text>
-      <div className={styles['chart-bars']}>
+      <Flex className={styles['chart-bars']} align="flex-end" justify="space-between" gap={4}>
         {data.map((value) => {
           const occurrence = barKeyCounts.get(value) || 0;
           barKeyCounts.set(value, occurrence + 1);
@@ -35,7 +35,7 @@ export const SimpleBarChart: React.FC<SimpleBarChartProps> = ({ data, color, lab
             />
           );
         })}
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   );
 };

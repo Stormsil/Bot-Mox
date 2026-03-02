@@ -4,7 +4,7 @@ import {
   RightOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { Card, Tag, Typography } from 'antd';
+import { Card, Flex, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { SectionToggle } from './content-map-toggle';
 import type {
@@ -51,14 +51,14 @@ export function FinanceNotesSection({
 }) {
   return (
     <div className={cx('content-map-section')}>
-      <div className={cx('content-map-section-head')}>
+      <Flex className={cx('content-map-section-head')} justify="space-between" align="center">
         <div className={cx('content-map-section-title')}>Finance & Notes</div>
         <SectionToggle
           section="finance_notes"
           collapsedSections={collapsedSections}
           onToggle={toggleSection}
         />
-      </div>
+      </Flex>
       {!collapsedSections.finance_notes && (
         <div className={cx('content-map-grid content-map-grid--primary')}>
           <Card
@@ -68,12 +68,12 @@ export function FinanceNotesSection({
             styles={mapCardStyles}
             {...navProps('/finance')}
           >
-            <div className={cx('map-card-head')}>
+            <Flex className={cx('map-card-head')} justify="space-between" align="center">
               <div className={cx('map-card-title')}>
                 <DollarOutlined /> Finance
               </div>
               <Tag className={cx('map-card-tag')}>{financeWindowDays} Days</Tag>
-            </div>
+            </Flex>
             <div className={cx('map-kpi-grid')}>
               <div className={cx('map-kpi')}>
                 <span className={cx('map-kpi-label')}>Income</span>
@@ -117,10 +117,10 @@ export function FinanceNotesSection({
                 </div>
               </div>
             </div>
-            <div className={cx('map-card-footer')}>
+            <Flex className={cx('map-card-footer')} justify="space-between" align="center">
               <span>Open finance</span>
               <RightOutlined />
-            </div>
+            </Flex>
           </Card>
 
           <Card
@@ -130,13 +130,13 @@ export function FinanceNotesSection({
             styles={mapCardStyles}
             {...navProps('/notes')}
           >
-            <div className={cx('map-card-head')}>
+            <Flex className={cx('map-card-head')} justify="space-between" align="center">
               <div className={cx('map-card-title')}>
                 <FileTextOutlined /> Notes
               </div>
               <Tag className={cx('map-card-tag')}>{notesStats.total} total</Tag>
-            </div>
-            <div className={cx('map-stats-row')}>
+            </Flex>
+            <Flex className={cx('map-stats-row')} wrap>
               <div className={cx('map-stat-chip')}>
                 <span className={cx('map-stat-value')}>{notesStats.pinned}</span>
                 <span className={cx('map-stat-label')}>Pinned</span>
@@ -145,7 +145,7 @@ export function FinanceNotesSection({
                 <span className={cx('map-stat-value')}>{notesStats.total - notesStats.pinned}</span>
                 <span className={cx('map-stat-label')}>Regular</span>
               </div>
-            </div>
+            </Flex>
             <div className={cx('map-card-meta map-card-meta--stack')}>
               {latestNotes.length > 0 ? (
                 <div className={cx('map-notes-list')}>
@@ -159,10 +159,10 @@ export function FinanceNotesSection({
                 <Text type="secondary">No notes yet</Text>
               )}
             </div>
-            <div className={cx('map-card-footer')}>
+            <Flex className={cx('map-card-footer')} justify="space-between" align="center">
               <span>Open notes</span>
               <RightOutlined />
-            </div>
+            </Flex>
           </Card>
         </div>
       )}
@@ -183,31 +183,36 @@ export function ExpiringSection({
 }) {
   return (
     <div className={cx('content-map-section')}>
-      <div className={cx('content-map-section-head')}>
+      <Flex className={cx('content-map-section-head')} justify="space-between" align="center">
         <div className={cx('content-map-section-title')}>Expiring Soon</div>
         <SectionToggle
           section="expiring"
           collapsedSections={collapsedSections}
           onToggle={toggleSection}
         />
-      </div>
+      </Flex>
       {!collapsedSections.expiring && (
         <Card
           className={cx('map-card')}
           loading={loading.licenses || loading.proxies || loading.subscriptions}
           styles={mapCardStyles}
         >
-          <div className={cx('map-card-head')}>
+          <Flex className={cx('map-card-head')} justify="space-between" align="center">
             <div className={cx('map-card-title')}>
               <WarningOutlined /> Alerts
             </div>
             <Tag className={cx('map-card-tag')}>{expiringItems.length} items</Tag>
-          </div>
+          </Flex>
 
           {expiringItems.length > 0 ? (
             <div className={cx('expiring-list')}>
               {expiringItems.slice(0, 4).map((item) => (
-                <div key={item.id} className={cx('expiring-row')}>
+                <Flex
+                  key={item.id}
+                  className={cx('expiring-row')}
+                  justify="space-between"
+                  align="center"
+                >
                   <Tag className={cx(`expiring-tag expiring-tag--${item.type}`)}>{item.type}</Tag>
                   <div className={cx('expiring-main')}>
                     <span className={cx('expiring-name')}>{item.name}</span>
@@ -225,7 +230,7 @@ export function ExpiringSection({
                       {dayjs(item.expiresAt).format('DD.MM.YYYY')}
                     </span>
                   </div>
-                </div>
+                </Flex>
               ))}
             </div>
           ) : (

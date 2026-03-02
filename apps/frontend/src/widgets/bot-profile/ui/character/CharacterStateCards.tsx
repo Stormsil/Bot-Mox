@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Spin, Typography } from 'antd';
+import { Alert, Button, Card, Flex, Spin, Typography } from 'antd';
 import type React from 'react';
 import styles from './character.module.css';
 
@@ -14,10 +14,16 @@ export const CharacterLoadingCard: React.FC = () => (
       }}
       bodyStyle={{ padding: 16 }}
     >
-      <div className={styles['loading-container']}>
+      <Flex
+        vertical
+        className={styles['loading-container']}
+        align="center"
+        justify="center"
+        gap={16}
+      >
         <Spin size="large" />
         <Text className={styles['loading-text']}>Loading character data...</Text>
-      </div>
+      </Flex>
     </Card>
   </div>
 );

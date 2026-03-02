@@ -14,12 +14,7 @@
 }
 
 .loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   min-height: 300px;
-  gap: 16px;
 }
 
 /* Simple Bar Chart */
@@ -34,12 +29,8 @@
 }
 
 .chart-bars {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
   height: 120px;
   padding: 0 8px;
-  gap: 4px;
 }
 
 .chart-bar {
@@ -63,15 +54,15 @@
 }
 
 .stage-selector-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  min-width: 0;
 }
 
 .stage-selector-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  min-width: 0;
+}
+
+.stage-indicator {
+  min-width: 0;
 }
 
 .stage-selector-left h5 {
@@ -84,9 +75,7 @@
 }
 
 .stage-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  min-width: 0;
 }
 
 .current-stage-tag {
@@ -124,9 +113,6 @@
 /* Prepare Content */
 .prepare-content {
   min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .prepare-message {
@@ -166,8 +152,6 @@
 }
 
 .xp-info {
-  display: flex;
-  justify-content: space-between;
   margin-bottom: 8px;
 }
 
@@ -180,9 +164,6 @@
 
 /* Location Info */
 .location-info {
-  display: flex;
-  align-items: center;
-  gap: 16px;
   padding: 8px 0;
 }
 
@@ -192,9 +173,7 @@
 }
 
 .location-details {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  min-width: 0;
 }
 
 .location-tag {
@@ -219,9 +198,7 @@
 }
 
 .profession-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  min-width: 0;
 }
 
 .profession-icon {
@@ -238,12 +215,11 @@
 }
 
 .profession-progress {
+  min-width: 0;
   padding: 8px 0;
 }
 
 .skill-info {
-  display: flex;
-  justify-content: space-between;
   margin-bottom: 8px;
 }
 
@@ -268,9 +244,7 @@
 }
 
 .inventory-item-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  min-width: 0;
 }
 
 .inventory-item-icon {
@@ -279,9 +253,7 @@
 }
 
 .inventory-item-details {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  min-width: 0;
 }
 
 .quality-tag {

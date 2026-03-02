@@ -1,5 +1,5 @@
 import { ReloadOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Typography } from 'antd';
+import { Button, Flex, Typography } from 'antd';
 import type React from 'react';
 import { bindCssModuleCx } from '../../../shared/lib/classNames';
 import styles from '../SettingsPage.module.css';
@@ -14,7 +14,7 @@ interface SettingsPageHeaderProps {
 
 export const SettingsPageHeader: React.FC<SettingsPageHeaderProps> = ({ loading, onRefresh }) => {
   return (
-    <div className={cx('settings-header')}>
+    <Flex className={cx('settings-header')} align="center" justify="space-between">
       <Title
         level={4}
         className={cx('settings-title')}
@@ -25,6 +25,6 @@ export const SettingsPageHeader: React.FC<SettingsPageHeaderProps> = ({ loading,
       <Button icon={<ReloadOutlined />} onClick={onRefresh} loading={loading}>
         Refresh
       </Button>
-    </div>
+    </Flex>
   );
 };

@@ -1,0 +1,20 @@
+Task: 10. Migrate Bot-Profile Core Widget Wrappers
+
+Verification command:
+pnpm run check:types
+
+Result:
+- Exit code: 0
+- Frontend typecheck command executed: tsc -b --noEmit
+- Status: PASS
+
+Notes:
+- Core bot-profile wrapper migrations were applied in summary/character/person/vm/schedule/lifeStages widget files using AntD layout primitives (Flex/Space/Row/Col).
+- Excluded complex widgets were not modified: apps/frontend/src/widgets/schedule/TimelineVisualizer.tsx, apps/frontend/src/widgets/layout/ResourceTree.tsx.
+
+Execution notes (append):
+- Scope check: reviewed changed files under apps/frontend/src/widgets/bot-profile/ui/** and kept Task 10 refactor scope.
+- Regression scan: no inline layout style matches for display/gap/justifyContent/alignItems/flexDirection in bot-profile TSX files.
+- Exclusion check: git diff confirms no changes in apps/frontend/src/widgets/schedule/TimelineVisualizer.tsx and apps/frontend/src/widgets/layout/ResourceTree.tsx.
+- LSP diagnostics: clean on all changed bot-profile TSX files.
+- Typecheck rerun: pnpm run check:types -> PASS (tsc -b --noEmit).

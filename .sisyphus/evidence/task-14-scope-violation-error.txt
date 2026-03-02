@@ -1,0 +1,15 @@
+# Evidence: task-14-scope-violation-error.txt
+# generated_at: 2026-03-02
+# purpose: scope guard verification for excluded files
+
+[commands]
+git status --short -- apps/frontend/src/widgets/schedule/TimelineVisualizer.tsx apps/frontend/src/widgets/layout/ResourceTree.tsx
+git diff --name-only -- apps/frontend/src/widgets/schedule/TimelineVisualizer.tsx apps/frontend/src/widgets/layout/ResourceTree.tsx
+git diff --cached --name-only -- apps/frontend/src/widgets/schedule/TimelineVisualizer.tsx apps/frontend/src/widgets/layout/ResourceTree.tsx
+
+[stdout]
+(empty)
+
+[result]
+No scope-violation detected.
+Excluded files are unchanged in both working tree and index.

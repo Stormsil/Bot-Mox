@@ -6,7 +6,7 @@ import {
   StopOutlined,
   ToolOutlined,
 } from '@ant-design/icons';
-import { Timeline, Typography } from 'antd';
+import { Flex, Timeline, Typography } from 'antd';
 import type React from 'react';
 import type { LifeStage } from './config';
 import styles from './lifeStages.module.css';
@@ -18,7 +18,7 @@ interface StageTimelineProps {
 }
 
 export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) => (
-  <div className={styles['stage-timeline']}>
+  <Flex vertical className={styles['stage-timeline']}>
     <Timeline
       style={{ paddingLeft: 8 }}
       items={[
@@ -223,5 +223,5 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
         },
       ]}
     />
-  </div>
+  </Flex>
 );

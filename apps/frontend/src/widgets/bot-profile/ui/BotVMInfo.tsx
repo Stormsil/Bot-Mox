@@ -1,5 +1,5 @@
 import { DesktopOutlined } from '@ant-design/icons';
-import { Card, Empty, Space, Typography } from 'antd';
+import { Card, Empty, Flex, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import type { Bot } from '../../../shared/types';
@@ -48,7 +48,7 @@ export const BotVMInfo: React.FC<BotVMInfoProps> = ({ bot }) => {
 
   if (!vm) {
     return (
-      <div className={styles['bot-vm-info']}>
+      <Flex vertical className={styles['bot-vm-info']}>
         <Card className={styles['vm-card']}>
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -59,12 +59,12 @@ export const BotVMInfo: React.FC<BotVMInfoProps> = ({ bot }) => {
             }
           />
         </Card>
-      </div>
+      </Flex>
     );
   }
 
   return (
-    <div className={styles['bot-vm-info']}>
+    <Flex vertical className={styles['bot-vm-info']}>
       <Card
         className={styles['vm-card']}
         title={
@@ -74,31 +74,31 @@ export const BotVMInfo: React.FC<BotVMInfoProps> = ({ bot }) => {
           </Space>
         }
       >
-        <div className={styles['vm-content']}>
-          <div className={styles['vm-field']}>
+        <Flex vertical className={styles['vm-content']} gap={16}>
+          <Flex vertical className={styles['vm-field']} gap={4}>
             <Text type="secondary" className={styles['field-label']}>
               VM Name
             </Text>
             <Text strong>{vm.name}</Text>
-          </div>
+          </Flex>
 
-          <div className={styles['vm-field']}>
+          <Flex vertical className={styles['vm-field']} gap={4}>
             <Text type="secondary" className={styles['field-label']}>
               IP Address
             </Text>
             <Text strong className={styles['vm-ip']} copyable>
               {vm.ip}
             </Text>
-          </div>
+          </Flex>
 
-          <div className={styles['vm-field']}>
+          <Flex vertical className={styles['vm-field']} gap={4}>
             <Text type="secondary" className={styles['field-label']}>
               Created At
             </Text>
             <Text>{formattedCreatedAt}</Text>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Card>
-    </div>
+    </Flex>
   );
 };

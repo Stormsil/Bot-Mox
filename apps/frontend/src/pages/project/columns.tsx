@@ -1,5 +1,5 @@
 import { DeleteOutlined } from '@ant-design/icons';
-import { Popconfirm, Tag, Tooltip, Typography } from 'antd';
+import { Flex, Popconfirm, Tag, Tooltip, Typography } from 'antd';
 import type { BotStatus } from '../../shared/types';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
 import { TableActionButton } from '../../shared/ui/TableActionButton';
@@ -22,17 +22,15 @@ function renderStatusWithDays({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      className={`${styles.cellButton} ${styles.cellStack} ${styles.cellLink}`}
-      onClick={onClick}
-    >
-      <Tag color={color} className={styles.statusTag}>
-        {label}
-      </Tag>
-      <Text type="secondary" className={styles.secondary}>
-        {formatDaysRemaining(daysRemaining)}
-      </Text>
+    <button type="button" className={`${styles.cellButton} ${styles.cellLink}`} onClick={onClick}>
+      <Flex vertical gap={2}>
+        <Tag color={color} className={styles.statusTag}>
+          {label}
+        </Tag>
+        <Text type="secondary" className={styles.secondary}>
+          {formatDaysRemaining(daysRemaining)}
+        </Text>
+      </Flex>
     </button>
   );
 }
@@ -108,13 +106,15 @@ export function createProjectColumns({
       render: (_: unknown, record: BotRow) => (
         <button
           type="button"
-          className={`${styles.cellButton} ${styles.cellStack} ${styles.cellLink}`}
+          className={`${styles.cellButton} ${styles.cellLink}`}
           onClick={() => goToBot(record.id, 'account')}
         >
-          <Text>{record.email || '-'}</Text>
-          <Text type="secondary" className={styles.secondary}>
-            {record.password || '-'}
-          </Text>
+          <Flex vertical gap={2}>
+            <Text>{record.email || '-'}</Text>
+            <Text type="secondary" className={styles.secondary}>
+              {record.password || '-'}
+            </Text>
+          </Flex>
         </button>
       ),
     },
@@ -135,16 +135,18 @@ export function createProjectColumns({
         return (
           <button
             type="button"
-            className={`${styles.cellButton} ${styles.cellStack} ${styles.cellLink}`}
+            className={`${styles.cellButton} ${styles.cellLink}`}
             onClick={() => goToBot(record.id, 'character')}
           >
-            <Text strong>
-              {record.characterName}
-              {typeof record.level === 'number' ? ` (${record.level})` : ''}
-            </Text>
-            <Text type="secondary" className={styles.secondary}>
-              {secondary}
-            </Text>
+            <Flex vertical gap={2}>
+              <Text strong>
+                {record.characterName}
+                {typeof record.level === 'number' ? ` (${record.level})` : ''}
+              </Text>
+              <Text type="secondary" className={styles.secondary}>
+                {secondary}
+              </Text>
+            </Flex>
           </button>
         );
       },
@@ -199,7 +201,7 @@ export function createProjectColumns({
       render: (_: unknown, record: BotRow) => {
         const isDeleting = Boolean(deletingBotIds[record.id]);
         return (
-          <div className={styles.rowActions}>
+          <Flex justify="flex-start">
             <Popconfirm
               title="Delete account?"
               description={`This will remove ${record.idShort} from database.`}
@@ -219,7 +221,7 @@ export function createProjectColumns({
                 Delete
               </TableActionButton>
             </Popconfirm>
-          </div>
+          </Flex>
         );
       },
     },

@@ -1,5 +1,5 @@
 import { CalendarOutlined, ReloadOutlined, SaveOutlined, UnlockOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button, Space } from 'antd';
 import type React from 'react';
 import type { ScheduleGenerationParams } from '../../../shared/types';
 import { ScheduleGenerator } from '../../../widgets/schedule';
@@ -30,7 +30,7 @@ export const BotScheduleActions: React.FC<BotScheduleActionsProps> = ({
   hasChanges,
   handleSave,
 }) => (
-  <div className={styles['schedule-actions']}>
+  <Space className={styles['schedule-actions']} size={8} wrap>
     <Button
       icon={<CalendarOutlined />}
       size="small"
@@ -73,5 +73,5 @@ export const BotScheduleActions: React.FC<BotScheduleActionsProps> = ({
     >
       Save
     </Button>
-  </div>
+  </Space>
 );

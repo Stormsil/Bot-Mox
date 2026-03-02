@@ -12,6 +12,7 @@ import {
   Card,
   Col,
   Divider,
+  Flex,
   Form,
   Input,
   Modal,
@@ -121,10 +122,16 @@ export const BotLifeStagesWidget: React.FC<BotLifeStagesProps> = ({ botId }) => 
 
   if (loading) {
     return (
-      <div className={[styles['bot-life-stages'], styles.loading].join(' ')}>
+      <Flex
+        vertical
+        className={[styles['bot-life-stages'], styles.loading].join(' ')}
+        align="center"
+        justify="center"
+        gap={16}
+      >
         <Spin size="large" />
         <p>Loading data...</p>
-      </div>
+      </Flex>
     );
   }
 
@@ -139,8 +146,8 @@ export const BotLifeStagesWidget: React.FC<BotLifeStagesProps> = ({ botId }) => 
   return (
     <div className={styles['bot-life-stages']}>
       <Card className={styles['stage-selector-card']}>
-        <div className={styles['stage-selector-header']}>
-          <div className={styles['stage-selector-left']}>
+        <Flex className={styles['stage-selector-header']} align="center" justify="space-between">
+          <Flex className={styles['stage-selector-left']} align="center" gap={16}>
             <Title level={5}>Life Stage</Title>
             <Select
               variant="filled"
@@ -178,8 +185,8 @@ export const BotLifeStagesWidget: React.FC<BotLifeStagesProps> = ({ botId }) => 
                 </span>
               </Option>
             </Select>
-          </div>
-          <div className={styles['stage-indicator']}>
+          </Flex>
+          <Flex className={styles['stage-indicator']}>
             <Tag
               icon={getStageIcon(currentStage)}
               color={getStageColor(currentStage)}
@@ -187,8 +194,8 @@ export const BotLifeStagesWidget: React.FC<BotLifeStagesProps> = ({ botId }) => 
             >
               {getStageLabel(currentStage)}
             </Tag>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Card>
 
       <Row gutter={[16, 16]} className={styles['stages-content-row']}>

@@ -1,4 +1,4 @@
-import { Typography } from 'antd';
+import { Flex, Typography } from 'antd';
 import type React from 'react';
 import { ProjectsSection, ResourcesSection } from './content-map-sections';
 import { ExpiringSection, FinanceNotesSection } from './content-map-sections-secondary';
@@ -63,16 +63,16 @@ export const DatacenterContentMap: React.FC<DatacenterContentMapProps> = ({
 }) => {
   return (
     <div className={cx('content-map')}>
-      <div className={cx('content-map-header')}>
-        <div>
+      <Flex className={cx('content-map-header')}>
+        <Flex vertical>
           <Title level={4} style={{ margin: 0 }} className={cx('content-map-title')}>
             Content Map
           </Title>
           <Text type="secondary" className={cx('content-map-subtitle')}>
             Быстрый доступ к ключевым разделам и их метрикам
           </Text>
-        </div>
-      </div>
+        </Flex>
+      </Flex>
 
       <ProjectsSection
         collapsedSections={collapsedSections}

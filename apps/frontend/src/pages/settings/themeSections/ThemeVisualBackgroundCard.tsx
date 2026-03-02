@@ -4,6 +4,7 @@ import {
   Card,
   ColorPicker,
   Empty,
+  Flex,
   List,
   Popconfirm,
   Segmented,
@@ -48,7 +49,13 @@ export function ThemeVisualBackgroundCard(props: VisualProps): ReactElement {
       }
     >
       <Space direction="vertical" size={12} style={{ width: '100%' }}>
-        <div className={cx('theme-visual-row')}>
+        <Flex
+          className={cx('theme-visual-row')}
+          align="center"
+          justify="space-between"
+          gap={12}
+          wrap
+        >
           <Text>Enable visual background</Text>
           <Switch
             checked={props.localVisualSettings.enabled}
@@ -56,8 +63,14 @@ export function ThemeVisualBackgroundCard(props: VisualProps): ReactElement {
               props.onVisualSettingsChange({ enabled: checked, mode: checked ? 'image' : 'none' })
             }
           />
-        </div>
-        <div className={cx('theme-visual-row')}>
+        </Flex>
+        <Flex
+          className={cx('theme-visual-row')}
+          align="center"
+          justify="space-between"
+          gap={12}
+          wrap
+        >
           <Text>Background image</Text>
           <Space wrap>
             <Upload
@@ -79,7 +92,7 @@ export function ThemeVisualBackgroundCard(props: VisualProps): ReactElement {
               Refresh
             </Button>
           </Space>
-        </div>
+        </Flex>
 
         {props.themeAssets.length === 0 ? (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No uploaded backgrounds" />
@@ -163,7 +176,13 @@ export function ThemeVisualBackgroundCard(props: VisualProps): ReactElement {
           />
         </div>
 
-        <div className={cx('theme-visual-row')}>
+        <Flex
+          className={cx('theme-visual-row')}
+          align="center"
+          justify="space-between"
+          gap={12}
+          wrap
+        >
           <Text type="secondary">Overlay color (light)</Text>
           <ColorPicker
             value={props.localVisualSettings.overlayColorLight}
@@ -174,8 +193,14 @@ export function ThemeVisualBackgroundCard(props: VisualProps): ReactElement {
               props.onVisualSettingsChange({ overlayColorLight: color.toHexString() })
             }
           />
-        </div>
-        <div className={cx('theme-visual-row')}>
+        </Flex>
+        <Flex
+          className={cx('theme-visual-row')}
+          align="center"
+          justify="space-between"
+          gap={12}
+          wrap
+        >
           <Text type="secondary">Overlay color (dark)</Text>
           <ColorPicker
             value={props.localVisualSettings.overlayColorDark}
@@ -186,9 +211,15 @@ export function ThemeVisualBackgroundCard(props: VisualProps): ReactElement {
               props.onVisualSettingsChange({ overlayColorDark: color.toHexString() })
             }
           />
-        </div>
+        </Flex>
 
-        <div className={cx('theme-visual-row')}>
+        <Flex
+          className={cx('theme-visual-row')}
+          align="center"
+          justify="space-between"
+          gap={12}
+          wrap
+        >
           <Text type="secondary">Position</Text>
           <Segmented
             value={props.localVisualSettings.backgroundPosition}
@@ -202,8 +233,14 @@ export function ThemeVisualBackgroundCard(props: VisualProps): ReactElement {
               })
             }
           />
-        </div>
-        <div className={cx('theme-visual-row')}>
+        </Flex>
+        <Flex
+          className={cx('theme-visual-row')}
+          align="center"
+          justify="space-between"
+          gap={12}
+          wrap
+        >
           <Text type="secondary">Size</Text>
           <Segmented
             value={props.localVisualSettings.backgroundSize}
@@ -218,7 +255,7 @@ export function ThemeVisualBackgroundCard(props: VisualProps): ReactElement {
               })
             }
           />
-        </div>
+        </Flex>
 
         <Button
           type="primary"
