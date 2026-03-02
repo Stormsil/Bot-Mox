@@ -1,9 +1,6 @@
+import { message } from 'antd';
 import { type Dispatch, type SetStateAction, useCallback, useMemo, useState } from 'react';
-import {
-  applySelectedThemePreset,
-  deleteSelectedThemePreset,
-  saveCurrentThemePreset,
-} from './themePresetActions';
+import { cloneThemePalettes, mapThemePresetsToList } from './themeSettings.helpers';
 import type {
   ThemePalettes,
   ThemePreset,
@@ -14,9 +11,30 @@ import type {
 } from './themeSettings.types';
 
 interface UseThemePresetControlsParams {
-  savePreset: (payload: { name: string; palettes: ThemePalettes }) => Promise<ThemePreset>;
-  applyPreset: (payload: { presetId: string }) => Promise<ThemeSettings>;
-  deletePreset: (payload: { presetId: string }) => Promise<ThemeSettings>;
+  savePreset: (
+    payload: { name: string; palettes: ThemePalettes },
+    options?: {
+      onSuccess?: (preset: ThemePreset) => void;
+      onSettled?: () => void;
+    },
+  ) => void;
+  applyPreset: (
+    payload: { presetId: string },
+    options?: {
+      onSuccess?: (settings: ThemeSettings) => void;
+      onSettled?: () => void;
+    },
+  ) => void;
+  deletePreset: (
+    payload: { presetId: string },
+    options?: {
+      onSuccess?: (settings: ThemeSettings) => void;
+      onSettled?: () => void;
+    },
+  ) => void;
+  themePresetSaving: boolean;
+  themePresetApplying: boolean;
+  themePresetDeleting: boolean;
   localThemePalettes: ThemePalettes;
   sanitizeVisualSettings: (source: unknown) => ThemeVisualSettings;
   sanitizeTypographySettings: (source: unknown) => ThemeTypographySettings;
@@ -53,77 +71,103 @@ interface UseThemePresetControlsResult {
 export function useThemePresetControls(
   params: UseThemePresetControlsParams,
 ): UseThemePresetControlsResult {
-  const [themePresetSaving, setThemePresetSaving] = useState(false);
-  const [themePresetApplying, setThemePresetApplying] = useState(false);
-  const [themePresetDeleting, setThemePresetDeleting] = useState(false);
   const [themePresets, setThemePresets] = useState<ThemePreset[]>([]);
   const [selectedPresetId, setSelectedPresetId] = useState<string | undefined>();
   const [activePresetId, setActivePresetId] = useState<string | undefined>();
   const [newThemePresetName, setNewThemePresetName] = useState('');
 
   const handleSaveCurrentAsPreset = useCallback(async () => {
-    setThemePresetSaving(true);
-    try {
-      await saveCurrentThemePreset({
-        newThemePresetName,
-        localThemePalettes: params.localThemePalettes,
-        savePreset: params.savePreset,
-        setThemePresets,
-        setSelectedPresetId,
-        setActivePresetId,
-        setNewThemePresetName,
-      });
-    } finally {
-      setThemePresetSaving(false);
+    const presetName = newThemePresetName.trim();
+    if (!presetName) {
+      message.warning('Enter theme name first');
+      return;
     }
+
+    await new Promise<void>((resolve) => {
+      params.savePreset(
+        {
+          name: presetName,
+          palettes: params.localThemePalettes,
+        },
+        {
+          onSuccess: (preset) => {
+            setThemePresets((current) =>
+              mapThemePresetsToList({
+                ...Object.fromEntries(current.map((item) => [item.id, item])),
+                [preset.id]: preset,
+              }),
+            );
+            setSelectedPresetId(preset.id);
+            setActivePresetId(preset.id);
+            setNewThemePresetName('');
+          },
+          onSettled: () => resolve(),
+        },
+      );
+    });
   }, [newThemePresetName, params.localThemePalettes, params.savePreset]);
 
   const handleApplySelectedPreset = useCallback(async () => {
-    setThemePresetApplying(true);
-    try {
-      await applySelectedThemePreset({
-        selectedPresetId,
-        applyPreset: params.applyPreset,
-        sanitizeVisualSettings: params.sanitizeVisualSettings,
-        sanitizeTypographySettings: params.sanitizeTypographySettings,
-        sanitizeShapeSettings: params.sanitizeShapeSettings,
-        setLocalThemePalettes: params.setLocalThemePalettes,
-        setThemeInputValues: params.setThemeInputValues,
-        setLocalVisualSettings: params.setLocalVisualSettings,
-        setLocalTypographySettings: params.setLocalTypographySettings,
-        setLocalShapeSettings: params.setLocalShapeSettings,
-        setThemePresets,
-        setActivePresetId,
-        setSelectedPresetId,
-        onThemePalettesChange: params.onThemePalettesChange,
-        onVisualSettingsChange: params.onVisualSettingsChange,
-        onTypographySettingsChange: params.onTypographySettingsChange,
-        onShapeSettingsChange: params.onShapeSettingsChange,
-      });
-    } finally {
-      setThemePresetApplying(false);
+    if (!selectedPresetId) {
+      message.warning('Select saved theme first');
+      return;
     }
+
+    await new Promise<void>((resolve) => {
+      params.applyPreset(
+        { presetId: selectedPresetId },
+        {
+          onSuccess: (nextSettings) => {
+            const nextPalettes = cloneThemePalettes(nextSettings.palettes);
+            const nextVisual = params.sanitizeVisualSettings(nextSettings.visual);
+            const nextTypography = params.sanitizeTypographySettings(nextSettings.typography);
+            const nextShape = params.sanitizeShapeSettings(nextSettings.shape);
+
+            params.setLocalThemePalettes(nextPalettes);
+            params.setThemeInputValues(nextPalettes);
+            params.setLocalVisualSettings(nextVisual);
+            params.setLocalTypographySettings(nextTypography);
+            params.setLocalShapeSettings(nextShape);
+            setThemePresets(mapThemePresetsToList(nextSettings.presets));
+            setActivePresetId(nextSettings.active_preset_id);
+            setSelectedPresetId(nextSettings.active_preset_id ?? selectedPresetId);
+            params.onThemePalettesChange?.(nextSettings.palettes);
+            params.onVisualSettingsChange?.(nextVisual);
+            params.onTypographySettingsChange?.(nextTypography);
+            params.onShapeSettingsChange?.(nextShape);
+          },
+          onSettled: () => resolve(),
+        },
+      );
+    });
   }, [params, selectedPresetId]);
 
   const handleDeleteSelectedPreset = useCallback(async () => {
-    setThemePresetDeleting(true);
-    try {
-      await deleteSelectedThemePreset({
-        selectedPresetId,
-        deletePreset: params.deletePreset,
-        sanitizeTypographySettings: params.sanitizeTypographySettings,
-        sanitizeShapeSettings: params.sanitizeShapeSettings,
-        setThemePresets,
-        setActivePresetId,
-        setSelectedPresetId,
-        setLocalTypographySettings: params.setLocalTypographySettings,
-        setLocalShapeSettings: params.setLocalShapeSettings,
-        onTypographySettingsChange: params.onTypographySettingsChange,
-        onShapeSettingsChange: params.onShapeSettingsChange,
-      });
-    } finally {
-      setThemePresetDeleting(false);
+    if (!selectedPresetId) {
+      return;
     }
+
+    await new Promise<void>((resolve) => {
+      params.deletePreset(
+        { presetId: selectedPresetId },
+        {
+          onSuccess: (nextSettings) => {
+            const nextPresets = mapThemePresetsToList(nextSettings.presets);
+            const nextTypography = params.sanitizeTypographySettings(nextSettings.typography);
+            const nextShape = params.sanitizeShapeSettings(nextSettings.shape);
+
+            setThemePresets(nextPresets);
+            setActivePresetId(nextSettings.active_preset_id);
+            setSelectedPresetId(nextSettings.active_preset_id ?? nextPresets[0]?.id);
+            params.setLocalTypographySettings(nextTypography);
+            params.setLocalShapeSettings(nextShape);
+            params.onTypographySettingsChange?.(nextTypography);
+            params.onShapeSettingsChange?.(nextShape);
+          },
+          onSettled: () => resolve(),
+        },
+      );
+    });
   }, [params, selectedPresetId]);
 
   const themePresetOptions = useMemo(
@@ -136,9 +180,9 @@ export function useThemePresetControls(
   );
 
   return {
-    themePresetSaving,
-    themePresetApplying,
-    themePresetDeleting,
+    themePresetSaving: params.themePresetSaving,
+    themePresetApplying: params.themePresetApplying,
+    themePresetDeleting: params.themePresetDeleting,
     themePresets,
     setThemePresets,
     selectedPresetId,

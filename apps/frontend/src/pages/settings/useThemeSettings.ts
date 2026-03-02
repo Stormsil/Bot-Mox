@@ -29,12 +29,8 @@ import type {
 } from './themeSettings.types';
 import {
   applyThemeSettingsState,
-  deleteThemeAssetAction,
   refreshThemeAssetsAction,
-  saveThemeColorsAction,
-  saveVisualSettingsAction,
   selectThemeBackgroundState,
-  uploadThemeAssetAction,
 } from './themeSettingsStateActions';
 import { useThemeColorControls } from './useThemeColorControls';
 import { useThemePresetControls } from './useThemePresetControls';
@@ -52,7 +48,6 @@ export function useThemeSettings({
   shapeSettings,
   onShapeSettingsChange,
 }: UseThemeSettingsArgs): UseThemeSettingsResult {
-  const [themeSaving, setThemeSaving] = useState(false);
   const [isThemeDrawerOpen, setIsThemeDrawerOpen] = useState(false);
   const [editingThemeMode, setEditingThemeMode] = useState<ThemeMode>('light');
   const themeAssetsQuery = useThemeAssetsQuery();
@@ -115,9 +110,13 @@ export function useThemeSettings({
     handleApplySelectedPreset,
     handleDeleteSelectedPreset,
   } = useThemePresetControls({
-    savePreset: (payload) => saveThemePresetMutation.mutateAsync(payload),
-    applyPreset: ({ presetId }) => applyThemePresetMutation.mutateAsync({ presetId }),
-    deletePreset: ({ presetId }) => deleteThemePresetMutation.mutateAsync({ presetId }),
+    savePreset: (payload, options) => saveThemePresetMutation.mutate(payload, options),
+    applyPreset: ({ presetId }, options) => applyThemePresetMutation.mutate({ presetId }, options),
+    deletePreset: ({ presetId }, options) =>
+      deleteThemePresetMutation.mutate({ presetId }, options),
+    themePresetSaving: saveThemePresetMutation.isPending,
+    themePresetApplying: applyThemePresetMutation.isPending,
+    themePresetDeleting: deleteThemePresetMutation.isPending,
     localThemePalettes,
     sanitizeVisualSettings: sanitizeThemeVisualSettings,
     sanitizeTypographySettings: sanitizeThemeTypographySettings,
@@ -181,22 +180,25 @@ export function useThemeSettings({
     setThemeInputValues,
   });
 
+  const themeSaving =
+    updateThemeSettingsMutation.isPending || updateThemeVisualSettingsMutation.isPending;
+
   const handleSaveThemeColors = useCallback(async () => {
-    setThemeSaving(true);
-    try {
-      await saveThemeColorsAction({
-        updateThemeSettings: (payload) => updateThemeSettingsMutation.mutateAsync(payload),
-        localThemePalettes,
-        activePresetId,
-        localVisualSettings,
-        localTypographySettings,
-        localShapeSettings,
-      });
-    } catch {
-      // user-facing error is handled in action helper
-    } finally {
-      setThemeSaving(false);
-    }
+    await new Promise<void>((resolve) => {
+      updateThemeSettingsMutation.mutate(
+        {
+          palettes: localThemePalettes,
+          activePresetId,
+          options: { syncActivePreset: true },
+          visualSettings: localVisualSettings,
+          typographySettings: localTypographySettings,
+          shapeSettings: localShapeSettings,
+        },
+        {
+          onSettled: () => resolve(),
+        },
+      );
+    });
   }, [
     activePresetId,
     localShapeSettings,
@@ -240,31 +242,36 @@ export function useThemeSettings({
   );
 
   const handleSaveVisualSettings = useCallback(async () => {
-    setThemeSaving(true);
-    try {
-      await saveVisualSettingsAction({
-        updateVisualSettings: (payload) => updateThemeVisualSettingsMutation.mutateAsync(payload),
-        localVisualSettings,
-      });
-    } catch {
-      // user-facing error is handled in action helper
-    } finally {
-      setThemeSaving(false);
-    }
+    await new Promise<void>((resolve) => {
+      updateThemeVisualSettingsMutation.mutate(
+        { visual: localVisualSettings },
+        {
+          onSettled: () => resolve(),
+        },
+      );
+    });
   }, [localVisualSettings, updateThemeVisualSettingsMutation]);
 
   const handleUploadThemeAsset = useCallback(
     async (file: File) => {
-      try {
-        await uploadThemeAssetAction({
-          file,
-          uploadAsset: (assetFile) => uploadThemeAssetMutation.mutateAsync(assetFile),
-          setLocalVisualSettings,
-          onVisualSettingsChange,
+      await new Promise<void>((resolve) => {
+        uploadThemeAssetMutation.mutate(file, {
+          onSuccess: (uploaded) => {
+            setLocalVisualSettings((current) => {
+              const next = sanitizeThemeVisualSettings({
+                ...current,
+                enabled: true,
+                mode: 'image',
+                backgroundAssetId: uploaded.id,
+                backgroundImageUrl: uploaded.image_url || undefined,
+              });
+              onVisualSettingsChange?.(next);
+              return next;
+            });
+          },
+          onSettled: () => resolve(),
         });
-      } catch {
-        // user-facing error is handled in action helper
-      }
+      });
     },
     [onVisualSettingsChange, uploadThemeAssetMutation],
   );
@@ -283,16 +290,28 @@ export function useThemeSettings({
 
   const handleDeleteThemeAsset = useCallback(
     async (assetId: string) => {
-      try {
-        await deleteThemeAssetAction({
-          assetId,
-          deleteAsset: (currentAssetId) => deleteThemeAssetMutation.mutateAsync(currentAssetId),
-          setLocalVisualSettings,
-          onVisualSettingsChange,
+      await new Promise<void>((resolve) => {
+        deleteThemeAssetMutation.mutate(assetId, {
+          onSuccess: () => {
+            setLocalVisualSettings((current) => {
+              if (current.backgroundAssetId !== assetId) {
+                return current;
+              }
+
+              const next = sanitizeThemeVisualSettings({
+                ...current,
+                enabled: false,
+                mode: 'none',
+                backgroundAssetId: undefined,
+                backgroundImageUrl: undefined,
+              });
+              onVisualSettingsChange?.(next);
+              return next;
+            });
+          },
+          onSettled: () => resolve(),
         });
-      } catch {
-        // user-facing error is handled in action helper
-      }
+      });
     },
     [deleteThemeAssetMutation, onVisualSettingsChange],
   );
