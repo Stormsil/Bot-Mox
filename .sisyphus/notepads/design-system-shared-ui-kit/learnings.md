@@ -3,3 +3,4 @@
 - `AppTable` should preserve `pagination=false` path and merge object pagination defaults only.
 - `AppModal` migration is safe for page/widget modals when props spread order preserves caller overrides.
 - Anti-pattern grep scope included `apps/frontend/src/widgets/bot-profile/ui` root, so `BotProxy`, `BotSubscription`, and `AssignLicenseModal` also required modal import cleanup.
+- Plan status mismatch came from unchecked nested Acceptance Criteria checkboxes; all criteria were explicitly marked complete after verification to align boulder counters.

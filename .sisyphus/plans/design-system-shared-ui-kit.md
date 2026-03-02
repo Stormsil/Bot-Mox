@@ -121,8 +121,8 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - Pattern: `apps/frontend/src/widgets/bot-profile/ui/subscription/SubscriptionModal.tsx:22` - direct `Modal` shell.
 
   **Acceptance Criteria**:
-  - [ ] `pnpm exec rg "import\\s*\\{[^}]*\\b(Table|Modal)\\b[^}]*\\}\\s*from 'antd'" apps/frontend/src/pages/licenses apps/frontend/src/pages/proxies apps/frontend/src/pages/subscriptions apps/frontend/src/widgets/bot-profile/ui --glob "*.tsx"` runs and evidence is saved.
-  - [ ] A plain-text allowlist is recorded in `.sisyphus/evidence/task-1-scope-baseline.txt`.
+  - [x] `pnpm exec rg "import\\s*\\{[^}]*\\b(Table|Modal)\\b[^}]*\\}\\s*from 'antd'" apps/frontend/src/pages/licenses apps/frontend/src/pages/proxies apps/frontend/src/pages/subscriptions apps/frontend/src/widgets/bot-profile/ui --glob "*.tsx"` runs and evidence is saved.
+  - [x] A plain-text allowlist is recorded in `.sisyphus/evidence/task-1-scope-baseline.txt`.
 
   **QA Scenarios**:
   ```text
@@ -161,9 +161,9 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - External: `https://github.com/ant-design/ant-design/blob/master/components/table/hooks/usePagination.ts` - merged pagination behavior reference.
 
   **Acceptance Criteria**:
-  - [ ] `AppTable` compiles with generic `TableProps<T>` and forwards unknown props to underlying antd `Table`.
-  - [ ] If `pagination` is object, wrapper merges defaults without dropping existing `current/pageSize/onChange`.
-  - [ ] If `pagination` is `false`, wrapper keeps pagination disabled.
+  - [x] `AppTable` compiles with generic `TableProps<T>` and forwards unknown props to underlying antd `Table`.
+  - [x] If `pagination` is object, wrapper merges defaults without dropping existing `current/pageSize/onChange`.
+  - [x] If `pagination` is `false`, wrapper keeps pagination disabled.
 
   **QA Scenarios**:
   ```text
@@ -202,8 +202,8 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - External: `https://github.com/ant-design/ant-design/blob/master/components/modal/interface.ts` - `destroyOnClose` compatibility/deprecation context.
 
   **Acceptance Criteria**:
-  - [ ] `AppModal` forwards all `ModalProps` and default props apply only when caller does not override.
-  - [ ] Existing modal open/close flows compile unchanged after swapping import in one pilot consumer.
+  - [x] `AppModal` forwards all `ModalProps` and default props apply only when caller does not override.
+  - [x] Existing modal open/close flows compile unchanged after swapping import in one pilot consumer.
 
   **QA Scenarios**:
   ```text
@@ -241,9 +241,9 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - API/Type: `https://refine.dev/docs/ui-integrations/ant-design/components/basic-views/list/` - `List` and `headerButtons` usage.
 
   **Acceptance Criteria**:
-  - [ ] `LicensePageHeader` import/usage removed from licenses page.
-  - [ ] `AppTable` receives `licensesTable.tableProps` and page compiles.
-  - [ ] Refine `<List>` wraps page body and retains create/stats actions.
+  - [x] `LicensePageHeader` import/usage removed from licenses page.
+  - [x] `AppTable` receives `licensesTable.tableProps` and page compiles.
+  - [x] Refine `<List>` wraps page body and retains create/stats actions.
 
   **QA Scenarios**:
   ```text
@@ -281,9 +281,9 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - Pattern: `apps/frontend/src/pages/proxies/ProxiesFiltersCard.tsx` - filter block placement inside new `List` body.
 
   **Acceptance Criteria**:
-  - [ ] `ProxiesPageHeader` import/usage removed from page.
-  - [ ] `AppTable` usage compiles and keeps `scroll`/layout requirements.
-  - [ ] Proxies create and edit modal triggers remain accessible from list header/table actions.
+  - [x] `ProxiesPageHeader` import/usage removed from page.
+  - [x] `AppTable` usage compiles and keeps `scroll`/layout requirements.
+  - [x] Proxies create and edit modal triggers remain accessible from list header/table actions.
 
   **QA Scenarios**:
   ```text
@@ -321,9 +321,9 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - Pattern: `apps/frontend/src/pages/subscriptions/SubscriptionsStats.tsx` - stats area to preserve.
 
   **Acceptance Criteria**:
-  - [ ] Inline manual header block removed and replaced by Refine `<List>`.
-  - [ ] `AppTable` consumes existing table props and renders `filteredSubscriptions`.
-  - [ ] Subscription modals still open/close via existing actions.
+  - [x] Inline manual header block removed and replaced by Refine `<List>`.
+  - [x] `AppTable` consumes existing table props and renders `filteredSubscriptions`.
+  - [x] Subscription modals still open/close via existing actions.
 
   **QA Scenarios**:
   ```text
@@ -361,9 +361,9 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - Pattern: `apps/frontend/src/pages/subscriptions/index.tsx:350` - create/edit subscription modals.
 
   **Acceptance Criteria**:
-  - [ ] All in-scope page-level modal components import/use `AppModal`.
-  - [ ] Existing widths/titles/footer null/custom footer behavior remain unchanged.
-  - [ ] `maskClosable={false}` default applies unless explicit override exists.
+  - [x] All in-scope page-level modal components import/use `AppModal`.
+  - [x] Existing widths/titles/footer null/custom footer behavior remain unchanged.
+  - [x] `maskClosable={false}` default applies unless explicit override exists.
 
   **QA Scenarios**:
   ```text
@@ -401,8 +401,8 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - Pattern: `apps/frontend/src/widgets/subscriptions/SubscriptionForm.tsx` - shared form body to keep untouched.
 
   **Acceptance Criteria**:
-  - [ ] All three bot-profile modal shells in scope use `AppModal`.
-  - [ ] No change to exposed props and caller contracts.
+  - [x] All three bot-profile modal shells in scope use `AppModal`.
+  - [x] No change to exposed props and caller contracts.
 
   **QA Scenarios**:
   ```text
@@ -440,8 +440,8 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - Pattern: `apps/frontend/src/pages/proxies/ProxiesPage.tsx` - stale header import removal.
 
   **Acceptance Criteria**:
-  - [ ] Obsolete header files are deleted.
-  - [ ] No compile errors from removed imports/usages.
+  - [x] Obsolete header files are deleted.
+  - [x] No compile errors from removed imports/usages.
 
   **QA Scenarios**:
   ```text
@@ -479,8 +479,8 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - Pattern: `apps/frontend/src/pages/subscriptions/index.tsx:12` - direct `Table` and `Modal` imports currently present.
 
   **Acceptance Criteria**:
-  - [ ] `shared/ui/index.ts` exports `AppTable` and `AppModal`.
-  - [ ] In-scope migrated files use shared wrappers.
+  - [x] `shared/ui/index.ts` exports `AppTable` and `AppModal`.
+  - [x] In-scope migrated files use shared wrappers.
 
   **QA Scenarios**:
   ```text
@@ -518,10 +518,10 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - Pattern: `.github/workflows/ci.yml:80` - frontend build gate in CI.
 
   **Acceptance Criteria**:
-  - [ ] `pnpm --filter @botmox/frontend lint` passes.
-  - [ ] `pnpm --filter @botmox/frontend typecheck` passes.
-  - [ ] `pnpm --filter @botmox/frontend build` passes.
-  - [ ] Anti-pattern grep checks pass and evidence recorded.
+  - [x] `pnpm --filter @botmox/frontend lint` passes.
+  - [x] `pnpm --filter @botmox/frontend typecheck` passes.
+  - [x] `pnpm --filter @botmox/frontend build` passes.
+  - [x] Anti-pattern grep checks pass and evidence recorded.
 
   **QA Scenarios**:
   ```text
@@ -558,8 +558,8 @@ Wave 3: modal migrations + cleanup + regression hardening (`T7`, `T8`, `T9`, `T1
   - Pattern: `.github/workflows/ci.yml:128` - canonical E2E command.
 
   **Acceptance Criteria**:
-  - [ ] `pnpm --filter @botmox/frontend test:e2e --grep "refine phase2 crud baseline|refine phase3 crud wiring baseline|licenses|proxies|subscriptions"` passes.
-  - [ ] `git diff --name-only` (or equivalent) confirms changed files remain in planned scope only.
+  - [x] `pnpm --filter @botmox/frontend test:e2e --grep "refine phase2 crud baseline|refine phase3 crud wiring baseline|licenses|proxies|subscriptions"` passes.
+  - [x] `git diff --name-only` (or equivalent) confirms changed files remain in planned scope only.
 
   **QA Scenarios**:
   ```text
