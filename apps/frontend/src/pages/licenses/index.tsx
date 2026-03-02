@@ -1,12 +1,14 @@
-import { useModalForm, useTable } from '@refinedev/antd';
+import { DownOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
+import { List, useModalForm, useTable } from '@refinedev/antd';
 import { type CrudFilter, type HttpError, useList, useUpdate } from '@refinedev/core';
 import type { FormInstance } from 'antd';
-import { Card, Form, message, Table } from 'antd';
+import { Button, Card, Form, message, Space } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
 import type { BotLicense, LicenseWithBots } from '../../entities/resources/model/types';
 import { uiLogger } from '../../observability/uiLogger';
 import { useCurrentTime } from '../../shared/lib/hooks/useCurrentTime';
+import { AppTable } from '../../shared/ui';
 import styles from './LicensesPage.module.css';
 import type { AddBotFormValues, LicenseFormValues } from './page';
 import {
@@ -16,7 +18,6 @@ import {
   computeStats,
   getCurrentTimestamp,
   LicenseEditorModal,
-  LicensePageHeader,
   LicensesFiltersCard,
   LicensesStatsPanel,
   STATS_COLLAPSED_KEY,
@@ -359,98 +360,98 @@ export const LicensesPage: React.FC = () => {
   });
 
   return (
-    <div className={styles.root}>
-      <LicensePageHeader
-        statsCollapsed={statsCollapsed}
-        onToggleStats={() => setStatsCollapsed((prev) => !prev)}
-        onCreate={openCreateModal}
-      />
+    <List
+      createButtonProps={{
+        children: 'Add License',
+        icon: <PlusOutlined />,
+        onClick: (event) => {
+          event.preventDefault();
+          openCreateModal();
+        },
+      }}
+      headerButtons={({ defaultButtons }) => (
+        <Space>
+          <Button
+            type="text"
+            icon={statsCollapsed ? <RightOutlined /> : <DownOutlined />}
+            onClick={() => setStatsCollapsed((prev) => !prev)}
+          >
+            Stats
+          </Button>
+          {defaultButtons}
+        </Space>
+      )}
+    >
+      <div className={styles.root}>
+        <LicensesStatsPanel stats={stats} collapsed={statsCollapsed} />
 
-      <LicensesStatsPanel stats={stats} collapsed={statsCollapsed} />
-
-      <LicensesFiltersCard
-        searchText={searchText}
-        statusFilter={statusFilter}
-        typeFilter={typeFilter}
-        onSearchChange={(value) => setMergedFilters({ q: value })}
-        onStatusChange={(value) => setMergedFilters({ status: value })}
-        onTypeChange={(value) => setMergedFilters({ type: value })}
-        onReset={() =>
-          licensesTable.setFilters(
-            buildTableFilters({ q: '', status: 'all', type: 'all' }),
-            'replace',
-          )
-        }
-      />
-
-      <Card className={styles.tableCard}>
-        <Table
-          {...licensesTable.tableProps}
-          dataSource={licensesWithBots}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          className={styles.table}
-          size="small"
-          pagination={
-            licensesTable.tableProps.pagination &&
-            typeof licensesTable.tableProps.pagination === 'object'
-              ? {
-                  ...licensesTable.tableProps.pagination,
-                  current: Math.max(1, Number(licensesTable.tableProps.pagination.current) || 1),
-                  pageSize: Math.max(1, Number(licensesTable.tableProps.pagination.pageSize) || 10),
-                  showSizeChanger: true,
-                  showTotal: (total) => `Total ${total} licenses`,
-                }
-              : {
-                  pageSize: 10,
-                  showSizeChanger: true,
-                  showTotal: (total) => `Total ${total} licenses`,
-                }
+        <LicensesFiltersCard
+          searchText={searchText}
+          statusFilter={statusFilter}
+          typeFilter={typeFilter}
+          onSearchChange={(value) => setMergedFilters({ q: value })}
+          onStatusChange={(value) => setMergedFilters({ status: value })}
+          onTypeChange={(value) => setMergedFilters({ type: value })}
+          onReset={() =>
+            licensesTable.setFilters(
+              buildTableFilters({ q: '', status: 'all', type: 'all' }),
+              'replace',
+            )
           }
         />
-      </Card>
 
-      <LicenseEditorModal
-        modalProps={{
-          ...createLicenseModal.modalProps,
-          title: 'Add License',
-          okText: 'Create',
-          onCancel: () => {
-            createLicenseModal.close();
-            createLicenseForm.resetFields();
-            setLicenseEditorDefaults(createLicenseForm);
-          },
-        }}
-        formProps={createLicenseFormProps}
-      />
+        <Card className={styles.tableCard}>
+          <AppTable
+            {...licensesTable.tableProps}
+            dataSource={licensesWithBots}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            className={styles.table}
+          />
+        </Card>
 
-      <LicenseEditorModal
-        modalProps={{
-          ...editLicenseModal.modalProps,
-          title: 'Edit License',
-          okText: 'Update',
-          onCancel: () => {
-            editLicenseModal.close();
-            editLicenseForm.resetFields();
-            setSelectedLicenseForEdit(null);
-          },
-        }}
-        formProps={editLicenseFormProps}
-      />
+        <LicenseEditorModal
+          modalProps={{
+            ...createLicenseModal.modalProps,
+            title: 'Add License',
+            okText: 'Create',
+            onCancel: () => {
+              createLicenseModal.close();
+              createLicenseForm.resetFields();
+              setLicenseEditorDefaults(createLicenseForm);
+            },
+          }}
+          formProps={createLicenseFormProps}
+        />
 
-      <AddBotModal
-        open={isAddBotModalOpen}
-        bots={bots}
-        form={addBotForm}
-        submitting={updateLicense.mutation.isPending}
-        onCancel={() => {
-          setIsAddBotModalOpen(false);
-          setSelectedLicenseForBot(null);
-          addBotForm.resetFields();
-        }}
-        onSave={handleAddBot}
-      />
-    </div>
+        <LicenseEditorModal
+          modalProps={{
+            ...editLicenseModal.modalProps,
+            title: 'Edit License',
+            okText: 'Update',
+            onCancel: () => {
+              editLicenseModal.close();
+              editLicenseForm.resetFields();
+              setSelectedLicenseForEdit(null);
+            },
+          }}
+          formProps={editLicenseFormProps}
+        />
+
+        <AddBotModal
+          open={isAddBotModalOpen}
+          bots={bots}
+          form={addBotForm}
+          submitting={updateLicense.mutation.isPending}
+          onCancel={() => {
+            setIsAddBotModalOpen(false);
+            setSelectedLicenseForBot(null);
+            addBotForm.resetFields();
+          }}
+          onSave={handleAddBot}
+        />
+      </div>
+    </List>
   );
 };

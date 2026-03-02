@@ -1,6 +1,7 @@
 import type { FormProps, ModalProps } from 'antd';
-import { AutoComplete, DatePicker, Form, Input, Modal } from 'antd';
+import { AutoComplete, DatePicker, Form, Input } from 'antd';
 import type React from 'react';
+import { AppModal } from '../../../../shared/ui';
 
 interface LicenseFormModalProps {
   modalProps: ModalProps;
@@ -13,7 +14,7 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
   formProps,
   typeOptions,
 }) => (
-  <Modal {...modalProps} width={500}>
+  <AppModal {...modalProps} width={500}>
     <Form {...formProps} layout="vertical">
       <Form.Item
         name="key"
@@ -51,5 +52,5 @@ export const LicenseFormModal: React.FC<LicenseFormModalProps> = ({
         />
       </Form.Item>
     </Form>
-  </Modal>
+  </AppModal>
 );

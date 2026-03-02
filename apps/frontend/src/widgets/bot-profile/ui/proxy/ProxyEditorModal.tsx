@@ -1,9 +1,10 @@
 import type { FormProps, ModalProps } from 'antd';
-import { DatePicker, Form, Input, Modal, Spin, Typography } from 'antd';
+import { DatePicker, Form, Input, Spin, Typography } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import type { IPQSResponse } from '../../../../entities/resources/model/types';
 import type { ParsedProxy } from '../../../../shared/lib/utils/proxyUtils';
+import { AppModal } from '../../../../shared/ui';
 import { ProxyIpqsResults } from './ProxyIpqsResults';
 import { ProxyParsedAlert } from './ProxyParsedAlert';
 import styles from './proxy.module.css';
@@ -50,7 +51,7 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
   onTogglePassword,
 }) => {
   return (
-    <Modal
+    <AppModal
       {...modalProps}
       title={editing ? 'Edit Proxy' : 'Add Proxy'}
       okText={editing ? 'Update' : 'Add'}
@@ -106,6 +107,6 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
           <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" variant="filled" />
         </Form.Item>
       </Form>
-    </Modal>
+    </AppModal>
   );
 };

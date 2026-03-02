@@ -6,7 +6,6 @@ import {
   type FormInstance,
   type FormProps,
   Input,
-  Modal,
   type ModalProps,
   message,
   Select,
@@ -21,6 +20,7 @@ import {
 } from '../../entities/resources/api/ipqsFacade';
 import type { IPQSResponse, Proxy as ProxyResource } from '../../entities/resources/model/types';
 import { parseProxyString } from '../../shared/lib/utils/proxyUtils';
+import { AppModal } from '../../shared/ui';
 import { ParsedProxyAlert, ProxyIpqsLoadingAlert, ProxyIpqsResultAlert } from './proxyCrudAlerts';
 
 interface ProxyCrudModalProps {
@@ -285,7 +285,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
   };
 
   return (
-    <Modal
+    <AppModal
       {...modalProps}
       title={isEditMode ? 'Edit Proxy' : 'Add Proxy'}
       okText={isEditMode ? 'Update' : 'Create'}
@@ -379,6 +379,6 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           <DatePicker style={{ width: '100%' }} showTime={false} />
         </Form.Item>
       </Form>
-    </Modal>
+    </AppModal>
   );
 };

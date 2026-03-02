@@ -6,10 +6,10 @@ import {
   RightOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { useModalForm, useTable } from '@refinedev/antd';
+import { List, useModalForm, useTable } from '@refinedev/antd';
 import { type HttpError, useList } from '@refinedev/core';
 import type { TableProps } from 'antd';
-import { Button, Card, Input, Modal, message, Select, Space, Table, Typography } from 'antd';
+import { Button, Card, Input, message, Select, Space, Typography } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
@@ -23,6 +23,7 @@ import type {
 import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
+import { AppModal, AppTable } from '../../shared/ui';
 import { SubscriptionForm } from '../../widgets/subscriptions/SubscriptionForm';
 import { ExpiringSubscriptionsAlert } from './ExpiringSubscriptionsAlert';
 import styles from './SubscriptionsPage.module.css';
@@ -250,8 +251,9 @@ export const SubscriptionsPage: React.FC = () => {
 
   return (
     <div className={styles.root}>
-      <Card className={styles.header}>
-        <div className={styles.headerContent}>
+      <List
+        wrapperProps={{ className: styles.header }}
+        title={
           <div className={styles.headerTitle}>
             <Title level={4} className={styles.headerMainTitle}>
               <CreditCardOutlined /> Subscriptions
@@ -260,6 +262,8 @@ export const SubscriptionsPage: React.FC = () => {
               Manage bot subscriptions
             </Text>
           </div>
+        }
+        headerButtons={
           <Space>
             <Button
               type="text"
@@ -276,78 +280,74 @@ export const SubscriptionsPage: React.FC = () => {
               Add Subscription
             </Button>
           </Space>
-        </div>
-      </Card>
+        }
+      >
+        <ExpiringSubscriptionsAlert subscriptions={expiringSoon} />
 
-      <ExpiringSubscriptionsAlert subscriptions={expiringSoon} />
+        <SubscriptionsStats collapsed={statsCollapsed} stats={stats} />
 
-      <SubscriptionsStats collapsed={statsCollapsed} stats={stats} />
+        <Card className={styles.filters}>
+          <Space wrap>
+            <Input
+              placeholder="Search by bot or character..."
+              prefix={<SearchOutlined />}
+              size="small"
+              value={searchText}
+              onChange={(event) =>
+                subscriptionsTable.setFilters(
+                  buildTableFilters({ q: event.target.value }),
+                  'replace',
+                )
+              }
+              style={{ width: 300 }}
+            />
+            <Select
+              placeholder="Status"
+              size="small"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ width: 150 }}
+            >
+              <Option value="all">All Statuses</Option>
+              <Option value="active">Active</Option>
+              <Option value="expiring_soon">Expiring Soon</Option>
+              <Option value="expired">Expired</Option>
+            </Select>
+            <Button
+              icon={<ReloadOutlined />}
+              size="small"
+              onClick={() => {
+                subscriptionsTable.setFilters([], 'replace');
+                setStatusFilter('all');
+              }}
+            >
+              Reset
+            </Button>
+          </Space>
+        </Card>
 
-      <Card className={styles.filters}>
-        <Space wrap>
-          <Input
-            placeholder="Search by bot or character..."
-            prefix={<SearchOutlined />}
-            size="small"
-            value={searchText}
-            onChange={(event) =>
-              subscriptionsTable.setFilters(buildTableFilters({ q: event.target.value }), 'replace')
+        <Card className={styles.tableCard}>
+          <AppTable
+            {...subscriptionsTableProps}
+            dataSource={filteredSubscriptions}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            pagination={
+              subscriptionsTableProps.pagination === false
+                ? false
+                : {
+                    ...(subscriptionsTableProps.pagination &&
+                    typeof subscriptionsTableProps.pagination === 'object'
+                      ? subscriptionsTableProps.pagination
+                      : {}),
+                  }
             }
-            style={{ width: 300 }}
           />
-          <Select
-            placeholder="Status"
-            size="small"
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ width: 150 }}
-          >
-            <Option value="all">All Statuses</Option>
-            <Option value="active">Active</Option>
-            <Option value="expiring_soon">Expiring Soon</Option>
-            <Option value="expired">Expired</Option>
-          </Select>
-          <Button
-            icon={<ReloadOutlined />}
-            size="small"
-            onClick={() => {
-              subscriptionsTable.setFilters([], 'replace');
-              setStatusFilter('all');
-            }}
-          >
-            Reset
-          </Button>
-        </Space>
-      </Card>
+        </Card>
+      </List>
 
-      <Card className={styles.tableCard}>
-        <Table
-          {...subscriptionsTableProps}
-          dataSource={filteredSubscriptions}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={
-            subscriptionsTableProps.pagination &&
-            typeof subscriptionsTableProps.pagination === 'object'
-              ? {
-                  ...subscriptionsTableProps.pagination,
-                  current: Math.max(1, Number(subscriptionsTableProps.pagination.current) || 1),
-                  pageSize: Math.max(1, Number(subscriptionsTableProps.pagination.pageSize) || 10),
-                  showSizeChanger: true,
-                  showTotal: (total) => `Total ${total} subscriptions`,
-                }
-              : {
-                  pageSize: 10,
-                  showSizeChanger: true,
-                  showTotal: (total) => `Total ${total} subscriptions`,
-                }
-          }
-          size="small"
-        />
-      </Card>
-
-      <Modal
+      <AppModal
         {...createSubscriptionForm.modalProps}
         title="Add Subscription"
         footer={null}
@@ -359,9 +359,9 @@ export const SubscriptionsPage: React.FC = () => {
           formProps={createSubscriptionFormProps}
           onCancel={createSubscriptionForm.close}
         />
-      </Modal>
+      </AppModal>
 
-      <Modal
+      <AppModal
         {...editSubscriptionForm.modalProps}
         title="Edit Subscription"
         footer={null}
@@ -373,7 +373,7 @@ export const SubscriptionsPage: React.FC = () => {
           formProps={editSubscriptionFormProps}
           onCancel={editSubscriptionForm.close}
         />
-      </Modal>
+      </AppModal>
     </div>
   );
 };

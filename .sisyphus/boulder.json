@@ -1,10 +1,12 @@
 {
-  "active_plan": ".sisyphus/plans/aop-mutation-error-ui-cleanup.md",
-  "plan_name": "aop-mutation-error-ui-cleanup",
-  "started_at": "2026-03-02T02:49:08.5275135+03:00",
+  "active_plan": ".sisyphus/plans/design-system-shared-ui-kit.md",
+  "plan_name": "design-system-shared-ui-kit",
+  "started_at": "2026-03-02T04:37:08.613Z",
   "session_ids": [
     "atlas-main",
-    "ses_3545a3022ffeB10IslJesTv34e"
+    "ses_3545a3022ffeB10IslJesTv34e",
+    "atlas-design-system-shared-ui-kit",
+    "ses_3535b356cffeNda2wNx8d29ZZo"
   ],
   "worktree_path": "E:\\Боттинг\\source\\repos\\Bot-Mox"
 }

@@ -1,7 +1,8 @@
 import type { FormInstance } from 'antd';
-import { AutoComplete, Form, Modal } from 'antd';
+import { AutoComplete, Form } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
+import { AppModal } from '../../../../shared/ui';
 import type { AssignLicenseFormValues, LicenseInfo } from './types';
 
 interface AssignLicenseModalProps {
@@ -21,7 +22,7 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
   onCancel,
   onSubmit,
 }) => (
-  <Modal
+  <AppModal
     title="Assign Existing License"
     open={open}
     onOk={() => form.submit()}
@@ -51,5 +52,5 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
         />
       </Form.Item>
     </Form>
-  </Modal>
+  </AppModal>
 );

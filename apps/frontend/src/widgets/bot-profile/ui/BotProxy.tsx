@@ -2,7 +2,7 @@ import { WarningOutlined } from '@ant-design/icons';
 import { useModalForm } from '@refinedev/antd';
 import { type HttpError, useList, useUpdate } from '@refinedev/core';
 import type { FormInstance } from 'antd';
-import { Card, Modal, message, Spin } from 'antd';
+import { App, Card, message, Spin } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -23,11 +23,11 @@ import {
 } from './proxy';
 import styles from './proxy/proxy.module.css';
 
-const { confirm } = Modal;
 const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
+  const { modal } = App.useApp();
   const [proxyInput, setProxyInput] = useState('');
   const [parsedProxy, setParsedProxy] = useState<ReturnType<typeof parseProxyString>>(null);
   const [parseError, setParseError] = useState<string>('');
@@ -165,7 +165,7 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
   const handleUnassign = () => {
     if (!proxy) return;
 
-    confirm({
+    modal.confirm({
       title: '',
       icon: <WarningOutlined style={{ color: '#faad14' }} />,
       content: (

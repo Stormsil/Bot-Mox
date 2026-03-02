@@ -1,0 +1,10 @@
+Scope anomaly detected: inventory includes direct antd Table/Modal imports outside frozen allowlist.
+
+Out-of-allowlist matches:
+- apps/frontend/src/widgets/bot-profile/ui/BotProxy.tsx
+- apps/frontend/src/widgets/bot-profile/ui/BotSubscription.tsx
+
+Expected widget scope is limited to:
+- apps/frontend/src/widgets/bot-profile/ui/license
+- apps/frontend/src/widgets/bot-profile/ui/proxy
+- apps/frontend/src/widgets/bot-profile/ui/subscription

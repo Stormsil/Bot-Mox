@@ -1,6 +1,6 @@
 import type { FormProps, ModalProps } from 'antd';
-import { Modal } from 'antd';
 import type React from 'react';
+import { AppModal } from '../../../../shared/ui';
 import { SubscriptionForm } from '../../../../widgets/subscriptions/SubscriptionForm';
 import type { BotOption, SubscriptionWithDetails } from './types';
 
@@ -19,7 +19,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   presetBotId,
   botOption,
 }) => (
-  <Modal
+  <AppModal
     {...modalProps}
     title={editingSubscription ? 'Edit Subscription' : 'Add Subscription'}
     footer={null}
@@ -32,5 +32,5 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
       formProps={formProps}
       onCancel={modalProps.onCancel as (() => void) | undefined}
     />
-  </Modal>
+  </AppModal>
 );

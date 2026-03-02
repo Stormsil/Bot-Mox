@@ -1,6 +1,7 @@
-import { useModalForm, useTable } from '@refinedev/antd';
+import { DownOutlined, GlobalOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
+import { List, useModalForm, useTable } from '@refinedev/antd';
 import { type HttpError, useList, useUpdate } from '@refinedev/core';
-import { Card, message, Table } from 'antd';
+import { Button, Card, message, Typography } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
@@ -11,9 +12,9 @@ import {
   updateProxyWithIPQSData,
 } from '../../entities/resources/api/ipqsFacade';
 import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
+import { AppTable } from '../../shared/ui';
 import { ProxiesFiltersCard } from './ProxiesFiltersCard';
 import styles from './ProxiesPage.module.css';
-import { ProxiesPageHeader } from './ProxiesPageHeader';
 import { ProxiesStatsCards } from './ProxiesStatsCards';
 import { ProxyCrudModal } from './ProxyCrudModal';
 import {
@@ -34,6 +35,7 @@ import { buildProxyColumns, type ProxyWithBot } from './proxyColumns';
 
 const BOT_POLL_MS = 5_000;
 const LARGE_PAGE_SIZE = 5_000;
+const { Title, Text } = Typography;
 
 export const ProxiesPage: React.FC = () => {
   const syncWithLocationEnabled = !(typeof navigator !== 'undefined' && navigator.webdriver);
@@ -284,49 +286,61 @@ export const ProxiesPage: React.FC = () => {
 
   return (
     <div className={styles.root}>
-      <ProxiesPageHeader
-        statsCollapsed={statsCollapsed}
-        onToggleStats={() => setStatsCollapsed((prev) => !prev)}
-        onOpenCreate={() => createProxyModal.show()}
-      />
+      <List
+        wrapperProps={{ className: styles.header }}
+        title={
+          <div className={styles.headerTitle}>
+            <Title level={4} className={styles.pageTitle}>
+              <GlobalOutlined /> Proxies
+            </Title>
+            <Text type="secondary" className={styles.headerSubtitle}>
+              Manage proxy servers for bots
+            </Text>
+          </div>
+        }
+        headerButtons={({ defaultButtons }) => (
+          <div className={styles.headerActions}>
+            <Button
+              type="text"
+              size="small"
+              icon={statsCollapsed ? <RightOutlined /> : <DownOutlined />}
+              onClick={() => setStatsCollapsed((prev) => !prev)}
+            >
+              Stats
+            </Button>
+            {defaultButtons}
+            <Button
+              type="primary"
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={() => createProxyModal.show()}
+            >
+              Add Proxy
+            </Button>
+          </div>
+        )}
+      >
+        {!statsCollapsed && <ProxiesStatsCards stats={stats} />}
 
-      {!statsCollapsed && <ProxiesStatsCards stats={stats} />}
-
-      <ProxiesFiltersCard
-        filters={tableFilters}
-        countries={countries}
-        onChange={setMergedFilters}
-        onReset={resetFilters}
-      />
-
-      <Card className={styles.tableCard}>
-        <Table
-          {...proxiesTable.tableProps}
-          dataSource={tableProxies}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={
-            proxiesTable.tableProps.pagination &&
-            typeof proxiesTable.tableProps.pagination === 'object'
-              ? {
-                  ...proxiesTable.tableProps.pagination,
-                  current: Math.max(1, Number(proxiesTable.tableProps.pagination.current) || 1),
-                  pageSize: Math.max(1, Number(proxiesTable.tableProps.pagination.pageSize) || 10),
-                  showSizeChanger: true,
-                  showTotal: (total) => `Total ${total} proxies`,
-                }
-              : {
-                  pageSize: 10,
-                  showSizeChanger: true,
-                  showTotal: (total) => `Total ${total} proxies`,
-                }
-          }
-          size="small"
-          tableLayout="fixed"
-          scroll={{ x: 1170 }}
+        <ProxiesFiltersCard
+          filters={tableFilters}
+          countries={countries}
+          onChange={setMergedFilters}
+          onReset={resetFilters}
         />
-      </Card>
+
+        <Card className={styles.tableCard}>
+          <AppTable
+            {...proxiesTable.tableProps}
+            dataSource={tableProxies}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            tableLayout="fixed"
+            scroll={{ x: 1170 }}
+          />
+        </Card>
+      </List>
 
       <ProxyCrudModal
         mode="create"

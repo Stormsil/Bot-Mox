@@ -1,7 +1,8 @@
 import type { FormInstance, FormProps, ModalProps } from 'antd';
-import { DatePicker, Form, Input, Modal, Select } from 'antd';
+import { DatePicker, Form, Input, Select } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
+import { AppModal } from '../../../shared/ui';
 import type { AddBotFormValues, BotsMap } from './types';
 
 const { Option } = Select;
@@ -26,7 +27,7 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
   modalProps,
   formProps,
 }) => (
-  <Modal {...modalProps} width={500}>
+  <AppModal {...modalProps} width={500}>
     <Form {...formProps} layout="vertical">
       <Form.Item
         name="key"
@@ -59,7 +60,7 @@ export const LicenseEditorModal: React.FC<LicenseEditorModalProps> = ({
         />
       </Form.Item>
     </Form>
-  </Modal>
+  </AppModal>
 );
 
 interface AddBotModalProps {
@@ -79,7 +80,7 @@ export const AddBotModal: React.FC<AddBotModalProps> = ({
   onCancel,
   onSave,
 }) => (
-  <Modal
+  <AppModal
     title="Add Bot to License"
     open={open}
     onOk={() => form.submit()}
@@ -112,5 +113,5 @@ export const AddBotModal: React.FC<AddBotModalProps> = ({
         </Select>
       </Form.Item>
     </Form>
-  </Modal>
+  </AppModal>
 );

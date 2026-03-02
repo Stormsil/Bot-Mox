@@ -1,7 +1,7 @@
 import { CreditCardOutlined, PlusOutlined } from '@ant-design/icons';
 import { useModalForm } from '@refinedev/antd';
 import { type HttpError, useDelete, useList } from '@refinedev/core';
-import { Button, Card, Empty, List, Modal, message, Space, Spin, Typography } from 'antd';
+import { App, Button, Card, Empty, List, message, Space, Spin, Typography } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
@@ -24,7 +24,6 @@ import {
 import styles from './subscription/subscription.module.css';
 
 const { Text } = Typography;
-const { confirm } = Modal;
 const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
@@ -39,6 +38,7 @@ function parseDateToTimestamp(dateString: string): number {
 }
 
 export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
+  const { modal } = App.useApp();
   const subscriptionsList = useList<Subscription>({
     resource: 'subscriptions',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
@@ -178,7 +178,7 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
   };
 
   const handleDelete = (subscription: SubscriptionWithDetails) => {
-    confirm({
+    modal.confirm({
       title: 'Delete Subscription?',
       content: `Are you sure you want to delete ${subscription.type.toUpperCase()} subscription?`,
       okText: 'Delete',

@@ -1,0 +1,5 @@
+- `List` from `@refinedev/antd` does not accept direct `className`; use `wrapperProps` for wrapper class.
+- Keep existing button labels (`Add License`, `Add Proxy`, `Add Subscription`, `Stats`) to avoid Playwright selector regressions.
+- `AppTable` should preserve `pagination=false` path and merge object pagination defaults only.
+- `AppModal` migration is safe for page/widget modals when props spread order preserves caller overrides.
+- Anti-pattern grep scope included `apps/frontend/src/widgets/bot-profile/ui` root, so `BotProxy`, `BotSubscription`, and `AssignLicenseModal` also required modal import cleanup.
