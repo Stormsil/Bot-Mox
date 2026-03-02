@@ -107,10 +107,6 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
           setTemplateName('');
           message.success('Template saved');
         },
-        onError: (err) => {
-          console.error('Failed to save template:', err);
-          message.error('Failed to save template');
-        },
       },
     );
   };
@@ -134,10 +130,6 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
     deleteTemplateMutation.mutate(id, {
       onSuccess: () => {
         message.success('Template deleted');
-      },
-      onError: (err) => {
-        console.error('Failed to delete template:', err);
-        message.error('Failed to delete template');
       },
     });
   };

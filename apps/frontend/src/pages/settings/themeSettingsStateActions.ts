@@ -1,5 +1,3 @@
-import { message } from 'antd';
-import { uiLogger } from '../../observability/uiLogger';
 import {
   normalizeHexColor,
   sanitizeThemeShapeSettings,
@@ -133,43 +131,25 @@ export async function saveThemeColorsAction(params: {
   localTypographySettings: ThemeTypographySettings;
   localShapeSettings: ThemeShapeSettings;
 }): Promise<void> {
-  try {
-    await params.updateThemeSettings({
-      palettes: params.localThemePalettes,
-      activePresetId: params.activePresetId,
-      options: { syncActivePreset: true },
-      visualSettings: params.localVisualSettings,
-      typographySettings: params.localTypographySettings,
-      shapeSettings: params.localShapeSettings,
-    });
-  } catch (error) {
-    uiLogger.error('Error saving theme colors:', error);
-    message.error('Failed to save theme colors');
-    throw error;
-  }
+  await params.updateThemeSettings({
+    palettes: params.localThemePalettes,
+    activePresetId: params.activePresetId,
+    options: { syncActivePreset: true },
+    visualSettings: params.localVisualSettings,
+    typographySettings: params.localTypographySettings,
+    shapeSettings: params.localShapeSettings,
+  });
 }
 
 export async function saveVisualSettingsAction(params: {
   updateVisualSettings: (payload: { visual: ThemeVisualSettings }) => Promise<unknown>;
   localVisualSettings: ThemeVisualSettings;
 }): Promise<void> {
-  try {
-    await params.updateVisualSettings({ visual: params.localVisualSettings });
-  } catch (error) {
-    uiLogger.error('Error saving visual theme settings:', error);
-    message.error('Failed to save visual theme settings');
-    throw error;
-  }
+  await params.updateVisualSettings({ visual: params.localVisualSettings });
 }
 
 export async function refreshThemeAssetsAction(refetch: () => Promise<unknown>): Promise<void> {
-  try {
-    await refetch();
-  } catch (error) {
-    uiLogger.error('Error loading theme assets:', error);
-    message.error('Failed to load background images');
-    throw error;
-  }
+  await refetch();
 }
 
 export async function uploadThemeAssetAction(params: {
@@ -178,24 +158,18 @@ export async function uploadThemeAssetAction(params: {
   setLocalVisualSettings: SetState<ThemeVisualSettings>;
   onVisualSettingsChange?: ((settings: ThemeVisualSettings) => void) | undefined;
 }): Promise<void> {
-  try {
-    const uploaded = await params.uploadAsset(params.file);
-    params.setLocalVisualSettings((current) => {
-      const next = sanitizeThemeVisualSettings({
-        ...current,
-        enabled: true,
-        mode: 'image',
-        backgroundAssetId: uploaded.id,
-        backgroundImageUrl: uploaded.image_url || undefined,
-      });
-      params.onVisualSettingsChange?.(next);
-      return next;
+  const uploaded = await params.uploadAsset(params.file);
+  params.setLocalVisualSettings((current) => {
+    const next = sanitizeThemeVisualSettings({
+      ...current,
+      enabled: true,
+      mode: 'image',
+      backgroundAssetId: uploaded.id,
+      backgroundImageUrl: uploaded.image_url || undefined,
     });
-  } catch (error) {
-    uiLogger.error('Error uploading theme asset:', error);
-    message.error(error instanceof Error ? error.message : 'Failed to upload background image');
-    throw error;
-  }
+    params.onVisualSettingsChange?.(next);
+    return next;
+  });
 }
 
 export function selectThemeBackgroundState(params: {
@@ -224,25 +198,19 @@ export async function deleteThemeAssetAction(params: {
   setLocalVisualSettings: SetState<ThemeVisualSettings>;
   onVisualSettingsChange?: ((settings: ThemeVisualSettings) => void) | undefined;
 }): Promise<void> {
-  try {
-    await params.deleteAsset(params.assetId);
-    params.setLocalVisualSettings((current) => {
-      if (current.backgroundAssetId !== params.assetId) {
-        return current;
-      }
-      const next = sanitizeThemeVisualSettings({
-        ...current,
-        enabled: false,
-        mode: 'none',
-        backgroundAssetId: undefined,
-        backgroundImageUrl: undefined,
-      });
-      params.onVisualSettingsChange?.(next);
-      return next;
+  await params.deleteAsset(params.assetId);
+  params.setLocalVisualSettings((current) => {
+    if (current.backgroundAssetId !== params.assetId) {
+      return current;
+    }
+    const next = sanitizeThemeVisualSettings({
+      ...current,
+      enabled: false,
+      mode: 'none',
+      backgroundAssetId: undefined,
+      backgroundImageUrl: undefined,
     });
-  } catch (error) {
-    uiLogger.error('Error deleting theme asset:', error);
-    message.error('Failed to delete background image');
-    throw error;
-  }
+    params.onVisualSettingsChange?.(next);
+    return next;
+  });
 }

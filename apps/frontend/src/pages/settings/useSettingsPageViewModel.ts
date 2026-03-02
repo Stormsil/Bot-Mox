@@ -1,6 +1,6 @@
 import type { FormInstance } from 'antd';
 import { Form } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { ProjectSettings } from '../../entities/settings/api/settingsFacade';
 import { useProjectSettingsQuery } from '../../entities/settings/api/useProjectSettingsQuery';
 import {
@@ -58,7 +58,6 @@ export interface SettingsPageViewModel {
 }
 
 export function useSettingsPageViewModel(): SettingsPageViewModel {
-  const [saving, setSaving] = useState(false);
   const [apiKeysForm] = Form.useForm<ApiKeysFormValues>();
   const [proxyForm] = Form.useForm<ProxySettingsFormValues>();
   const [notificationsForm] = Form.useForm<NotificationEventsFormValues>();
@@ -163,6 +162,13 @@ export function useSettingsPageViewModel(): SettingsPageViewModel {
     storagePolicyQuery.isFetching ||
     subscriptionSettingsQuery.isFetching;
 
+  const saving =
+    updateApiKeysMutation.isPending ||
+    updateProxySettingsMutation.isPending ||
+    updateNotificationEventsMutation.isPending ||
+    updateSubscriptionSettingsMutation.isPending ||
+    updateStoragePolicyMutation.isPending;
+
   const {
     handleSaveApiKeys,
     handleSaveProxySettings,
@@ -170,12 +176,21 @@ export function useSettingsPageViewModel(): SettingsPageViewModel {
     handleSaveGlobalAlerts,
     handleSaveStoragePolicy,
   } = useSettingsSaveHandlers({
-    setSaving,
-    saveApiKeys: updateApiKeysMutation.mutateAsync,
-    saveProxySettings: updateProxySettingsMutation.mutateAsync,
-    saveNotificationEvents: updateNotificationEventsMutation.mutateAsync,
-    saveSubscriptionSettings: updateSubscriptionSettingsMutation.mutateAsync,
-    saveStoragePolicy: updateStoragePolicyMutation.mutateAsync,
+    saveApiKeys: (value) => {
+      updateApiKeysMutation.mutate(value);
+    },
+    saveProxySettings: (value) => {
+      updateProxySettingsMutation.mutate(value);
+    },
+    saveNotificationEvents: (value) => {
+      updateNotificationEventsMutation.mutate(value);
+    },
+    saveSubscriptionSettings: (value) => {
+      updateSubscriptionSettingsMutation.mutate(value);
+    },
+    saveStoragePolicy: (value) => {
+      updateStoragePolicyMutation.mutate(value);
+    },
     currentSubscriptionSettings: subscriptionSettingsQuery.data,
   });
 
