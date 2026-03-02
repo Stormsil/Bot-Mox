@@ -1,4 +1,5 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
+import { message } from 'antd';
 import type {
   CreateCalendarEventData,
   CreateKanbanTaskData,
@@ -36,6 +37,7 @@ export function useCreateCalendarEventMutation(): UseMutationResult<
     mutationFn: async (data) => createCalendarEvent(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.calendar() });
+      message.success('Event created');
     },
   });
 }
@@ -51,6 +53,7 @@ export function useUpdateCalendarEventMutation(): UseMutationResult<
     mutationFn: async ({ id, data }) => updateCalendarEvent(id, data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.calendar() });
+      message.success('Event updated');
     },
   });
 }
@@ -62,6 +65,7 @@ export function useDeleteCalendarEventMutation(): UseMutationResult<void, Error,
     mutationFn: async (id) => deleteCalendarEvent(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.calendar() });
+      message.success('Event deleted');
     },
   });
 }
@@ -77,6 +81,7 @@ export function useCreateKanbanTaskMutation(): UseMutationResult<
     mutationFn: async (data) => createKanbanTask(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.kanban() });
+      message.success('Task created');
     },
   });
 }
@@ -92,6 +97,7 @@ export function useUpdateKanbanTaskMutation(): UseMutationResult<
     mutationFn: async ({ id, data }) => updateKanbanTask(id, data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.kanban() });
+      message.success('Task updated');
     },
   });
 }
@@ -103,6 +109,7 @@ export function useDeleteKanbanTaskMutation(): UseMutationResult<void, Error, st
     mutationFn: async (id) => deleteKanbanTask(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.kanban() });
+      message.success('Task deleted');
     },
   });
 }

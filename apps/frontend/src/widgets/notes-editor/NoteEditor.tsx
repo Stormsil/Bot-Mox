@@ -13,7 +13,7 @@ import {
   SplitCellsOutlined,
 } from '@ant-design/icons';
 import MDEditor from '@uiw/react-md-editor';
-import { Button, Input, message, Space, Tag, Tooltip } from 'antd';
+import { Button, Input, Space, Tag, Tooltip } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import remarkGfm from 'remark-gfm';
@@ -52,18 +52,15 @@ const getInitialEditorMode = (): EditorMode => {
 /**
  * Debounce функция для отложенного сохранения заметки
  */
-function useDebouncedSave(
-  fn: (note: Note, silent: boolean) => Promise<void>,
-  delay: number,
-): (note: Note, silent?: boolean) => void {
+function useDebouncedSave(fn: (note: Note) => void, delay: number): (note: Note) => void {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const debouncedFn = useCallback(
-    (note: Note, silent: boolean = true) => {
+    (note: Note) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      timeoutRef.current = setTimeout(() => fn(note, silent), delay);
+      timeoutRef.current = setTimeout(() => fn(note), delay);
     },
     [fn, delay],
   );
@@ -91,7 +88,6 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onNoteChange, onNo
     title: note.title || '',
   });
   const [editorMode, setEditorMode] = useState<EditorMode>(getInitialEditorMode);
-  const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [colorMode, setColorMode] = useState<'light' | 'dark'>(() =>
     typeof document !== 'undefined' &&
@@ -141,10 +137,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onNoteChange, onNo
 
   // Автосохранение с debounce (2 секунды)
   const saveNote = useCallback(
-    async (noteToSave: Note, silent: boolean = false) => {
-      try {
-        setIsSaving(true);
-        await updateNoteMutation.mutateAsync({
+    (noteToSave: Note) => {
+      updateNoteMutation.mutate(
+        {
           noteId: noteToSave.id,
           payload: {
             title: noteToSave.title,
@@ -152,17 +147,13 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onNoteChange, onNo
             tags: noteToSave.tags,
             is_pinned: noteToSave.is_pinned,
           },
-        });
-        setHasChanges(false);
-        if (!silent) {
-          message.success('Note saved', 1);
-        }
-      } catch (error) {
-        console.error('Error saving note:', error);
-        message.error('Failed to save note');
-      } finally {
-        setIsSaving(false);
-      }
+        },
+        {
+          onSuccess: () => {
+            setHasChanges(false);
+          },
+        },
+      );
     },
     [updateNoteMutation],
   );
@@ -175,7 +166,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onNoteChange, onNo
       setLocalNote((prev) => {
         const updated = { ...prev, ...updates, updated_at: Date.now() };
         setHasChanges(true);
-        debouncedSave(updated, true);
+        debouncedSave(updated);
         onNoteChange(updated);
         return updated;
       });
@@ -202,20 +193,17 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onNoteChange, onNo
   }, [handleNoteUpdate, localNote.is_pinned]);
 
   // Удаление заметки
-  const handleDelete = useCallback(async () => {
-    try {
-      await deleteNoteMutation.mutateAsync(localNote.id);
-      onNoteDelete?.(localNote.id);
-      message.success('Note deleted');
-    } catch (error) {
-      console.error('Error deleting note:', error);
-      message.error('Failed to delete note');
-    }
+  const handleDelete = useCallback(() => {
+    deleteNoteMutation.mutate(localNote.id, {
+      onSuccess: () => {
+        onNoteDelete?.(localNote.id);
+      },
+    });
   }, [deleteNoteMutation, localNote.id, onNoteDelete]);
 
   // Ручное сохранение
   const handleManualSave = useCallback(() => {
-    void saveNote(localNote, false);
+    saveNote(localNote);
   }, [localNote, saveNote]);
   const mdPreviewMode = useMemo<'edit' | 'live' | 'preview'>(() => {
     if (editorMode === 'edit') return 'edit';
@@ -283,7 +271,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, onNoteChange, onNo
           </Tooltip>
           <TableActionButton
             icon={<SaveOutlined />}
-            loading={isSaving}
+            loading={updateNoteMutation.isPending}
             onClick={handleManualSave}
             tooltip="Save"
           />

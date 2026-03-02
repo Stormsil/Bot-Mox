@@ -1,0 +1,10 @@
+# Evidence: task-12-workspace-ast.txt
+# generated_at: 2026-03-02T05:29:24
+# command: ast-grep run --lang tsx --pattern "try { $$$BEFORE; await $MUT.mutateAsync($$$ARGS); $$$AFTER } catch ($ERR) { $$$CATCH }" apps/frontend/src/pages/workspace/kanban/index.tsx apps/frontend/src/pages/workspace/calendar/index.tsx
+# exit_code: 1
+
+[stdout]
+
+
+[stderr]
+

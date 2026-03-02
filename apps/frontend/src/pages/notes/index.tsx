@@ -53,7 +53,6 @@ export const NotesPage: React.FC = () => {
   // Обработчик создания новой заметки
   const handleCreateNote = useCallback(() => {
     setSelectedNoteId(null);
-    message.success('Note created');
   }, []);
 
   // Обработчик обновления заметки (локально)
@@ -65,7 +64,6 @@ export const NotesPage: React.FC = () => {
   const handleNoteDelete = useCallback((noteId: string) => {
     void noteId;
     setSelectedNoteId(null);
-    message.success('Note deleted');
   }, []);
 
   // Обработчик переключения состояния боковой панели

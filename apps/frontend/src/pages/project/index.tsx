@@ -1,6 +1,6 @@
 import { DesktopOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { useDelete, useList } from '@refinedev/core';
-import { Alert, Button, Card, Input, message, Select, Space, Table, Typography } from 'antd';
+import { Alert, Button, Card, Input, Select, Space, Table, Typography } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -204,27 +204,29 @@ export const ProjectPage: React.FC = () => {
   );
 
   const handleDeleteAccount = useCallback(
-    async (botId: string) => {
+    (botId: string) => {
       if (!botId || deletingBotIds[botId]) return;
 
       setDeletingBotIds((prev) => ({ ...prev, [botId]: true }));
-      try {
-        await deleteBotMutation.mutateAsync({
+      deleteBotMutation.mutate(
+        {
           resource: 'bots',
           id: botId,
           invalidates: ['resourceAll'],
-        });
-        message.success(`Account ${botId.slice(0, 8)} deleted`);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        message.error(`Failed to delete account: ${errorMessage}`);
-      } finally {
-        setDeletingBotIds((prev) => {
-          const next = { ...prev };
-          delete next[botId];
-          return next;
-        });
-      }
+        },
+        {
+          onError: (error) => {
+            uiLogger.error('Error deleting bot from project page:', error);
+          },
+          onSettled: () => {
+            setDeletingBotIds((prev) => {
+              const next = { ...prev };
+              delete next[botId];
+              return next;
+            });
+          },
+        },
+      );
     },
     [deleteBotMutation, deletingBotIds],
   );

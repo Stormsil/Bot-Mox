@@ -1,0 +1,6 @@
+Task 16 mutateAsync gate (reconstructed on current state)
+timestamp=2026-03-02T00:48:36Z
+command=grep -R -F "mutateAsync(" "apps/frontend/src" | grep -v "apps/frontend/src/widgets/vm/useVmListController.ts" | grep -v "apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts" | grep -v "apps/frontend/src/pages/settings/useThemeSettings.ts"
+
+
+[exit_code=1]

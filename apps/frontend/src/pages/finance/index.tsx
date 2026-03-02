@@ -1,5 +1,5 @@
 import { useCreate, useDelete, useInfiniteList, useUpdate } from '@refinedev/core';
-import { Card, DatePicker, message, Select, Space, Typography } from 'antd';
+import { Card, DatePicker, Select, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -179,51 +179,66 @@ export const FinancePage: React.FC = () => {
     setFormVisible(true);
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteFinanceOperation.mutateAsync({
+  const handleDelete = (id: string) => {
+    deleteFinanceOperation.mutate(
+      {
         resource: 'finance/operations',
         id,
         invalidates: ['resourceAll'],
-      });
-      message.success('Transaction deleted successfully');
-    } catch (error) {
-      uiLogger.error('Error deleting operation:', error);
-      message.error('Failed to delete transaction');
-      throw error;
-    }
+      },
+      {
+        onError: (error) => {
+          uiLogger.error('Error deleting operation:', error);
+        },
+      },
+    );
   };
 
-  const handleFormSubmit = async (data: FinanceOperationFormData) => {
-    try {
-      if (editingOperation) {
-        await updateFinanceOperation.mutateAsync({
-          resource: 'finance/operations',
-          id: editingOperation.id,
-          values: buildFinanceOperationPatchPayload(data),
-          invalidates: ['resourceAll'],
-        });
-        message.success('Transaction updated successfully');
-      } else {
-        await createFinanceOperation.mutateAsync({
+  const handleFormSubmit = (data: FinanceOperationFormData): Promise<void> => {
+    if (editingOperation) {
+      return new Promise<void>((resolve, reject) => {
+        updateFinanceOperation.mutate(
+          {
+            resource: 'finance/operations',
+            id: editingOperation.id,
+            values: buildFinanceOperationPatchPayload(data),
+            invalidates: ['resourceAll'],
+          },
+          {
+            onSuccess: () => {
+              setFormVisible(false);
+              setEditingOperation(null);
+              resolve();
+            },
+            onError: (error) => {
+              uiLogger.error('Error updating operation:', error);
+              reject(error);
+            },
+          },
+        );
+      });
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      createFinanceOperation.mutate(
+        {
           resource: 'finance/operations',
           values: buildFinanceOperationCreatePayload(data),
           invalidates: ['resourceAll'],
-        });
-        message.success('Transaction added successfully');
-      }
-    } catch (error) {
-      if (editingOperation) {
-        uiLogger.error('Error updating operation:', error);
-        message.error('Failed to update transaction');
-      } else {
-        uiLogger.error('Error adding operation:', error);
-        message.error('Failed to add transaction');
-      }
-      throw error;
-    }
-    setFormVisible(false);
-    setEditingOperation(null);
+        },
+        {
+          onSuccess: () => {
+            setFormVisible(false);
+            setEditingOperation(null);
+            resolve();
+          },
+          onError: (error) => {
+            uiLogger.error('Error adding operation:', error);
+            reject(error);
+          },
+        },
+      );
+    });
   };
 
   const handleFormCancel = () => {

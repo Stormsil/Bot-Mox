@@ -1,0 +1,19 @@
+# Evidence: task-13-botprofile-grep.txt
+# generated_at: 2026-03-02T05:29:24
+# command: grep -n -E "mutateAsync\(|setSaving\(|setSubmitting\(|onSuccess|isPending" apps/frontend/src/widgets/bot-profile/ui/BotCharacterWidget.tsx apps/frontend/src/widgets/bot-profile/ui/BotSchedule.tsx apps/frontend/src/widgets/bot-profile/ui/BotLicense.tsx apps/frontend/src/widgets/bot-profile/ui/BotProxy.tsx apps/frontend/src/widgets/bot-profile/ui/BotSubscription.tsx apps/frontend/src/widgets/bot-profile/ui/BotLifeStagesWidget.tsx
+# exit_code: 0
+
+[stdout]
+apps/frontend/src/widgets/bot-profile/ui/BotCharacterWidget.tsx:153:        onSuccess: () => {
+apps/frontend/src/widgets/bot-profile/ui/BotCharacterWidget.tsx:179:          onSuccess: (data) => {
+apps/frontend/src/widgets/bot-profile/ui/BotCharacterWidget.tsx:242:        onSuccess: () => {
+apps/frontend/src/widgets/bot-profile/ui/BotCharacterWidget.tsx:305:            saving={updateBotMutation.isPending}
+apps/frontend/src/widgets/bot-profile/ui/BotSchedule.tsx:196:        onSuccess: () => {
+apps/frontend/src/widgets/bot-profile/ui/BotSchedule.tsx:249:        onSuccess: () => {
+apps/frontend/src/widgets/bot-profile/ui/BotLicense.tsx:169:        onSuccess: () => {
+apps/frontend/src/widgets/bot-profile/ui/BotLicense.tsx:235:          submitting={updateLicenseMutation.mutation.isPending}
+apps/frontend/src/widgets/bot-profile/ui/BotLifeStagesWidget.tsx:111:        onSuccess: () => {
+apps/frontend/src/widgets/bot-profile/ui/BotLifeStagesWidget.tsx:242:        confirmLoading={banBotMutation.isPending}
+
+[stderr]
+

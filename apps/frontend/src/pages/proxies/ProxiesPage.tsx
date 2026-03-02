@@ -209,17 +209,20 @@ export const ProxiesPage: React.FC = () => {
           updates.status = 'banned';
         }
 
-        await updateProxy.mutateAsync({
-          resource: 'proxies',
-          id: proxy.id,
-          values: updates,
-          invalidates: ['resourceAll'],
-        });
-        const statusMessage = suspicious ? '' : '';
-        message.success(`Proxy checked! Fraud Score: ${data.fraud_score}${statusMessage}`);
+        updateProxy.mutate(
+          {
+            resource: 'proxies',
+            id: proxy.id,
+            values: updates,
+            invalidates: ['resourceAll'],
+          },
+          {
+            onSettled: () => {
+              setCheckingProxyId(null);
+            },
+          },
+        );
       } catch {
-        message.error('Failed to recheck proxy');
-      } finally {
         setCheckingProxyId(null);
       }
     },

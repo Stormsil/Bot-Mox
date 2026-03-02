@@ -67,7 +67,7 @@ export const useDeleteVmWorkflow = ({
   }, [queueItems]);
 
   const updateDeleteVmFilters = useCallback(
-    async (updater: (current: DeleteVmFilters) => DeleteVmFilters) => {
+    (updater: (current: DeleteVmFilters) => DeleteVmFilters) => {
       const current = normalizeDeleteVmFilters(settings?.deleteVmFilters);
       const next = updater(current);
 
@@ -83,13 +83,17 @@ export const useDeleteVmWorkflow = ({
       });
 
       setDeleteVmFiltersSaving(true);
-      try {
-        await updateVmSettingsMutation.mutateAsync({ deleteVmFilters: next });
-      } catch {
-        message.error('Failed to save delete filters');
-      } finally {
-        setDeleteVmFiltersSaving(false);
-      }
+      updateVmSettingsMutation.mutate(
+        { deleteVmFilters: next },
+        {
+          onError: () => {
+            message.error('Failed to save delete filters');
+          },
+          onSettled: () => {
+            setDeleteVmFiltersSaving(false);
+          },
+        },
+      );
     },
     [settings?.deleteVmFilters, setSettings, updateVmSettingsMutation],
   );

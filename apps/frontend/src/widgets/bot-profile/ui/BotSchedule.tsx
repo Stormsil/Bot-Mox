@@ -177,29 +177,29 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     [getCurrentDaySchedule, selectedDay, updateDay],
   );
 
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(() => {
     if (!schedule || !botId) return;
 
-    try {
-      const nextSchedule = {
-        ...schedule,
-        updated_at: Date.now(),
-      };
-      await updateBotMutation.mutateAsync({
+    const nextSchedule = {
+      ...schedule,
+      updated_at: Date.now(),
+    };
+    updateBotMutation.mutate(
+      {
         botId,
         payload: {
           schedule: nextSchedule,
           ...(pendingScheduleLock ? { 'generation_locks/schedule': true } : {}),
         },
-      });
-      setServerSchedule(nextSchedule);
-      if (pendingScheduleLock) setPendingScheduleLock(false);
-      setHasChanges(false);
-      message.success('Schedule saved successfully');
-    } catch (err) {
-      console.error('Failed to save schedule:', err);
-      message.error('Failed to save schedule');
-    }
+      },
+      {
+        onSuccess: () => {
+          setServerSchedule(nextSchedule);
+          if (pendingScheduleLock) setPendingScheduleLock(false);
+          setHasChanges(false);
+        },
+      },
+    );
   }, [schedule, botId, pendingScheduleLock, updateBotMutation]);
 
   const handleReset = useCallback(() => {
@@ -235,23 +235,23 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
     [scheduleLocked],
   );
 
-  const handleUnlockGeneration = useCallback(async () => {
+  const handleUnlockGeneration = useCallback(() => {
     if (!botId) return;
 
-    try {
-      await updateBotMutation.mutateAsync({
+    updateBotMutation.mutate(
+      {
         botId,
         payload: {
           'generation_locks/schedule': false,
         },
-      });
-      setPendingScheduleLock(false);
-      setScheduleLocked(false);
-      message.success('Schedule generation unlocked');
-    } catch (error) {
-      console.error('Failed to unlock schedule generation:', error);
-      message.error('Failed to unlock generation');
-    }
+      },
+      {
+        onSuccess: () => {
+          setPendingScheduleLock(false);
+          setScheduleLocked(false);
+        },
+      },
+    );
   }, [botId, updateBotMutation]);
 
   if (loading)

@@ -1,4 +1,5 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
+import { message } from 'antd';
 import {
   deleteBotViaContract,
   patchBotViaContract,
@@ -18,6 +19,7 @@ export function useUpdateBotMutation(): UseMutationResult<void, Error, UpdateBot
       await patchBotViaContract(botId, payload);
     },
     onSuccess: async (_data, variables) => {
+      message.success('Bot updated');
       const id = String(variables.botId || '').trim();
       if (id) {
         await queryClient.invalidateQueries({ queryKey: botQueryKeys.byId(id) });
@@ -35,6 +37,7 @@ export function useDeleteBotMutation(): UseMutationResult<void, Error, string> {
       await deleteBotViaContract(botId);
     },
     onSuccess: async (_data, botId) => {
+      message.success('Bot deleted');
       const id = String(botId || '').trim();
       if (id) {
         await queryClient.invalidateQueries({ queryKey: botQueryKeys.byId(id) });

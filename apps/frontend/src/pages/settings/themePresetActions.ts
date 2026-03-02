@@ -77,7 +77,6 @@ export async function saveCurrentThemePreset(params: SavePresetParams): Promise<
     params.setSelectedPresetId(preset.id);
     params.setActivePresetId(preset.id);
     params.setNewThemePresetName('');
-    message.success(`Theme "${preset.name}" saved`);
     return true;
   } catch (error) {
     uiLogger.error('Error saving theme preset:', error);
@@ -111,7 +110,6 @@ export async function applySelectedThemePreset(params: ApplyPresetParams): Promi
     params.onVisualSettingsChange?.(nextVisual);
     params.onTypographySettingsChange?.(nextTypography);
     params.onShapeSettingsChange?.(nextShape);
-    message.success('Theme applied');
     return true;
   } catch (error) {
     uiLogger.error('Error applying theme preset:', error);
@@ -138,7 +136,6 @@ export async function deleteSelectedThemePreset(params: DeletePresetParams): Pro
     params.setLocalShapeSettings(nextShape);
     params.onTypographySettingsChange?.(nextTypography);
     params.onShapeSettingsChange?.(nextShape);
-    message.success('Theme preset deleted');
     return true;
   } catch (error) {
     uiLogger.error('Error deleting theme preset:', error);

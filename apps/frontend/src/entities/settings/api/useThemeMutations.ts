@@ -1,4 +1,5 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
+import { message } from 'antd';
 import type {
   ThemeMode,
   ThemePalettes,
@@ -71,6 +72,7 @@ export function useUpdateThemeSettingsMutation(): UseMutationResult<
       );
     },
     onSuccess: async () => {
+      message.success('Theme colors saved');
       await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.theme() });
     },
   });
@@ -88,6 +90,7 @@ export function useUpdateThemeVisualSettingsMutation(): UseMutationResult<
       await updateThemeVisualSettings(visual, userId);
     },
     onSuccess: async () => {
+      message.success('Visual theme settings saved');
       await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.theme() });
     },
   });
@@ -102,7 +105,8 @@ export function useSaveThemePresetMutation(): UseMutationResult<
 
   return useMutation<ThemePreset, Error, SaveThemePresetPayload>({
     mutationFn: async ({ name, palettes, userId }) => saveThemePreset(name, palettes, userId),
-    onSuccess: async () => {
+    onSuccess: async (preset) => {
+      message.success(`Theme "${preset.name}" saved`);
       await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.theme() });
     },
   });
@@ -118,6 +122,7 @@ export function useApplyThemePresetMutation(): UseMutationResult<
   return useMutation<ThemeSettings, Error, ApplyThemePresetPayload>({
     mutationFn: async ({ presetId, userId }) => applyThemePreset(presetId, userId),
     onSuccess: async (data) => {
+      message.success('Theme applied');
       queryClient.setQueryData(settingsQueryKeys.theme(), data);
       await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.theme() });
     },
@@ -134,6 +139,7 @@ export function useDeleteThemePresetMutation(): UseMutationResult<
   return useMutation<ThemeSettings, Error, DeleteThemePresetPayload>({
     mutationFn: async ({ presetId, userId }) => deleteThemePreset(presetId, userId),
     onSuccess: async (data) => {
+      message.success('Theme preset deleted');
       queryClient.setQueryData(settingsQueryKeys.theme(), data);
       await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.theme() });
     },
@@ -150,6 +156,7 @@ export function useUploadThemeAssetMutation(): UseMutationResult<
   return useMutation<ThemeBackgroundAsset, Error, File>({
     mutationFn: async (file) => uploadThemeAsset(file),
     onSuccess: async (uploaded) => {
+      message.success('Background image uploaded');
       queryClient.setQueryData<ThemeBackgroundAsset[]>(
         settingsQueryKeys.themeAssets(),
         (current) => {
@@ -170,6 +177,7 @@ export function useDeleteThemeAssetMutation(): UseMutationResult<void, Error, st
       await deleteThemeAsset(assetId);
     },
     onSuccess: async (_data, assetId) => {
+      message.success('Background image deleted');
       queryClient.setQueryData<ThemeBackgroundAsset[]>(
         settingsQueryKeys.themeAssets(),
         (current) => {

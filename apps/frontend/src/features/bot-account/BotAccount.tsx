@@ -26,7 +26,6 @@ import { useBotAccountSubscription } from './account/use-bot-account-subscriptio
 
 export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
   const [form] = Form.useForm<AccountFormValues>();
-  const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [pendingLocks, setPendingLocks] = useState<AccountGenerationLocks>({
     email: false,
@@ -91,15 +90,28 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
     selectedDomain,
     customDomain,
     useCustomDomain,
-    updateBot: async (payload) => {
-      if (!bot?.id) {
-        throw new Error('Bot ID is not available');
-      }
-      await updateBotMutation.mutateAsync({
-        botId: bot.id,
-        payload,
-      });
-    },
+    updateBot: (payload) =>
+      new Promise<void>((resolve, reject) => {
+        if (!bot?.id) {
+          reject(new Error('Bot ID is not available'));
+          return;
+        }
+
+        updateBotMutation.mutate(
+          {
+            botId: bot.id,
+            payload,
+          },
+          {
+            onSuccess: () => {
+              resolve();
+            },
+            onError: (error) => {
+              reject(error);
+            },
+          },
+        );
+      }),
     setHasBackup,
   });
 
@@ -114,7 +126,7 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
     });
   };
 
-  const handleSave = async (values: Partial<AccountFormValues>) => {
+  const handleSave = (values: Partial<AccountFormValues>) => {
     if (
       (generationLocks.email || generationLocks.password) &&
       !pendingLocks.email &&
@@ -129,43 +141,36 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
       return;
     }
 
-    setSaving(true);
-    try {
-      const accountData = {
-        email: values.email || '',
-        password: values.password || '',
-        bnet_created_at: values.registration_date ? values.registration_date.valueOf() : 0,
-      };
+    const accountData = {
+      email: values.email || '',
+      password: values.password || '',
+      bnet_created_at: values.registration_date ? values.registration_date.valueOf() : 0,
+    };
 
-      const lockUpdates: Record<string, boolean> = {
-        account_email: Boolean(String(values.email || '').trim()),
-        account_password: Boolean(String(values.password || '').trim()),
-      };
+    const lockUpdates: Record<string, boolean> = {
+      account_email: Boolean(String(values.email || '').trim()),
+      account_password: Boolean(String(values.password || '').trim()),
+    };
 
-      await updateBotMutation.mutateAsync({
+    updateBotMutation.mutate(
+      {
         botId: bot.id,
         payload: {
           account: accountData,
           'generation_locks/account_email': lockUpdates.account_email,
           'generation_locks/account_password': lockUpdates.account_password,
         },
-      });
-
-      setGenerationLocks({
-        email: lockUpdates.account_email,
-        password: lockUpdates.account_password,
-      });
-      setPendingLocks({ email: false, password: false });
-      message.success('Account data saved and locked');
-    } catch (error) {
-      console.error('Error saving account data:', error);
-      message.error(
-        'Failed to save account data: ' +
-          (error instanceof Error ? error.message : 'Unknown error'),
-      );
-    } finally {
-      setSaving(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          setGenerationLocks({
+            email: lockUpdates.account_email,
+            password: lockUpdates.account_password,
+          });
+          setPendingLocks({ email: false, password: false });
+        },
+      },
+    );
   };
 
   const getFieldWarning = (fieldName: keyof AccountFormValues) => {
@@ -270,7 +275,7 @@ export const BotAccount: React.FC<BotAccountProps> = ({ bot }) => {
             pendingLocks={pendingLocks}
             isPersonComplete={isPersonDataComplete(bot.person)}
             hasBackup={hasBackup}
-            saving={saving}
+            saving={updateBotMutation.isPending}
             requestGeneration={requestGeneration}
             handleUnlockGeneration={() => {
               void handleUnlockGeneration();

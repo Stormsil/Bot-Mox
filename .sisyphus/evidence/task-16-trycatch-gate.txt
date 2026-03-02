@@ -1,0 +1,6 @@
+Task 16 try/catch gate (reconstructed on current state)
+timestamp=2026-03-02T00:49:03Z
+command=ast-grep run --lang tsx --pattern 'try { $$$BEFORE; await $MUT.mutateAsync($$$ARGS); $$$AFTER } catch ($ERR) { $$$CATCH }' apps/frontend/src
+
+
+[exit_code=1]

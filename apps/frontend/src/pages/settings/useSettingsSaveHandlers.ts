@@ -57,7 +57,6 @@ export function useSettingsSaveHandlers(
         };
 
         await options.saveApiKeys(newApiKeys);
-        message.success('API keys saved');
       } catch (error) {
         uiLogger.error('Error saving API keys:', error);
         message.error('Failed to save API keys');
@@ -79,7 +78,6 @@ export function useSettingsSaveHandlers(
         };
 
         await options.saveProxySettings(newProxySettings);
-        message.success('Proxy settings saved');
       } catch (error) {
         uiLogger.error('Error saving proxy settings:', error);
         message.error('Failed to save proxy settings');
@@ -105,7 +103,6 @@ export function useSettingsSaveHandlers(
         };
 
         await options.saveNotificationEvents(newEvents);
-        message.success('Notification settings saved');
       } catch (error) {
         uiLogger.error('Error saving notification settings:', error);
         message.error('Failed to save notification settings');
@@ -147,7 +144,6 @@ export function useSettingsSaveHandlers(
             enabled: Boolean(values.sync_enabled),
           },
         });
-        message.success('Storage policy saved');
       } catch (error) {
         uiLogger.error('Error saving storage policy:', error);
         message.error('Failed to save storage policy');

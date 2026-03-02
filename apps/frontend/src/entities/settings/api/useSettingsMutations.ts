@@ -1,4 +1,5 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
+import { message } from 'antd';
 import type { ApiKeys, NotificationEvents, ProxySettings, StoragePolicy } from '../model/types';
 import {
   updateApiKeys,
@@ -16,6 +17,7 @@ export function useUpdateApiKeysMutation(): UseMutationResult<void, Error, ApiKe
       await updateApiKeys(payload);
     },
     onSuccess: async () => {
+      message.success('API keys saved');
       await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.apiKeys() });
     },
   });
@@ -29,6 +31,7 @@ export function useUpdateProxySettingsMutation(): UseMutationResult<void, Error,
       await updateProxySettings(payload);
     },
     onSuccess: async () => {
+      message.success('Proxy settings saved');
       await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.proxy() });
     },
   });
@@ -46,6 +49,7 @@ export function useUpdateNotificationEventsMutation(): UseMutationResult<
       await updateNotificationEvents(payload);
     },
     onSuccess: async () => {
+      message.success('Notification settings saved');
       await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.notifications() });
     },
   });
@@ -63,6 +67,7 @@ export function useUpdateStoragePolicyMutation(): UseMutationResult<
       await updateStoragePolicy(payload);
     },
     onSuccess: async () => {
+      message.success('Storage policy saved');
       await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.storagePolicy() });
     },
   });

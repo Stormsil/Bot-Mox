@@ -1,0 +1,44 @@
+# Evidence: task-7-domain-contract-grep.txt
+# generated_at: 2026-03-02T05:29:24
+# command: grep -n -E "suppressGlobalErrorToast|localErrorToastOwner|errorToastDedupeKey|message.success|invalidateQueries" apps/frontend/src/entities/notes/api/useNoteMutations.ts apps/frontend/src/entities/vm/api/useVmActionMutations.ts
+# exit_code: 0
+
+[stdout]
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:14:      await queryClient.invalidateQueries({ queryKey: notesQueryKeys.index() });
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:16:      message.success('Note created');
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:32:      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:33:      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:34:      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'notes.update',
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:37:      await queryClient.invalidateQueries({ queryKey: notesQueryKeys.index() });
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:38:      await queryClient.invalidateQueries({ queryKey: notesQueryKeys.note(variables.noteId) });
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:49:      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:50:      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:51:      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'notes.delete',
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:54:      await queryClient.invalidateQueries({ queryKey: notesQueryKeys.index() });
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:56:      message.success('Note deleted');
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:50:      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:51:      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:52:      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.start',
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:55:      message.success(`VM ${variables.vmid} start requested`);
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:66:      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:67:      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:68:      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.stop',
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:71:      message.success(`VM ${variables.vmid} stop requested`);
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:84:      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:85:      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:86:      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.updateConfig',
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:99:      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:100:      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:101:      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.waitTask',
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:118:      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:119:      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:120:      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.startBatch',
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:140:      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:141:      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:142:      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.hardwareFingerprint',
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:157:      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:158:      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:159:      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.updateSettings',
+
+[stderr]
+

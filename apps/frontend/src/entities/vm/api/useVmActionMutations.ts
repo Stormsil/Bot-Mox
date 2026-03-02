@@ -1,4 +1,6 @@
 import { type UseMutationResult, useMutation } from '@tanstack/react-query';
+import { message } from 'antd';
+import { mutationToastOwnershipMetaKeys } from '../../../shared/lib/query/mutationToastOwnership';
 import { vmQueryKeys } from './vmQueryKeys';
 import {
   getVmHardwareFingerprint,
@@ -44,6 +46,14 @@ export function useStartVmMutation(): UseMutationResult<void, Error, StartStopVm
     mutationFn: async ({ vmid, node }) => {
       await startVM(vmid, node);
     },
+    meta: {
+      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.start',
+    },
+    onSuccess: (_data, variables) => {
+      message.success(`VM ${variables.vmid} start requested`);
+    },
   });
 }
 
@@ -51,6 +61,14 @@ export function useStopVmMutation(): UseMutationResult<void, Error, StartStopVmP
   return useMutation<void, Error, StartStopVmPayload>({
     mutationFn: async ({ vmid, node }) => {
       await stopVM(vmid, node);
+    },
+    meta: {
+      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.stop',
+    },
+    onSuccess: (_data, variables) => {
+      message.success(`VM ${variables.vmid} stop requested`);
     },
   });
 }
@@ -62,6 +80,11 @@ export function useUpdateVmConfigMutation(): UseMutationResult<
 > {
   return useMutation<Awaited<ReturnType<typeof updateVMConfig>>, Error, UpdateVmConfigPayload>({
     mutationFn: async ({ vmid, node, config }) => updateVMConfig({ vmid, node, config }),
+    meta: {
+      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.updateConfig',
+    },
   });
 }
 
@@ -72,6 +95,11 @@ export function useWaitForVmTaskMutation(): UseMutationResult<
 > {
   return useMutation<Awaited<ReturnType<typeof waitForTask>>, Error, WaitForTaskPayload>({
     mutationFn: async ({ upid, node, options }) => waitForTask(upid, node, options),
+    meta: {
+      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.waitTask',
+    },
   });
 }
 
@@ -86,6 +114,11 @@ export function useStartAndSendKeyBatchMutation(): UseMutationResult<
     StartAndSendKeyBatchPayload
   >({
     mutationFn: async ({ vmIds, options }) => startAndSendKeyBatch(vmIds, options),
+    meta: {
+      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.startBatch',
+    },
   });
 }
 
@@ -103,6 +136,11 @@ export function useVmHardwareFingerprintMutation(): UseMutationResult<
   return useMutation<Awaited<ReturnType<typeof getVmHardwareFingerprint>>, Error, void>({
     mutationKey: vmQueryKeys.hardwareFingerprint(),
     mutationFn: async () => getVmHardwareFingerprint(),
+    meta: {
+      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.hardwareFingerprint',
+    },
   });
 }
 
@@ -114,6 +152,11 @@ export function useUpdateVmSettingsMutation(): UseMutationResult<
   return useMutation<void, Error, Record<string, unknown>>({
     mutationFn: async (payload) => {
       await updateVMSettings(payload);
+    },
+    meta: {
+      [mutationToastOwnershipMetaKeys.suppressGlobalErrorToast]: true,
+      [mutationToastOwnershipMetaKeys.localErrorToastOwner]: true,
+      [mutationToastOwnershipMetaKeys.errorToastDedupeKey]: 'vm.updateSettings',
     },
   });
 }

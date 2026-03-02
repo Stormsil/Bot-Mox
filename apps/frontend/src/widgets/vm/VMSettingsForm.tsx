@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import { message, Tabs } from 'antd';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -90,7 +91,6 @@ interface VMSettingsFormProps {
 export const VMSettingsForm: React.FC<VMSettingsFormProps> = ({ storageOptions = [] }) => {
   const [settings, setSettings] = useState<VMGeneratorSettings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [templateSyncState, setTemplateSyncState] = useState<TemplateSyncState>('idle');
   const [templateSyncMessage, setTemplateSyncMessage] = useState('');
   const [templateSummary, setTemplateSummary] = useState<TemplateVmSummary | null>(null);
@@ -104,17 +104,18 @@ export const VMSettingsForm: React.FC<VMSettingsFormProps> = ({ storageOptions =
     });
   }, []);
 
-  const handleSave = async () => {
+  const saveSettingsMutation = useMutation({
+    mutationFn: (nextSettings: VMGeneratorSettings) =>
+      updateVMSettings(stripPasswords(nextSettings)),
+    onSuccess: () => {
+      message.success('Settings saved');
+    },
+  });
+
+  const handleSave = () => {
     if (!settings) return;
 
-    setSaving(true);
-    try {
-      await updateVMSettings(stripPasswords(settings));
-      message.success('Settings saved');
-    } catch {
-      message.error('Failed to save settings');
-    }
-    setSaving(false);
+    saveSettingsMutation.mutate(settings);
   };
 
   const handleFieldChange = (path: string, value: unknown) => {
@@ -211,7 +212,7 @@ export const VMSettingsForm: React.FC<VMSettingsFormProps> = ({ storageOptions =
             templateSummary={templateSummary}
             storageOptions={storageOptions}
           />
-          <SettingsActions saving={saving} onSave={handleSave} />
+          <SettingsActions saving={saveSettingsMutation.isPending} onSave={handleSave} />
         </div>
       ),
     },
@@ -221,7 +222,7 @@ export const VMSettingsForm: React.FC<VMSettingsFormProps> = ({ storageOptions =
       children: (
         <div>
           <ProjectResourcesSection settings={settings} onFieldChange={handleFieldChange} />
-          <SettingsActions saving={saving} onSave={handleSave} />
+          <SettingsActions saving={saveSettingsMutation.isPending} onSave={handleSave} />
         </div>
       ),
     },

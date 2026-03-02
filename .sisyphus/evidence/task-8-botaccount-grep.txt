@@ -1,0 +1,13 @@
+# Evidence: task-8-botaccount-grep.txt
+# generated_at: 2026-03-02T05:29:24
+# command: grep -n -E "mutateAsync\(|setSaving\(|onSuccess|isPending|message.error\(" apps/frontend/src/features/bot-account/BotAccount.tsx
+# exit_code: 0
+
+[stdout]
+106:            onSuccess: () => {
+140:      message.error('Bot ID is not available');
+165:        onSuccess: () => {
+278:            saving={updateBotMutation.isPending}
+
+[stderr]
+

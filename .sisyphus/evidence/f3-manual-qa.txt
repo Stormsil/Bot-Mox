@@ -1,0 +1,77 @@
+F3 Real Manual QA - user-facing mutation flows
+Date: 2026-03-02
+Executor: OpenCode (hands-on Playwright + curl)
+Verdict: BLOCKED
+
+Scope from plan:
+- BotAccount save flow
+- VMSettingsForm save flow
+- UnattendTab create/update/delete profile flows
+
+Environment status checks (local):
+1) Frontend runtime
+   Command: curl -sS -m 5 -i "http://localhost:5173"
+   Result: HTTP/1.1 200 OK (Vite app HTML returned)
+
+2) Backend health
+   Command: curl -sS -m 5 -i "http://localhost:3002/api/v1/health"
+   Result: HTTP/1.1 200 OK
+   Body: {"success":true,"data":{"service":"botmox-api","timestamp":"2026-03-02T01:23:59.772Z","data_backend":"supabase"}}
+
+3) Backend signin sanity
+   Command: curl -sS -m 5 -i -H "Content-Type: application/json" -d "{\"login\":\"admin@localhost\",\"password\":\"BotmoxLocal234\"}" "http://localhost:3002/api/v1/auth/signin"
+   Result: HTTP/1.1 500 Internal Server Error
+   Body: {"success":false,"error":{"code":"AUTH_SUPABASE_URL_MISSING","message":"SUPABASE_PUBLIC_URL or SUPABASE_URL is required for quick-pair"}}
+
+Manual UI interactions (Playwright, real browser automation):
+
+A) Login happy-path attempt (required precondition for all 3 target flows)
+   Steps:
+   - Open http://localhost:5173/login
+   - Fill email=admin@localhost, password=BotmoxLocal234
+   - Click "Sign in"
+   Observed:
+   - Stayed on /login
+   - UI alert: "SUPABASE_PUBLIC_URL or SUPABASE_URL is required for quick-pairLoginError"
+   - Network: POST http://localhost:3002/api/v1/auth/signin -> 500 AUTH_SUPABASE_URL_MISSING
+
+B) Create-account happy-path attempt (alternative auth precondition path)
+   Steps:
+   - Switch to "Create account"
+   - Fill email/password/confirm_password and submit
+   Observed:
+   - Stayed on /login
+   - UI alert: "SUPABASE_PUBLIC_URL or SUPABASE_URL is requiredLoginError"
+   - Network: POST http://localhost:3002/api/v1/auth/signup -> 500 AUTH_SUPABASE_URL_MISSING
+
+C) Target flow route attempts with console/network capture
+   Flow: BotAccount save
+   - Route attempt: /bot/1
+   - Final URL: /login (redirect)
+   - Failure path observed: unauthenticated redirect blocks reaching form/save controls
+
+   Flow: VMSettingsForm save
+   - Route attempt: /vms
+   - Final URL: /login (redirect)
+   - Failure path observed: unauthenticated redirect blocks VM settings modal/form access
+
+   Flow: UnattendTab create/update/delete profiles
+   - Route attempt: /vms
+   - Final URL: /login (redirect)
+   - Failure path observed: unauthenticated redirect blocks Unattend tab/profile actions
+
+Console/network error observations during route interactions:
+- Console errors repeatedly include:
+  - "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  - "[error_loading_theme_settings:] {message: Invalid or missing bearer token, ...}"
+- API responses observed:
+  - GET http://localhost:3002/api/v1/settings/theme -> 401 INVALID_OR_MISSING_BEARER_TOKEN
+  - POST http://localhost:3002/api/v1/auth/signin -> 500 AUTH_SUPABASE_URL_MISSING
+  - POST http://localhost:3002/api/v1/auth/signup -> 500 AUTH_SUPABASE_URL_MISSING
+
+Artifact evidence produced:
+- .sisyphus/evidence/f3-manual-qa-blocked.png (final UI state screenshot)
+
+Conclusion:
+- Required mutation flows are blocked by auth runtime misconfiguration (missing SUPABASE_PUBLIC_URL/SUPABASE_URL for quick-pair auth), despite backend health endpoint being up.
+- Happy-path verification for BotAccount/VMSettingsForm/UnattendTab is not executable until auth backend config is fixed.

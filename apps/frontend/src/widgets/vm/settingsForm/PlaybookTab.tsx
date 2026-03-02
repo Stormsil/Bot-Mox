@@ -6,6 +6,7 @@ import {
   UploadOutlined,
 } from '@ant-design/icons';
 import Editor from '@monaco-editor/react';
+import { useMutation } from '@tanstack/react-query';
 import { Button, Card, Checkbox, Input, message, Space, Spin, Typography } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -26,7 +27,6 @@ const { Text } = Typography;
 export const PlaybookTab: React.FC = () => {
   const [playbooks, setPlaybooks] = useState<Playbook[]>([]);
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [playbookName, setPlaybookName] = useState('');
   const [content, setContent] = useState(DEFAULT_PLAYBOOK_CONTENT);
@@ -42,6 +42,36 @@ export const PlaybookTab: React.FC = () => {
   useEffect(() => {
     playbookNameRef.current = playbookName;
   }, [playbookName]);
+
+  const { mutate: createPlaybookMutate, isPending: isCreatePending } = useMutation({
+    mutationFn: createPlaybook,
+    onSuccess: (envelope) => {
+      setPlaybooks((prev) => [...prev, envelope.data]);
+      setSelectedId(envelope.data.id);
+    },
+  });
+
+  const { mutate: updatePlaybookMutate, isPending: isUpdatePending } = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: Parameters<typeof updatePlaybook>[1] }) =>
+      updatePlaybook(id, payload),
+    onSuccess: (envelope, variables) => {
+      setPlaybooks((prev) => prev.map((p) => (p.id === variables.id ? envelope.data : p)));
+    },
+  });
+
+  const { mutate: deletePlaybookMutate, isPending: isDeletePending } = useMutation({
+    mutationFn: deletePlaybook,
+    onSuccess: (_data, deletedId) => {
+      setPlaybooks((prev) => prev.filter((p) => p.id !== deletedId));
+      setSelectedId(null);
+      setPlaybookName('');
+      setContent(DEFAULT_PLAYBOOK_CONTENT);
+      setIsDefault(false);
+      setValidation(null);
+    },
+  });
+
+  const saving = isCreatePending || isUpdatePending || isDeletePending;
 
   const loadPlaybooks = useCallback(async () => {
     setLoading(true);
@@ -93,7 +123,7 @@ export const PlaybookTab: React.FC = () => {
     setValidation(null);
   }, []);
 
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(() => {
     if (!playbookName.trim()) {
       message.warning('Playbook name is required');
       return;
@@ -103,51 +133,30 @@ export const PlaybookTab: React.FC = () => {
       return;
     }
 
-    setSaving(true);
-    try {
-      if (selectedId) {
-        const envelope = await updatePlaybook(selectedId, {
+    if (selectedId) {
+      updatePlaybookMutate({
+        id: selectedId,
+        payload: {
           name: playbookName.trim(),
           is_default: isDefault,
           content,
-        });
-        setPlaybooks((prev) => prev.map((p) => (p.id === selectedId ? envelope.data : p)));
-        message.success('Playbook updated');
-      } else {
-        const envelope = await createPlaybook({
-          name: playbookName.trim(),
-          is_default: isDefault,
-          content,
-        });
-        setPlaybooks((prev) => [...prev, envelope.data]);
-        setSelectedId(envelope.data.id);
-        message.success('Playbook created');
-      }
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      message.error(`Failed to save playbook: ${errorMessage}`);
+        },
+      });
+      return;
     }
-    setSaving(false);
-  }, [content, isDefault, playbookName, selectedId]);
 
-  const handleDelete = useCallback(async () => {
+    createPlaybookMutate({
+      name: playbookName.trim(),
+      is_default: isDefault,
+      content,
+    });
+  }, [content, createPlaybookMutate, isDefault, playbookName, selectedId, updatePlaybookMutate]);
+
+  const handleDelete = useCallback(() => {
     if (!selectedId) return;
 
-    setSaving(true);
-    try {
-      await deletePlaybook(selectedId);
-      setPlaybooks((prev) => prev.filter((p) => p.id !== selectedId));
-      setSelectedId(null);
-      setPlaybookName('');
-      setContent(DEFAULT_PLAYBOOK_CONTENT);
-      setIsDefault(false);
-      setValidation(null);
-      message.success('Playbook deleted');
-    } catch {
-      message.error('Failed to delete playbook');
-    }
-    setSaving(false);
-  }, [selectedId]);
+    deletePlaybookMutate(selectedId);
+  }, [deletePlaybookMutate, selectedId]);
 
   const handleValidate = useCallback(async () => {
     if (!content.trim()) return;

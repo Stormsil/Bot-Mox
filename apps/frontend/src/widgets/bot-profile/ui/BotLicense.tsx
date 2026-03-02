@@ -29,13 +29,6 @@ import styles from './license/license.module.css';
 const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error && error.message.trim()) {
-    return error.message;
-  }
-  return fallback;
-}
-
 export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
   const licensesList = useList<BotLicenseRecord>({
     resource: 'licenses',
@@ -153,17 +146,17 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
   );
 
   const handleAssign = async (values: AssignLicenseFormValues) => {
-    try {
-      const selectedLicense = allLicenses.find((item) => item.id === values.license_id);
-      if (!selectedLicense) return;
+    const selectedLicense = allLicenses.find((item) => item.id === values.license_id);
+    if (!selectedLicense) return;
 
-      const currentBotIds = selectedLicense.bot_ids || [];
-      if (currentBotIds.includes(bot.id)) {
-        message.warning('Bot is already assigned to this license');
-        return;
-      }
+    const currentBotIds = selectedLicense.bot_ids || [];
+    if (currentBotIds.includes(bot.id)) {
+      message.warning('Bot is already assigned to this license');
+      return;
+    }
 
-      await updateLicenseMutation.mutateAsync({
+    updateLicenseMutation.mutate(
+      {
         resource: 'licenses',
         id: selectedLicense.id,
         values: {
@@ -171,43 +164,37 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
           updated_at: Date.now(),
         },
         invalidates: ['resourceAll'],
-      });
-      message.success('Bot assigned to license');
-      setIsAssignModalOpen(false);
-      assignForm.resetFields();
-    } catch (error) {
-      console.error('Error assigning license:', error);
-      message.error(`Failed to assign license: ${getErrorMessage(error, 'Unknown error')}`);
-    }
+      },
+      {
+        onSuccess: () => {
+          setIsAssignModalOpen(false);
+          assignForm.resetFields();
+        },
+      },
+    );
   };
 
   const handleUnassign = async () => {
     if (!license) return;
-    try {
-      const newBotIds = (license.bot_ids || []).filter((id) => id !== bot.id);
-      if (newBotIds.length === 0) {
-        await deleteLicenseMutation.mutateAsync({
-          resource: 'licenses',
-          id: license.id,
-          invalidates: ['resourceAll'],
-        });
-        message.success('License deleted (no bots assigned)');
-      } else {
-        await updateLicenseMutation.mutateAsync({
-          resource: 'licenses',
-          id: license.id,
-          values: {
-            bot_ids: newBotIds,
-            updated_at: Date.now(),
-          },
-          invalidates: ['resourceAll'],
-        });
-        message.success('Bot unassigned from license');
-      }
-    } catch (error) {
-      console.error('Error unassigning bot:', error);
-      message.error('Failed to unassign bot');
+    const newBotIds = (license.bot_ids || []).filter((id) => id !== bot.id);
+    if (newBotIds.length === 0) {
+      deleteLicenseMutation.mutate({
+        resource: 'licenses',
+        id: license.id,
+        invalidates: ['resourceAll'],
+      });
+      return;
     }
+
+    updateLicenseMutation.mutate({
+      resource: 'licenses',
+      id: license.id,
+      values: {
+        bot_ids: newBotIds,
+        updated_at: Date.now(),
+      },
+      invalidates: ['resourceAll'],
+    });
   };
 
   const handleAddMenuClick: MenuProps['onClick'] = (info) => {

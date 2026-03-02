@@ -62,23 +62,23 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
     console.error('Failed to load schedule generator settings:', scheduleSettingsQuery.error);
   }, [scheduleSettingsQuery.error]);
 
-  const handleGenerate = useCallback(async () => {
+  const handleGenerate = useCallback(() => {
     const { valid, errors: validationErrors } = validateGenerationParams(params);
     if (!valid) {
       setErrors(validationErrors);
       return;
     }
 
-    // Save as last used params
-    try {
-      await saveLastParamsMutation.mutateAsync(params);
-    } catch (err) {
-      console.error('Failed to save last params:', err);
-    }
-
-    onGenerate(params);
-    setIsOpen(false);
-    setErrors([]);
+    saveLastParamsMutation.mutate(params, {
+      onError: (err) => {
+        console.error('Failed to save last params:', err);
+      },
+      onSettled: () => {
+        onGenerate(params);
+        setIsOpen(false);
+        setErrors([]);
+      },
+    });
   }, [params, onGenerate, saveLastParamsMutation]);
 
   const updateParam = useCallback(
@@ -89,25 +89,30 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
     [],
   );
 
-  const handleSaveTemplate = async () => {
+  const handleSaveTemplate = () => {
     if (!templateName.trim()) {
       message.warning('Please enter template name');
       return;
     }
 
-    try {
-      const templateId = `schedule_tpl_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-      await saveTemplateMutation.mutateAsync({
+    const templateId = `schedule_tpl_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    saveTemplateMutation.mutate(
+      {
         templateId,
         name: templateName,
         params,
-      });
-      setTemplateName('');
-      message.success('Template saved');
-    } catch (err) {
-      console.error('Failed to save template:', err);
-      message.error('Failed to save template');
-    }
+      },
+      {
+        onSuccess: () => {
+          setTemplateName('');
+          message.success('Template saved');
+        },
+        onError: (err) => {
+          console.error('Failed to save template:', err);
+          message.error('Failed to save template');
+        },
+      },
+    );
   };
 
   const handleLoadTemplate = (template: ScheduleTemplate) => {
@@ -124,15 +129,17 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
     message.success(`Template "${template.name}" applied and randomized`);
   };
 
-  const handleDeleteTemplate = async (e: React.MouseEvent, id: string) => {
+  const handleDeleteTemplate = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    try {
-      await deleteTemplateMutation.mutateAsync(id);
-      message.success('Template deleted');
-    } catch (err) {
-      console.error('Failed to delete template:', err);
-      message.error('Failed to delete template');
-    }
+    deleteTemplateMutation.mutate(id, {
+      onSuccess: () => {
+        message.success('Template deleted');
+      },
+      onError: (err) => {
+        console.error('Failed to delete template:', err);
+        message.error('Failed to delete template');
+      },
+    });
   };
 
   const popoverContent = (

@@ -25,7 +25,6 @@ import styles from './person/person.module.css';
 export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
   const [form] = Form.useForm<PersonFormValues>();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string>(
     () => loadPersonGeneratorCountry() || countries[0],
   );
@@ -71,7 +70,7 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
     savePersonGeneratorCountry(normalizedCountry);
   }, [selectedCountry]);
 
-  const handleSave = async (values: PersonFormValues) => {
+  const handleSave = (values: PersonFormValues) => {
     if (generationLocked) {
       message.warning('Person data is locked. Click Unlock to edit.');
       return;
@@ -82,29 +81,22 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
       return;
     }
 
-    setSaving(true);
-    try {
-      await updateBotMutation.mutateAsync({
+    updateBotMutation.mutate(
+      {
         botId: bot.id,
         payload: {
           person: toPersonPayload(values),
           ...(pendingLock ? { 'generation_locks/person_data': true } : {}),
         },
-      });
-
-      if (pendingLock) {
-        setPendingLock(false);
-      }
-
-      message.success('Person data saved successfully');
-    } catch (error) {
-      console.error('Error saving person data:', error);
-      message.error(
-        `Failed to save person data: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-    } finally {
-      setSaving(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          if (pendingLock) {
+            setPendingLock(false);
+          }
+        },
+      },
+    );
   };
 
   const handleGenerateData = useCallback(() => {
@@ -119,24 +111,23 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
     message.success(`Generated random person data for ${selectedCountry}`);
   }, [form, generationLocked, selectedCountry]);
 
-  const handleUnlockGeneration = useCallback(async () => {
+  const handleUnlockGeneration = useCallback(() => {
     if (!bot?.id) return;
 
-    try {
-      await updateBotMutation.mutateAsync({
+    updateBotMutation.mutate(
+      {
         botId: bot.id,
         payload: {
           'generation_locks/person_data': false,
         },
-      });
-
-      setPendingLock(false);
-      setGenerationLocked(false);
-      message.success('Person generation unlocked');
-    } catch (error) {
-      console.error('Failed to unlock person generation:', error);
-      message.error('Failed to unlock generation');
-    }
+      },
+      {
+        onSuccess: () => {
+          setPendingLock(false);
+          setGenerationLocked(false);
+        },
+      },
+    );
   }, [bot?.id, updateBotMutation]);
 
   const hasIncompleteData = !isPersonDataComplete(bot?.person);
@@ -175,7 +166,7 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
             manualEditLocked={manualEditLocked}
             generationLocked={generationLocked}
             pendingLock={pendingLock}
-            saving={saving}
+            saving={updateBotMutation.isPending}
             onSelectedCountryChange={setSelectedCountry}
             onGenerateData={handleGenerateData}
             onUnlockGeneration={handleUnlockGeneration}

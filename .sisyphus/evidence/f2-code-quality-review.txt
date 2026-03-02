@@ -1,60 +1,84 @@
-F2 Code Quality Review - vm-queue-zustand-phase-2
+F2 Code Quality Review - aop-mutation-error-ui-cleanup (re-run)
 Date: 2026-03-02
 Reviewer: OpenCode (unspecified-high)
 
-Scope reviewed (current diff implementation files):
-- apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
-- apps/frontend/src/features/vm-management/model/vm/queue/processor.ts
-- apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts
-- apps/frontend/src/features/vm-management/model/vm/queue/types.ts
-- apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts
-- apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx
-- apps/frontend/src/pages/vms/VMsPage.tsx
-- apps/frontend/src/pages/vms/hooks/useVmPageLiveRefs.ts
-- apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts
-- apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts
-- apps/frontend/src/widgets/vm/VMQueuePanel.tsx
+Scope from orchestrator instruction:
+- Plan expectations: .sisyphus/plans/aop-mutation-error-ui-cleanup.md
+- Focused files:
+  - apps/frontend/src/features/bot-account/BotAccount.tsx
+  - apps/frontend/src/entities/bot/api/useBotMutations.ts
+  - apps/frontend/src/widgets/vm/VMSettingsForm.tsx
+  - apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx
 
-Required command evidence:
-- git diff --stat: 12 files changed, 202 insertions, 138 deletions.
-- git diff --name-only: reviewed all changed implementation files above.
-- Anti-pattern scans (as any, @ts-ignore, TODO/FIXME/HACK/console.log): no matches in reviewed implementation files.
+Commands executed (targeted):
+1) git diff --stat
+2) git diff -- "apps/frontend/src/features/bot-account/BotAccount.tsx" "apps/frontend/src/entities/bot/api/useBotMutations.ts" "apps/frontend/src/widgets/vm/VMSettingsForm.tsx" "apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx"
+3) grep "mutateAsync\(" on each focused file (4 commands)
+4) grep "setSaving\(" on BotAccount/VMSettingsForm/UnattendTab (3 commands)
+5) grep "message\.error\(" on BotAccount/VMSettingsForm/UnattendTab (3 commands)
+6) lsp_diagnostics on each focused file (4 commands)
 
-Findings (PASS/FAIL with severity):
+Command result highlights:
+- git diff --stat: includes focused files with current remediation deltas
+  - apps/frontend/src/features/bot-account/BotAccount.tsx | 87 +++++------
+  - apps/frontend/src/entities/bot/api/useBotMutations.ts | 3 +
+  - apps/frontend/src/widgets/vm/VMSettingsForm.tsx | 25 +-
+  - apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx | 89 ++++++------
+- grep "mutateAsync\(" on all 4 focused files: no matches.
+- grep "setSaving\(" on BotAccount/VMSettingsForm/UnattendTab: no matches.
+- grep "message\.error\(" findings:
+  - BotAccount: apps/frontend/src/features/bot-account/BotAccount.tsx:140 (guard for missing bot id, not mutation-failure catch)
+  - VMSettingsForm: no matches.
+  - UnattendTab: apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:92,209,217 (query/import validation flows, not mutation-failure wrappers).
+- lsp_diagnostics:
+  - apps/frontend/src/features/bot-account/BotAccount.tsx -> No diagnostics found
+  - apps/frontend/src/entities/bot/api/useBotMutations.ts -> No diagnostics found
+  - apps/frontend/src/widgets/vm/VMSettingsForm.tsx -> No diagnostics found
+  - apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx -> No diagnostics found
 
-PASS [HIGH] Single-source queue ownership and type-safe pipeline access are consistent.
-- Evidence refs:
-  - apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:15
-  - apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts:144
-  - apps/frontend/src/features/vm-management/model/vm/queue/types.ts:37
-  - apps/frontend/src/features/vm-management/model/vm/queue/processor.ts:55
-  - apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts:48
-- Notes: queue reads/writes are routed through Zustand store accessors and fresh-read accessor (`getQueueItems`) instead of `queueRef`, reducing stale snapshot risk and improving boundary hygiene.
+Findings (prioritized):
 
-PASS [MEDIUM] Wrapper-only residue check: no legacy prop-drill or dead compatibility path found at page -> panel boundary.
-- Evidence refs:
-  - apps/frontend/src/pages/vms/VMsPage.tsx:56
-  - apps/frontend/src/widgets/vm/VMQueuePanel.tsx:21
-  - apps/frontend/src/widgets/vm/VMQueuePanel.tsx:23
-- Notes: page callsite is bare `<VMQueuePanel />`; panel no longer exposes legacy business props surface.
+1) PASS CHECK [HIGH] Previously flagged BotAccount silent-failure risk is remediated.
+- Evidence:
+  - BotAccount save flow has no local onError, but no suppress-global meta is applied in bot mutation hook:
+    - apps/frontend/src/features/bot-account/BotAccount.tsx:155
+    - apps/frontend/src/entities/bot/api/useBotMutations.ts:17
+  - Global mutation error fallback remains active when suppression meta is absent:
+    - apps/frontend/src/shared/lib/query/queryClient.ts:21
+    - apps/frontend/src/shared/lib/query/queryClient.ts:29
+- Assessment: mutation failure now has user-visible feedback via global MutationCache onError; prior silent-failure regression is no longer reproduced by code inspection.
 
-PASS [MEDIUM] Smart panel bridge is coherent and minimal for current architecture.
-- Evidence refs:
-  - apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx:19
-  - apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx:70
-  - apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts:217
-  - apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts:250
-- Notes: single producer (`setVMQueuePanelBridgeValue`) and single consumer hook (`useVMQueuePanelBridgeValue`) are present, with explicit unmount reset to prevent stale bridge state leakage.
+2) PASS CHECK [MEDIUM] Callback mutation flows keep expected side effects without local saving boilerplate.
+- Evidence:
+  - BotAccount save retains lock state updates in success callback:
+    - apps/frontend/src/features/bot-account/BotAccount.tsx:165
+    - apps/frontend/src/features/bot-account/BotAccount.tsx:170
+  - VMSettingsForm save uses mutation pending for UI state:
+    - apps/frontend/src/widgets/vm/VMSettingsForm.tsx:107
+    - apps/frontend/src/widgets/vm/VMSettingsForm.tsx:215
+  - Unattend create/update/delete use mutate callbacks and derived pending state:
+    - apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:56
+    - apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:74
+    - apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:127
+    - apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:155
 
-PASS [LOW] Readability and maintainability remain acceptable after contract cleanup.
-- Evidence refs:
-  - apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts:73
-  - apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts:53
-  - apps/frontend/src/pages/vms/hooks/useVmPageLiveRefs.ts:11
-- Notes: queue-dependent hooks now consume explicit `queueItems` inputs, making data dependencies clearer and reducing implicit coupling.
+3) PASS CHECK [MEDIUM] No anti-pattern reintroduction in focused scope.
+- Evidence:
+  - grep "mutateAsync\(" -> no matches in all focused files.
+  - grep "setSaving\(" -> no matches in BotAccount/VMSettingsForm/UnattendTab.
+  - No mutation try/catch wrappers introduced in focused flows (confirmed by file inspection and grep outputs above).
 
-FAIL findings:
-- None.
+Critical issues:
+- None found in focused scope.
 
-Overall verdict: PASS
-- F2 can be marked complete.
+High issues:
+- None found in focused scope.
+
+Medium issues:
+- None found in focused scope.
+
+Explicit regression / anti-pattern callout:
+- Regression introduced by latest remediation diff: NO (focused scope).
+- Anti-pattern reintroduction (mutateAsync local wrapper / setSaving duplication): NO (focused scope).
+
+Final verdict: PASS

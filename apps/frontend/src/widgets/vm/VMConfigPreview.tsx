@@ -9,13 +9,13 @@ export const VMConfigPreview: React.FC = () => {
   const vmHardwareFingerprintMutation = useVmHardwareFingerprintMutation();
   const [previewError, setPreviewError] = useState<string | null>(null);
 
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     setPreviewError(null);
-    try {
-      await vmHardwareFingerprintMutation.mutateAsync();
-    } catch (error) {
-      setPreviewError(error instanceof Error ? error.message : 'Failed to generate preview');
-    }
+    vmHardwareFingerprintMutation.mutate(undefined, {
+      onError: (error) => {
+        setPreviewError(error.message || 'Failed to generate preview');
+      },
+    });
   };
 
   const handleCopy = (text: string) => {
@@ -40,9 +40,7 @@ export const VMConfigPreview: React.FC = () => {
         <Button
           type="primary"
           icon={<ThunderboltOutlined />}
-          onClick={() => {
-            void handleGenerate();
-          }}
+          onClick={handleGenerate}
           loading={vmHardwareFingerprintMutation.isPending}
           disabled={vmHardwareFingerprintMutation.isPending}
         >

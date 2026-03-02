@@ -37,7 +37,6 @@ export const WorkspaceCalendarPage: React.FC = () => {
   const notesIndexQuery = useNotesIndexQuery();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<WorkspaceCalendarEvent | null>(null);
-  const [saving, setSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Dayjs>(() => dayjs());
   const [calendarView, setCalendarView] = useState<CalendarViewMode>(getInitialCalendarView);
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>('timeline');
@@ -149,47 +148,56 @@ export const WorkspaceCalendarPage: React.FC = () => {
   };
 
   const handleSave = async () => {
+    let values: CalendarEventFormValues;
     try {
-      const values = await form.validateFields();
-      setSaving(true);
-      const payload = {
-        title: values.title.trim(),
-        description: values.description?.trim() ?? '',
-        date: values.date.format('YYYY-MM-DD'),
-        linked_note_id: values.linked_note_id ?? null,
-      };
-
-      if (editingEvent) {
-        await updateCalendarEventMutation.mutateAsync({ id: editingEvent.id, data: payload });
-        message.success('Event updated');
-      } else {
-        await createCalendarEventMutation.mutateAsync(payload);
-        message.success('Event created');
-      }
-
-      setSelectedDate(values.date);
-      setSidebarMode('day');
-      closeModal();
+      values = await form.validateFields();
     } catch (error) {
       if (error && typeof error === 'object' && 'errorFields' in (error as object)) {
         return;
       }
-      uiLogger.error('Failed to save calendar event:', error);
-      message.error('Failed to save event');
-    } finally {
-      setSaving(false);
+      uiLogger.error('Failed to validate calendar event form:', error);
+      return;
     }
+
+    const payload = {
+      title: values.title.trim(),
+      description: values.description?.trim() ?? '',
+      date: values.date.format('YYYY-MM-DD'),
+      linked_note_id: values.linked_note_id ?? null,
+    };
+
+    const onSuccess = () => {
+      setSelectedDate(values.date);
+      setSidebarMode('day');
+      closeModal();
+    };
+
+    if (editingEvent) {
+      updateCalendarEventMutation.mutate(
+        { id: editingEvent.id, data: payload },
+        {
+          onSuccess,
+        },
+      );
+      return;
+    }
+
+    createCalendarEventMutation.mutate(payload, {
+      onSuccess,
+    });
   };
 
-  const handleDelete = async (eventId: string) => {
-    try {
-      await deleteCalendarEventMutation.mutateAsync(eventId);
-      message.success('Event deleted');
-    } catch (error) {
-      uiLogger.error('Failed to delete calendar event:', error);
-      message.error('Failed to delete event');
-    }
-  };
+  const handleDelete = (eventId: string): Promise<void> =>
+    new Promise((resolve, reject) => {
+      deleteCalendarEventMutation.mutate(eventId, {
+        onSuccess: () => {
+          resolve();
+        },
+        onError: (error) => {
+          reject(error);
+        },
+      });
+    });
 
   const setDayFilter = (value: Dayjs) => {
     setSelectedDate(value);
@@ -281,7 +289,7 @@ export const WorkspaceCalendarPage: React.FC = () => {
       <CalendarEventModal
         open={isModalOpen}
         editing={Boolean(editingEvent)}
-        saving={saving}
+        saving={createCalendarEventMutation.isPending || updateCalendarEventMutation.isPending}
         form={form}
         noteOptions={noteOptions}
         onSave={handleSave}

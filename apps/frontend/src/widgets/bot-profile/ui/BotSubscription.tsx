@@ -184,18 +184,12 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
       okText: 'Delete',
       okType: 'danger',
       cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          await deleteSubscriptionMutation.mutateAsync({
-            resource: 'subscriptions',
-            id: subscription.id,
-            invalidates: ['resourceAll'],
-          });
-          message.success('Subscription deleted');
-        } catch (error) {
-          console.error('Error deleting subscription:', error);
-          message.error('Error deleting subscription');
-        }
+      onOk: () => {
+        deleteSubscriptionMutation.mutate({
+          resource: 'subscriptions',
+          id: subscription.id,
+          invalidates: ['resourceAll'],
+        });
       },
     });
   };

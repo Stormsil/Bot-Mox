@@ -99,29 +99,24 @@ export const BotLifeStagesWidget: React.FC<BotLifeStagesProps> = ({ botId }) => 
     setCurrentStage(value);
   };
 
-  const handleBan = async () => {
+  const handleBan = () => {
     if (!banFormData.ban_reason.trim()) {
       message.error('Укажите причину блокировки');
       return;
     }
-    try {
-      await banBotMutation.mutateAsync({ botId, details: banFormData });
-      message.success('Бот заблокирован и перемещён в архив');
-      setIsBanModalVisible(false);
-    } catch (err) {
-      message.error('Ошибка при блокировке бота');
-      console.error(err);
-    }
+
+    banBotMutation.mutate(
+      { botId, details: banFormData },
+      {
+        onSuccess: () => {
+          setIsBanModalVisible(false);
+        },
+      },
+    );
   };
 
-  const handleUnban = async () => {
-    try {
-      await unbanBotMutation.mutateAsync(botId);
-      message.success('Бан снят, бот восстановлен');
-    } catch (err) {
-      message.error('Ошибка при снятии бана');
-      console.error(err);
-    }
+  const handleUnban = () => {
+    unbanBotMutation.mutate(botId);
   };
 
   if (loading) {

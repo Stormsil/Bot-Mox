@@ -138,7 +138,6 @@ export const LicensesPage: React.FC = () => {
 
   const currentTime = useCurrentTime();
   const [isAddBotModalOpen, setIsAddBotModalOpen] = useState(false);
-  const [addBotSubmitting, setAddBotSubmitting] = useState(false);
   const [selectedLicenseForBot, setSelectedLicenseForBot] = useState<LicenseWithBots | null>(null);
   const [selectedLicenseForEdit, setSelectedLicenseForEdit] = useState<LicenseWithBots | null>(
     null,
@@ -261,60 +260,67 @@ export const LicensesPage: React.FC = () => {
     message.success('License key copied');
   };
 
-  const handleAddBot = async (values: AddBotFormValues) => {
+  const handleAddBot = (values: AddBotFormValues): Promise<void> => {
     if (!selectedLicenseForBot) {
-      return;
-    }
-    if (addBotSubmitting) {
-      return;
+      return Promise.resolve();
     }
 
-    setAddBotSubmitting(true);
-    try {
-      const botId = values.bot_id;
-      const currentBotIds = selectedLicenseForBot.bot_ids || [];
-      await updateLicense.mutateAsync({
-        resource: 'licenses',
-        id: selectedLicenseForBot.id,
-        values: {
-          bot_ids: [...currentBotIds, botId],
-          updated_at: getCurrentTimestamp(),
+    const botId = values.bot_id;
+    const currentBotIds = selectedLicenseForBot.bot_ids || [];
+
+    return new Promise<void>((resolve, reject) => {
+      updateLicense.mutate(
+        {
+          resource: 'licenses',
+          id: selectedLicenseForBot.id,
+          values: {
+            bot_ids: [...currentBotIds, botId],
+            updated_at: getCurrentTimestamp(),
+          },
+          invalidates: ['resourceAll'],
         },
-        invalidates: ['resourceAll'],
-      });
-
-      message.success('Bot added to license');
-      setIsAddBotModalOpen(false);
-      setSelectedLicenseForBot(null);
-      addBotForm.resetFields();
-    } catch (error) {
-      uiLogger.error('Error adding bot:', error);
-      message.error(`Failed to add bot: ${getErrorMessage(error, 'Unknown error')}`);
-    } finally {
-      setAddBotSubmitting(false);
-    }
+        {
+          onSuccess: () => {
+            setIsAddBotModalOpen(false);
+            setSelectedLicenseForBot(null);
+            addBotForm.resetFields();
+            resolve();
+          },
+          onError: (error) => {
+            uiLogger.error('Error adding bot:', error);
+            reject(error);
+          },
+        },
+      );
+    });
   };
 
-  const handleRemoveBot = async (license: LicenseWithBots, botIndex: number) => {
-    try {
-      const newBotIds = [...(license.bot_ids || [])];
-      newBotIds.splice(botIndex, 1);
+  const handleRemoveBot = (license: LicenseWithBots, botIndex: number): Promise<void> => {
+    const newBotIds = [...(license.bot_ids || [])];
+    newBotIds.splice(botIndex, 1);
 
-      await updateLicense.mutateAsync({
-        resource: 'licenses',
-        id: license.id,
-        values: {
-          bot_ids: newBotIds,
-          updated_at: getCurrentTimestamp(),
+    return new Promise<void>((resolve, reject) => {
+      updateLicense.mutate(
+        {
+          resource: 'licenses',
+          id: license.id,
+          values: {
+            bot_ids: newBotIds,
+            updated_at: getCurrentTimestamp(),
+          },
+          invalidates: ['resourceAll'],
         },
-        invalidates: ['resourceAll'],
-      });
-
-      message.success('Bot removed from license');
-    } catch (error) {
-      uiLogger.error('Error removing bot:', error);
-      message.error('Failed to remove bot');
-    }
+        {
+          onSuccess: () => {
+            resolve();
+          },
+          onError: (error) => {
+            uiLogger.error('Error removing bot:', error);
+            reject(error);
+          },
+        },
+      );
+    });
   };
 
   const openAddBotModal = (license: LicenseWithBots) => {
@@ -437,7 +443,7 @@ export const LicensesPage: React.FC = () => {
         open={isAddBotModalOpen}
         bots={bots}
         form={addBotForm}
-        submitting={addBotSubmitting || updateLicense.mutation.isPending}
+        submitting={updateLicense.mutation.isPending}
         onCancel={() => {
           setIsAddBotModalOpen(false);
           setSelectedLicenseForBot(null);

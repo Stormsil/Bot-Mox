@@ -6,6 +6,7 @@ import {
   SaveOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
+import { useMutation } from '@tanstack/react-query';
 import type { UploadProps } from 'antd';
 import { Button, Card, Input, message, Space, Spin, Typography, Upload } from 'antd';
 import type React from 'react';
@@ -35,7 +36,6 @@ export const UnattendTab: React.FC = () => {
   const cardRadiusStyle: React.CSSProperties = { borderRadius: 2 };
   const [profiles, setProfiles] = useState<UnattendProfile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [profileName, setProfileName] = useState('');
   const [config, setConfig] = useState<UnattendProfileConfig>(
@@ -52,6 +52,26 @@ export const UnattendTab: React.FC = () => {
   useEffect(() => {
     profileNameRef.current = profileName;
   }, [profileName]);
+
+  const { mutate: createProfileMutate, isPending: isCreatePending } = useMutation({
+    mutationFn: createUnattendProfile,
+  });
+
+  const { mutate: updateProfileMutate, isPending: isUpdatePending } = useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: Parameters<typeof updateUnattendProfile>[1];
+    }) => updateUnattendProfile(id, payload),
+  });
+
+  const { mutate: deleteProfileMutate, isPending: isDeletePending } = useMutation({
+    mutationFn: deleteUnattendProfile,
+  });
+
+  const saving = isCreatePending || isUpdatePending || isDeletePending;
 
   const loadProfiles = useCallback(async () => {
     setLoading(true);
@@ -98,42 +118,51 @@ export const UnattendTab: React.FC = () => {
     setXmlValidationError(null);
   }, []);
 
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(() => {
     if (!profileName.trim()) {
       message.warning('Profile name is required');
       return;
     }
-    setSaving(true);
-    try {
-      if (selectedId) {
-        await updateUnattendProfile(selectedId, { name: profileName, config });
-        message.success('Profile updated');
-      } else {
-        const envelope = await createUnattendProfile({ name: profileName, config });
-        setSelectedId(envelope.data?.id || null);
-        message.success('Profile created');
-      }
-      await loadProfiles();
-    } catch {
-      message.error('Failed to save profile');
-    }
-    setSaving(false);
-  }, [selectedId, profileName, config, loadProfiles]);
 
-  const handleDelete = useCallback(async () => {
-    if (!selectedId) return;
-    try {
-      await deleteUnattendProfile(selectedId);
-      message.success('Profile deleted');
-      setSelectedId(null);
-      setProfileName('');
-      setConfig(structuredClone(DEFAULT_PROFILE_CONFIG));
-      setXmlValidationError(null);
-      await loadProfiles();
-    } catch {
-      message.error('Failed to delete profile');
+    if (selectedId) {
+      updateProfileMutate(
+        { id: selectedId, payload: { name: profileName, config } },
+        {
+          onSuccess: () => {
+            message.success('Profile updated');
+            void loadProfiles();
+          },
+        },
+      );
+      return;
     }
-  }, [selectedId, loadProfiles]);
+
+    createProfileMutate(
+      { name: profileName, config },
+      {
+        onSuccess: (envelope) => {
+          setSelectedId(envelope.data?.id || null);
+          message.success('Profile created');
+          void loadProfiles();
+        },
+      },
+    );
+  }, [config, createProfileMutate, loadProfiles, profileName, selectedId, updateProfileMutate]);
+
+  const handleDelete = useCallback(() => {
+    if (!selectedId) return;
+
+    deleteProfileMutate(selectedId, {
+      onSuccess: () => {
+        message.success('Profile deleted');
+        setSelectedId(null);
+        setProfileName('');
+        setConfig(structuredClone(DEFAULT_PROFILE_CONFIG));
+        setXmlValidationError(null);
+        void loadProfiles();
+      },
+    });
+  }, [deleteProfileMutate, loadProfiles, selectedId]);
 
   const updateConfig = useCallback(
     <K extends keyof UnattendProfileConfig>(

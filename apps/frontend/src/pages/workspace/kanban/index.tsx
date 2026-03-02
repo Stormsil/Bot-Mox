@@ -57,7 +57,6 @@ export const WorkspaceKanbanPage: React.FC = () => {
   const deleteKanbanTaskMutation = useDeleteKanbanTaskMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<KanbanTask | null>(null);
-  const [saving, setSaving] = useState(false);
   const [form] = Form.useForm<KanbanFormValues>();
 
   useEffect(() => {
@@ -118,68 +117,66 @@ export const WorkspaceKanbanPage: React.FC = () => {
   };
 
   const handleSave = async () => {
+    let values: KanbanFormValues;
     try {
-      const values = await form.validateFields();
-      setSaving(true);
-
-      const payload = {
-        title: values.title.trim(),
-        description: values.description?.trim() ?? '',
-        status: values.status,
-        due_date: values.due_date ? values.due_date.format('YYYY-MM-DD') : null,
-      };
-
-      if (editingTask) {
-        await updateKanbanTaskMutation.mutateAsync({ id: editingTask.id, data: payload });
-        message.success('Task updated');
-      } else {
-        await createKanbanTaskMutation.mutateAsync({
-          ...payload,
-          order: getNextOrder(payload.status),
-        });
-        message.success('Task created');
-      }
-
-      closeModal();
+      values = await form.validateFields();
     } catch (error) {
       if (error && typeof error === 'object' && 'errorFields' in (error as object)) {
         return;
       }
-      uiLogger.error('Failed to save task:', error);
-      message.error('Failed to save task');
-    } finally {
-      setSaving(false);
+      uiLogger.error('Failed to validate task form:', error);
+      return;
     }
+
+    const payload = {
+      title: values.title.trim(),
+      description: values.description?.trim() ?? '',
+      status: values.status,
+      due_date: values.due_date ? values.due_date.format('YYYY-MM-DD') : null,
+    };
+
+    if (editingTask) {
+      updateKanbanTaskMutation.mutate(
+        { id: editingTask.id, data: payload },
+        {
+          onSuccess: () => {
+            closeModal();
+          },
+        },
+      );
+      return;
+    }
+
+    createKanbanTaskMutation.mutate(
+      {
+        ...payload,
+        order: getNextOrder(payload.status),
+      },
+      {
+        onSuccess: () => {
+          closeModal();
+        },
+      },
+    );
   };
 
-  const handleDelete = async (taskId: string) => {
-    try {
-      await deleteKanbanTaskMutation.mutateAsync(taskId);
-      message.success('Task deleted');
-    } catch (error) {
-      uiLogger.error('Failed to delete task:', error);
-      message.error('Failed to delete task');
-    }
+  const handleDelete = (taskId: string) => {
+    deleteKanbanTaskMutation.mutate(taskId);
   };
 
-  const moveTask = async (task: KanbanTask) => {
+  const moveTask = (task: KanbanTask) => {
     const currentIndex = STATUSES.findIndex((item) => item.key === task.status);
     if (currentIndex < 0 || currentIndex === STATUSES.length - 1) {
       return;
     }
     const nextStatus = STATUSES[currentIndex + 1].key;
-    try {
-      await updateKanbanTaskMutation.mutateAsync({
-        id: task.id,
-        data: {
-          status: nextStatus,
-          order: getNextOrder(nextStatus),
-        },
-      });
-    } catch (error) {
-      uiLogger.error('Failed to move task:', error);
-      message.error('Failed to move task');
-    }
+    updateKanbanTaskMutation.mutate({
+      id: task.id,
+      data: {
+        status: nextStatus,
+        order: getNextOrder(nextStatus),
+      },
+    });
   };
 
   return (
@@ -300,7 +297,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
         open={isModalOpen}
         onOk={handleSave}
         onCancel={closeModal}
-        confirmLoading={saving}
+        confirmLoading={createKanbanTaskMutation.isPending || updateKanbanTaskMutation.isPending}
         destroyOnHidden
       >
         <Form layout="vertical" form={form}>

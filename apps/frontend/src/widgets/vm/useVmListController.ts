@@ -27,7 +27,6 @@ export function useVmListController({ vms, node, refreshVMs }: UseVmListControll
     async (vmid: number) => {
       try {
         await startVmMutation.mutateAsync({ vmid, node });
-        message.success(`VM ${vmid} start requested`);
         void refreshVMs();
       } catch (err) {
         message.error(`Failed to start VM ${vmid}: ${(err as Error).message}`);
@@ -40,7 +39,6 @@ export function useVmListController({ vms, node, refreshVMs }: UseVmListControll
     async (vmid: number) => {
       try {
         await stopVmMutation.mutateAsync({ vmid, node });
-        message.success(`VM ${vmid} stop requested`);
         void refreshVMs();
       } catch (err) {
         message.error(`Failed to stop VM ${vmid}: ${(err as Error).message}`);

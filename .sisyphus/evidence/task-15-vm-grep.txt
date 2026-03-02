@@ -1,0 +1,29 @@
+# Evidence: task-15-vm-grep.txt
+# generated_at: 2026-03-02T05:29:24
+# command: grep -n -E "mutateAsync\(|setSaving\(|setSubmitting\(|isPending|onSuccess" apps/frontend/src/widgets/vm/VMCommandPanel.tsx apps/frontend/src/widgets/vm/VMConfigPreview.tsx apps/frontend/src/widgets/vm/VMOperationLog.tsx apps/frontend/src/widgets/vm/VMSettingsForm.tsx apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx apps/frontend/src/widgets/vm/useVmListController.ts
+# exit_code: 0
+
+[stdout]
+apps/frontend/src/widgets/vm/VMCommandPanel.tsx:31:    if (startAndSendKeyBatchMutation.isPending) return;
+apps/frontend/src/widgets/vm/VMCommandPanel.tsx:45:        onSuccess: async (result) => {
+apps/frontend/src/widgets/vm/VMCommandPanel.tsx:78:            disabled={startAndSendKeyBatchMutation.isPending}
+apps/frontend/src/widgets/vm/VMCommandPanel.tsx:80:            {startAndSendKeyBatchMutation.isPending ? 'Starting...' : 'Start VMs'}
+apps/frontend/src/widgets/vm/VMConfigPreview.tsx:44:          loading={vmHardwareFingerprintMutation.isPending}
+apps/frontend/src/widgets/vm/VMConfigPreview.tsx:45:          disabled={vmHardwareFingerprintMutation.isPending}
+apps/frontend/src/widgets/vm/VMConfigPreview.tsx:80:              disabled={vmHardwareFingerprintMutation.isPending}
+apps/frontend/src/widgets/vm/VMSettingsForm.tsx:110:    onSuccess: () => {
+apps/frontend/src/widgets/vm/VMSettingsForm.tsx:215:          <SettingsActions saving={saveSettingsMutation.isPending} onSave={handleSave} />
+apps/frontend/src/widgets/vm/VMSettingsForm.tsx:225:          <SettingsActions saving={saveSettingsMutation.isPending} onSave={handleSave} />
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:56:  const { mutate: createProfileMutate, isPending: isCreatePending } = useMutation({
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:60:  const { mutate: updateProfileMutate, isPending: isUpdatePending } = useMutation({
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:70:  const { mutate: deleteProfileMutate, isPending: isDeletePending } = useMutation({
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:131:          onSuccess: () => {
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:143:        onSuccess: (envelope) => {
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:156:      onSuccess: () => {
+apps/frontend/src/widgets/vm/useVmListController.ts:29:        await startVmMutation.mutateAsync({ vmid, node });
+apps/frontend/src/widgets/vm/useVmListController.ts:41:        await stopVmMutation.mutateAsync({ vmid, node });
+apps/frontend/src/widgets/vm/useVmListController.ts:71:      const result = await updateVmConfigMutation.mutateAsync({
+apps/frontend/src/widgets/vm/useVmListController.ts:78:        const status = await waitForVmTaskMutation.mutateAsync({
+
+[stderr]
+

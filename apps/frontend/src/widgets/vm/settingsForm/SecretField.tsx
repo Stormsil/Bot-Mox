@@ -1,4 +1,5 @@
 import { CheckCircleOutlined, LockOutlined } from '@ant-design/icons';
+import { useMutation } from '@tanstack/react-query';
 import { Button, Input, Modal, message, Tag } from 'antd';
 import type React from 'react';
 import { useState } from 'react';
@@ -21,30 +22,40 @@ export const SecretField: React.FC<SecretFieldProps> = ({
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [value, setValue] = useState('');
-  const [saving, setSaving] = useState(false);
+
+  const saveSecretMutation = useMutation({
+    mutationFn: ({
+      plaintext,
+      existingSecretRef,
+    }: {
+      plaintext: string;
+      existingSecretRef?: string;
+    }) => setVmSettingsSecret(fieldName, plaintext, existingSecretRef),
+  });
 
   const isBound = Boolean(binding);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     const trimmed = value.trim();
     if (!trimmed) {
       message.warning('Please enter a value');
       return;
     }
 
-    setSaving(true);
-    try {
-      const newBinding = await setVmSettingsSecret(fieldName, trimmed, binding?.secret_ref);
-      onBindingChange(fieldName, newBinding);
-      message.success(isBound ? 'Secret rotated' : 'Secret set');
-      setModalOpen(false);
-      setValue('');
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Failed to save secret';
-      message.error(msg);
-    } finally {
-      setSaving(false);
-    }
+    saveSecretMutation.mutate(
+      {
+        plaintext: trimmed,
+        existingSecretRef: binding?.secret_ref,
+      },
+      {
+        onSuccess: (newBinding) => {
+          onBindingChange(fieldName, newBinding);
+          message.success(isBound ? 'Secret rotated' : 'Secret set');
+          setModalOpen(false);
+          setValue('');
+        },
+      },
+    );
   };
 
   return (
@@ -70,7 +81,7 @@ export const SecretField: React.FC<SecretFieldProps> = ({
           setModalOpen(false);
           setValue('');
         }}
-        confirmLoading={saving}
+        confirmLoading={saveSecretMutation.isPending}
         okText={isBound ? 'Rotate' : 'Save'}
         destroyOnHidden
       >

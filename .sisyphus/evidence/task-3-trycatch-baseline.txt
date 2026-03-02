@@ -1,0 +1,183 @@
+Task 3 try/catch baseline (reconstructed on current state)
+timestamp=2026-03-02T00:48:55Z
+command=ast-grep run --lang tsx --pattern 'try { $$$ } catch ($ERR) { $$$ }' apps/frontend/src
+
+apps/frontend/src\pages\workspace\kanban\index.tsx:121:    try {
+apps/frontend/src\pages\workspace\kanban\index.tsx:122:      values = await form.validateFields();
+apps/frontend/src\pages\workspace\kanban\index.tsx:123:    } catch (error) {
+apps/frontend/src\pages\workspace\kanban\index.tsx:124:      if (error && typeof error === 'object' && 'errorFields' in (error as object)) {
+apps/frontend/src\pages\workspace\kanban\index.tsx:125:        return;
+apps/frontend/src\pages\workspace\kanban\index.tsx:126:      }
+apps/frontend/src\pages\workspace\kanban\index.tsx:127:      uiLogger.error('Failed to validate task form:', error);
+apps/frontend/src\pages\workspace\kanban\index.tsx:128:      return;
+apps/frontend/src\pages\workspace\kanban\index.tsx:129:    }
+apps/frontend/src\widgets\finance\TransactionForm.tsx:168:    try {
+apps/frontend/src\widgets\finance\TransactionForm.tsx:169:      setSubmitting(true);
+apps/frontend/src\widgets\finance\TransactionForm.tsx:170:      const values = (await form.validateFields()) as TransactionFormValues & { date: unknown };
+apps/frontend/src\widgets\finance\TransactionForm.tsx:171:      const normalizedValues: TransactionFormValues = {
+apps/frontend/src\widgets\finance\TransactionForm.tsx:172:        ...getCreateDefaults(),
+apps/frontend/src\widgets\finance\TransactionForm.tsx:173:        ...values,
+apps/frontend/src\widgets\finance\TransactionForm.tsx:174:        date: dayjs.isDayjs(values.date) ? values.date.valueOf() : Number(values.date),
+apps/frontend/src\widgets\finance\TransactionForm.tsx:175:      };
+apps/frontend/src\widgets\finance\TransactionForm.tsx:176:
+apps/frontend/src\widgets\finance\TransactionForm.tsx:177:      const parsed = transactionFormSchema.parse(normalizedValues as unknown);
+apps/frontend/src\widgets\finance\TransactionForm.tsx:178:
+apps/frontend/src\widgets\finance\TransactionForm.tsx:179:      const formData: FinanceOperationFormData = {
+apps/frontend/src\widgets\finance\TransactionForm.tsx:180:        type: parsed.type as FinanceOperationType,
+apps/frontend/src\widgets\finance\TransactionForm.tsx:181:        category: parsed.category as FinanceOperationFormData['category'],
+apps/frontend/src\widgets\finance\TransactionForm.tsx:182:        bot_id: null,
+apps/frontend/src\widgets\finance\TransactionForm.tsx:183:        project_id: (parsed.project_id ?? null) as FinanceOperationFormData['project_id'],
+apps/frontend/src\widgets\finance\TransactionForm.tsx:184:        description: parsed.description ?? '',
+apps/frontend/src\widgets\finance\TransactionForm.tsx:185:        amount: parsed.category === 'sale' ? calculatedAmount : parsed.amount,
+apps/frontend/src\widgets\finance\TransactionForm.tsx:186:        currency: 'USD',
+apps/frontend/src\widgets\finance\TransactionForm.tsx:187:        gold_price_at_time: parsed.category === 'sale' ? (parsed.gold_price_at_time ?? null) : null,
+apps/frontend/src\widgets\finance\TransactionForm.tsx:188:        gold_amount:
+apps/frontend/src\widgets\finance\TransactionForm.tsx:189:          parsed.category === 'sale'
+apps/frontend/src\widgets\finance\TransactionForm.tsx:190:            ? ((parsed.gold_amount ?? undefined) as FinanceOperationFormData['gold_amount'])
+apps/frontend/src\widgets\finance\TransactionForm.tsx:191:            : undefined,
+apps/frontend/src\widgets\finance\TransactionForm.tsx:192:        date: dayjs(parsed.date).format('YYYY-MM-DD HH:mm:ss'),
+apps/frontend/src\widgets\finance\TransactionForm.tsx:193:      };
+apps/frontend/src\widgets\finance\TransactionForm.tsx:194:
+apps/frontend/src\widgets\finance\TransactionForm.tsx:195:      await onSubmit(formData);
+apps/frontend/src\widgets\finance\TransactionForm.tsx:196:      form.setFieldsValue(getCreateDefaults() as unknown as Record<string, unknown>);
+apps/frontend/src\widgets\finance\TransactionForm.tsx:197:    } catch (error) {
+apps/frontend/src\widgets\finance\TransactionForm.tsx:198:      if (error instanceof z.ZodError) {
+apps/frontend/src\widgets\finance\TransactionForm.tsx:199:        form.setFields(
+apps/frontend/src\widgets\finance\TransactionForm.tsx:200:          error.issues.map((issue) => ({
+apps/frontend/src\widgets\finance\TransactionForm.tsx:201:            name: issue.path,
+apps/frontend/src\widgets\finance\TransactionForm.tsx:202:            errors: [issue.message],
+apps/frontend/src\widgets\finance\TransactionForm.tsx:203:          })),
+apps/frontend/src\widgets\finance\TransactionForm.tsx:204:        );
+apps/frontend/src\widgets\finance\TransactionForm.tsx:205:        return;
+apps/frontend/src\widgets\finance\TransactionForm.tsx:206:      }
+apps/frontend/src\widgets\finance\TransactionForm.tsx:207:      if (
+apps/frontend/src\widgets\finance\TransactionForm.tsx:208:        typeof error === 'object' &&
+apps/frontend/src\widgets\finance\TransactionForm.tsx:209:        error !== null &&
+apps/frontend/src\widgets\finance\TransactionForm.tsx:210:        'errorFields' in error &&
+apps/frontend/src\widgets\finance\TransactionForm.tsx:211:        Array.isArray((error as { errorFields?: unknown[] }).errorFields)
+apps/frontend/src\widgets\finance\TransactionForm.tsx:212:      ) {
+apps/frontend/src\widgets\finance\TransactionForm.tsx:213:        return;
+apps/frontend/src\widgets\finance\TransactionForm.tsx:214:      }
+apps/frontend/src\widgets\finance\TransactionForm.tsx:215:      throw error;
+apps/frontend/src\widgets\finance\TransactionForm.tsx:216:    } finally {
+apps/frontend/src\widgets\finance\TransactionForm.tsx:217:      setSubmitting(false);
+apps/frontend/src\widgets\finance\TransactionForm.tsx:218:    }
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:142:      try {
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:143:        const config = await getVMConfig(vmId, node);
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:144:        if (requestId !== templateSyncRequestRef.current) return;
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:145:
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:146:        const loadedCores = normalizeTemplateCores(config.cores);
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:147:        const loadedMemory = normalizeTemplateMemoryMb(config.memory);
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:148:
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:149:        setSettings((prev) => {
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:150:          if (!prev) return prev;
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:151:
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:152:          const nextCores = loadedCores ?? prev.hardware.cores;
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:153:          const nextMemory = loadedMemory ?? prev.hardware.memory;
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:154:
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:155:          return {
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:156:            ...prev,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:157:            template: {
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:158:              ...prev.template,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:159:              vmId,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:160:            },
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:161:            hardware: {
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:162:              ...prev.hardware,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:163:              cores: nextCores,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:164:              memory: nextMemory,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:165:            },
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:166:          };
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:167:        });
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:168:
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:169:        const summary = buildTemplateSummary({
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:170:          node,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:171:          vmId,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:172:          config: config as Record<string, unknown>,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:173:          cores: loadedCores,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:174:          memoryMb: loadedMemory,
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:175:        });
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:176:        setTemplateSummary(summary);
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:177:
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:178:        setTemplateSyncState('ok');
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:179:        const meta: string[] = [];
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:180:        if (loadedCores !== null) meta.push(`cores=${loadedCores}`);
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:181:        if (loadedMemory !== null) meta.push(`memory=${loadedMemory}MB`);
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:182:        const suffix = meta.length > 0 ? ` (${meta.join(', ')})` : '';
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:183:        setTemplateSyncMessage(`Template VM ${vmId} found on ${node}${suffix}`);
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:184:      } catch (error) {
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:185:        if (requestId !== templateSyncRequestRef.current) return;
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:186:        console.error('Failed to auto-load template VM params:', error);
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:187:        setTemplateSummary(null);
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:188:        setTemplateSyncState('error');
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:189:        setTemplateSyncMessage(`Failed to load parameters from VM ${vmId}`);
+apps/frontend/src\widgets\vm\VMSettingsForm.tsx:190:      }
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:102:    try {
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:103:      setIsClearing(true);
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:104:      await clear();
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:105:      setTaskModalOpen(false);
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:106:      message.success('Operation history cleared');
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:107:    } catch (error) {
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:108:      const errorMessage =
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:109:        error instanceof Error ? error.message : 'Failed to clear operation history';
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:110:      message.error(errorMessage);
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:111:    } finally {
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:112:      setIsClearing(false);
+apps/frontend/src\widgets\vm\VMOperationLog.tsx:113:    }
+apps/frontend/src\pages\billing\index.tsx:95:    try {
+apps/frontend/src\pages\billing\index.tsx:96:      await activateBillingMock(30);
+apps/frontend/src\pages\billing\index.tsx:97:      await refreshIdentity();
+apps/frontend/src\pages\billing\index.tsx:98:      message.success('Stub premium activated for 30 days');
+apps/frontend/src\pages\billing\index.tsx:99:      window.location.reload();
+apps/frontend/src\pages\billing\index.tsx:100:    } catch (error) {
+apps/frontend/src\pages\billing\index.tsx:101:      const text = error instanceof Error ? error.message : 'Failed to activate stub premium';
+apps/frontend/src\pages\billing\index.tsx:102:      message.error(text);
+apps/frontend/src\pages\billing\index.tsx:103:    } finally {
+apps/frontend/src\pages\billing\index.tsx:104:      setIsActivating(false);
+apps/frontend/src\pages\billing\index.tsx:105:    }
+apps/frontend/src\pages\billing\index.tsx:110:    try {
+apps/frontend/src\pages\billing\index.tsx:111:      await startBillingTrial();
+apps/frontend/src\pages\billing\index.tsx:112:      await refreshIdentity();
+apps/frontend/src\pages\billing\index.tsx:113:      message.success('24-hour trial activated');
+apps/frontend/src\pages\billing\index.tsx:114:      window.location.reload();
+apps/frontend/src\pages\billing\index.tsx:115:    } catch (error) {
+apps/frontend/src\pages\billing\index.tsx:116:      if (error instanceof BillingApiError && error.code === 'AUTH_TRIAL_ALREADY_USED') {
+apps/frontend/src\pages\billing\index.tsx:117:        await refreshIdentity().catch(() => undefined);
+apps/frontend/src\pages\billing\index.tsx:118:        message.warning('Trial already used for this account');
+apps/frontend/src\pages\billing\index.tsx:119:        return;
+apps/frontend/src\pages\billing\index.tsx:120:      }
+apps/frontend/src\pages\billing\index.tsx:121:      const text = error instanceof Error ? error.message : 'Failed to start trial';
+apps/frontend/src\pages\billing\index.tsx:122:      message.error(text);
+apps/frontend/src\pages\billing\index.tsx:123:    } finally {
+apps/frontend/src\pages\billing\index.tsx:124:      setIsStartingTrial(false);
+apps/frontend/src\pages\billing\index.tsx:125:    }
+apps/frontend/src\pages\workspace\calendar\index.tsx:152:    try {
+apps/frontend/src\pages\workspace\calendar\index.tsx:153:      values = await form.validateFields();
+apps/frontend/src\pages\workspace\calendar\index.tsx:154:    } catch (error) {
+apps/frontend/src\pages\workspace\calendar\index.tsx:155:      if (error && typeof error === 'object' && 'errorFields' in (error as object)) {
+apps/frontend/src\pages\workspace\calendar\index.tsx:156:        return;
+apps/frontend/src\pages\workspace\calendar\index.tsx:157:      }
+apps/frontend/src\pages\workspace\calendar\index.tsx:158:      uiLogger.error('Failed to validate calendar event form:', error);
+apps/frontend/src\pages\workspace\calendar\index.tsx:159:      return;
+apps/frontend/src\pages\workspace\calendar\index.tsx:160:    }
+apps/frontend/src\widgets\notes-editor\NoteEditor.tsx:120:    try {
+apps/frontend/src\widgets\notes-editor\NoteEditor.tsx:121:      localStorage.setItem(EDITOR_MODE_STORAGE_KEY, editorMode);
+apps/frontend/src\widgets\notes-editor\NoteEditor.tsx:122:    } catch (error) {
+apps/frontend/src\widgets\notes-editor\NoteEditor.tsx:123:      console.warn('Failed to persist notes editor mode:', error);
+apps/frontend/src\widgets\notes-editor\NoteEditor.tsx:124:    }
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:99:    try {
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:100:      const autoCheckEnabled = await isAutoCheckEnabled();
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:101:      if (!autoCheckEnabled) {
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:102:        console.log('IPQS auto-check is disabled or API key not configured');
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:103:        return;
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:104:      }
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:105:
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:106:      const data = await checkIPQuality(ip);
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:107:      console.log('IPQS Data:', data);
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:108:      setIpqsData(data);
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:109:    } catch (error) {
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:110:      console.error('IPQS check failed:', error);
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:111:    } finally {
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:112:      setCheckingIPQS(false);
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:113:    }
+
+[exit_code=0]

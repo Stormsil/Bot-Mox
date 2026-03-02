@@ -23,7 +23,6 @@ import styles from './character/character.module.css';
 export const BotCharacterWidget: React.FC<BotCharacterProps> = ({ bot, mode = 'edit' }) => {
   const [characterForm] = Form.useForm<CharacterFormData>();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [nameGenerating, setNameGenerating] = useState(false);
   const [nameLocked, setNameLocked] = useState(false);
   const [pendingNameLock, setPendingNameLock] = useState(false);
@@ -130,42 +129,34 @@ export const BotCharacterWidget: React.FC<BotCharacterProps> = ({ bot, mode = 'e
       return;
     }
 
-    setSaving(true);
-    try {
-      const currentLevel = formData.level || 1;
-      const characterData = {
-        name: values.name,
-        level: currentLevel,
-        server: values.server,
-        faction: values.faction,
-        race: values.race,
-        class: values.class,
-        updated_at: Date.now(),
-      };
+    const currentLevel = formData.level || 1;
+    const characterData = {
+      name: values.name,
+      level: currentLevel,
+      server: values.server,
+      faction: values.faction,
+      race: values.race,
+      class: values.class,
+      updated_at: Date.now(),
+    };
 
-      const shouldLockName = !!String(values.name || '').trim();
-      await updateBotMutation.mutateAsync({
+    const shouldLockName = !!String(values.name || '').trim();
+    updateBotMutation.mutate(
+      {
         botId: bot.id,
         payload: {
           character: characterData,
           'generation_locks/character_name': shouldLockName,
         },
-      });
-      setNameLocked(shouldLockName);
-      setPendingNameLock(false);
-      message.success(
-        shouldLockName ? 'Character data saved and name locked' : 'Character data saved',
-      );
-      setHasChanges(false);
-    } catch (saveError) {
-      console.error('Error saving character data:', saveError);
-      message.error(
-        'Failed to save character data: ' +
-          (saveError instanceof Error ? saveError.message : 'Unknown error'),
-      );
-    } finally {
-      setSaving(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          setNameLocked(shouldLockName);
+          setPendingNameLock(false);
+          setHasChanges(false);
+        },
+      },
+    );
   };
 
   const handleCancel = () => {
@@ -181,62 +172,78 @@ export const BotCharacterWidget: React.FC<BotCharacterProps> = ({ bot, mode = 'e
     }
     setNameGenerating(true);
 
-    try {
-      const data = await wowNamesMutation.mutateAsync({ batches: 3 });
-      const names = Array.isArray(data.names) ? data.names.filter((name: string) => name) : [];
-      let candidatePool = names.filter((name: string) => !usedGeneratedNamesRef.current.has(name));
-      if (!candidatePool.length) {
-        usedGeneratedNamesRef.current.clear();
-        candidatePool = names;
-      }
+    await new Promise<void>((resolve) => {
+      wowNamesMutation.mutate(
+        { batches: 3 },
+        {
+          onSuccess: (data) => {
+            const names = Array.isArray(data.names)
+              ? data.names.filter((name: string) => name)
+              : [];
+            let candidatePool = names.filter(
+              (name: string) => !usedGeneratedNamesRef.current.has(name),
+            );
+            if (!candidatePool.length) {
+              usedGeneratedNamesRef.current.clear();
+              candidatePool = names;
+            }
 
-      let generatedName =
-        candidatePool.length > 0
-          ? candidatePool[Math.floor(Math.random() * candidatePool.length)]
-          : data?.random || '';
+            let generatedName =
+              candidatePool.length > 0
+                ? candidatePool[Math.floor(Math.random() * candidatePool.length)]
+                : data?.random || '';
 
-      if (generatedName && lastGeneratedName && candidatePool.length > 1) {
-        let attempts = 0;
-        while (generatedName === lastGeneratedName && attempts < 5) {
-          generatedName = candidatePool[Math.floor(Math.random() * candidatePool.length)];
-          attempts += 1;
-        }
-      }
+            if (generatedName && lastGeneratedName && candidatePool.length > 1) {
+              let attempts = 0;
+              while (generatedName === lastGeneratedName && attempts < 5) {
+                generatedName = candidatePool[Math.floor(Math.random() * candidatePool.length)];
+                attempts += 1;
+              }
+            }
 
-      if (!generatedName) {
-        throw new Error('No name returned');
-      }
+            if (!generatedName) {
+              const generateError = new Error('No name returned');
+              console.error('Failed to generate WoW name:', generateError);
+              message.error('Failed to generate name. Check API connectivity and auth session.');
+              return;
+            }
 
-      characterForm.setFieldsValue({ name: generatedName });
-      setFormData((prev) => ({ ...prev, name: generatedName }));
-      setHasChanges(true);
-      setPendingNameLock(true);
-      setLastGeneratedName(generatedName);
-      usedGeneratedNamesRef.current.add(generatedName);
-      message.success(`Generated: ${generatedName}`);
-    } catch (generateError) {
-      console.error('Failed to generate WoW name:', generateError);
-      message.error('Failed to generate name. Check API connectivity and auth session.');
-    } finally {
-      setNameGenerating(false);
-    }
+            characterForm.setFieldsValue({ name: generatedName });
+            setFormData((prev) => ({ ...prev, name: generatedName }));
+            setHasChanges(true);
+            setPendingNameLock(true);
+            setLastGeneratedName(generatedName);
+            usedGeneratedNamesRef.current.add(generatedName);
+            message.success(`Generated: ${generatedName}`);
+          },
+          onError: (generateError) => {
+            console.error('Failed to generate WoW name:', generateError);
+            message.error('Failed to generate name. Check API connectivity and auth session.');
+          },
+          onSettled: () => {
+            setNameGenerating(false);
+            resolve();
+          },
+        },
+      );
+    });
   }, [characterForm, lastGeneratedName, nameGenerating, nameLocked, wowNamesMutation]);
 
   const handleUnlockName = useCallback(async () => {
     if (!bot?.id) return;
-    try {
-      await updateBotMutation.mutateAsync({
+    updateBotMutation.mutate(
+      {
         botId: bot.id,
         payload: {
           'generation_locks/character_name': false,
         },
-      });
-      setPendingNameLock(false);
-      message.success('Name generation unlocked');
-    } catch (unlockError) {
-      console.error('Failed to unlock character name generation:', unlockError);
-      message.error('Failed to unlock name generation');
-    }
+      },
+      {
+        onSuccess: () => {
+          setPendingNameLock(false);
+        },
+      },
+    );
   }, [bot?.id, updateBotMutation]);
 
   const complete = useMemo(() => isCharacterComplete(formData), [formData]);
@@ -295,7 +302,7 @@ export const BotCharacterWidget: React.FC<BotCharacterProps> = ({ bot, mode = 'e
             filteredRaces={filteredRaces}
             availableClasses={availableClasses}
             hasChanges={hasChanges}
-            saving={saving}
+            saving={updateBotMutation.isPending}
             nameGenerating={nameGenerating}
             nameLocked={nameLocked}
             pendingNameLock={pendingNameLock}

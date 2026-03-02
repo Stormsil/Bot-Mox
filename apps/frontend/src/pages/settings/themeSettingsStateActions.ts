@@ -142,7 +142,6 @@ export async function saveThemeColorsAction(params: {
       typographySettings: params.localTypographySettings,
       shapeSettings: params.localShapeSettings,
     });
-    message.success('Theme colors saved');
   } catch (error) {
     uiLogger.error('Error saving theme colors:', error);
     message.error('Failed to save theme colors');
@@ -156,7 +155,6 @@ export async function saveVisualSettingsAction(params: {
 }): Promise<void> {
   try {
     await params.updateVisualSettings({ visual: params.localVisualSettings });
-    message.success('Visual theme settings saved');
   } catch (error) {
     uiLogger.error('Error saving visual theme settings:', error);
     message.error('Failed to save visual theme settings');
@@ -193,7 +191,6 @@ export async function uploadThemeAssetAction(params: {
       params.onVisualSettingsChange?.(next);
       return next;
     });
-    message.success('Background image uploaded');
   } catch (error) {
     uiLogger.error('Error uploading theme asset:', error);
     message.error(error instanceof Error ? error.message : 'Failed to upload background image');
@@ -243,7 +240,6 @@ export async function deleteThemeAssetAction(params: {
       params.onVisualSettingsChange?.(next);
       return next;
     });
-    message.success('Background image deleted');
   } catch (error) {
     uiLogger.error('Error deleting theme asset:', error);
     message.error('Failed to delete background image');

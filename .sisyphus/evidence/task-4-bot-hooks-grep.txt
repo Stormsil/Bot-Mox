@@ -1,0 +1,17 @@
+# Evidence: task-4-bot-hooks-grep.txt
+# generated_at: 2026-03-02T05:29:24
+# command: grep -n -E "onSuccess|message.success" apps/frontend/src/entities/bot/api/useBotMutations.ts apps/frontend/src/entities/bot/api/useBotLifecycleMutations.ts
+# exit_code: 0
+
+[stdout]
+apps/frontend/src/entities/bot/api/useBotMutations.ts:21:    onSuccess: async (_data, variables) => {
+apps/frontend/src/entities/bot/api/useBotMutations.ts:22:      message.success('Bot updated');
+apps/frontend/src/entities/bot/api/useBotMutations.ts:39:    onSuccess: async (_data, botId) => {
+apps/frontend/src/entities/bot/api/useBotMutations.ts:40:      message.success('Bot deleted');
+apps/frontend/src/entities/bot/api/useBotLifecycleMutations.ts:25:    onSuccess: async (_data, variables) => {
+apps/frontend/src/entities/bot/api/useBotLifecycleMutations.ts:26:      message.success('Р‘РѕС‚ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ Рё РїРµСЂРµРјРµС‰С‘РЅ РІ Р°СЂС…РёРІ');
+apps/frontend/src/entities/bot/api/useBotLifecycleMutations.ts:48:    onSuccess: async (_data, botId) => {
+apps/frontend/src/entities/bot/api/useBotLifecycleMutations.ts:49:      message.success('Р‘Р°РЅ СЃРЅСЏС‚, Р±РѕС‚ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅ');
+
+[stderr]
+

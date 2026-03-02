@@ -1,0 +1,35 @@
+# Evidence: task-6-settings-hooks-grep.txt
+# generated_at: 2026-03-02T05:29:24
+# command: grep -n -E "message.success|setQueryData|invalidateQueries" apps/frontend/src/entities/settings/api/useSettingsMutations.ts apps/frontend/src/entities/settings/api/useThemeMutations.ts
+# exit_code: 0
+
+[stdout]
+apps/frontend/src/entities/settings/api/useSettingsMutations.ts:20:      message.success('API keys saved');
+apps/frontend/src/entities/settings/api/useSettingsMutations.ts:21:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.apiKeys() });
+apps/frontend/src/entities/settings/api/useSettingsMutations.ts:34:      message.success('Proxy settings saved');
+apps/frontend/src/entities/settings/api/useSettingsMutations.ts:35:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.proxy() });
+apps/frontend/src/entities/settings/api/useSettingsMutations.ts:52:      message.success('Notification settings saved');
+apps/frontend/src/entities/settings/api/useSettingsMutations.ts:53:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.notifications() });
+apps/frontend/src/entities/settings/api/useSettingsMutations.ts:70:      message.success('Storage policy saved');
+apps/frontend/src/entities/settings/api/useSettingsMutations.ts:71:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.storagePolicy() });
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:75:      message.success('Theme colors saved');
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:76:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.theme() });
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:93:      message.success('Visual theme settings saved');
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:94:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.theme() });
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:109:      message.success(`Theme "${preset.name}" saved`);
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:110:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.theme() });
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:125:      message.success('Theme applied');
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:126:      queryClient.setQueryData(settingsQueryKeys.theme(), data);
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:127:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.theme() });
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:142:      message.success('Theme preset deleted');
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:143:      queryClient.setQueryData(settingsQueryKeys.theme(), data);
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:144:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.theme() });
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:159:      message.success('Background image uploaded');
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:160:      queryClient.setQueryData<ThemeBackgroundAsset[]>(
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:167:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.themeAssets() });
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:180:      message.success('Background image deleted');
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:181:      queryClient.setQueryData<ThemeBackgroundAsset[]>(
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:188:      await queryClient.invalidateQueries({ queryKey: settingsQueryKeys.themeAssets() });
+
+[stderr]
+

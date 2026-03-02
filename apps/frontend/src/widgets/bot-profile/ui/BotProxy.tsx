@@ -182,22 +182,16 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
       okText: 'Unassign',
       okType: 'danger',
       cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          await updateProxyMutation.mutateAsync({
-            resource: 'proxies',
-            id: proxy.id,
-            values: {
-              bot_id: null,
-              updated_at: Date.now(),
-            },
-            invalidates: ['resourceAll'],
-          });
-          message.success('');
-        } catch (error) {
-          console.error('Error unassigning proxy:', error);
-          message.error('Failed to unassign proxy');
-        }
+      onOk: () => {
+        updateProxyMutation.mutate({
+          resource: 'proxies',
+          id: proxy.id,
+          values: {
+            bot_id: null,
+            updated_at: Date.now(),
+          },
+          invalidates: ['resourceAll'],
+        });
       },
     });
   };

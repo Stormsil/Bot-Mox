@@ -46,7 +46,6 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
   const notes = useMemo(() => (notesIndexQuery.data || []) as NoteIndex[], [notesIndexQuery.data]);
   const loading = notesIndexQuery.isLoading;
   const [searchQuery, setSearchQuery] = useState('');
-  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     if (!notesIndexQuery.error) {
@@ -74,22 +73,21 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
     });
   }, [notes, searchQuery]);
 
-  const handleCreateNote = useCallback(async () => {
-    try {
-      setCreating(true);
-      await createNoteMutation.mutateAsync({
+  const handleCreateNote = useCallback(() => {
+    createNoteMutation.mutate(
+      {
         title: 'New Note',
         bot_id: null,
         project_id: null,
         tags: [],
-      });
-      onCreateNote?.();
-      setSearchQuery('');
-    } catch (error) {
-      console.error('Error creating note:', error);
-    } finally {
-      setCreating(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          onCreateNote?.();
+          setSearchQuery('');
+        },
+      },
+    );
   }, [createNoteMutation, onCreateNote]);
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,33 +99,24 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
   }, []);
 
   const handleDeleteNote = useCallback(
-    async (noteId: string, e: React.MouseEvent) => {
+    (noteId: string, e: React.MouseEvent) => {
       e.stopPropagation();
-      try {
-        await deleteNoteMutation.mutateAsync(noteId);
-        onNoteDelete?.(noteId);
-        message.success('Note deleted');
-      } catch (error) {
-        console.error('Error deleting note:', error);
-        message.error('Failed to delete note');
-      }
+      deleteNoteMutation.mutate(noteId, {
+        onSuccess: () => {
+          onNoteDelete?.(noteId);
+        },
+      });
     },
     [deleteNoteMutation, onNoteDelete],
   );
 
   const handleTogglePin = useCallback(
-    async (note: NoteIndex, e: React.MouseEvent) => {
+    (note: NoteIndex, e: React.MouseEvent) => {
       e.stopPropagation();
-      try {
-        await updateNoteMutation.mutateAsync({
-          noteId: note.id,
-          payload: { is_pinned: !note.is_pinned },
-        });
-        message.success(note.is_pinned ? 'Note unpinned' : 'Note pinned');
-      } catch (error) {
-        console.error('Error toggling pin:', error);
-        message.error('Failed to update note');
-      }
+      updateNoteMutation.mutate({
+        noteId: note.id,
+        payload: { is_pinned: !note.is_pinned },
+      });
     },
     [updateNoteMutation],
   );
@@ -151,7 +140,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={handleCreateNote}
-                loading={creating}
+                loading={createNoteMutation.isPending}
               />
             </Tooltip>
           )}

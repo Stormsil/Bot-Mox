@@ -1,84 +1,100 @@
-F4 Scope Fidelity Check (deep)
-Plan: .sisyphus/plans/vm-queue-zustand-phase-2.md
+F4 Scope Fidelity Check (deep) - re-run
+Plan: .sisyphus/plans/aop-mutation-error-ui-cleanup.md
 Date: 2026-03-02
 
-Audit objective
-- Verify all current diff changes stay within epic scope: VM queue ownership migration to Zustand and page/panel decoupling.
-- Verify no unintended product feature expansion.
+Plan boundary evidence
+- .sisyphus/plans/aop-mutation-error-ui-cleanup.md:60 => "No scope expansion to `apps/admin` in this epic."
+- Allowed epic scope for this gate: `apps/frontend/**` plus `.sisyphus/**` artifacts.
 
-Required command evidence
-1) git diff --name-only
-   .sisyphus/boulder.json
-   apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
-   apps/frontend/src/features/vm-management/model/vm/queue/processor.ts
-   apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts
-   apps/frontend/src/features/vm-management/model/vm/queue/types.ts
-   apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts
-   apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx
-   apps/frontend/src/pages/vms/VMsPage.tsx
-   apps/frontend/src/pages/vms/hooks/useVmPageLiveRefs.ts
-   apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts
-   apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts
-   apps/frontend/src/widgets/vm/VMQueuePanel.tsx
+Commands executed
+1) git status --short
+2) git diff --name-only
+3) git ls-files --others --exclude-standard
+4) Classification script over (2)+(3): prefix distribution, out-of-scope, apps/admin, dependency manifests
 
-2) git diff --stat
-   12 files changed, 202 insertions(+), 138 deletions(-)
+Command output evidence
+=== SUMMARY_JSON ===
+{"apps_admin_count": 0, "dependency_manifest_count": 0, "frontend_changed": 38, "out_of_scope_count": 0, "sisyphus_changed": 24, "total_changed": 62, "verdict": "PASS"}
 
-3) grep spot-check for unrelated domains on all touched product files
-   Pattern: finance|billing|kanban|datacenter|ipqs|bot-profile
-   Result: No matches found in each touched VM queue/product file.
+=== PREFIX_COUNTS ===
+.sisyphus: 24
+apps/frontend: 38
 
-File-by-file scope classification
-1. .sisyphus/boulder.json
-   Classification: IN SCOPE (non-product orchestration metadata)
-   Reason: switches active plan/session metadata to vm-queue-zustand-phase-2; no runtime/product behavior.
+=== OUT_OF_SCOPE ===
+<none>
 
-2. apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts
-   Classification: IN SCOPE
-   Reason: removes local queue ownership and queueRef path; reads/writes queue via Zustand store actions.
+=== APPS_ADMIN ===
+<none>
 
-3. apps/frontend/src/features/vm-management/model/vm/queue/types.ts
-   Classification: IN SCOPE
-   Reason: processing contract migration from queueRef to getQueueItems accessor.
+=== DEPENDENCY_MANIFESTS ===
+<none>
 
-4. apps/frontend/src/features/vm-management/model/vm/queue/processor.ts
-   Classification: IN SCOPE
-   Reason: replaces queueRef reads with fresh getQueueItems reads in processing/catch paths.
+=== git diff --name-only ===
+.sisyphus/evidence/f1-plan-compliance-audit.txt
+.sisyphus/evidence/f2-code-quality-review.txt
+apps/frontend/src/entities/bot/api/useBotLifecycleMutations.ts
+apps/frontend/src/entities/bot/api/useBotMutations.ts
+apps/frontend/src/entities/notes/api/useNoteMutations.ts
+apps/frontend/src/entities/settings/api/useSettingsMutations.ts
+apps/frontend/src/entities/settings/api/useThemeMutations.ts
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts
+apps/frontend/src/entities/workspace/api/useWorkspaceMutations.ts
+apps/frontend/src/features/bot-account/BotAccount.tsx
+apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
+apps/frontend/src/pages/finance/index.tsx
+apps/frontend/src/pages/licenses/index.tsx
+apps/frontend/src/pages/notes/index.tsx
+apps/frontend/src/pages/project/index.tsx
+apps/frontend/src/pages/proxies/ProxiesPage.tsx
+apps/frontend/src/pages/settings/themePresetActions.ts
+apps/frontend/src/pages/settings/themeSettingsStateActions.ts
+apps/frontend/src/pages/settings/useSettingsSaveHandlers.ts
+apps/frontend/src/pages/workspace/calendar/index.tsx
+apps/frontend/src/pages/workspace/kanban/index.tsx
+apps/frontend/src/shared/lib/query/queryClient.ts
+apps/frontend/src/widgets/bot-profile/ui/BotCharacterWidget.tsx
+apps/frontend/src/widgets/bot-profile/ui/BotLicense.tsx
+apps/frontend/src/widgets/bot-profile/ui/BotLifeStagesWidget.tsx
+apps/frontend/src/widgets/bot-profile/ui/BotPerson.tsx
+apps/frontend/src/widgets/bot-profile/ui/BotProxy.tsx
+apps/frontend/src/widgets/bot-profile/ui/BotSchedule.tsx
+apps/frontend/src/widgets/bot-profile/ui/BotSubscription.tsx
+apps/frontend/src/widgets/notes-editor/NoteEditor.tsx
+apps/frontend/src/widgets/notes-editor/NoteSidebar.tsx
+apps/frontend/src/widgets/schedule/ScheduleGenerator.tsx
+apps/frontend/src/widgets/vm/VMCommandPanel.tsx
+apps/frontend/src/widgets/vm/VMConfigPreview.tsx
+apps/frontend/src/widgets/vm/VMSettingsForm.tsx
+apps/frontend/src/widgets/vm/settingsForm/PlaybookTab.tsx
+apps/frontend/src/widgets/vm/settingsForm/SecretField.tsx
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx
+apps/frontend/src/widgets/vm/useVmListController.ts
 
-5. apps/frontend/src/features/vm-management/model/vm/queue/provisioningPhase.ts
-   Classification: IN SCOPE
-   Reason: provisioning phase now uses getQueueItems instead of queueRef.current.
+=== additional untracked changes (git ls-files --others --exclude-standard) ===
+.sisyphus/boulder.json
+.sisyphus/evidence/f3-after-login-success.png
+.sisyphus/evidence/f3-auth-state.json
+.sisyphus/evidence/f3-login-after-submit.png
+.sisyphus/evidence/f3-login-page.png
+.sisyphus/evidence/f3-manual-qa-blocked.png
+.sisyphus/evidence/f3-manual-qa.txt
+.sisyphus/evidence/f3-post-login.png
+.sisyphus/evidence/f3-protected-routes-redirect.png
+.sisyphus/evidence/task-16-mutateasync-gate.txt
+.sisyphus/evidence/task-16-trycatch-gate.txt
+.sisyphus/evidence/task-17-lint-build.txt
+.sisyphus/evidence/task-17-typecheck.txt
+.sisyphus/evidence/task-18-conformance-report.md
+.sisyphus/evidence/task-18-evidence-check.txt
+.sisyphus/evidence/task-3-mutateasync-baseline.txt
+.sisyphus/evidence/task-3-trycatch-baseline.txt
+.sisyphus/notepads/aop-mutation-error-ui-cleanup/decisions.md
+.sisyphus/notepads/aop-mutation-error-ui-cleanup/issues.md
+.sisyphus/notepads/aop-mutation-error-ui-cleanup/learnings.md
+.sisyphus/notepads/aop-mutation-error-ui-cleanup/problems.md
+.sisyphus/plans/aop-mutation-error-ui-cleanup.md
+apps/frontend/src/shared/lib/query/mutationToastOwnership.ts
 
-6. apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts
-   Classification: IN SCOPE
-   Reason: removes queue mirror effect, consumes canonical workspace queue items, and wires smart panel bridge.
-
-7. apps/frontend/src/pages/vms/VMsPage.tsx
-   Classification: IN SCOPE
-   Reason: queue pane callsite collapsed to bare <VMQueuePanel /> (prop drilling removed).
-
-8. apps/frontend/src/widgets/vm/VMQueuePanel.tsx
-   Classification: IN SCOPE
-   Reason: panel converted to smart component via bridge/store reads; queue actions no longer page-propped.
-
-9. apps/frontend/src/features/vm-queue/model/VMQueueContext.tsx
-   Classification: IN SCOPE
-   Reason: introduces bridge state plumbing required by smart panel decoupling.
-
-10. apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts
-    Classification: IN SCOPE
-    Reason: queue consumers realigned from queue.queue wrapper to canonical queueItems input.
-
-11. apps/frontend/src/pages/vms/hooks/useVmPageLiveRefs.ts
-    Classification: IN SCOPE
-    Reason: naming/wiring cleanup to reflect canonical workspaceQueueItems source.
-
-12. apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
-    Classification: IN SCOPE
-    Reason: queued-delete dedupe now reads explicit canonical queueItems input rather than wrapper queue.queue.
-
-Scope-fidelity conclusion
-- Out-of-scope product changes detected: NONE.
-- Product code changes map to queue ownership migration and queue panel/page decoupling only.
-- .sisyphus/boulder.json is acceptable orchestration metadata and not product scope creep.
-- F4 may be marked complete.
+Verdict
+- Scope fidelity: PASS
+- Reason: all changed files are confined to `.sisyphus/**` and `apps/frontend/**`; no `apps/admin/**` changes; no dependency-manifest changes.

@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import type React from 'react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useStartAndSendKeyBatchMutation } from '../../entities/vm/api/useVmActionMutations';
 import styles from './VMCommandPanel.module.css';
 
@@ -12,7 +12,6 @@ interface VMCommandPanelProps {
 
 export const VMCommandPanel: React.FC<VMCommandPanelProps> = ({ vmIds, node, onRunFinished }) => {
   const startAndSendKeyBatchMutation = useStartAndSendKeyBatchMutation();
-  const [isRunning, setIsRunning] = useState(false);
 
   const normalizedVmIds = useMemo(
     () =>
@@ -28,11 +27,11 @@ export const VMCommandPanel: React.FC<VMCommandPanelProps> = ({ vmIds, node, onR
 
   const vmIdsText = normalizedVmIds.join(', ');
 
-  const handleRun = async () => {
-    if (isRunning) return;
-    setIsRunning(true);
-    try {
-      const result = await startAndSendKeyBatchMutation.mutateAsync({
+  const handleRun = () => {
+    if (startAndSendKeyBatchMutation.isPending) return;
+
+    startAndSendKeyBatchMutation.mutate(
+      {
         vmIds: normalizedVmIds,
         options: {
           node,
@@ -41,24 +40,29 @@ export const VMCommandPanel: React.FC<VMCommandPanelProps> = ({ vmIds, node, onR
           intervalMs: 1000,
           startupDelayMs: 3000,
         },
-      });
+      },
+      {
+        onSuccess: async (result) => {
+          if (result.failed === 0) {
+            message.success(`VM start completed: ${result.ok}/${result.total}`);
+          } else {
+            const failedPreview = result.results
+              .filter((item) => !item.success)
+              .slice(0, 2)
+              .map((item) => `VM ${item.vmid}: ${item.error || 'Unknown error'}`)
+              .join(' | ');
+            message.warning(
+              `Completed with errors: ${result.ok}/${result.total}. ${failedPreview}`,
+            );
+          }
 
-      if (result.failed === 0) {
-        message.success(`VM start completed: ${result.ok}/${result.total}`);
-      } else {
-        const failedPreview = result.results
-          .filter((item) => !item.success)
-          .slice(0, 2)
-          .map((item) => `VM ${item.vmid}: ${item.error || 'Unknown error'}`)
-          .join(' | ');
-        message.warning(`Completed with errors: ${result.ok}/${result.total}. ${failedPreview}`);
-      }
-      await Promise.resolve(onRunFinished?.());
-    } catch (err) {
-      message.error(`Start API error: ${(err as Error).message}`);
-    } finally {
-      setIsRunning(false);
-    }
+          await Promise.resolve(onRunFinished?.());
+        },
+        onError: (err) => {
+          message.error(`Start API error: ${err.message}`);
+        },
+      },
+    );
   };
 
   return (
@@ -71,9 +75,9 @@ export const VMCommandPanel: React.FC<VMCommandPanelProps> = ({ vmIds, node, onR
             type="button"
             onClick={handleRun}
             className={`${styles.actionBtn} ${styles.runBtn}`}
-            disabled={isRunning}
+            disabled={startAndSendKeyBatchMutation.isPending}
           >
-            {isRunning ? 'Starting...' : 'Start VMs'}
+            {startAndSendKeyBatchMutation.isPending ? 'Starting...' : 'Start VMs'}
           </button>
         </div>
       </div>
