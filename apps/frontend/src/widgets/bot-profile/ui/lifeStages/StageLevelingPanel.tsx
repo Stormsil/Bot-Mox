@@ -4,8 +4,20 @@ import {
   LineChartOutlined,
   RiseOutlined,
 } from '@ant-design/icons';
-import { Card, Col, Divider, Flex, Progress, Row, Statistic, Tag, Typography } from 'antd';
+
 import type React from 'react';
+import { wowMetricColors } from '../../../../features/wow-data/config/colors';
+import {
+  AppCard as Card,
+  AppCol as Col,
+  AppDivider as Divider,
+  AppFlex as Flex,
+  AppProgress as Progress,
+  AppRow as Row,
+  AppStatistic as Statistic,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import { mockAnalytics, mockLeveling } from './config';
 import styles from './lifeStages.module.css';
 import { SimpleBarChart } from './SimpleBarChart';
@@ -27,7 +39,7 @@ export const StageLevelingPanel: React.FC = () => {
               title={<span className={styles['stat-title']}>Current Level</span>}
               value={leveling.current_level}
               prefix={<RiseOutlined />}
-              valueStyle={{ ...statValueStyle, color: '#722ed1' }}
+              valueStyle={{ ...statValueStyle, color: wowMetricColors.levelingCurrent }}
             />
           </Card>
         </Col>
@@ -37,7 +49,7 @@ export const StageLevelingPanel: React.FC = () => {
               title={<span className={styles['stat-title']}>XP per Hour</span>}
               value={leveling.xp_per_hour.toLocaleString()}
               suffix="XP"
-              valueStyle={{ ...statValueStyle, color: '#52c41a' }}
+              valueStyle={{ ...statValueStyle, color: wowMetricColors.levelingXpPerHour }}
             />
           </Card>
         </Col>
@@ -48,7 +60,7 @@ export const StageLevelingPanel: React.FC = () => {
               value={leveling.estimated_time_to_level}
               suffix="h"
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ ...statValueStyle, color: '#1890ff' }}
+              valueStyle={{ ...statValueStyle, color: wowMetricColors.levelingTimeToLevel }}
             />
           </Card>
         </Col>
@@ -67,7 +79,7 @@ export const StageLevelingPanel: React.FC = () => {
           </Flex>
           <Progress
             percent={xpPercent}
-            strokeColor="#722ed1"
+            strokeColor={wowMetricColors.levelingCurrent}
             trailColor="var(--boxmox-color-border-default)"
             showInfo={false}
           />
@@ -122,7 +134,7 @@ export const StageLevelingPanel: React.FC = () => {
         <Divider />
         <SimpleBarChart
           data={analytics.trend}
-          color="#722ed1"
+          color={wowMetricColors.levelingCurrent}
           label="XP/hour trend for recent sessions"
         />
       </Card>

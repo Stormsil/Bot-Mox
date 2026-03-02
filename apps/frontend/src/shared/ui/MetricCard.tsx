@@ -18,24 +18,24 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   subtext,
   progress,
   icon,
-  color = 'var(--boxmox-color-brand-primary)',
+  color = 'var(--botmox-color-brand-primary)',
 }) => {
   return (
     <Card
       variant="borderless"
       style={{
-        background: 'var(--boxmox-color-surface-panel)',
-        border: '1px solid var(--boxmox-color-border-default)',
+        background: 'var(--botmox-color-surface-panel)',
+        border: '1px solid var(--botmox-color-border-default)',
         borderRadius: 'var(--radius-sm)',
         height: '100%',
       }}
-      styles={{ body: { display: 'flex', flexDirection: 'column', gap: 8 } }}
+      styles={{ body: { display: 'flex', flexDirection: 'column', gap: 'var(--botmox-space-sm)' } }}
     >
       <Statistic
         title={
           <Text
             style={{
-              color: 'var(--boxmox-color-text-muted)',
+              color: 'var(--botmox-color-text-muted)',
               fontSize: 11,
               textTransform: 'uppercase',
               letterSpacing: 0.5,
@@ -65,13 +65,13 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           percent={progress}
           size="small"
           strokeColor={color}
-          trailColor="var(--boxmox-color-surface-muted)"
+          trailColor="var(--botmox-color-surface-muted)"
           strokeLinecap="butt"
           showInfo={false}
         />
       )}
       {subtext && (
-        <Text style={{ color: 'var(--boxmox-color-text-muted)', fontSize: 12 }}>{subtext}</Text>
+        <Text style={{ color: 'var(--botmox-color-text-muted)', fontSize: 12 }}>{subtext}</Text>
       )}
     </Card>
   );

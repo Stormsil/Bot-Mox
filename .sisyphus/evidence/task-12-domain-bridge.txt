@@ -1,0 +1,56 @@
+Task 12 - Domain Styling Bridge for WoW-Specific Colors
+
+Scope implemented:
+- Created `apps/frontend/src/features/wow-data/config/colors.ts` as WoW domain palette bridge.
+- Migrated WoW widgets to consume domain config (no local WoW HEX literals in touched WoW widget files).
+
+Verification command 1:
+`pnpm exec rg "#[0-9a-fA-F]{3,8}" apps/frontend/src/widgets/bot-profile apps/frontend/src/features/wow-data --glob "*.{ts,tsx}"`
+
+Output:
+- `apps/frontend/src/features/wow-data/config/colors.ts` contains centralized WoW palette literals (expected).
+- Residual HEX matches remain in non-WoW bot-profile modules (`license/*`, `subscription/*`, `proxy/*`, `BotLogsWidget.tsx`, `BotProxy.tsx`).
+- No HEX matches remain in migrated WoW files:
+  - `widgets/bot-profile/ui/BotFarm.tsx`
+  - `widgets/bot-profile/ui/BotProfessionWidget.tsx`
+  - `widgets/bot-profile/ui/BotLevelingWidget.tsx`
+  - `widgets/bot-profile/ui/lifeStages/config.tsx`
+  - `widgets/bot-profile/ui/lifeStages/StageLevelingPanel.tsx`
+  - `widgets/bot-profile/ui/lifeStages/StageFarmPanel.tsx`
+  - `widgets/bot-profile/ui/lifeStages/StageProfessionsPanel.tsx`
+  - `widgets/bot-profile/ui/lifeStages/StageTimeline.tsx`
+
+Interpretation:
+- WoW-specific colors are now centralized in feature-domain config and consumed by WoW widgets.
+- Remaining HEX literals in scoped grep are outside this task's WoW-domain migration scope.
+
+Verification command 2:
+`pnpm --filter @botmox/frontend typecheck`
+
+Output:
+`@botmox/frontend typecheck` -> `tsc -b --noEmit` completed successfully.
+
+Interpretation:
+- Migration is compile-safe.
+
+Final completion pass:
+
+Verification command 1 (strict acceptance):
+`pnpm exec rg "#[0-9a-fA-F]{3,8}" apps/frontend/src/widgets/bot-profile apps/frontend/src/features/wow-data --glob "*.{ts,tsx}"`
+
+Output:
+- Matches are now reported only from `apps/frontend/src/features/wow-data/config/colors.ts`.
+- No remaining HEX literal matches exist in `apps/frontend/src/widgets/bot-profile/**/*.ts(x)`.
+
+Interpretation:
+- Strict grep criterion is satisfied.
+- WoW domain palette remains centralized under feature config, while bot-profile TS/TSX files consume non-HEX theme/status variables.
+
+Verification command 2:
+`pnpm --filter @botmox/frontend typecheck`
+
+Output:
+`@botmox/frontend typecheck` -> `tsc -b --noEmit` completed successfully.
+
+Interpretation:
+- Final Task 12 state is compile-safe and acceptance-compliant.

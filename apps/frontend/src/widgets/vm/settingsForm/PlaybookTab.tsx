@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons';
 import Editor from '@monaco-editor/react';
 import { useMutation } from '@tanstack/react-query';
-import { Button, Card, Checkbox, Input, message, Space, Spin, Typography } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -20,6 +20,15 @@ import {
   validatePlaybook,
 } from '../../../entities/vm/api/playbookFacade';
 import { DEFAULT_PLAYBOOK_CONTENT } from '../../../shared/config/data/default-playbook';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCheckbox as Checkbox,
+  AppInput as Input,
+  AppSpace as Space,
+  AppSpin as Spin,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import styles from './PlaybookTab.module.css';
 
 const { Text } = Typography;

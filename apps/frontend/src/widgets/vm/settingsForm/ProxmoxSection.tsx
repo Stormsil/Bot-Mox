@@ -1,5 +1,10 @@
-import { Col, Flex, Input, Row } from 'antd';
 import type React from 'react';
+import {
+  AppCol as Col,
+  AppFlex as Flex,
+  AppInput as Input,
+  AppRow as Row,
+} from '../../../shared/ui';
 import { SecretField } from './SecretField';
 import layout from './SettingsSectionLayout.module.css';
 import type { SettingsSectionProps } from './types';

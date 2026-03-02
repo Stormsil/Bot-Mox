@@ -1,6 +1,6 @@
-import { Row } from 'antd';
 import type React from 'react';
 import type { ProjectSettings } from '../../../entities/settings/model/projectSettings';
+import { AppRow as Row } from '../../../shared/ui';
 import {
   ApiKeysCard,
   NotificationsCard,

@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import type { UploadProps } from 'antd';
-import { Button, Card, Input, message, Space, Spin, Typography, Upload } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -27,6 +27,15 @@ import {
   triggerXmlDownload,
   validateUnattendXml,
 } from '../../../shared/lib/utils/unattendXml';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppInput as Input,
+  AppSpace as Space,
+  AppSpin as Spin,
+  AppTypography as Typography,
+  AppUpload as Upload,
+} from '../../../shared/ui';
 import styles from './UnattendTab.module.css';
 import { buildUnattendSectionCards } from './unattend/sectionCards';
 

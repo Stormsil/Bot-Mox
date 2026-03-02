@@ -1,4 +1,3 @@
-import { Card, Col, Empty, Row, Typography } from 'antd';
 import type React from 'react';
 import { useMemo } from 'react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
@@ -9,6 +8,13 @@ import type {
   GoldPriceHistoryEntry,
   TimeSeriesData,
 } from '../../entities/finance/model/types';
+import {
+  AppCard as Card,
+  AppCol as Col,
+  AppEmpty as Empty,
+  AppRow as Row,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { CostAnalysis } from './CostAnalysis';
 import styles from './FinanceSummary.module.css';
 import { ProjectPerformanceTable } from './ProjectPerformanceTable';

@@ -6,8 +6,17 @@ import {
   UnlockOutlined,
 } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import { Button, Col, Flex, Form, Input, Row, Select } from 'antd';
+
 import type React from 'react';
+import {
+  AppButton as Button,
+  AppCol as Col,
+  AppFlex as Flex,
+  AppForm as Form,
+  AppInput as Input,
+  AppRow as Row,
+  AppSelect as Select,
+} from '../../../../shared/ui';
 import styles from './person.module.css';
 import type { PersonFormValues } from './types';
 

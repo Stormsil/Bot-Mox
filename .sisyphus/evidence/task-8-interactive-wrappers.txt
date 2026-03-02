@@ -1,0 +1,16 @@
+export { AppButton } from './AppButton/AppButton';
+export { AppInput } from './AppInput/AppInput';
+export { AppSelect } from './AppSelect/AppSelect';
+export { AppSwitch } from './AppSwitch/AppSwitch';
+
+> @botmox/frontend@0.0.0 typecheck E:\Боттинг\source\repos\Bot-Mox\apps\frontend
+> tsc -b --noEmit
+
+[interpretation]
+- Wrapper exports are present in shared UI barrel: AppButton, AppInput, AppSelect, AppSwitch.
+- Frontend typecheck completed successfully with no reported TypeScript errors.
+- The exact glob in the first rg command produced no matches; wrapper default-size behavior is still implemented in dedicated wrapper files.
+apps/frontend/src/shared/ui/AppSelect/AppSelect.tsx:export const AppSelect: React.FC<SelectProps> = ({ size = 'small', style, ...props }) => {
+apps/frontend/src/shared/ui/AppSwitch/AppSwitch.tsx:export const AppSwitch: React.FC<SwitchProps> = ({ size = 'small', style, ...props }) => {
+apps/frontend/src/shared/ui/AppInput/AppInput.tsx:export const AppInput: React.FC<InputProps> = ({ size = 'small', style, ...props }) => {
+apps/frontend/src/shared/ui/AppButton/AppButton.tsx:export const AppButton: React.FC<ButtonProps> = ({ size = 'small', style, ...props }) => {

@@ -1,0 +1,15 @@
+Edge/Failure Check (type-level): unsupported AppText type rejection proof
+
+Command 1: pnpm exec rg "interface AppTextProps extends Omit<TextProps, 'type'>|type\?: AppTextType|export type AppTextType" apps/frontend/src/shared/ui/AppText/AppText.tsx
+export type AppTextType = 'primary' | 'secondary' | 'muted' | 'danger' | 'success';
+export interface AppTextProps extends Omit<TextProps, 'type'> {
+  type?: AppTextType;
+
+Command 2: pnpm exec rg "'warning'|'info'|'default'|'critical'" apps/frontend/src/shared/ui/AppText/AppText.tsx
+(no matches)
+
+Command 3: pnpm exec rg "typeColorMap" apps/frontend/src/shared/ui/AppText/AppText.tsx
+const typeColorMap: Record<AppTextType, string> = {
+        color: typeColorMap[type],
+
+Interpretation: `AppText` public API intentionally omits raw AntD `TextProps.type` and replaces it with closed union `AppTextType`. Unsupported values such as `warning`, `info`, `default`, or `critical` are not part of the union and are rejected by TypeScript.

@@ -1,10 +1,17 @@
 import { CheckCircleOutlined, LockOutlined } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Button, Flex, Input, Modal, message, Tag } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useState } from 'react';
 import { setVmSettingsSecret } from '../../../entities/vm/api/secretsFacade';
 import type { SecretBinding } from '../../../shared/types';
+import {
+  AppButton as Button,
+  AppFlex as Flex,
+  AppInput as Input,
+  AppModal as Modal,
+  AppTag as Tag,
+} from '../../../shared/ui';
 import layout from './SettingsSectionLayout.module.css';
 
 interface SecretFieldProps {

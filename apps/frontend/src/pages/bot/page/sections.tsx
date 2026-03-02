@@ -1,7 +1,8 @@
 import { CheckOutlined, ExclamationOutlined, RightOutlined } from '@ant-design/icons';
-import { Collapse } from 'antd';
+
 import { BotAccount } from '../../../features/bot-account';
 import type { Bot } from '../../../shared/types';
+import { AppCollapse as Collapse } from '../../../shared/ui';
 import {
   BotCharacterWidget,
   BotLicense,

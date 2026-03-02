@@ -1,5 +1,5 @@
-import { Col, Row } from 'antd';
 import type React from 'react';
+import { AppCol as Col, AppRow as Row } from '../../../shared/ui';
 import { MetricCard } from '../../../shared/ui/MetricCard';
 import type { LicensesStats } from './types';
 

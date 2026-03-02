@@ -8,8 +8,18 @@ import {
   KeyOutlined,
   PoweroffOutlined,
 } from '@ant-design/icons';
-import { Alert, Card, Col, Flex, Row, Space, Tag, Tooltip } from 'antd';
+
 import type React from 'react';
+import {
+  AppAlert as Alert,
+  AppCard as Card,
+  AppCol as Col,
+  AppFlex as Flex,
+  AppRow as Row,
+  AppSpace as Space,
+  AppTag as Tag,
+  AppTooltip as Tooltip,
+} from '../../../../shared/ui';
 import { StatusBadge } from '../../../../shared/ui/StatusBadge';
 import { BotCharacterWidget } from '../BotCharacterWidget';
 import styles from '../BotSummary.module.css';

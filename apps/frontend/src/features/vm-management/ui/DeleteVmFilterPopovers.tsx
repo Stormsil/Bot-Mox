@@ -1,5 +1,5 @@
-import { Checkbox } from 'antd';
 import type React from 'react';
+import { AppCheckbox as Checkbox } from '../../../shared/ui';
 import type { DeleteVmFilters } from '../lib/deleteVmRules';
 
 export const DeleteRulesPopoverContent: React.FC<{

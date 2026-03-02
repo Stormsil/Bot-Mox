@@ -1,5 +1,10 @@
-import { Col, Flex, Tag, Typography } from 'antd';
 import type React from 'react';
+import {
+  AppCol as Col,
+  AppFlex as Flex,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import styles from '../BotSummary.module.css';
 
 const { Text } = Typography;

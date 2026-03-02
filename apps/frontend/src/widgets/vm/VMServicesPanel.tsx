@@ -1,8 +1,9 @@
 import { LinkOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+
 import type React from 'react';
 import { useMemo } from 'react';
 import { useVmSettingsQuery } from '../../entities/vm/api/useVmQueries';
+import { AppButton as Button } from '../../shared/ui';
 import styles from './VMServicesPanel.module.css';
 
 interface ServiceInfo {

@@ -1,7 +1,15 @@
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, Row, Select } from 'antd';
+
 import type { ReactNode } from 'react';
 import { popularEmailDomains } from '../../../shared/lib/utils/accountGenerators';
+import {
+  AppButton as Button,
+  AppCol as Col,
+  AppForm as Form,
+  AppInput as Input,
+  AppRow as Row,
+  AppSelect as Select,
+} from '../../../shared/ui';
 import styles from './account.module.css';
 
 const { Option } = Select;

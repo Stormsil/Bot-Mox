@@ -1,5 +1,5 @@
 import { useGetIdentity } from '@refinedev/core';
-import { Alert, Button, Card, message, Space, Tag, Typography } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import {
@@ -8,6 +8,14 @@ import {
   fetchBillingWhoami,
   startBillingTrial,
 } from '../../entities/billing/api/billingClient';
+import {
+  AppAlert as Alert,
+  AppButton as Button,
+  AppCard as Card,
+  AppSpace as Space,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import styles from './BillingPage.module.css';
 
 type AccessTier = 'free' | 'trial' | 'premium' | 'admin';

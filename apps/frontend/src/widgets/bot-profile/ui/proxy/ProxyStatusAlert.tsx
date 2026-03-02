@@ -1,6 +1,7 @@
 import { WarningOutlined } from '@ant-design/icons';
-import { Alert } from 'antd';
+
 import type React from 'react';
+import { AppAlert as Alert } from '../../../../shared/ui';
 import { getProxyAlertState } from './helpers';
 import styles from './proxy.module.css';
 import type { ProxyInfo } from './types';

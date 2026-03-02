@@ -1,7 +1,15 @@
 import type { UploadProps } from 'antd';
-import { Button, Modal, Select, Space, Typography, Upload } from 'antd';
+
 import type React from 'react';
 import type { UnattendProfile } from '../../entities/vm/api/unattendProfileFacade';
+import {
+  AppButton as Button,
+  AppModal as Modal,
+  AppSelect as Select,
+  AppSpace as Space,
+  AppTypography as Typography,
+  AppUpload as Upload,
+} from '../../shared/ui';
 
 interface VMQueueUnattendModalProps {
   open: boolean;

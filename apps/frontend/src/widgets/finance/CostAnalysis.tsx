@@ -1,7 +1,12 @@
-import { Card, List, Progress, Typography } from 'antd';
 import type React from 'react';
 import { useMemo } from 'react';
 import type { CategoryBreakdown } from '../../entities/finance/model/types';
+import {
+  AppCard as Card,
+  AppList as List,
+  AppProgress as Progress,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import styles from './FinanceSummary.module.css';
 
 const { Text } = Typography;

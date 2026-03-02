@@ -1,18 +1,19 @@
 import { SaveOutlined, SettingOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import {
-  Button,
-  Divider,
-  Form,
-  Input,
-  InputNumber,
-  Space,
-  Switch,
-  TimePicker,
-  Tooltip,
-} from 'antd';
+
 import dayjs from 'dayjs';
 import type React from 'react';
 import type { ScheduleGenerationParams } from '../../shared/types';
+import {
+  AppButton as Button,
+  AppDivider as Divider,
+  AppForm as Form,
+  AppInput as Input,
+  AppInputNumber as InputNumber,
+  AppSpace as Space,
+  AppSwitch as Switch,
+  AppTimePicker as TimePicker,
+  AppTooltip as Tooltip,
+} from '../../shared/ui';
 import { CONSTRAINTS } from './generator-config';
 import styles from './ScheduleGenerator.module.css';
 

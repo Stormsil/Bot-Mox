@@ -1,7 +1,7 @@
 import { CreditCardOutlined, PlusOutlined } from '@ant-design/icons';
 import { useModalForm } from '@refinedev/antd';
 import { type HttpError, useDelete, useList } from '@refinedev/core';
-import { App, Button, Card, Empty, List, message, Space, Spin, Typography } from 'antd';
+import { App, message } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
@@ -9,6 +9,15 @@ import { enrichSubscriptionsWithDetails } from '../../../entities/resources/api/
 import type { Subscription } from '../../../entities/resources/model/types';
 import { getDefaultSettings } from '../../../entities/settings/api/settingsFacade';
 import { useSubscriptionSettingsQuery } from '../../../entities/settings/api/useSubscriptionSettingsQuery';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppEmpty as Empty,
+  AppList as List,
+  AppSpace as Space,
+  AppSpin as Spin,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import type {
   BotSubscriptionProps,
   SubscriptionFormData,

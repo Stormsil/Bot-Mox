@@ -1,5 +1,5 @@
 import { EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, Button, DatePicker, Form, type FormProps, Select } from 'antd';
+import type { FormProps } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import type React from 'react';
@@ -8,6 +8,13 @@ import type {
   SubscriptionFormData,
   SubscriptionWithDetails,
 } from '../../entities/resources/model/types';
+import {
+  AppAlert as Alert,
+  AppButton as Button,
+  AppDatePicker as DatePicker,
+  AppForm as Form,
+  AppSelect as Select,
+} from '../../shared/ui';
 import styles from './SubscriptionForm.module.css';
 
 const { Option } = Select;

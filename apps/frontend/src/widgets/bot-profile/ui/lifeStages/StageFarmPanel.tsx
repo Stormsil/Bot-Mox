@@ -5,8 +5,20 @@ import {
   ShoppingOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons';
-import { Card, Col, Divider, Flex, List, Row, Statistic, Tag, Typography } from 'antd';
+
 import type React from 'react';
+import { wowLifeStageColors, wowMetricColors } from '../../../../features/wow-data/config/colors';
+import {
+  AppCard as Card,
+  AppCol as Col,
+  AppDivider as Divider,
+  AppFlex as Flex,
+  AppList as List,
+  AppRow as Row,
+  AppStatistic as Statistic,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import { getQualityColor, mockAnalytics, mockFarmStats, mockInventory } from './config';
 import styles from './lifeStages.module.css';
 import { SimpleBarChart } from './SimpleBarChart';
@@ -38,7 +50,7 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
               value={farmStats.total_gold.toLocaleString()}
               suffix="g"
               prefix={<DollarOutlined />}
-              valueStyle={{ ...statValueStyle, color: '#ffd700' }}
+              valueStyle={{ ...statValueStyle, color: wowMetricColors.farmGold }}
             />
           </Card>
         </Col>
@@ -49,7 +61,7 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
               value={farmStats.gold_per_hour.toFixed(1)}
               suffix="g/h"
               prefix={<ThunderboltOutlined />}
-              valueStyle={{ ...statValueStyle, color: '#52c41a' }}
+              valueStyle={{ ...statValueStyle, color: wowMetricColors.farmGoldPerHour }}
             />
           </Card>
         </Col>
@@ -59,7 +71,7 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
               title={<span className={styles['stat-title']}>Session Time</span>}
               value={formatDuration(sessionDuration)}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ ...statValueStyle, color: '#1890ff' }}
+              valueStyle={{ ...statValueStyle, color: wowMetricColors.farmSessionTime }}
             />
           </Card>
         </Col>
@@ -127,7 +139,11 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
           </Col>
         </Row>
         <Divider />
-        <SimpleBarChart data={analytics.trend} color="#faad14" label="Gold/hour trend" />
+        <SimpleBarChart
+          data={analytics.trend}
+          color={wowLifeStageColors.farm}
+          label="Gold/hour trend"
+        />
       </Card>
     </Flex>
   );

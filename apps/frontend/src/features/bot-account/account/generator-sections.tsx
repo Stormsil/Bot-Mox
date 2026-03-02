@@ -5,19 +5,20 @@ import {
   RightOutlined,
   SaveOutlined,
 } from '@ant-design/icons';
-import {
-  Button,
-  Card,
-  Checkbox,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  Row,
-  Select,
-} from 'antd';
+
 import type { PasswordOptions } from '../../../shared/lib/utils/accountGenerators';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCheckbox as Checkbox,
+  AppCol as Col,
+  AppDatePicker as DatePicker,
+  AppForm as Form,
+  AppInput as Input,
+  AppInputNumber as InputNumber,
+  AppRow as Row,
+  AppSelect as Select,
+} from '../../../shared/ui';
 import { TableActionButton } from '../../../shared/ui/TableActionButton';
 import styles from './account.module.css';
 import { ActionButtonsSection } from './action-buttons-section';

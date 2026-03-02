@@ -1,8 +1,14 @@
 import type { FormInstance, FormProps, ModalProps } from 'antd';
-import { DatePicker, Form, Input, Select } from 'antd';
+
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
-import { AppModal } from '../../../shared/ui';
+import {
+  AppModal,
+  AppDatePicker as DatePicker,
+  AppForm as Form,
+  AppInput as Input,
+  AppSelect as Select,
+} from '../../../shared/ui';
 import type { AddBotFormValues, BotsMap } from './types';
 
 const { Option } = Select;

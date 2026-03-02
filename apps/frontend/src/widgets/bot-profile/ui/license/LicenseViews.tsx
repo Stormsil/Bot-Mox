@@ -8,23 +8,24 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Dropdown,
-  Empty,
-  Flex,
-  Popconfirm,
-  Row,
-  Space,
-  Spin,
-  Tag,
-  Typography,
-} from 'antd';
+
 import dayjs from 'dayjs';
 import type React from 'react';
+import {
+  AppAlert as Alert,
+  AppButton as Button,
+  AppCard as Card,
+  AppCol as Col,
+  AppDropdown as Dropdown,
+  AppEmpty as Empty,
+  AppFlex as Flex,
+  AppPopconfirm as Popconfirm,
+  AppRow as Row,
+  AppSpace as Space,
+  AppSpin as Spin,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import { TableActionButton } from '../../../../shared/ui/TableActionButton';
 import { getDaysLeftColor, getLicenseStatusColor, getLicenseStatusText } from './helpers';
 import styles from './license.module.css';
@@ -177,11 +178,15 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
                   color={getLicenseStatusColor(license)}
                   icon={
                     license.isExpired ? (
-                      <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
+                      <ExclamationCircleOutlined
+                        style={{ color: 'var(--boxmox-color-status-danger)' }}
+                      />
                     ) : license.isExpiringSoon ? (
-                      <WarningOutlined style={{ color: '#faad14' }} />
+                      <WarningOutlined style={{ color: 'var(--boxmox-color-status-warning)' }} />
                     ) : (
-                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                      <CheckCircleOutlined
+                        style={{ color: 'var(--boxmox-color-status-success)' }}
+                      />
                     )
                   }
                 >

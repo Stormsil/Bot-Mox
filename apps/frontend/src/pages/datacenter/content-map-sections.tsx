@@ -5,8 +5,9 @@ import {
   KeyOutlined,
   RightOutlined,
 } from '@ant-design/icons';
-import { Card, Flex, Tag } from 'antd';
+
 import type React from 'react';
+import { AppCard as Card, AppFlex as Flex, AppTag as Tag } from '../../shared/ui';
 import { SectionToggle } from './content-map-toggle';
 import type {
   ContentMapSection,

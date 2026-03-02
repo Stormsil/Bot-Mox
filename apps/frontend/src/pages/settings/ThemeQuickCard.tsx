@@ -1,7 +1,15 @@
 import { BgColorsOutlined, CheckOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Flex, Select, Typography } from 'antd';
+
 import type React from 'react';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCol as Col,
+  AppFlex as Flex,
+  AppSelect as Select,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import styles from './SettingsPage.module.css';
 
 const { Text } = Typography;

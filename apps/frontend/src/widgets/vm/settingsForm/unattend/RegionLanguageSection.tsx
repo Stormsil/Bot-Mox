@@ -1,5 +1,5 @@
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Form, Select, Space, Typography } from 'antd';
+
 import type React from 'react';
 import type {
   KeyboardLayoutPair,
@@ -12,6 +12,13 @@ import {
 } from '../../../../shared/config/data/windows-keyboards';
 import { WINDOWS_LANGUAGES } from '../../../../shared/config/data/windows-languages';
 import { WINDOWS_TIMEZONES } from '../../../../shared/config/data/windows-timezones';
+import {
+  AppButton as Button,
+  AppForm as Form,
+  AppSelect as Select,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 
 const { Text } = Typography;
 

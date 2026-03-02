@@ -1,5 +1,11 @@
-import { InputNumber, Modal, Select, Space, Typography } from 'antd';
 import type React from 'react';
+import {
+  AppInputNumber as InputNumber,
+  AppModal as Modal,
+  AppSelect as Select,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../shared/ui';
 
 const { Text } = Typography;
 

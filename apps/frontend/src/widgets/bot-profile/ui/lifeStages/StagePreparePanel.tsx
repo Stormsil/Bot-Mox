@@ -1,6 +1,12 @@
 import { StopOutlined } from '@ant-design/icons';
-import { Alert, Empty, Flex, Typography } from 'antd';
+
 import type React from 'react';
+import {
+  AppAlert as Alert,
+  AppEmpty as Empty,
+  AppFlex as Flex,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import styles from './lifeStages.module.css';
 
 const { Text, Title } = Typography;

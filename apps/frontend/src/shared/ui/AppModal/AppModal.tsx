@@ -6,7 +6,7 @@ const defaultStyles: ModalProps['styles'] = {
   body: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 16,
+    gap: 'var(--botmox-space-lg)',
   },
 };
 

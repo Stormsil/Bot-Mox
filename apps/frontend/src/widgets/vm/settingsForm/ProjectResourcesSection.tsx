@@ -1,5 +1,9 @@
-import { InputNumber, Table, Typography } from 'antd';
 import type React from 'react';
+import {
+  AppInputNumber as InputNumber,
+  AppTable as Table,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import styles from './ProjectResourcesSection.module.css';
 import type { SettingsSectionProps } from './types';
 

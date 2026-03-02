@@ -4,9 +4,10 @@ import {
   PoweroffOutlined,
   RedoOutlined,
 } from '@ant-design/icons';
-import { Tag, Typography } from 'antd';
+
 import type React from 'react';
 import type { ProxmoxVM } from '../../shared/types';
+import { AppTag as Tag, AppTypography as Typography } from '../../shared/ui';
 import { TableActionButton, TableActionGroup } from '../../shared/ui/TableActionButton';
 
 const headerTitle = (text: string) => (

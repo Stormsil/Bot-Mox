@@ -1,8 +1,8 @@
 import type { FormInstance } from 'antd';
-import { AutoComplete, Form } from 'antd';
+
 import dayjs from 'dayjs';
 import type React from 'react';
-import { AppModal } from '../../../../shared/ui';
+import { AppModal, AppAutoComplete as AutoComplete, AppForm as Form } from '../../../../shared/ui';
 import type { AssignLicenseFormValues, LicenseInfo } from './types';
 
 interface AssignLicenseModalProps {

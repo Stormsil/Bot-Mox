@@ -1,5 +1,5 @@
 import { useInfiniteList, useList } from '@refinedev/core';
-import { Spin } from 'antd';
+
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,7 @@ import type {
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
 import type { FinanceOperationContractRecord } from '../../shared/api/providers/finance-contract-client';
+import { AppSpin as Spin } from '../../shared/ui';
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import { DatacenterContentMap, type ExpiringItem } from './content-map';
 import { cx } from './datacenterUi';

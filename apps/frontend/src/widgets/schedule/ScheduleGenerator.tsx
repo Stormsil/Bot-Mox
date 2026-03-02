@@ -1,5 +1,5 @@
 import { FolderOpenOutlined, LockOutlined, SettingOutlined } from '@ant-design/icons';
-import { Button, Divider, message, Popover } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -10,6 +10,7 @@ import {
 } from '../../entities/settings/api/useScheduleGeneratorSettings';
 import { validateGenerationParams } from '../../shared/lib/utils/scheduleUtils';
 import type { ScheduleGenerationParams, ScheduleTemplate } from '../../shared/types';
+import { AppButton as Button, AppDivider as Divider, AppPopover as Popover } from '../../shared/ui';
 import { DEFAULT_PARAMS } from './generator-config';
 import styles from './ScheduleGenerator.module.css';
 import { ScheduleGeneratorForm } from './ScheduleGeneratorForm';

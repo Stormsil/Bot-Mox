@@ -5,21 +5,7 @@ import {
   PlusOutlined,
   RightOutlined,
 } from '@ant-design/icons';
-import {
-  Button,
-  Card,
-  DatePicker,
-  Empty,
-  Form,
-  Input,
-  Modal,
-  message,
-  Popconfirm,
-  Select,
-  Space,
-  Tag,
-  Typography,
-} from 'antd';
+import { message } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -31,6 +17,20 @@ import {
 import { useWorkspaceKanbanTasksQuery } from '../../../entities/workspace/api/useWorkspaceQueries';
 import type { KanbanStatus, KanbanTask } from '../../../entities/workspace/model/types';
 import { uiLogger } from '../../../observability/uiLogger';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppDatePicker as DatePicker,
+  AppEmpty as Empty,
+  AppForm as Form,
+  AppInput as Input,
+  AppModal as Modal,
+  AppPopconfirm as Popconfirm,
+  AppSelect as Select,
+  AppSpace as Space,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import { TableActionButton } from '../../../shared/ui/TableActionButton';
 import styles from './WorkspaceKanbanPage.module.css';
 

@@ -1,5 +1,5 @@
 import { SettingOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, ColorPicker, Popover, Select } from 'antd';
+
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -19,6 +19,14 @@ import {
 } from '../../entities/finance/api/chartConfig';
 import type { ChartSeriesConfig } from '../../entities/finance/model/chart';
 import type { GoldPriceHistoryEntry, TimeSeriesData } from '../../entities/finance/model/types';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCheckbox as Checkbox,
+  AppColorPicker as ColorPicker,
+  AppPopover as Popover,
+  AppSelect as Select,
+} from '../../shared/ui';
 import styles from './UniversalChart.module.css';
 
 interface UniversalChartProps {

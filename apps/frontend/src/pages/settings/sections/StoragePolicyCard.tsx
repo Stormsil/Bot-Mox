@@ -1,7 +1,18 @@
 import { CloudOutlined, DatabaseOutlined, LockOutlined, SaveOutlined } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import { Button, Card, Col, Form, Radio, Space, Switch, Tag, Typography } from 'antd';
+
 import type React from 'react';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCol as Col,
+  AppForm as Form,
+  AppRadio as Radio,
+  AppSpace as Space,
+  AppSwitch as Switch,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import type { StoragePolicyFormValues } from '../types';
 import { cx } from './classNames';
 

@@ -1,7 +1,7 @@
-import { Button } from 'antd';
 import type React from 'react';
 import { useVMQueueContext } from '../../features/vm-queue/model/VMQueueContext';
 import type { VMQueueItem } from '../../shared/types';
+import { AppButton as Button } from '../../shared/ui';
 import { formatMemoryGiB } from './queuePanelUtils';
 
 interface VMQueuePanelRowResourcesCellProps {

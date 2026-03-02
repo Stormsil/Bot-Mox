@@ -11,8 +11,14 @@ import {
   MailOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Card, Row, Tag, Typography } from 'antd';
+
 import type React from 'react';
+import {
+  AppCard as Card,
+  AppRow as Row,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import styles from '../BotSummary.module.css';
 import { ResourceStatusCard } from './ResourceStatusCard';
 import { SummaryConfigureLinkCard } from './SummaryConfigureLinkCard';

@@ -1,8 +1,15 @@
 import { DesktopOutlined } from '@ant-design/icons';
-import { Card, Empty, Flex, Space, Typography } from 'antd';
+
 import dayjs from 'dayjs';
 import type React from 'react';
 import type { Bot } from '../../../shared/types';
+import {
+  AppCard as Card,
+  AppEmpty as Empty,
+  AppFlex as Flex,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import styles from './BotVMInfo.module.css';
 
 const { Text } = Typography;

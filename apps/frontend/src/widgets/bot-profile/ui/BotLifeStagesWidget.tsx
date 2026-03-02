@@ -6,23 +6,7 @@ import {
   StopOutlined,
   ToolOutlined,
 } from '@ant-design/icons';
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Divider,
-  Flex,
-  Form,
-  Input,
-  Modal,
-  message,
-  Row,
-  Select,
-  Spin,
-  Tag,
-  Typography,
-} from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import {
@@ -32,6 +16,22 @@ import {
 import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
 import { formatDurationHoursMinutes } from '../../../shared/lib/date';
 import type { BanDetails, Bot } from '../../../shared/types';
+import {
+  AppAlert as Alert,
+  AppButton as Button,
+  AppCard as Card,
+  AppCol as Col,
+  AppDivider as Divider,
+  AppFlex as Flex,
+  AppForm as Form,
+  AppInput as Input,
+  AppModal as Modal,
+  AppRow as Row,
+  AppSelect as Select,
+  AppSpin as Spin,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import type { LifeStage } from './lifeStages/config';
 import { formatDate, getStageColor, getStageIcon, getStageLabel } from './lifeStages/config';
 import styles from './lifeStages/lifeStages.module.css';

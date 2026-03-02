@@ -4,8 +4,14 @@ import {
   RightOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { Card, Flex, Tag, Typography } from 'antd';
+
 import dayjs from 'dayjs';
+import {
+  AppCard as Card,
+  AppFlex as Flex,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { SectionToggle } from './content-map-toggle';
 import type {
   ContentMapSection,

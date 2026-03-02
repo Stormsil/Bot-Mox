@@ -1,8 +1,16 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, Calendar, Card, Space, Tag, Typography } from 'antd';
+
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import type { WorkspaceCalendarEvent } from '../../../../entities/workspace/model/types';
+import {
+  AppButton as Button,
+  AppCalendar as Calendar,
+  AppCard as Card,
+  AppSpace as Space,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import styles from '../WorkspaceCalendarPage.module.css';
 import type { CalendarViewMode } from './types';
 

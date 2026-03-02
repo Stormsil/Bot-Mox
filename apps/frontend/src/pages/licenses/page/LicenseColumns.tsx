@@ -7,9 +7,16 @@ import {
 } from '@ant-design/icons';
 import { DeleteButton, EditButton } from '@refinedev/antd';
 import type { TableColumnsType } from 'antd';
-import { Button, Popover, Space, Tag, Typography } from 'antd';
+
 import dayjs from 'dayjs';
 import type { LicenseWithBots } from '../../../entities/resources/model/types';
+import {
+  AppButton as Button,
+  AppPopover as Popover,
+  AppSpace as Space,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import { TableActionButton, TableActionGroup } from '../../../shared/ui/TableActionButton';
 import styles from '../LicensesPage.module.css';
 import { isExpired, isExpiringSoon, ONE_DAY_MS } from './helpers';

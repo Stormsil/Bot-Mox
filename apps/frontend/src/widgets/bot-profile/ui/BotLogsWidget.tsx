@@ -1,9 +1,16 @@
 import { DownloadOutlined } from '@ant-design/icons';
-import { Button, Card, List, Tag, Typography } from 'antd';
+
 import type React from 'react';
 import { useState } from 'react';
 import { subtractNow } from '../../../shared/lib/date';
 import type { Bot, LogEntry, LogEventType } from '../../../shared/types';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppList as List,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import styles from './BotLogs.module.css';
 
 const { Text } = Typography;
@@ -43,13 +50,13 @@ const mockLogs: LogEntry[] = [
 const getEventColor = (type: LogEventType) => {
   switch (type) {
     case 'ban':
-      return '#f5222d';
+      return 'var(--boxmox-color-status-danger)';
     case 'level_up':
-      return '#52c41a';
+      return 'var(--boxmox-color-status-success)';
     case 'death':
-      return '#fa8c16';
+      return 'var(--boxmox-color-status-warning)';
     default:
-      return '#8c8c8c';
+      return 'var(--boxmox-color-status-neutral)';
   }
 };
 
@@ -100,22 +107,25 @@ export const BotLogsWidget: React.FC<BotLogsProps> = ({ bot }) => {
       >
         <List
           dataSource={logs}
-          renderItem={(log) => (
-            <List.Item className={styles['log-entry']}>
-              <div className={styles['log-timestamp']}>{formatTime(log.timestamp)}</div>
-              <Tag
-                className={styles['log-type-tag']}
-                style={{
-                  backgroundColor: `${getEventColor(log.type)}20`,
-                  borderColor: getEventColor(log.type),
-                  color: getEventColor(log.type),
-                }}
-              >
-                {getEventLabel(log.type)}
-              </Tag>
-              <Text className={styles['log-message']}>{log.message}</Text>
-            </List.Item>
-          )}
+          renderItem={(log) => {
+            const eventColor = getEventColor(log.type);
+            return (
+              <List.Item className={styles['log-entry']}>
+                <div className={styles['log-timestamp']}>{formatTime(log.timestamp)}</div>
+                <Tag
+                  className={styles['log-type-tag']}
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${eventColor} 14%, transparent)`,
+                    borderColor: eventColor,
+                    color: eventColor,
+                  }}
+                >
+                  {getEventLabel(log.type)}
+                </Tag>
+                <Text className={styles['log-message']}>{log.message}</Text>
+              </List.Item>
+            );
+          }}
           locale={{ emptyText: 'No important events' }}
         />
       </Card>

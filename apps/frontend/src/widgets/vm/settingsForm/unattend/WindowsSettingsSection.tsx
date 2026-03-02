@@ -1,9 +1,9 @@
-import { Checkbox, Form } from 'antd';
 import type React from 'react';
 import type {
   UnattendProfileConfig,
   UnattendWindowsSettings,
 } from '../../../../entities/vm/model/unattend';
+import { AppCheckbox as Checkbox, AppForm as Form } from '../../../../shared/ui';
 
 const TOGGLE_LABELS: Record<keyof UnattendWindowsSettings, string> = {
   disableDefender: 'Disable Windows Defender',

@@ -5,7 +5,7 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
-import { Card, Col, Row, Spin, Table, Typography } from 'antd';
+
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo } from 'react';
@@ -13,6 +13,14 @@ import { useBotsListQuery } from '../../entities/bot/api/useBotQueries';
 import { uiLogger } from '../../observability/uiLogger';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
 import type { Bot } from '../../shared/types';
+import {
+  AppCard as Card,
+  AppCol as Col,
+  AppRow as Row,
+  AppSpin as Spin,
+  AppTable as Table,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { MetricCard } from '../../shared/ui/MetricCard';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
 import styles from './Dashboard.module.css';

@@ -14,8 +14,20 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import { Alert, Button, Col, Flex, Form, Input, Row, Select, Tooltip, Typography } from 'antd';
+
 import type React from 'react';
+import {
+  AppAlert as Alert,
+  AppButton as Button,
+  AppCol as Col,
+  AppFlex as Flex,
+  AppForm as Form,
+  AppInput as Input,
+  AppRow as Row,
+  AppSelect as Select,
+  AppTooltip as Tooltip,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import styles from './character.module.css';
 import type { CharacterFormData, ReferenceData } from './types';
 

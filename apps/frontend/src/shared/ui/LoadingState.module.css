@@ -21,8 +21,8 @@
 }
 
 .loadingCard {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .tableLoadingState {
@@ -38,7 +38,7 @@
 
 .listLoadingItem {
   padding: 12px;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 4px;
 }

@@ -6,8 +6,14 @@ import {
   StopOutlined,
   ToolOutlined,
 } from '@ant-design/icons';
-import { Flex, Timeline, Typography } from 'antd';
+
 import type React from 'react';
+import { wowLifeStageColors } from '../../../../features/wow-data/config/colors';
+import {
+  AppFlex as Flex,
+  AppTimeline as Timeline,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import type { LifeStage } from './config';
 import styles from './lifeStages.module.css';
 
@@ -24,7 +30,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
       items={[
         {
           dot: currentStage === 'prepare' ? <LoadingOutlined /> : <CheckCircleOutlined />,
-          color: currentStage === 'prepare' ? 'blue' : 'green',
+          color: currentStage === 'prepare' ? wowLifeStageColors.prepare : 'green',
           children: (
             <div
               className={[
@@ -68,7 +74,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
             ) : null,
           color:
             currentStage === 'leveling'
-              ? 'purple'
+              ? wowLifeStageColors.leveling
               : ['professions', 'farm', 'banned'].includes(currentStage)
                 ? 'green'
                 : 'gray',
@@ -115,7 +121,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
             ) : null,
           color:
             currentStage === 'professions'
-              ? 'cyan'
+              ? wowLifeStageColors.professions
               : ['farm', 'banned'].includes(currentStage)
                 ? 'green'
                 : 'gray',
@@ -160,7 +166,12 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
             ) : currentStage === 'banned' ? (
               <CheckCircleOutlined />
             ) : null,
-          color: currentStage === 'farm' ? 'orange' : currentStage === 'banned' ? 'green' : 'gray',
+          color:
+            currentStage === 'farm'
+              ? wowLifeStageColors.farm
+              : currentStage === 'banned'
+                ? 'green'
+                : 'gray',
           children: (
             <div
               className={[
@@ -197,7 +208,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
         },
         {
           dot: currentStage === 'banned' ? <StopOutlined /> : null,
-          color: currentStage === 'banned' ? 'red' : 'gray',
+          color: currentStage === 'banned' ? wowLifeStageColors.banned : 'gray',
           children: (
             <div
               className={[
@@ -208,13 +219,16 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 .filter(Boolean)
                 .join(' ')}
             >
-              <Text strong style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}>
+              <Text
+                strong
+                style={currentStage === 'banned' ? { color: wowLifeStageColors.banned } : undefined}
+              >
                 Banned
               </Text>
               <br />
               <Text
                 type="secondary"
-                style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}
+                style={currentStage === 'banned' ? { color: wowLifeStageColors.banned } : undefined}
               >
                 Archived
               </Text>

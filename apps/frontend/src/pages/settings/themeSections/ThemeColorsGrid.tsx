@@ -1,6 +1,14 @@
 import { HighlightOutlined } from '@ant-design/icons';
-import { Button, ColorPicker, Flex, Input, Space, Typography } from 'antd';
+
 import type { ReactElement } from 'react';
+import {
+  AppButton as Button,
+  AppColorPicker as ColorPicker,
+  AppFlex as Flex,
+  AppInput as Input,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import { THEME_COLOR_DEFINITIONS } from '../../../theme/themePalette';
 import { cx } from '../sections/classNames';
 import type { ThemeSettingsPanelProps } from '../ThemeSettingsPanel.types';

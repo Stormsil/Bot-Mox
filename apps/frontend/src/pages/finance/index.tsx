@@ -1,5 +1,5 @@
 import { useCreate, useDelete, useInfiniteList, useUpdate } from '@refinedev/core';
-import { Card, DatePicker, Select, Space, Typography } from 'antd';
+
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -20,6 +20,13 @@ import type {
 } from '../../entities/finance/model/types';
 import { uiLogger } from '../../observability/uiLogger';
 import type { FinanceOperationContractRecord } from '../../shared/api/providers/finance-contract-client';
+import {
+  AppCard as Card,
+  AppDatePicker as DatePicker,
+  AppSelect as Select,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { FinanceSummary, FinanceTransactions, TransactionForm } from '../../widgets/finance';
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import styles from './FinancePage.module.css';

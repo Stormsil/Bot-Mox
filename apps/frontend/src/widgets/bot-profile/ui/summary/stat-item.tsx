@@ -1,5 +1,5 @@
-import { Flex } from 'antd';
 import type React from 'react';
+import { AppFlex as Flex } from '../../../../shared/ui';
 import styles from '../BotSummary.module.css';
 
 interface SummaryStatItemProps {

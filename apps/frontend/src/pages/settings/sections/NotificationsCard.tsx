@@ -1,7 +1,17 @@
 import { BellOutlined, SaveOutlined } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import { Button, Card, Col, Form, Row, Space, Switch, Typography } from 'antd';
+
 import type React from 'react';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCol as Col,
+  AppForm as Form,
+  AppRow as Row,
+  AppSpace as Space,
+  AppSwitch as Switch,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import type { NotificationEventsFormValues } from '../types';
 import { cx } from './classNames';
 

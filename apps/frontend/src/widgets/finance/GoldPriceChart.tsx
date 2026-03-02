@@ -1,4 +1,3 @@
-import { Card, Empty, Spin } from 'antd';
 import type React from 'react';
 import { useMemo } from 'react';
 import {
@@ -12,6 +11,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { GoldPriceHistoryEntry } from '../../entities/finance/model/types';
+import { AppCard as Card, AppEmpty as Empty, AppSpin as Spin } from '../../shared/ui';
 import styles from './GoldPriceChart.module.css';
 
 interface GoldPriceChartProps {

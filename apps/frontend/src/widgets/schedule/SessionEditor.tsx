@@ -1,9 +1,16 @@
-import { Alert, Form, Modal, Switch, TimePicker, theme } from 'antd';
+import { theme } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { generateSessionId, hasOverlap, timeToMinutes } from '../../shared/lib/utils/scheduleUtils';
 import type { ScheduleSession } from '../../shared/types';
+import {
+  AppAlert as Alert,
+  AppForm as Form,
+  AppModal as Modal,
+  AppSwitch as Switch,
+  AppTimePicker as TimePicker,
+} from '../../shared/ui';
 
 interface SessionEditorProps {
   session?: ScheduleSession | null;

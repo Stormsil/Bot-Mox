@@ -1,6 +1,14 @@
 import { ExclamationCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { Alert, Badge, Card, Flex, Spin, Tooltip } from 'antd';
+
 import type React from 'react';
+import {
+  AppAlert as Alert,
+  AppBadge as Badge,
+  AppCard as Card,
+  AppFlex as Flex,
+  AppSpin as Spin,
+  AppTooltip as Tooltip,
+} from '../../../../shared/ui';
 import styles from './person.module.css';
 
 interface PersonCardTitleProps {

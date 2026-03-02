@@ -1,11 +1,19 @@
 import { SafetyCertificateOutlined } from '@ant-design/icons';
-import { Alert, Flex, Progress, Space, Tag, Typography } from 'antd';
+
 import type React from 'react';
 import {
   getFraudScoreColor,
   getFraudScoreLabel,
 } from '../../../../entities/resources/api/ipqsFacade';
 import type { IPQSResponse } from '../../../../entities/resources/model/types';
+import {
+  AppAlert as Alert,
+  AppFlex as Flex,
+  AppProgress as Progress,
+  AppSpace as Space,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import styles from './proxy.module.css';
 
 const { Text } = Typography;

@@ -1,5 +1,5 @@
-import { Card, Col, Row } from 'antd';
 import type React from 'react';
+import { AppCard as Card, AppCol as Col, AppRow as Row } from '../../shared/ui';
 import styles from './ProxiesPage.module.css';
 
 interface ProxiesStats {

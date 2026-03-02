@@ -23,11 +23,11 @@ export const SUBSCRIPTION_TYPES: SubscriptionTypeOption[] = [
 export const getStatusIcon = (status: ComputedSubscriptionStatus) => {
   switch (status) {
     case 'expired':
-      return <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />;
+      return <ExclamationCircleOutlined style={{ color: 'var(--boxmox-color-status-danger)' }} />;
     case 'expiring_soon':
-      return <ClockCircleOutlined style={{ color: '#faad14' }} />;
+      return <ClockCircleOutlined style={{ color: 'var(--boxmox-color-status-warning)' }} />;
     case 'active':
-      return <CheckCircleOutlined style={{ color: '#52c41a' }} />;
+      return <CheckCircleOutlined style={{ color: 'var(--boxmox-color-status-success)' }} />;
     default:
       return null;
   }
@@ -57,13 +57,13 @@ export const getTypeLabel = (type: SubscriptionType) =>
   SUBSCRIPTION_TYPES.find((item) => item.value === type)?.label || type;
 
 export const getDaysLeftColor = (subscription: SubscriptionWithDetails): string => {
-  if (subscription.isExpired) return '#ff4d4f';
-  if (subscription.isExpiringSoon) return '#faad14';
+  if (subscription.isExpired) return 'var(--boxmox-color-status-danger)';
+  if (subscription.isExpiringSoon) return 'var(--boxmox-color-status-warning)';
   if (typeof subscription.daysRemaining === 'number' && subscription.daysRemaining <= 3)
-    return '#ff4d4f';
+    return 'var(--boxmox-color-status-danger)';
   if (typeof subscription.daysRemaining === 'number' && subscription.daysRemaining <= 7)
-    return '#faad14';
-  return '#52c41a';
+    return 'var(--boxmox-color-status-warning)';
+  return 'var(--boxmox-color-status-success)';
 };
 
 export const isProblemSubscription = (subscription: SubscriptionWithDetails): boolean =>

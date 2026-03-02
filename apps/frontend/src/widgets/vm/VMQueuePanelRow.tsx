@@ -1,8 +1,14 @@
 import { FileTextOutlined } from '@ant-design/icons';
-import { Button, Progress, Select, Typography } from 'antd';
+
 import type React from 'react';
 import { useVMQueueContext } from '../../features/vm-queue/model/VMQueueContext';
 import type { VMQueueItem } from '../../shared/types';
+import {
+  AppButton as Button,
+  AppProgress as Progress,
+  AppSelect as Select,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import {
   buildStorageUsage,
   formatMemoryGiB,

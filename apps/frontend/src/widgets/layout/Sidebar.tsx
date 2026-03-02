@@ -7,10 +7,11 @@ import {
   RobotOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu } from 'antd';
+
 import type React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
+import { AppLayout as Layout, AppMenu as Menu } from '../../shared/ui';
 import styles from './Sidebar.module.css';
 
 const cx = bindCssModuleCx(styles);

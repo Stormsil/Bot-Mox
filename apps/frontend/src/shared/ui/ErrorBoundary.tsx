@@ -65,7 +65,7 @@ export class ErrorBoundary extends Component<Props, State> {
           ]}
         >
           {this.state.errorInfo && (
-            <div style={{ marginTop: 24, textAlign: 'left' }}>
+            <div style={{ marginTop: 'var(--botmox-space-xl)', textAlign: 'left' }}>
               <details style={{ whiteSpace: 'pre-wrap' }}>
                 <summary>Error Details</summary>
                 {this.state.errorInfo.componentStack}

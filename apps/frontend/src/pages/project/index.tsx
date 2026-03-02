@@ -1,6 +1,6 @@
 import { DesktopOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { useDelete, useList } from '@refinedev/core';
-import { Alert, Button, Card, Flex, Input, Select, Space, Table, Typography } from 'antd';
+
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -15,6 +15,17 @@ import type {
   Subscription,
   SubscriptionSettings,
 } from '../../shared/types';
+import {
+  AppAlert as Alert,
+  AppButton as Button,
+  AppCard as Card,
+  AppFlex as Flex,
+  AppInput as Input,
+  AppSelect as Select,
+  AppSpace as Space,
+  AppTable as Table,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import { createProjectColumns } from './columns';
 import styles from './ProjectPage.module.css';

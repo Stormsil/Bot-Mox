@@ -1,7 +1,7 @@
 {
-  "active_plan": ".sisyphus/plans/css-lapsha-final-cleanup.md",
-  "plan_name": "css-lapsha-final-cleanup",
-  "started_at": "2026-03-02T12:03:35+03:00",
+  "active_plan": ".sisyphus/plans/strict-design-system-ui-kit-foundation.md",
+  "plan_name": "strict-design-system-ui-kit-foundation",
+  "started_at": "2026-03-02T19:35:00+03:00",
   "session_ids": [
     "atlas-main",
     "ses_3545a3022ffeB10IslJesTv34e",
@@ -9,7 +9,9 @@
     "ses_3535b356cffeNda2wNx8d29ZZo",
     "atlas-css-lapsha-antd-layout-primitives",
     "ses_352f56ac9ffebM6HTDIj7yfWzT",
-    "atlas-css-lapsha-final-cleanup"
+    "atlas-css-lapsha-final-cleanup",
+    "atlas-strict-design-system-ui-kit-foundation",
+    "ses_35009bc23ffepr9t9QINq1YDrX"
   ],
   "worktree_path": "E:\\Боттинг\\source\\repos\\Bot-Mox"
 }

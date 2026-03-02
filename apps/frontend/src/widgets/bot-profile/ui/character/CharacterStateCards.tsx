@@ -1,5 +1,12 @@
-import { Alert, Button, Card, Flex, Spin, Typography } from 'antd';
 import type React from 'react';
+import {
+  AppAlert as Alert,
+  AppButton as Button,
+  AppCard as Card,
+  AppFlex as Flex,
+  AppSpin as Spin,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import styles from './character.module.css';
 
 const { Text } = Typography;

@@ -3,11 +3,11 @@
  * Поддерживает переключение состояния и редактирование текста
  */
 
-import { Checkbox } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CheckboxBlock } from '../../entities/notes/model/types';
 import { cx } from '../../shared/lib/classNames';
+import { AppCheckbox as Checkbox } from '../../shared/ui';
 import styles from './NoteBlocks.module.css';
 
 interface CheckboxBlockProps {

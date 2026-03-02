@@ -4,24 +4,25 @@ import {
   DollarOutlined,
   DownloadOutlined,
 } from '@ant-design/icons';
-import {
-  Button,
-  Card,
-  Col,
-  DatePicker,
-  Flex,
-  Row,
-  Select,
-  Space,
-  Statistic,
-  Table,
-  Tag,
-  Typography,
-} from 'antd';
+
 import type { ColumnsType } from 'antd/es/table';
 import type React from 'react';
 import { useState } from 'react';
 import type { Bot } from '../../../shared/types';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCol as Col,
+  AppDatePicker as DatePicker,
+  AppFlex as Flex,
+  AppRow as Row,
+  AppSelect as Select,
+  AppSpace as Space,
+  AppStatistic as Statistic,
+  AppTable as Table,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import styles from './BotFinance.module.css';
 import { mockTransactions } from './botFinanceWidgetData';
 

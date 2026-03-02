@@ -1,9 +1,10 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import { Card, Form, message } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useState } from 'react';
 import { useUpdateBotMutation } from '../../entities/bot/api/useBotMutations';
 import { isPersonDataComplete } from '../../shared/lib/utils/accountGenerators';
+import { AppCard as Card, AppForm as Form } from '../../shared/ui';
 import styles from './account/account.module.css';
 import {
   AccountCardTitle,

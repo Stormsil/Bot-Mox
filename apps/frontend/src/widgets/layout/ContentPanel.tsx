@@ -7,9 +7,10 @@ import {
   SettingOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
-import { Segmented } from 'antd';
+
 import type React from 'react';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
+import { AppSegmented as Segmented } from '../../shared/ui';
 import styles from './ContentPanel.module.css';
 
 const cx = bindCssModuleCx(styles);

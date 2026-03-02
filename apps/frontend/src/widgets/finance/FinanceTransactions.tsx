@@ -5,21 +5,7 @@ import {
   PlusOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import {
-  Button,
-  Card,
-  Col,
-  DatePicker,
-  Empty,
-  Input,
-  Popconfirm,
-  Row,
-  Select,
-  Space,
-  Table,
-  Tag,
-  Typography,
-} from 'antd';
+
 import type { ColumnsType } from 'antd/es/table';
 import type React from 'react';
 import { useMemo, useState } from 'react';
@@ -29,6 +15,21 @@ import type {
   FinanceOperation,
   FinanceOperationType,
 } from '../../entities/finance/model/types';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCol as Col,
+  AppDatePicker as DatePicker,
+  AppEmpty as Empty,
+  AppInput as Input,
+  AppPopconfirm as Popconfirm,
+  AppRow as Row,
+  AppSelect as Select,
+  AppSpace as Space,
+  AppTable as Table,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { TableActionButton, TableActionGroup } from '../../shared/ui/TableActionButton';
 import commonStyles from './FinanceCommon.module.css';
 import styles from './FinanceTransactions.module.css';

@@ -8,6 +8,11 @@ import {
   StopOutlined,
   ToolOutlined,
 } from '@ant-design/icons';
+import {
+  getWowProfessionColor,
+  getWowRarityColor,
+  wowLifeStageColors,
+} from '../../../../features/wow-data/config/colors';
 import { subtractNow } from '../../../../shared/lib/date';
 import type { InventoryItem, LevelingProgress, ProfessionProgress } from '../../../../shared/types';
 
@@ -77,33 +82,11 @@ export const getProfessionIcon = (name: string) => {
 };
 
 export const getProfessionColor = (name: string) => {
-  switch (name.toLowerCase()) {
-    case 'mining':
-      return '#8b4513';
-    case 'herbalism':
-      return '#228b22';
-    case 'skinning':
-      return '#cd853f';
-    case 'engineering':
-      return '#4682b4';
-    default:
-      return '#eb2f96';
-  }
+  return getWowProfessionColor(name);
 };
 
 export const getQualityColor = (quality: InventoryItem['quality']) => {
-  switch (quality) {
-    case 'common':
-      return '#9ca3af';
-    case 'uncommon':
-      return '#22c55e';
-    case 'rare':
-      return '#3b82f6';
-    case 'epic':
-      return '#a855f7';
-    default:
-      return '#9ca3af';
-  }
+  return getWowRarityColor(quality);
 };
 
 export const getStageIcon = (stage: LifeStage) => {
@@ -137,18 +120,7 @@ export const getStageLabel = (stage: LifeStage) => {
 };
 
 export const getStageColor = (stage: LifeStage) => {
-  switch (stage) {
-    case 'prepare':
-      return '#8c8c8c';
-    case 'leveling':
-      return '#722ed1';
-    case 'professions':
-      return '#13c2c2';
-    case 'farm':
-      return '#faad14';
-    case 'banned':
-      return '#ff4d4f';
-  }
+  return wowLifeStageColors[stage];
 };
 
 export const formatDate = (date: Date): string => {

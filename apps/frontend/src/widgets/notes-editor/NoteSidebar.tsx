@@ -7,7 +7,7 @@ import {
   PushpinOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { Button, Card, Empty, Input, message, Popconfirm, Spin, Tag, Tooltip } from 'antd';
+import { message } from 'antd';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   useCreateNoteMutation,
@@ -17,6 +17,16 @@ import {
 import { useNotesIndexQuery } from '../../entities/notes/api/useNotesIndexQuery';
 import type { NoteIndex } from '../../entities/notes/model/types';
 import { cx } from '../../shared/lib/classNames';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppEmpty as Empty,
+  AppInput as Input,
+  AppPopconfirm as Popconfirm,
+  AppSpin as Spin,
+  AppTag as Tag,
+  AppTooltip as Tooltip,
+} from '../../shared/ui';
 import { TableActionButton } from '../../shared/ui/TableActionButton';
 import styles from './NoteSidebar.module.css';
 import { formatDate, getTagColor } from './noteSidebarUtils';

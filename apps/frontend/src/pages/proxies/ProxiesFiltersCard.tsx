@@ -1,6 +1,13 @@
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Card, Flex, Input, Select } from 'antd';
+
 import type React from 'react';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppFlex as Flex,
+  AppInput as Input,
+  AppSelect as Select,
+} from '../../shared/ui';
 import styles from './ProxiesPage.module.css';
 import type { ProxiesTableFilterValues } from './proxiesTableFilters';
 

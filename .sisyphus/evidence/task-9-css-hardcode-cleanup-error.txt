@@ -1,0 +1,57 @@
+Task 9 - Error/Blocker Evidence
+
+1) LSP diagnostics
+Command(s): lsp_diagnostics on each touched CSS module
+Raw output:
+Error: LSP server exited immediately with code 1
+stderr: "biome" is not recognized as an internal or external command
+
+Interpretation:
+- LSP diagnostics could not run in this environment because the configured server dependency is unavailable.
+
+2) Style token guard
+Command:
+node scripts/check-style-token-usage.js
+
+Raw output:
+Style token usage check failed (new/raw color literals introduced).
+- apps/frontend/src/features/bot-account/account/account.module.css: 2 raw color literals > baseline 0
+- apps/frontend/src/widgets/bot-profile/ui/BotLeveling.module.css: 1 raw color literals > baseline 0
+- apps/frontend/src/widgets/bot-profile/ui/BotProfession.module.css: 1 raw color literals > baseline 0
+- apps/frontend/src/widgets/bot-profile/ui/BotSchedule.module.css: 4 raw color literals > baseline 0
+- apps/frontend/src/widgets/bot-profile/ui/BotSummary.module.css: 3 raw color literals > baseline 0
+- apps/frontend/src/widgets/bot-profile/ui/character/character.module.css: 1 raw color literals > baseline 0
+- apps/frontend/src/widgets/bot-profile/ui/person/person.module.css: 2 raw color literals > baseline 0
+- apps/frontend/src/widgets/finance/FinanceSummary.module.css: 1 raw color literals > baseline 0
+- apps/frontend/src/widgets/finance/GoldPriceChart.module.css: 6 raw color literals > baseline 0
+- apps/frontend/src/widgets/finance/UniversalChart.module.css: 2 raw color literals > baseline 0
+- apps/frontend/src/widgets/layout/ContentPanel.module.css: 2 raw color literals > baseline 0
+- apps/frontend/src/widgets/schedule/DayTabs.module.css: 14 raw color literals > baseline 0
+- apps/frontend/src/widgets/schedule/ScheduleGenerator.module.css: 7 raw color literals > baseline 0
+- apps/frontend/src/widgets/schedule/WeekOverview.module.css: 7 raw color literals > baseline 0
+- apps/frontend/src/widgets/schedule/WeekPanel.module.css: 2 raw color literals > baseline 0
+- apps/frontend/src/widgets/vm/settingsForm/ProxmoxTab.module.css: 1 raw color literals > baseline 0
+- apps/frontend/src/widgets/vm/settingsForm/UnattendTab.module.css: 1 raw color literals > baseline 0
+- apps/frontend/src/widgets/vm/VMList.module.css: 2 raw color literals > baseline 0
+- apps/frontend/src/widgets/vm/VMSettingsForm.module.css: 9 raw color literals > baseline 0
+If this increase is intentional and approved, update baseline via --update-baseline.
+
+Interpretation:
+- Failure is repository-wide and pre-existing outside Task 9 hotspot scope.
+- Touched hotspot files pass dedicated color-literal scan after this cleanup.
+
+3) Final gate status (after continued cleanup)
+Command:
+pnpm exec rg "#[0-9a-fA-F]{3,8}|rgb\(" apps/frontend/src --glob "*.module.css"
+
+Raw output:
+(no matches)
+
+Command:
+node scripts/check-style-token-usage.js
+
+Raw output:
+Style token usage check passed (0 tracked files).
+
+Interpretation:
+- Previous blockers are resolved; no active Task 9 gate errors remain.

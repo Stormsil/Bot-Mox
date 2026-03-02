@@ -1,5 +1,5 @@
 import type { TreeDataNode } from 'antd';
-import { Tree } from 'antd';
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
@@ -10,6 +10,7 @@ import {
   useSaveResourceTreeSettingsMutation,
 } from '../../entities/settings/api/useResourceTreeSettings';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
+import { AppTree as Tree } from '../../shared/ui';
 import styles from './ResourceTree.module.css';
 import { buildUnifiedTreeData } from './resourceTree/builders';
 import { resolveStaticPathForTreeKey } from './resourceTree/navigation';

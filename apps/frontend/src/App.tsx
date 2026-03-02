@@ -167,7 +167,7 @@ const ProxmoxLayout: React.FC = () => {
 };
 
 const ArchivePage: React.FC = () => (
-  <div style={{ padding: 24, color: 'var(--boxmox-color-text-primary)' }}>
+  <div style={{ padding: 24, color: 'var(--botmox-color-text-primary)' }}>
     <h2>Archive Page (Coming Soon)</h2>
   </div>
 );

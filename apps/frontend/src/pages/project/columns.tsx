@@ -1,6 +1,13 @@
 import { DeleteOutlined } from '@ant-design/icons';
-import { Flex, Popconfirm, Tag, Tooltip, Typography } from 'antd';
+
 import type { BotStatus } from '../../shared/types';
+import {
+  AppFlex as Flex,
+  AppPopconfirm as Popconfirm,
+  AppTag as Tag,
+  AppTooltip as Tooltip,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
 import { TableActionButton } from '../../shared/ui/TableActionButton';
 import styles from './ProjectPage.module.css';

@@ -1,7 +1,8 @@
-import { message, Popconfirm } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
+import { AppPopconfirm as Popconfirm } from '../../shared/ui';
 import {
   useVmWorkspaceLogOperationApi,
   useVmWorkspaceLogTasks,

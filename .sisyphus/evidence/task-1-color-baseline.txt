@@ -1,0 +1,302 @@
+apps/frontend/src\theme\themeRuntime.tsx:        optionSelectedColor: '#ffffff',
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-base: #f2f4f7;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-panel: #ffffff;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-muted: #e9edf2;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-hover: #e1e8f1;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-active: #d5e0ee;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-primary: #3b7db8;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-primary-hover: #2f6b9f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-soft: #d6e6f7;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-contrast: #1f4f6f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-warning: #f59a23;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-primary: #26323b;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-secondary: #4b5a66;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-muted: #7b8793;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-strong: #1a1f24;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-success: #2ecc71;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-neutral: #7f8c8d;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-warning: #f39c12;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-danger: #e74c3c;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-info: #3498db;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-paused: #f1c40f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-default: #d4dbe3;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-subtle: #e4e9ef;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-strong: #bcc6d1;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-bg: #2c3e50;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-border: #21313f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-text: #e6edf3;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-text-muted: #a9b6c3;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-hover: #344a5e;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-base: #1e1f22;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-panel: #2a2f35;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-muted: #31363d;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-hover: #3a414a;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-active: #444c56;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-primary: #4a90d6;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-primary-hover: #5aa0e0;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-soft: #233a4f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-contrast: #cfe2f4;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-warning: #f2a93b;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-primary: #e6edf3;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-secondary: #b9c3cd;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-muted: #8e9aa6;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-strong: #f4f7fa;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-default: #3a424a;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-subtle: #4a545e;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-strong: #23282f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-bg: #1f2a33;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-border: #182129;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-text: #e6edf3;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-text-muted: #97a6b4;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-hover: #2a3945;
+apps/frontend/src\theme\themePalette.ts:  return fallbackHex ?? '#000000';
+apps/frontend/src\theme\themePalette.ts:    '#3b7db8',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-base': '#f2f4f7',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-panel': '#ffffff',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-muted': '#e9edf2',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-hover': '#e1e8f1',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-active': '#d5e0ee',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-primary': '#3b7db8',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-primary-hover': '#2f6b9f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-soft': '#d6e6f7',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-contrast': '#1f4f6f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-warning': '#f59a23',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-primary': '#26323b',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-secondary': '#4b5a66',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-muted': '#7b8793',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-strong': '#1a1f24',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-success': '#2ecc71',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-neutral': '#7f8c8d',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-warning': '#f39c12',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-danger': '#e74c3c',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-info': '#3498db',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-paused': '#f1c40f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-default': '#d4dbe3',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-subtle': '#e4e9ef',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-strong': '#bcc6d1',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-bg': '#2c3e50',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-border': '#21313f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-text': '#e6edf3',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-text-muted': '#a9b6c3',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-hover': '#344a5e',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-base': '#1e1f22',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-panel': '#2a2f35',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-muted': '#31363d',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-hover': '#3a414a',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-active': '#444c56',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-primary': '#4a90d6',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-primary-hover': '#5aa0e0',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-soft': '#233a4f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-contrast': '#cfe2f4',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-warning': '#f2a93b',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-primary': '#e6edf3',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-secondary': '#b9c3cd',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-muted': '#8e9aa6',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-strong': '#f4f7fa',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-success': '#2ecc71',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-neutral': '#7f8c8d',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-warning': '#f39c12',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-danger': '#e74c3c',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-info': '#3498db',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-paused': '#f1c40f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-default': '#3a424a',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-subtle': '#4a545e',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-strong': '#23282f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-bg': '#1f2a33',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-border': '#182129',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-text': '#e6edf3',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-text-muted': '#97a6b4',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-hover': '#2a3945',
+apps/frontend/src\theme\themePalette.definitions.ts:  overlayColorLight: '#f2f4f7',
+apps/frontend/src\theme\themePalette.definitions.ts:  overlayColorDark: '#121518',
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  color: #fff;
+apps/frontend/src\entities\resources\api\ipqsFacade.ts:  if (score <= 20) return '#52c41a';
+apps/frontend/src\entities\resources\api\ipqsFacade.ts:  if (score <= 50) return '#faad14';
+apps/frontend/src\entities\resources\api\ipqsFacade.ts:  if (score <= 75) return '#ff7a45';
+apps/frontend/src\entities\resources\api\ipqsFacade.ts:  return '#ff4d4f';
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  background: #52c41a;
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  background: #52c41a;
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  background: #8c8c8c;
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  background: #52c41a;
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  background: #faad14;
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  background: #52c41a;
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  background: #8c8c8c;
+apps/frontend/src\features\bot-account\account\account.module.css:  color: #faad14;
+apps/frontend/src\features\bot-account\account\account.module.css:  color: #faad14;
+apps/frontend/src\widgets\layout\resourceTree\types.ts:  offline: { title: 'Offline', color: '#8c8c8c' },
+apps/frontend/src\widgets\layout\resourceTree\types.ts:  prepare: { title: 'Prepare', color: '#1890ff' },
+apps/frontend/src\widgets\layout\resourceTree\types.ts:  leveling: { title: 'Leveling', color: '#722ed1' },
+apps/frontend/src\widgets\layout\resourceTree\types.ts:  profession: { title: 'Profession', color: '#eb2f96' },
+apps/frontend/src\widgets\layout\resourceTree\types.ts:  farming: { title: 'Farming', color: '#52c41a' },
+apps/frontend/src\widgets\layout\resourceTree\types.ts:  banned: { title: 'Banned', color: '#f5222d' },
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:      return <PoweroffOutlined style={{ ...iconStyle, color: '#8c8c8c' }} />;
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:      return <ClockCircleOutlined style={{ ...iconStyle, color: '#1890ff' }} />;
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:      return <PlayCircleOutlined style={{ ...iconStyle, color: '#722ed1' }} />;
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:      return <ToolOutlined style={{ ...iconStyle, color: '#eb2f96' }} />;
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:      return <PlayCircleOutlined style={{ ...iconStyle, color: '#52c41a' }} />;
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:      return <StopOutlined style={{ ...iconStyle, color: '#f5222d' }} />;
+apps/frontend/src\pages\proxies\proxyColumns.tsx:              color: expired ? '#ff4d4f' : expiringSoon ? '#faad14' : undefined,
+apps/frontend/src\pages\proxies\proxyColumns.tsx:              color: expired ? '#ff4d4f' : expiringSoon ? '#faad14' : '#52c41a',
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: #52c41a;
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: #ff4d4f;
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: #faad14;
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: #f5222d;
+apps/frontend/src\widgets\layout\ContentPanel.module.css:  color: #faad14;
+apps/frontend/src\widgets\layout\ContentPanel.module.css:  color: #faad14;
+apps/frontend/src\widgets\schedule\ScheduleGenerator.module.css:  border-left: 3px solid #ff4d4f;
+apps/frontend/src\widgets\schedule\ScheduleGenerator.module.css:  color: #ff4d4f;
+apps/frontend/src\pages\bot\BotPage.module.css:  color: #fff;
+apps/frontend/src\pages\bot\BotPage.module.css:  background: #f59a23;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  color: #52c41a;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  border: 1px solid #52c41a;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  color: #fff;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  background: #52c41a;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  color: #fff;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  background: #52c41a;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  box-shadow: 0 0 4px #52c41a;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  background: #8c8c8c;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  background: #faad14;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  background: #fff;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  border-left: 3px solid #52c41a;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  border-left: 3px solid #8c8c8c;
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  border-left: 3px solid #faad14;
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: #52c41a;
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: #1890ff;
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: #faad14;
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: #ff4d4f;
+apps/frontend/src\pages\login\LoginPage.module.css:    linear-gradient(160deg, #0f1722, #1a2636 65%, #111a27);
+apps/frontend/src\widgets\finance\UniversalChart.tsx:    color: '#9a9a9a',
+apps/frontend/src\widgets\finance\UniversalChart.tsx:    color: '#7a7a7a',
+apps/frontend/src\widgets\finance\UniversalChart.tsx:    color: '#8b8b8b',
+apps/frontend/src\widgets\finance\UniversalChart.tsx:    color: '#5f5f5f',
+apps/frontend/src\widgets\finance\UniversalChart.tsx:    color: '#8a8a8a',
+apps/frontend/src\widgets\finance\UniversalChart.tsx:    color: '#6f6f6f',
+apps/frontend/src\pages\licenses\page\LicenseColumns.tsx:        <Text style={{ color: expired ? '#ff4d4f' : expiringSoon ? '#faad14' : undefined }}>
+apps/frontend/src\pages\licenses\page\LicenseColumns.tsx:        return <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>0</Text>;
+apps/frontend/src\pages\licenses\page\LicenseColumns.tsx:      let color = '#52c41a';
+apps/frontend/src\pages\licenses\page\LicenseColumns.tsx:        color = '#ff4d4f';
+apps/frontend/src\pages\licenses\page\LicenseColumns.tsx:        color = '#faad14';
+apps/frontend/src\widgets\finance\GoldPriceChart.tsx:            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+apps/frontend/src\widgets\finance\GoldPriceChart.tsx:              stroke="#8c8c8c"
+apps/frontend/src\widgets\finance\GoldPriceChart.tsx:              stroke="#8c8c8c"
+apps/frontend/src\widgets\finance\GoldPriceChart.tsx:                style: { textAnchor: 'middle', fill: '#8c8c8c' },
+apps/frontend/src\widgets\finance\GoldPriceChart.tsx:                stroke="#1890ff"
+apps/frontend/src\widgets\finance\GoldPriceChart.tsx:                dot={{ fill: '#1890ff', strokeWidth: 2, r: 4 }}
+apps/frontend/src\widgets\finance\GoldPriceChart.tsx:                activeDot={{ r: 6, stroke: '#1890ff', strokeWidth: 2 }}
+apps/frontend/src\widgets\finance\GoldPriceChart.tsx:                stroke="#52c41a"
+apps/frontend/src\widgets\finance\GoldPriceChart.tsx:                dot={{ fill: '#52c41a', strokeWidth: 2, r: 4 }}
+apps/frontend/src\widgets\finance\GoldPriceChart.tsx:                activeDot={{ r: 6, stroke: '#52c41a', strokeWidth: 2 }}
+apps/frontend/src\widgets\vm\VMSettingsForm.module.css:  background: #e0e0e0;
+apps/frontend/src\widgets\vm\VMSettingsForm.module.css:  border: 1px solid #8d8d8d;
+apps/frontend/src\widgets\vm\VMSettingsForm.module.css:  border-right: 1px solid #8d8d8d;
+apps/frontend/src\widgets\vm\VMSettingsForm.module.css:  color: #525252;
+apps/frontend/src\widgets\vm\VMSettingsForm.module.css:  color: #525252;
+apps/frontend/src\widgets\vm\VMSettingsForm.module.css:  border: 1px solid #161616;
+apps/frontend/src\widgets\vm\VMSettingsForm.module.css:  background: #ffffff;
+apps/frontend/src\widgets\vm\VMSettingsForm.module.css:  color: #161616;
+apps/frontend/src\widgets\vm\VMSettingsForm.module.css:  outline: 2px solid #0f62fe;
+apps/frontend/src\pages\subscriptions\subscription-columns.tsx:          color: record.isExpired ? '#ff4d4f' : record.isExpiringSoon ? '#faad14' : undefined,
+apps/frontend/src\pages\subscriptions\subscription-columns.tsx:        return <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>0</Text>;
+apps/frontend/src\pages\subscriptions\subscription-columns.tsx:      let color = '#52c41a';
+apps/frontend/src\pages\subscriptions\subscription-columns.tsx:        color = '#ff4d4f';
+apps/frontend/src\pages\subscriptions\subscription-columns.tsx:        color = '#faad14';
+apps/frontend/src\widgets\finance\CostAnalysis.tsx:          const color = CATEGORY_COLORS[item.category] || '#f5222d';
+apps/frontend/src\widgets\finance\CostAnalysis.tsx:        <div style={{ textAlign: 'center', padding: '20px', color: '#8c8c8c' }}>
+apps/frontend/src\widgets\finance\GoldPriceChart.module.css:  border: 1px solid #f0f0f0;
+apps/frontend/src\widgets\finance\GoldPriceChart.module.css:  color: #262626;
+apps/frontend/src\widgets\finance\GoldPriceChart.module.css:  border-bottom: 1px solid #f0f0f0;
+apps/frontend/src\widgets\finance\GoldPriceChart.module.css:  border-top: 1px solid #f0f0f0;
+apps/frontend/src\widgets\finance\GoldPriceChart.module.css:  color: #8c8c8c;
+apps/frontend/src\pages\subscriptions\SubscriptionsPage.module.css:  border-left: 4px solid #faad14;
+apps/frontend/src\pages\subscriptions\SubscriptionsPage.module.css:  color: #faad14;
+apps/frontend/src\pages\subscriptions\SubscriptionsPage.module.css:  color: #faad14;
+apps/frontend/src\widgets\finance\FinanceSummary.tsx:  categories: ['#5b6f8f', '#4f8a8b', '#8b5a3c', '#7a5c8f', '#6b7a88', '#8a8f4f'],
+apps/frontend/src\widgets\vm\vmListColumns.tsx:              icon={<PlayCircleOutlined style={{ color: '#52c41a' }} />}
+apps/frontend/src\widgets\vm\VMList.module.css:  background: #52c41a;
+apps/frontend/src\widgets\vm\VMList.module.css:  background: #8c8c8c;
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.tsx:      return '#9ca3af';
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.tsx:      return '#22c55e';
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.tsx:      return '#3b82f6';
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.tsx:      return '#a855f7';
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.tsx:      return '#9ca3af';
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.tsx:              valueStyle={{ color: '#ffd700', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.tsx:              valueStyle={{ color: '#52c41a', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.tsx:              valueStyle={{ color: '#1890ff', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  color: #722ed1;
+apps/frontend/src\widgets\bot-profile\ui\BotLogsWidget.tsx:      return '#f5222d';
+apps/frontend/src\widgets\bot-profile\ui\BotLogsWidget.tsx:      return '#52c41a';
+apps/frontend/src\widgets\bot-profile\ui\BotLogsWidget.tsx:      return '#fa8c16';
+apps/frontend/src\widgets\bot-profile\ui\BotLogsWidget.tsx:      return '#8c8c8c';
+apps/frontend/src\widgets\bot-profile\ui\BotProfession.module.css:  border-color: #52c41a;
+apps/frontend/src\widgets\bot-profile\ui\BotLevelingWidget.tsx:              valueStyle={{ color: '#722ed1', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+apps/frontend/src\widgets\bot-profile\ui\BotLevelingWidget.tsx:              valueStyle={{ color: '#52c41a', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+apps/frontend/src\widgets\bot-profile\ui\BotLevelingWidget.tsx:              valueStyle={{ color: '#1890ff', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+apps/frontend/src\widgets\bot-profile\ui\BotLevelingWidget.tsx:            strokeColor="#722ed1"
+apps/frontend/src\widgets\bot-profile\ui\BotProfessionWidget.tsx:      return '#8b4513';
+apps/frontend/src\widgets\bot-profile\ui\BotProfessionWidget.tsx:      return '#228b22';
+apps/frontend/src\widgets\bot-profile\ui\BotProfessionWidget.tsx:      return '#cd853f';
+apps/frontend/src\widgets\bot-profile\ui\BotProfessionWidget.tsx:      return '#4682b4';
+apps/frontend/src\widgets\bot-profile\ui\BotProfessionWidget.tsx:      return '#eb2f96';
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:      icon: <WarningOutlined style={{ color: '#faad14' }} />,
+apps/frontend/src\widgets\bot-profile\ui\BotProxy.tsx:          <p style={{ color: '#8c8c8c', fontSize: '12px' }}>
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  color: #fff;
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  color: #fff;
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  background: #fff4e3;
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  color: #b36200;
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: #ff4d4f;
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.tsx:      <CheckCircleFilled style={{ color: '#52c41a' }} />
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.tsx:      <CloseCircleFilled style={{ color: '#ff4d4f' }} />
+apps/frontend/src\pages\settings\themeSections\ThemeColorsGrid.tsx:              placeholder="#000000"
+apps/frontend/src\widgets\bot-profile\ui\license\LicenseViews.tsx:                      <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
+apps/frontend/src\widgets\bot-profile\ui\license\LicenseViews.tsx:                      <WarningOutlined style={{ color: '#faad14' }} />
+apps/frontend/src\widgets\bot-profile\ui\license\LicenseViews.tsx:                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+apps/frontend/src\widgets\bot-profile\ui\license\helpers.ts:  if (license.isExpired) return '#ff4d4f';
+apps/frontend/src\widgets\bot-profile\ui\license\helpers.ts:  if (license.isExpiringSoon) return '#faad14';
+apps/frontend/src\widgets\bot-profile\ui\license\helpers.ts:  return '#52c41a';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#8b4513';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#228b22';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#cd853f';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#4682b4';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#eb2f96';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#9ca3af';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#22c55e';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#3b82f6';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#a855f7';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#9ca3af';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#8c8c8c';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#722ed1';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#13c2c2';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#faad14';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\config.tsx:      return '#ff4d4f';
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageFarmPanel.tsx:              valueStyle={{ ...statValueStyle, color: '#ffd700' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageFarmPanel.tsx:              valueStyle={{ ...statValueStyle, color: '#52c41a' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageFarmPanel.tsx:              valueStyle={{ ...statValueStyle, color: '#1890ff' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageFarmPanel.tsx:        <SimpleBarChart data={analytics.trend} color="#faad14" label="Gold/hour trend" />
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageLevelingPanel.tsx:              valueStyle={{ ...statValueStyle, color: '#722ed1' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageLevelingPanel.tsx:              valueStyle={{ ...statValueStyle, color: '#52c41a' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageLevelingPanel.tsx:              valueStyle={{ ...statValueStyle, color: '#1890ff' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageLevelingPanel.tsx:            strokeColor="#722ed1"
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageLevelingPanel.tsx:          color="#722ed1"
+apps/frontend/src\widgets\bot-profile\ui\subscription\SubscriptionListItem.tsx:                ? '#ff4d4f'
+apps/frontend/src\widgets\bot-profile\ui\subscription\SubscriptionListItem.tsx:                  ? '#faad14'
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageProfessionsPanel.tsx:        <SimpleBarChart data={analytics.trend} color="#13c2c2" label="Skill points trend" />
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  color: #faad14;
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  color: #faad14;
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageTimeline.tsx:              <Text strong style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}>
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageTimeline.tsx:                style={currentStage === 'banned' ? { color: '#ff4d4f' } : undefined}
+apps/frontend/src\widgets\bot-profile\ui\subscription\helpers.tsx:      return <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />;
+apps/frontend/src\widgets\bot-profile\ui\subscription\helpers.tsx:      return <ClockCircleOutlined style={{ color: '#faad14' }} />;
+apps/frontend/src\widgets\bot-profile\ui\subscription\helpers.tsx:      return <CheckCircleOutlined style={{ color: '#52c41a' }} />;
+apps/frontend/src\widgets\bot-profile\ui\subscription\helpers.tsx:  if (subscription.isExpired) return '#ff4d4f';
+apps/frontend/src\widgets\bot-profile\ui\subscription\helpers.tsx:  if (subscription.isExpiringSoon) return '#faad14';
+apps/frontend/src\widgets\bot-profile\ui\subscription\helpers.tsx:    return '#ff4d4f';
+apps/frontend/src\widgets\bot-profile\ui\subscription\helpers.tsx:    return '#faad14';
+apps/frontend/src\widgets\bot-profile\ui\subscription\helpers.tsx:  return '#52c41a';
+apps/frontend/src\widgets\bot-profile\ui\proxy\helpers.tsx:  if (proxy.isExpired) return <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />;
+apps/frontend/src\widgets\bot-profile\ui\proxy\helpers.tsx:  if (proxy.isExpiringSoon) return <ClockCircleOutlined style={{ color: '#faad14' }} />;
+apps/frontend/src\widgets\bot-profile\ui\proxy\helpers.tsx:  if (proxy.status === 'banned') return <WarningOutlined style={{ color: '#ff4d4f' }} />;
+apps/frontend/src\widgets\bot-profile\ui\proxy\helpers.tsx:  return <CheckCircleOutlined style={{ color: '#52c41a' }} />;
+apps/frontend/src\widgets\bot-profile\ui\proxy\helpers.tsx:  if (score <= 20) return '#52c41a';
+apps/frontend/src\widgets\bot-profile\ui\proxy\helpers.tsx:  if (score <= 50) return '#faad14';
+apps/frontend/src\widgets\bot-profile\ui\proxy\helpers.tsx:  return '#ff4d4f';
+apps/frontend/src\widgets\bot-profile\ui\proxy\ProxyDetailsCard.tsx:              color: proxy.isExpired ? '#ff4d4f' : proxy.isExpiringSoon ? '#faad14' : undefined,

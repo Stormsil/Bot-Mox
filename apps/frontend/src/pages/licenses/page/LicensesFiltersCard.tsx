@@ -1,6 +1,13 @@
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Card, Input, Select, Space } from 'antd';
+
 import type React from 'react';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppInput as Input,
+  AppSelect as Select,
+  AppSpace as Space,
+} from '../../../shared/ui';
 import styles from '../LicensesPage.module.css';
 
 const { Option } = Select;

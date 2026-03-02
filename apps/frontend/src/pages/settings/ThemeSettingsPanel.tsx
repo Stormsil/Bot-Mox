@@ -1,7 +1,15 @@
 import { BgColorsOutlined, SaveOutlined } from '@ant-design/icons';
-import { Button, Drawer, Flex, Segmented, Space, Typography } from 'antd';
+
 import type React from 'react';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
+import {
+  AppButton as Button,
+  AppDrawer as Drawer,
+  AppFlex as Flex,
+  AppSegmented as Segmented,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import type { ThemeMode } from '../../theme/themePalette';
 import styles from './SettingsPage.module.css';
 import { ThemeQuickCard } from './ThemeQuickCard';

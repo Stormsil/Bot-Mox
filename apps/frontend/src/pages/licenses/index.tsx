@@ -2,13 +2,19 @@ import { DownOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { List, useModalForm, useTable } from '@refinedev/antd';
 import { type CrudFilter, type HttpError, useList, useUpdate } from '@refinedev/core';
 import type { FormInstance } from 'antd';
-import { Button, Card, Form, message, Space } from 'antd';
+import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
 import type { BotLicense, LicenseWithBots } from '../../entities/resources/model/types';
 import { uiLogger } from '../../observability/uiLogger';
 import { useCurrentTime } from '../../shared/lib/hooks/useCurrentTime';
-import { AppTable } from '../../shared/ui';
+import {
+  AppTable,
+  AppButton as Button,
+  AppCard as Card,
+  AppForm as Form,
+  AppSpace as Space,
+} from '../../shared/ui';
 import styles from './LicensesPage.module.css';
 import type { AddBotFormValues, LicenseFormValues } from './page';
 import {

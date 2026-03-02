@@ -1,5 +1,5 @@
 import { useList } from '@refinedev/core';
-import { Card, Flex, message, Spin } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -9,6 +9,7 @@ import type {
   Subscription,
 } from '../../../entities/resources/model/types';
 import { useCurrentTime } from '../../../shared/lib/hooks/useCurrentTime';
+import { AppCard as Card, AppFlex as Flex, AppSpin as Spin } from '../../../shared/ui';
 import styles from './BotSummary.module.css';
 import {
   calculateScheduleStats,

@@ -1,7 +1,16 @@
 import { BuildOutlined, ExperimentOutlined, FireOutlined, ToolOutlined } from '@ant-design/icons';
-import { Card, Col, Progress, Row, Tag, Typography } from 'antd';
+
 import type React from 'react';
+import { getWowProfessionColor } from '../../../features/wow-data/config/colors';
 import type { Bot, ProfessionProgress } from '../../../shared/types';
+import {
+  AppCard as Card,
+  AppCol as Col,
+  AppProgress as Progress,
+  AppRow as Row,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import styles from './BotProfession.module.css';
 
 const { Text } = Typography;
@@ -31,21 +40,6 @@ const getProfessionIcon = (name: string) => {
   }
 };
 
-const getProfessionColor = (name: string) => {
-  switch (name.toLowerCase()) {
-    case 'mining':
-      return '#8b4513';
-    case 'herbalism':
-      return '#228b22';
-    case 'skinning':
-      return '#cd853f';
-    case 'engineering':
-      return '#4682b4';
-    default:
-      return '#eb2f96';
-  }
-};
-
 export const BotProfessionWidget: React.FC<BotProfessionProps> = () => {
   const professions = mockProfessions;
 
@@ -57,7 +51,7 @@ export const BotProfessionWidget: React.FC<BotProfessionProps> = () => {
             profession.max_skill_points > 0
               ? Math.round((profession.skill_points / profession.max_skill_points) * 100)
               : 0;
-          const color = getProfessionColor(profession.name);
+          const color = getWowProfessionColor(profession.name);
           const isActive = profession.skill_points > 0;
 
           return (

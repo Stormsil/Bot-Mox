@@ -1,11 +1,12 @@
 import { useModalForm } from '@refinedev/antd';
 import { type HttpError, useDelete, useList, useUpdate } from '@refinedev/core';
 import type { FormInstance, MenuProps } from 'antd';
-import { Form, message } from 'antd';
+import { message } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import type { BotLicense as BotLicenseRecord } from '../../../entities/resources/model/types';
+import { AppForm as Form } from '../../../shared/ui';
 import type {
   AssignLicenseFormValues,
   BotLicenseProps,

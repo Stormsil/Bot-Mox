@@ -1,5 +1,5 @@
 import { WarningOutlined } from '@ant-design/icons';
-import { Alert, Card, Flex, message, Spin } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useUpdateBotMutation } from '../../../entities/bot/api/useBotMutations';
@@ -16,6 +16,12 @@ import type {
   ScheduleGenerationParams,
   ScheduleSession,
 } from '../../../shared/types';
+import {
+  AppAlert as Alert,
+  AppCard as Card,
+  AppFlex as Flex,
+  AppSpin as Spin,
+} from '../../../shared/ui';
 import { SessionEditor } from '../../../widgets/schedule';
 import styles from './BotSchedule.module.css';
 import { BotScheduleActions } from './BotScheduleActions';

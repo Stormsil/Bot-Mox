@@ -1,6 +1,6 @@
-import { Checkbox, Tag } from 'antd';
 import type React from 'react';
 import type { DeleteVmCandidateRow } from '../../../features/vm-management';
+import { AppCheckbox as Checkbox, AppTag as Tag } from '../../../shared/ui';
 
 export const DeleteVmCandidateItem: React.FC<{
   candidate: DeleteVmCandidateRow;

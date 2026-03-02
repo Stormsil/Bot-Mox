@@ -8,11 +8,22 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { useGetIdentity, useLogout } from '@refinedev/core';
-import { Avatar, Button, Dropdown, Layout, Space, Switch, Tag, Tooltip, Typography } from 'antd';
+
 import React, { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useBotByIdQuery } from '../../entities/bot/api/useBotQueries';
 import { bindCssModuleCx } from '../../shared/lib/classNames';
+import {
+  AppAvatar as Avatar,
+  AppButton as Button,
+  AppDropdown as Dropdown,
+  AppLayout as Layout,
+  AppSpace as Space,
+  AppSwitch as Switch,
+  AppTag as Tag,
+  AppTooltip as Tooltip,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { useThemeRuntime } from '../../theme/themeRuntime';
 import styles from './Header.module.css';
 import { buildBotContext, buildBreadcrumbs } from './header/breadcrumbs';

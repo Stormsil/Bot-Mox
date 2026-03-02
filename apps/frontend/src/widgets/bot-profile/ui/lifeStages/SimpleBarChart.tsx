@@ -1,5 +1,5 @@
-import { Flex, Typography } from 'antd';
 import type React from 'react';
+import { AppFlex as Flex, AppTypography as Typography } from '../../../../shared/ui';
 import styles from './lifeStages.module.css';
 
 const { Text } = Typography;

@@ -1,0 +1,1457 @@
+apps/admin/src\App.tsx:          borderBottom: '1px solid var(--boxmox-color-border-default)',
+apps/admin/src\App.tsx:          background: 'var(--boxmox-color-surface-elevated)',
+apps/admin/src\styles\variables.css:  --boxmox-color-surface-base: #f2f4f7;
+apps/admin/src\styles\variables.css:  --boxmox-color-surface-panel: #ffffff;
+apps/admin/src\styles\variables.css:  --boxmox-color-surface-muted: #e9edf2;
+apps/admin/src\styles\variables.css:  --boxmox-color-surface-hover: #e1e8f1;
+apps/admin/src\styles\variables.css:  --boxmox-color-surface-active: #d5e0ee;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-primary: #3b7db8;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-primary-hover: #2f6b9f;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-soft: #d6e6f7;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-contrast: #1f4f6f;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-warning: #f59a23;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-primary-rgb: 59, 125, 184;
+apps/admin/src\styles\variables.css:  --boxmox-color-text-primary: #26323b;
+apps/admin/src\styles\variables.css:  --boxmox-color-text-secondary: #4b5a66;
+apps/admin/src\styles\variables.css:  --boxmox-color-text-muted: #7b8793;
+apps/admin/src\styles\variables.css:  --boxmox-color-text-strong: #1a1f24;
+apps/admin/src\styles\variables.css:  --boxmox-color-status-success: #2ecc71;
+apps/admin/src\styles\variables.css:  --boxmox-color-status-neutral: #7f8c8d;
+apps/admin/src\styles\variables.css:  --boxmox-color-status-warning: #f39c12;
+apps/admin/src\styles\variables.css:  --boxmox-color-status-danger: #e74c3c;
+apps/admin/src\styles\variables.css:  --boxmox-color-status-info: #3498db;
+apps/admin/src\styles\variables.css:  --boxmox-color-status-paused: #f1c40f;
+apps/admin/src\styles\variables.css:  --boxmox-color-border-default: #d4dbe3;
+apps/admin/src\styles\variables.css:  --boxmox-color-border-subtle: #e4e9ef;
+apps/admin/src\styles\variables.css:  --boxmox-color-border-strong: #bcc6d1;
+apps/admin/src\styles\variables.css:  --boxmox-color-header-bg: #2c3e50;
+apps/admin/src\styles\variables.css:  --boxmox-color-header-border: #21313f;
+apps/admin/src\styles\variables.css:  --boxmox-color-header-text: #e6edf3;
+apps/admin/src\styles\variables.css:  --boxmox-color-header-text-muted: #a9b6c3;
+apps/admin/src\styles\variables.css:  --boxmox-color-header-hover: #344a5e;
+apps/admin/src\styles\variables.css:  --boxmox-color-surface-base: #1e1f22;
+apps/admin/src\styles\variables.css:  --boxmox-color-surface-panel: #2a2f35;
+apps/admin/src\styles\variables.css:  --boxmox-color-surface-muted: #31363d;
+apps/admin/src\styles\variables.css:  --boxmox-color-surface-hover: #3a414a;
+apps/admin/src\styles\variables.css:  --boxmox-color-surface-active: #444c56;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-primary: #4a90d6;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-primary-hover: #5aa0e0;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-soft: #233a4f;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-contrast: #cfe2f4;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-warning: #f2a93b;
+apps/admin/src\styles\variables.css:  --boxmox-color-brand-primary-rgb: 74, 144, 214;
+apps/admin/src\styles\variables.css:  --boxmox-color-text-primary: #e6edf3;
+apps/admin/src\styles\variables.css:  --boxmox-color-text-secondary: #b9c3cd;
+apps/admin/src\styles\variables.css:  --boxmox-color-text-muted: #8e9aa6;
+apps/admin/src\styles\variables.css:  --boxmox-color-text-strong: #f4f7fa;
+apps/admin/src\styles\variables.css:  --boxmox-color-border-default: #3a424a;
+apps/admin/src\styles\variables.css:  --boxmox-color-border-subtle: #4a545e;
+apps/admin/src\styles\variables.css:  --boxmox-color-border-strong: #23282f;
+apps/admin/src\styles\variables.css:  --boxmox-color-header-bg: #1f2a33;
+apps/admin/src\styles\variables.css:  --boxmox-color-header-border: #182129;
+apps/admin/src\styles\variables.css:  --boxmox-color-header-text: #e6edf3;
+apps/admin/src\styles\variables.css:  --boxmox-color-header-text-muted: #97a6b4;
+apps/admin/src\styles\variables.css:  --boxmox-color-header-hover: #2a3945;
+apps/admin/src\styles\global.css:  background-color: var(--boxmox-color-surface-base);
+apps/admin/src\styles\global.css:  color: var(--boxmox-color-text-primary);
+apps/admin/src\styles\global.css:  color: var(--boxmox-color-text-primary);
+apps/admin/src\styles\global.css:  background: var(--boxmox-color-surface-muted);
+apps/admin/src\styles\global.css:  background: var(--boxmox-color-border-strong);
+apps/admin/src\styles\global.css:  background: var(--boxmox-color-border-default);
+apps/frontend/src\AppShell.module.css:  background: var(--boxmox-color-surface-base);
+apps/frontend/src\AppShell.module.css:  border-bottom: 1px solid var(--boxmox-color-header-border);
+apps/frontend/src\AppShell.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\App.tsx:  <div style={{ padding: 24, color: 'var(--boxmox-color-text-primary)' }}>
+apps/admin/src\pages\login\LoginPage.module.css:  color: var(--boxmox-color-text-muted, #9db2c8);
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-base: #f2f4f7;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-panel: #ffffff;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-muted: #e9edf2;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-hover: #e1e8f1;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-active: #d5e0ee;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-primary: #3b7db8;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-primary-hover: #2f6b9f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-soft: #d6e6f7;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-contrast: #1f4f6f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-warning: #f59a23;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-primary-rgb: 59, 125, 184;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-primary: #26323b;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-secondary: #4b5a66;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-muted: #7b8793;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-strong: #1a1f24;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-success: #2ecc71;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-neutral: #7f8c8d;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-warning: #f39c12;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-danger: #e74c3c;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-info: #3498db;
+apps/frontend/src\styles\variables.css:  --boxmox-color-status-paused: #f1c40f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-default: #d4dbe3;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-subtle: #e4e9ef;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-strong: #bcc6d1;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-bg: #2c3e50;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-border: #21313f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-text: #e6edf3;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-text-muted: #a9b6c3;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-hover: #344a5e;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-base: #1e1f22;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-panel: #2a2f35;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-muted: #31363d;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-hover: #3a414a;
+apps/frontend/src\styles\variables.css:  --boxmox-color-surface-active: #444c56;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-primary: #4a90d6;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-primary-hover: #5aa0e0;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-soft: #233a4f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-contrast: #cfe2f4;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-warning: #f2a93b;
+apps/frontend/src\styles\variables.css:  --boxmox-color-brand-primary-rgb: 74, 144, 214;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-primary: #e6edf3;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-secondary: #b9c3cd;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-muted: #8e9aa6;
+apps/frontend/src\styles\variables.css:  --boxmox-color-text-strong: #f4f7fa;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-default: #3a424a;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-subtle: #4a545e;
+apps/frontend/src\styles\variables.css:  --boxmox-color-border-strong: #23282f;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-bg: #1f2a33;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-border: #182129;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-text: #e6edf3;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-text-muted: #97a6b4;
+apps/frontend/src\styles\variables.css:  --boxmox-color-header-hover: #2a3945;
+apps/frontend/src\styles\global.css:  background-color: var(--boxmox-color-surface-base);
+apps/frontend/src\styles\global.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\styles\global.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\styles\global.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\styles\global.css:  background: var(--boxmox-color-border-strong);
+apps/frontend/src\styles\global.css:  background: var(--boxmox-color-border-default);
+apps/admin/src\pages\admin\access\AdminAccessPage.module.css:  border: 1px solid var(--boxmox-color-border-default, #2f3b4a);
+apps/admin/src\pages\admin\access\AdminAccessPage.module.css:  background: var(--boxmox-color-surface-panel, #1a2330);
+apps/frontend/src\pages\licenses\LicensesPage.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\finance\FinancePage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\finance\FinancePage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\features\bot-account\BotAccount.tsx:          background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\features\bot-account\BotAccount.tsx:          borderColor: 'var(--boxmox-color-border-default)',
+apps/frontend/src\pages\licenses\page\LicenseColumns.tsx:              <RobotOutlined style={{ color: 'var(--boxmox-color-brand-primary)' }} />
+apps/frontend/src\pages\licenses\page\LicenseColumns.tsx:                  style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }}
+apps/frontend/src\pages\workspace\kanban\WorkspaceKanbanPage.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\workspace\kanban\WorkspaceKanbanPage.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\pages\workspace\kanban\WorkspaceKanbanPage.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\pages\workspace\kanban\WorkspaceKanbanPage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\licenses\page\LicensesStats.tsx:          color="var(--boxmox-color-status-success)"
+apps/frontend/src\pages\licenses\page\LicensesStats.tsx:          color="var(--boxmox-color-status-warning)"
+apps/frontend/src\pages\licenses\page\LicensesStats.tsx:          color="var(--boxmox-color-status-danger)"
+apps/frontend/src\shared\ui\MetricCard.tsx:  color = 'var(--boxmox-color-brand-primary)',
+apps/frontend/src\shared\ui\MetricCard.tsx:        background: 'var(--boxmox-color-surface-panel)',
+apps/frontend/src\shared\ui\MetricCard.tsx:        border: '1px solid var(--boxmox-color-border-default)',
+apps/frontend/src\shared\ui\MetricCard.tsx:              color: 'var(--boxmox-color-text-muted)',
+apps/frontend/src\shared\ui\MetricCard.tsx:          trailColor="var(--boxmox-color-surface-muted)"
+apps/frontend/src\shared\ui\MetricCard.tsx:        <Text style={{ color: 'var(--boxmox-color-text-muted)', fontSize: 12 }}>{subtext}</Text>
+apps/frontend/src\pages\workspace\kanban\index.tsx:          style={{ margin: 0, color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\shared\ui\LoadingState.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\shared\ui\LoadingState.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\shared\ui\LoadingState.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\shared\ui\LoadingState.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-panel: var(--boxmox-color-surface-panel);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-muted: var(--boxmox-color-surface-muted);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-hover: var(--boxmox-color-surface-hover);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-border: var(--boxmox-color-border-default);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-border-subtle: var(--boxmox-color-border-subtle);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-border-strong: var(--boxmox-color-border-strong);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-text: var(--boxmox-color-text-primary);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-text-muted: var(--boxmox-color-text-secondary);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-accent: var(--boxmox-color-brand-primary);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-accent-hover: var(--boxmox-color-brand-primary-hover);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-accent-soft: var(--boxmox-color-brand-soft);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-success: var(--boxmox-color-status-success);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-warning: var(--boxmox-color-status-warning);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-info: var(--boxmox-color-status-info);
+apps/frontend/src\features\vm-management\ui\DeleteVmModalLayout.module.css:  --dvm-header-text: var(--boxmox-color-header-text);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  background: var(--boxmox-color-brand-soft);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  background: var(--boxmox-color-brand-soft);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  background: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  border: 1px solid var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  background: var(--boxmox-color-brand-soft);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  background: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  background: var(--boxmox-color-brand-soft);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  border-bottom-color: var(--boxmox-color-border-default);
+apps/frontend/src\pages\workspace\calendar\WorkspaceCalendarPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\bot\BotPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\bot\BotPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\bot\BotPage.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\bot\BotPage.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\bot\BotPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\bot\BotPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\bot\BotPage.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\bot\BotPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\bot\BotPage.module.css:  background: var(--boxmox-color-status-success);
+apps/frontend/src\pages\bot\BotPage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\bot\BotPage.module.css:  border-top: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\features\vm-management\ui\DeleteVmModal.tsx:    background: 'var(--boxmox-color-surface-panel)',
+apps/frontend/src\features\vm-management\ui\DeleteVmModal.tsx:    border: '1px solid var(--boxmox-color-border-default)',
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-bg: var(--boxmox-color-surface-base);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-panel: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-muted: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-muted-2: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-border: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-border-strong: var(--boxmox-color-border-strong);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-text: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-text-muted: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-accent: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-accent-hover: var(--boxmox-color-brand-primary-hover);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-accent-soft: var(--boxmox-color-brand-soft);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-accent-rgb: var(--boxmox-color-brand-primary-rgb);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-danger: var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-success: var(--boxmox-color-status-success);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-info: var(--boxmox-color-status-info);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-warning: var(--boxmox-color-status-warning);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-neutral: var(--boxmox-color-status-neutral);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  --vmx-header-text: var(--boxmox-color-header-text);
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm-workspace\ui\VMsPageWorkspace.module.css:  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-color: color-mix(in srgb, var(--boxmox-color-status-info) 60%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-status-info);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-color: color-mix(in srgb, var(--boxmox-color-status-success) 60%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-status-success);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-color: color-mix(in srgb, var(--boxmox-color-text-muted) 60%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-color: color-mix(in srgb, var(--boxmox-color-status-danger) 60%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-status-danger);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-color: color-mix(in srgb, var(--boxmox-color-status-warning) 60%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-status-warning);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-color: color-mix(in srgb, var(--boxmox-color-status-danger) 60%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-status-danger);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  background: color-mix(in srgb, var(--boxmox-color-status-info) 12%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-status-info);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-color: color-mix(in srgb, var(--boxmox-color-status-info) 40%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  background: color-mix(in srgb, var(--boxmox-color-brand-primary) 12%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-color: color-mix(in srgb, var(--boxmox-color-brand-primary) 40%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  background: color-mix(in srgb, var(--boxmox-color-brand-contrast) 18%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-brand-contrast);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  border-color: color-mix(in srgb, var(--boxmox-color-brand-contrast) 40%, transparent);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-status-warning);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-status-danger);
+apps/frontend/src\pages\datacenter\DatacenterPageMetrics.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-panel: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-muted: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-hover: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-border: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-border-subtle: var(--boxmox-color-border-subtle);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-border-strong: var(--boxmox-color-border-strong);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-text: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-text-muted: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-accent: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-accent-hover: var(--boxmox-color-brand-primary-hover);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-accent-soft: var(--boxmox-color-brand-soft);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-success: var(--boxmox-color-status-success);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-warning: var(--boxmox-color-status-warning);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-info: var(--boxmox-color-status-info);
+apps/frontend/src\widgets\vm-workspace\ui\VMDeleteVmModalLayout.module.css:  --dvm-header-text: var(--boxmox-color-header-text);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  outline: 2px solid var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  outline: 2px solid var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\datacenter\DatacenterPageLayout.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\dashboard\index.tsx:        style={{ color: 'var(--boxmox-color-text-primary)', marginBottom: 24 }}
+apps/frontend/src\features\bot-account\account\state-sections.tsx:          <LockOutlined style={{ fontSize: 14, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\features\bot-account\account\state-sections.tsx:            style={{ fontSize: 14, color: 'var(--boxmox-color-brand-primary)' }}
+apps/frontend/src\features\bot-account\account\state-sections.tsx:        borderLeft: `3px solid var(--boxmox-color-brand-primary)`,
+apps/frontend/src\features\bot-account\account\state-sections.tsx:        borderColor: 'var(--boxmox-color-brand-warning)',
+apps/frontend/src\features\bot-account\account\state-sections.tsx:          'color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted))',
+apps/frontend/src\features\bot-account\account\state-sections.tsx:          background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\features\bot-account\account\state-sections.tsx:          borderColor: 'var(--boxmox-color-border-default)',
+apps/frontend/src\features\bot-account\account\state-sections.tsx:          <p style={{ marginTop: '16px', color: 'var(--boxmox-color-text-secondary)' }}>
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  background: var(--boxmox-color-surface-base);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  border-bottom: 2px solid var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  border-bottom: 1px solid var(--boxmox-color-border-subtle);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\dashboard\Dashboard.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\subscriptions\SubscriptionsStats.tsx:          color="var(--boxmox-color-status-success)"
+apps/frontend/src\pages\subscriptions\SubscriptionsStats.tsx:          color="var(--boxmox-color-status-warning)"
+apps/frontend/src\pages\subscriptions\SubscriptionsStats.tsx:          color="var(--boxmox-color-status-danger)"
+apps/frontend/src\pages\subscriptions\SubscriptionsPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\subscriptions\SubscriptionsPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\subscriptions\SubscriptionsPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\subscriptions\SubscriptionsPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\features\bot-account\account\generator-sections.tsx:        background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\features\bot-account\account\generator-sections.tsx:        borderColor: 'var(--boxmox-color-border-default)',
+apps/frontend/src\features\bot-account\account\generator-sections.tsx:        background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\features\bot-account\account\generator-sections.tsx:        borderColor: 'var(--boxmox-color-border-default)',
+apps/frontend/src\features\bot-account\account\generator-sections.tsx:        background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\features\bot-account\account\generator-sections.tsx:        borderColor: 'var(--boxmox-color-border-default)',
+apps/frontend/src\features\bot-account\account\generator-sections.tsx:        background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\features\bot-account\account\generator-sections.tsx:        borderColor: 'var(--boxmox-color-border-default)',
+apps/frontend/src\features\bot-account\account\generator-sections.tsx:          style={{ color: 'var(--boxmox-color-text-secondary)', paddingInline: 4 }}
+apps/frontend/src\pages\notes\NotesPage.module.css:  background-color: var(--boxmox-color-surface-base);
+apps/frontend/src\pages\notes\NotesPage.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\notes\NotesPage.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\notes\NotesPage.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\notes\NotesPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\notes\NotesPage.module.css:    border-top: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\subscriptions\subscription-columns.tsx:          <RobotOutlined style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }} />
+apps/frontend/src\features\bot-account\account\account.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\features\bot-account\account\account.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\features\bot-account\account\account.module.css:  border-top: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\features\bot-account\account\account.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\features\bot-account\account\account.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\features\bot-account\account\account.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\features\bot-account\account\account.module.css:  border-color: var(--boxmox-color-brand-warning);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-brand-warning);
+apps/frontend/src\features\bot-account\account\account.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\features\bot-account\account\account.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\features\bot-account\account\account.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\features\bot-account\account\account.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\features\bot-account\account\account.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  border: 1px dashed var(--boxmox-color-border-default);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\settings\SettingsPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\proxies\proxyColumns.tsx:                trailColor="var(--boxmox-color-surface-muted)"
+apps/frontend/src\pages\proxies\proxyColumns.tsx:            <RobotOutlined style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }} />
+apps/frontend/src\pages\login\LoginPage.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\pages\proxies\ProxiesPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\settings\sections\ApiKeysCard.tsx:  background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\pages\settings\sections\ApiKeysCard.tsx:  border: '1px solid var(--boxmox-color-border-default)',
+apps/frontend/src\pages\settings\sections\ApiKeysCard.tsx:    background: 'var(--boxmox-color-surface-hover)',
+apps/frontend/src\pages\settings\sections\ApiKeysCard.tsx:    borderBottom: '1px solid var(--boxmox-color-border-default)',
+apps/frontend/src\pages\settings\sections\ApiKeysCard.tsx:    background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\pages\vms\VMListPage.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\vms\VMListPage.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\pages\vms\VMListPage.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\pages\vms\VMListPage.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\pages\vms\VMListPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\project\ProjectPage.module.css:  outline: 2px solid rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\pages\project\ProjectPage.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\pages\settings\ui\SettingsPageHeader.tsx:        style={{ margin: 0, color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  border-top: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  border-color: var(--vmx-border-strong, var(--boxmox-color-border-strong));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  border-right: 1px solid var(--vmx-border, var(--boxmox-color-border-subtle));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-subtle));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-accent-soft, var(--boxmox-color-brand-soft));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-accent, var(--boxmox-color-brand-primary));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  outline: 2px solid rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-info, var(--boxmox-color-status-info));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-success, var(--boxmox-color-status-success));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-warning, var(--boxmox-color-status-warning));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  border-top: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMOperationLogCore.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border-color: var(--vmx-border-strong, var(--boxmox-color-border-strong));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-accent, var(--boxmox-color-brand-primary));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  color: var(--vmx-header-text, var(--boxmox-color-header-text));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border-color: var(--vmx-accent, var(--boxmox-color-brand-primary));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-accent-hover, var(--boxmox-color-brand-primary-hover));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border-color: var(--vmx-accent-hover, var(--boxmox-color-brand-primary-hover));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border-color: var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border-color: var(--vmx-border-strong, var(--boxmox-color-border-strong));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-accent, var(--boxmox-color-brand-primary));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border-color: var(--vmx-accent, var(--boxmox-color-brand-primary));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  color: var(--vmx-header-text, var(--boxmox-color-header-text));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-accent-hover, var(--boxmox-color-brand-primary-hover));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border-color: var(--vmx-accent-hover, var(--boxmox-color-brand-primary-hover));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  color: var(--vmx-header-text, var(--boxmox-color-header-text));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  border-color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  color: var(--vmx-header-text, var(--boxmox-color-header-text));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-neutral, var(--boxmox-color-status-neutral));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-accent, var(--boxmox-color-brand-primary));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-success, var(--boxmox-color-status-success));
+apps/frontend/src\widgets\vm\VMStatusBar.module.css:  background: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMList.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\VMList.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\vm\VMList.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm\VMList.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm\VMList.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\VMServicesPanel.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm\VMServicesPanel.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\VMServicesPanel.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm\VMServicesPanel.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm\VMServicesPanel.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\vm\VMConfigPreview.module.css:  background: var(--boxmox-color-surface-base);
+apps/frontend/src\widgets\vm\VMConfigPreview.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\VMConfigPreview.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm\VMConfigPreview.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm\VMConfigPreview.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\VMConfigPreview.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\vm\VMConfigPreview.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm\VMQueuePanelRowResourcesCell.tsx:                color: 'var(--boxmox-color-brand-primary)',
+apps/frontend/src\widgets\vm\VMQueuePanelRow.tsx:              background: 'var(--boxmox-color-surface-panel)',
+apps/frontend/src\widgets\vm\VMQueuePanelRow.tsx:              border: '1px solid var(--boxmox-color-border-default)',
+apps/frontend/src\widgets\vm\VMQueuePanelRow.tsx:                          strokeColor="var(--boxmox-color-brand-primary)"
+apps/frontend/src\widgets\vm\VMQueuePanelRow.tsx:                          trailColor="var(--boxmox-color-surface-hover)"
+apps/frontend/src\widgets\vm\VMQueuePanelRow.tsx:              background: 'var(--boxmox-color-surface-panel)',
+apps/frontend/src\widgets\vm\VMQueuePanelRow.tsx:              border: '1px solid var(--boxmox-color-border-default)',
+apps/frontend/src\widgets\vm\VMQueuePanelRow.tsx:              background: 'var(--boxmox-color-surface-panel)',
+apps/frontend/src\widgets\vm\VMQueuePanelRow.tsx:              border: '1px solid var(--boxmox-color-border-default)',
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  background: var(--boxmox-color-header-bg);
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  background: rgba(var(--vmx-accent-rgb, var(--boxmox-color-brand-primary-rgb)), 0.08);
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  border-color: var(--vmx-border-strong, var(--boxmox-color-border-strong));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  border-color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  background: rgba(var(--vmx-danger-rgb, var(--boxmox-color-status-danger-rgb, 255, 77, 79)), 0.12);
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  border-color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  background: var(--vmx-bg, var(--boxmox-color-surface-base));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-warning, var(--boxmox-color-status-warning));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-success, var(--boxmox-color-status-success));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-warning, var(--boxmox-color-status-warning));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMOperationLogModal.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotFarm.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border-color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background: var(--vmx-accent, var(--boxmox-color-brand-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border-color: var(--vmx-accent, var(--boxmox-color-brand-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--boxmox-color-header-text);
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border-bottom: 1px solid var(--boxmox-color-border-subtle);
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border-color: var(--vmx-accent, var(--boxmox-color-brand-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  box-shadow: 0 0 0 2px rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.15);
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-accent, var(--boxmox-color-brand-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-info, var(--boxmox-color-status-info));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border-color: var(--vmx-info, var(--boxmox-color-status-info));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-success, var(--boxmox-color-status-success));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border-color: var(--vmx-success, var(--boxmox-color-status-success));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border-color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  border: 1px solid var(--vmx-success, var(--boxmox-color-status-success));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-success, var(--boxmox-color-status-success));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  background: var(--vmx-success, var(--boxmox-color-status-success));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--boxmox-color-header-text);
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+apps/frontend/src\widgets\vm\VMQueuePanelCore.module.css:  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+apps/frontend/src\widgets\vm\VMQueuePanelModal.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\vm\VMQueuePanelModal.module.css:  border: 1px solid var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\vm\VMQueuePanelModal.module.css:  background: rgba(var(--boxmox-color-status-danger-rgb, 255, 77, 79), 0.08);
+apps/frontend/src\widgets\vm\VMQueuePanelModal.module.css:  color: var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\vm\VMQueuePanelModal.module.css:  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+apps/frontend/src\widgets\vm\VMQueuePanelModal.module.css:  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+apps/frontend/src\widgets\vm\VMQueuePanelModal.module.css:  color: var(--vmx-text, var(--boxmox-color-text-primary));
+apps/frontend/src\widgets\bot-profile\ui\BotCharacterWidget.tsx:          background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\widgets\bot-profile\ui\BotCharacterWidget.tsx:          borderColor: 'var(--boxmox-color-border-default)',
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  background-color: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  box-shadow: var(--boxmox-shadow-md);
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  background-color: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  color: var(--boxmox-color-text-strong);
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  background-color: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\notes-editor\SlashCommandMenu.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-right: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-strong);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: var(--boxmox-color-surface-active);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.08);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-left: 3px solid var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.12);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.15);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.15);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-strong);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  border-top: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:  background-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteSidebar.module.css:    border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\UnattendTab.module.css:  border-right: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\UnattendTab.module.css:  border: 1px solid var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\vm\settingsForm\UnattendTab.module.css:  color: var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\vm\settingsForm\UnattendTab.module.css:    border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\theme\themeRuntime.tsx:      colorPrimary: palette['--boxmox-color-brand-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorPrimaryHover: palette['--boxmox-color-brand-primary-hover'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorPrimaryActive: palette['--boxmox-color-brand-contrast'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorBgBase: palette['--boxmox-color-surface-base'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorBgContainer: palette['--boxmox-color-surface-panel'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorBgElevated: palette['--boxmox-color-surface-panel'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorTextBase: palette['--boxmox-color-text-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorTextSecondary: palette['--boxmox-color-text-secondary'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorTextPlaceholder: palette['--boxmox-color-text-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorBorder: palette['--boxmox-color-border-default'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorFillContent: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:      colorFillContentHover: palette['--boxmox-color-surface-hover'],
+apps/frontend/src\theme\themeRuntime.tsx:      controlOutline: 'rgba(var(--boxmox-color-brand-primary-rgb), 0.22)',
+apps/frontend/src\theme\themeRuntime.tsx:        headerBg: palette['--boxmox-color-header-bg'],
+apps/frontend/src\theme\themeRuntime.tsx:        bodyBg: palette['--boxmox-color-surface-base'],
+apps/frontend/src\theme\themeRuntime.tsx:        siderBg: palette['--boxmox-color-surface-panel'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorBgContainer: palette['--boxmox-color-surface-panel'],
+apps/frontend/src\theme\themeRuntime.tsx:        headerBg: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorBgContainer: palette['--boxmox-color-surface-panel'],
+apps/frontend/src\theme\themeRuntime.tsx:        headerBg: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemBg: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemActiveBg: palette['--boxmox-color-brand-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemActiveColor: palette['--boxmox-color-brand-contrast'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemActiveColorHover: palette['--boxmox-color-brand-contrast'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemLinkBg: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemInputBg: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorBgContainer: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        hoverBorderColor: palette['--boxmox-color-brand-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        activeBorderColor: palette['--boxmox-color-brand-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorBgContainer: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        hoverBorderColor: palette['--boxmox-color-brand-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        activeBorderColor: palette['--boxmox-color-brand-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorBgContainer: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        optionActiveBg: palette['--boxmox-color-surface-hover'],
+apps/frontend/src\theme\themeRuntime.tsx:        optionSelectedBg: palette['--boxmox-color-brand-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorBgContainer: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        hoverBorderColor: palette['--boxmox-color-brand-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        activeBorderColor: palette['--boxmox-color-brand-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorTextPlaceholder: palette['--boxmox-color-text-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        labelColor: palette['--boxmox-color-text-secondary'],
+apps/frontend/src\theme\themeRuntime.tsx:        contentBg: palette['--boxmox-color-surface-panel'],
+apps/frontend/src\theme\themeRuntime.tsx:        headerBg: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        footerBg: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        titleColor: palette['--boxmox-color-text-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorText: palette['--boxmox-color-text-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorBgElevated: palette['--boxmox-color-surface-panel'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorBgSpotlight: palette['--boxmox-color-surface-panel'],
+apps/frontend/src\theme\themeRuntime.tsx:        nodeHoverColor: palette['--boxmox-color-text-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        nodeSelectedColor: palette['--boxmox-color-text-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        trackBg: palette['--boxmox-color-surface-panel'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemColor: palette['--boxmox-color-text-secondary'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemHoverColor: palette['--boxmox-color-text-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemHoverBg: palette['--boxmox-color-surface-hover'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemActiveBg: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemSelectedBg: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemSelectedColor: palette['--boxmox-color-text-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        colorBgContainer: palette['--boxmox-color-surface-muted'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemColor: palette['--boxmox-color-text-secondary'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemHoverBg: palette['--boxmox-color-surface-hover'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemHoverColor: palette['--boxmox-color-text-primary'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemSelectedBg: palette['--boxmox-color-brand-soft'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemSelectedColor: palette['--boxmox-color-brand-contrast'],
+apps/frontend/src\theme\themeRuntime.tsx:        itemActiveBg: palette['--boxmox-color-surface-hover'],
+apps/frontend/src\theme\themePalette.ts:    palette['--boxmox-color-brand-primary'],
+apps/frontend/src\theme\themePalette.ts:    '--boxmox-color-brand-primary-rgb',
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-surface-base', label: 'Surface / Base' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-surface-panel', label: 'Surface / Panel' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-surface-muted', label: 'Surface / Muted' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-surface-hover', label: 'Surface / Hover' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-surface-active', label: 'Surface / Active' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-brand-primary', label: 'Brand / Primary' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-brand-primary-hover', label: 'Brand / Primary Hover' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-brand-soft', label: 'Brand / Soft' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-brand-contrast', label: 'Brand / Contrast' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-brand-warning', label: 'Brand / Warning Accent' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-text-primary', label: 'Text / Primary' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-text-secondary', label: 'Text / Secondary' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-text-muted', label: 'Text / Muted' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-text-strong', label: 'Text / Strong' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-status-success', label: 'Status / Success' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-status-neutral', label: 'Status / Neutral' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-status-warning', label: 'Status / Warning' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-status-danger', label: 'Status / Danger' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-status-info', label: 'Status / Info' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-status-paused', label: 'Status / Paused' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-border-default', label: 'Border / Default' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-border-subtle', label: 'Border / Subtle' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-border-strong', label: 'Border / Strong' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-header-bg', label: 'Header / Background' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-header-border', label: 'Header / Border' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-header-text', label: 'Header / Text' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-header-text-muted', label: 'Header / Text Muted' },
+apps/frontend/src\theme\themePalette.definitions.ts:  { cssVar: '--boxmox-color-header-hover', label: 'Header / Hover' },
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-base': ['--proxmox-bg-primary', '--proxmox-bg'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-panel': ['--proxmox-bg-secondary', '--proxmox-card-bg'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-muted': ['--proxmox-bg-tertiary'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-hover': ['--proxmox-bg-hover'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-active': ['--proxmox-bg-active'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-primary': ['--proxmox-accent', '--proxmox-primary'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-primary-hover': ['--proxmox-accent-hover', '--proxmox-primary-hover'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-soft': ['--proxmox-accent-light'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-contrast': ['--proxmox-accent-strong'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-warning': ['--proxmox-orange'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-primary': ['--proxmox-text-primary'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-secondary': ['--proxmox-text-secondary'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-muted': ['--proxmox-text-muted'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-strong': ['--proxmox-text-dark'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-success': ['--proxmox-status-online', '--proxmox-success'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-neutral': ['--proxmox-status-offline'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-warning': ['--proxmox-status-warning', '--proxmox-warning'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-danger': ['--proxmox-status-error'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-info': ['--proxmox-status-info'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-paused': ['--proxmox-status-paused'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-default': ['--proxmox-border'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-subtle': ['--proxmox-border-light'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-strong': ['--proxmox-border-dark'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-bg': ['--vsphere-header-bg'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-border': ['--vsphere-header-border'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-text': ['--vsphere-header-text'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-text-muted': ['--vsphere-header-muted'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-hover': ['--vsphere-header-hover'],
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-base': '#f2f4f7',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-panel': '#ffffff',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-muted': '#e9edf2',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-hover': '#e1e8f1',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-active': '#d5e0ee',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-primary': '#3b7db8',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-primary-hover': '#2f6b9f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-soft': '#d6e6f7',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-contrast': '#1f4f6f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-warning': '#f59a23',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-primary': '#26323b',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-secondary': '#4b5a66',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-muted': '#7b8793',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-strong': '#1a1f24',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-success': '#2ecc71',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-neutral': '#7f8c8d',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-warning': '#f39c12',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-danger': '#e74c3c',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-info': '#3498db',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-paused': '#f1c40f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-default': '#d4dbe3',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-subtle': '#e4e9ef',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-strong': '#bcc6d1',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-bg': '#2c3e50',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-border': '#21313f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-text': '#e6edf3',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-text-muted': '#a9b6c3',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-hover': '#344a5e',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-base': '#1e1f22',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-panel': '#2a2f35',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-muted': '#31363d',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-hover': '#3a414a',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-surface-active': '#444c56',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-primary': '#4a90d6',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-primary-hover': '#5aa0e0',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-soft': '#233a4f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-contrast': '#cfe2f4',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-brand-warning': '#f2a93b',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-primary': '#e6edf3',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-secondary': '#b9c3cd',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-muted': '#8e9aa6',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-text-strong': '#f4f7fa',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-success': '#2ecc71',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-neutral': '#7f8c8d',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-warning': '#f39c12',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-danger': '#e74c3c',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-info': '#3498db',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-status-paused': '#f1c40f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-default': '#3a424a',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-subtle': '#4a545e',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-border-strong': '#23282f',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-bg': '#1f2a33',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-border': '#182129',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-text': '#e6edf3',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-text-muted': '#97a6b4',
+apps/frontend/src\theme\themePalette.definitions.ts:  '--boxmox-color-header-hover': '#2a3945',
+apps/frontend/src\widgets\bot-profile\ui\BotProfessionWidget.tsx:                    <Text strong style={{ color: 'var(--boxmox-color-text-primary)' }}>
+apps/frontend/src\widgets\bot-profile\ui\BotProfessionWidget.tsx:                    <Text type="secondary" style={{ color: 'var(--boxmox-color-text-primary)' }}>
+apps/frontend/src\widgets\bot-profile\ui\BotProfessionWidget.tsx:                    trailColor="var(--boxmox-color-border-default)"
+apps/frontend/src\widgets\bot-profile\ui\BotLogs.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotLogs.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotLogs.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotLogs.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotLogs.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  --color-canvas-default: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  --color-canvas-subtle: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  --color-border-default: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  --color-border-muted: var(--boxmox-color-border-subtle);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  --color-fg-default: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  --color-fg-muted: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  --color-accent-fg: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  --color-neutral-muted: rgba(var(--boxmox-color-brand-primary-rgb), 0.12);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  caret-color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: rgba(var(--boxmox-color-brand-primary-rgb), 0.24);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  box-shadow: var(--boxmox-shadow-sm);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-strong);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  background-color: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\notes-editor\NoteEditor.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.tsx:            icon={<WarningOutlined style={{ color: 'var(--boxmox-color-brand-warning)' }} />}
+apps/frontend/src\widgets\bot-profile\ui\BotProfession.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotProfession.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotProfession.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotProfession.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\BotProfession.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotLifeStagesWidget.tsx:                background: 'var(--boxmox-color-surface-base)',
+apps/frontend/src\widgets\bot-profile\ui\BotLifeStagesWidget.tsx:                color: 'var(--boxmox-color-text-primary)',
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  background-color: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  background-color: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  box-shadow: 0 0 0 2px rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.12);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  color: var(--boxmox-color-text-strong);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\notes-editor\NoteBlocks.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  background: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  background: var(--boxmox-color-brand-primary-hover);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  border-color: var(--boxmox-color-brand-primary-hover);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  border-color: var(--boxmox-color-brand-warning);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  color: var(--boxmox-color-brand-warning);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  border-color: var(--boxmox-color-brand-warning);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotSchedule.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotFinanceWidget.tsx:                color: 'var(--boxmox-color-status-success)',
+apps/frontend/src\widgets\bot-profile\ui\BotFinanceWidget.tsx:                color: 'var(--boxmox-color-status-danger)',
+apps/frontend/src\widgets\bot-profile\ui\BotFinanceWidget.tsx:                    ? 'var(--boxmox-color-status-success)'
+apps/frontend/src\widgets\bot-profile\ui\BotFinanceWidget.tsx:                    : 'var(--boxmox-color-status-danger)',
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  background: var(--boxmox-color-brand-soft);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-brand-contrast);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  outline: 2px solid color-mix(in srgb, var(--boxmox-color-brand-primary) 55%, transparent);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  box-shadow: 0 0 0 2px color-mix(in srgb, var(--boxmox-color-brand-primary) 50%, transparent);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotSummary.module.css:  outline: 2px solid color-mix(in srgb, var(--boxmox-color-brand-primary) 55%, transparent);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  border-bottom: 1px solid var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  background: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-status-success);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  border-bottom: 1px solid var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-status-success);
+apps/frontend/src\widgets\bot-profile\ui\BotFinance.module.css:  color: var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\bot-profile\ui\BotLevelingWidget.tsx:            trailColor="var(--boxmox-color-border-default)"
+apps/frontend/src\widgets\bot-profile\ui\BotVMInfo.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotVMInfo.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotVMInfo.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotVMInfo.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\BotLeveling.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.tsx:            labelStyle={{ color: 'var(--boxmox-color-text-secondary)', fontSize: 11 }}
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.tsx:              color: 'var(--boxmox-color-text-primary)',
+apps/frontend/src\widgets\layout\ContentPanel.module.css:  background: var(--boxmox-color-surface-base);
+apps/frontend/src\widgets\layout\ContentPanel.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\layout\ContentPanel.module.css:  border-bottom: 1px solid var(--boxmox-color-border-strong);
+apps/frontend/src\widgets\layout\ContentPanel.module.css:  background: var(--boxmox-color-surface-base);
+apps/frontend/src\widgets\layout\ContentPanel.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\layout\ContentPanel.module.css:  background: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\layout\ContentPanel.module.css:  background: var(--boxmox-color-border-subtle);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  border-bottom: 1px dotted var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProxmoxTab.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\CostAnalysis.tsx:  subscription_bot: 'var(--boxmox-color-border-subtle)',
+apps/frontend/src\widgets\finance\CostAnalysis.tsx:  subscription_game: 'var(--boxmox-color-border-subtle)',
+apps/frontend/src\widgets\finance\CostAnalysis.tsx:  proxy: 'var(--boxmox-color-border-subtle)',
+apps/frontend/src\widgets\finance\CostAnalysis.tsx:  license: 'var(--boxmox-color-border-subtle)',
+apps/frontend/src\widgets\finance\CostAnalysis.tsx:  other: 'var(--boxmox-color-border-subtle)',
+apps/frontend/src\widgets\finance\CostAnalysis.tsx:                trailColor="var(--boxmox-color-surface-muted)"
+apps/frontend/src\widgets\finance\FinanceCommon.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\finance\FinanceCommon.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\FinanceCommon.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\finance\FinanceSummary.tsx:                    stroke="var(--boxmox-color-surface-base)"
+apps/frontend/src\widgets\finance\FinanceSummary.tsx:                      color: 'var(--boxmox-color-text-secondary)',
+apps/frontend/src\widgets\vm\settingsForm\ProjectResourcesSection.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm\settingsForm\ProjectResourcesSection.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProjectResourcesSection.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm\settingsForm\ProjectResourcesSection.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProjectResourcesSection.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProjectResourcesSection.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm\settingsForm\ProjectResourcesSection.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm\settingsForm\ProjectResourcesSection.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm\settingsForm\ProjectResourcesSection.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\ProjectResourcesSection.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  color: var(--boxmox-color-text-strong);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  border-left: 3px solid var(--boxmox-color-border-subtle);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  background-color: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\finance\FinanceSummary.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm\settingsForm\PlaybookTab.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm\settingsForm\PlaybookTab.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\vm\settingsForm\PlaybookTab.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\PlaybookTab.module.css:  background: var(--boxmox-color-brand-soft);
+apps/frontend/src\widgets\vm\settingsForm\PlaybookTab.module.css:    var(--boxmox-color-brand-primary) 55%,
+apps/frontend/src\widgets\vm\settingsForm\PlaybookTab.module.css:    var(--boxmox-color-border-default)
+apps/frontend/src\widgets\vm\settingsForm\PlaybookTab.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\PlaybookTab.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\layout\Sidebar.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\layout\Sidebar.module.css:  border-right: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\layout\Sidebar.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\layout\Sidebar.module.css:  border-left-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\finance\FinanceTransactions.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageTimeline.tsx:                    ? { color: 'var(--boxmox-color-brand-primary)' }
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageTimeline.tsx:                    ? { color: 'var(--boxmox-color-brand-primary)' }
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageTimeline.tsx:                    ? { color: 'var(--boxmox-color-brand-primary)' }
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageTimeline.tsx:                    ? { color: 'var(--boxmox-color-brand-primary)' }
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageTimeline.tsx:                    ? { color: 'var(--boxmox-color-brand-primary)' }
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageTimeline.tsx:                    ? { color: 'var(--boxmox-color-brand-primary)' }
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageTimeline.tsx:                    ? { color: 'var(--boxmox-color-brand-primary)' }
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageTimeline.tsx:                    ? { color: 'var(--boxmox-color-brand-primary)' }
+apps/frontend/src\widgets\bot-profile\ui\license\license.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\license\license.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\license\license.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\license\license.module.css:  border-top: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\SettingsSectionLayout.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\vm\settingsForm\SettingsSectionLayout.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\SettingsSectionLayout.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\vm\settingsForm\SettingsSectionLayout.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\vm\settingsForm\SettingsSectionLayout.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm\settingsForm\SettingsSectionLayout.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\vm\settingsForm\SettingsSectionLayout.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageProfessionsPanel.tsx:                    trailColor="var(--boxmox-color-border-default)"
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageProfessionsPanel.tsx:              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageProfessionsPanel.tsx:              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageProfessionsPanel.tsx:              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  border-right: 1px solid var(--boxmox-color-border-strong);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: color-mix(in srgb, var(--boxmox-color-brand-primary) 35%, transparent);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: color-mix(in srgb, var(--boxmox-color-brand-primary) 45%, transparent);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  outline: 2px solid var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-brand-soft);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-brand-contrast);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  background: var(--boxmox-color-brand-soft);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-brand-contrast);
+apps/frontend/src\widgets\layout\ResourceTree.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterStateCards.tsx:        background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterStateCards.tsx:        borderColor: 'var(--boxmox-color-border-default)',
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterStateCards.tsx:        background: 'var(--boxmox-color-surface-muted)',
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterStateCards.tsx:        borderColor: 'var(--boxmox-color-border-default)',
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterStateCards.tsx:            'color-mix(in srgb, var(--boxmox-color-status-danger) 10%, var(--boxmox-color-surface-muted))',
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterStateCards.tsx:          borderColor: 'var(--boxmox-color-status-danger)',
+apps/frontend/src\widgets\finance\UniversalChart.tsx:              stroke="var(--boxmox-color-border-default)"
+apps/frontend/src\widgets\finance\UniversalChart.tsx:              tick={{ fontSize: 11, fill: 'var(--boxmox-color-text-secondary)' }}
+apps/frontend/src\widgets\finance\UniversalChart.tsx:              tick={{ fontSize: 11, fill: 'var(--boxmox-color-text-secondary)' }}
+apps/frontend/src\widgets\finance\UniversalChart.tsx:                style: { textAnchor: 'middle', fill: 'var(--boxmox-color-text-muted)' },
+apps/frontend/src\widgets\finance\UniversalChart.tsx:              tick={{ fontSize: 11, fill: 'var(--boxmox-color-text-secondary)' }}
+apps/frontend/src\widgets\finance\UniversalChart.tsx:                style: { textAnchor: 'middle', fill: 'var(--boxmox-color-text-muted)' },
+apps/frontend/src\widgets\finance\UniversalChart.tsx:            <Legend wrapperStyle={{ color: 'var(--boxmox-color-text-secondary)', fontSize: 11 }} />
+apps/frontend/src\widgets\finance\UniversalChart.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\UniversalChart.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\finance\UniversalChart.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\finance\UniversalChart.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\finance\UniversalChart.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\finance\UniversalChart.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\finance\UniversalChart.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\UniversalChart.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\finance\UniversalChart.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\finance\UniversalChart.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterEditForm.tsx:            borderColor: 'var(--boxmox-color-brand-warning)',
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterEditForm.tsx:              'color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted))',
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterEditForm.tsx:            <LockOutlined style={{ fontSize: 14, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterEditForm.tsx:              style={{ fontSize: 14, color: 'var(--boxmox-color-brand-primary)' }}
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterEditForm.tsx:          borderLeft: `3px solid var(--boxmox-color-brand-primary)`,
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterEditForm.tsx:                        style={{ color: 'var(--boxmox-color-brand-primary)' }}
+apps/frontend/src\widgets\bot-profile\ui\character\CharacterEditForm.tsx:                          style={{ color: 'var(--boxmox-color-brand-warning)' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageLevelingPanel.tsx:  const statValueStyle = { color: 'var(--boxmox-color-text-primary)' };
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageLevelingPanel.tsx:            trailColor="var(--boxmox-color-border-default)"
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageLevelingPanel.tsx:              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageLevelingPanel.tsx:              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageLevelingPanel.tsx:              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  background: var(--boxmox-color-status-warning);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  background: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  border: 2px solid var(--boxmox-color-border-subtle);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  border: 2px solid var(--boxmox-color-border-subtle);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  background: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  border-top: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-status-warning);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\character\character.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageFarmPanel.tsx:  const statValueStyle = { color: 'var(--boxmox-color-text-primary)' };
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageFarmPanel.tsx:              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageFarmPanel.tsx:              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\StageFarmPanel.tsx:              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+apps/frontend/src\widgets\layout\Header.module.css:  background: var(--boxmox-color-header-bg);
+apps/frontend/src\widgets\layout\Header.module.css:  border-bottom: 1px solid var(--boxmox-color-header-border);
+apps/frontend/src\widgets\layout\Header.module.css:  background: var(--boxmox-color-header-hover);
+apps/frontend/src\widgets\layout\Header.module.css:  color: var(--boxmox-color-header-text);
+apps/frontend/src\widgets\layout\Header.module.css:  color: var(--boxmox-color-header-text-muted);
+apps/frontend/src\widgets\layout\Header.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\layout\Header.module.css:  border: 1px solid var(--boxmox-color-header-border);
+apps/frontend/src\widgets\layout\Header.module.css:  color: var(--boxmox-color-header-text);
+apps/frontend/src\widgets\layout\Header.module.css:  background: var(--boxmox-color-header-hover);
+apps/frontend/src\widgets\layout\Header.module.css:  color: var(--boxmox-color-header-text-muted);
+apps/frontend/src\widgets\layout\Header.module.css:  color: var(--boxmox-color-header-text);
+apps/frontend/src\widgets\layout\Header.module.css:  color: var(--boxmox-color-header-text);
+apps/frontend/src\widgets\layout\Header.module.css:  color: var(--boxmox-color-header-text-muted);
+apps/frontend/src\widgets\layout\Header.module.css:  background: var(--boxmox-color-header-hover);
+apps/frontend/src\widgets\layout\Header.module.css:  color: var(--boxmox-color-header-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  border-color: var(--boxmox-color-status-success);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\lifeStages\lifeStages.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\layout\Header.tsx:                  ? 'var(--boxmox-color-brand-primary)'
+apps/frontend/src\widgets\layout\Header.tsx:                  : 'var(--boxmox-color-header-hover)',
+apps/frontend/src\widgets\layout\Header.tsx:                style={{ backgroundColor: 'var(--boxmox-color-brand-primary)' }}
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:      return <UserOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-muted)' }} />;
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:              style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }}
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:              style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }}
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:            <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:            <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:      return <HomeOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <DesktopOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <DollarOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <CreditCardOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <SettingOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <RobotOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <GlobalOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <CreditCardOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <FileTextOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <CalendarOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:        <AppstoreOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+apps/frontend/src\widgets\layout\resourceTree\tree-utils.tsx:          style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }}
+apps/frontend/src\widgets\bot-profile\ui\subscription\subscription.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\subscription\subscription.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\subscription\subscription.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\subscription\subscription.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\subscription\subscription.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\DayStats.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\DayStats.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\DayStats.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\DayStats.module.css:  background: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  background: var(--boxmox-color-surface-hover);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  border-color: var(--boxmox-color-brand-warning);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  background: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  border: 2px solid var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\DayTabs.module.css:  border-left: 1px solid var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  border-top: 1px dashed var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\proxy\proxy.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\person\PersonCardStates.tsx:        <p style={{ marginTop: '16px', color: 'var(--boxmox-color-text-secondary)' }}>
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  border-left: 3px solid var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  border-color: var(--boxmox-color-brand-warning);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:    var(--boxmox-color-brand-warning) 10%,
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:    var(--boxmox-color-surface-muted)
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  color: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  border-top: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  border-color: var(--boxmox-color-brand-warning);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  color: var(--boxmox-color-brand-warning);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  background: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  background: var(--boxmox-color-brand-primary-hover);
+apps/frontend/src\widgets\bot-profile\ui\person\person.module.css:  border-color: var(--boxmox-color-brand-primary-hover);
+apps/frontend/src\widgets\bot-profile\ui\proxy\ProxyDetailsCard.tsx:            trailColor="var(--boxmox-color-surface-muted)"
+apps/frontend/src\widgets\bot-profile\ui\proxy\ProxyIpqsResults.tsx:                trailColor="var(--boxmox-color-surface-muted)"
+apps/frontend/src\widgets\schedule\ScheduleGenerator.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\ScheduleGenerator.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\ScheduleGenerator.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\ScheduleGenerator.module.css:  border: 1px dashed var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\ScheduleGenerator.module.css:  border-top: 1px dashed var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\ScheduleGenerator.module.css:  border-top: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\ScheduleGenerator.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\schedule\ScheduleGenerator.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  background: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  background: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\SessionList.module.css:  color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\schedule\SessionList.tsx:                        ? 'var(--boxmox-color-status-success)'
+apps/frontend/src\widgets\schedule\SessionList.tsx:                        : 'var(--boxmox-color-border-strong)',
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  border-right: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  color: var(--boxmox-color-brand-warning);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  border-color: var(--boxmox-color-brand-primary);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  background: var(--boxmox-color-brand-warning);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  background: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\WeekPanel.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  border-bottom: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  border-color: var(--boxmox-color-brand-warning);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  border-color: var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  border-top: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\WeekOverview.module.css:  border: 2px solid var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  background: var(--boxmox-color-status-success);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  background: var(--boxmox-color-status-warning);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  box-shadow: 0 0 8px color-mix(in srgb, var(--boxmox-color-status-warning) 60%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  background: var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  box-shadow: 0 0 8px color-mix(in srgb, var(--boxmox-color-status-danger) 60%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  box-shadow: 0 0 6px color-mix(in srgb, var(--boxmox-color-status-success) 50%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  box-shadow: 0 0 8px color-mix(in srgb, var(--boxmox-color-status-warning) 80%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  background: color-mix(in srgb, var(--boxmox-color-status-success) 40%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  border: 1px dashed var(--boxmox-color-status-success);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  border: 2px solid var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  background: var(--boxmox-color-status-success);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  box-shadow: 0 0 0 2px color-mix(in srgb, var(--boxmox-color-status-success) 30%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  background: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  box-shadow: 0 0 0 2px color-mix(in srgb, var(--boxmox-color-text-muted) 30%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  box-shadow: 0 0 0 4px color-mix(in srgb, var(--boxmox-color-status-success) 20%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  box-shadow: 0 0 0 4px color-mix(in srgb, var(--boxmox-color-text-muted) 20%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  box-shadow: 0 0 0 6px color-mix(in srgb, var(--boxmox-color-status-success) 30%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  box-shadow: 0 0 0 6px color-mix(in srgb, var(--boxmox-color-text-muted) 30%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  background: var(--boxmox-color-surface-muted);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  color: var(--boxmox-color-status-success);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  text-shadow: 0 1px 2px color-mix(in srgb, var(--boxmox-color-header-bg) 80%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  color: var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  color: var(--boxmox-color-status-warning);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  color: var(--boxmox-color-brand-contrast);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  color: var(--boxmox-color-status-warning);
+apps/frontend/src\widgets\schedule\TimelineVisualizerSession.module.css:  color: var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  background: var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  border: 1px solid var(--boxmox-color-border-default);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  color: var(--boxmox-color-text-primary);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  background: var(--boxmox-color-status-success);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  background: var(--boxmox-color-status-warning);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  background: var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  border: 2px solid var(--boxmox-color-surface-panel);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  background: var(--boxmox-color-status-success);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  background: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  background: var(--boxmox-color-border-strong);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  background: var(--boxmox-color-status-danger);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  background: var(--boxmox-color-text-muted);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  color: var(--boxmox-color-text-secondary);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  background: color-mix(in srgb, var(--boxmox-color-header-bg) 80%, transparent);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  color: var(--boxmox-color-header-text);
+apps/frontend/src\widgets\schedule\TimelineVisualizerCore.module.css:  border: 1px solid var(--boxmox-color-border-default);

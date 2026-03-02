@@ -1,7 +1,17 @@
 import { KeyOutlined, SafetyOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import { Button, Card, Col, Form, Input, Row, Space, Switch } from 'antd';
+
 import type React from 'react';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCol as Col,
+  AppForm as Form,
+  AppInput as Input,
+  AppRow as Row,
+  AppSpace as Space,
+  AppSwitch as Switch,
+} from '../../../shared/ui';
 import type { ApiKeysFormValues } from '../types';
 import { cx } from './classNames';
 

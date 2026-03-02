@@ -1,6 +1,6 @@
-import { Steps, Tag, Typography } from 'antd';
 import type React from 'react';
 import { useVmSetupProgressQuery } from '../../entities/vm/api/useVmQueries';
+import { AppSteps as Steps, AppTag as Tag, AppTypography as Typography } from '../../shared/ui';
 
 const { Text } = Typography;
 

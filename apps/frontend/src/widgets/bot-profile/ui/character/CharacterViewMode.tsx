@@ -6,8 +6,9 @@ import {
   TrophyOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Flex, Typography } from 'antd';
+
 import type React from 'react';
+import { AppFlex as Flex, AppTypography as Typography } from '../../../../shared/ui';
 import styles from './character.module.css';
 import type { CharacterFormData, ReferenceData } from './types';
 

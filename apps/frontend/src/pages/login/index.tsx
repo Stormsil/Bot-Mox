@@ -1,8 +1,18 @@
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useLogin } from '@refinedev/core';
-import { Alert, Button, Card, Form, Input, message, Segmented, Space, Typography } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useState } from 'react';
+import {
+  AppAlert as Alert,
+  AppButton as Button,
+  AppCard as Card,
+  AppForm as Form,
+  AppInput as Input,
+  AppSegmented as Segmented,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import styles from './LoginPage.module.css';
 
 interface LoginFormValues {

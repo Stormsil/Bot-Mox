@@ -4,7 +4,13 @@ import {
   LockOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
-import { Alert, Badge, Card, Spin, Tooltip } from 'antd';
+import {
+  AppAlert as Alert,
+  AppBadge as Badge,
+  AppCard as Card,
+  AppSpin as Spin,
+  AppTooltip as Tooltip,
+} from '../../../shared/ui';
 import styles from './account.module.css';
 
 interface AccountWorkflowAlertProps {

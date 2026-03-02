@@ -7,9 +7,10 @@ import {
   UserOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { Spin } from 'antd';
+
 import type { Subscription } from '../../../../entities/resources/model/types';
 import { formatDateDotted } from '../../../../shared/lib/date';
+import { AppSpin as Spin } from '../../../../shared/ui';
 import type {
   BotStatusInfo,
   BotSummaryBot,

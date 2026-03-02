@@ -1,10 +1,15 @@
-import { Checkbox, Form, Radio, Typography } from 'antd';
 import type React from 'react';
 import type { UnattendProfileConfig } from '../../../../entities/vm/model/unattend';
 import {
   DESKTOP_ICONS,
   START_FOLDERS,
 } from '../../../../shared/config/data/windows-visual-effects';
+import {
+  AppCheckbox as Checkbox,
+  AppForm as Form,
+  AppRadio as Radio,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 
 const { Text } = Typography;
 

@@ -1,6 +1,7 @@
 import { SaveOutlined } from '@ant-design/icons';
-import { Button, Flex } from 'antd';
+
 import type React from 'react';
+import { AppButton as Button, AppFlex as Flex } from '../../../shared/ui';
 
 interface SettingsActionsProps {
   saving: boolean;

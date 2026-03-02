@@ -1,7 +1,12 @@
 import { ReloadOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Flex, Typography } from 'antd';
+
 import type React from 'react';
 import { bindCssModuleCx } from '../../../shared/lib/classNames';
+import {
+  AppButton as Button,
+  AppFlex as Flex,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import styles from '../SettingsPage.module.css';
 
 const cx = bindCssModuleCx(styles);

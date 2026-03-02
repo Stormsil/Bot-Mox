@@ -1,7 +1,18 @@
 import { AimOutlined, ClockCircleOutlined, RiseOutlined } from '@ant-design/icons';
-import { Card, Col, Flex, Progress, Row, Statistic, Tag, Typography } from 'antd';
+
 import type React from 'react';
+import { wowMetricColors } from '../../../features/wow-data/config/colors';
 import type { Bot, LevelingProgress } from '../../../shared/types';
+import {
+  AppCard as Card,
+  AppCol as Col,
+  AppFlex as Flex,
+  AppProgress as Progress,
+  AppRow as Row,
+  AppStatistic as Statistic,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import styles from './BotLeveling.module.css';
 
 const { Text } = Typography;
@@ -33,7 +44,11 @@ export const BotLevelingWidget: React.FC<BotLevelingProps> = () => {
               title={<span className={styles['stat-title']}>Current Level</span>}
               value={leveling.current_level}
               prefix={<RiseOutlined />}
-              valueStyle={{ color: '#722ed1', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+              valueStyle={{
+                color: wowMetricColors.levelingCurrent,
+                fontSize: 'var(--text-xl)',
+                fontWeight: 600,
+              }}
             />
           </Card>
         </Col>
@@ -43,7 +58,11 @@ export const BotLevelingWidget: React.FC<BotLevelingProps> = () => {
               title={<span className={styles['stat-title']}>XP per Hour</span>}
               value={leveling.xp_per_hour.toLocaleString()}
               suffix="XP"
-              valueStyle={{ color: '#52c41a', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+              valueStyle={{
+                color: wowMetricColors.levelingXpPerHour,
+                fontSize: 'var(--text-xl)',
+                fontWeight: 600,
+              }}
             />
           </Card>
         </Col>
@@ -54,7 +73,11 @@ export const BotLevelingWidget: React.FC<BotLevelingProps> = () => {
               value={leveling.estimated_time_to_level}
               suffix="h"
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#1890ff', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+              valueStyle={{
+                color: wowMetricColors.levelingTimeToLevel,
+                fontSize: 'var(--text-xl)',
+                fontWeight: 600,
+              }}
             />
           </Card>
         </Col>
@@ -75,7 +98,7 @@ export const BotLevelingWidget: React.FC<BotLevelingProps> = () => {
           </Flex>
           <Progress
             percent={xpPercent}
-            strokeColor="#722ed1"
+            strokeColor={wowMetricColors.levelingCurrent}
             trailColor="var(--boxmox-color-border-default)"
             showInfo={false}
           />

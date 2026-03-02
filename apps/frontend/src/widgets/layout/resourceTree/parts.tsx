@@ -5,9 +5,10 @@ import {
   PlusSquareOutlined,
   RightOutlined,
 } from '@ant-design/icons';
-import { Button, Spin } from 'antd';
+
 import type { CSSProperties } from 'react';
 import { bindCssModuleCx } from '../../../shared/lib/classNames';
+import { AppButton as Button, AppSpin as Spin } from '../../../shared/ui';
 import styles from '../ResourceTree.module.css';
 import { getIcon } from './tree-utils';
 import type { BotStatus, TreeItem } from './types';

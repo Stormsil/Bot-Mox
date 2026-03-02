@@ -1,0 +1,3 @@
+$ pnpm exec rg "#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6,8})|rgb\(|[0-9]+px" apps/frontend/src/shared/ui/AppCard/AppCard.tsx apps/frontend/src/shared/ui/AppDivider/AppDivider.tsx
+(no matches)
+Interpretation: Edge scan found no hardcoded hex/rgb colors or `px` literals in the new wrapper files.

@@ -1,15 +1,5 @@
 import { proxyResourceCreateSchema, proxyResourceUpdateSchema } from '@botmox/api-contract';
-import {
-  Button,
-  DatePicker,
-  Form,
-  type FormInstance,
-  type FormProps,
-  Input,
-  type ModalProps,
-  message,
-  Select,
-} from 'antd';
+import { type FormInstance, type FormProps, type ModalProps, message } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -20,7 +10,14 @@ import {
 } from '../../entities/resources/api/ipqsFacade';
 import type { IPQSResponse, Proxy as ProxyResource } from '../../entities/resources/model/types';
 import { parseProxyString } from '../../shared/lib/utils/proxyUtils';
-import { AppModal } from '../../shared/ui';
+import {
+  AppModal,
+  AppButton as Button,
+  AppDatePicker as DatePicker,
+  AppForm as Form,
+  AppInput as Input,
+  AppSelect as Select,
+} from '../../shared/ui';
 import { ParsedProxyAlert, ProxyIpqsLoadingAlert, ProxyIpqsResultAlert } from './proxyCrudAlerts';
 
 interface ProxyCrudModalProps {

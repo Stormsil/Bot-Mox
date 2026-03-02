@@ -4,11 +4,21 @@ import {
   ShoppingOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons';
-import { Card, Col, List, Row, Statistic, Tag, Typography } from 'antd';
+
 import type React from 'react';
+import { getWowRarityColor, wowMetricColors } from '../../../features/wow-data/config/colors';
 import { formatDurationHoursMinutes, subtractNow } from '../../../shared/lib/date';
 import { useCurrentTime } from '../../../shared/lib/hooks/useCurrentTime';
 import type { Bot, InventoryItem } from '../../../shared/types';
+import {
+  AppCard as Card,
+  AppCol as Col,
+  AppList as List,
+  AppRow as Row,
+  AppStatistic as Statistic,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import styles from './BotFarm.module.css';
 
 const { Text } = Typography;
@@ -32,21 +42,6 @@ const mockFarmStats = {
   session_start: subtractNow(6, 'hour'),
 };
 
-const getQualityColor = (quality: InventoryItem['quality']) => {
-  switch (quality) {
-    case 'common':
-      return '#9ca3af';
-    case 'uncommon':
-      return '#22c55e';
-    case 'rare':
-      return '#3b82f6';
-    case 'epic':
-      return '#a855f7';
-    default:
-      return '#9ca3af';
-  }
-};
-
 export const BotFarm: React.FC<BotFarmProps> = () => {
   const inventory = mockInventory;
   const farmStats = mockFarmStats;
@@ -63,7 +58,11 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
               value={farmStats.total_gold.toLocaleString()}
               suffix="g"
               prefix={<DollarOutlined />}
-              valueStyle={{ color: '#ffd700', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+              valueStyle={{
+                color: wowMetricColors.farmGold,
+                fontSize: 'var(--text-xl)',
+                fontWeight: 600,
+              }}
             />
           </Card>
         </Col>
@@ -74,7 +73,11 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
               value={farmStats.gold_per_hour.toFixed(1)}
               suffix="g/h"
               prefix={<ThunderboltOutlined />}
-              valueStyle={{ color: '#52c41a', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+              valueStyle={{
+                color: wowMetricColors.farmGoldPerHour,
+                fontSize: 'var(--text-xl)',
+                fontWeight: 600,
+              }}
             />
           </Card>
         </Col>
@@ -84,7 +87,11 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
               title={<span className={styles.farmStatTitle}>Session Time</span>}
               value={formatDurationHoursMinutes(sessionDuration)}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#1890ff', fontSize: 'var(--text-xl)', fontWeight: 600 }}
+              valueStyle={{
+                color: wowMetricColors.farmSessionTime,
+                fontSize: 'var(--text-xl)',
+                fontWeight: 600,
+              }}
             />
           </Card>
         </Col>
@@ -99,7 +106,7 @@ export const BotFarm: React.FC<BotFarmProps> = () => {
                 <ShoppingOutlined className={styles['inventory-item-icon']} />
                 <Text
                   className={styles['inventory-item-name']}
-                  style={{ color: getQualityColor(item.quality) }}
+                  style={{ color: getWowRarityColor(item.quality) }}
                 >
                   {item.name}
                 </Text>

@@ -1,7 +1,13 @@
 import type { FormProps, ModalProps } from 'antd';
-import { AutoComplete, DatePicker, Form, Input } from 'antd';
+
 import type React from 'react';
-import { AppModal } from '../../../../shared/ui';
+import {
+  AppModal,
+  AppAutoComplete as AutoComplete,
+  AppDatePicker as DatePicker,
+  AppForm as Form,
+  AppInput as Input,
+} from '../../../../shared/ui';
 
 interface LicenseFormModalProps {
   modalProps: ModalProps;

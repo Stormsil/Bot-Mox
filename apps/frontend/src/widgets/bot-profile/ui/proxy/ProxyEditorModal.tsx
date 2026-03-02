@@ -1,10 +1,18 @@
 import type { FormProps, ModalProps } from 'antd';
-import { DatePicker, Flex, Form, Input, Spin, Typography } from 'antd';
+
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import type { IPQSResponse } from '../../../../entities/resources/model/types';
 import type { ParsedProxy } from '../../../../shared/lib/utils/proxyUtils';
-import { AppModal } from '../../../../shared/ui';
+import {
+  AppModal,
+  AppDatePicker as DatePicker,
+  AppFlex as Flex,
+  AppForm as Form,
+  AppInput as Input,
+  AppSpin as Spin,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import { ProxyIpqsResults } from './ProxyIpqsResults';
 import { ProxyParsedAlert } from './ProxyParsedAlert';
 import styles from './proxy.module.css';

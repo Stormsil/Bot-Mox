@@ -1,9 +1,10 @@
 import { DeleteOutlined, EditOutlined, RobotOutlined } from '@ant-design/icons';
 import { DeleteButton, EditButton } from '@refinedev/antd';
 import type { TableColumnsType } from 'antd';
-import { Space, Tag, Typography } from 'antd';
+
 import dayjs from 'dayjs';
 import type { SubscriptionWithDetails } from '../../entities/resources/model/types';
+import { AppSpace as Space, AppTag as Tag, AppTypography as Typography } from '../../shared/ui';
 import { getSubscriptionStatusColor, getSubscriptionStatusText } from './subscription-status';
 
 const { Text } = Typography;

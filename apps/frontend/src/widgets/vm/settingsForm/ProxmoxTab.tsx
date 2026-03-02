@@ -1,20 +1,21 @@
 import { CheckCircleFilled, CloseCircleFilled, LoadingOutlined } from '@ant-design/icons';
-import {
-  Descriptions,
-  Divider,
-  InputNumber,
-  Progress,
-  Radio,
-  Space,
-  Switch,
-  Table,
-  Tag,
-  Tooltip,
-  Typography,
-} from 'antd';
+
 import type React from 'react';
 import { useEffect } from 'react';
 import type { VMGeneratorSettings, VMStorageOption } from '../../../shared/types';
+import {
+  AppDescriptions as Descriptions,
+  AppDivider as Divider,
+  AppInputNumber as InputNumber,
+  AppProgress as Progress,
+  AppRadio as Radio,
+  AppSpace as Space,
+  AppSwitch as Switch,
+  AppTable as Table,
+  AppTag as Tag,
+  AppTooltip as Tooltip,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import { VMConfigPreview } from '../VMConfigPreview';
 import styles from './ProxmoxTab.module.css';
 import {

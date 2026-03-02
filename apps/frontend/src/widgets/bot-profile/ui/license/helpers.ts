@@ -30,9 +30,9 @@ export const getLicenseStatusText = (license: LicenseInfo) => {
 };
 
 export const getDaysLeftColor = (license: LicenseInfo) => {
-  if (license.isExpired) return '#ff4d4f';
-  if (license.isExpiringSoon) return '#faad14';
-  return '#52c41a';
+  if (license.isExpired) return 'var(--boxmox-color-status-danger)';
+  if (license.isExpiringSoon) return 'var(--boxmox-color-status-warning)';
+  return 'var(--boxmox-color-status-success)';
 };
 
 export const getTypeOptions = (licenses: LicenseInfo[]) =>

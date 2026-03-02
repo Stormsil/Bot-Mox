@@ -1,5 +1,13 @@
-import { Card, Col, Flex, Input, Row, Space, Typography } from 'antd';
 import type { ReactElement } from 'react';
+import {
+  AppCard as Card,
+  AppCol as Col,
+  AppFlex as Flex,
+  AppInput as Input,
+  AppRow as Row,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import { cx } from '../sections/classNames';
 import type { ThemeSettingsPanelProps } from '../ThemeSettingsPanel.types';
 

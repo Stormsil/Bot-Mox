@@ -1,7 +1,14 @@
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Flex, List, Space, Tag, Typography } from 'antd';
+
 import dayjs from 'dayjs';
 import type React from 'react';
+import {
+  AppFlex as Flex,
+  AppList as List,
+  AppSpace as Space,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import { TableActionButton } from '../../../../shared/ui/TableActionButton';
 import { getDaysLeftColor, getStatusColor, getStatusIcon, getStatusText } from './helpers';
 import { SubscriptionStatusAlert } from './SubscriptionAlerts';
@@ -80,9 +87,9 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
             style={{
               fontSize: '12px',
               color: subscription.isExpired
-                ? '#ff4d4f'
+                ? 'var(--boxmox-color-status-danger)'
                 : subscription.isExpiringSoon
-                  ? '#faad14'
+                  ? 'var(--boxmox-color-status-warning)'
                   : undefined,
             }}
           >

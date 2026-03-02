@@ -2,7 +2,7 @@ import { WarningOutlined } from '@ant-design/icons';
 import { useModalForm } from '@refinedev/antd';
 import { type HttpError, useList, useUpdate } from '@refinedev/core';
 import type { FormInstance } from 'antd';
-import { App, Card, message, Spin } from 'antd';
+import { App, message } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -13,6 +13,7 @@ import {
 } from '../../../entities/resources/api/ipqsFacade';
 import type { IPQSResponse, Proxy as ProxyResource } from '../../../entities/resources/model/types';
 import { parseProxyString } from '../../../shared/lib/utils/proxyUtils';
+import { AppCard as Card, AppSpin as Spin } from '../../../shared/ui';
 import type { BotProxyProps, ProxyInfo, ProxyModalFormValues } from './proxy';
 import {
   ProxyDetailsCard,
@@ -167,14 +168,14 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
 
     modal.confirm({
       title: '',
-      icon: <WarningOutlined style={{ color: '#faad14' }} />,
+      icon: <WarningOutlined style={{ color: 'var(--boxmox-color-status-warning)' }} />,
       content: (
         <div>
           <p>Are you sure you want to unassign this proxy from the bot?</p>
           <p>
             <strong>IP:</strong> {proxy.ip}:{proxy.port}
           </p>
-          <p style={{ color: '#8c8c8c', fontSize: '12px' }}>
+          <p style={{ color: 'var(--boxmox-color-text-muted)', fontSize: '12px' }}>
             The proxy will remain in the database but will no longer be linked to this bot.
           </p>
         </div>

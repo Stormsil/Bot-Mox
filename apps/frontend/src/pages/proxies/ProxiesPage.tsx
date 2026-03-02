@@ -1,7 +1,7 @@
 import { DownOutlined, GlobalOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { List, useModalForm, useTable } from '@refinedev/antd';
 import { type HttpError, useList, useUpdate } from '@refinedev/core';
-import { Button, Card, Flex, message, Space, Typography } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
@@ -12,7 +12,14 @@ import {
   updateProxyWithIPQSData,
 } from '../../entities/resources/api/ipqsFacade';
 import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
-import { AppTable } from '../../shared/ui';
+import {
+  AppTable,
+  AppButton as Button,
+  AppCard as Card,
+  AppFlex as Flex,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { ProxiesFiltersCard } from './ProxiesFiltersCard';
 import styles from './ProxiesPage.module.css';
 import { ProxiesStatsCards } from './ProxiesStatsCards';

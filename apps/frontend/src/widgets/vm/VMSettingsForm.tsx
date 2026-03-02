@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { message, Tabs } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { getVMConfig } from '../../entities/vm/api/vmReadFacade';
@@ -10,6 +10,7 @@ import {
   updateVMSettings,
 } from '../../entities/vm/api/vmSettingsFacade';
 import type { VMGeneratorSettings, VMStorageOption } from '../../shared/types';
+import { AppTabs as Tabs } from '../../shared/ui';
 import type { TemplateSyncState, TemplateVmSummary } from './settingsForm';
 import {
   normalizeTemplateCores,

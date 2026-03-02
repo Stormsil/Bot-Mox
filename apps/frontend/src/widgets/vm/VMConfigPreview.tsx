@@ -1,8 +1,9 @@
 import { CopyOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import { Alert, Button, Space } from 'antd';
+
 import type React from 'react';
 import { useState } from 'react';
 import { useVmHardwareFingerprintMutation } from '../../entities/vm/api/useVmActionMutations';
+import { AppAlert as Alert, AppButton as Button, AppSpace as Space } from '../../shared/ui';
 import styles from './VMConfigPreview.module.css';
 
 export const VMConfigPreview: React.FC = () => {

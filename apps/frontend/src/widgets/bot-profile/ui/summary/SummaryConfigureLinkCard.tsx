@@ -1,5 +1,10 @@
-import { Card, Col, Flex, Space } from 'antd';
 import type React from 'react';
+import {
+  AppCard as Card,
+  AppCol as Col,
+  AppFlex as Flex,
+  AppSpace as Space,
+} from '../../../../shared/ui';
 import styles from '../BotSummary.module.css';
 
 interface SummaryConfigureLinkCardProps {

@@ -1,6 +1,13 @@
 import type { FormInstance } from 'antd';
-import { DatePicker, Form, Input, Modal, Select } from 'antd';
+
 import type React from 'react';
+import {
+  AppDatePicker as DatePicker,
+  AppForm as Form,
+  AppInput as Input,
+  AppModal as Modal,
+  AppSelect as Select,
+} from '../../../../shared/ui';
 import type { CalendarEventFormValues } from './types';
 
 const { TextArea } = Input;

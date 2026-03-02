@@ -1,7 +1,15 @@
 import { DesktopOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Flex, Space, Typography } from 'antd';
+
 import type React from 'react';
 import type { ProjectSettings } from '../../../entities/settings/model/projectSettings';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCol as Col,
+  AppFlex as Flex,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import { cx } from './classNames';
 
 const { Text } = Typography;

@@ -1,6 +1,13 @@
-import { Form, Input, InputNumber, Radio, Select, Typography } from 'antd';
 import type React from 'react';
 import type { UnattendProfileConfig } from '../../../../entities/vm/model/unattend';
+import {
+  AppForm as Form,
+  AppInput as Input,
+  AppInputNumber as InputNumber,
+  AppRadio as Radio,
+  AppSelect as Select,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 
 const { Text } = Typography;
 

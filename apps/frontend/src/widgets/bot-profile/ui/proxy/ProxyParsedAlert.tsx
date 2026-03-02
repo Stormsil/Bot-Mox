@@ -1,7 +1,12 @@
 import { CheckCircleFilled } from '@ant-design/icons';
-import { Alert, Space, Typography } from 'antd';
+
 import type React from 'react';
 import type { ParsedProxy } from '../../../../shared/lib/utils/proxyUtils';
+import {
+  AppAlert as Alert,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import { TableActionButton } from '../../../../shared/ui/TableActionButton';
 
 const { Text } = Typography;

@@ -3,12 +3,13 @@
  * Интегрирует NoteSidebar и NoteEditor для полноценной работы с заметками
  */
 
-import { Empty, message, Spin } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useNoteByIdQuery } from '../../entities/notes/api/useNoteByIdQuery';
 import type { Note } from '../../entities/notes/model/types';
+import { AppEmpty as Empty, AppSpin as Spin } from '../../shared/ui';
 import { NoteSidebar } from '../../widgets/notes-editor';
 import styles from './NotesPage.module.css';
 

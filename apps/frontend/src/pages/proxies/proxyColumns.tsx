@@ -6,12 +6,18 @@ import {
   SyncOutlined,
 } from '@ant-design/icons';
 import { DeleteButton, EditButton } from '@refinedev/antd';
-import { Button, Progress, Tag, Typography } from 'antd';
+
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { getFraudScoreColor } from '../../entities/resources/api/ipqsFacade';
 import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
+import {
+  AppButton as Button,
+  AppProgress as Progress,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { TableActionButton, TableActionGroup } from '../../shared/ui/TableActionButton';
 import styles from './ProxiesPage.module.css';
 

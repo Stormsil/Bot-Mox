@@ -1,8 +1,9 @@
-import { Card, Form, message } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useUpdateBotMutation } from '../../../entities/bot/api/useBotMutations';
 import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
+import { AppCard as Card, AppForm as Form } from '../../../shared/ui';
 import type { BotPersonProps, PersonFormValues } from './person';
 import {
   countries,

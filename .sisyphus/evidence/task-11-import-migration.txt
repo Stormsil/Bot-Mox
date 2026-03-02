@@ -1,0 +1,82 @@
+COMMAND:
+pnpm exec rg "from ['\"]antd['\"]" apps/frontend/src/pages apps/frontend/src/widgets apps/frontend/src/features apps/frontend/src/entities --glob "*.tsx"
+
+OUTPUT:
+apps/frontend/src/features/bot-account/BotAccount.tsx:import { message } from 'antd';
+apps/frontend/src/pages/workspace/kanban/index.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/layout/ResourceTree.tsx:import type { TreeDataNode } from 'antd';
+apps/frontend/src/widgets/finance/TransactionForm.tsx:import { theme } from 'antd';
+apps/frontend/src/widgets/schedule/ScheduleGenerator.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/layout/resourceTree/tree-utils.tsx:import type { TreeDataNode } from 'antd';
+apps/frontend/src/widgets/schedule/SessionEditor.tsx:import { theme } from 'antd';
+apps/frontend/src/widgets/vm/VMCommandPanel.tsx:import { message } from 'antd';
+apps/frontend/src/pages/login/index.tsx:import { message } from 'antd';
+apps/frontend/src/pages/dashboard/index.tsx:import type { TableColumnsType } from 'antd';
+apps/frontend/src/widgets/vm/VMOperationLog.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/notes-editor/NoteSidebar.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:import type { UploadProps } from 'antd';
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:import { message } from 'antd';
+apps/frontend/src/pages/licenses/page/LicenseModals.tsx:import type { FormInstance, FormProps, ModalProps } from 'antd';
+apps/frontend/src/pages/licenses/page/LicenseColumns.tsx:import type { TableColumnsType } from 'antd';
+apps/frontend/src/pages/licenses/index.tsx:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/licenses/index.tsx:import { message } from 'antd';
+apps/frontend/src/pages/notes/index.tsx:import { message } from 'antd';
+apps/frontend/src/pages/settings/sections/NotificationsCard.tsx:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/settings/sections/ApiKeysCard.tsx:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/settings/sections/StoragePolicyCard.tsx:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/settings/sections/ProxyAndAlertsCards.tsx:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/proxies/ProxiesPage.tsx:import { message } from 'antd';
+apps/frontend/src/pages/proxies/ProxyCrudModal.tsx:import { type FormInstance, type FormProps, type ModalProps, message } from 'antd';
+apps/frontend/src/pages/workspace/calendar/index.tsx:import { message } from 'antd';
+apps/frontend/src/pages/billing/index.tsx:import { message } from 'antd';
+apps/frontend/src/pages/subscriptions/subscription-columns.tsx:import type { TableColumnsType } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotLifeStagesWidget.tsx:import { message } from 'antd';
+apps/frontend/src/pages/subscriptions/index.tsx:import type { TableProps } from 'antd';
+apps/frontend/src/pages/subscriptions/index.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/subscription/SubscriptionModal.tsx:import type { FormProps, ModalProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotPerson.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotCharacterWidget.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotLicense.tsx:import type { FormInstance, MenuProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotLicense.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotProxy.tsx:import type { FormInstance } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotProxy.tsx:import { App, message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotSchedule.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/vm/settingsForm/SecretField.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/person/PersonFormFields.tsx:import type { FormInstance } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/character/CharacterEditForm.tsx:import type { FormInstance } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotSummaryWidget.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/license/AssignLicenseModal.tsx:import type { FormInstance } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/proxy/helpers.tsx:import type { AlertProps } from 'antd';
+apps/frontend/src/widgets/vm/settingsForm/PlaybookTab.tsx:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/license/LicenseFormModal.tsx:import type { FormProps, ModalProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/proxy/ProxyEditorModal.tsx:import type { FormProps, ModalProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/license/LicenseViews.tsx:import type { MenuProps } from 'antd';
+apps/frontend/src/widgets/subscriptions/SubscriptionForm.tsx:import type { FormProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotSubscription.tsx:import { App, message } from 'antd';
+apps/frontend/src/widgets/vm/VMQueueUnattendModal.tsx:import type { UploadProps } from 'antd';
+apps/frontend/src/widgets/vm/VMSettingsForm.tsx:import { message } from 'antd';
+apps/frontend/src/pages/workspace/calendar/page/CalendarEventModal.tsx:import type { FormInstance } from 'antd';
+
+INTERPRETATION:
+- Remaining imports are allowlisted runtime (`message`, `theme`, `App`) and type-only imports.
+- No direct visual AntD imports remain in business-layer TSX.
+
+COMMAND:
+pnpm --filter @botmox/frontend lint && pnpm --filter @botmox/frontend typecheck
+
+OUTPUT:
+> @botmox/frontend@0.0.0 lint E:\Боттинг\source\repos\Bot-Mox\apps\frontend
+> pnpm --dir ../.. exec biome check apps/frontend/src && pnpm --dir ../.. run check:ui:boundaries
+
+Checked 602 files in 352ms. No fixes applied.
+
+> botmox-project@1.0.0 check:ui:boundaries E:\Боттинг\source\repos\Bot-Mox
+> node scripts/check-ui-boundaries.js
+
+[check-ui-boundaries] OK. Checked 109 UI files; violations: 0.
+
+> @botmox/frontend@0.0.0 typecheck E:\Боттинг\source\repos\Bot-Mox\apps\frontend
+> tsc -b --noEmit
+
+RESULT:
+- Full required gate passes.

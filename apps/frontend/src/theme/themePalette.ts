@@ -242,7 +242,7 @@ export const applyThemePaletteToDocument = (palette: ThemePalette): void => {
   }
 
   const brandPrimary = normalizeHexColor(
-    palette['--boxmox-color-brand-primary'],
+    palette['--botmox-color-brand-primary'],
     '#3b7db8',
   ).replace('#', '');
 
@@ -251,7 +251,7 @@ export const applyThemePaletteToDocument = (palette: ThemePalette): void => {
   const b = Number.parseInt(brandPrimary.slice(4, 6), 16);
 
   document.documentElement.style.setProperty(
-    '--boxmox-color-brand-primary-rgb',
+    '--botmox-color-brand-primary-rgb',
     `${r}, ${g}, ${b}`,
   );
 };
@@ -259,6 +259,9 @@ export const applyThemePaletteToDocument = (palette: ThemePalette): void => {
 export const applyThemeTypographyToDocument = (typography: ThemeTypographySettings): void => {
   if (typeof document === 'undefined') return;
   const next = sanitizeThemeTypographySettings(typography);
+  document.documentElement.style.setProperty('--botmox-font-primary', next.fontPrimary);
+  document.documentElement.style.setProperty('--botmox-font-condensed', next.fontCondensed);
+  document.documentElement.style.setProperty('--botmox-font-mono', next.fontMono);
   document.documentElement.style.setProperty('--font-primary', next.fontPrimary);
   document.documentElement.style.setProperty('--font-condensed', next.fontCondensed);
   document.documentElement.style.setProperty('--font-mono', next.fontMono);

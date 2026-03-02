@@ -1,6 +1,11 @@
-import { Card, Table, Tag, Typography } from 'antd';
 import React, { useMemo } from 'react';
 import type { FinanceOperation } from '../../entities/finance/model/types';
+import {
+  AppCard as Card,
+  AppTable as Table,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import commonStyles from './FinanceCommon.module.css';
 import styles from './FinanceSummary.module.css';
 

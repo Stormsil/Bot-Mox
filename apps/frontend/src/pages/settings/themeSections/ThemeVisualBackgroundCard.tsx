@@ -1,20 +1,21 @@
 import { DeleteOutlined, PictureOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
-import {
-  Button,
-  Card,
-  ColorPicker,
-  Empty,
-  Flex,
-  List,
-  Popconfirm,
-  Segmented,
-  Slider,
-  Space,
-  Switch,
-  Typography,
-  Upload,
-} from 'antd';
+
 import type { ReactElement } from 'react';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppColorPicker as ColorPicker,
+  AppEmpty as Empty,
+  AppFlex as Flex,
+  AppList as List,
+  AppPopconfirm as Popconfirm,
+  AppSegmented as Segmented,
+  AppSlider as Slider,
+  AppSpace as Space,
+  AppSwitch as Switch,
+  AppTypography as Typography,
+  AppUpload as Upload,
+} from '../../../shared/ui';
 import type { ThemeVisualSettings } from '../../../theme/themePalette';
 import { cx } from '../sections/classNames';
 import type { ThemeSettingsPanelProps } from '../ThemeSettingsPanel.types';

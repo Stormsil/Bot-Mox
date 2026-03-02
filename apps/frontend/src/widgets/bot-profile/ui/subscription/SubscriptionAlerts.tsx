@@ -1,6 +1,7 @@
 import { WarningOutlined } from '@ant-design/icons';
-import { Alert } from 'antd';
+
 import type React from 'react';
+import { AppAlert as Alert } from '../../../../shared/ui';
 import { getTypeLabel } from './helpers';
 import styles from './subscription.module.css';
 import type { SubscriptionWithDetails } from './types';

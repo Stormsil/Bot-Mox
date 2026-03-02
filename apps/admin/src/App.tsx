@@ -71,8 +71,8 @@ const AdminShell: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           paddingInline: 16,
-          borderBottom: '1px solid var(--boxmox-color-border-default)',
-          background: 'var(--boxmox-color-surface-elevated)',
+          borderBottom: '1px solid var(--botmox-color-border-default)',
+          background: 'var(--botmox-color-surface-elevated)',
         }}
       >
         <Space>

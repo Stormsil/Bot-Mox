@@ -20,10 +20,10 @@
 }
 
 .passwordPolicy {
-  border: 1px solid var(--boxmox-color-border-default, #2f3b4a);
+  border: 1px solid var(--botmox-color-border-default, #2f3b4a);
   border-radius: 8px;
   padding: 8px 10px;
-  background: var(--boxmox-color-surface-panel, #1a2330);
+  background: var(--botmox-color-surface-panel, #1a2330);
 }
 
 .passwordRule {

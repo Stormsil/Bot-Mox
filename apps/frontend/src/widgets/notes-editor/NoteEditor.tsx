@@ -13,7 +13,7 @@ import {
   SplitCellsOutlined,
 } from '@ant-design/icons';
 import MDEditor from '@uiw/react-md-editor';
-import { Button, Input, Space, Tag, Tooltip } from 'antd';
+
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import remarkGfm from 'remark-gfm';
@@ -25,6 +25,13 @@ import type { Note } from '../../entities/notes/model/types';
 import { cx } from '../../shared/lib/classNames';
 import { TableActionButton } from '../../shared/ui/TableActionButton';
 import '@uiw/react-md-editor/markdown-editor.css';
+import {
+  AppButton as Button,
+  AppInput as Input,
+  AppSpace as Space,
+  AppTag as Tag,
+  AppTooltip as Tooltip,
+} from '../../shared/ui';
 import styles from './NoteEditor.module.css';
 
 interface NoteEditorProps {

@@ -1,5 +1,10 @@
-import { Button, Select, Tag, Typography } from 'antd';
 import type React from 'react';
+import {
+  AppButton as Button,
+  AppSelect as Select,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import { useVmTargetStripModel } from './useVmTargetStripModel';
 
 interface VmTargetStripProps {

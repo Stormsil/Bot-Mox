@@ -1,8 +1,9 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Empty, Switch } from 'antd';
+
 import type React from 'react';
 import { formatDuration, timeToMinutes } from '../../shared/lib/utils/scheduleUtils';
 import type { ScheduleSession } from '../../shared/types';
+import { AppButton as Button, AppEmpty as Empty, AppSwitch as Switch } from '../../shared/ui';
 import { TableActionButton } from '../../shared/ui/TableActionButton';
 import styles from './SessionList.module.css';
 

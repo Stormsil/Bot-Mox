@@ -1,6 +1,6 @@
-import { Flex } from 'antd';
 import type React from 'react';
 import type { BotScheduleV2, ScheduleDay, ScheduleSession } from '../../../shared/types';
+import { AppFlex as Flex } from '../../../shared/ui';
 import {
   DayStats,
   DayTabs,

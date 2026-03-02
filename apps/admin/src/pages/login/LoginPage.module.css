@@ -18,5 +18,5 @@
 .hint {
   margin-top: 12px;
   margin-bottom: 0;
-  color: var(--boxmox-color-text-muted, #9db2c8);
+  color: var(--botmox-color-text-muted, #9db2c8);
 }

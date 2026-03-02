@@ -1,7 +1,8 @@
 import { CalendarOutlined, ReloadOutlined, SaveOutlined, UnlockOutlined } from '@ant-design/icons';
-import { Button, Space } from 'antd';
+
 import type React from 'react';
 import type { ScheduleGenerationParams } from '../../../shared/types';
+import { AppButton as Button, AppSpace as Space } from '../../../shared/ui';
 import { ScheduleGenerator } from '../../../widgets/schedule';
 import styles from './BotSchedule.module.css';
 

@@ -1,8 +1,9 @@
 import { WarningOutlined } from '@ant-design/icons';
-import { Alert } from 'antd';
+
 import dayjs from 'dayjs';
 import type React from 'react';
 import type { SubscriptionWithDetails } from '../../entities/resources/model/types';
+import { AppAlert as Alert } from '../../shared/ui';
 import styles from './SubscriptionsPage.module.css';
 
 interface ExpiringSubscriptionsAlertProps {

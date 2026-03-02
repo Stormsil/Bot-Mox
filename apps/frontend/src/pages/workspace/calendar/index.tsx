@@ -1,5 +1,5 @@
 import { CalendarOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Form, message, Segmented, Space, Typography } from 'antd';
+import { message } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -14,6 +14,14 @@ import {
 import { useWorkspaceCalendarEventsQuery } from '../../../entities/workspace/api/useWorkspaceQueries';
 import type { WorkspaceCalendarEvent } from '../../../entities/workspace/model/types';
 import { uiLogger } from '../../../observability/uiLogger';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppForm as Form,
+  AppSegmented as Segmented,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../../shared/ui';
 import type { CalendarEventFormValues, CalendarViewMode, SidebarMode } from './page';
 import {
   CALENDAR_VIEW_STORAGE_KEY,

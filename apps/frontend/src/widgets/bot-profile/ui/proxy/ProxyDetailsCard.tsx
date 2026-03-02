@@ -1,7 +1,18 @@
 import { EditOutlined, GlobalOutlined, LinkOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Flex, Progress, Row, Space, Tag, Typography } from 'antd';
+
 import dayjs from 'dayjs';
 import type React from 'react';
+import {
+  AppButton as Button,
+  AppCard as Card,
+  AppCol as Col,
+  AppFlex as Flex,
+  AppProgress as Progress,
+  AppRow as Row,
+  AppSpace as Space,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import {
   getLocalFraudScoreColor,
   getLocalFraudScoreStatus,
@@ -146,7 +157,11 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
           <Text
             strong
             style={{
-              color: proxy.isExpired ? '#ff4d4f' : proxy.isExpiringSoon ? '#faad14' : undefined,
+              color: proxy.isExpired
+                ? 'var(--boxmox-color-status-danger)'
+                : proxy.isExpiringSoon
+                  ? 'var(--boxmox-color-status-warning)'
+                  : undefined,
             }}
           >
             {dayjs(proxy.expires_at).format('DD.MM.YYYY HH:mm')}

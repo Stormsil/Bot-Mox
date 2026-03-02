@@ -1,6 +1,6 @@
-import { Input, Modal } from 'antd';
 import type React from 'react';
 import type { ProxmoxVM } from '../../shared/types';
+import { AppInput as Input, AppModal as Modal } from '../../shared/ui';
 
 interface VmRenameModalProps {
   target: ProxmoxVM | null;

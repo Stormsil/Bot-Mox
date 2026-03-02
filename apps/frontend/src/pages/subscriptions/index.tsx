@@ -9,7 +9,7 @@ import {
 import { List, useModalForm, useTable } from '@refinedev/antd';
 import { type HttpError, useList } from '@refinedev/core';
 import type { TableProps } from 'antd';
-import { Button, Card, Flex, Input, message, Select, Space, Typography } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
@@ -23,7 +23,17 @@ import type {
 import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
-import { AppModal, AppTable } from '../../shared/ui';
+import {
+  AppModal,
+  AppTable,
+  AppButton as Button,
+  AppCard as Card,
+  AppFlex as Flex,
+  AppInput as Input,
+  AppSelect as Select,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../shared/ui';
 import { SubscriptionForm } from '../../widgets/subscriptions/SubscriptionForm';
 import { ExpiringSubscriptionsAlert } from './ExpiringSubscriptionsAlert';
 import styles from './SubscriptionsPage.module.css';

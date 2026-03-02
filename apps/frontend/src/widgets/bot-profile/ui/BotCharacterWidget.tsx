@@ -1,5 +1,5 @@
 import { EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { Card, Flex, Form, message, Tooltip } from 'antd';
+import { message } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useUpdateBotMutation } from '../../../entities/bot/api/useBotMutations';
@@ -7,6 +7,12 @@ import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
 import { useBotReferenceDataQuery } from '../../../entities/bot/api/useBotReferenceDataQuery';
 import { useWowNamesMutation } from '../../../entities/bot/api/useWowNamesMutation';
 import type { FactionType } from '../../../shared/types';
+import {
+  AppCard as Card,
+  AppFlex as Flex,
+  AppForm as Form,
+  AppTooltip as Tooltip,
+} from '../../../shared/ui';
 import type { BotCharacterProps, CharacterFormData, ReferenceData } from './character';
 import {
   CharacterEditForm,

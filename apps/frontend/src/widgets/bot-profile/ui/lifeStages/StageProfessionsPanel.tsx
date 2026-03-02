@@ -1,6 +1,18 @@
 import { ClockCircleOutlined, LineChartOutlined, ToolOutlined } from '@ant-design/icons';
-import { Card, Col, Divider, Flex, Progress, Row, Statistic, Tag, Typography } from 'antd';
+
 import type React from 'react';
+import { wowLifeStageColors } from '../../../../features/wow-data/config/colors';
+import {
+  AppCard as Card,
+  AppCol as Col,
+  AppDivider as Divider,
+  AppFlex as Flex,
+  AppProgress as Progress,
+  AppRow as Row,
+  AppStatistic as Statistic,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../../../shared/ui';
 import { getProfessionColor, getProfessionIcon, mockAnalytics, mockProfessions } from './config';
 import styles from './lifeStages.module.css';
 import { SimpleBarChart } from './SimpleBarChart';
@@ -94,7 +106,11 @@ export const StageProfessionsPanel: React.FC = () => {
           </Col>
         </Row>
         <Divider />
-        <SimpleBarChart data={analytics.trend} color="#13c2c2" label="Skill points trend" />
+        <SimpleBarChart
+          data={analytics.trend}
+          color={wowLifeStageColors.professions}
+          label="Skill points trend"
+        />
       </Card>
     </Flex>
   );

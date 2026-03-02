@@ -4,10 +4,18 @@ import {
   EyeOutlined,
   SafetyOutlined,
 } from '@ant-design/icons';
-import { Alert, Button, Space, Spin, Tag, Typography } from 'antd';
+
 import type React from 'react';
 import type { IPQSResponse } from '../../entities/resources/model/types';
 import { getCountryFlag } from '../../shared/lib/utils/proxyUtils';
+import {
+  AppAlert as Alert,
+  AppButton as Button,
+  AppSpace as Space,
+  AppSpin as Spin,
+  AppTag as Tag,
+  AppTypography as Typography,
+} from '../../shared/ui';
 
 const { Text } = Typography;
 

@@ -1,17 +1,5 @@
 import { financeOperationCreateSchema } from '@botmox/api-contract';
-import {
-  DatePicker,
-  Divider,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Radio,
-  Select,
-  Space,
-  Typography,
-  theme,
-} from 'antd';
+import { theme } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -21,6 +9,18 @@ import type {
   FinanceOperationFormData,
   FinanceOperationType,
 } from '../../entities/finance/model/types';
+import {
+  AppDatePicker as DatePicker,
+  AppDivider as Divider,
+  AppForm as Form,
+  AppInput as Input,
+  AppInputNumber as InputNumber,
+  AppModal as Modal,
+  AppRadio as Radio,
+  AppSelect as Select,
+  AppSpace as Space,
+  AppTypography as Typography,
+} from '../../shared/ui';
 
 const { Text } = Typography;
 const { TextArea } = Input;

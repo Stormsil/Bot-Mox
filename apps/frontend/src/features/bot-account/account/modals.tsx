@@ -1,4 +1,4 @@
-import { Alert, Modal } from 'antd';
+import { AppAlert as Alert, AppModal as Modal } from '../../../shared/ui';
 
 interface ConfirmGenerationModalProps {
   open: boolean;

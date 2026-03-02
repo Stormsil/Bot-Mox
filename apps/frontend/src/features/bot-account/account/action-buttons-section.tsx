@@ -6,7 +6,7 @@ import {
   UndoOutlined,
   UnlockOutlined,
 } from '@ant-design/icons';
-import { Button, Tooltip } from 'antd';
+import { AppButton as Button, AppTooltip as Tooltip } from '../../../shared/ui';
 import styles from './account.module.css';
 import type { AccountGenerationLocks } from './types';
 
