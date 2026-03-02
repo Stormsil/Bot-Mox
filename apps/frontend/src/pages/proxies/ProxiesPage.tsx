@@ -1,7 +1,7 @@
 import { DownOutlined, GlobalOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { List, useModalForm, useTable } from '@refinedev/antd';
 import { type HttpError, useList, useUpdate } from '@refinedev/core';
-import { Button, Card, message, Typography } from 'antd';
+import { Button, Card, Flex, message, Space, Typography } from 'antd';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
@@ -289,17 +289,20 @@ export const ProxiesPage: React.FC = () => {
       <List
         wrapperProps={{ className: styles.header }}
         title={
-          <div className={styles.headerTitle}>
-            <Title level={4} className={styles.pageTitle}>
-              <GlobalOutlined /> Proxies
+          <Flex vertical className={styles.headerTitle}>
+            <Title level={4}>
+              <Space size={8}>
+                <GlobalOutlined />
+                <span>Proxies</span>
+              </Space>
             </Title>
             <Text type="secondary" className={styles.headerSubtitle}>
               Manage proxy servers for bots
             </Text>
-          </div>
+          </Flex>
         }
         headerButtons={({ defaultButtons }) => (
-          <div className={styles.headerActions}>
+          <Space size={8}>
             <Button
               type="text"
               size="small"
@@ -317,7 +320,7 @@ export const ProxiesPage: React.FC = () => {
             >
               Add Proxy
             </Button>
-          </div>
+          </Space>
         )}
       >
         {!statsCollapsed && <ProxiesStatsCards stats={stats} />}

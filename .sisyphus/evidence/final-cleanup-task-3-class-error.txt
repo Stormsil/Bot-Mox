@@ -1,0 +1,4 @@
+Validation target: CSS module key harmonization for text-primary in BotLeveling scope
+Result: styles['text-primary'] usage retained in TSX and .text-primary selector exists in BotLeveling.module.css
+Result: targeted legacy selectors removed from BotFinance/BotLeveling module CSS files (.cost-item, .roi-item, .transactions-header, .xp-info, .location-info, .location-details)
+Status: no class-key mismatch reproduced in touched scope after cleanup

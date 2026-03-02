@@ -1,6 +1,6 @@
 import { CheckCircleOutlined, LockOutlined } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
-import { Button, Input, Modal, message, Tag } from 'antd';
+import { Button, Flex, Input, Modal, message, Tag } from 'antd';
 import type React from 'react';
 import { useState } from 'react';
 import { setVmSettingsSecret } from '../../../entities/vm/api/secretsFacade';
@@ -61,7 +61,7 @@ export const SecretField: React.FC<SecretFieldProps> = ({
   return (
     <div className={layout.field}>
       <div className={layout.fieldLabel}>{label}</div>
-      <div className={layout.inlineRow}>
+      <Flex gap={8} align="center" wrap>
         {isBound ? (
           <Tag icon={<CheckCircleOutlined />} color="success">
             Secret set
@@ -72,7 +72,7 @@ export const SecretField: React.FC<SecretFieldProps> = ({
         <Button size="small" icon={<LockOutlined />} onClick={() => setModalOpen(true)}>
           {isBound ? 'Rotate' : 'Set'}
         </Button>
-      </div>
+      </Flex>
       <Modal
         title={`${isBound ? 'Rotate' : 'Set'} ${label}`}
         open={modalOpen}

@@ -9,6 +9,7 @@ import {
   Card,
   Col,
   DatePicker,
+  Flex,
   Row,
   Select,
   Space,
@@ -176,44 +177,52 @@ export const BotFinanceWidget: React.FC<BotFinanceProps> = () => {
       <Row gutter={[16, 16]} className={styles['costs-breakdown']}>
         <Col span={12}>
           <Card className={styles['costs-card']} title="Cost Breakdown">
-            <div className={styles['cost-item']}>
+            <Flex justify="space-between" align="center" className={styles['cost-row']}>
               <Text className={styles.lineLabel}>Proxy Costs</Text>
               <Text className={styles.lineValue}>$15.00</Text>
-            </div>
-            <div className={styles['cost-item']}>
+            </Flex>
+            <Flex justify="space-between" align="center" className={styles['cost-row']}>
               <Text className={styles.lineLabel}>Subscription</Text>
               <Text className={styles.lineValue}>$25.00</Text>
-            </div>
-            <div className={styles['cost-item']}>
+            </Flex>
+            <Flex justify="space-between" align="center" className={styles['cost-row']}>
               <Text className={styles.lineLabel}>Session Costs</Text>
               <Text className={styles.lineValue}>$5.00</Text>
-            </div>
+            </Flex>
             <div className={styles['cost-divider']} />
-            <div className={styles['cost-item']}>
+            <Flex
+              justify="space-between"
+              align="center"
+              className={[styles['cost-row'], styles['row-last']].join(' ')}
+            >
               <Text className={styles.lineLabelStrong}>Total Costs</Text>
               <Text className={[styles.lineValueStrong, styles.totalAmount].join(' ')}>$45.00</Text>
-            </div>
+            </Flex>
           </Card>
         </Col>
         <Col span={12}>
           <Card className={styles['roi-card']} title="ROI Analysis">
-            <div className={styles['roi-item']}>
+            <Flex justify="space-between" align="center" className={styles['roi-row']}>
               <Text className={styles.lineLabel}>Total Invested</Text>
               <Text className={styles.lineValue}>$120.00</Text>
-            </div>
-            <div className={styles['roi-item']}>
+            </Flex>
+            <Flex justify="space-between" align="center" className={styles['roi-row']}>
               <Text className={styles.lineLabel}>Total Returned</Text>
               <Text className={[styles.lineValue, styles.positive].join(' ')}>$187.50</Text>
-            </div>
-            <div className={styles['roi-item']}>
+            </Flex>
+            <Flex justify="space-between" align="center" className={styles['roi-row']}>
               <Text className={styles.lineLabel}>Payback Period</Text>
               <Text className={styles.lineValue}>12 days</Text>
-            </div>
+            </Flex>
             <div className={styles['roi-divider']} />
-            <div className={styles['roi-item']}>
+            <Flex
+              justify="space-between"
+              align="center"
+              className={[styles['roi-row'], styles['row-last']].join(' ')}
+            >
               <Text className={styles.lineLabelStrong}>Profit per Day</Text>
               <Text className={[styles.lineValueStrong, styles.positive].join(' ')}>$5.62</Text>
-            </div>
+            </Flex>
           </Card>
         </Col>
       </Row>
@@ -221,7 +230,7 @@ export const BotFinanceWidget: React.FC<BotFinanceProps> = () => {
       <Card
         className={styles['transactions-card']}
         title={
-          <div className={styles['transactions-header']}>
+          <Flex justify="space-between" align="center" className={styles['transactions-title']}>
             <span>Transaction History</span>
             <Space>
               <Select
@@ -240,7 +249,7 @@ export const BotFinanceWidget: React.FC<BotFinanceProps> = () => {
                 Export
               </Button>
             </Space>
-          </div>
+          </Flex>
         }
       >
         <Table

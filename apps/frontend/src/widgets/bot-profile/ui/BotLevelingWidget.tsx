@@ -1,5 +1,5 @@
 import { AimOutlined, ClockCircleOutlined, RiseOutlined } from '@ant-design/icons';
-import { Card, Col, Progress, Row, Statistic, Tag, Typography } from 'antd';
+import { Card, Col, Flex, Progress, Row, Statistic, Tag, Typography } from 'antd';
 import type React from 'react';
 import type { Bot, LevelingProgress } from '../../../shared/types';
 import styles from './BotLeveling.module.css';
@@ -65,14 +65,14 @@ export const BotLevelingWidget: React.FC<BotLevelingProps> = () => {
         title={<span className={styles['card-title']}>Experience Progress</span>}
       >
         <div className={styles['xp-progress-section']}>
-          <div className={styles['xp-info']}>
+          <Flex justify="space-between" className={styles['xp-summary']}>
             <Text strong className={styles['text-primary']}>
               Level {leveling.current_level}
             </Text>
             <Text type="secondary" className={styles['text-primary']}>
               {leveling.current_xp.toLocaleString()} / {leveling.max_xp.toLocaleString()} XP
             </Text>
-          </div>
+          </Flex>
           <Progress
             percent={xpPercent}
             strokeColor="#722ed1"
@@ -84,15 +84,15 @@ export const BotLevelingWidget: React.FC<BotLevelingProps> = () => {
       </Card>
 
       <Card className={styles['leveling-location-card']}>
-        <div className={styles['location-info']}>
+        <Flex align="center" gap={12} className={styles['location-row']}>
           <AimOutlined className={styles['location-icon']} />
-          <div className={styles['location-details']}>
+          <Flex vertical gap={4} className={styles['location-content']}>
             <Text type="secondary" style={{ fontSize: 'var(--text-xs)' }}>
               Current Location
             </Text>
             <Tag className={styles['location-tag']}>{leveling.location}</Tag>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Card>
     </div>
   );

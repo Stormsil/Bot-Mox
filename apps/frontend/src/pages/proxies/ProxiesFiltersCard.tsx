@@ -1,5 +1,5 @@
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Card, Input, Select } from 'antd';
+import { Button, Card, Flex, Input, Select } from 'antd';
 import type React from 'react';
 import styles from './ProxiesPage.module.css';
 import type { ProxiesTableFilterValues } from './proxiesTableFilters';
@@ -20,7 +20,7 @@ export const ProxiesFiltersCard: React.FC<ProxiesFiltersCardProps> = ({
   onReset,
 }) => (
   <Card className={styles.filters}>
-    <div className={styles.filtersRow}>
+    <Flex wrap gap={8} align="center">
       <Input
         placeholder="Search by IP, provider, country, ISP..."
         prefix={<SearchOutlined />}
@@ -69,6 +69,6 @@ export const ProxiesFiltersCard: React.FC<ProxiesFiltersCardProps> = ({
       <Button size="small" icon={<ReloadOutlined />} onClick={onReset}>
         Reset
       </Button>
-    </div>
+    </Flex>
   </Card>
 );

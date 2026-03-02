@@ -1,0 +1,3 @@
+OK .status-item has no targeted layout props
+OK .summary-stat-item has no targeted layout props
+RESULT: PASS

@@ -30,10 +30,12 @@
   padding: 8px 0;
 }
 
-.xp-info {
-  display: flex;
-  justify-content: space-between;
+.xp-summary {
   margin-bottom: 12px;
+}
+
+.text-primary {
+  color: var(--boxmox-color-text-primary);
 }
 
 .xp-percent {
@@ -50,9 +52,7 @@
   border-color: var(--boxmox-color-border-default);
 }
 
-.location-info {
-  display: flex;
-  align-items: center;
+.location-row {
   gap: 12px;
 }
 
@@ -61,9 +61,7 @@
   color: var(--boxmox-color-brand-primary);
 }
 
-.location-details {
-  display: flex;
-  flex-direction: column;
+.location-content {
   gap: 4px;
 }
 

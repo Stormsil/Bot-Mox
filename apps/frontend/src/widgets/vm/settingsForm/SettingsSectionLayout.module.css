@@ -14,17 +14,6 @@
   padding-bottom: 8px;
 }
 
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.rowSingle {
-  grid-template-columns: 1fr;
-}
-
 .field label {
   display: block;
   font-size: 12px;
@@ -37,19 +26,6 @@
   font-size: 12px;
   color: var(--boxmox-color-text-secondary);
   margin-bottom: 4px;
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.inlineRow {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
 }
 
 .helperText {

@@ -1,5 +1,5 @@
 import type { FormProps, ModalProps } from 'antd';
-import { DatePicker, Form, Input, Spin, Typography } from 'antd';
+import { DatePicker, Flex, Form, Input, Spin, Typography } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import type React from 'react';
 import type { IPQSResponse } from '../../../../entities/resources/model/types';
@@ -82,10 +82,10 @@ export const ProxyEditorModal: React.FC<ProxyEditorModalProps> = ({
         </Form.Item>
 
         {checkingIPQS && (
-          <div className={styles['ipqs-loading']}>
+          <Flex align="center" gap={8} className={styles['ipqs-loading-box']}>
             <Spin size="small" />
             <Text type="secondary">Checking IP quality...</Text>
-          </div>
+          </Flex>
         )}
 
         {parsedProxy && (

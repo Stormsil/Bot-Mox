@@ -43,8 +43,8 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.cost-item,
-.roi-item {
+.cost-row,
+.roi-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -52,8 +52,7 @@
   border-bottom: 1px solid var(--boxmox-color-surface-muted);
 }
 
-.cost-item:last-child,
-.roi-item:last-child {
+.row-last {
   border-bottom: none;
 }
 
@@ -100,7 +99,7 @@
   border: 1px solid var(--boxmox-color-border-default);
 }
 
-.transactions-header {
+.transactions-title {
   display: flex;
   justify-content: space-between;
   align-items: center;

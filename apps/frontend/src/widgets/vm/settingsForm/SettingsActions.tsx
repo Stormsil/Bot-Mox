@@ -1,7 +1,6 @@
 import { SaveOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button, Flex } from 'antd';
 import type React from 'react';
-import layout from './SettingsSectionLayout.module.css';
 
 interface SettingsActionsProps {
   saving: boolean;
@@ -9,9 +8,9 @@ interface SettingsActionsProps {
 }
 
 export const SettingsActions: React.FC<SettingsActionsProps> = ({ saving, onSave }) => (
-  <div className={layout.actions}>
+  <Flex gap={8} align="center">
     <Button type="primary" icon={<SaveOutlined />} onClick={onSave} loading={saving}>
       Save Settings
     </Button>
-  </div>
+  </Flex>
 );

@@ -1,5 +1,5 @@
 import { SafetyCertificateOutlined } from '@ant-design/icons';
-import { Alert, Progress, Space, Tag, Typography } from 'antd';
+import { Alert, Flex, Progress, Space, Tag, Typography } from 'antd';
 import type React from 'react';
 import {
   getFraudScoreColor,
@@ -31,10 +31,10 @@ export const ProxyIpqsResults: React.FC<ProxyIpqsResultsProps> = ({ ipqsData }) 
         </Space>
       }
       description={
-        <div className={styles['ipqs-results']}>
-          <div className={styles['ipqs-row']}>
+        <Flex vertical gap={8}>
+          <Flex justify="space-between" align="center" className={styles['ipqs-row-divider']}>
             <Text type="secondary">Fraud Score:</Text>
-            <div className={styles['fraud-score-display']}>
+            <Space size={12} align="center">
               <Progress
                 percent={ipqsData.fraud_score}
                 size="small"
@@ -45,25 +45,25 @@ export const ProxyIpqsResults: React.FC<ProxyIpqsResultsProps> = ({ ipqsData }) 
               <Text strong style={{ color: fraudScoreColor }}>
                 {fraudScoreLabel}
               </Text>
-            </div>
-          </div>
+            </Space>
+          </Flex>
 
-          <div className={styles['ipqs-row']}>
+          <Flex justify="space-between" align="center">
             <Text type="secondary">Country:</Text>
             <Text>
               {ipqsData.country_code || 'Unknown'} {ipqsData.city ? `- ${ipqsData.city}` : ''}
             </Text>
-          </div>
+          </Flex>
 
           {(ipqsData.vpn || ipqsData.proxy || ipqsData.tor || ipqsData.bot_status) && (
-            <div className={styles['ipqs-flags']}>
+            <Space size={8} wrap className={styles['ipqs-flags-panel']}>
               {ipqsData.vpn && <Tag color="orange">VPN</Tag>}
               {ipqsData.proxy && <Tag color="red">Proxy</Tag>}
               {ipqsData.tor && <Tag color="purple">TOR</Tag>}
               {ipqsData.bot_status && <Tag color="magenta">Bot</Tag>}
-            </div>
+            </Space>
           )}
-        </div>
+        </Flex>
       }
       type={ipqsData.fraud_score > 75 ? 'error' : ipqsData.fraud_score > 50 ? 'warning' : 'success'}
       showIcon

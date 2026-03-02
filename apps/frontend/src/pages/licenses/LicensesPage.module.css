@@ -8,23 +8,16 @@
   margin-bottom: 16px;
 }
 
-.headerContent {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.headerHeading {
-  margin: 0;
-  color: var(--boxmox-color-text-primary);
-}
-
-.headerSubtitle {
-  color: var(--boxmox-color-text-secondary);
-}
-
 .filters {
   margin-bottom: 16px;
+}
+
+.tableCard {
+  margin-bottom: 0;
+}
+
+.table {
+  width: 100%;
 }
 
 .licenseKey {
@@ -47,6 +40,10 @@
 
 .filterSelect {
   width: 120px;
+}
+
+.resetButton {
+  flex-shrink: 0;
 }
 
 .filterSearch input::placeholder {

@@ -53,11 +53,11 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
         <Text type="secondary" className={styles['field-label']}>
           Proxy String
         </Text>
-        <div className={styles['proxy-string-container']}>
+        <Flex align="center" gap={8}>
           <Text code className={styles['proxy-string']} copyable>
             {proxy.ip}:{proxy.port}:{proxy.login}:{proxy.password}
           </Text>
-        </div>
+        </Flex>
       </Flex>
 
       <Row gutter={[16, 16]}>

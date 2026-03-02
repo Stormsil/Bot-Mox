@@ -9,7 +9,7 @@ import {
 import { List, useModalForm, useTable } from '@refinedev/antd';
 import { type HttpError, useList } from '@refinedev/core';
 import type { TableProps } from 'antd';
-import { Button, Card, Input, message, Select, Space, Typography } from 'antd';
+import { Button, Card, Flex, Input, message, Select, Space, Typography } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
@@ -254,14 +254,14 @@ export const SubscriptionsPage: React.FC = () => {
       <List
         wrapperProps={{ className: styles.header }}
         title={
-          <div className={styles.headerTitle}>
+          <Flex vertical gap={2}>
             <Title level={4} className={styles.headerMainTitle}>
               <CreditCardOutlined /> Subscriptions
             </Title>
             <Text type="secondary" className={styles.headerSubtitle}>
               Manage bot subscriptions
             </Text>
-          </div>
+          </Flex>
         }
         headerButtons={
           <Space>

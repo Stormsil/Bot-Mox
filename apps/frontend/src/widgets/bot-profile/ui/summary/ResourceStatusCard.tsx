@@ -22,16 +22,18 @@ export const ResourceStatusCard: React.FC<{
         onClick={onClick}
         onKeyDown={onKeyDown}
       >
-        <span className={styles['status-icon']}>{icon}</span>
-        <Flex vertical>
-          <Text type="secondary">{title}</Text>
-          <br />
-          {statusTag || <Tag>Not Assigned</Tag>}
-          {metaRows.map((row) => (
-            <div key={row.key} className={styles['status-meta']}>
-              {row.content}
-            </div>
-          ))}
+        <Flex align="center" gap={12}>
+          <span className={styles['status-icon']}>{icon}</span>
+          <Flex vertical>
+            <Text type="secondary">{title}</Text>
+            <br />
+            {statusTag || <Tag>Not Assigned</Tag>}
+            {metaRows.map((row) => (
+              <div key={row.key} className={styles['status-meta']}>
+                {row.content}
+              </div>
+            ))}
+          </Flex>
         </Flex>
       </button>
     </Col>

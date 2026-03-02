@@ -131,11 +131,6 @@
 }
 
 .status-item {
-  width: 100%;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  gap: 12px;
   padding: 12px;
   background: var(--boxmox-color-surface-muted);
   border-radius: 4px;

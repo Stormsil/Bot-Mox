@@ -1,0 +1,7 @@
+Task 7 Key/Cleanup Evidence
+Checks:
+- Removed dead selectors from subscriptions CSS: headerContent, headerTitle
+- Removed dead selectors from licenses CSS: headerContent, headerHeading, headerSubtitle
+- Present selectors for active keys: tableCard (subscriptions/licenses), table (licenses), resetButton (licenses)
+- LSP diagnostics on touched TSX files: clean
+Result: PASS

@@ -1,0 +1,4 @@
+Task 7 E2E Evidence
+Command: pnpm --filter @botmox/frontend test:e2e -- e2e/refine-phase2-crud-baseline.spec.ts e2e/refine-phase3-crud-wiring.spec.ts
+Result: PASS
+Details: 6 passed (21.0s)

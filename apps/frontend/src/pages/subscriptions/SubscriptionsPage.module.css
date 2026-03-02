@@ -8,18 +8,6 @@
   margin-bottom: 16px;
 }
 
-.headerContent {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.headerTitle {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
 .headerMainTitle {
   margin: 0;
   color: var(--boxmox-color-text-primary);
@@ -62,4 +50,8 @@
 
 .filters {
   margin-bottom: 16px;
+}
+
+.tableCard {
+  margin-bottom: 0;
 }
