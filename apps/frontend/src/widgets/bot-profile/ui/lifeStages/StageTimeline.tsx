@@ -30,7 +30,10 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
       items={[
         {
           dot: currentStage === 'prepare' ? <LoadingOutlined /> : <CheckCircleOutlined />,
-          color: currentStage === 'prepare' ? wowLifeStageColors.prepare : 'green',
+          color:
+            currentStage === 'prepare'
+              ? wowLifeStageColors.prepare
+              : 'var(--botmox-color-status-success)',
           children: (
             <div
               className={[
@@ -76,8 +79,8 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
             currentStage === 'leveling'
               ? wowLifeStageColors.leveling
               : ['professions', 'farm', 'banned'].includes(currentStage)
-                ? 'green'
-                : 'gray',
+                ? 'var(--botmox-color-status-success)'
+                : 'var(--botmox-color-text-muted)',
           children: (
             <div
               className={[
@@ -123,8 +126,8 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
             currentStage === 'professions'
               ? wowLifeStageColors.professions
               : ['farm', 'banned'].includes(currentStage)
-                ? 'green'
-                : 'gray',
+                ? 'var(--botmox-color-status-success)'
+                : 'var(--botmox-color-text-muted)',
           children: (
             <div
               className={[
@@ -170,8 +173,8 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
             currentStage === 'farm'
               ? wowLifeStageColors.farm
               : currentStage === 'banned'
-                ? 'green'
-                : 'gray',
+                ? 'var(--botmox-color-status-success)'
+                : 'var(--botmox-color-text-muted)',
           children: (
             <div
               className={[
@@ -208,7 +211,10 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
         },
         {
           dot: currentStage === 'banned' ? <StopOutlined /> : null,
-          color: currentStage === 'banned' ? wowLifeStageColors.banned : 'gray',
+          color:
+            currentStage === 'banned'
+              ? wowLifeStageColors.banned
+              : 'var(--botmox-color-text-muted)',
           children: (
             <div
               className={[

@@ -53,9 +53,9 @@ async function captureRoute(page, routeKey, routePath, mode) {
     const body = getComputedStyle(document.body);
     return {
       theme: document.documentElement.getAttribute('data-theme') || 'unknown',
-      canvas: root.getPropertyValue('--boxmox-color-bg-canvas').trim(),
-      panel: root.getPropertyValue('--boxmox-color-surface-panel').trim(),
-      text: root.getPropertyValue('--boxmox-color-text-primary').trim(),
+      canvas: root.getPropertyValue('--botmox-color-bg-canvas').trim(),
+      panel: root.getPropertyValue('--botmox-color-surface-panel').trim(),
+      text: root.getPropertyValue('--botmox-color-text-primary').trim(),
       bodyBackgroundColor: body.backgroundColor,
       bodyColor: body.color,
       title: document.title,

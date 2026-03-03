@@ -134,10 +134,9 @@ export function updateProxyWithIPQSData(
 }
 
 export function getFraudScoreColor(score: number): string {
-  if (score <= 20) return '#52c41a';
-  if (score <= 50) return '#faad14';
-  if (score <= 75) return '#ff7a45';
-  return '#ff4d4f';
+  if (score <= 20) return 'var(--botmox-color-status-success)';
+  if (score <= 50) return 'var(--botmox-color-status-warning)';
+  return 'var(--botmox-color-status-danger)';
 }
 
 export function getFraudScoreLabel(score: number): string {
