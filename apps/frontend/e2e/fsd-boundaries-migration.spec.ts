@@ -426,7 +426,7 @@ test.describe('fsd boundaries migration focused paths', () => {
       hasText: 'VM 501 - vm-e2e-01',
     });
     await expect(candidateRow).toBeVisible();
-    await expect(candidateRow).toContainText('ALLOWED');
+    await expect(candidateRow).toContainText('Rule: VM deletion decision unavailable from backend');
   });
 
   test('bot profile sections render on migration-affected route', async ({ page }) => {

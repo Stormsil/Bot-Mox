@@ -2,6 +2,7 @@ import {
   settingsApiKeysMutationSchema,
   settingsNotificationEventsMutationSchema,
   settingsProxyMutationSchema,
+  settingsScheduleGenerateSchema,
 } from '@botmox/api-contract';
 import {
   BadRequestException,
@@ -11,6 +12,7 @@ import {
   Headers,
   Param,
   Patch,
+  Post,
   Put,
   Req,
   UnauthorizedException,
@@ -18,7 +20,7 @@ import {
 import type { Request } from 'express';
 import type { ZodType } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
-import { SettingsService } from './settings.service';
+import { ScheduleValidationError, SettingsService } from './settings.service';
 
 @Controller('settings')
 export class SettingsController {
@@ -112,6 +114,17 @@ export class SettingsController {
       body,
       'SETTINGS_INVALID_API_KEYS_BODY',
       'Invalid settings api_keys payload',
+    );
+  }
+
+  private parseScheduleGenerateBody(
+    body: unknown,
+  ): import('zod').infer<typeof settingsScheduleGenerateSchema> {
+    return this.parseWithSchema(
+      settingsScheduleGenerateSchema,
+      body ?? {},
+      'SETTINGS_INVALID_SCHEDULE_GENERATE_BODY',
+      'Invalid settings schedule generate payload',
     );
   }
 
@@ -314,6 +327,32 @@ export class SettingsController {
       (input) => input,
       (parsed, tenantId) => this.settingsService.updateAlerts(parsed, tenantId),
     );
+  }
+
+  @Post('schedule/generate')
+  async generateSchedule(
+    @Headers('authorization') authorization: string | undefined,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    const parsedBody = this.parseScheduleGenerateBody(body);
+
+    return this.readWithTenant(authorization, req, (tenantId) => {
+      try {
+        return this.settingsService.generateScheduleFromRequest(parsedBody, tenantId);
+      } catch (error) {
+        if (error instanceof ScheduleValidationError) {
+          throw new BadRequestException({
+            code: 'SETTINGS_INVALID_SCHEDULE_GENERATION_PARAMS',
+            message: 'Invalid settings schedule generation params',
+            details: {
+              errors: error.errors,
+            },
+          });
+        }
+        throw error;
+      }
+    });
   }
 
   @Get('storage_policy')

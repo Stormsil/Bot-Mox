@@ -293,6 +293,79 @@ export const vmRecordSchema = z
   })
   .passthrough();
 
+export const vmIdSchema: z.ZodTypeAny = z.union([
+  z.coerce.number().int().positive(),
+  z.string().trim().min(1).max(64),
+]);
+
+export const vmDeletionEvaluateItemSchema: z.ZodTypeAny = z
+  .object({
+    vmid: vmIdSchema,
+    node: z.string().trim().min(1).max(200).optional(),
+    vm_uuid: vmUuidSchema.optional(),
+    name: z.string().trim().min(1).max(255).optional(),
+  })
+  .passthrough();
+
+export const vmDeletionEvaluateBodySchema: z.ZodTypeAny = z.object({
+  items: z.array(vmDeletionEvaluateItemSchema).min(1).max(1_000),
+});
+
+export const vmDeletionEvaluationResultSchema: z.ZodTypeAny = z
+  .object({
+    vmid: vmIdSchema,
+    can_delete: z.boolean(),
+    reason: z.string().trim().min(1),
+    reasons: z.array(z.string().trim().min(1)).optional(),
+    node: z.string().trim().min(1).optional(),
+    vm_uuid: vmUuidSchema.optional(),
+  })
+  .passthrough();
+
+export const vmDeletionEvaluationSchema: z.ZodTypeAny = z.object({
+  items: z.array(vmDeletionEvaluationResultSchema),
+});
+
+export const vmPatchPlanBodySchema = z
+  .object({
+    vmid: vmIdSchema,
+    node: z.string().trim().min(1).max(200).optional(),
+    vm_uuid: vmUuidSchema.optional(),
+    seed: z.union([z.coerce.number().int(), z.string().trim().min(1).max(255)]).optional(),
+    intent: z.record(jsonValueSchema).optional(),
+    profile: z.record(jsonValueSchema).optional(),
+    template: z.record(jsonValueSchema).optional(),
+    current_config: z.string().optional(),
+  })
+  .passthrough();
+
+export const vmPatchPlanSchema: z.ZodTypeAny = z
+  .object({
+    vmid: vmIdSchema,
+    node: z.string().trim().min(1).optional(),
+    vm_uuid: vmUuidSchema.optional(),
+    patch: z.record(jsonValueSchema).optional(),
+    warnings: z.array(z.string().trim().min(1)).optional(),
+  })
+  .passthrough();
+
+export const vmPatchApplyBodySchema = vmPatchPlanBodySchema.extend({
+  apply: z.boolean().optional(),
+  dry_run: z.boolean().optional(),
+});
+
+export const vmPatchApplySchema: z.ZodTypeAny = z
+  .object({
+    vmid: vmIdSchema,
+    node: z.string().trim().min(1).optional(),
+    vm_uuid: vmUuidSchema.optional(),
+    applied: z.boolean(),
+    patch: z.record(jsonValueSchema).optional(),
+    warnings: z.array(z.string().trim().min(1)).optional(),
+    task_id: z.string().trim().min(1).optional(),
+  })
+  .passthrough();
+
 export const artifactReleaseStatusSchema = z.enum(['draft', 'active', 'disabled', 'archived']);
 
 export const artifactReleaseCreateSchema = z.object({

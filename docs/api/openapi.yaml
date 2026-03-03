@@ -750,6 +750,33 @@ paths:
           description: Updated settings
         '400':
           description: Invalid path or invalid payload for selected subpath
+  /api/v1/settings/schedule/generate:
+    post:
+      summary: Generate schedule with optional deterministic seed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seed:
+                  oneOf:
+                    - type: string
+                    - type: integer
+                mode:
+                  type: string
+                  enum: [seeded, random]
+                params:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Generated schedule payload
+        '400':
+          description: Invalid schedule generation request
+        '422':
+          description: Schedule generation validation failed
   /api/v1/vm/register:
     post:
       summary: Register VM UUID in tenant-scoped VM registry
@@ -1039,6 +1066,24 @@ paths:
       responses:
         '200':
           description: Gold price history payload
+  /api/v1/finance/summary:
+    get:
+      summary: Get finance summary aggregates
+      responses:
+        '200':
+          description: Finance summary aggregate payload
+  /api/v1/finance/breakdown:
+    get:
+      summary: Get finance breakdown aggregates
+      responses:
+        '200':
+          description: Finance breakdown aggregate payload
+  /api/v1/finance/time-series:
+    get:
+      summary: Get finance time-series aggregates
+      responses:
+        '200':
+          description: Finance time-series aggregate payload
   /api/v1/license/lease:
     post:
       summary: Issue short-lived execution lease for runner
@@ -1907,3 +1952,97 @@ paths:
       responses:
         '200':
           description: Command updated
+  /api/v1/vms/evaluate-deletion:
+    post:
+      summary: Evaluate VM deletion safety and reasons
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    properties:
+                      vmid:
+                        oneOf:
+                          - type: integer
+                          - type: string
+                      node:
+                        type: string
+                      vm_uuid:
+                        type: string
+                    required: [vmid]
+      responses:
+        '200':
+          description: VM deletion evaluation result
+        '400':
+          description: Invalid evaluation request
+  /api/v1/vms/patch/plan:
+    post:
+      summary: Generate VM config patch plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vmid:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                node:
+                  type: string
+                vm_uuid:
+                  type: string
+                seed:
+                  oneOf:
+                    - type: string
+                    - type: integer
+                intent:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: VM patch plan payload
+        '400':
+          description: Invalid patch plan request
+  /api/v1/vms/patch/apply:
+    post:
+      summary: Apply VM config patch intent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vmid:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                node:
+                  type: string
+                vm_uuid:
+                  type: string
+                seed:
+                  oneOf:
+                    - type: string
+                    - type: integer
+                intent:
+                  type: object
+                  additionalProperties: true
+                apply:
+                  type: boolean
+                dry_run:
+                  type: boolean
+      responses:
+        '200':
+          description: VM patch apply payload
+        '400':
+          description: Invalid patch apply request

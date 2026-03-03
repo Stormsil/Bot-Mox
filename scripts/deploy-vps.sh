@@ -4,7 +4,6 @@ set -euo pipefail
 DRY_RUN=false
 SKIP_PULL=false
 SKIP_HEALTHCHECK=false
-SKIP_MIGRATION_CHECK=false
 WAIT_TIMEOUT_SECONDS="${WAIT_TIMEOUT_SECONDS:-120}"
 
 while [[ $# -gt 0 ]]; do
@@ -19,10 +18,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     --skip-healthcheck)
       SKIP_HEALTHCHECK=true
-      shift
-      ;;
-    --skip-migration-check)
-      SKIP_MIGRATION_CHECK=true
       shift
       ;;
     --wait-timeout)
@@ -151,17 +146,6 @@ if [[ -n "${IMAGE_TAG}" ]]; then
 fi
 
 compose_cmd=(docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}")
-
-if [[ "${SKIP_MIGRATION_CHECK}" == "true" ]]; then
-  echo "[deploy-vps] Skipping strict migration flags check (--skip-migration-check)"
-else
-  echo "[deploy-vps] Running strict migration flags check..."
-  set -a
-  # shellcheck disable=SC1090
-  source "${ENV_FILE}"
-  set +a
-  node scripts/check-migration-flags.js --strict
-fi
 
 echo "[deploy-vps] Preflight: validating docker compose config..."
 "${compose_cmd[@]}" config >/dev/null

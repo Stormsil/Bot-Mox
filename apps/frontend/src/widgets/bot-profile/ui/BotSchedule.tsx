@@ -5,8 +5,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { useUpdateBotMutation } from '../../../entities/bot/api/useBotMutations';
 import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
 import {
+  extractScheduleGenerationErrors,
+  generateScheduleViaBackend,
+} from '../../../entities/settings/api/scheduleGenerationFacade';
+import {
   createEmptySchedule,
-  generateSchedule,
   migrateSchedule,
   sortSessions,
 } from '../../../shared/lib/utils/scheduleUtils';
@@ -42,6 +45,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingSession, setEditingSession] = useState<ScheduleSession | null>(null);
   const [scheduleLocked, setScheduleLocked] = useState(false);
+  const [generationErrors, setGenerationErrors] = useState<string[]>([]);
   const [pendingScheduleLock, setPendingScheduleLock] = useState(false);
   const botQuery = useBotByIdQuery(botId);
   const updateBotMutation = useUpdateBotMutation();
@@ -218,25 +222,34 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
   }, [serverSchedule]);
 
   const handleGenerateSchedule = useCallback(
-    (params: ScheduleGenerationParams) => {
+    async (params: ScheduleGenerationParams): Promise<{ ok: boolean; errors?: string[] }> => {
       if (scheduleLocked) {
         message.warning('Schedule generation is locked');
-        return;
+        return { ok: false, errors: ['Schedule generation is locked'] };
       }
-      const generated = generateSchedule(params);
 
-      setSchedule((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          days: generated.days,
-          allowedWindows: generated.allowedWindows,
-          updated_at: Date.now(),
-        };
-      });
-      setHasChanges(true);
-      setPendingScheduleLock(true);
-      message.success('Schedule generated for all 7 days');
+      try {
+        const generated = await generateScheduleViaBackend(params);
+
+        setSchedule((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            days: generated.generated.days,
+            allowedWindows: generated.allowedWindows,
+            updated_at: Date.now(),
+          };
+        });
+        setGenerationErrors([]);
+        setHasChanges(true);
+        setPendingScheduleLock(true);
+        message.success('Schedule generated for all 7 days');
+        return { ok: true };
+      } catch (error: unknown) {
+        const errors = extractScheduleGenerationErrors(error);
+        setGenerationErrors(errors);
+        return { ok: false, errors };
+      }
     },
     [scheduleLocked],
   );
@@ -285,6 +298,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
             viewMode={viewMode}
             setViewMode={setViewMode}
             handleGenerateSchedule={handleGenerateSchedule}
+            generationErrors={generationErrors}
             loading={loading}
             scheduleLocked={scheduleLocked}
             pendingScheduleLock={pendingScheduleLock}

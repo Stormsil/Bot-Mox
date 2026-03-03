@@ -1,3 +1,4 @@
+import { vmPatchApplySchema, vmPatchPlanSchema } from '@botmox/api-contract';
 import { executeVmOps } from '../../../../features/vm-management/model/vmOps/runtime';
 import type {
   CloneParams,
@@ -7,7 +8,7 @@ import type {
   ProxmoxVMConfig,
   VMConfigUpdateParams,
 } from '../../../types';
-import { ApiClientError } from '../../apiClient';
+import { ApiClientError, apiPost } from '../../apiClient';
 import { AGENT_CONNECTIVITY_ERROR_CODES, extractUpid } from './proxmoxUtils';
 
 export interface ProxmoxTargetInfo {
@@ -28,6 +29,36 @@ export interface ProxmoxConnectionSnapshot {
 export interface DeleteVMOptions {
   purge?: boolean;
   destroyUnreferencedDisks?: boolean;
+}
+
+export interface VmPatchPlanRequest {
+  vmid: number;
+  node?: string;
+  vm_uuid?: string;
+  seed?: number | string;
+  intent?: Record<string, unknown>;
+  profile?: Record<string, unknown>;
+  template?: Record<string, unknown>;
+  current_config?: string;
+}
+
+export interface VmPatchApplyRequest extends VmPatchPlanRequest {
+  apply?: boolean;
+  dry_run?: boolean;
+}
+
+export async function planVMConfigPatch(
+  input: VmPatchPlanRequest,
+): Promise<ReturnType<typeof vmPatchPlanSchema.parse>> {
+  const response = await apiPost<unknown>('/api/v1/vms/patch/plan', input);
+  return vmPatchPlanSchema.parse(response.data);
+}
+
+export async function applyVMConfigPatch(
+  input: VmPatchApplyRequest,
+): Promise<ReturnType<typeof vmPatchApplySchema.parse>> {
+  const response = await apiPost<unknown>('/api/v1/vms/patch/apply', input);
+  return vmPatchApplySchema.parse(response.data);
 }
 
 export async function testProxmoxConnection(): Promise<boolean> {

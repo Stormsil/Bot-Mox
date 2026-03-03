@@ -47,26 +47,19 @@ pnpm run agent:dev
 This gate includes `backend:test` and `agent:test` as mandatory sub-steps.
 2. `pnpm run docs:check`
 3. `pnpm run contract:check`
-4. `pnpm run migration:check`
-5. `pnpm run backend:test`
-6. `pnpm run agent:test`
-7. `pnpm turbo run typecheck`
-8. `pnpm turbo run build`
-9. `pnpm run check:lockfiles`
-10. `pnpm run smoke:prodlike` for cross-app/runtime changes (frontend/backend/infra/auth flows).
+4. `pnpm run backend:test`
+5. `pnpm run agent:test`
+6. `pnpm turbo run typecheck`
+7. `pnpm turbo run build`
+8. `pnpm run check:lockfiles`
+9. `pnpm run smoke:prodlike` for cross-app/runtime changes (frontend/backend/infra/auth flows).
 
 Documentation must be updated in the same PR for architecture/workflow-critical changes.
 This is enforced by `pnpm run docs:change:policy`.
 
-## Runtime Migration Flags (Hardening Waves)
+## Runtime Baseline Profile
 
-Use only allowed values validated by `pnpm run migration:check`:
-
-1. `AUTH_MODE=shadow|enforced`
-2. `AGENT_TRANSPORT=longpoll|ws|hybrid`
-3. `SECRETS_VAULT_MODE=shadow|enforced`
-
-Strict CI profile uses `pnpm run migration:check:strict` with enforced baseline:
+Use enforced runtime baseline values:
 
 1. `AUTH_MODE=enforced`
 2. `AGENT_TRANSPORT=ws`
@@ -135,7 +128,6 @@ pnpm run repo:reports
 ## Suggested Pre-Push Routine
 
 ```bash
-pnpm run migration:check
 pnpm run backend:test
 pnpm run agent:test
 pnpm run check:lockfiles

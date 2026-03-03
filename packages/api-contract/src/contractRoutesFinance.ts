@@ -2,6 +2,8 @@ import { z } from 'zod';
 import {
   authHeaderSchema,
   errorEnvelopeSchema,
+  financeAggregateQuerySchema,
+  financeBreakdownSchema,
   financeDailyStatsSchema,
   financeDeleteResultSchema,
   financeGoldPriceHistorySchema,
@@ -9,6 +11,9 @@ import {
   financeOperationCreateSchema,
   financeOperationPatchSchema,
   financeOperationRecordSchema,
+  financeSummarySchema,
+  financeTimeSeriesQuerySchema,
+  financeTimeSeriesSchema,
   successEnvelopeSchema,
 } from './schemas.js';
 
@@ -109,5 +114,44 @@ export const contractRoutesFinance = {
       404: errorEnvelopeSchema,
     },
     summary: 'Patch finance operation',
+  },
+  financeSummary: {
+    method: 'GET',
+    path: '/api/v1/finance/summary',
+    headers: authHeaderSchema,
+    query: financeAggregateQuerySchema,
+    responses: {
+      200: successEnvelopeSchema(financeSummarySchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+    },
+    summary: 'Get finance summary aggregates',
+  },
+  financeBreakdown: {
+    method: 'GET',
+    path: '/api/v1/finance/breakdown',
+    headers: authHeaderSchema,
+    query: financeAggregateQuerySchema,
+    responses: {
+      200: successEnvelopeSchema(financeBreakdownSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+    },
+    summary: 'Get finance breakdown aggregates',
+  },
+  financeTimeSeries: {
+    method: 'GET',
+    path: '/api/v1/finance/time-series',
+    headers: authHeaderSchema,
+    query: financeTimeSeriesQuerySchema,
+    responses: {
+      200: successEnvelopeSchema(financeTimeSeriesSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+    },
+    summary: 'Get finance time-series aggregates',
   },
 } as const;

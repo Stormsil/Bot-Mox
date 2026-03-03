@@ -1,0 +1,24 @@
+Task 4 Parity Fail Evidence
+
+Command:
+node --import tsx -e "const { assertParity } = require('./src/modules/__tests__/business-logic-parity.helper.ts'); try { assertParity('schedule.mismatch-evidence', { valid: true, payload: { value: 2 } }, { valid: false, payload: { value: 1 } }); } catch (error) { console.error(String(error.message)); process.exit(1); }"
+
+Outcome:
+- Exit code: 1
+- Explicit diff signal emitted:
+
+PARITY_MISMATCH:schedule.mismatch-evidence
+expected:
+{
+  "payload": {
+    "value": 1
+  },
+  "valid": false
+}
+actual:
+{
+  "payload": {
+    "value": 2
+  },
+  "valid": true
+}

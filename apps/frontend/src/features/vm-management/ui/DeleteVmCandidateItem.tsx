@@ -1,6 +1,6 @@
 import type React from 'react';
 import { AppCheckbox as Checkbox, AppTag as Tag } from '../../../shared/ui';
-import type { DeleteVmCandidateRow } from '../lib/deleteVmRules';
+import type { DeleteVmCandidateRow } from '../model/deleteVm.types';
 
 export const DeleteVmCandidateItem: React.FC<{
   candidate: DeleteVmCandidateRow;

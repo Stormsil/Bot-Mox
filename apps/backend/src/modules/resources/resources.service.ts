@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { buildResourceComputedStatusFields } from '../common/status-computation';
 import { ResourcesRepository } from './resources.repository';
 
 type ResourceKind = 'licenses' | 'proxies' | 'subscriptions';
@@ -113,13 +114,21 @@ export class ResourcesService {
     };
   }
 
-  private mapDbRowToRecord(row: Record<string, unknown>): ResourceRecord {
+  private mapDbRowToRecord(kind: ResourceKind, row: Record<string, unknown>): ResourceRecord {
     const id = String(row.id || '').trim();
     const payload = row.payload;
     if (payload && typeof payload === 'object') {
-      return { ...(payload as ResourceRecord), ...(id ? { id } : {}) };
+      const mapped = { ...(payload as ResourceRecord), ...(id ? { id } : {}) };
+      return {
+        ...mapped,
+        ...buildResourceComputedStatusFields(kind, mapped),
+      };
     }
-    return id ? { id } : {};
+    const mapped = id ? { id } : {};
+    return {
+      ...mapped,
+      ...buildResourceComputedStatusFields(kind, mapped),
+    };
   }
 
   async list(
@@ -128,7 +137,7 @@ export class ResourcesService {
     tenantId: string,
   ): Promise<ResourceListResult> {
     const rows = await this.repository.list(tenantId, kind);
-    const mapped = rows.map((row) => this.mapDbRowToRecord(row));
+    const mapped = rows.map((row) => this.mapDbRowToRecord(kind, row));
     return this.applyListQuery(mapped, query);
   }
 
@@ -137,7 +146,7 @@ export class ResourcesService {
     if (!row) {
       return null;
     }
-    return this.mapDbRowToRecord(row);
+    return this.mapDbRowToRecord(kind, row);
   }
 
   async create(
@@ -163,7 +172,7 @@ export class ResourcesService {
       id,
       payload: nextRecord as Prisma.InputJsonValue,
     });
-    return this.mapDbRowToRecord(row);
+    return this.mapDbRowToRecord(kind, row);
   }
 
   async update(
@@ -173,7 +182,7 @@ export class ResourcesService {
     tenantId: string,
   ): Promise<ResourceRecord | null> {
     const dbCurrent = await this.repository.findById(tenantId, kind, id);
-    const current = dbCurrent ? this.mapDbRowToRecord(dbCurrent) : null;
+    const current = dbCurrent ? this.mapDbRowToRecord(kind, dbCurrent) : null;
     if (!current) {
       return null;
     }
@@ -191,7 +200,7 @@ export class ResourcesService {
       id,
       payload: nextRecord as Prisma.InputJsonValue,
     });
-    return this.mapDbRowToRecord(row);
+    return this.mapDbRowToRecord(kind, row);
   }
 
   async remove(kind: ResourceKind, id: string, tenantId: string): Promise<boolean> {

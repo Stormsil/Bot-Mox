@@ -1,0 +1,173 @@
+{
+  "fixedNow": 1768478400000,
+  "warningDays": 7,
+  "botStatusesAt": [
+    {
+      "id": "bot-banned",
+      "status": "banned"
+    },
+    {
+      "id": "bot-offline",
+      "status": "offline"
+    },
+    {
+      "id": "bot-prepare",
+      "status": "prepare"
+    },
+    {
+      "id": "bot-active",
+      "status": "farming"
+    }
+  ],
+  "botStatusesNow": [
+    {
+      "id": "bot-banned",
+      "status": "banned"
+    },
+    {
+      "id": "bot-offline",
+      "status": "offline"
+    },
+    {
+      "id": "bot-prepare",
+      "status": "prepare"
+    },
+    {
+      "id": "bot-active",
+      "status": "farming"
+    }
+  ],
+  "proxyStatuses": [
+    {
+      "caseId": "proxy-0",
+      "output": {
+        "status": "none",
+        "label": "None",
+        "color": "default",
+        "sort": 5
+      }
+    },
+    {
+      "caseId": "proxy-1",
+      "output": {
+        "status": "banned",
+        "label": "Banned",
+        "color": "error",
+        "sort": 1,
+        "daysRemaining": 0
+      }
+    },
+    {
+      "caseId": "proxy-2",
+      "output": {
+        "status": "expired",
+        "label": "Expired",
+        "color": "error",
+        "sort": 2,
+        "daysRemaining": 0
+      }
+    },
+    {
+      "caseId": "proxy-3",
+      "output": {
+        "status": "expiring",
+        "label": "Expiring",
+        "color": "warning",
+        "sort": 3,
+        "daysRemaining": 3
+      }
+    },
+    {
+      "caseId": "proxy-4",
+      "output": {
+        "status": "active",
+        "label": "Active",
+        "color": "success",
+        "sort": 4,
+        "daysRemaining": 40
+      }
+    }
+  ],
+  "subscriptionStatuses": [
+    {
+      "caseId": "subs-0",
+      "output": {
+        "status": "none",
+        "label": "None",
+        "color": "default",
+        "sort": 5
+      }
+    },
+    {
+      "caseId": "subs-1",
+      "output": {
+        "status": "expired",
+        "label": "Expired",
+        "color": "error",
+        "sort": 1,
+        "daysRemaining": 0
+      }
+    },
+    {
+      "caseId": "subs-2",
+      "output": {
+        "status": "expiring",
+        "label": "Expiring",
+        "color": "warning",
+        "sort": 2,
+        "daysRemaining": 2
+      }
+    },
+    {
+      "caseId": "subs-3",
+      "output": {
+        "status": "active",
+        "label": "Active",
+        "color": "success",
+        "sort": 3,
+        "daysRemaining": 20
+      }
+    }
+  ],
+  "licenseStatuses": [
+    {
+      "caseId": "license-0",
+      "output": {
+        "status": "none",
+        "label": "None",
+        "color": "default",
+        "sort": 5
+      }
+    },
+    {
+      "caseId": "license-1",
+      "output": {
+        "status": "expired",
+        "label": "Expired",
+        "color": "error",
+        "sort": 1,
+        "daysRemaining": 0
+      }
+    },
+    {
+      "caseId": "license-2",
+      "output": {
+        "status": "expiring",
+        "label": "Expiring",
+        "color": "warning",
+        "sort": 2,
+        "daysRemaining": 4
+      }
+    },
+    {
+      "caseId": "license-3",
+      "output": {
+        "status": "active",
+        "label": "Active",
+        "color": "success",
+        "sort": 3,
+        "daysRemaining": 30
+      }
+    }
+  ]
+}

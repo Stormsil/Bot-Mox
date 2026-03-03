@@ -8,7 +8,6 @@ import {
   useSaveScheduleTemplateMutation,
   useScheduleGeneratorSettingsQuery,
 } from '../../entities/settings/api/useScheduleGeneratorSettings';
-import { validateGenerationParams } from '../../shared/lib/utils/scheduleUtils';
 import type { ScheduleGenerationParams, ScheduleTemplate } from '../../shared/types';
 import { AppButton as Button, AppDivider as Divider, AppPopover as Popover } from '../../shared/ui';
 import { DEFAULT_PARAMS } from './generator-config';
@@ -17,13 +16,18 @@ import { ScheduleGeneratorForm } from './ScheduleGeneratorForm';
 import { ScheduleTemplateList } from './ScheduleTemplateList';
 
 interface ScheduleGeneratorProps {
-  onGenerate: (params: ScheduleGenerationParams) => void;
+  onGenerate: (params: ScheduleGenerationParams) => Promise<{
+    ok: boolean;
+    errors?: string[];
+  }>;
+  errors?: string[];
   disabled?: boolean;
   locked?: boolean;
 }
 
 export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
   onGenerate,
+  errors: externalErrors = [],
   disabled = false,
   locked = false,
 }) => {
@@ -63,23 +67,25 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
     console.error('Failed to load schedule generator settings:', scheduleSettingsQuery.error);
   }, [scheduleSettingsQuery.error]);
 
-  const handleGenerate = useCallback(() => {
-    const { valid, errors: validationErrors } = validateGenerationParams(params);
-    if (!valid) {
-      setErrors(validationErrors);
+  useEffect(() => {
+    setErrors(externalErrors);
+  }, [externalErrors]);
+
+  const handleGenerate = useCallback(async () => {
+    try {
+      await saveLastParamsMutation.mutateAsync(params);
+    } catch (err) {
+      console.error('Failed to save last params:', err);
+    }
+
+    const result = await onGenerate(params);
+    if (!result.ok) {
+      setErrors(result.errors || ['Failed to generate schedule']);
       return;
     }
 
-    saveLastParamsMutation.mutate(params, {
-      onError: (err) => {
-        console.error('Failed to save last params:', err);
-      },
-      onSettled: () => {
-        onGenerate(params);
-        setIsOpen(false);
-        setErrors([]);
-      },
-    });
+    setErrors([]);
+    setIsOpen(false);
   }, [params, onGenerate, saveLastParamsMutation]);
 
   const updateParam = useCallback(
@@ -119,9 +125,14 @@ export const ScheduleGenerator: React.FC<ScheduleGeneratorProps> = ({
     message.success(`Template "${template.name}" parameters loaded`);
   };
 
-  const handleApplyTemplate = (template: ScheduleTemplate) => {
-    // Прямое применение с генерацией
-    onGenerate(template.params);
+  const handleApplyTemplate = async (template: ScheduleTemplate) => {
+    const result = await onGenerate(template.params);
+    if (!result.ok) {
+      setErrors(result.errors || ['Failed to generate schedule']);
+      return;
+    }
+
+    setErrors([]);
     setIsOpen(false);
     message.success(`Template "${template.name}" applied and randomized`);
   };

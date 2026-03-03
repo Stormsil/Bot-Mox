@@ -1,10 +1,10 @@
 import {
+  financeAggregateQuerySchema,
   financeListQuerySchema,
   financeOperationCreateSchema,
   financeOperationPatchSchema,
+  financeTimeSeriesQuerySchema,
 } from '@botmox/api-contract';
-import { Transform, Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 import {
   BadRequestException,
   Body,
@@ -20,6 +20,8 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Transform, Type } from 'class-transformer';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 import type { Request } from 'express';
 import { getRequestIdentity } from '../auth/request-identity.util';
 import {
@@ -28,7 +30,12 @@ import {
 } from '../common/http-validation.util';
 import { isPrismaMissingStorageError } from '../common/prisma-soft-fail';
 import { buildTrimmedIdSchema } from '../common/zod-http-parse';
-import { type FinanceListQuery, FinanceService } from './finance.service';
+import {
+  type FinanceAggregateQuery,
+  type FinanceListQuery,
+  FinanceService,
+  type FinanceTimeSeriesQuery,
+} from './finance.service';
 
 const financeIdSchema = buildTrimmedIdSchema('Finance operation id');
 const financeIdParamPipe = createBadRequestValidationPipe(
@@ -38,6 +45,14 @@ const financeIdParamPipe = createBadRequestValidationPipe(
 const financeListQueryPipe = createBadRequestValidationPipe(
   'FINANCE_INVALID_LIST_QUERY',
   'Invalid finance list query',
+);
+const financeAggregateQueryPipe = createBadRequestValidationPipe(
+  'FINANCE_INVALID_AGGREGATE_QUERY',
+  'Invalid finance aggregate query',
+);
+const financeTimeSeriesQueryPipe = createBadRequestValidationPipe(
+  'FINANCE_INVALID_TIME_SERIES_QUERY',
+  'Invalid finance time-series query',
 );
 const financeCreateBodyPipe = new ZodSchemaValidationPipe(
   financeOperationCreateSchema,
@@ -88,6 +103,45 @@ class FinanceListQueryDto {
   q?: string;
 }
 
+class FinanceAggregateQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  from_ts?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  to_ts?: number;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value).trim()))
+  @IsString()
+  @MinLength(1)
+  currency?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value).trim()))
+  @IsString()
+  @MinLength(1)
+  project_id?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value).trim()))
+  @IsString()
+  @MinLength(1)
+  bot_id?: string;
+}
+
+class FinanceTimeSeriesQueryDto extends FinanceAggregateQueryDto {
+  @IsOptional()
+  @Transform(({ value }) => (value == null ? value : String(value)))
+  @IsIn(['hour', 'day', 'week', 'month'])
+  granularity?: 'hour' | 'day' | 'week' | 'month';
+}
+
 @Controller('finance')
 export class FinanceController {
   private isFinanceStorageUnavailable(error: unknown): boolean {
@@ -127,7 +181,11 @@ export class FinanceController {
   }
 
   private parseWithSchema<T>(
-    schema: { safeParse: (value: unknown) => { success: true; data: T } | { success: false; error: { flatten: () => unknown } } },
+    schema: {
+      safeParse: (
+        value: unknown,
+      ) => { success: true; data: T } | { success: false; error: { flatten: () => unknown } };
+    },
     value: unknown,
     code: string,
     message: string,
@@ -230,6 +288,63 @@ export class FinanceController {
       'FINANCE_INVALID_LIST_QUERY',
       'Invalid finance list query',
     );
+  }
+
+  private assertValidDateWindow(fromTs: number | undefined, toTs: number | undefined): void {
+    if (fromTs !== undefined && toTs !== undefined && fromTs > toTs) {
+      throw new BadRequestException({
+        code: 'FINANCE_INVALID_DATE_WINDOW',
+        message: 'Invalid finance date window',
+        details: {
+          from_ts: fromTs,
+          to_ts: toTs,
+          reason: 'from_ts must be less than or equal to to_ts',
+        },
+      });
+    }
+  }
+
+  private parseAggregateQuery(query: Record<string, unknown>): FinanceAggregateQuery {
+    const parsed = this.parseWithSchema(
+      financeAggregateQuerySchema,
+      query ?? {},
+      'FINANCE_INVALID_AGGREGATE_QUERY',
+      'Invalid finance aggregate query',
+    );
+    this.assertValidDateWindow(parsed.from_ts, parsed.to_ts);
+    return parsed;
+  }
+
+  private parseTimeSeriesQuery(query: Record<string, unknown>): FinanceTimeSeriesQuery {
+    const parsed = this.parseWithSchema(
+      financeTimeSeriesQuerySchema,
+      query ?? {},
+      'FINANCE_INVALID_TIME_SERIES_QUERY',
+      'Invalid finance time-series query',
+    );
+    this.assertValidDateWindow(parsed.from_ts, parsed.to_ts);
+    return parsed;
+  }
+
+  private buildEmptySummary(query: FinanceAggregateQuery): {
+    income_total: number;
+    expense_total: number;
+    net_total: number;
+    margin_percent: number;
+    operation_count: number;
+    period: { from_ts?: number; to_ts?: number };
+  } {
+    return {
+      income_total: 0,
+      expense_total: 0,
+      net_total: 0,
+      margin_percent: 0,
+      operation_count: 0,
+      period: {
+        ...(query.from_ts !== undefined ? { from_ts: query.from_ts } : {}),
+        ...(query.to_ts !== undefined ? { to_ts: query.to_ts } : {}),
+      },
+    };
   }
 
   private parseCreateBody(body: unknown): Record<string, unknown> {
@@ -338,7 +453,12 @@ export class FinanceController {
     @Body(financePatchBodyPipe) body: Record<string, unknown>,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    return this.updateCore(authorization, typeof params === 'string' ? params : params.id, body, req);
+    return this.updateCore(
+      authorization,
+      typeof params === 'string' ? params : params.id,
+      body,
+      req,
+    );
   }
 
   @Delete('operations/:id')
@@ -347,10 +467,97 @@ export class FinanceController {
     @Param(financeIdParamPipe) params: FinanceOperationIdParamDto | string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { id: string; deleted: boolean } }> {
-    return this.removeCore(authorization, typeof params === 'string' ? params : params.id, req) as Promise<{
+    return this.removeCore(
+      authorization,
+      typeof params === 'string' ? params : params.id,
+      req,
+    ) as Promise<{
       success: true;
       data: { id: string; deleted: boolean };
     }>;
+  }
+
+  @Get('summary')
+  async summary(
+    @Headers('authorization') authorization: string | undefined,
+    @Query(financeAggregateQueryPipe) query: FinanceAggregateQueryDto,
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    this.ensureAuthHeader(authorization);
+    const tenantId = this.getTenantId(req);
+    const parsedQuery = this.parseAggregateQuery(query as Record<string, unknown>);
+    try {
+      return {
+        success: true,
+        data: await this.financeService.getSummary(parsedQuery, tenantId),
+      };
+    } catch (error) {
+      if (!this.isFinanceStorageUnavailable(error)) {
+        throw error;
+      }
+      return {
+        success: true,
+        data: this.buildEmptySummary(parsedQuery),
+      };
+    }
+  }
+
+  @Get('breakdown')
+  async breakdown(
+    @Headers('authorization') authorization: string | undefined,
+    @Query(financeAggregateQueryPipe) query: FinanceAggregateQueryDto,
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    this.ensureAuthHeader(authorization);
+    const tenantId = this.getTenantId(req);
+    const parsedQuery = this.parseAggregateQuery(query as Record<string, unknown>);
+    try {
+      return {
+        success: true,
+        data: await this.financeService.getBreakdown(parsedQuery, tenantId),
+      };
+    } catch (error) {
+      if (!this.isFinanceStorageUnavailable(error)) {
+        throw error;
+      }
+      return {
+        success: true,
+        data: {
+          group_by: 'category',
+          items: [],
+          totals: this.buildEmptySummary(parsedQuery),
+        },
+      };
+    }
+  }
+
+  @Get('time-series')
+  async timeSeries(
+    @Headers('authorization') authorization: string | undefined,
+    @Query(financeTimeSeriesQueryPipe) query: FinanceTimeSeriesQueryDto,
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    this.ensureAuthHeader(authorization);
+    const tenantId = this.getTenantId(req);
+    const parsedQuery = this.parseTimeSeriesQuery(query as Record<string, unknown>);
+    try {
+      return {
+        success: true,
+        data: await this.financeService.getTimeSeries(parsedQuery, tenantId),
+      };
+    } catch (error) {
+      if (!this.isFinanceStorageUnavailable(error)) {
+        throw error;
+      }
+      return {
+        success: true,
+        data: {
+          granularity: parsedQuery.granularity ?? 'day',
+          points: [],
+          totals: this.buildEmptySummary(parsedQuery),
+        },
+      };
+    }
   }
 
   @Get('daily-stats')

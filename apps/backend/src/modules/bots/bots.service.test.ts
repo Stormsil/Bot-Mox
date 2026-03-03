@@ -132,3 +132,76 @@ test('BotsService keeps legacy plaintext payload compatible', async () => {
   assert.equal(item?.id, 'b-legacy');
   assert.equal(item?.name, 'legacy bot');
 });
+
+test('BotsService computes status metadata with banned and offline precedence', async () => {
+  const fixedNow = 1_700_000_000_000;
+  const originalNow = Date.now;
+  Date.now = () => fixedNow;
+
+  try {
+    const repositoryStub: RepositoryStub = {
+      list: async () => [
+        {
+          id: 'bot-banned',
+          payload: {
+            id: 'bot-banned',
+            status: 'banned',
+            last_seen: fixedNow - 60_000,
+          },
+        },
+        {
+          id: 'bot-offline',
+          payload: {
+            id: 'bot-offline',
+            status: 'farming',
+            last_seen: fixedNow - 6 * 60 * 1000,
+          },
+        },
+        {
+          id: 'bot-online',
+          payload: {
+            id: 'bot-online',
+            status: 'prepare',
+            last_seen: fixedNow - 2 * 60 * 1000,
+          },
+        },
+      ],
+      findById: async (_tenantId: unknown, id: unknown) => {
+        if (String(id) === 'bot-missing-seen') {
+          return {
+            id: 'bot-missing-seen',
+            payload: {
+              id: 'bot-missing-seen',
+            },
+          };
+        }
+        return null;
+      },
+      upsert: async () => {
+        throw new Error('not_needed');
+      },
+      delete: async () => false,
+    };
+
+    const service = createService(repositoryStub);
+    const listed = await service.list({}, 'tenant-a');
+
+    const banned = listed.items.find((item: Record<string, unknown>) => item.id === 'bot-banned');
+    assert.equal(banned?.computed_status, 'banned');
+    assert.equal(banned?.days_remaining, null);
+    assert.equal(banned?.is_expiring_soon, false);
+
+    const offline = listed.items.find((item: Record<string, unknown>) => item.id === 'bot-offline');
+    assert.equal(offline?.computed_status, 'offline');
+
+    const online = listed.items.find((item: Record<string, unknown>) => item.id === 'bot-online');
+    assert.equal(online?.computed_status, 'prepare');
+
+    const missingSeen = await service.getById('bot-missing-seen', 'tenant-a');
+    assert.equal(missingSeen?.computed_status, 'offline');
+    assert.equal(missingSeen?.days_remaining, null);
+    assert.equal(missingSeen?.is_expiring_soon, false);
+  } finally {
+    Date.now = originalNow;
+  }
+});

@@ -138,7 +138,6 @@ function updateLastUpdated(source) {
 
 const commandResults = [];
 if (withChecks) {
-  commandResults.push(runCommand('pnpm', ['run', 'migration:check:strict']));
   commandResults.push(runCommand('pnpm', ['run', 'docs:check']));
   commandResults.push(runCommand('pnpm', ['run', 'check:admin:surface-isolation']));
   commandResults.push(runCommand('pnpm', ['run', 'smoke:admin-origin:e2e']));

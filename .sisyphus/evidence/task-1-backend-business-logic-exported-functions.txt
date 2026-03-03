@@ -1,0 +1,39 @@
+Task: Exported function inventory (AST-grep)
+
+Source files:
+- apps/frontend/src/entities/bot/lib/statuses.ts
+- apps/frontend/src/entities/finance/lib/analyticsCalculations.ts
+- apps/frontend/src/features/vm-management/lib/deleteVmRules.ts
+- apps/frontend/src/shared/lib/utils/schedule/generation.ts
+- apps/frontend/src/shared/lib/utils/vm/patcher.ts
+
+Exports discovered:
+
+statuses.ts
+- computeBotStatusAt
+- computeBotStatus
+- computeProxyStatus
+- computeSubscriptionStatus
+- computeLicenseStatus
+
+analyticsCalculations.ts
+- calculateFinanceSummary
+- calculateCategoryBreakdown
+- prepareTimeSeriesData
+- getGoldPriceHistoryFromOperations
+- filterOperations
+
+deleteVmRules.ts
+- normalizeToken
+- normalizeDeleteVmFilters
+- evaluateDeleteBot
+
+generation.ts
+- randomInt
+- validateGenerationParams
+- generateDaySchedule
+- generateSchedule
+
+patcher.ts
+- extractVmNumber
+- patchConfig

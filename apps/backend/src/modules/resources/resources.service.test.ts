@@ -129,3 +129,109 @@ test('ResourcesService passes plain payload to repository and returns record sha
   const listed = await service.list('subscriptions', {}, 'tenant-a');
   assert.equal(listed.items[0].token, 'top-secret');
 });
+
+test('ResourcesService computes status metadata for proxies, licenses and subscriptions', async () => {
+  const fixedNow = 1_700_000_000_000;
+  const day = 24 * 60 * 60 * 1000;
+  const originalNow = Date.now;
+  Date.now = () => fixedNow;
+
+  try {
+    const repository: RepositoryStub = {
+      list: async (_tenantId: unknown, kind: unknown) => {
+        if (kind === 'proxies') {
+          return [
+            {
+              id: 'proxy-banned',
+              payload: { id: 'proxy-banned', status: 'banned', expires_at: fixedNow + 10 * day },
+            },
+            {
+              id: 'proxy-expiring',
+              payload: { id: 'proxy-expiring', status: 'active', expires_at: fixedNow + 3 * day },
+            },
+            {
+              id: 'proxy-active',
+              payload: { id: 'proxy-active', status: 'active', expires_at: fixedNow + 30 * day },
+            },
+          ];
+        }
+
+        if (kind === 'licenses') {
+          return [
+            {
+              id: 'license-expired',
+              payload: { id: 'license-expired', status: 'active', expires_at: fixedNow - day },
+            },
+            {
+              id: 'license-expiring',
+              payload: { id: 'license-expiring', status: 'active', expires_at: fixedNow + 2 * day },
+            },
+          ];
+        }
+
+        return [
+          {
+            id: 'sub-active',
+            payload: { id: 'sub-active', status: 'active', expires_at: fixedNow + 20 * day },
+          },
+        ];
+      },
+      findById: async (_tenantId: unknown, kind: unknown, id: unknown) => {
+        if (kind === 'subscriptions' && String(id) === 'sub-missing-expiry') {
+          return {
+            id: 'sub-missing-expiry',
+            payload: { id: 'sub-missing-expiry', status: 'active' },
+          };
+        }
+        return null;
+      },
+      upsert: async () => ({ id: 'noop', payload: {} }),
+      delete: async () => true,
+    };
+
+    const service = createService(repository);
+
+    const proxies = await service.list('proxies', {}, 'tenant-a');
+    const bannedProxy = proxies.items.find(
+      (item: Record<string, unknown>) => item.id === 'proxy-banned',
+    );
+    assert.equal(bannedProxy?.computed_status, 'banned');
+    assert.equal(bannedProxy?.days_remaining, 0);
+    assert.equal(bannedProxy?.is_expiring_soon, false);
+
+    const expiringProxy = proxies.items.find(
+      (item: Record<string, unknown>) => item.id === 'proxy-expiring',
+    );
+    assert.equal(expiringProxy?.computed_status, 'expiring');
+    assert.equal(expiringProxy?.days_remaining, 3);
+    assert.equal(expiringProxy?.is_expiring_soon, true);
+
+    const licenses = await service.list('licenses', {}, 'tenant-a');
+    const expiredLicense = licenses.items.find(
+      (item: Record<string, unknown>) => item.id === 'license-expired',
+    );
+    assert.equal(expiredLicense?.computed_status, 'expired');
+    assert.equal(expiredLicense?.days_remaining, 0);
+    assert.equal(expiredLicense?.is_expiring_soon, false);
+
+    const expiringLicense = licenses.items.find(
+      (item: Record<string, unknown>) => item.id === 'license-expiring',
+    );
+    assert.equal(expiringLicense?.computed_status, 'expiring');
+    assert.equal(expiringLicense?.days_remaining, 2);
+    assert.equal(expiringLicense?.is_expiring_soon, true);
+
+    const subscriptions = await service.list('subscriptions', {}, 'tenant-a');
+    const activeSubscription = subscriptions.items[0];
+    assert.equal(activeSubscription.computed_status, 'active');
+    assert.equal(activeSubscription.days_remaining, 20);
+    assert.equal(activeSubscription.is_expiring_soon, false);
+
+    const missingExpiry = await service.getById('subscriptions', 'sub-missing-expiry', 'tenant-a');
+    assert.equal(missingExpiry?.computed_status, 'active');
+    assert.equal(missingExpiry?.days_remaining, null);
+    assert.equal(missingExpiry?.is_expiring_soon, false);
+  } finally {
+    Date.now = originalNow;
+  }
+});

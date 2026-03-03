@@ -9,6 +9,9 @@ export type SubscriptionStatus = 'none' | 'active' | 'expiring' | 'expired';
 export type ProxyLike = {
   expires_at?: number;
   status?: ProxyResource['status'];
+  computed_status?: 'active' | 'expiring' | 'expired' | 'banned';
+  days_remaining?: number | null;
+  is_expiring_soon?: boolean;
 };
 
 export interface BotRecord {
@@ -16,6 +19,9 @@ export interface BotRecord {
   project_id: string;
   status: BotStatus;
   last_seen?: number;
+  computed_status?: BotStatus;
+  days_remaining?: number | null;
+  is_expiring_soon?: boolean;
   name?: string;
   character?: {
     name?: string;

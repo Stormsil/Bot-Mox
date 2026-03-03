@@ -2,7 +2,7 @@ import { DownOutlined, FilterOutlined } from '@ant-design/icons';
 
 import type React from 'react';
 import { AppButton as Button, AppModal as Modal, AppPopover as Popover } from '../../../shared/ui';
-import type { DeleteVmCandidateRow, DeleteVmFilters } from '../lib/deleteVmRules';
+import type { DeleteVmCandidateRow, DeleteVmFilters } from '../model/deleteVm.types';
 import { DeleteVmCandidateItem } from './DeleteVmCandidateItem';
 import { DeleteRulesPopoverContent, ViewFiltersPopoverContent } from './DeleteVmFilterPopovers';
 import { cx } from './deleteVmModal.cx';

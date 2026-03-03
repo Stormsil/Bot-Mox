@@ -12,6 +12,9 @@ export interface BotLicense {
   expires_at: number;
   created_at: number;
   updated_at: number;
+  computed_status?: 'active' | 'expiring' | 'expired';
+  days_remaining?: number | null;
+  is_expiring_soon?: boolean;
 }
 
 export interface LicenseBotName {
@@ -59,6 +62,9 @@ export interface Proxy {
   created_at: number;
   updated_at: number;
   last_checked?: number;
+  computed_status?: 'active' | 'expiring' | 'expired' | 'banned';
+  days_remaining?: number | null;
+  is_expiring_soon?: boolean;
 }
 
 export interface IPQSResponse {
@@ -98,6 +104,9 @@ export interface Subscription {
   auto_renew?: boolean;
   project_id?: 'wow_tbc' | 'wow_midnight';
   notes?: string;
+  computed_status?: 'active' | 'expiring' | 'expired';
+  days_remaining?: number | null;
+  is_expiring_soon?: boolean;
 }
 
 export interface SubscriptionWithDetails extends Subscription {

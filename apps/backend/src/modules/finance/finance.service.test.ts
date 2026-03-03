@@ -114,3 +114,208 @@ test('FinanceService passes plain payload to repository and returns record shape
   assert.equal(listed.items.length, 1);
   assert.equal(listed.items[0].note, 'private note');
 });
+
+test('FinanceService aggregate DTOs are stable for normal filtered period', async () => {
+  const day1 = Date.UTC(2026, 0, 1, 12, 0, 0, 0);
+  const day2 = Date.UTC(2026, 0, 2, 12, 0, 0, 0);
+  const day4 = Date.UTC(2026, 0, 4, 12, 0, 0, 0);
+  const rows = [
+    {
+      id: 'fin-1',
+      payload: {
+        id: 'fin-1',
+        type: 'income',
+        category: 'sale',
+        amount: 100,
+        currency: 'usd',
+        project_id: 'wow_tbc',
+        date: day1,
+      },
+    },
+    {
+      id: 'fin-2',
+      payload: {
+        id: 'fin-2',
+        type: 'expense',
+        category: 'consumables',
+        amount: 30,
+        currency: 'usd',
+        project_id: 'wow_tbc',
+        date: day2,
+      },
+    },
+    {
+      id: 'fin-3',
+      payload: {
+        id: 'fin-3',
+        type: 'income',
+        category: 'sale',
+        amount: 50,
+        currency: 'usd',
+        project_id: 'wow_tbc',
+        date: day4,
+      },
+    },
+    {
+      id: 'fin-4',
+      payload: {
+        id: 'fin-4',
+        type: 'expense',
+        category: 'consumables',
+        amount: 999,
+        currency: 'usd',
+        project_id: 'wow_midnight',
+        date: day1,
+      },
+    },
+  ];
+
+  const repositoryStub: RepositoryStub = {
+    list: async () => rows,
+    findById: async () => null,
+    upsert: async () => ({ id: 'x', payload: {} }),
+    delete: async () => false,
+  };
+  const service = createService(repositoryStub);
+
+  const summary = await service.getSummary(
+    {
+      from_ts: Date.UTC(2026, 0, 1, 0, 0, 0, 0),
+      to_ts: Date.UTC(2026, 0, 3, 23, 59, 59, 999),
+      project_id: 'wow_tbc',
+      currency: 'usd',
+    },
+    'tenant-a',
+  );
+
+  assert.deepEqual(summary, {
+    income_total: 100,
+    expense_total: 30,
+    net_total: 70,
+    margin_percent: 70,
+    operation_count: 2,
+    period: {
+      from_ts: Date.UTC(2026, 0, 1, 0, 0, 0, 0),
+      to_ts: Date.UTC(2026, 0, 3, 23, 59, 59, 999),
+    },
+  });
+
+  const breakdown = await service.getBreakdown(
+    {
+      from_ts: Date.UTC(2026, 0, 1, 0, 0, 0, 0),
+      to_ts: Date.UTC(2026, 0, 3, 23, 59, 59, 999),
+      project_id: 'wow_tbc',
+      currency: 'usd',
+    },
+    'tenant-a',
+  );
+
+  assert.equal(breakdown.group_by, 'category');
+  assert.equal(breakdown.items.length, 2);
+  assert.deepEqual(breakdown.items[0], {
+    key: 'sale',
+    label: 'sale',
+    amount: 100,
+    share_percent: (100 / 130) * 100,
+    count: 1,
+    income_total: 100,
+    expense_total: 0,
+    net_total: 100,
+  });
+  assert.deepEqual(breakdown.items[1], {
+    key: 'consumables',
+    label: 'consumables',
+    amount: 30,
+    share_percent: (30 / 130) * 100,
+    count: 1,
+    income_total: 0,
+    expense_total: 30,
+    net_total: -30,
+  });
+
+  const timeSeries = await service.getTimeSeries(
+    {
+      from_ts: Date.UTC(2026, 0, 1, 0, 0, 0, 0),
+      to_ts: Date.UTC(2026, 0, 3, 23, 59, 59, 999),
+      granularity: 'day',
+      project_id: 'wow_tbc',
+      currency: 'usd',
+    },
+    'tenant-a',
+  );
+
+  assert.equal(timeSeries.granularity, 'day');
+  assert.deepEqual(timeSeries.points, [
+    {
+      bucket: '2026-01-01',
+      income_total: 100,
+      expense_total: 0,
+      net_total: 100,
+      operation_count: 1,
+    },
+    {
+      bucket: '2026-01-02',
+      income_total: 0,
+      expense_total: 30,
+      net_total: -30,
+      operation_count: 1,
+    },
+    {
+      bucket: '2026-01-03',
+      income_total: 0,
+      expense_total: 0,
+      net_total: 0,
+      operation_count: 0,
+    },
+  ]);
+  assert.deepEqual(timeSeries.totals, summary);
+});
+
+test('FinanceService aggregate DTOs handle empty dataset', async () => {
+  const repositoryStub: RepositoryStub = {
+    list: async () => [],
+    findById: async () => null,
+    upsert: async () => ({ id: 'x', payload: {} }),
+    delete: async () => false,
+  };
+  const service = createService(repositoryStub);
+
+  const query = {
+    from_ts: Date.UTC(2026, 1, 1, 0, 0, 0, 0),
+    to_ts: Date.UTC(2026, 1, 2, 23, 59, 59, 999),
+  };
+
+  const summary = await service.getSummary(query, 'tenant-a');
+  assert.deepEqual(summary, {
+    income_total: 0,
+    expense_total: 0,
+    net_total: 0,
+    margin_percent: 0,
+    operation_count: 0,
+    period: query,
+  });
+
+  const breakdown = await service.getBreakdown(query, 'tenant-a');
+  assert.deepEqual(breakdown, {
+    group_by: 'category',
+    items: [],
+    totals: summary,
+  });
+
+  const timeSeries = await service.getTimeSeries({ ...query, granularity: 'day' }, 'tenant-a');
+  assert.equal(timeSeries.points.length, 2);
+  assert.deepEqual(timeSeries.points[0], {
+    bucket: '2026-02-01',
+    income_total: 0,
+    expense_total: 0,
+    net_total: 0,
+    operation_count: 0,
+  });
+  assert.deepEqual(timeSeries.points[1], {
+    bucket: '2026-02-02',
+    income_total: 0,
+    expense_total: 0,
+    net_total: 0,
+    operation_count: 0,
+  });
+});

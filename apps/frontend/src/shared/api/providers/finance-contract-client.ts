@@ -1,9 +1,14 @@
 import {
+  financeAggregateQuerySchema,
+  financeBreakdownSchema,
   financeDailyStatsSchema,
   financeGoldPriceHistorySchema,
   financeOperationCreateSchema,
   financeOperationPatchSchema,
   financeOperationRecordSchema,
+  financeSummarySchema,
+  financeTimeSeriesQuerySchema,
+  financeTimeSeriesSchema,
 } from '@botmox/api-contract';
 import { ApiClientError, type ApiSuccessEnvelope } from '../apiClient';
 import {
@@ -18,6 +23,18 @@ interface FinanceListQuery {
   sort?: string;
   order?: 'asc' | 'desc';
   q?: string;
+}
+
+interface FinanceAggregateQuery {
+  from_ts?: number;
+  to_ts?: number;
+  currency?: string;
+  project_id?: string;
+  bot_id?: string;
+}
+
+interface FinanceTimeSeriesQuery extends FinanceAggregateQuery {
+  granularity?: 'hour' | 'day' | 'week' | 'month';
 }
 
 function isFinanceDegradedReadError(error: unknown): boolean {
@@ -38,6 +55,9 @@ export type FinanceDailyStatsContractMap = ReturnType<typeof financeDailyStatsSc
 export type FinanceGoldPriceHistoryContractMap = ReturnType<
   typeof financeGoldPriceHistorySchema.parse
 >;
+export type FinanceSummaryContractRecord = ReturnType<typeof financeSummarySchema.parse>;
+export type FinanceBreakdownContractRecord = ReturnType<typeof financeBreakdownSchema.parse>;
+export type FinanceTimeSeriesContractRecord = ReturnType<typeof financeTimeSeriesSchema.parse>;
 
 export async function listFinanceOperationsViaContract(
   query: FinanceListQuery,
@@ -227,6 +247,143 @@ export async function getFinanceGoldPriceHistoryViaContract(): Promise<
     return {
       success: true,
       data: financeGoldPriceHistorySchema.parse({}),
+    };
+  }
+}
+
+export async function getFinanceSummaryViaContract(
+  query: FinanceAggregateQuery,
+): Promise<ApiSuccessEnvelope<FinanceSummaryContractRecord>> {
+  try {
+    const client = createContractRuntimeClient();
+    const authorization = resolveContractAuthorizationHeader();
+    const parsedQuery = financeAggregateQuerySchema.parse(query || {});
+    const response = await client.financeSummary({
+      headers: { authorization },
+      query: parsedQuery,
+    });
+
+    if (response.status !== 200) {
+      throw toContractApiClientError('/api/v1/finance/summary', response.status, response.body);
+    }
+
+    return {
+      success: true,
+      data: financeSummarySchema.parse(response.body.data),
+      ...(response.body.meta ? { meta: response.body.meta } : {}),
+    };
+  } catch (error) {
+    if (!isFinanceDegradedReadError(error)) {
+      throw error;
+    }
+    const parsedQuery = financeAggregateQuerySchema.parse(query || {});
+    return {
+      success: true,
+      data: financeSummarySchema.parse({
+        income_total: 0,
+        expense_total: 0,
+        net_total: 0,
+        margin_percent: 0,
+        operation_count: 0,
+        period: {
+          ...(parsedQuery.from_ts !== undefined ? { from_ts: parsedQuery.from_ts } : {}),
+          ...(parsedQuery.to_ts !== undefined ? { to_ts: parsedQuery.to_ts } : {}),
+        },
+      }),
+    };
+  }
+}
+
+export async function getFinanceBreakdownViaContract(
+  query: FinanceAggregateQuery,
+): Promise<ApiSuccessEnvelope<FinanceBreakdownContractRecord>> {
+  try {
+    const client = createContractRuntimeClient();
+    const authorization = resolveContractAuthorizationHeader();
+    const parsedQuery = financeAggregateQuerySchema.parse(query || {});
+    const response = await client.financeBreakdown({
+      headers: { authorization },
+      query: parsedQuery,
+    });
+
+    if (response.status !== 200) {
+      throw toContractApiClientError('/api/v1/finance/breakdown', response.status, response.body);
+    }
+
+    return {
+      success: true,
+      data: financeBreakdownSchema.parse(response.body.data),
+      ...(response.body.meta ? { meta: response.body.meta } : {}),
+    };
+  } catch (error) {
+    if (!isFinanceDegradedReadError(error)) {
+      throw error;
+    }
+    const parsedQuery = financeAggregateQuerySchema.parse(query || {});
+    return {
+      success: true,
+      data: financeBreakdownSchema.parse({
+        group_by: 'category',
+        items: [],
+        totals: {
+          income_total: 0,
+          expense_total: 0,
+          net_total: 0,
+          margin_percent: 0,
+          operation_count: 0,
+          period: {
+            ...(parsedQuery.from_ts !== undefined ? { from_ts: parsedQuery.from_ts } : {}),
+            ...(parsedQuery.to_ts !== undefined ? { to_ts: parsedQuery.to_ts } : {}),
+          },
+        },
+      }),
+    };
+  }
+}
+
+export async function getFinanceTimeSeriesViaContract(
+  query: FinanceTimeSeriesQuery,
+): Promise<ApiSuccessEnvelope<FinanceTimeSeriesContractRecord>> {
+  try {
+    const client = createContractRuntimeClient();
+    const authorization = resolveContractAuthorizationHeader();
+    const parsedQuery = financeTimeSeriesQuerySchema.parse(query || {});
+    const response = await client.financeTimeSeries({
+      headers: { authorization },
+      query: parsedQuery,
+    });
+
+    if (response.status !== 200) {
+      throw toContractApiClientError('/api/v1/finance/time-series', response.status, response.body);
+    }
+
+    return {
+      success: true,
+      data: financeTimeSeriesSchema.parse(response.body.data),
+      ...(response.body.meta ? { meta: response.body.meta } : {}),
+    };
+  } catch (error) {
+    if (!isFinanceDegradedReadError(error)) {
+      throw error;
+    }
+    const parsedQuery = financeTimeSeriesQuerySchema.parse(query || {});
+    return {
+      success: true,
+      data: financeTimeSeriesSchema.parse({
+        granularity: parsedQuery.granularity || 'day',
+        points: [],
+        totals: {
+          income_total: 0,
+          expense_total: 0,
+          net_total: 0,
+          margin_percent: 0,
+          operation_count: 0,
+          period: {
+            ...(parsedQuery.from_ts !== undefined ? { from_ts: parsedQuery.from_ts } : {}),
+            ...(parsedQuery.to_ts !== undefined ? { to_ts: parsedQuery.to_ts } : {}),
+          },
+        },
+      }),
     };
   }
 }

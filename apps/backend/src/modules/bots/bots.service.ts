@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { buildBotComputedStatusFields } from '../common/status-computation';
 import { buildBanPayload, buildTransitionPayload, buildUnbanPayload } from './bots.lifecycle';
 import { BotsRepository } from './bots.repository';
 import type {
@@ -29,9 +30,17 @@ export class BotsService {
     const id = String(row.id || '').trim();
     const payload = row.payload;
     if (payload && typeof payload === 'object') {
-      return { ...(payload as BotRecord), ...(id ? { id } : {}) };
+      const mapped = { ...(payload as BotRecord), ...(id ? { id } : {}) };
+      return {
+        ...mapped,
+        ...buildBotComputedStatusFields(mapped),
+      };
     }
-    return id ? { id } : {};
+    const mapped = id ? { id } : {};
+    return {
+      ...mapped,
+      ...buildBotComputedStatusFields(mapped),
+    };
   }
 
   async list(query: BotsListQuery, tenantId: string): Promise<BotsListResult> {

@@ -1,0 +1,17 @@
+Task 4 Parity Pass Evidence
+
+Command:
+pnpm --filter @botmox/backend test
+
+Outcome:
+- Exit code: 0
+- New parity suites executed and passed:
+  - parity: statuses stream matches Task 1 fixture
+  - parity: finance stream matches Task 1 fixture
+  - parity: vm-delete stream matches Task 1 fixture
+  - parity: schedule stream matches Task 1 fixture and seed is deterministic
+  - parity: vm-patcher stream matches Task 1 fixture
+  - parity harness emits explicit diff signal on mismatch
+
+Notes:
+- Backend test runner completed with 252 tests passed, 0 failed.

@@ -58,10 +58,6 @@ NPM aliases:
 - `BOTMOX_RUN_DATA_ENCRYPTION_SMOKE=true`
 - `BOTMOX_RUN_SETTINGS_SURFACE_SMOKE=true`
 - `BOTMOX_RUN_RUNTIME_METRICS_RECORD=true`
-- `BOTMOX_ENFORCE_STRICT_FLAGS=true` (принудительно выставляет secure migration/runtime flags и запускает `migration:check:strict` перед стартом)
-  - включает детерминированные access-параметры:
-    - `TRIAL_DURATION_HOURS=24`
-    - `BILLING_STUB_SELF_ACTIVATE=false`
 
 Запуск:
 
@@ -165,7 +161,6 @@ pnpm run supabase:create-user -- --email "admin@example.com" --password "ChangeM
 - `--dry-run` (валидация compose-конфига без запуска)
 - `--skip-pull`
 - `--skip-healthcheck`
-- `--skip-migration-check` (пропустить `check-migration-flags.js --strict` preflight)
 - `--wait-timeout <seconds>` (таймаут healthcheck, default `120`)
 
 Оба скрипта (`deploy-vps.sh`, `rollback-vps.sh`) умеют резолвить `FRONTEND_IMAGE_REPO`/`BACKEND_IMAGE_REPO`
@@ -545,7 +540,6 @@ pnpm run repo:ingest:profile
 Всегда фиксирует базовые security-флаги среды (`AUTH_MODE`, `AGENT_TRANSPORT`, `SECRETS_VAULT_MODE`, `ADMIN_ORIGIN_*`, `ADMIN_CORS_ORIGIN`, `BILLING_STUB_SELF_ACTIVATE`).
 При `--with-checks` дополнительно запускает admin smoke-пакет:
 
-- `migration:check:strict`
 - `check:admin:surface-isolation`
 - `smoke:admin-origin:e2e`
 - `smoke:admin-rbac:e2e`
@@ -571,7 +565,6 @@ pnpm run hardening:rollout:readiness:checks
 Добавляет запись в monthly smoke-window audit.
 При `--with-checks` выполняет те же gate-check команды, включая:
 
-- `migration:check:strict`
 - `check:admin:surface-isolation`
 - `smoke:admin-origin:e2e`
 - `smoke:admin-rbac:e2e`
@@ -609,7 +602,6 @@ pnpm run hardening:smoke:streak -- --target=7
 
 - файл: `docs/audits/production-hardening-load-smoke-YYYY-MM.md`
 - сохраняет профиль флагов (`AUTH_MODE`, `AGENT_TRANSPORT`, `SECRETS_VAULT_MODE`)
-- в `--strict` режиме сначала выполняет `migration:check:strict` preflight
 - при `--run-load` запускает `smoke:load:multi-tenant` и пишет метрики (`p99`, `5xx`, `401`, `sse_fail`)
 
 Run:
@@ -655,43 +647,6 @@ Gitignored файлы (например, локальные `.env`/secrets) в �
 
 ```bash
 node scripts/check-secrets.js
-```
-
-## `check-migration-flags.js`
-
-Validates runtime migration flags used during hardening waves.
-
-Standard mode:
-
-- validates values only when flag is provided.
-
-Strict mode:
-
-- requires all flags and enforces strict production-like values:
-  - `AUTH_MODE=enforced`
-  - `AGENT_TRANSPORT=ws`
-  - `SECRETS_VAULT_MODE=enforced`
-- also enforces admin-origin hardening:
-  - `ADMIN_ORIGIN_ENFORCEMENT=true`
-  - `ADMIN_ORIGIN_STRICT=true`
-  - `ADMIN_CORS_ORIGIN` must be set
-  - if `ADMIN_DOMAIN` is set, `ADMIN_CORS_ORIGIN` must include that host
-- enforces billing safety:
-  - `BILLING_STUB_SELF_ACTIVATE` must not be `true`
-- enforces deterministic trial window:
-  - `TRIAL_DURATION_HOURS` must be exactly `24`
-- when `SECRETS_VAULT_MODE=enforced`, also requires:
-  - `SUPABASE_URL`
-  - `SUPABASE_SERVICE_ROLE_KEY`
-  - `SUPABASE_VAULT_RPC_NAME`
-  - `SUPABASE_VAULT_ROTATE_RPC_NAME`
-
-Run:
-
-```bash
-pnpm run migration:check
-pnpm run migration:check:strict
-pnpm run migration:check:test
 ```
 
 ## `auth-access-e2e-smoke.js`

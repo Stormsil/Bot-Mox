@@ -177,3 +177,68 @@ export const financeGoldPriceHistoryEntrySchema = z
   .passthrough();
 
 export const financeGoldPriceHistorySchema = z.record(financeGoldPriceHistoryEntrySchema);
+
+export const financeAggregateQuerySchema = z.object({
+  from_ts: z.coerce.number().int().nonnegative().optional(),
+  to_ts: z.coerce.number().int().nonnegative().optional(),
+  currency: z.string().trim().min(1).optional(),
+  project_id: z.string().trim().min(1).optional(),
+  bot_id: z.string().trim().min(1).optional(),
+});
+
+export const financeSummarySchema: z.ZodTypeAny = z
+  .object({
+    income_total: z.coerce.number().finite().optional(),
+    expense_total: z.coerce.number().finite().optional(),
+    net_total: z.coerce.number().finite().optional(),
+    margin_percent: z.coerce.number().finite().optional(),
+    operation_count: z.coerce.number().int().nonnegative().optional(),
+    period: z
+      .object({
+        from_ts: z.coerce.number().int().nonnegative().optional(),
+        to_ts: z.coerce.number().int().nonnegative().optional(),
+      })
+      .partial()
+      .optional(),
+  })
+  .passthrough();
+
+export const financeBreakdownItemSchema: z.ZodTypeAny = z
+  .object({
+    key: z.string().trim().min(1).optional(),
+    label: z.string().trim().min(1).optional(),
+    amount: z.coerce.number().finite().optional(),
+    share_percent: z.coerce.number().finite().optional(),
+    count: z.coerce.number().int().nonnegative().optional(),
+  })
+  .passthrough();
+
+export const financeBreakdownSchema: z.ZodTypeAny = z
+  .object({
+    group_by: z.string().trim().min(1).optional(),
+    items: z.array(financeBreakdownItemSchema),
+    totals: financeSummarySchema.optional(),
+  })
+  .passthrough();
+
+export const financeTimeSeriesQuerySchema: z.ZodTypeAny = financeAggregateQuerySchema.extend({
+  granularity: z.enum(['hour', 'day', 'week', 'month']).optional(),
+});
+
+export const financeTimeSeriesPointSchema: z.ZodTypeAny = z
+  .object({
+    bucket: z.string().trim().min(1),
+    income_total: z.coerce.number().finite().optional(),
+    expense_total: z.coerce.number().finite().optional(),
+    net_total: z.coerce.number().finite().optional(),
+    operation_count: z.coerce.number().int().nonnegative().optional(),
+  })
+  .passthrough();
+
+export const financeTimeSeriesSchema: z.ZodTypeAny = z
+  .object({
+    granularity: z.enum(['hour', 'day', 'week', 'month']).optional(),
+    points: z.array(financeTimeSeriesPointSchema),
+    totals: financeSummarySchema.optional(),
+  })
+  .passthrough();

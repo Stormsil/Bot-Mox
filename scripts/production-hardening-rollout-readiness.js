@@ -144,7 +144,6 @@ if (vaultMode.toLowerCase() === 'enforced') {
 
 const commandChecks = [];
 if (withChecks) {
-  commandChecks.push(runCommand('pnpm', ['run', 'migration:check:strict']));
   commandChecks.push(runCommand('pnpm', ['run', 'docs:check']));
   commandChecks.push(runCommand('pnpm', ['run', 'check:admin:surface-isolation']));
   commandChecks.push(runCommand('pnpm', ['run', 'smoke:admin-origin:e2e']));

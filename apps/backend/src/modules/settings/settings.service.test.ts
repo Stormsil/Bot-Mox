@@ -2,7 +2,7 @@ export {};
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { SettingsService } = require('./settings.service.ts');
+const { ScheduleValidationError, SettingsService } = require('./settings.service.ts');
 
 type RepositoryStub = {
   findByPath: (...args: unknown[]) => Promise<Record<string, unknown> | null>;
@@ -129,5 +129,67 @@ test('SettingsService fails hard on repository errors', async () => {
   await assert.rejects(
     () => service.updateApiKeys({ openai_api_key: 'k' }, 'tenant-a'),
     /repo read failed|repo write failed/,
+  );
+});
+
+test('SettingsService schedule generation is deterministic for same seed and params', () => {
+  const repositoryStub: RepositoryStub = {
+    findByPath: async () => null,
+    upsert: async () => ({ payload: {} }),
+  };
+  const service = createService(repositoryStub);
+  const request = {
+    seed: 1337,
+    params: {
+      startTime: '07:00',
+      endTime: '23:30',
+      useSecondWindow: false,
+      targetActiveMinutes: 600,
+      minSessionMinutes: 60,
+      minBreakMinutes: 30,
+      randomOffsetMinutes: 15,
+      profile: 'farming',
+    },
+  };
+
+  const first = service.generateScheduleFromRequest(request, 'tenant-a');
+  const second = service.generateScheduleFromRequest(request, 'tenant-a');
+
+  assert.deepEqual(first, second);
+  assert.equal(first.mode, 'seeded');
+  assert.equal(first.meta.deterministic, true);
+  assert.equal(first.meta.validation.valid, true);
+  assert.equal(Array.isArray(first.items), true);
+});
+
+test('SettingsService schedule generation rejects overlapping windows with validation errors', () => {
+  const repositoryStub: RepositoryStub = {
+    findByPath: async () => null,
+    upsert: async () => ({ payload: {} }),
+  };
+  const service = createService(repositoryStub);
+  const request = {
+    seed: 1337,
+    params: {
+      startTime: '10:00',
+      endTime: '14:00',
+      useSecondWindow: true,
+      startTime2: '13:00',
+      endTime2: '15:00',
+      targetActiveMinutes: 240,
+      minSessionMinutes: 60,
+      minBreakMinutes: 30,
+      randomOffsetMinutes: 15,
+      profile: 'farming',
+    },
+  };
+
+  assert.throws(
+    () => service.generateScheduleFromRequest(request, 'tenant-a'),
+    (error: unknown) => {
+      assert.ok(error instanceof ScheduleValidationError);
+      assert.deepEqual((error as { errors: string[] }).errors, ['Windows must not overlap']);
+      return true;
+    },
   );
 });

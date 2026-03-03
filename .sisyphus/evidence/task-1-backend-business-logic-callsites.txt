@@ -1,0 +1,23 @@
+Task: Callsite audit for 5 migration streams
+
+statuses stream
+- apps/frontend/src/pages/datacenter/page-helpers.ts (computeBotStatusAt)
+- apps/frontend/src/pages/project/selectors.ts (computeBotStatus, computeLicenseStatus, computeProxyStatus, computeSubscriptionStatus)
+
+finance analytics stream
+- apps/frontend/src/entities/finance/lib/analytics.ts
+- apps/frontend/src/pages/finance/index.tsx
+- apps/frontend/src/pages/datacenter/index.tsx
+
+VM delete rules stream
+- apps/frontend/src/features/vm-management/lib/deleteVmWorkflowCandidates.ts
+- apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
+
+schedule generation stream
+- apps/frontend/src/shared/lib/utils/scheduleUtils.ts
+- apps/frontend/src/widgets/schedule/ScheduleGenerator.tsx
+- apps/frontend/src/widgets/bot-profile/ui/BotSchedule.tsx
+
+VM patcher stream
+- apps/frontend/src/shared/lib/utils/vm/index.ts
+- apps/frontend/src/features/vm-management/model/vm/queue/configureVmItem.ts

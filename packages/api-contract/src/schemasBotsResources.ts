@@ -4,6 +4,9 @@ import { jsonValueSchema } from './schemasCommon.js';
 export const botRecordSchema = z
   .object({
     id: z.string().min(1),
+    computed_status: z.string().trim().min(1).optional(),
+    days_remaining: z.coerce.number().int().nullable().optional(),
+    is_expiring_soon: z.boolean().optional(),
   })
   .passthrough();
 
@@ -86,7 +89,13 @@ export const botLifecycleIsBannedSchema = z.object({
 });
 
 export const resourceKindSchema = z.enum(['licenses', 'proxies', 'subscriptions']);
-export const resourceRecordSchema = z.record(jsonValueSchema);
+export const resourceRecordSchema = z.record(jsonValueSchema).and(
+  z.object({
+    computed_status: z.string().trim().min(1).optional(),
+    days_remaining: z.coerce.number().int().nullable().optional(),
+    is_expiring_soon: z.boolean().optional(),
+  }),
+);
 export const resourceListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(200).optional(),

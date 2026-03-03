@@ -1,0 +1,163 @@
+Task 6: Frontend Callsite Audit for Planned Removals
+Plan: .sisyphus/plans/backend-business-logic-migration.md (Task 6)
+Date: 2026-03-03
+
+Scope (5 target frontend logic files)
+1) apps/frontend/src/entities/bot/lib/statuses.ts
+2) apps/frontend/src/entities/finance/lib/analyticsCalculations.ts
+3) apps/frontend/src/features/vm-management/lib/deleteVmRules.ts
+4) apps/frontend/src/shared/lib/utils/schedule/generation.ts
+5) apps/frontend/src/shared/lib/utils/vm/patcher.ts
+
+Commands executed (reproducible)
+1) Direct path grep scan
+   - Tool: grep + bash (git grep)
+   - Command:
+     git grep -nE "entities/bot/lib/statuses|entities/finance/lib/analyticsCalculations|features/vm-management/lib/deleteVmRules|shared/lib/utils/schedule/generation|shared/lib/utils/vm/patcher" -- "apps/frontend/src"
+   - Key result:
+     - statuses direct imports found in:
+       - apps/frontend/src/pages/datacenter/page-helpers.ts:1
+       - apps/frontend/src/pages/project/selectors.ts:6
+     - Note: matches in statuses.types are false-positive path-prefix matches and were excluded.
+
+2) Symbol reference grep scan (per stream)
+   - Tool: grep
+   - Status stream symbols:
+     computeBotStatusAt|computeBotStatus|computeProxyStatus|computeSubscriptionStatus|computeLicenseStatus
+   - Finance stream symbols:
+     calculateFinanceSummary|calculateCategoryBreakdown|prepareTimeSeriesData|getGoldPriceHistoryFromOperations|filterOperations
+   - VM-delete stream symbols:
+     DEFAULT_DELETE_VM_FILTERS|normalizeToken|normalizeDeleteVmFilters|evaluateDeleteBot|DeleteVmBotEvaluation|DeleteVmCandidateRow|DeleteVmFilters
+   - Schedule stream symbols:
+     randomInt|validateGenerationParams|generateDaySchedule|generateSchedule
+   - VM-patcher stream symbols:
+     extractVmNumber|patchConfig|PatchResult|PatchHardwareValues|PatchChange
+
+3) AST import/export confirmation
+   - Tool: ast-grep
+   - Confirmed import/export chain nodes:
+     - statuses direct imports in project/selectors and datacenter/page-helpers
+     - analytics.ts re-exports from ./analyticsCalculations
+     - vm-management/lib/index.ts re-exports ./deleteVmRules
+     - scheduleUtils.ts re-exports ./schedule/generation
+     - vm/index.ts re-exports ./patcher
+
+4) LSP symbol references (spot checks)
+   - Tool: lsp_find_references
+   - computeBotStatusAt -> statuses.ts + datacenter/page-helpers.ts
+   - calculateFinanceSummary -> analyticsCalculations.ts + analytics.ts + pages/datacenter/index.tsx + pages/finance/index.tsx
+   - evaluateDeleteBot -> deleteVmRules.ts + deleteVmWorkflowCandidates.ts
+   - generateSchedule -> generation.ts + scheduleUtils.ts + widgets/bot-profile/ui/BotSchedule.tsx
+   - patchConfig -> patcher.ts + vm/index.ts + configureVmItem.ts
+
+Inventory summary by stream
+
+A) statuses stream (apps/frontend/src/entities/bot/lib/statuses.ts)
+- Direct importers:
+  - apps/frontend/src/pages/project/selectors.ts
+  - apps/frontend/src/pages/datacenter/page-helpers.ts
+- Runtime callsites:
+  - apps/frontend/src/pages/project/selectors.ts (computeBotStatus, computeLicenseStatus, computeProxyStatus, computeSubscriptionStatus)
+  - apps/frontend/src/pages/datacenter/page-helpers.ts (computeBotStatusAt)
+- Non-target similarly named item excluded:
+  - apps/frontend/src/widgets/layout/header/breadcrumbs.ts has a local computeBotStatus function, not imported from statuses.ts
+
+B) finance stream (apps/frontend/src/entities/finance/lib/analyticsCalculations.ts)
+- Direct importer:
+  - apps/frontend/src/entities/finance/lib/analytics.ts (barrel re-export)
+- Consumer callsites via barrel:
+  - apps/frontend/src/pages/finance/index.tsx
+  - apps/frontend/src/pages/datacenter/index.tsx
+
+C) vm-delete stream (apps/frontend/src/features/vm-management/lib/deleteVmRules.ts)
+- Direct importers/re-exporters:
+  - apps/frontend/src/features/vm-management/lib/deleteVmWorkflowCandidates.ts
+  - apps/frontend/src/features/vm-management/lib/index.ts
+  - apps/frontend/src/features/vm-management/model/deleteVmWorkflow.types.ts
+  - apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
+  - apps/frontend/src/features/vm-management/ui/DeleteVmModal.tsx
+  - apps/frontend/src/features/vm-management/ui/DeleteVmFilterPopovers.tsx
+  - apps/frontend/src/features/vm-management/ui/DeleteVmCandidateItem.tsx
+- Transitive consumers through feature exports/types:
+  - apps/frontend/src/widgets/vm-workspace/ui/DeleteVmFilterPopovers.tsx
+  - apps/frontend/src/widgets/vm-workspace/ui/DeleteVmCandidateItem.tsx
+  - apps/frontend/src/widgets/vm-workspace/ui/VMPageModals.tsx
+  - apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts
+
+D) schedule stream (apps/frontend/src/shared/lib/utils/schedule/generation.ts)
+- Direct re-exporter:
+  - apps/frontend/src/shared/lib/utils/scheduleUtils.ts
+- Consumer callsites via scheduleUtils:
+  - apps/frontend/src/widgets/bot-profile/ui/BotSchedule.tsx (generateSchedule)
+  - apps/frontend/src/widgets/schedule/ScheduleGenerator.tsx (validateGenerationParams)
+
+E) vm-patcher stream (apps/frontend/src/shared/lib/utils/vm/patcher.ts)
+- Direct re-exporter:
+  - apps/frontend/src/shared/lib/utils/vm/index.ts
+- Consumer callsite via vm utils barrel:
+  - apps/frontend/src/features/vm-management/model/vm/queue/configureVmItem.ts (patchConfig)
+
+Explicit deletion checklist by stream (for cutover tasks)
+
+1) statuses cutover (Task 8)
+- Delete target file:
+  - apps/frontend/src/entities/bot/lib/statuses.ts
+- Update/remove dependencies before deletion:
+  - apps/frontend/src/pages/project/selectors.ts
+  - apps/frontend/src/pages/datacenter/page-helpers.ts
+- Verify after cutover:
+  - grep for "entities/bot/lib/statuses" returns zero matches in apps/frontend/src
+
+2) finance cutover (Task 10)
+- Delete target file:
+  - apps/frontend/src/entities/finance/lib/analyticsCalculations.ts
+- Update/remove dependencies before deletion:
+  - apps/frontend/src/entities/finance/lib/analytics.ts
+  - apps/frontend/src/pages/finance/index.tsx
+  - apps/frontend/src/pages/datacenter/index.tsx
+- Verify after cutover:
+  - grep for "analyticsCalculations" returns zero matches in apps/frontend/src
+
+3) vm-delete cutover (Task 12)
+- Delete target file:
+  - apps/frontend/src/features/vm-management/lib/deleteVmRules.ts
+- Update/remove direct dependencies before deletion:
+  - apps/frontend/src/features/vm-management/lib/deleteVmWorkflowCandidates.ts
+  - apps/frontend/src/features/vm-management/lib/index.ts
+  - apps/frontend/src/features/vm-management/model/deleteVmWorkflow.types.ts
+  - apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
+  - apps/frontend/src/features/vm-management/ui/DeleteVmModal.tsx
+  - apps/frontend/src/features/vm-management/ui/DeleteVmFilterPopovers.tsx
+  - apps/frontend/src/features/vm-management/ui/DeleteVmCandidateItem.tsx
+- Review transitive consumers impacted by feature export shape:
+  - apps/frontend/src/widgets/vm-workspace/ui/DeleteVmFilterPopovers.tsx
+  - apps/frontend/src/widgets/vm-workspace/ui/DeleteVmCandidateItem.tsx
+  - apps/frontend/src/widgets/vm-workspace/ui/VMPageModals.tsx
+  - apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts
+- Verify after cutover:
+  - grep for "deleteVmRules" returns zero matches in apps/frontend/src
+
+4) schedule cutover (Task 14)
+- Delete target file:
+  - apps/frontend/src/shared/lib/utils/schedule/generation.ts
+- Update/remove dependencies before deletion:
+  - apps/frontend/src/shared/lib/utils/scheduleUtils.ts
+  - apps/frontend/src/widgets/bot-profile/ui/BotSchedule.tsx
+  - apps/frontend/src/widgets/schedule/ScheduleGenerator.tsx
+- Verify after cutover:
+  - grep for "schedule/generation" returns zero matches in apps/frontend/src
+
+5) vm-patcher cutover (Task 16)
+- Delete target file:
+  - apps/frontend/src/shared/lib/utils/vm/patcher.ts
+- Update/remove dependencies before deletion:
+  - apps/frontend/src/shared/lib/utils/vm/index.ts
+  - apps/frontend/src/features/vm-management/model/vm/queue/configureVmItem.ts
+- Verify after cutover:
+  - grep for "utils/vm/patcher" and "from './patcher'" returns zero matches in apps/frontend/src
+
+Acceptance criteria check (Task 6)
+- [PASS] Audit report lists current imports/references for all 5 target files.
+- [PASS] Each stream includes explicit deletion checklist.
+- [PASS] Commands are documented for reproducibility.
+- [PASS] Drift detection command/output produced (see .sisyphus/evidence/task-6-callsite-drift.txt).

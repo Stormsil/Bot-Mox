@@ -31,7 +31,7 @@ Related Checks: `check:zod:boundaries`, `check:infra:gateway`, `contract:check`,
    - `shadow`, `enforced`.
    - Missing Vault RPC config is fail-fast (no local fallback in active runtime).
    - `local-vault://` references are forbidden.
-   - Strict migration profile (`migration:check:strict`) requires:
+   - Enforced profile requires:
      - `SUPABASE_URL`
      - `SUPABASE_SERVICE_ROLE_KEY`
      - `SUPABASE_VAULT_RPC_NAME`

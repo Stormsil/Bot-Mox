@@ -12,6 +12,16 @@ coverage/
 *.tsbuildinfo
 apps/frontend/test-results/
 apps/frontend/playwright-report/
+test-results/
+**/test-results/
+playwright-report/
+**/playwright-report/
+.nyc_output/
+**/.nyc_output/
+junit.xml
+**/junit.xml
+vitest-report/
+**/vitest-report/
 
 # Logs
 logs/

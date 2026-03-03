@@ -104,6 +104,31 @@ export const settingsNotificationEventsMutationSchema = settingsNotificationEven
   'Notification events payload must not be empty',
 );
 
+export const settingsScheduleGenerateSchema: z.ZodTypeAny = z
+  .object({
+    seed: z.union([z.coerce.number().int(), z.string().trim().min(1).max(255)]).optional(),
+    mode: z.enum(['seeded', 'random']).optional(),
+    params: z.record(jsonValueSchema).optional(),
+  })
+  .passthrough();
+
+export const settingsScheduleGeneratedItemSchema: z.ZodTypeAny = z
+  .object({
+    day: z.string().trim().min(1).optional(),
+    start: z.string().trim().min(1).optional(),
+    end: z.string().trim().min(1).optional(),
+  })
+  .passthrough();
+
+export const settingsScheduleGenerateResponseSchema: z.ZodTypeAny = z
+  .object({
+    seed: z.union([z.coerce.number().int(), z.string().trim().min(1), z.null()]).optional(),
+    mode: z.enum(['seeded', 'random']).optional(),
+    items: z.array(settingsScheduleGeneratedItemSchema).optional(),
+    meta: z.record(jsonValueSchema).optional(),
+  })
+  .passthrough();
+
 export const themeAssetSchema = z.object({
   id: z.string().trim().min(1),
   object_key: z.string().trim().min(1),

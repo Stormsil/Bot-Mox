@@ -9,7 +9,11 @@ import styles from './BotSchedule.module.css';
 interface BotScheduleActionsProps {
   viewMode: 'day' | 'week';
   setViewMode: (mode: 'day' | 'week') => void;
-  handleGenerateSchedule: (params: ScheduleGenerationParams) => void;
+  handleGenerateSchedule: (params: ScheduleGenerationParams) => Promise<{
+    ok: boolean;
+    errors?: string[];
+  }>;
+  generationErrors: string[];
   loading: boolean;
   scheduleLocked: boolean;
   pendingScheduleLock: boolean;
@@ -23,6 +27,7 @@ export const BotScheduleActions: React.FC<BotScheduleActionsProps> = ({
   viewMode,
   setViewMode,
   handleGenerateSchedule,
+  generationErrors,
   loading,
   scheduleLocked,
   pendingScheduleLock,
@@ -42,6 +47,7 @@ export const BotScheduleActions: React.FC<BotScheduleActionsProps> = ({
     </Button>
     <ScheduleGenerator
       onGenerate={handleGenerateSchedule}
+      errors={generationErrors}
       disabled={loading}
       locked={scheduleLocked}
     />

@@ -1,25 +1,33 @@
 import { useCreate, useDelete, useInfiniteList, useUpdate } from '@refinedev/core';
+import { useQuery } from '@tanstack/react-query';
 
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  calculateCategoryBreakdown,
-  calculateFinanceSummary,
-  getGoldPriceHistoryFromOperations,
-  prepareTimeSeriesData,
-} from '../../entities/finance/lib/analytics';
 import { mapFinanceOperationsFromInfinitePages } from '../../entities/finance/lib/financeOperationMapper';
 import {
   buildFinanceOperationCreatePayload,
   buildFinanceOperationPatchPayload,
 } from '../../entities/finance/lib/financeOperationPayload';
 import type {
+  CategoryBreakdown,
+  FinanceCategory,
   FinanceOperation,
   FinanceOperationFormData,
+  FinanceSummary as FinanceSummaryModel,
+  GoldPriceHistoryEntry,
+  TimeSeriesData,
 } from '../../entities/finance/model/types';
 import { uiLogger } from '../../observability/uiLogger';
-import type { FinanceOperationContractRecord } from '../../shared/api/providers/finance-contract-client';
+import {
+  type FinanceBreakdownContractRecord,
+  type FinanceOperationContractRecord,
+  type FinanceSummaryContractRecord,
+  type FinanceTimeSeriesContractRecord,
+  getFinanceBreakdownViaContract,
+  getFinanceSummaryViaContract,
+  getFinanceTimeSeriesViaContract,
+} from '../../shared/api/providers/finance-contract-client';
 import {
   AppCard as Card,
   AppDatePicker as DatePicker,
@@ -27,7 +35,11 @@ import {
   AppSpace as Space,
   AppTypography as Typography,
 } from '../../shared/ui';
-import { FinanceSummary, FinanceTransactions, TransactionForm } from '../../widgets/finance';
+import {
+  FinanceSummary as FinanceSummaryWidget,
+  FinanceTransactions,
+  TransactionForm,
+} from '../../widgets/finance';
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import styles from './FinancePage.module.css';
 
@@ -39,6 +51,142 @@ type ProjectFilter = 'all' | 'wow_tbc' | 'wow_midnight';
 
 const FINANCE_PAGE_SIZE = 200;
 const FINANCE_REFETCH_INTERVAL_MS = 4_000;
+
+const FINANCE_CATEGORY_SET = new Set<FinanceCategory>([
+  'subscription_game',
+  'proxy',
+  'bot_license',
+  'other',
+  'sale',
+]);
+
+function toFinanceCategory(value: unknown): FinanceCategory {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+  if (FINANCE_CATEGORY_SET.has(normalized as FinanceCategory)) {
+    return normalized as FinanceCategory;
+  }
+  return 'other';
+}
+
+function toFiniteNumber(value: unknown): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getGoldPriceHistoryFromOperationsLocal(
+  operations: FinanceOperation[],
+): GoldPriceHistoryEntry[] {
+  const grouped = new Map<string, GoldPriceHistoryEntry>();
+
+  operations
+    .filter(
+      (operation) =>
+        operation.type === 'income' &&
+        operation.category === 'sale' &&
+        typeof operation.gold_price_at_time === 'number' &&
+        operation.gold_price_at_time > 0 &&
+        operation.project_id,
+    )
+    .forEach((operation) => {
+      const date = dayjs(operation.date).format('YYYY-MM-DD');
+      const projectId = operation.project_id as 'wow_tbc' | 'wow_midnight';
+      const key = `${date}_${projectId}`;
+      const existing = grouped.get(key);
+      if (!existing) {
+        grouped.set(key, {
+          date,
+          price: operation.gold_price_at_time || 0,
+          project_id: projectId,
+        });
+        return;
+      }
+      existing.price = (existing.price + (operation.gold_price_at_time || 0)) / 2;
+      grouped.set(key, existing);
+    });
+
+  return [...grouped.values()].sort(
+    (left, right) => dayjs(left.date).valueOf() - dayjs(right.date).valueOf(),
+  );
+}
+
+function mapBreakdownFromAggregate(
+  breakdown: FinanceBreakdownContractRecord | undefined,
+  type: 'income' | 'expense',
+): CategoryBreakdown[] {
+  const sourceItems = (breakdown?.items || []) as Array<Record<string, unknown>>;
+  const mapped = sourceItems
+    .map((item: Record<string, unknown>) => {
+      const typedItem = item as Record<string, unknown>;
+      const amount =
+        type === 'income'
+          ? toFiniteNumber(typedItem.income_total)
+          : toFiniteNumber(typedItem.expense_total);
+      return {
+        category: toFinanceCategory(typedItem.key),
+        amount,
+      };
+    })
+    .filter((entry: { category: FinanceCategory; amount: number }) => entry.amount > 0);
+
+  const total = mapped.reduce(
+    (accumulator: number, entry: { category: FinanceCategory; amount: number }) =>
+      accumulator + entry.amount,
+    0,
+  );
+  return mapped
+    .map((entry: { category: FinanceCategory; amount: number }) => ({
+      ...entry,
+      percentage: total > 0 ? Math.round((entry.amount / total) * 100) : 0,
+    }))
+    .sort((left: { amount: number }, right: { amount: number }) => right.amount - left.amount);
+}
+
+function mapSummaryFromAggregate(
+  summary: FinanceSummaryContractRecord | undefined,
+): FinanceSummaryModel {
+  return {
+    totalIncome: toFiniteNumber(summary?.income_total),
+    totalExpenses: toFiniteNumber(summary?.expense_total),
+    netProfit: toFiniteNumber(summary?.net_total),
+    totalGoldSold: 0,
+    totalGoldFarmed: 0,
+    averageGoldPrice: 0,
+  };
+}
+
+function mapTimeSeriesFromAggregate(
+  timeSeries: FinanceTimeSeriesContractRecord | undefined,
+): TimeSeriesData[] {
+  if (!timeSeries?.points) {
+    return [];
+  }
+
+  const sortedPoints = [...timeSeries.points].sort(
+    (left, right) =>
+      dayjs(String(left.bucket || '')).valueOf() - dayjs(String(right.bucket || '')).valueOf(),
+  );
+
+  let cumulativeProfit = 0;
+  return sortedPoints.map((point) => {
+    const income = toFiniteNumber(point.income_total);
+    const expense = toFiniteNumber(point.expense_total);
+    const dailyProfit =
+      point.net_total === undefined || point.net_total === null
+        ? income - expense
+        : toFiniteNumber(point.net_total);
+    cumulativeProfit += dailyProfit;
+    return {
+      date: String(point.bucket || ''),
+      income,
+      expense,
+      dailyProfit,
+      profit: cumulativeProfit,
+      cumulativeProfit,
+    };
+  });
+}
 
 export const FinancePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<FinanceTab>('summary');
@@ -115,13 +263,81 @@ export const FinancePage: React.FC = () => {
     [financeOperationsResult.data?.pages],
   );
 
+  const aggregateQuery = useMemo(() => {
+    const fromTs = dateRange ? dateRange[0].startOf('day').valueOf() : undefined;
+    const toTs = dateRange ? dateRange[1].endOf('day').valueOf() : undefined;
+    return {
+      ...(fromTs !== undefined ? { from_ts: fromTs } : {}),
+      ...(toTs !== undefined ? { to_ts: toTs } : {}),
+      ...(selectedProject !== 'all' ? { project_id: selectedProject } : {}),
+    };
+  }, [dateRange, selectedProject]);
+
+  const financeSummaryAggregateQuery = useQuery({
+    queryKey: ['finance', 'summary-aggregate', aggregateQuery],
+    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
+    queryFn: async () => {
+      const payload = await getFinanceSummaryViaContract(aggregateQuery);
+      return payload.data;
+    },
+  });
+  const financeBreakdownAggregateQuery = useQuery({
+    queryKey: ['finance', 'breakdown-aggregate', aggregateQuery],
+    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
+    queryFn: async () => {
+      const payload = await getFinanceBreakdownViaContract(aggregateQuery);
+      return payload.data;
+    },
+  });
+  const financeTimeSeriesAggregateQuery = useQuery({
+    queryKey: ['finance', 'time-series-aggregate', aggregateQuery],
+    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
+    queryFn: async () => {
+      const payload = await getFinanceTimeSeriesViaContract({
+        ...aggregateQuery,
+        granularity: 'day',
+      });
+      return payload.data;
+    },
+  });
+
+  useEffect(() => {
+    if (!financeSummaryAggregateQuery.error) {
+      return;
+    }
+    uiLogger.error('Error loading finance summary aggregates:', financeSummaryAggregateQuery.error);
+  }, [financeSummaryAggregateQuery.error]);
+  useEffect(() => {
+    if (!financeBreakdownAggregateQuery.error) {
+      return;
+    }
+    uiLogger.error(
+      'Error loading finance breakdown aggregates:',
+      financeBreakdownAggregateQuery.error,
+    );
+  }, [financeBreakdownAggregateQuery.error]);
+  useEffect(() => {
+    if (!financeTimeSeriesAggregateQuery.error) {
+      return;
+    }
+    uiLogger.error(
+      'Error loading finance time-series aggregates:',
+      financeTimeSeriesAggregateQuery.error,
+    );
+  }, [financeTimeSeriesAggregateQuery.error]);
+
   const financeListLoading =
     !isFinanceInitialLoadComplete &&
     (financeOperationsQuery.isLoading ||
       financeOperationsQuery.isFetchingNextPage ||
       Boolean(financeOperationsResult.hasNextPage));
+  const financeAggregateLoading =
+    financeSummaryAggregateQuery.isFetching ||
+    financeBreakdownAggregateQuery.isFetching ||
+    financeTimeSeriesAggregateQuery.isFetching;
   const loading =
     financeListLoading ||
+    financeAggregateLoading ||
     createFinanceOperation.mutation.isPending ||
     updateFinanceOperation.mutation.isPending ||
     deleteFinanceOperation.mutation.isPending;
@@ -144,16 +360,15 @@ export const FinancePage: React.FC = () => {
     return filtered;
   }, [operations, selectedProject, dateRange]);
 
-  // Recalculate derived data based on filtered operations
-  const summary = useMemo(() => calculateFinanceSummary(filteredOperations), [filteredOperations]);
-  const incomeBreakdown = useMemo(
-    () => calculateCategoryBreakdown(filteredOperations, 'income'),
-    [filteredOperations],
-  );
-  const expenseBreakdown = useMemo(
-    () => calculateCategoryBreakdown(filteredOperations, 'expense'),
-    [filteredOperations],
-  );
+  const summary = useMemo(() => {
+    return mapSummaryFromAggregate(financeSummaryAggregateQuery.data);
+  }, [financeSummaryAggregateQuery.data]);
+  const incomeBreakdown = useMemo(() => {
+    return mapBreakdownFromAggregate(financeBreakdownAggregateQuery.data, 'income');
+  }, [financeBreakdownAggregateQuery.data]);
+  const expenseBreakdown = useMemo(() => {
+    return mapBreakdownFromAggregate(financeBreakdownAggregateQuery.data, 'expense');
+  }, [financeBreakdownAggregateQuery.data]);
 
   // Calculate days difference for time series
   const daysDiff = useMemo(() => {
@@ -163,16 +378,12 @@ export const FinancePage: React.FC = () => {
 
   const timeSeriesData = useMemo(() => {
     if (!dateRange) return [];
-    return prepareTimeSeriesData(
-      filteredOperations,
-      dateRange[0].startOf('day').valueOf(),
-      dateRange[1].endOf('day').valueOf(),
-    );
-  }, [filteredOperations, dateRange]);
+    return mapTimeSeriesFromAggregate(financeTimeSeriesAggregateQuery.data);
+  }, [dateRange, financeTimeSeriesAggregateQuery.data]);
 
   // Get gold price history (from ALL operations to show trends, or filtered? Filtered makes sense)
   const goldPriceHistory = useMemo(() => {
-    return getGoldPriceHistoryFromOperations(filteredOperations);
+    return getGoldPriceHistoryFromOperationsLocal(filteredOperations);
   }, [filteredOperations]);
 
   // Handle adding transaction
@@ -258,7 +469,7 @@ export const FinancePage: React.FC = () => {
     switch (activeTab) {
       case 'summary':
         return (
-          <FinanceSummary
+          <FinanceSummaryWidget
             summary={summary}
             incomeBreakdown={incomeBreakdown}
             expenseBreakdown={expenseBreakdown}
@@ -266,7 +477,7 @@ export const FinancePage: React.FC = () => {
             goldPriceHistory={goldPriceHistory}
             loading={loading}
             timeRange={daysDiff}
-            onTimeRangeChange={(days) => {
+            onTimeRangeChange={(days: number) => {
               // Update the Date Range picker based on quick select
               setDateRange([dayjs().subtract(days, 'days'), dayjs()]);
             }}

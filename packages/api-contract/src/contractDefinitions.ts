@@ -17,7 +17,26 @@ import { contractRoutesVmRegistry } from './contractRoutesVmRegistry.js';
 import { contractRoutesWorkspace } from './contractRoutesWorkspace.js';
 import { contractRoutesWowNames } from './contractRoutesWowNames.js';
 
-export const apiContractDefinitions = {
+export type ApiContractDefinitions = typeof contractRoutesCore &
+  typeof contractRoutesAuth &
+  typeof contractRoutesLicense &
+  typeof contractRoutesProvisioning &
+  typeof contractRoutesBots &
+  typeof contractRoutesResources &
+  typeof contractRoutesSettingsTheme &
+  typeof contractRoutesWorkspace &
+  typeof contractRoutesFinance &
+  typeof contractRoutesPlaybooks &
+  typeof contractRoutesIpqs &
+  typeof contractRoutesWowNames &
+  typeof contractRoutesAgents &
+  typeof contractRoutesVmRegistry &
+  typeof contractRoutesSecrets &
+  typeof contractRoutesArtifacts &
+  typeof contractRoutesInfra &
+  typeof contractRoutesVmOps;
+
+export const apiContractDefinitions: ApiContractDefinitions = {
   ...contractRoutesCore,
   ...contractRoutesAuth,
   ...contractRoutesLicense,

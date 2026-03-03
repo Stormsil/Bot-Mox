@@ -1,9 +1,8 @@
 import {
+  applyVMConfigPatch,
   getVMConfig,
-  updateVMConfig,
-  waitForTask,
+  planVMConfigPatch,
 } from '../../../../../shared/api/services/vm/proxmoxOps';
-import { patchConfig } from '../../../../../shared/lib/utils/vm';
 import type { VMQueueItem } from '../../../../../shared/types';
 import type { VMLog } from '../../useVMLog';
 import { runConfigureResourcesPhase } from './configureResourcesPhase';
@@ -199,16 +198,34 @@ export async function configureVmItem(params: ConfigureVmItemParams): Promise<nu
   );
 
   log.step(`VM ${vmId}: patching config (name=${item.name})`, item.name);
-  const patchResult = patchConfig(
-    configText,
-    item.name,
-    {
-      mac: hardwareFingerprint.mac,
-      ssdSerial: hardwareFingerprint.ssdSerial,
-      smbiosArgs: hardwareFingerprint.smbiosArgs,
-    },
-    vmId,
-  );
+  const patchSeed = `${vmId}:${item.name}:${Date.now()}`;
+  const patchIntent = {
+    vm_name: item.name,
+    mac: hardwareFingerprint.mac,
+    ssdSerial: hardwareFingerprint.ssdSerial,
+    smbiosArgs: hardwareFingerprint.smbiosArgs,
+  };
+
+  log.taskLog(vmTaskKey, 'Requesting backend patch plan');
+  let patchResult: Awaited<ReturnType<typeof planVMConfigPatch>>['patch'];
+  try {
+    const plannedPatch = await planVMConfigPatch({
+      vmid: vmId,
+      node: targetNode,
+      seed: patchSeed,
+      intent: patchIntent,
+      current_config: configText,
+    });
+    if (!plannedPatch.patch || typeof plannedPatch.patch.patched !== 'string') {
+      throw new Error('patch payload is missing');
+    }
+    patchResult = plannedPatch.patch;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    log.taskLog(vmTaskKey, `Backend patch plan failed: ${message}`, 'error');
+    throw new Error(`Backend patch plan failed: ${message}`);
+  }
+
   generatedIp = patchResult.generatedIp;
   const vmIndex = extractVmIndex(item.name) ?? Math.max(1, vmId - 100);
   log.taskLog(
@@ -247,8 +264,8 @@ export async function configureVmItem(params: ConfigureVmItemParams): Promise<nu
   log.diffTable(`Config changes - ${item.name}`, patchResult.changes, item.name);
 
   if (mutablePatchFields.length > 0) {
-    log.step(`VM ${vmId}: applying mutable patch via Proxmox API`, item.name);
-    log.taskLog(vmTaskKey, 'Applying mutable patch via Proxmox API');
+    log.step(`VM ${vmId}: applying patch via backend`, item.name);
+    log.taskLog(vmTaskKey, 'Applying patch via backend endpoint');
     logTaskFieldChanges(
       log,
       vmTaskKey,
@@ -267,33 +284,34 @@ export async function configureVmItem(params: ConfigureVmItemParams): Promise<nu
       item.name,
     );
 
-    const spoofTask = await updateVMConfig({
-      vmid: vmId,
-      node: targetNode,
-      config: mutablePatch,
-    });
-    log.debug(`VM ${vmId}: mutable patch UPID: ${spoofTask.upid}`, item.name);
-
-    if (!spoofTask.upid || String(spoofTask.upid).trim() === '') {
-      log.warn(
-        `VM ${vmId}: mutable patch returned no UPID, continuing with final config verification`,
-        item.name,
-      );
-      await sleep(1200);
-    } else {
-      const spoofStatus = await waitForTask(spoofTask.upid, targetNode, {
-        timeoutMs: 120_000,
-        intervalMs: 1_000,
+    try {
+      const appliedPatch = await applyVMConfigPatch({
+        vmid: vmId,
+        node: targetNode,
+        seed: patchSeed,
+        intent: patchIntent,
+        current_config: configText,
+        apply: true,
       });
-      if (spoofStatus.exitstatus && spoofStatus.exitstatus !== 'OK') {
-        throw new Error(`VM spoof config task failed: ${spoofStatus.exitstatus}`);
+      if (!appliedPatch.applied) {
+        throw new Error('backend returned applied=false');
       }
-      log.info(
-        `VM ${vmId}: mutable patch task finished (${spoofStatus.exitstatus || 'OK'})`,
-        item.name,
+      if (!appliedPatch.patch || typeof appliedPatch.patch.patched !== 'string') {
+        throw new Error('backend returned invalid patch payload');
+      }
+      log.taskLog(
+        vmTaskKey,
+        `Backend patch applied${appliedPatch.task_id ? ` (task=${appliedPatch.task_id})` : ''}`,
       );
-      log.taskLog(vmTaskKey, `Mutable patch task finished (${spoofStatus.exitstatus || 'OK'})`);
+      if (!appliedPatch.task_id) {
+        log.warn(`VM ${vmId}: backend patch apply returned no task id, continuing`, item.name);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      log.taskLog(vmTaskKey, `Backend patch apply failed: ${message}`, 'error');
+      throw new Error(`Backend patch apply failed: ${message}`);
     }
+
     log.taskLog(
       vmTaskKey,
       `Mutable patch applied (${mutablePatchFields.length} field${mutablePatchFields.length === 1 ? '' : 's'})`,

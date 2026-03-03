@@ -25,6 +25,38 @@ function createServiceStub() {
     create: async () => ({}),
     patch: async () => null,
     remove: async () => false,
+    getSummary: async () => ({
+      income_total: 0,
+      expense_total: 0,
+      net_total: 0,
+      margin_percent: 0,
+      operation_count: 0,
+      period: {},
+    }),
+    getBreakdown: async () => ({
+      group_by: 'category',
+      items: [],
+      totals: {
+        income_total: 0,
+        expense_total: 0,
+        net_total: 0,
+        margin_percent: 0,
+        operation_count: 0,
+        period: {},
+      },
+    }),
+    getTimeSeries: async () => ({
+      granularity: 'day',
+      points: [],
+      totals: {
+        income_total: 0,
+        expense_total: 0,
+        net_total: 0,
+        margin_percent: 0,
+        operation_count: 0,
+        period: {},
+      },
+    }),
     getDailyStats: async () => ({}),
     getGoldPriceHistory: async () => ({}),
   };
@@ -124,4 +156,30 @@ test('FinanceController soft-fails missing finance storage in list and preserves
       limit: 7,
     },
   });
+});
+
+test('FinanceController summary validates invalid date window with deterministic envelope', async () => {
+  const controller = new FinanceController(createServiceStub());
+
+  await assert.rejects(
+    () =>
+      controller.summary(
+        'Bearer test-token',
+        {
+          from_ts: '1700000100000',
+          to_ts: '1700000000000',
+        },
+        buildRequest('tenant-a'),
+      ),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      const response = (error as { getResponse: () => unknown }).getResponse() as {
+        code: string;
+        message: string;
+      };
+      assert.equal(response.code, 'FINANCE_INVALID_DATE_WINDOW');
+      assert.equal(response.message, 'Invalid finance date window');
+      return true;
+    },
+  );
 });

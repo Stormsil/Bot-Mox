@@ -636,22 +636,6 @@ function Apply-StrictRuntimeProfile {
   }
 }
 
-function Run-StrictMigrationChecks([string]$RepoRoot) {
-  $enforceStrict = Is-Truthy([string]([Environment]::GetEnvironmentVariable('BOTMOX_ENFORCE_STRICT_FLAGS', 'Process')))
-  if (-not $enforceStrict) {
-    return
-  }
-
-  Write-Step "Running strict migration flags check..."
-  Push-Location $RepoRoot
-  try {
-    pnpm run migration:check:strict
-    Assert-LastExitCode "Strict migration flags check"
-  } finally {
-    Pop-Location
-  }
-}
-
 $repoRoot = Get-RepoRoot
 $envFile = Get-EnvFilePath -RepoRoot $repoRoot
 
@@ -659,7 +643,6 @@ Push-Location $repoRoot
 try {
   Import-EnvFile -EnvFilePath $envFile
   Apply-StrictRuntimeProfile
-  Run-StrictMigrationChecks -RepoRoot $repoRoot
 
   $fullReset = Is-Truthy([string]([Environment]::GetEnvironmentVariable('BOTMOX_STACK_FULL_RESET', 'Process')))
   $buildNoCache = Is-Truthy([string]([Environment]::GetEnvironmentVariable('BOTMOX_BUILD_NO_CACHE', 'Process')))

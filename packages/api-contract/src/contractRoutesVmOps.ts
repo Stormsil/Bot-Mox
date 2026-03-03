@@ -3,6 +3,8 @@ import {
   authHeaderSchema,
   errorEnvelopeSchema,
   successEnvelopeSchema,
+  vmDeletionEvaluateBodySchema,
+  vmDeletionEvaluationSchema,
   vmOpsActionSchema,
   vmOpsCommandCreateSchema,
   vmOpsCommandListQuerySchema,
@@ -10,6 +12,10 @@ import {
   vmOpsCommandSchema,
   vmOpsCommandUpdateSchema,
   vmOpsDispatchBodySchema,
+  vmPatchApplyBodySchema,
+  vmPatchApplySchema,
+  vmPatchPlanBodySchema,
+  vmPatchPlanSchema,
 } from './schemas.js';
 
 export const contractRoutesVmOps = {
@@ -120,5 +126,46 @@ export const contractRoutesVmOps = {
       404: errorEnvelopeSchema,
     },
     summary: 'Dispatch syncthing command through agent queue',
+  },
+  vmsEvaluateDeletion: {
+    method: 'POST',
+    path: '/api/v1/vms/evaluate-deletion',
+    headers: authHeaderSchema,
+    body: vmDeletionEvaluateBodySchema,
+    responses: {
+      200: successEnvelopeSchema(vmDeletionEvaluationSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+    },
+    summary: 'Evaluate VM deletion safety and reasons',
+  },
+  vmsPatchPlan: {
+    method: 'POST',
+    path: '/api/v1/vms/patch/plan',
+    headers: authHeaderSchema,
+    body: vmPatchPlanBodySchema,
+    responses: {
+      200: successEnvelopeSchema(vmPatchPlanSchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Generate VM config patch plan',
+  },
+  vmsPatchApply: {
+    method: 'POST',
+    path: '/api/v1/vms/patch/apply',
+    headers: authHeaderSchema,
+    body: vmPatchApplyBodySchema,
+    responses: {
+      200: successEnvelopeSchema(vmPatchApplySchema),
+      400: errorEnvelopeSchema,
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+      404: errorEnvelopeSchema,
+    },
+    summary: 'Apply VM config patch intent',
   },
 } as const;

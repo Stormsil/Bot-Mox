@@ -19,6 +19,61 @@ export interface FinanceListResult {
   limit: number;
 }
 
+export interface FinanceAggregateQuery {
+  from_ts?: number | undefined;
+  to_ts?: number | undefined;
+  currency?: string | undefined;
+  project_id?: string | undefined;
+  bot_id?: string | undefined;
+}
+
+export interface FinanceTimeSeriesQuery extends FinanceAggregateQuery {
+  granularity?: 'hour' | 'day' | 'week' | 'month' | undefined;
+}
+
+export interface FinanceSummaryDto {
+  income_total: number;
+  expense_total: number;
+  net_total: number;
+  margin_percent: number;
+  operation_count: number;
+  period: {
+    from_ts?: number;
+    to_ts?: number;
+  };
+}
+
+export interface FinanceBreakdownItemDto {
+  key: string;
+  label: string;
+  amount: number;
+  share_percent: number;
+  count: number;
+  income_total: number;
+  expense_total: number;
+  net_total: number;
+}
+
+export interface FinanceBreakdownDto {
+  group_by: 'category';
+  items: FinanceBreakdownItemDto[];
+  totals: FinanceSummaryDto;
+}
+
+export interface FinanceTimeSeriesPointDto {
+  bucket: string;
+  income_total: number;
+  expense_total: number;
+  net_total: number;
+  operation_count: number;
+}
+
+export interface FinanceTimeSeriesDto {
+  granularity: 'hour' | 'day' | 'week' | 'month';
+  points: FinanceTimeSeriesPointDto[];
+  totals: FinanceSummaryDto;
+}
+
 @Injectable()
 export class FinanceService {
   constructor(private readonly repository: FinanceRepository) {}
@@ -62,6 +117,270 @@ export class FinanceService {
     const month = String(date.getUTCMonth() + 1).padStart(2, '0');
     const day = String(date.getUTCDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private normalizeExactFilter(value: unknown): string | undefined {
+    if (typeof value !== 'string') {
+      return undefined;
+    }
+    const normalized = value.trim().toLowerCase();
+    return normalized.length > 0 ? normalized : undefined;
+  }
+
+  private normalizeTimestamp(value: unknown): number | undefined {
+    if (value === null || value === undefined) {
+      return undefined;
+    }
+    const asNumber = Number(value);
+    if (!Number.isFinite(asNumber)) {
+      return undefined;
+    }
+    return Math.trunc(asNumber);
+  }
+
+  private normalizeAmount(value: unknown): number {
+    const amount = Number(value);
+    return Number.isFinite(amount) ? amount : 0;
+  }
+
+  private normalizeType(value: unknown): 'income' | 'expense' | undefined {
+    return value === 'income' || value === 'expense' ? value : undefined;
+  }
+
+  private normalizeGranularity(value: unknown): 'hour' | 'day' | 'week' | 'month' {
+    if (value === 'hour' || value === 'day' || value === 'week' || value === 'month') {
+      return value;
+    }
+    return 'day';
+  }
+
+  private floorUtcToHour(timestamp: number): number {
+    const date = new Date(timestamp);
+    date.setUTCMinutes(0, 0, 0);
+    return date.getTime();
+  }
+
+  private floorUtcToDay(timestamp: number): number {
+    const date = new Date(timestamp);
+    date.setUTCHours(0, 0, 0, 0);
+    return date.getTime();
+  }
+
+  private floorUtcToWeek(timestamp: number): number {
+    const dayStart = new Date(this.floorUtcToDay(timestamp));
+    const dayOfWeek = dayStart.getUTCDay();
+    const offsetToMonday = (dayOfWeek + 6) % 7;
+    dayStart.setUTCDate(dayStart.getUTCDate() - offsetToMonday);
+    return dayStart.getTime();
+  }
+
+  private floorUtcToMonth(timestamp: number): number {
+    const date = new Date(timestamp);
+    date.setUTCDate(1);
+    date.setUTCHours(0, 0, 0, 0);
+    return date.getTime();
+  }
+
+  private stepBucket(bucketStart: number, granularity: 'hour' | 'day' | 'week' | 'month'): number {
+    if (granularity === 'hour') {
+      return bucketStart + 60 * 60 * 1000;
+    }
+    if (granularity === 'day') {
+      return bucketStart + 24 * 60 * 60 * 1000;
+    }
+    if (granularity === 'week') {
+      return bucketStart + 7 * 24 * 60 * 60 * 1000;
+    }
+    const date = new Date(bucketStart);
+    date.setUTCMonth(date.getUTCMonth() + 1);
+    return date.getTime();
+  }
+
+  private getBucketStart(
+    timestamp: number,
+    granularity: 'hour' | 'day' | 'week' | 'month',
+  ): number {
+    if (granularity === 'hour') {
+      return this.floorUtcToHour(timestamp);
+    }
+    if (granularity === 'day') {
+      return this.floorUtcToDay(timestamp);
+    }
+    if (granularity === 'week') {
+      return this.floorUtcToWeek(timestamp);
+    }
+    return this.floorUtcToMonth(timestamp);
+  }
+
+  private formatBucket(
+    bucketStart: number,
+    granularity: 'hour' | 'day' | 'week' | 'month',
+  ): string {
+    const date = new Date(bucketStart);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+
+    if (granularity === 'month') {
+      return `${year}-${month}`;
+    }
+    if (granularity === 'hour') {
+      const hour = String(date.getUTCHours()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hour}:00:00Z`;
+    }
+    return `${year}-${month}-${day}`;
+  }
+
+  private filterOperationsByAggregateQuery(
+    items: FinanceOperationRecord[],
+    query: FinanceAggregateQuery,
+  ): FinanceOperationRecord[] {
+    const fromTs = this.normalizeTimestamp(query.from_ts);
+    const toTs = this.normalizeTimestamp(query.to_ts);
+    const currency = this.normalizeExactFilter(query.currency);
+    const projectId = this.normalizeExactFilter(query.project_id);
+    const botId = this.normalizeExactFilter(query.bot_id);
+
+    return items.filter((item) => {
+      const operationTs = this.normalizeTimestamp(item.date ?? item.created_at);
+      if (fromTs !== undefined && (operationTs === undefined || operationTs < fromTs)) {
+        return false;
+      }
+      if (toTs !== undefined && (operationTs === undefined || operationTs > toTs)) {
+        return false;
+      }
+
+      if (currency !== undefined) {
+        const operationCurrency = this.normalizeExactFilter(item.currency);
+        if (operationCurrency !== currency) {
+          return false;
+        }
+      }
+
+      if (projectId !== undefined) {
+        const operationProjectId = this.normalizeExactFilter(item.project_id);
+        if (operationProjectId !== projectId) {
+          return false;
+        }
+      }
+
+      if (botId !== undefined) {
+        const operationBotId = this.normalizeExactFilter(item.bot_id);
+        if (operationBotId !== botId) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }
+
+  private buildSummary(
+    items: FinanceOperationRecord[],
+    query: FinanceAggregateQuery,
+  ): FinanceSummaryDto {
+    let incomeTotal = 0;
+    let expenseTotal = 0;
+    const fromTs = this.normalizeTimestamp(query.from_ts);
+    const toTs = this.normalizeTimestamp(query.to_ts);
+
+    for (const item of items) {
+      const amount = this.normalizeAmount(item.amount);
+      const type = this.normalizeType(item.type);
+      if (type === 'income') {
+        incomeTotal += amount;
+      } else if (type === 'expense') {
+        expenseTotal += amount;
+      }
+    }
+
+    const netTotal = incomeTotal - expenseTotal;
+    const marginPercent = incomeTotal > 0 ? (netTotal / incomeTotal) * 100 : 0;
+    const period: { from_ts?: number; to_ts?: number } = {};
+    if (fromTs !== undefined) {
+      period.from_ts = fromTs;
+    }
+    if (toTs !== undefined) {
+      period.to_ts = toTs;
+    }
+
+    return {
+      income_total: incomeTotal,
+      expense_total: expenseTotal,
+      net_total: netTotal,
+      margin_percent: marginPercent,
+      operation_count: items.length,
+      period,
+    };
+  }
+
+  private buildTimeSeriesPoints(
+    items: FinanceOperationRecord[],
+    query: FinanceTimeSeriesQuery,
+  ): FinanceTimeSeriesPointDto[] {
+    const granularity = this.normalizeGranularity(query.granularity);
+    const pointsByBucket = new Map<
+      number,
+      {
+        incomeTotal: number;
+        expenseTotal: number;
+        operationCount: number;
+      }
+    >();
+
+    const fromTs = this.normalizeTimestamp(query.from_ts);
+    const toTs = this.normalizeTimestamp(query.to_ts);
+
+    for (const item of items) {
+      const operationTs = this.normalizeTimestamp(item.date ?? item.created_at);
+      if (operationTs === undefined) {
+        continue;
+      }
+
+      const bucketStart = this.getBucketStart(operationTs, granularity);
+      const current = pointsByBucket.get(bucketStart) ?? {
+        incomeTotal: 0,
+        expenseTotal: 0,
+        operationCount: 0,
+      };
+      const amount = this.normalizeAmount(item.amount);
+      const type = this.normalizeType(item.type);
+      if (type === 'income') {
+        current.incomeTotal += amount;
+      } else if (type === 'expense') {
+        current.expenseTotal += amount;
+      }
+      current.operationCount += 1;
+      pointsByBucket.set(bucketStart, current);
+    }
+
+    if (fromTs !== undefined && toTs !== undefined) {
+      const startBucket = this.getBucketStart(fromTs, granularity);
+      const endBucket = this.getBucketStart(toTs, granularity);
+      for (
+        let bucketStart = startBucket;
+        bucketStart <= endBucket;
+        bucketStart = this.stepBucket(bucketStart, granularity)
+      ) {
+        if (!pointsByBucket.has(bucketStart)) {
+          pointsByBucket.set(bucketStart, {
+            incomeTotal: 0,
+            expenseTotal: 0,
+            operationCount: 0,
+          });
+        }
+      }
+    }
+
+    return [...pointsByBucket.entries()]
+      .sort(([left], [right]) => left - right)
+      .map(([bucketStart, aggregate]) => ({
+        bucket: this.formatBucket(bucketStart, granularity),
+        income_total: aggregate.incomeTotal,
+        expense_total: aggregate.expenseTotal,
+        net_total: aggregate.incomeTotal - aggregate.expenseTotal,
+        operation_count: aggregate.operationCount,
+      }));
   }
 
   private applyListQuery(
@@ -267,5 +586,100 @@ export class FinanceService {
       };
     }
     return result;
+  }
+
+  async getSummary(query: FinanceAggregateQuery, tenantId: string): Promise<FinanceSummaryDto> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const source = (await this.repository.list(normalizedTenantId)).map((row) =>
+      this.mapDbRow(row),
+    );
+    const filtered = this.filterOperationsByAggregateQuery(source, query);
+    return this.buildSummary(filtered, query);
+  }
+
+  async getBreakdown(query: FinanceAggregateQuery, tenantId: string): Promise<FinanceBreakdownDto> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const source = (await this.repository.list(normalizedTenantId)).map((row) =>
+      this.mapDbRow(row),
+    );
+    const filtered = this.filterOperationsByAggregateQuery(source, query);
+    const totals = this.buildSummary(filtered, query);
+
+    const byCategory = new Map<
+      string,
+      {
+        key: string;
+        label: string;
+        amount: number;
+        count: number;
+        incomeTotal: number;
+        expenseTotal: number;
+      }
+    >();
+
+    for (const operation of filtered) {
+      const rawCategory = typeof operation.category === 'string' ? operation.category.trim() : '';
+      const key = rawCategory.length > 0 ? rawCategory : 'uncategorized';
+      const current = byCategory.get(key) ?? {
+        key,
+        label: key,
+        amount: 0,
+        count: 0,
+        incomeTotal: 0,
+        expenseTotal: 0,
+      };
+      const amount = this.normalizeAmount(operation.amount);
+      const type = this.normalizeType(operation.type);
+
+      current.amount += amount;
+      current.count += 1;
+      if (type === 'income') {
+        current.incomeTotal += amount;
+      } else if (type === 'expense') {
+        current.expenseTotal += amount;
+      }
+      byCategory.set(key, current);
+    }
+
+    const totalAmount = [...byCategory.values()].reduce((acc, entry) => acc + entry.amount, 0);
+    const items: FinanceBreakdownItemDto[] = [...byCategory.values()]
+      .map((entry) => ({
+        key: entry.key,
+        label: entry.label,
+        amount: entry.amount,
+        share_percent: totalAmount > 0 ? (entry.amount / totalAmount) * 100 : 0,
+        count: entry.count,
+        income_total: entry.incomeTotal,
+        expense_total: entry.expenseTotal,
+        net_total: entry.incomeTotal - entry.expenseTotal,
+      }))
+      .sort((left, right) => {
+        if (right.amount !== left.amount) {
+          return right.amount - left.amount;
+        }
+        return left.key.localeCompare(right.key);
+      });
+
+    return {
+      group_by: 'category',
+      items,
+      totals,
+    };
+  }
+
+  async getTimeSeries(
+    query: FinanceTimeSeriesQuery,
+    tenantId: string,
+  ): Promise<FinanceTimeSeriesDto> {
+    const normalizedTenantId = this.normalizeTenantId(tenantId);
+    const source = (await this.repository.list(normalizedTenantId)).map((row) =>
+      this.mapDbRow(row),
+    );
+    const filtered = this.filterOperationsByAggregateQuery(source, query);
+    return {
+      granularity: this.normalizeGranularity(query.granularity),
+      points: this.buildTimeSeriesPoints(filtered, query),
+      totals: this.buildSummary(filtered, query),
+    };
   }
 }

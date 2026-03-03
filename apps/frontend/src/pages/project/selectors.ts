@@ -1,14 +1,9 @@
-import {
-  computeBotStatus,
-  computeLicenseStatus,
-  computeProxyStatus,
-  computeSubscriptionStatus,
-} from '../../entities/bot/lib/statuses';
 import type {
   BotLicense,
   Proxy as ProxyResource,
   Subscription,
 } from '../../entities/resources/model/types';
+import type { BotStatus } from '../../shared/types/core';
 import type {
   BotRecord,
   BotRow,
@@ -17,6 +12,161 @@ import type {
   ResourcesByBotMaps,
   StatusFilter,
 } from './types';
+
+type ComputedStatusPayload = {
+  computed_status?: string;
+  days_remaining?: number | null;
+  is_expiring_soon?: boolean;
+};
+
+function hasComputedStatus(value: unknown): value is ComputedStatusPayload {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as ComputedStatusPayload;
+  return typeof candidate.computed_status === 'string';
+}
+
+function toBotStatus(value: unknown): BotStatus | undefined {
+  if (
+    value === 'offline' ||
+    value === 'prepare' ||
+    value === 'leveling' ||
+    value === 'profession' ||
+    value === 'farming' ||
+    value === 'banned'
+  ) {
+    return value;
+  }
+  return undefined;
+}
+
+function clampDaysRemaining(value: unknown): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return undefined;
+  }
+  return Math.max(0, Math.ceil(value));
+}
+
+function buildProxyStatus(proxy?: ProxyResource | ProxyLike) {
+  if (hasComputedStatus(proxy)) {
+    const computed = proxy.computed_status;
+    const daysRemaining = clampDaysRemaining(proxy.days_remaining);
+
+    if (computed === 'banned') {
+      return {
+        status: 'banned' as const,
+        label: 'Banned',
+        color: 'error',
+        sort: 1,
+        daysRemaining: 0,
+      };
+    }
+
+    if (computed === 'expired') {
+      return {
+        status: 'expired' as const,
+        label: 'Expired',
+        color: 'error',
+        sort: 2,
+        daysRemaining: 0,
+      };
+    }
+
+    if (computed === 'expiring') {
+      return {
+        status: 'expiring' as const,
+        label: 'Expiring',
+        color: 'warning',
+        sort: 3,
+        daysRemaining,
+      };
+    }
+
+    if (computed === 'active') {
+      return {
+        status: 'active' as const,
+        label: 'Active',
+        color: 'success',
+        sort: 4,
+        daysRemaining,
+      };
+    }
+  }
+
+  if (!proxy) {
+    return {
+      status: 'none' as const,
+      label: 'None',
+      color: 'default',
+      sort: 5,
+      daysRemaining: undefined,
+    };
+  }
+
+  return {
+    status: 'none' as const,
+    label: 'None',
+    color: 'default',
+    sort: 5,
+    daysRemaining: undefined,
+  };
+}
+
+function buildAggregateResourceStatus(
+  resources: ComputedStatusPayload[],
+  _warningDays: number,
+  activeSort: number,
+) {
+  if (!resources.length) {
+    return {
+      status: 'none' as const,
+      label: 'None',
+      color: 'default',
+      sort: 5,
+      daysRemaining: undefined as number | undefined,
+    };
+  }
+
+  if (resources.some((item) => item.computed_status === 'expired')) {
+    return {
+      status: 'expired' as const,
+      label: 'Expired',
+      color: 'error',
+      sort: 1,
+      daysRemaining: 0,
+    };
+  }
+
+  const expiring = resources.filter(
+    (item) => item.computed_status === 'expiring' || item.is_expiring_soon === true,
+  );
+  if (expiring.length > 0) {
+    const minDaysRemaining = expiring
+      .map((item) => clampDaysRemaining(item.days_remaining))
+      .find((value) => value !== undefined);
+    return {
+      status: 'expiring' as const,
+      label: 'Expiring',
+      color: 'warning',
+      sort: 2,
+      daysRemaining: minDaysRemaining,
+    };
+  }
+
+  const minDaysRemaining = resources
+    .map((item) => clampDaysRemaining(item.days_remaining))
+    .find((value) => value !== undefined);
+
+  return {
+    status: 'active' as const,
+    label: 'Active',
+    color: 'success',
+    sort: activeSort,
+    daysRemaining: minDaysRemaining,
+  };
+}
 
 export function buildResourcesByBotMaps({
   proxies,
@@ -81,10 +231,10 @@ export function buildBotRows({
       const botSubscriptions = subscriptionsByBot.get(botId) || [];
       const botLicenses = licensesByBot.get(botId) || [];
 
-      const computedStatus = computeBotStatus(bot);
-      const licenseStatus = computeLicenseStatus(botLicenses, warningDays);
-      const proxyStatus = computeProxyStatus(proxy);
-      const subscriptionStatus = computeSubscriptionStatus(botSubscriptions, warningDays);
+      const computedStatus = toBotStatus(bot.computed_status) || 'offline';
+      const licenseStatus = buildAggregateResourceStatus(botLicenses, warningDays, 3);
+      const proxyStatus = buildProxyStatus(proxy);
+      const subscriptionStatus = buildAggregateResourceStatus(botSubscriptions, warningDays, 3);
 
       return {
         id: botId,

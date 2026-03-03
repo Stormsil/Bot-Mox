@@ -1,6 +1,6 @@
 import type React from 'react';
 import { AppCheckbox as Checkbox } from '../../../shared/ui';
-import type { DeleteVmFilters } from '../lib/deleteVmRules';
+import type { DeleteVmFilters } from '../model/deleteVm.types';
 
 export const DeleteRulesPopoverContent: React.FC<{
   filters: DeleteVmFilters;

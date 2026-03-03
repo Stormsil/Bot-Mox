@@ -1,0 +1,363 @@
+{
+  "defaultFilters": {
+    "policy": {
+      "allowBanned": true,
+      "allowPrepareNoResources": true,
+      "allowOrphan": true
+    },
+    "view": {
+      "showAllowed": true,
+      "showLocked": true,
+      "showRunning": true,
+      "showStopped": true
+    }
+  },
+  "normalizedFilters": {
+    "policy": {
+      "allowBanned": true,
+      "allowPrepareNoResources": true,
+      "allowOrphan": true
+    },
+    "view": {
+      "showAllowed": true,
+      "showLocked": true,
+      "showRunning": true,
+      "showStopped": true
+    }
+  },
+  "strictFilters": {
+    "policy": {
+      "allowBanned": false,
+      "allowPrepareNoResources": false,
+      "allowOrphan": false
+    },
+    "view": {
+      "showAllowed": true,
+      "showLocked": true,
+      "showRunning": true,
+      "showStopped": true
+    }
+  },
+  "directEvaluations": [
+    {
+      "bot": {
+        "id": "b1",
+        "vmName": "WoW101",
+        "status": "banned",
+        "accountEmail": "b1@example.com",
+        "accountPassword": "secret"
+      },
+      "hasEmail": true,
+      "hasPassword": true,
+      "hasProxy": true,
+      "hasSubscription": false,
+      "hasLicense": false,
+      "isBanned": true,
+      "isPrepareSeed": false,
+      "canDelete": true,
+      "reason": "BANNED account"
+    },
+    {
+      "bot": {
+        "id": "b2",
+        "vmName": "WoW102",
+        "status": "prepare",
+        "accountEmail": "",
+        "accountPassword": ""
+      },
+      "hasEmail": false,
+      "hasPassword": false,
+      "hasProxy": false,
+      "hasSubscription": false,
+      "hasLicense": false,
+      "isBanned": false,
+      "isPrepareSeed": true,
+      "canDelete": true,
+      "reason": "PREPARE seed without credentials/resources"
+    },
+    {
+      "bot": {
+        "id": "b3",
+        "vmName": "WoW103",
+        "status": "farming",
+        "accountEmail": "b3@example.com",
+        "accountPassword": "secret"
+      },
+      "hasEmail": true,
+      "hasPassword": true,
+      "hasProxy": true,
+      "hasSubscription": true,
+      "hasLicense": true,
+      "isBanned": false,
+      "isPrepareSeed": false,
+      "canDelete": false,
+      "reason": "status=farming, credentials present, proxy linked, subscription linked, license linked"
+    }
+  ],
+  "candidates": [
+    {
+      "vm": {
+        "vmid": 101,
+        "name": "WoW101",
+        "status": "stopped",
+        "template": false
+      },
+      "linkedBots": [
+        {
+          "id": "b1",
+          "vmName": "WoW101",
+          "status": "banned",
+          "accountEmail": "b1@example.com",
+          "accountPassword": "secret"
+        }
+      ],
+      "evaluations": [
+        {
+          "bot": {
+            "id": "b1",
+            "vmName": "WoW101",
+            "status": "banned",
+            "accountEmail": "b1@example.com",
+            "accountPassword": "secret"
+          },
+          "hasEmail": true,
+          "hasPassword": true,
+          "hasProxy": true,
+          "hasSubscription": false,
+          "hasLicense": false,
+          "isBanned": true,
+          "isPrepareSeed": false,
+          "canDelete": true,
+          "reason": "BANNED account"
+        }
+      ],
+      "canDelete": true,
+      "decisionReason": "BANNED account"
+    },
+    {
+      "vm": {
+        "vmid": 102,
+        "name": "WoW102",
+        "status": "stopped",
+        "template": false
+      },
+      "linkedBots": [
+        {
+          "id": "b2",
+          "vmName": "WoW102",
+          "status": "prepare",
+          "accountEmail": "",
+          "accountPassword": ""
+        }
+      ],
+      "evaluations": [
+        {
+          "bot": {
+            "id": "b2",
+            "vmName": "WoW102",
+            "status": "prepare",
+            "accountEmail": "",
+            "accountPassword": ""
+          },
+          "hasEmail": false,
+          "hasPassword": false,
+          "hasProxy": false,
+          "hasSubscription": false,
+          "hasLicense": false,
+          "isBanned": false,
+          "isPrepareSeed": true,
+          "canDelete": true,
+          "reason": "PREPARE seed without credentials/resources"
+        }
+      ],
+      "canDelete": true,
+      "decisionReason": "PREPARE seed without credentials/resources"
+    },
+    {
+      "vm": {
+        "vmid": 103,
+        "name": "WoW103",
+        "status": "running",
+        "template": false
+      },
+      "linkedBots": [
+        {
+          "id": "b3",
+          "vmName": "WoW103",
+          "status": "farming",
+          "accountEmail": "b3@example.com",
+          "accountPassword": "secret"
+        }
+      ],
+      "evaluations": [
+        {
+          "bot": {
+            "id": "b3",
+            "vmName": "WoW103",
+            "status": "farming",
+            "accountEmail": "b3@example.com",
+            "accountPassword": "secret"
+          },
+          "hasEmail": true,
+          "hasPassword": true,
+          "hasProxy": true,
+          "hasSubscription": true,
+          "hasLicense": true,
+          "isBanned": false,
+          "isPrepareSeed": false,
+          "canDelete": false,
+          "reason": "status=farming, credentials present, proxy linked, subscription linked, license linked"
+        }
+      ],
+      "canDelete": false,
+      "decisionReason": "status=farming, credentials present, proxy linked, subscription linked, license linked"
+    },
+    {
+      "vm": {
+        "vmid": 104,
+        "name": "WoW104",
+        "status": "stopped",
+        "template": false
+      },
+      "linkedBots": [],
+      "evaluations": [],
+      "canDelete": true,
+      "decisionReason": "Orphan VM: no linked account in database"
+    }
+  ],
+  "filteredCandidates": [
+    {
+      "vm": {
+        "vmid": 101,
+        "name": "WoW101",
+        "status": "stopped",
+        "template": false
+      },
+      "linkedBots": [
+        {
+          "id": "b1",
+          "vmName": "WoW101",
+          "status": "banned",
+          "accountEmail": "b1@example.com",
+          "accountPassword": "secret"
+        }
+      ],
+      "evaluations": [
+        {
+          "bot": {
+            "id": "b1",
+            "vmName": "WoW101",
+            "status": "banned",
+            "accountEmail": "b1@example.com",
+            "accountPassword": "secret"
+          },
+          "hasEmail": true,
+          "hasPassword": true,
+          "hasProxy": true,
+          "hasSubscription": false,
+          "hasLicense": false,
+          "isBanned": true,
+          "isPrepareSeed": false,
+          "canDelete": true,
+          "reason": "BANNED account"
+        }
+      ],
+      "canDelete": true,
+      "decisionReason": "BANNED account"
+    },
+    {
+      "vm": {
+        "vmid": 102,
+        "name": "WoW102",
+        "status": "stopped",
+        "template": false
+      },
+      "linkedBots": [
+        {
+          "id": "b2",
+          "vmName": "WoW102",
+          "status": "prepare",
+          "accountEmail": "",
+          "accountPassword": ""
+        }
+      ],
+      "evaluations": [
+        {
+          "bot": {
+            "id": "b2",
+            "vmName": "WoW102",
+            "status": "prepare",
+            "accountEmail": "",
+            "accountPassword": ""
+          },
+          "hasEmail": false,
+          "hasPassword": false,
+          "hasProxy": false,
+          "hasSubscription": false,
+          "hasLicense": false,
+          "isBanned": false,
+          "isPrepareSeed": true,
+          "canDelete": true,
+          "reason": "PREPARE seed without credentials/resources"
+        }
+      ],
+      "canDelete": true,
+      "decisionReason": "PREPARE seed without credentials/resources"
+    },
+    {
+      "vm": {
+        "vmid": 103,
+        "name": "WoW103",
+        "status": "running",
+        "template": false
+      },
+      "linkedBots": [
+        {
+          "id": "b3",
+          "vmName": "WoW103",
+          "status": "farming",
+          "accountEmail": "b3@example.com",
+          "accountPassword": "secret"
+        }
+      ],
+      "evaluations": [
+        {
+          "bot": {
+            "id": "b3",
+            "vmName": "WoW103",
+            "status": "farming",
+            "accountEmail": "b3@example.com",
+            "accountPassword": "secret"
+          },
+          "hasEmail": true,
+          "hasPassword": true,
+          "hasProxy": true,
+          "hasSubscription": true,
+          "hasLicense": true,
+          "isBanned": false,
+          "isPrepareSeed": false,
+          "canDelete": false,
+          "reason": "status=farming, credentials present, proxy linked, subscription linked, license linked"
+        }
+      ],
+      "canDelete": false,
+      "decisionReason": "status=farming, credentials present, proxy linked, subscription linked, license linked"
+    },
+    {
+      "vm": {
+        "vmid": 104,
+        "name": "WoW104",
+        "status": "stopped",
+        "template": false
+      },
+      "linkedBots": [],
+      "evaluations": [],
+      "canDelete": true,
+      "decisionReason": "Orphan VM: no linked account in database"
+    }
+  ],
+  "selectable": [
+    101,
+    104
+  ]
+}

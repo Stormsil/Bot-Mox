@@ -1,0 +1,66 @@
+Task 6 drift scenario detection
+Date: 2026-03-03
+
+Purpose
+- Detect unexpected new direct imports/re-exports for the 5 migration target files.
+- Fail fast when audited allowlist differs from actual callsites.
+
+Command executed
+
+node -e "
+const fs=require('fs');
+const path=require('path');
+const root='apps/frontend/src';
+const exts=new Set(['.ts','.tsx']);
+const files=[];
+function walk(d){
+  for(const e of fs.readdirSync(d,{withFileTypes:true})){
+    const p=path.join(d,e.name);
+    if(e.isDirectory()) walk(p);
+    else if(exts.has(path.extname(e.name))) files.push(p.split(path.sep).join('/'));
+  }
+}
+walk(root);
+const checks=[
+  {stream:'statuses',need:[\"from '../../entities/bot/lib/statuses'\"],allow:['apps/frontend/src/pages/datacenter/page-helpers.ts','apps/frontend/src/pages/project/selectors.ts']},
+  {stream:'finance',need:[\"from './analyticsCalculations'\"],allow:['apps/frontend/src/entities/finance/lib/analytics.ts']},
+  {stream:'vm-delete',need:[\"from './deleteVmRules'\",\"from '../lib/deleteVmRules'\"],allow:['apps/frontend/src/features/vm-management/lib/deleteVmWorkflowCandidates.ts','apps/frontend/src/features/vm-management/lib/index.ts','apps/frontend/src/features/vm-management/model/deleteVmWorkflow.types.ts','apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts','apps/frontend/src/features/vm-management/ui/DeleteVmCandidateItem.tsx','apps/frontend/src/features/vm-management/ui/DeleteVmFilterPopovers.tsx','apps/frontend/src/features/vm-management/ui/DeleteVmModal.tsx']},
+  {stream:'schedule',need:[\"from './schedule/generation'\"],allow:['apps/frontend/src/shared/lib/utils/scheduleUtils.ts']},
+  {stream:'vm-patcher',need:[\"from './patcher'\"],allow:['apps/frontend/src/shared/lib/utils/vm/index.ts']}
+];
+let failed=false;
+for(const c of checks){
+  const found=[];
+  for(const f of files){
+    const txt=fs.readFileSync(f,'utf8');
+    if(c.need.some(s=>txt.includes(s))) found.push(f);
+  }
+  found.sort();
+  const extra=found.filter(f=>!c.allow.includes(f));
+  const missing=c.allow.filter(f=>!found.includes(f));
+  const ok=extra.length===0&&missing.length===0;
+  console.log(c.stream+': '+(ok?'PASS':'FAIL'));
+  console.log('  found='+found.length+' allow='+c.allow.length);
+  if(extra.length) console.log('  extra: '+extra.join(', '));
+  if(missing.length) console.log('  missing: '+missing.join(', '));
+  if(!ok) failed=true;
+}
+process.exit(failed?1:0);
+"
+
+Command output
+
+statuses: PASS
+  found=2 allow=2
+finance: PASS
+  found=1 allow=1
+vm-delete: PASS
+  found=7 allow=7
+schedule: PASS
+  found=1 allow=1
+vm-patcher: PASS
+  found=1 allow=1
+
+How drift is detected
+- If any new direct importer appears, output includes "extra: ..." and command exits with code 1.
+- If expected importer disappears unexpectedly, output includes "missing: ..." and command exits with code 1.
