@@ -11,6 +11,12 @@ import type { TableColumnsType } from 'antd';
 import dayjs from 'dayjs';
 import type { LicenseWithBots } from '../../../entities/resources/model/types';
 import {
+  getExpiryIntent,
+  getLicenseStatusIntent,
+  getRemainingDaysIntent,
+  getSemanticIntentColorToken,
+} from '../../../shared/lib/statusSemantic';
+import {
   AppButton as Button,
   AppPopover as Popover,
   AppSpace as Space,
@@ -42,7 +48,7 @@ const renderBotsPopover = (
         >
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <RobotOutlined style={{ color: 'var(--boxmox-color-brand-primary)' }} />
+              <RobotOutlined style={{ color: 'var(--botmox-color-brand-primary)' }} />
               <Text style={{ fontSize: '12px', fontWeight: 500 }}>{bot.name}</Text>
             </div>
             <Text type="secondary" style={{ fontSize: '11px', paddingLeft: 24 }}>
@@ -73,21 +79,13 @@ export const buildLicenseColumns = ({
     dataIndex: 'status',
     key: 'status',
     width: 120,
-    render: (status: string, record) => {
-      let color = 'default';
-
-      if (isExpired(record.expires_at, currentTime)) {
-        color = 'error';
-      } else if (isExpiringSoon(record.expires_at, currentTime)) {
-        color = 'warning';
-      } else if (status === 'active') {
-        color = 'success';
-      } else if (status === 'revoked') {
-        color = 'red';
-      }
+    render: (status: LicenseWithBots['status'], record) => {
+      const intent = isExpiringSoon(record.expires_at, currentTime)
+        ? 'warning'
+        : getLicenseStatusIntent(isExpired(record.expires_at, currentTime) ? 'expired' : status);
 
       return (
-        <Tag bordered={false} color={color} className={styles.statusTag}>
+        <Tag bordered={false} intent={intent} className={styles.statusTag}>
           {(isExpired(record.expires_at, currentTime) ? 'expired' : status).toUpperCase()}
         </Tag>
       );
@@ -140,7 +138,7 @@ export const buildLicenseColumns = ({
             <Space direction="vertical" size={0}>
               <Space size={4}>
                 <RobotOutlined
-                  style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }}
+                  style={{ marginRight: 4, color: 'var(--botmox-color-brand-primary)' }}
                 />
                 <Text code>{bot.id}</Text>
               </Space>
@@ -208,8 +206,13 @@ export const buildLicenseColumns = ({
     render: (expiresAt: number) => {
       const expired = isExpired(expiresAt, currentTime);
       const expiringSoon = isExpiringSoon(expiresAt, currentTime);
+      const expiryIntent = getExpiryIntent(expired, expiringSoon);
       return (
-        <Text style={{ color: expired ? '#ff4d4f' : expiringSoon ? '#faad14' : undefined }}>
+        <Text
+          style={{
+            color: expiryIntent ? getSemanticIntentColorToken(expiryIntent) : undefined,
+          }}
+        >
           {dayjs(expiresAt).format('DD.MM.YYYY')}
         </Text>
       );
@@ -231,15 +234,20 @@ export const buildLicenseColumns = ({
       const daysLeft = Math.ceil((record.expires_at - currentTime) / ONE_DAY_MS);
 
       if (expired) {
-        return <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>0</Text>;
+        return (
+          <Text
+            style={{
+              color: getSemanticIntentColorToken('error'),
+              fontSize: '14px',
+              fontWeight: 600,
+            }}
+          >
+            0
+          </Text>
+        );
       }
 
-      let color = '#52c41a';
-      if (daysLeft <= 3) {
-        color = '#ff4d4f';
-      } else if (daysLeft <= 7) {
-        color = '#faad14';
-      }
+      const color = getSemanticIntentColorToken(getRemainingDaysIntent(daysLeft));
 
       return <Text style={{ color, fontSize: '14px', fontWeight: 600 }}>{daysLeft}</Text>;
     },

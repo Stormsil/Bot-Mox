@@ -1,0 +1,11 @@
+Task 12 Ratchet Verification (PASS)
+
+Command:
+`pnpm run check:style:ratchet`
+
+Output:
+> botmox-project@1.0.0 check:style:ratchet E:\Боттинг\source\repos\Bot-Mox
+> node scripts/check-style-token-usage.js --ratchet-prefix-only && node scripts/check-style-guardrails.js --ratchet-ui-kit
+
+Style token usage check passed (13 tracked files; legacyPrefix=0 in business scopes).
+Style guardrails passed (ui-kit ratchet mode: hex/tag checks).

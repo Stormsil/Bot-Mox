@@ -7,16 +7,16 @@
 }
 
 .proxy-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   margin-bottom: 16px;
 }
 .card-title {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .card-title-icon {
-  color: var(--boxmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }
 
 .proxy-field {
@@ -31,10 +31,10 @@
 
 /* Proxy String field styles */
 .proxy-string-field {
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
   padding: 12px;
   border-radius: 6px;
-  border: 1px solid var(--boxmox-color-border-default);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .proxy-string {
@@ -47,27 +47,27 @@
 .ipqs-loading-box {
   margin-bottom: 16px;
   padding: 8px 12px;
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
   border-radius: 4px;
 }
 
 .ipqs-row-divider {
   padding: 4px 0;
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .ipqs-flags-panel {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px dashed var(--boxmox-color-border-default);
+  border-top: 1px dashed var(--botmox-color-border-default);
 }
 
 /* Modal styles for proxy */
 .modal-title {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 /* Empty state styles */
 .empty-description {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }

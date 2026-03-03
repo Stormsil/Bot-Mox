@@ -3,12 +3,12 @@
 }
 
 .leveling-stat-card {
-  background: var(--boxmox-color-surface-panel);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-color: var(--botmox-color-border-default);
 }
 
 .stat-title {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -16,12 +16,12 @@
 
 .leveling-progress-card {
   margin-top: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-color: var(--botmox-color-border-default);
 }
 
 .card-title {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-size: var(--text-sm);
   font-weight: 600;
 }
@@ -35,7 +35,7 @@
 }
 
 .text-primary {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .xp-percent {
@@ -43,13 +43,13 @@
   margin-top: 8px;
   font-size: var(--text-lg);
   font-weight: 600;
-  color: #722ed1;
+  color: var(--botmox-color-brand-primary);
 }
 
 .leveling-location-card {
   margin-top: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-color: var(--botmox-color-border-default);
 }
 
 .location-row {
@@ -58,7 +58,7 @@
 
 .location-icon {
   font-size: 24px;
-  color: var(--boxmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }
 
 .location-content {
@@ -68,7 +68,7 @@
 .location-tag {
   font-size: var(--text-sm);
   font-weight: 500;
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
+  background: var(--botmox-color-surface-muted);
+  border-color: var(--botmox-color-border-default);
+  color: var(--botmox-color-text-primary);
 }

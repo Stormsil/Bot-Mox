@@ -48,7 +48,7 @@ export const StageProfessionsPanel: React.FC = () => {
                     </span>
                     <span className={styles['profession-name']}>{profession.name}</span>
                     {isActive && (
-                      <Tag color="success" className={styles['profession-status']}>
+                      <Tag intent="success" className={styles['profession-status']}>
                         Active
                       </Tag>
                     )}
@@ -63,7 +63,7 @@ export const StageProfessionsPanel: React.FC = () => {
                   <Progress
                     percent={percent}
                     strokeColor={color}
-                    trailColor="var(--boxmox-color-border-default)"
+                    trailColor="var(--botmox-color-border-default)"
                     showInfo={false}
                   />
                   <div className={styles['skill-percent']}>{percent}%</div>
@@ -85,7 +85,7 @@ export const StageProfessionsPanel: React.FC = () => {
               value={analytics.totalTime}
               suffix="h"
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+              valueStyle={{ color: 'var(--botmox-color-text-primary)' }}
             />
           </Col>
           <Col span={8}>
@@ -93,7 +93,7 @@ export const StageProfessionsPanel: React.FC = () => {
               title={<span className={styles['stat-title']}>Skill Points</span>}
               value={analytics.skillsGained}
               prefix={<ToolOutlined />}
-              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+              valueStyle={{ color: 'var(--botmox-color-text-primary)' }}
             />
           </Col>
           <Col span={8}>
@@ -101,7 +101,7 @@ export const StageProfessionsPanel: React.FC = () => {
               title={<span className={styles['stat-title']}>Avg Gain/h</span>}
               value={analytics.avgSkillPerHour}
               prefix={<LineChartOutlined />}
-              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+              valueStyle={{ color: 'var(--botmox-color-text-primary)' }}
             />
           </Col>
         </Row>

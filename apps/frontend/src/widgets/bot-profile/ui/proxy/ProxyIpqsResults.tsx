@@ -47,7 +47,7 @@ export const ProxyIpqsResults: React.FC<ProxyIpqsResultsProps> = ({ ipqsData }) 
                 percent={ipqsData.fraud_score}
                 size="small"
                 strokeColor={fraudScoreColor}
-                trailColor="var(--boxmox-color-surface-muted)"
+                trailColor="var(--botmox-color-surface-muted)"
                 style={{ width: 120 }}
               />
               <Text strong style={{ color: fraudScoreColor }}>
@@ -65,10 +65,10 @@ export const ProxyIpqsResults: React.FC<ProxyIpqsResultsProps> = ({ ipqsData }) 
 
           {(ipqsData.vpn || ipqsData.proxy || ipqsData.tor || ipqsData.bot_status) && (
             <Space size={8} wrap className={styles['ipqs-flags-panel']}>
-              {ipqsData.vpn && <Tag color="orange">VPN</Tag>}
-              {ipqsData.proxy && <Tag color="red">Proxy</Tag>}
-              {ipqsData.tor && <Tag color="purple">TOR</Tag>}
-              {ipqsData.bot_status && <Tag color="magenta">Bot</Tag>}
+              {ipqsData.vpn && <Tag intent="warning">VPN</Tag>}
+              {ipqsData.proxy && <Tag intent="error">Proxy</Tag>}
+              {ipqsData.tor && <Tag intent="info">TOR</Tag>}
+              {ipqsData.bot_status && <Tag intent="info">Bot</Tag>}
             </Space>
           )}
         </Flex>

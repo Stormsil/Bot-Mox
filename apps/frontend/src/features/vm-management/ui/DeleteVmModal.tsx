@@ -49,8 +49,8 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
   onClearSelection,
 }) => {
   const popoverInnerStyle: React.CSSProperties = {
-    background: 'var(--boxmox-color-surface-panel)',
-    border: '1px solid var(--boxmox-color-border-default)',
+    background: 'var(--botmox-color-surface-panel)',
+    border: '1px solid var(--botmox-color-border-default)',
     borderRadius: 'var(--radius-md)',
   };
 

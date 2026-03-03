@@ -12,7 +12,7 @@ import { AppButton as Button, AppSpin as Spin } from '../../../shared/ui';
 import styles from '../ResourceTree.module.css';
 import { getIcon } from './tree-utils';
 import type { BotStatus, TreeItem } from './types';
-import { statusConfig } from './types';
+import { getBotStatusColorToken, statusConfig } from './types';
 
 const cx = bindCssModuleCx(styles);
 
@@ -116,7 +116,7 @@ export function ResourceTreeFilters({
               type="button"
               className={cx(`filter-chip ${visibleStatuses.includes(status) ? 'active' : ''}`)}
               onClick={() => onToggleStatus(status)}
-              style={{ '--status-color': statusConfig[status].color } as CSSProperties}
+              style={{ '--status-color': getBotStatusColorToken(status) } as CSSProperties}
             >
               <span className={cx('filter-chip-indicator')} />
               <span className={cx('filter-chip-label')}>{statusConfig[status].title}</span>

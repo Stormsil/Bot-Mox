@@ -25,7 +25,7 @@ export const PersonCardTitle: React.FC<PersonCardTitleProps> = ({ hasIncompleteD
     <span>Person Information</span>
     {hasIncompleteData && (
       <Tooltip title="Some fields are empty. Please fill in all person data.">
-        <Badge dot color="orange">
+        <Badge dot status="warning">
           <ExclamationCircleOutlined className={styles['warning-icon']} />
         </Badge>
       </Tooltip>
@@ -85,7 +85,7 @@ export const PersonLoadingState: React.FC = () => (
     <Card title="Person Information" className={styles['person-card']}>
       <Flex vertical align="center" className={styles['person-loading-state']}>
         <Spin size="large" />
-        <p style={{ marginTop: '16px', color: 'var(--boxmox-color-text-secondary)' }}>
+        <p style={{ marginTop: '16px', color: 'var(--botmox-color-text-secondary)' }}>
           Loading person data...
         </p>
       </Flex>

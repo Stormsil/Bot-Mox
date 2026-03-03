@@ -110,8 +110,8 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({ item }) => {
             listHeight={400}
             placement="bottomLeft"
             dropdownStyle={{
-              background: 'var(--boxmox-color-surface-panel)',
-              border: '1px solid var(--boxmox-color-border-default)',
+              background: 'var(--botmox-color-surface-panel)',
+              border: '1px solid var(--botmox-color-border-default)',
               borderRadius: 'var(--radius-md)',
               padding: 4,
             }}
@@ -141,8 +141,8 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({ item }) => {
                           percent={usage.percent}
                           showInfo={false}
                           size="small"
-                          strokeColor="var(--boxmox-color-brand-primary)"
-                          trailColor="var(--boxmox-color-surface-hover)"
+                          strokeColor="var(--botmox-color-brand-primary)"
+                          trailColor="var(--botmox-color-surface-hover)"
                         />
                         <Text
                           type="secondary"
@@ -195,8 +195,8 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({ item }) => {
             listHeight={400}
             placement="bottomLeft"
             dropdownStyle={{
-              background: 'var(--boxmox-color-surface-panel)',
-              border: '1px solid var(--boxmox-color-border-default)',
+              background: 'var(--botmox-color-surface-panel)',
+              border: '1px solid var(--botmox-color-border-default)',
               borderRadius: 'var(--radius-md)',
               padding: 4,
             }}
@@ -290,8 +290,8 @@ export const VMQueuePanelRow: React.FC<VMQueuePanelRowProps> = ({ item }) => {
             popupMatchSelectWidth={false}
             size="small"
             dropdownStyle={{
-              background: 'var(--boxmox-color-surface-panel)',
-              border: '1px solid var(--boxmox-color-border-default)',
+              background: 'var(--botmox-color-surface-panel)',
+              border: '1px solid var(--botmox-color-border-default)',
               borderRadius: 'var(--radius-md)',
               padding: 4,
             }}

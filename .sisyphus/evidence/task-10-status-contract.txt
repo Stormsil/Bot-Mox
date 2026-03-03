@@ -1,0 +1,22 @@
+Task 10: Canonical status-to-semantic mapping contract
+
+Mapping module:
+- apps/frontend/src/shared/lib/statusSemantic.ts
+
+Consumers updated:
+- apps/frontend/src/shared/ui/StatusBadge.tsx
+- apps/frontend/src/widgets/layout/resourceTree/types.ts
+- apps/frontend/src/widgets/layout/resourceTree/parts.tsx
+- apps/frontend/src/pages/subscriptions/subscription-columns.tsx
+- apps/frontend/src/pages/subscriptions/subscription-status.ts
+- apps/frontend/src/pages/licenses/page/LicenseColumns.tsx
+
+Verification (local map remnants in target files):
+- StatusBadge.tsx: no local status color map patterns
+- resourceTree/types.ts: no local status color map patterns
+- subscription-columns.tsx: no local status color-map logic (let color, status-to-color switches)
+- LicenseColumns.tsx: no local status color-map logic (let color, manual intent map)
+
+Gates:
+- pnpm --filter @botmox/frontend typecheck: PASS
+- pnpm --filter @botmox/frontend build: PASS

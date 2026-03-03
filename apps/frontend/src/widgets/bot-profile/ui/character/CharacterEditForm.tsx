@@ -91,9 +91,9 @@ export const CharacterEditForm: React.FC<CharacterEditFormProps> = ({
           icon={<ExclamationCircleOutlined />}
           style={{
             marginBottom: 12,
-            borderColor: 'var(--boxmox-color-brand-warning)',
+            borderColor: 'var(--botmox-color-brand-warning)',
             background:
-              'color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted))',
+              'color-mix(in srgb, var(--botmox-color-brand-warning) 10%, var(--botmox-color-surface-muted))',
           }}
         />
       )}
@@ -103,10 +103,10 @@ export const CharacterEditForm: React.FC<CharacterEditFormProps> = ({
         showIcon
         icon={
           nameLocked ? (
-            <LockOutlined style={{ fontSize: 14, color: 'var(--boxmox-color-text-secondary)' }} />
+            <LockOutlined style={{ fontSize: 14, color: 'var(--botmox-color-text-secondary)' }} />
           ) : (
             <CheckCircleOutlined
-              style={{ fontSize: 14, color: 'var(--boxmox-color-brand-primary)' }}
+              style={{ fontSize: 14, color: 'var(--botmox-color-brand-primary)' }}
             />
           )
         }
@@ -127,7 +127,7 @@ export const CharacterEditForm: React.FC<CharacterEditFormProps> = ({
         style={{
           marginBottom: 16,
           padding: '6px 10px',
-          borderLeft: `3px solid var(--boxmox-color-brand-primary)`,
+          borderLeft: `3px solid var(--botmox-color-brand-primary)`,
         }}
       />
 
@@ -163,7 +163,7 @@ export const CharacterEditForm: React.FC<CharacterEditFormProps> = ({
                         loading={nameGenerating}
                         disabled={nameLocked}
                         className={styles['character-generate-btn']}
-                        style={{ color: 'var(--boxmox-color-brand-primary)' }}
+                        style={{ color: 'var(--botmox-color-brand-primary)' }}
                       >
                         {nameLocked ? 'Locked' : 'Generate'}
                       </Button>
@@ -175,7 +175,7 @@ export const CharacterEditForm: React.FC<CharacterEditFormProps> = ({
                           icon={<UnlockOutlined />}
                           onClick={() => void onUnlockName()}
                           className={styles['character-unlock-btn']}
-                          style={{ color: 'var(--boxmox-color-brand-warning)' }}
+                          style={{ color: 'var(--botmox-color-brand-warning)' }}
                         >
                           Unlock
                         </Button>

@@ -80,7 +80,7 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
             <div>
               <Tag
                 bordered={false}
-                color={proxy.type === 'socks5' ? 'blue' : 'cyan'}
+                intent={proxy.type === 'socks5' ? 'info' : 'default'}
                 style={{ textTransform: 'uppercase' }}
               >
                 {proxy.type.toUpperCase()}
@@ -97,7 +97,7 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
             <div>
               <Tag
                 bordered={false}
-                color={getProxyStatusColor(proxy)}
+                intent={getProxyStatusColor(proxy)}
                 icon={getProxyStatusIcon(proxy)}
               >
                 {getProxyStatusText(proxy).toUpperCase()}
@@ -140,7 +140,7 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
             percent={proxy.fraud_score}
             size="small"
             strokeColor={getLocalFraudScoreColor(proxy.fraud_score)}
-            trailColor="var(--boxmox-color-surface-muted)"
+            trailColor="var(--botmox-color-surface-muted)"
             style={{ width: 200 }}
           />
           <Text style={{ color: getLocalFraudScoreColor(proxy.fraud_score) }}>
@@ -158,9 +158,9 @@ export const ProxyDetailsCard: React.FC<ProxyDetailsCardProps> = ({
             strong
             style={{
               color: proxy.isExpired
-                ? 'var(--boxmox-color-status-danger)'
+                ? 'var(--botmox-color-status-danger)'
                 : proxy.isExpiringSoon
-                  ? 'var(--boxmox-color-status-warning)'
+                  ? 'var(--botmox-color-status-warning)'
                   : undefined,
             }}
           >

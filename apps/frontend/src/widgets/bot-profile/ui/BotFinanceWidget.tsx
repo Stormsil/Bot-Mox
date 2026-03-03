@@ -50,7 +50,7 @@ const columns: ColumnsType<Transaction> = [
     render: (type: string) => (
       <Tag
         bordered={false}
-        color={type === 'income' ? 'green' : 'red'}
+        intent={type === 'income' ? 'success' : 'error'}
         className={styles['transaction-type-tag']}
       >
         {(type === 'income' ? 'Income' : 'Expense').toUpperCase()}
@@ -119,7 +119,7 @@ export const BotFinanceWidget: React.FC<BotFinanceProps> = () => {
               suffix="USD"
               precision={2}
               valueStyle={{
-                color: 'var(--boxmox-color-status-success)',
+                color: 'var(--botmox-color-status-success)',
                 fontFamily: 'var(--font-condensed)',
                 fontSize: 'var(--text-2xl)',
                 fontWeight: 600,
@@ -139,7 +139,7 @@ export const BotFinanceWidget: React.FC<BotFinanceProps> = () => {
               suffix="USD"
               precision={2}
               valueStyle={{
-                color: 'var(--boxmox-color-status-danger)',
+                color: 'var(--botmox-color-status-danger)',
                 fontFamily: 'var(--font-condensed)',
                 fontSize: 'var(--text-2xl)',
                 fontWeight: 600,
@@ -161,8 +161,8 @@ export const BotFinanceWidget: React.FC<BotFinanceProps> = () => {
               valueStyle={{
                 color:
                   netProfit >= 0
-                    ? 'var(--boxmox-color-status-success)'
-                    : 'var(--boxmox-color-status-danger)',
+                    ? 'var(--botmox-color-status-success)'
+                    : 'var(--botmox-color-status-danger)',
                 fontFamily: 'var(--font-condensed)',
                 fontSize: 'var(--text-2xl)',
                 fontWeight: 600,

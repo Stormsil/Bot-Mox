@@ -87,6 +87,7 @@
     "check:fsd:boundaries": "node scripts/check-fsd-boundaries.js",
     "check:file-size:budgets": "node scripts/check-file-size-budgets.js",
     "check:style:token-usage": "node scripts/check-style-token-usage.js",
+    "check:style:ratchet": "node scripts/check-style-token-usage.js --ratchet-prefix-only && node scripts/check-style-guardrails.js --ratchet-ui-kit",
     "docs:lint": "node scripts/docs-lint.js",
     "docs:freshness:check": "node scripts/check-docs-freshness.js",
     "docs:change:policy": "node scripts/check-docs-change-policy.js",

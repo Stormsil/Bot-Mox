@@ -22,21 +22,21 @@ export const LicensesStatsPanel: React.FC<LicensesStatsProps> = ({ stats, collap
         <MetricCard
           label="Active"
           value={stats.active}
-          color="var(--boxmox-color-status-success)"
+          color="var(--botmox-color-status-success)"
         />
       </Col>
       <Col xs={12} sm={8} md={4}>
         <MetricCard
           label="Expiring Soon"
           value={stats.expiringSoon}
-          color="var(--boxmox-color-status-warning)"
+          color="var(--botmox-color-status-warning)"
         />
       </Col>
       <Col xs={12} sm={8} md={4}>
         <MetricCard
           label="Expired"
           value={stats.expired}
-          color="var(--boxmox-color-status-danger)"
+          color="var(--botmox-color-status-danger)"
         />
       </Col>
       <Col xs={12} sm={8} md={4}>

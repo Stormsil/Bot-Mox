@@ -20,7 +20,7 @@
 }
 
 .content-map-subtitle {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   font-size: 12px;
 }
 
@@ -38,7 +38,7 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .content-map-toggle {
@@ -51,18 +51,18 @@
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   cursor: pointer;
 }
 
 .content-map-toggle:hover {
-  color: var(--boxmox-color-text-primary);
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
+  color: var(--botmox-color-text-primary);
+  background: var(--botmox-color-surface-muted);
+  border-color: var(--botmox-color-border-default);
 }
 
 .content-map-toggle:focus-visible {
-  outline: 2px solid var(--boxmox-color-brand-primary);
+  outline: 2px solid var(--botmox-color-brand-primary);
   outline-offset: 2px;
 }
 
@@ -84,9 +84,9 @@
 }
 
 .map-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
+  color: var(--botmox-color-text-primary);
 }
 
 .map-card--clickable {
@@ -94,12 +94,12 @@
 }
 
 .map-card--clickable:hover {
-  border-color: var(--boxmox-color-brand-primary);
-  background: var(--boxmox-color-surface-muted);
+  border-color: var(--botmox-color-brand-primary);
+  background: var(--botmox-color-surface-muted);
 }
 
 .map-card--clickable:focus-visible {
-  outline: 2px solid var(--boxmox-color-brand-primary);
+  outline: 2px solid var(--botmox-color-brand-primary);
   outline-offset: 2px;
 }
 
@@ -113,19 +113,19 @@
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .map-card-tag {
-  background: var(--boxmox-color-surface-muted);
-  border: 1px solid var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-secondary);
+  background: var(--botmox-color-surface-muted);
+  border: 1px solid var(--botmox-color-border-default);
+  color: var(--botmox-color-text-secondary);
   font-size: 11px;
 }
 
 .map-card-footer {
   margin-top: 12px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   font-size: 12px;
 }
 
@@ -152,7 +152,7 @@
 }
 
 .map-note-title {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-size: 12px;
   line-height: 1.3;
   overflow: hidden;

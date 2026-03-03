@@ -288,8 +288,8 @@ export const BotCharacterWidget: React.FC<BotCharacterProps> = ({ bot, mode = 'e
           </Flex>
         }
         headStyle={{
-          background: 'var(--boxmox-color-surface-muted)',
-          borderColor: 'var(--boxmox-color-border-default)',
+          background: 'var(--botmox-color-surface-muted)',
+          borderColor: 'var(--botmox-color-border-default)',
         }}
         bodyStyle={{ padding: 16 }}
       >

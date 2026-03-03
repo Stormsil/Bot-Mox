@@ -3,11 +3,18 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const repoRoot = process.cwd();
+const args = new Set(process.argv.slice(2));
 const srcRoot = path.join(repoRoot, 'apps', 'frontend', 'src');
 const baselinePath = path.join(repoRoot, 'configs', 'style-token-usage-baseline.json');
+const businessScopes = [
+  path.join(srcRoot, 'pages'),
+  path.join(srcRoot, 'widgets'),
+  path.join(srcRoot, 'features'),
+];
 
 const fileExt = new Set(['.css']);
 const colorLiteralPattern = /#(?:[0-9a-fA-F]{3,8})\b|rgba?\([^)]*\)|hsla?\([^)]*\)/g;
+const legacyPrefixPattern = /--boxmox-/;
 
 function walk(dir, out = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -41,6 +48,35 @@ function walk(dir, out = []) {
 
 function normalizeRel(abs) {
   return path.relative(repoRoot, abs).split(path.sep).join('/');
+}
+
+function walkForExtensions(dir, extensions, out = []) {
+  if (!fs.existsSync(dir)) {
+    return out;
+  }
+
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.turbo') {
+        continue;
+      }
+      walkForExtensions(abs, extensions, out);
+      continue;
+    }
+
+    if (!entry.isFile()) {
+      continue;
+    }
+
+    const ext = path.extname(entry.name).toLowerCase();
+    if (extensions.has(ext)) {
+      out.push(abs);
+    }
+  }
+
+  return out;
 }
 
 function countRawLiterals(source) {
@@ -90,7 +126,7 @@ for (const file of moduleCssFiles) {
   }
 }
 
-if (process.argv.includes('--update-baseline')) {
+if (args.has('--update-baseline')) {
   writeBaseline(current);
   process.stdout.write(
     `Style token usage baseline updated (${Object.keys(current).length} files).\n`,
@@ -98,28 +134,53 @@ if (process.argv.includes('--update-baseline')) {
   process.exit(0);
 }
 
-const baseline = readBaseline();
-const baselineFiles = baseline.files || {};
-const violations = [];
+if (!args.has('--ratchet-prefix-only')) {
+  const baseline = readBaseline();
+  const baselineFiles = baseline.files || {};
+  const violations = [];
 
-for (const [rel, count] of Object.entries(current)) {
-  const allowed = baselineFiles[rel] ?? 0;
-  if (count > allowed) {
-    violations.push(`${rel}: ${count} raw color literals > baseline ${allowed}`);
+  for (const [rel, count] of Object.entries(current)) {
+    const allowed = baselineFiles[rel] ?? 0;
+    if (count > allowed) {
+      violations.push(`${rel}: ${count} raw color literals > baseline ${allowed}`);
+    }
+  }
+
+  if (violations.length > 0) {
+    process.stderr.write('Style token usage check failed (new/raw color literals introduced).\n');
+    for (const violation of violations) {
+      process.stderr.write(`- ${violation}\n`);
+    }
+    process.stderr.write(
+      'If this increase is intentional and approved, update baseline via --update-baseline.\n',
+    );
+    process.exit(1);
   }
 }
 
-if (violations.length > 0) {
-  process.stderr.write('Style token usage check failed (new/raw color literals introduced).\n');
-  for (const violation of violations) {
-    process.stderr.write(`- ${violation}\n`);
+const legacyPrefixFiles = [];
+const ratchetExtensions = new Set(['.ts', '.tsx', '.css']);
+for (const scopeDir of businessScopes) {
+  const scopedFiles = walkForExtensions(scopeDir, ratchetExtensions);
+  for (const file of scopedFiles) {
+    const text = fs.readFileSync(file, 'utf8');
+    if (!legacyPrefixPattern.test(text)) {
+      continue;
+    }
+    legacyPrefixFiles.push(normalizeRel(file));
   }
+}
+
+if (legacyPrefixFiles.length > 0) {
   process.stderr.write(
-    'If this increase is intentional and approved, update baseline via --update-baseline.\n',
+    'Style token usage check failed (legacy --boxmox- prefix found in business scopes).\n',
   );
+  for (const file of legacyPrefixFiles.sort()) {
+    process.stderr.write(`- ${file}\n`);
+  }
   process.exit(1);
 }
 
 process.stdout.write(
-  `Style token usage check passed (${Object.keys(current).length} tracked files).\n`,
+  `Style token usage check passed (${Object.keys(current).length} tracked files; legacyPrefix=0 in business scopes).\n`,
 );

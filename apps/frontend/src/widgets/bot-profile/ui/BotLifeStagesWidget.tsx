@@ -56,6 +56,13 @@ const STATUS_TO_STAGE_MAP: Record<string, LifeStage | 'banned'> = {
   banned: 'banned',
 };
 
+const getStageIntent = (stage: LifeStage): 'success' | 'warning' | 'error' | 'info' | 'default' => {
+  if (stage === 'farm') return 'success';
+  if (stage === 'professions') return 'warning';
+  if (stage === 'leveling') return 'info';
+  return 'default';
+};
+
 export type { LifeStage };
 
 export const BotLifeStagesWidget: React.FC<BotLifeStagesProps> = ({ botId }) => {
@@ -156,8 +163,8 @@ export const BotLifeStagesWidget: React.FC<BotLifeStagesProps> = ({ botId }) => 
               className={styles['stage-select']}
               disabled={currentStage === 'banned'}
               style={{
-                background: 'var(--boxmox-color-surface-base)',
-                color: 'var(--boxmox-color-text-primary)',
+                background: 'var(--botmox-color-surface-base)',
+                color: 'var(--botmox-color-text-primary)',
               }}
             >
               <Option value="prepare">
@@ -189,7 +196,7 @@ export const BotLifeStagesWidget: React.FC<BotLifeStagesProps> = ({ botId }) => 
           <Flex className={styles['stage-indicator']}>
             <Tag
               icon={getStageIcon(currentStage)}
-              color={getStageColor(currentStage)}
+              intent={getStageIntent(currentStage)}
               className={styles['current-stage-tag']}
             >
               {getStageLabel(currentStage)}

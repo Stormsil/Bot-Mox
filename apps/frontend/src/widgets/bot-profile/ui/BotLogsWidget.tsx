@@ -50,13 +50,13 @@ const mockLogs: LogEntry[] = [
 const getEventColor = (type: LogEventType) => {
   switch (type) {
     case 'ban':
-      return 'var(--boxmox-color-status-danger)';
+      return 'var(--botmox-color-status-danger)';
     case 'level_up':
-      return 'var(--boxmox-color-status-success)';
+      return 'var(--botmox-color-status-success)';
     case 'death':
-      return 'var(--boxmox-color-status-warning)';
+      return 'var(--botmox-color-status-warning)';
     default:
-      return 'var(--boxmox-color-status-neutral)';
+      return 'var(--botmox-color-status-neutral)';
   }
 };
 

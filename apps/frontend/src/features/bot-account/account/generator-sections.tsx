@@ -47,12 +47,12 @@ export function PasswordGeneratorOptionsCard({
       size="small"
       className={styles['generator-options-card']}
       style={{
-        background: 'var(--boxmox-color-surface-muted)',
-        borderColor: 'var(--boxmox-color-border-default)',
+        background: 'var(--botmox-color-surface-muted)',
+        borderColor: 'var(--botmox-color-border-default)',
       }}
       headStyle={{
-        background: 'var(--boxmox-color-surface-muted)',
-        borderColor: 'var(--boxmox-color-border-default)',
+        background: 'var(--botmox-color-surface-muted)',
+        borderColor: 'var(--botmox-color-border-default)',
         minHeight: 40,
       }}
       bodyStyle={{ padding: '12px 16px' }}
@@ -172,12 +172,12 @@ export function GeneratorPresetsCard({
       size="small"
       className={styles['generator-presets-card']}
       style={{
-        background: 'var(--boxmox-color-surface-muted)',
-        borderColor: 'var(--boxmox-color-border-default)',
+        background: 'var(--botmox-color-surface-muted)',
+        borderColor: 'var(--botmox-color-border-default)',
       }}
       headStyle={{
-        background: 'var(--boxmox-color-surface-muted)',
-        borderColor: 'var(--boxmox-color-border-default)',
+        background: 'var(--botmox-color-surface-muted)',
+        borderColor: 'var(--botmox-color-border-default)',
         minHeight: 40,
       }}
       bodyStyle={{ padding: '12px 16px' }}
@@ -185,7 +185,7 @@ export function GeneratorPresetsCard({
         <Button
           type="text"
           size="small"
-          style={{ color: 'var(--boxmox-color-text-secondary)', paddingInline: 4 }}
+          style={{ color: 'var(--botmox-color-text-secondary)', paddingInline: 4 }}
           icon={presetsCollapsed ? <RightOutlined /> : <DownOutlined />}
           onClick={() => setPresetsCollapsed((prev) => !prev)}
         >

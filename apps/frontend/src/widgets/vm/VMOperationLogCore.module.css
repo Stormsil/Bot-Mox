@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
-  border-top: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  background: var(--vmx-panel, var(--botmox-color-surface-panel));
+  border-top: 1px solid var(--vmx-border, var(--botmox-color-border-default));
   font-size: 11px;
   overflow: hidden;
 }
@@ -14,14 +14,14 @@
   gap: 6px;
   min-height: 32px;
   padding: 0 8px;
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
-  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
+  border-bottom: 1px solid var(--vmx-border, var(--botmox-color-border-default));
   flex-shrink: 0;
 }
 
 .vm-operation-log-toolbar-title {
   margin-right: 4px;
-  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  color: var(--vmx-text, var(--botmox-color-text-primary));
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -30,7 +30,7 @@
 
 .vm-operation-log-toolbar-stat {
   margin-right: auto;
-  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+  color: var(--vmx-text-muted, var(--botmox-color-text-muted));
   font-size: 11px;
 }
 
@@ -39,9 +39,9 @@
   padding: 0 8px;
   font-size: 11px;
   font-weight: 600;
-  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
-  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
-  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  border: 1px solid var(--vmx-border, var(--botmox-color-border-default));
+  background: var(--vmx-panel, var(--botmox-color-surface-panel));
+  color: var(--vmx-text, var(--botmox-color-text-primary));
   box-shadow: none;
   cursor: pointer;
   transition:
@@ -50,8 +50,8 @@
 }
 
 .vm-operation-log-toolbar button:hover {
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
-  border-color: var(--vmx-border-strong, var(--boxmox-color-border-strong));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
+  border-color: var(--vmx-border-strong, var(--botmox-color-border-strong));
 }
 
 .vm-operation-log-content-shell {
@@ -90,8 +90,8 @@
 
 .vm-task-table th,
 .vm-task-table td {
-  border-right: 1px solid var(--vmx-border, var(--boxmox-color-border-subtle));
-  border-bottom: 1px solid var(--vmx-border, var(--boxmox-color-border-subtle));
+  border-right: 1px solid var(--vmx-border, var(--botmox-color-border-subtle));
+  border-bottom: 1px solid var(--vmx-border, var(--botmox-color-border-subtle));
   padding: 5px 8px;
   text-align: left;
   white-space: nowrap;
@@ -109,8 +109,8 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
-  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
+  color: var(--vmx-text, var(--botmox-color-text-primary));
   font-weight: 700;
   font-size: 10px;
   letter-spacing: 0.05em;
@@ -137,22 +137,22 @@
 }
 
 .vm-task-table-row:nth-child(even) {
-  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
+  background: var(--vmx-panel, var(--botmox-color-surface-panel));
 }
 
 .vm-task-table-row:hover {
-  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+  background: var(--vmx-muted-2, var(--botmox-color-surface-hover));
 }
 
 .vm-task-table-row.selected {
-  background: var(--vmx-accent-soft, var(--boxmox-color-brand-soft));
+  background: var(--vmx-accent-soft, var(--botmox-color-brand-soft));
 }
 
 .vm-task-open-btn {
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  color: var(--vmx-text, var(--botmox-color-text-primary));
   cursor: pointer;
   font: inherit;
   text-align: left;
@@ -163,27 +163,27 @@
 }
 
 .vm-task-open-btn:hover {
-  color: var(--vmx-accent, var(--boxmox-color-brand-primary));
+  color: var(--vmx-accent, var(--botmox-color-brand-primary));
 }
 
 .vm-task-open-btn:focus-visible {
-  outline: 2px solid rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
+  outline: 2px solid rgba(var(--botmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
   outline-offset: 2px;
 }
 
 .vm-task-table-row--error {
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
 }
 
 .vm-task-table-row--error:nth-child(even),
 .vm-task-table-row--error:hover,
 .vm-task-table-row--error.selected {
-  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+  background: var(--vmx-muted-2, var(--botmox-color-surface-hover));
 }
 
 .vm-task-table-empty {
   text-align: center;
-  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+  color: var(--vmx-text-muted, var(--botmox-color-text-muted));
   padding: 20px;
 }
 
@@ -195,19 +195,19 @@
 }
 
 .vm-task-status--running {
-  color: var(--vmx-info, var(--boxmox-color-status-info));
+  color: var(--vmx-info, var(--botmox-color-status-info));
 }
 
 .vm-task-status--ok {
-  color: var(--vmx-success, var(--boxmox-color-status-success));
+  color: var(--vmx-success, var(--botmox-color-status-success));
 }
 
 .vm-task-status--error {
-  color: var(--vmx-danger, var(--boxmox-color-status-danger));
+  color: var(--vmx-danger, var(--botmox-color-status-danger));
 }
 
 .vm-task-status--cancelled {
-  color: var(--vmx-warning, var(--boxmox-color-status-warning));
+  color: var(--vmx-warning, var(--botmox-color-status-warning));
 }
 
 .vm-task-open-hint {
@@ -215,9 +215,9 @@
   display: flex;
   align-items: center;
   padding: 0 8px;
-  border-top: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
-  color: var(--vmx-text-muted, var(--boxmox-color-text-muted));
+  border-top: 1px solid var(--vmx-border, var(--botmox-color-border-default));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
+  color: var(--vmx-text-muted, var(--botmox-color-text-muted));
   font-size: 10px;
 }
 

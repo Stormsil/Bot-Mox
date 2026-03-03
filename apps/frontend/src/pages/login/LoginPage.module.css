@@ -7,7 +7,12 @@
   background:
     radial-gradient(circle at 20% 20%, rgba(31, 115, 183, 0.18), transparent 45%),
     radial-gradient(circle at 80% 0%, rgba(0, 188, 140, 0.14), transparent 40%),
-    linear-gradient(160deg, #0f1722, #1a2636 65%, #111a27);
+    linear-gradient(
+      160deg,
+      var(--botmox-color-header-bg),
+      var(--botmox-color-surface-panel) 65%,
+      var(--botmox-color-surface-base)
+    );
 }
 
 .card {
@@ -18,7 +23,7 @@
 .hint {
   margin-top: 12px;
   margin-bottom: 0;
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
 }
 
 .policy {

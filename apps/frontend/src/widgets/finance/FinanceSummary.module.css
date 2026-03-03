@@ -8,8 +8,8 @@
   position: relative;
   min-height: 96px;
   padding: 4px 2px;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 0;
   box-shadow: none;
 }
@@ -24,7 +24,7 @@
 
 .metricTitle {
   font-size: 11px;
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
@@ -33,14 +33,14 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  color: var(--boxmox-color-text-strong);
+  color: var(--botmox-color-text-strong);
 }
 
 .metricValue {
   font-size: 22px;
   font-weight: 600;
   letter-spacing: 0.2px;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -50,7 +50,7 @@
   letter-spacing: 0.4px;
   margin-top: 8px;
   display: block;
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
 }
 
 .metricMulti {
@@ -72,7 +72,7 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
 }
 
 .metricHintStack {
@@ -87,19 +87,19 @@
 .metricNegative,
 .metricNeutral,
 .metricAccent {
-  border-left: 3px solid var(--boxmox-color-border-subtle);
+  border-left: 3px solid var(--botmox-color-border-subtle);
 }
 
 .chartCard {
   border-radius: 0;
-  border: 1px solid var(--boxmox-color-border-default);
-  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
   overflow: hidden;
 }
 
 .chartTooltip {
-  background-color: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background-color: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 2px;
   padding: 12px;
   box-shadow: 0 8px 18px rgba(31, 52, 73, 0.12);
@@ -108,8 +108,8 @@
 .chartTooltipLabel {
   font-weight: 600;
   margin-bottom: 8px;
-  color: var(--boxmox-color-text-primary);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  color: var(--botmox-color-text-primary);
+  border-bottom: 1px solid var(--botmox-color-border-default);
   padding-bottom: 4px;
 }
 
@@ -122,23 +122,23 @@
 .projectPerformanceCard,
 .costAnalysisCard {
   border-radius: 0;
-  border: 1px solid var(--boxmox-color-border-default);
-  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
   box-shadow: none;
 }
 
 .tableCell {
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-secondary);
+  border-bottom: 1px solid var(--botmox-color-border-default);
+  color: var(--botmox-color-text-secondary);
 }
 
 .tableRow:hover td {
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
 }
 
 .tableHeaderCell {
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-primary);
+  background: var(--botmox-color-surface-muted);
+  color: var(--botmox-color-text-primary);
   font-weight: 600;
   font-size: 11px;
   text-transform: uppercase;

@@ -16,17 +16,17 @@
 }
 
 .subscription-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   margin-bottom: 16px;
 }
 
 .card-title {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .card-title-icon {
-  color: var(--boxmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }
 
 .subscription-list {
@@ -35,7 +35,7 @@
 
 .subscription-item {
   padding: 12px 24px;
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .subscription-item:last-child {

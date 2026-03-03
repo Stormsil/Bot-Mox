@@ -93,7 +93,7 @@ export const VisualEffectsSection: React.FC<VisualEffectsSectionProps> = ({
                   </Checkbox>
                   {isRandom && (
                     <Tag
-                      color="blue"
+                      intent="info"
                       style={{ fontSize: 10, lineHeight: '16px', padding: '0 4px' }}
                     >
                       rnd

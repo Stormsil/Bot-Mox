@@ -1,0 +1,105 @@
+Task 5 deterministic baseline scan for direct antd imports
+
+Scope
+- Include: apps/frontend/src/**/*.{ts,tsx,js,jsx}
+- Exclude: apps/frontend/src/shared/ui/**
+
+Deterministic command snippets used
+
+1) Parse and classify symbol-level imports with TypeScript AST
+
+node - <<'NODE'
+const fs = require('fs');
+const path = require('path');
+const ts = require('typescript');
+const root = 'apps/frontend/src';
+const allowed = new Set(['message', 'theme', 'App']);
+function walk(d, out = []) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) walk(f, out); else if (/\.(ts|tsx|js|jsx)$/.test(e.name)) out.push(f); } return out; }
+const records = [];
+for (const file of walk(root).sort()) {
+  const norm = file.split(path.sep).join('/');
+  if (norm.includes('/shared/ui/')) continue;
+  const text = fs.readFileSync(file, 'utf8');
+  const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st)) continue;
+    const mod = ts.isStringLiteral(st.moduleSpecifier) ? st.moduleSpecifier.text : '';
+    if (mod !== 'antd') continue;
+    const line = sf.getLineAndCharacterOfPosition(st.getStart(sf)).line + 1;
+    const cl = st.importClause;
+    if (!cl) continue;
+    const wholeType = !!cl.isTypeOnly;
+    const add = (imported, local, isTypeOnly) => {
+      const category = isTypeOnly ? 'type-only' : (allowed.has(imported) ? 'utility' : 'visual');
+      records.push({ file: norm.replace(/^apps\/frontend\/src\//, 'src/'), line, imported, local, category });
+    };
+    if (cl.name) add('default', cl.name.text, wholeType);
+    if (cl.namedBindings) {
+      if (ts.isNamespaceImport(cl.namedBindings)) add('*', cl.namedBindings.name.text, wholeType);
+      else for (const el of cl.namedBindings.elements) add((el.propertyName || el.name).text, el.name.text, wholeType || !!el.isTypeOnly);
+    }
+  }
+}
+const counts = records.reduce((acc, r) => ((acc[r.category] = (acc[r.category] || 0) + 1), acc), {});
+const top = Object.entries(records.filter(r => r.category === 'visual').reduce((acc, r) => ((acc[r.file] = (acc[r.file] || 0) + 1), acc), {})).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+console.log(JSON.stringify({ counts, topVisualOffenders: top, totalSymbolImports: records.length }, null, 2));
+NODE
+
+2) Validate mixed category declarations are split correctly
+
+node - <<'NODE'
+const fs = require('fs');
+const path = require('path');
+const ts = require('typescript');
+const root = 'apps/frontend/src';
+const allowed = new Set(['message', 'theme', 'App']);
+function walk(d, out = []) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) walk(f, out); else if (/\.(ts|tsx|js|jsx)$/.test(e.name)) out.push(f); } return out; }
+const mixed = [];
+for (const file of walk(root).sort()) {
+  const norm = file.split(path.sep).join('/');
+  if (norm.includes('/shared/ui/')) continue;
+  const text = fs.readFileSync(file, 'utf8');
+  const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st)) continue;
+    const mod = ts.isStringLiteral(st.moduleSpecifier) ? st.moduleSpecifier.text : '';
+    if (mod !== 'antd') continue;
+    const cl = st.importClause;
+    if (!cl) continue;
+    const wholeType = !!cl.isTypeOnly;
+    const cats = new Set();
+    const add = (name, isTypeOnly) => cats.add(isTypeOnly ? 'type-only' : (allowed.has(name) ? 'utility' : 'visual'));
+    if (cl.name) add('default', wholeType);
+    if (cl.namedBindings) {
+      if (ts.isNamespaceImport(cl.namedBindings)) add('*', wholeType);
+      else for (const el of cl.namedBindings.elements) add((el.propertyName || el.name).text, wholeType || !!el.isTypeOnly);
+    }
+    if (cats.size > 1) {
+      const line = sf.getLineAndCharacterOfPosition(st.getStart(sf)).line + 1;
+      mixed.push(`${norm.replace(/^apps\/frontend\/src\//, 'src/')}:${line} => ${[...cats].sort().join(', ')}`);
+    }
+  }
+}
+console.log(mixed.join('\n'));
+NODE
+
+Observed outputs
+- totalSymbolImports: 101
+- utility: 54
+- visual: 6
+- type-only: 41
+- top visual offenders:
+  - src/App.tsx: 5
+  - src/pages/settings/useSettingsPageViewModel.ts: 1
+- mixed declarations:
+  - src/App.tsx:4 => utility, visual
+  - src/pages/proxies/ProxyCrudModal.tsx:2 => type-only, utility
+  - src/theme/themeRuntime.tsx:3 => type-only, utility
+
+Visual import migration targets
+- src/App.tsx: Button -> AppButton
+- src/App.tsx: ConfigProvider -> AppConfigProvider (wrapper plan)
+- src/App.tsx: Spin -> AppSpin
+- src/App.tsx: Tag -> AppTag
+- src/App.tsx: Typography -> AppTypography
+- src/pages/settings/useSettingsPageViewModel.ts: Form -> AppForm

@@ -84,9 +84,9 @@ export const VMSetupProgress: React.FC<VMSetupProgressProps> = ({
           status: entry ? statusToStepStatus(entry.status) : 'wait',
           description:
             entry?.status === 'failed' ? (
-              <Tag color="red">Failed</Tag>
+              <Tag intent="error">Failed</Tag>
             ) : entry?.status === 'running' ? (
-              <Tag color="blue">In progress</Tag>
+              <Tag intent="info">In progress</Tag>
             ) : undefined,
         };
       })}

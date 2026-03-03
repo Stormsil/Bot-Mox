@@ -2,7 +2,7 @@
 .vm-queue-modal-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  color: var(--vmx-text, var(--botmox-color-text-primary));
 }
 
 .vm-queue-modal-grid {
@@ -13,18 +13,18 @@
 
 .vm-queue-unattend-error {
   padding: 8px 10px;
-  border: 1px solid var(--boxmox-color-status-danger);
-  background: rgba(var(--boxmox-color-status-danger-rgb, 255, 77, 79), 0.08);
-  color: var(--boxmox-color-status-danger);
+  border: 1px solid var(--botmox-color-status-danger);
+  background: rgba(var(--botmox-color-status-danger-rgb, 255, 77, 79), 0.08);
+  color: var(--botmox-color-status-danger);
   font-size: 12px;
 }
 
 .vm-queue-unattend-preview {
   width: 100%;
   min-height: 260px;
-  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
-  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
-  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  border: 1px solid var(--vmx-border, var(--botmox-color-border-default));
+  background: var(--vmx-panel, var(--botmox-color-surface-panel));
+  color: var(--vmx-text, var(--botmox-color-text-primary));
   padding: 8px;
   resize: vertical;
   font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;

@@ -11,21 +11,21 @@
 .block-editor:hover,
 .checkbox-block:hover,
 .list-block:hover {
-  background-color: var(--boxmox-color-surface-hover);
+  background-color: var(--botmox-color-surface-hover);
 }
 
 .block-editor:focus-within,
 .checkbox-block:focus-within,
 .list-block:focus-within {
-  background-color: var(--boxmox-color-surface-hover);
-  box-shadow: 0 0 0 2px rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.12);
+  background-color: var(--botmox-color-surface-hover);
+  box-shadow: 0 0 0 2px rgba(var(--botmox-color-brand-primary-rgb, 66, 133, 244), 0.12);
 }
 
 .block-placeholder {
   position: absolute;
   top: 4px;
   left: 8px;
-  color: var(--boxmox-color-text-strong);
+  color: var(--botmox-color-text-strong);
   pointer-events: none;
   user-select: none;
   font-size: var(--text-base);
@@ -37,7 +37,7 @@
   padding: 0;
   font-size: var(--text-base);
   line-height: 1.5;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   outline: none;
   white-space: pre-wrap;
   word-break: break-word;
@@ -50,7 +50,7 @@
 .heading-1 .block-content {
   font-size: var(--text-2xl);
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .heading-1 .block-placeholder {
@@ -61,7 +61,7 @@
 .heading-2 .block-content {
   font-size: var(--text-xl);
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .heading-2 .block-placeholder {
@@ -72,7 +72,7 @@
 .heading-3 .block-content {
   font-size: var(--text-lg);
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .heading-3 .block-placeholder {
@@ -82,7 +82,7 @@
 
 .paragraph .block-content {
   font-size: var(--text-base);
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .checkbox-block {
@@ -108,7 +108,7 @@
   padding: 0;
   font-size: var(--text-base);
   line-height: 1.5;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   outline: none;
   white-space: pre-wrap;
   word-break: break-word;
@@ -116,7 +116,7 @@
 
 .checkbox-block.checked .checkbox-content {
   text-decoration: line-through;
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
 }
 
 .checkbox-content:empty::before {
@@ -140,7 +140,7 @@
   min-width: 24px;
   text-align: center;
   font-size: var(--text-base);
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
   user-select: none;
 }
 
@@ -160,7 +160,7 @@
   padding: 0;
   font-size: var(--text-base);
   line-height: 1.5;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   outline: none;
   white-space: pre-wrap;
   word-break: break-word;

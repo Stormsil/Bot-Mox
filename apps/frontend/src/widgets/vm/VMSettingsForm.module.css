@@ -15,8 +15,8 @@
 }
 
 .switcherTabs :global(.ant-tabs-nav-wrap) {
-  background: #e0e0e0;
-  border: 1px solid #8d8d8d;
+  background: var(--botmox-color-surface-muted);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 4px;
 }
 
@@ -30,7 +30,7 @@
   margin: 0;
   padding: 11px 16px;
   border: 0;
-  border-right: 1px solid #8d8d8d;
+  border-right: 1px solid var(--botmox-color-border-default);
   border-radius: 0;
   background: transparent;
   transition: none;
@@ -43,7 +43,7 @@
 .switcherTabs :global(.ant-tabs-tab-btn) {
   width: 100%;
   overflow: hidden;
-  color: #525252;
+  color: var(--botmox-color-text-secondary);
   font-family: var(--font-primary);
   font-size: 14px;
   font-weight: 400;
@@ -55,19 +55,19 @@
 }
 
 .switcherTabs :global(.ant-tabs-tab:hover .ant-tabs-tab-btn) {
-  color: #525252;
+  color: var(--botmox-color-text-secondary);
 }
 
 .switcherTabs :global(.ant-tabs-tab-active) {
   margin: -1px 0;
-  border: 1px solid #161616;
+  border: 1px solid var(--botmox-color-border-strong);
   border-radius: 4px;
-  background: #ffffff;
+  background: var(--botmox-color-surface-panel);
   z-index: 1;
 }
 
 .switcherTabs :global(.ant-tabs-tab-active .ant-tabs-tab-btn) {
-  color: #161616;
+  color: var(--botmox-color-text-strong);
   font-weight: 600;
 }
 
@@ -76,7 +76,7 @@
 }
 
 .switcherTabs :global(.ant-tabs-tab-btn:focus-visible) {
-  outline: 2px solid #0f62fe;
+  outline: 2px solid var(--botmox-color-brand-primary);
   outline-offset: 2px;
   border-radius: 2px;
 }

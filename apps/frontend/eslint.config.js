@@ -55,6 +55,39 @@ export default defineConfig([
     },
   },
   {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/shared/ui/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'antd',
+              importNames: ['Card'],
+              message: 'Use AppCard from shared/ui instead',
+            },
+            {
+              name: 'antd',
+              allowImportNames: ['message', 'theme', 'App'],
+              allowTypeImports: true,
+              message:
+                'Outside shared/ui, only message, theme, App, and type-only imports are allowed from antd.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['antd/es/*', 'antd/lib/*'],
+              allowTypeImports: true,
+              message:
+                'Visual AntD deep imports are not allowed outside shared/ui. Use shared/ui wrappers instead.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: [
       'src/components/bot/**/*.tsx',
       'src/pages/bot/**/*.tsx',

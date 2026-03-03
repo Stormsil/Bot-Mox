@@ -1,5 +1,4 @@
 import type { FormInstance } from 'antd';
-import { Form } from 'antd';
 import { useCallback, useEffect, useMemo } from 'react';
 import type { ProjectSettings } from '../../entities/settings/api/settingsFacade';
 import { useProjectSettingsQuery } from '../../entities/settings/api/useProjectSettingsQuery';
@@ -19,6 +18,7 @@ import {
 import { useUpdateSubscriptionSettingsMutation } from '../../entities/settings/api/useSubscriptionSettingsMutation';
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
+import { AppForm } from '../../shared/ui';
 import type {
   ApiKeysFormValues,
   NotificationEventsFormValues,
@@ -58,11 +58,11 @@ export interface SettingsPageViewModel {
 }
 
 export function useSettingsPageViewModel(): SettingsPageViewModel {
-  const [apiKeysForm] = Form.useForm<ApiKeysFormValues>();
-  const [proxyForm] = Form.useForm<ProxySettingsFormValues>();
-  const [notificationsForm] = Form.useForm<NotificationEventsFormValues>();
-  const [alertsForm] = Form.useForm<{ warning_days: number }>();
-  const [storagePolicyForm] = Form.useForm<StoragePolicyFormValues>();
+  const [apiKeysForm] = AppForm.useForm<ApiKeysFormValues>();
+  const [proxyForm] = AppForm.useForm<ProxySettingsFormValues>();
+  const [notificationsForm] = AppForm.useForm<NotificationEventsFormValues>();
+  const [alertsForm] = AppForm.useForm<{ warning_days: number }>();
+  const [storagePolicyForm] = AppForm.useForm<StoragePolicyFormValues>();
 
   const apiKeysQuery = useApiKeysQuery();
   const proxySettingsQuery = useProxySettingsQuery();

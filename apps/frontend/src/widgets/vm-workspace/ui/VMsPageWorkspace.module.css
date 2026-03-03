@@ -1,22 +1,22 @@
 .vm-generator {
-  --vmx-bg: var(--boxmox-color-surface-base);
-  --vmx-panel: var(--boxmox-color-surface-panel);
-  --vmx-muted: var(--boxmox-color-surface-muted);
-  --vmx-muted-2: var(--boxmox-color-surface-hover);
-  --vmx-border: var(--boxmox-color-border-default);
-  --vmx-border-strong: var(--boxmox-color-border-strong);
-  --vmx-text: var(--boxmox-color-text-primary);
-  --vmx-text-muted: var(--boxmox-color-text-secondary);
-  --vmx-accent: var(--boxmox-color-brand-primary);
-  --vmx-accent-hover: var(--boxmox-color-brand-primary-hover);
-  --vmx-accent-soft: var(--boxmox-color-brand-soft);
-  --vmx-accent-rgb: var(--boxmox-color-brand-primary-rgb);
-  --vmx-danger: var(--boxmox-color-status-danger);
-  --vmx-success: var(--boxmox-color-status-success);
-  --vmx-info: var(--boxmox-color-status-info);
-  --vmx-warning: var(--boxmox-color-status-warning);
-  --vmx-neutral: var(--boxmox-color-status-neutral);
-  --vmx-header-text: var(--boxmox-color-header-text);
+  --vmx-bg: var(--botmox-color-surface-base);
+  --vmx-panel: var(--botmox-color-surface-panel);
+  --vmx-muted: var(--botmox-color-surface-muted);
+  --vmx-muted-2: var(--botmox-color-surface-hover);
+  --vmx-border: var(--botmox-color-border-default);
+  --vmx-border-strong: var(--botmox-color-border-strong);
+  --vmx-text: var(--botmox-color-text-primary);
+  --vmx-text-muted: var(--botmox-color-text-secondary);
+  --vmx-accent: var(--botmox-color-brand-primary);
+  --vmx-accent-hover: var(--botmox-color-brand-primary-hover);
+  --vmx-accent-soft: var(--botmox-color-brand-soft);
+  --vmx-accent-rgb: var(--botmox-color-brand-primary-rgb);
+  --vmx-danger: var(--botmox-color-status-danger);
+  --vmx-success: var(--botmox-color-status-success);
+  --vmx-info: var(--botmox-color-status-info);
+  --vmx-warning: var(--botmox-color-status-warning);
+  --vmx-neutral: var(--botmox-color-status-neutral);
+  --vmx-header-text: var(--botmox-color-header-text);
 
   height: 100%;
   min-height: 0;
@@ -71,7 +71,7 @@
   cursor: col-resize;
   border: 1px solid var(--vmx-border);
   border-radius: 2px;
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
 }
 
 .vm-generator-workspace-resizer::before {
@@ -84,7 +84,7 @@
 
 .vm-generator-workspace-resizer:hover,
 .vm-generator-workspace--resizing .vm-generator-workspace-resizer {
-  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
+  background: var(--vmx-muted-2, var(--botmox-color-surface-hover));
   border-color: var(--vmx-border-strong);
 }
 

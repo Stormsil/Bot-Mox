@@ -3,13 +3,13 @@
 }
 
 .profession-card {
-  background: var(--boxmox-color-surface-panel);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-color: var(--botmox-color-border-default);
   transition: all 0.2s ease;
 }
 
 .active {
-  border-color: #52c41a;
+  border-color: var(--botmox-color-status-success);
 }
 
 .inactive {
@@ -29,7 +29,7 @@
 .profession-name {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   text-transform: capitalize;
 }
 
@@ -54,9 +54,9 @@
   margin-top: 8px;
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .skill-text {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }

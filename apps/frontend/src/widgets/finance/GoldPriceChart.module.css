@@ -19,8 +19,8 @@
 }
 
 .tooltip {
-  background: white;
-  border: 1px solid #f0f0f0;
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-subtle);
   border-radius: 4px;
   padding: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -29,8 +29,8 @@
 .tooltipDate {
   margin: 0 0 8px 0;
   font-weight: 600;
-  color: #262626;
-  border-bottom: 1px solid #f0f0f0;
+  color: var(--botmox-color-text-primary);
+  border-bottom: 1px solid var(--botmox-color-border-subtle);
   padding-bottom: 4px;
 }
 
@@ -42,12 +42,12 @@
 .info {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--botmox-color-border-subtle);
 }
 
 .infoText {
   margin: 0;
-  color: #8c8c8c;
+  color: var(--botmox-color-text-muted);
   font-size: 12px;
   text-align: center;
 }

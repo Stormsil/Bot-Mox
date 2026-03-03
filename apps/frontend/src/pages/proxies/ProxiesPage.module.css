@@ -6,17 +6,17 @@
 
 .header {
   margin-bottom: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .headerTitle h4 {
   margin: 0;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .headerSubtitle {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .statsRow {
@@ -24,44 +24,44 @@
 }
 
 .statCard {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   text-align: center;
 }
 
 .statValue {
   font-size: 24px;
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .statLabel {
   font-size: 12px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .statCardActive .statValue {
-  color: #52c41a;
+  color: var(--botmox-color-status-success);
 }
 
 .statCardExpired .statValue {
-  color: #ff4d4f;
+  color: var(--botmox-color-status-danger);
 }
 
 .statCardWarning .statValue {
-  color: #faad14;
+  color: var(--botmox-color-status-warning);
 }
 
 .statCardBanned .statValue {
-  color: #f5222d;
+  color: var(--botmox-color-status-danger);
 }
 
 .filters {
   margin-bottom: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .filterSearch {
@@ -77,8 +77,8 @@
 }
 
 .tableCard {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .tableCard table {
@@ -92,9 +92,9 @@
 }
 
 .tableCard thead th {
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-secondary);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-muted);
+  color: var(--botmox-color-text-secondary);
+  border-bottom: 1px solid var(--botmox-color-border-default);
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.5px;
@@ -103,14 +103,14 @@
 }
 
 .tableCard tbody td {
-  border-bottom: 1px solid var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
+  border-bottom: 1px solid var(--botmox-color-border-default);
+  color: var(--botmox-color-text-primary);
   vertical-align: middle;
   padding: 10px 12px;
 }
 
 .tableCard tbody tr:hover td {
-  background: var(--boxmox-color-surface-hover);
+  background: var(--botmox-color-surface-hover);
 }
 
 .tableCard td > *,
@@ -127,8 +127,8 @@
 }
 
 .proxyCopyBtn:hover {
-  background: var(--boxmox-color-surface-hover);
-  border-color: var(--boxmox-color-brand-primary);
+  background: var(--botmox-color-surface-hover);
+  border-color: var(--botmox-color-brand-primary);
 }
 
 .proxyCell {
@@ -147,7 +147,7 @@
   font-family:
     "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
   font-size: 11px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   opacity: 0.8;
 }
 

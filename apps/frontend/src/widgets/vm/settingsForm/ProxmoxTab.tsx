@@ -67,9 +67,9 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
     syncState === 'loading' ? (
       <LoadingOutlined />
     ) : syncState === 'ok' ? (
-      <CheckCircleFilled style={{ color: '#52c41a' }} />
+      <CheckCircleFilled style={{ color: 'var(--botmox-color-status-success)' }} />
     ) : syncState === 'error' ? (
-      <CloseCircleFilled style={{ color: '#ff4d4f' }} />
+      <CloseCircleFilled style={{ color: 'var(--botmox-color-status-danger)' }} />
     ) : (
       <span />
     );
@@ -179,9 +179,9 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
           <Descriptions
             size="small"
             column={2}
-            labelStyle={{ color: 'var(--boxmox-color-text-secondary)', fontSize: 11 }}
+            labelStyle={{ color: 'var(--botmox-color-text-secondary)', fontSize: 11 }}
             contentStyle={{
-              color: 'var(--boxmox-color-text-primary)',
+              color: 'var(--botmox-color-text-primary)',
               fontSize: 12,
               fontWeight: 600,
             }}
@@ -264,7 +264,7 @@ export const ProxmoxTab: React.FC<ProxmoxTabProps> = ({
                 <Space size={8} align="center">
                   <Text strong>{row.value}</Text>
                   {currentTarget === row.value ? (
-                    <Tag color="green">{autoSelectBest ? 'AUTO' : 'DEFAULT'}</Tag>
+                    <Tag intent="success">{autoSelectBest ? 'AUTO' : 'DEFAULT'}</Tag>
                   ) : null}
                 </Space>
               ),

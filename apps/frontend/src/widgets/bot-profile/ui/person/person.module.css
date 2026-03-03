@@ -4,8 +4,8 @@
 }
 
 .person-card {
-  background: var(--boxmox-color-surface-panel);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-color: var(--botmox-color-border-default);
 }
 
 .person-loading-state {
@@ -18,7 +18,7 @@
 }
 
 .warning-icon {
-  color: #faad14;
+  color: var(--botmox-color-status-warning);
   font-size: 18px;
 }
 
@@ -27,15 +27,15 @@
 }
 
 .person-workflow-alert {
-  border-left: 3px solid var(--boxmox-color-brand-primary);
+  border-left: 3px solid var(--botmox-color-brand-primary);
 }
 
 .config-incomplete-alert {
-  border-color: var(--boxmox-color-brand-warning);
+  border-color: var(--botmox-color-brand-warning);
   background: color-mix(
     in srgb,
-    var(--boxmox-color-brand-warning) 10%,
-    var(--boxmox-color-surface-muted)
+    var(--botmox-color-brand-warning) 10%,
+    var(--botmox-color-surface-muted)
   );
 }
 
@@ -43,13 +43,13 @@
   font-size: var(--text-xs);
   line-height: 1.25;
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .alert-description {
   font-size: var(--text-xs);
   line-height: 1.2;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .alert-icon {
@@ -61,7 +61,7 @@
 }
 
 .person-workflow-help-icon {
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
   cursor: help;
   font-size: 13px;
 }
@@ -73,14 +73,14 @@
 }
 
 .field-warning-icon {
-  color: #faad14;
+  color: var(--botmox-color-status-warning);
   font-size: 14px;
 }
 
 .person-form-actions {
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 1px solid var(--boxmox-color-border-default);
+  border-top: 1px solid var(--botmox-color-border-default);
   flex-wrap: wrap;
 }
 
@@ -89,39 +89,39 @@
 }
 
 .generate-label {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   font-size: var(--text-sm);
 }
 
 .generate-btn {
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
+  background: var(--botmox-color-surface-muted);
+  border-color: var(--botmox-color-border-default);
+  color: var(--botmox-color-text-primary);
 }
 
 .generate-btn:hover {
-  border-color: var(--boxmox-color-brand-primary);
-  color: var(--boxmox-color-brand-primary);
+  border-color: var(--botmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }
 
 .unlock-btn {
-  border-color: var(--boxmox-color-brand-warning);
-  color: var(--boxmox-color-brand-warning);
+  border-color: var(--botmox-color-brand-warning);
+  color: var(--botmox-color-brand-warning);
 }
 
 .unlock-btn:hover {
-  border-color: var(--boxmox-color-brand-primary);
-  color: var(--boxmox-color-brand-primary);
+  border-color: var(--botmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }
 
 .save-btn {
-  background: var(--boxmox-color-brand-primary);
-  border-color: var(--boxmox-color-brand-primary);
+  background: var(--botmox-color-brand-primary);
+  border-color: var(--botmox-color-brand-primary);
 }
 
 .save-btn:hover {
-  background: var(--boxmox-color-brand-primary-hover);
-  border-color: var(--boxmox-color-brand-primary-hover);
+  background: var(--botmox-color-brand-primary-hover);
+  border-color: var(--botmox-color-brand-primary-hover);
 }
 
 /* Responsive adjustments */

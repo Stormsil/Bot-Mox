@@ -38,7 +38,7 @@ export const VMQueuePanelRowResourcesCell: React.FC<VMQueuePanelRowResourcesCell
                 height: 20,
                 paddingInline: 6,
                 fontSize: 10,
-                color: 'var(--boxmox-color-brand-primary)',
+                color: 'var(--botmox-color-brand-primary)',
               }}
               onClick={() => openCustomEditor(item)}
               title="Edit Custom Resources"

@@ -1,6 +1,6 @@
 .proxmox-sidebar {
-  background: var(--boxmox-color-surface-muted);
-  border-right: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-muted);
+  border-right: 1px solid var(--botmox-color-border-default);
   min-height: calc(100vh - 45px);
 }
 
@@ -26,11 +26,11 @@
 }
 
 .menu-item:hover {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .menu-item-selected {
-  border-left-color: var(--boxmox-color-brand-primary);
+  border-left-color: var(--botmox-color-brand-primary);
 }
 
 .menu-item-icon {

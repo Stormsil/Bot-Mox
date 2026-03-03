@@ -252,7 +252,7 @@ export const NoteSidebar: React.FC<NoteSidebarProps> = ({
                               {note.tags.slice(0, 3).map((tag) => (
                                 <Tag
                                   key={tag}
-                                  color={getTagColor(tag)}
+                                  customColor={getTagColor(tag)}
                                   className={styles['note-list-item-tag']}
                                 >
                                   {tag}

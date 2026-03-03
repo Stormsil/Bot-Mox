@@ -16,19 +16,19 @@ import type { ApiKeysFormValues } from '../types';
 import { cx } from './classNames';
 
 const INNER_SETTINGS_CARD_STYLE: React.CSSProperties = {
-  background: 'var(--boxmox-color-surface-muted)',
-  border: '1px solid var(--boxmox-color-border-default)',
+  background: 'var(--botmox-color-surface-muted)',
+  border: '1px solid var(--botmox-color-border-default)',
 };
 
 const INNER_SETTINGS_CARD_STYLES: NonNullable<React.ComponentProps<typeof Card>['styles']> = {
   header: {
-    background: 'var(--boxmox-color-surface-hover)',
-    borderBottom: '1px solid var(--boxmox-color-border-default)',
+    background: 'var(--botmox-color-surface-hover)',
+    borderBottom: '1px solid var(--botmox-color-border-default)',
     padding: '8px 12px',
     fontSize: 14,
   },
   body: {
-    background: 'var(--boxmox-color-surface-muted)',
+    background: 'var(--botmox-color-surface-muted)',
     padding: 16,
   },
 };

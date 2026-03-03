@@ -60,13 +60,13 @@ export function buildVmListColumns({
       key: 'status',
       width: 110,
       render: (status: string) => {
-        const colorMap: Record<string, string> = {
+        const intentMap: Record<string, 'success' | 'warning' | 'error' | 'info' | 'default'> = {
           running: 'success',
           stopped: 'default',
           paused: 'warning',
         };
         return (
-          <Tag bordered={false} color={colorMap[status] || 'default'}>
+          <Tag bordered={false} intent={intentMap[status] || 'default'}>
             {status.toUpperCase()}
           </Tag>
         );
@@ -92,7 +92,7 @@ export function buildVmListColumns({
         <TableActionGroup>
           {record.status === 'stopped' ? (
             <TableActionButton
-              icon={<PlayCircleOutlined style={{ color: '#52c41a' }} />}
+              icon={<PlayCircleOutlined style={{ color: 'var(--botmox-color-status-success)' }} />}
               onClick={() => onStart(record.vmid)}
               tooltip="Start"
             />

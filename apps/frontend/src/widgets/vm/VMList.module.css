@@ -11,8 +11,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 6px 10px;
-  border: 1px solid var(--boxmox-color-border-default);
-  background: var(--boxmox-color-surface-muted);
+  border: 1px solid var(--botmox-color-border-default);
+  background: var(--botmox-color-surface-muted);
 }
 
 .stats {
@@ -20,7 +20,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   font-size: var(--text-xs);
 }
 
@@ -38,16 +38,16 @@
 }
 
 .statDotRunning {
-  background: #52c41a;
+  background: var(--botmox-color-status-success);
 }
 
 .statDotStopped {
-  background: #8c8c8c;
+  background: var(--botmox-color-status-neutral);
 }
 
 .tableWrap {
   flex: 1;
   min-height: 0;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }

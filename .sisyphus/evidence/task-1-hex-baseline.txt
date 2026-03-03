@@ -1,0 +1,155 @@
+# Task 1 HEX Baseline
+
+## Scope
+- apps/frontend/src/pages
+- apps/frontend/src/widgets
+- apps/frontend/src/features
+
+## Command
+`grep -RInE --binary-files=without-match '#[0-9A-Fa-f]{3,8}' apps/frontend/src/pages apps/frontend/src/widgets apps/frontend/src/features | LC_ALL=C sort`
+
+## Results
+apps/frontend/src/features/bot-account/account/account.module.css:24:  color: #faad14;
+apps/frontend/src/features/bot-account/account/account.module.css:74:  color: #faad14;
+apps/frontend/src/features/wow-data/config/colors.ts:10:  priest: '#ffffff',
+apps/frontend/src/features/wow-data/config/colors.ts:11:  rogue: '#fff468',
+apps/frontend/src/features/wow-data/config/colors.ts:12:  shaman: '#0070dd',
+apps/frontend/src/features/wow-data/config/colors.ts:13:  warlock: '#8788ee',
+apps/frontend/src/features/wow-data/config/colors.ts:14:  warrior: '#c69b6d',
+apps/frontend/src/features/wow-data/config/colors.ts:18:  common: '#9ca3af',
+apps/frontend/src/features/wow-data/config/colors.ts:19:  uncommon: '#22c55e',
+apps/frontend/src/features/wow-data/config/colors.ts:20:  rare: '#3b82f6',
+apps/frontend/src/features/wow-data/config/colors.ts:21:  epic: '#a855f7',
+apps/frontend/src/features/wow-data/config/colors.ts:25:  engineering: '#4682b4',
+apps/frontend/src/features/wow-data/config/colors.ts:26:  herbalism: '#228b22',
+apps/frontend/src/features/wow-data/config/colors.ts:27:  mining: '#8b4513',
+apps/frontend/src/features/wow-data/config/colors.ts:28:  skinning: '#cd853f',
+apps/frontend/src/features/wow-data/config/colors.ts:29:  unknown: '#eb2f96',
+apps/frontend/src/features/wow-data/config/colors.ts:33:  banned: '#ff4d4f',
+apps/frontend/src/features/wow-data/config/colors.ts:34:  farm: '#faad14',
+apps/frontend/src/features/wow-data/config/colors.ts:35:  leveling: '#722ed1',
+apps/frontend/src/features/wow-data/config/colors.ts:36:  prepare: '#8c8c8c',
+apps/frontend/src/features/wow-data/config/colors.ts:37:  professions: '#13c2c2',
+apps/frontend/src/features/wow-data/config/colors.ts:41:  farmGold: '#ffd700',
+apps/frontend/src/features/wow-data/config/colors.ts:42:  farmGoldPerHour: '#52c41a',
+apps/frontend/src/features/wow-data/config/colors.ts:43:  farmSessionTime: '#1890ff',
+apps/frontend/src/features/wow-data/config/colors.ts:44:  levelingCurrent: '#722ed1',
+apps/frontend/src/features/wow-data/config/colors.ts:45:  levelingTimeToLevel: '#1890ff',
+apps/frontend/src/features/wow-data/config/colors.ts:46:  levelingXpPerHour: '#52c41a',
+apps/frontend/src/features/wow-data/config/colors.ts:4:  deathKnight: '#c41e3a',
+apps/frontend/src/features/wow-data/config/colors.ts:5:  druid: '#ff7c0a',
+apps/frontend/src/features/wow-data/config/colors.ts:6:  hunter: '#aad372',
+apps/frontend/src/features/wow-data/config/colors.ts:7:  mage: '#3fc7eb',
+apps/frontend/src/features/wow-data/config/colors.ts:8:  monk: '#00ff98',
+apps/frontend/src/features/wow-data/config/colors.ts:9:  paladin: '#f48cba',
+apps/frontend/src/pages/bot/BotPage.module.css:132:  color: #fff;
+apps/frontend/src/pages/bot/BotPage.module.css:141:  background: #f59a23;
+apps/frontend/src/pages/licenses/page/LicenseColumns.tsx:212:        <Text style={{ color: expired ? '#ff4d4f' : expiringSoon ? '#faad14' : undefined }}>
+apps/frontend/src/pages/licenses/page/LicenseColumns.tsx:234:        return <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>0</Text>;
+apps/frontend/src/pages/licenses/page/LicenseColumns.tsx:237:      let color = '#52c41a';
+apps/frontend/src/pages/licenses/page/LicenseColumns.tsx:239:        color = '#ff4d4f';
+apps/frontend/src/pages/licenses/page/LicenseColumns.tsx:241:        color = '#faad14';
+apps/frontend/src/pages/login/LoginPage.module.css:10:    linear-gradient(160deg, #0f1722, #1a2636 65%, #111a27);
+apps/frontend/src/pages/project/ProjectPage.module.css:42:  color: #52c41a;
+apps/frontend/src/pages/project/ProjectPage.module.css:46:  color: #1890ff;
+apps/frontend/src/pages/project/ProjectPage.module.css:50:  color: #faad14;
+apps/frontend/src/pages/project/ProjectPage.module.css:54:  color: #ff4d4f;
+apps/frontend/src/pages/proxies/ProxiesPage.module.css:46:  color: #52c41a;
+apps/frontend/src/pages/proxies/ProxiesPage.module.css:50:  color: #ff4d4f;
+apps/frontend/src/pages/proxies/ProxiesPage.module.css:54:  color: #faad14;
+apps/frontend/src/pages/proxies/ProxiesPage.module.css:58:  color: #f5222d;
+apps/frontend/src/pages/proxies/proxyColumns.tsx:239:              color: expired ? '#ff4d4f' : expiringSoon ? '#faad14' : undefined,
+apps/frontend/src/pages/proxies/proxyColumns.tsx:261:              color: expired ? '#ff4d4f' : expiringSoon ? '#faad14' : '#52c41a',
+apps/frontend/src/pages/settings/themeSections/ThemeColorsGrid.tsx:69:              placeholder="#000000"
+apps/frontend/src/pages/subscriptions/SubscriptionsPage.module.css:23:  border-left: 4px solid #faad14;
+apps/frontend/src/pages/subscriptions/SubscriptionsPage.module.css:29:  color: #faad14;
+apps/frontend/src/pages/subscriptions/SubscriptionsPage.module.css:38:  color: #faad14;
+apps/frontend/src/pages/subscriptions/subscription-columns.tsx:59:          color: record.isExpired ? '#ff4d4f' : record.isExpiringSoon ? '#faad14' : undefined,
+apps/frontend/src/pages/subscriptions/subscription-columns.tsx:82:        return <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>0</Text>;
+apps/frontend/src/pages/subscriptions/subscription-columns.tsx:85:      let color = '#52c41a';
+apps/frontend/src/pages/subscriptions/subscription-columns.tsx:87:        color = '#ff4d4f';
+apps/frontend/src/pages/subscriptions/subscription-columns.tsx:89:        color = '#faad14';
+apps/frontend/src/pages/workspace/calendar/WorkspaceCalendarPage.module.css:101:  color: #fff;
+apps/frontend/src/widgets/bot-profile/ui/BotLeveling.module.css:46:  color: #722ed1;
+apps/frontend/src/widgets/bot-profile/ui/BotProfession.module.css:12:  border-color: #52c41a;
+apps/frontend/src/widgets/bot-profile/ui/BotSchedule.module.css:38:  color: #fff;
+apps/frontend/src/widgets/bot-profile/ui/BotSchedule.module.css:44:  color: #fff;
+apps/frontend/src/widgets/bot-profile/ui/BotSchedule.module.css:65:  background: #fff4e3;
+apps/frontend/src/widgets/bot-profile/ui/BotSchedule.module.css:70:  color: #b36200;
+apps/frontend/src/widgets/bot-profile/ui/BotSummary.module.css:124:  color: #ff4d4f;
+apps/frontend/src/widgets/bot-profile/ui/person/person.module.css:21:  color: #faad14;
+apps/frontend/src/widgets/bot-profile/ui/person/person.module.css:76:  color: #faad14;
+apps/frontend/src/widgets/finance/CostAnalysis.tsx:60:          const color = CATEGORY_COLORS[item.category] || '#f5222d';
+apps/frontend/src/widgets/finance/CostAnalysis.tsx:89:        <div style={{ textAlign: 'center', padding: '20px', color: '#8c8c8c' }}>
+apps/frontend/src/widgets/finance/FinanceSummary.tsx:53:  categories: ['#5b6f8f', '#4f8a8b', '#8b5a3c', '#7a5c8f', '#6b7a88', '#8a8f4f'],
+apps/frontend/src/widgets/finance/GoldPriceChart.module.css:23:  border: 1px solid #f0f0f0;
+apps/frontend/src/widgets/finance/GoldPriceChart.module.css:32:  color: #262626;
+apps/frontend/src/widgets/finance/GoldPriceChart.module.css:33:  border-bottom: 1px solid #f0f0f0;
+apps/frontend/src/widgets/finance/GoldPriceChart.module.css:45:  border-top: 1px solid #f0f0f0;
+apps/frontend/src/widgets/finance/GoldPriceChart.module.css:50:  color: #8c8c8c;
+apps/frontend/src/widgets/finance/GoldPriceChart.tsx:138:            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+apps/frontend/src/widgets/finance/GoldPriceChart.tsx:142:              stroke="#8c8c8c"
+apps/frontend/src/widgets/finance/GoldPriceChart.tsx:146:              stroke="#8c8c8c"
+apps/frontend/src/widgets/finance/GoldPriceChart.tsx:153:                style: { textAnchor: 'middle', fill: '#8c8c8c' },
+apps/frontend/src/widgets/finance/GoldPriceChart.tsx:163:                stroke="#1890ff"
+apps/frontend/src/widgets/finance/GoldPriceChart.tsx:165:                dot={{ fill: '#1890ff', strokeWidth: 2, r: 4 }}
+apps/frontend/src/widgets/finance/GoldPriceChart.tsx:166:                activeDot={{ r: 6, stroke: '#1890ff', strokeWidth: 2 }}
+apps/frontend/src/widgets/finance/GoldPriceChart.tsx:175:                stroke="#52c41a"
+apps/frontend/src/widgets/finance/GoldPriceChart.tsx:177:                dot={{ fill: '#52c41a', strokeWidth: 2, r: 4 }}
+apps/frontend/src/widgets/finance/GoldPriceChart.tsx:178:                activeDot={{ r: 6, stroke: '#52c41a', strokeWidth: 2 }}
+apps/frontend/src/widgets/finance/UniversalChart.tsx:44:    color: '#9a9a9a',
+apps/frontend/src/widgets/finance/UniversalChart.tsx:53:    color: '#7a7a7a',
+apps/frontend/src/widgets/finance/UniversalChart.tsx:62:    color: '#8b8b8b',
+apps/frontend/src/widgets/finance/UniversalChart.tsx:71:    color: '#5f5f5f',
+apps/frontend/src/widgets/finance/UniversalChart.tsx:80:    color: '#8a8a8a',
+apps/frontend/src/widgets/finance/UniversalChart.tsx:89:    color: '#6f6f6f',
+apps/frontend/src/widgets/layout/ContentPanel.module.css:32:  color: #faad14;
+apps/frontend/src/widgets/layout/ContentPanel.module.css:36:  color: #faad14;
+apps/frontend/src/widgets/layout/resourceTree/tree-utils.tsx:56:      return <PoweroffOutlined style={{ ...iconStyle, color: '#8c8c8c' }} />;
+apps/frontend/src/widgets/layout/resourceTree/tree-utils.tsx:58:      return <ClockCircleOutlined style={{ ...iconStyle, color: '#1890ff' }} />;
+apps/frontend/src/widgets/layout/resourceTree/tree-utils.tsx:60:      return <PlayCircleOutlined style={{ ...iconStyle, color: '#722ed1' }} />;
+apps/frontend/src/widgets/layout/resourceTree/tree-utils.tsx:62:      return <ToolOutlined style={{ ...iconStyle, color: '#eb2f96' }} />;
+apps/frontend/src/widgets/layout/resourceTree/tree-utils.tsx:64:      return <PlayCircleOutlined style={{ ...iconStyle, color: '#52c41a' }} />;
+apps/frontend/src/widgets/layout/resourceTree/tree-utils.tsx:66:      return <StopOutlined style={{ ...iconStyle, color: '#f5222d' }} />;
+apps/frontend/src/widgets/layout/resourceTree/types.ts:67:  offline: { title: 'Offline', color: '#8c8c8c' },
+apps/frontend/src/widgets/layout/resourceTree/types.ts:68:  prepare: { title: 'Prepare', color: '#1890ff' },
+apps/frontend/src/widgets/layout/resourceTree/types.ts:69:  leveling: { title: 'Leveling', color: '#722ed1' },
+apps/frontend/src/widgets/layout/resourceTree/types.ts:70:  profession: { title: 'Profession', color: '#eb2f96' },
+apps/frontend/src/widgets/layout/resourceTree/types.ts:71:  farming: { title: 'Farming', color: '#52c41a' },
+apps/frontend/src/widgets/layout/resourceTree/types.ts:72:  banned: { title: 'Banned', color: '#f5222d' },
+apps/frontend/src/widgets/schedule/DayTabs.module.css:102:  background: #fff;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:108:  border-left: 3px solid #52c41a;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:112:  border-left: 3px solid #8c8c8c;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:117:  border-left: 3px solid #faad14;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:49:  color: #52c41a;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:53:  border: 1px solid #52c41a;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:58:  color: #fff;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:59:  background: #52c41a;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:64:  color: #fff;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:87:  background: #52c41a;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:88:  box-shadow: 0 0 4px #52c41a;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:92:  background: #8c8c8c;
+apps/frontend/src/widgets/schedule/DayTabs.module.css:96:  background: #faad14;
+apps/frontend/src/widgets/schedule/ScheduleGenerator.module.css:69:  border-left: 3px solid #ff4d4f;
+apps/frontend/src/widgets/schedule/ScheduleGenerator.module.css:75:  color: #ff4d4f;
+apps/frontend/src/widgets/schedule/WeekOverview.module.css:109:  background: #52c41a;
+apps/frontend/src/widgets/schedule/WeekOverview.module.css:114:  background: #8c8c8c;
+apps/frontend/src/widgets/schedule/WeekOverview.module.css:144:  background: #52c41a;
+apps/frontend/src/widgets/schedule/WeekOverview.module.css:149:  background: #faad14;
+apps/frontend/src/widgets/schedule/WeekOverview.module.css:160:  background: #52c41a;
+apps/frontend/src/widgets/schedule/WeekOverview.module.css:164:  background: #8c8c8c;
+apps/frontend/src/widgets/schedule/WeekPanel.module.css:70:  background: #52c41a;
+apps/frontend/src/widgets/vm/VMList.module.css:41:  background: #52c41a;
+apps/frontend/src/widgets/vm/VMList.module.css:45:  background: #8c8c8c;
+apps/frontend/src/widgets/vm/VMSettingsForm.module.css:18:  background: #e0e0e0;
+apps/frontend/src/widgets/vm/VMSettingsForm.module.css:19:  border: 1px solid #8d8d8d;
+apps/frontend/src/widgets/vm/VMSettingsForm.module.css:33:  border-right: 1px solid #8d8d8d;
+apps/frontend/src/widgets/vm/VMSettingsForm.module.css:46:  color: #525252;
+apps/frontend/src/widgets/vm/VMSettingsForm.module.css:58:  color: #525252;
+apps/frontend/src/widgets/vm/VMSettingsForm.module.css:63:  border: 1px solid #161616;
+apps/frontend/src/widgets/vm/VMSettingsForm.module.css:65:  background: #ffffff;
+apps/frontend/src/widgets/vm/VMSettingsForm.module.css:70:  color: #161616;
+apps/frontend/src/widgets/vm/VMSettingsForm.module.css:79:  outline: 2px solid #0f62fe;
+apps/frontend/src/widgets/vm/settingsForm/ProxmoxTab.tsx:70:      <CheckCircleFilled style={{ color: '#52c41a' }} />
+apps/frontend/src/widgets/vm/settingsForm/ProxmoxTab.tsx:72:      <CloseCircleFilled style={{ color: '#ff4d4f' }} />
+apps/frontend/src/widgets/vm/vmListColumns.tsx:95:              icon={<PlayCircleOutlined style={{ color: '#52c41a' }} />}

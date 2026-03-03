@@ -34,7 +34,7 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
   renderTimestamp,
   formatDuration,
 }) => {
-  const statValueStyle = { color: 'var(--boxmox-color-text-primary)' };
+  const statValueStyle = { color: 'var(--botmox-color-text-primary)' };
   const inventory = mockInventory;
   const farmStats = mockFarmStats;
   const sessionDuration = renderTimestamp - farmStats.session_start;
@@ -116,7 +116,7 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
               value={analytics.totalTime}
               suffix="h"
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+              valueStyle={{ color: 'var(--botmox-color-text-primary)' }}
             />
           </Col>
           <Col span={8}>
@@ -125,7 +125,7 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
               value={analytics.totalGold.toLocaleString()}
               suffix="g"
               prefix={<DollarOutlined />}
-              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+              valueStyle={{ color: 'var(--botmox-color-text-primary)' }}
             />
           </Col>
           <Col span={8}>
@@ -134,7 +134,7 @@ export const StageFarmPanel: React.FC<StageFarmPanelProps> = ({
               value={analytics.avgGoldPerHour.toFixed(1)}
               suffix="g/h"
               prefix={<BarChartOutlined />}
-              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+              valueStyle={{ color: 'var(--botmox-color-text-primary)' }}
             />
           </Col>
         </Row>

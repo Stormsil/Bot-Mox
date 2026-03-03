@@ -49,8 +49,8 @@
 /* Stage Selector Card */
 .stage-selector-card {
   margin-bottom: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .stage-selector-header {
@@ -67,7 +67,7 @@
 
 .stage-selector-left h5 {
   margin: 0;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .stage-select {
@@ -121,29 +121,29 @@
 }
 
 .prepare-message h4 {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   margin-bottom: 8px;
 }
 
 /* Stat Cards */
 .stage-stat-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .stat-title {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 /* Detail Cards */
 .stage-detail-card {
   margin-top: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .detail-card-title {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 /* XP Progress Section */
@@ -159,7 +159,7 @@
   text-align: center;
   margin-top: 8px;
   font-weight: bold;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 /* Location Info */
@@ -169,7 +169,7 @@
 
 .location-icon {
   font-size: 24px;
-  color: var(--boxmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }
 
 .location-details {
@@ -183,13 +183,13 @@
 
 /* Profession Cards */
 .profession-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   transition: all 0.3s ease;
 }
 
 .active {
-  border-color: var(--boxmox-color-status-success);
+  border-color: var(--botmox-color-status-success);
   box-shadow: 0 0 8px rgba(82, 196, 26, 0.2);
 }
 
@@ -207,7 +207,7 @@
 
 .profession-name {
   flex: 1;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .profession-status {
@@ -227,7 +227,7 @@
   text-align: center;
   margin-top: 8px;
   font-weight: bold;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 /* Inventory */
@@ -236,7 +236,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .inventory-item:last-child {
@@ -249,7 +249,7 @@
 
 .inventory-item-icon {
   font-size: 20px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .inventory-item-details {
@@ -265,18 +265,18 @@
 
 .inventory-item-quantity {
   font-weight: bold;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 /* Analytics Card */
 .analytics-card {
-  background: var(--boxmox-color-surface-panel);
+  background: var(--botmox-color-surface-panel);
 }
 
 /* Timeline Card */
 .timeline-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   height: fit-content;
 }
 

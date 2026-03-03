@@ -1,6 +1,7 @@
-import { Tag } from 'antd';
 import type React from 'react';
+import { getBotStatusIntent } from '../lib/statusSemantic';
 import type { BotStatus } from '../types';
+import { AppTag } from './AppTag/AppTag';
 import styles from './StatusBadge.module.css';
 
 interface StatusBadgeProps {
@@ -9,13 +10,13 @@ interface StatusBadgeProps {
   size?: 'default' | 'small';
 }
 
-const statusConfig: Record<BotStatus, { color: string; text: string }> = {
-  offline: { color: 'default', text: 'OFFLINE' },
-  prepare: { color: 'processing', text: 'PREPARE' },
-  leveling: { color: 'purple', text: 'LEVELING' },
-  profession: { color: 'magenta', text: 'PROFESSION' },
-  farming: { color: 'success', text: 'FARMING' },
-  banned: { color: 'error', text: 'BANNED' },
+const statusConfig: Record<BotStatus, { text: string }> = {
+  offline: { text: 'OFFLINE' },
+  prepare: { text: 'PREPARE' },
+  leveling: { text: 'LEVELING' },
+  profession: { text: 'PROFESSION' },
+  farming: { text: 'FARMING' },
+  banned: { text: 'BANNED' },
 };
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({
@@ -28,9 +29,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   return (
     <span className={styles.statusBadge} data-status={status} data-size={size}>
       {showText ? (
-        <Tag bordered={false} color={config.color}>
+        <AppTag bordered={false} intent={getBotStatusIntent(status)}>
           {config.text}
-        </Tag>
+        </AppTag>
       ) : null}
     </span>
   );

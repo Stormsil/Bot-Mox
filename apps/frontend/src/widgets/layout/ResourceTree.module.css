@@ -1,8 +1,8 @@
 .resource-tree-container {
   width: var(--resource-tree-width);
   height: 100%;
-  background: var(--boxmox-color-surface-panel);
-  border-right: 1px solid var(--boxmox-color-border-strong);
+  background: var(--botmox-color-surface-panel);
+  border-right: 1px solid var(--botmox-color-border-strong);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -16,17 +16,17 @@
   justify-content: space-between;
   padding: 6px 8px;
   gap: 6px;
-  background: var(--boxmox-color-surface-panel);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .resource-tree-collapse-btn {
   width: 28px;
   height: 28px;
-  border: 1px solid var(--boxmox-color-border-default);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 4px;
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-secondary);
+  background: var(--botmox-color-surface-muted);
+  color: var(--botmox-color-text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -35,8 +35,8 @@
 }
 
 .resource-tree-collapse-btn:hover {
-  background: var(--boxmox-color-surface-hover);
-  color: var(--boxmox-color-text-primary);
+  background: var(--botmox-color-surface-hover);
+  color: var(--botmox-color-text-primary);
 }
 
 .resource-tree-toolbar-right {
@@ -48,9 +48,9 @@
 .resource-tree-loading-inline {
   width: 28px;
   height: 28px;
-  border: 1px solid var(--boxmox-color-border-default);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 4px;
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -65,10 +65,10 @@
 .resource-tree-action-btn {
   width: 28px;
   height: 28px;
-  border: 1px solid var(--boxmox-color-border-default);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 4px;
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-secondary);
+  background: var(--botmox-color-surface-muted);
+  color: var(--botmox-color-text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -77,15 +77,15 @@
 }
 
 .resource-tree-action-btn:hover {
-  background: var(--boxmox-color-surface-hover);
-  color: var(--boxmox-color-text-primary);
+  background: var(--botmox-color-surface-hover);
+  color: var(--botmox-color-text-primary);
 }
 
 .resource-tree-action-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-muted);
+  background: var(--botmox-color-surface-muted);
+  color: var(--botmox-color-text-muted);
 }
 
 .resource-tree-resizer {
@@ -107,12 +107,12 @@
 }
 
 .resource-tree-resizer:hover {
-  background: color-mix(in srgb, var(--boxmox-color-brand-primary) 35%, transparent);
+  background: color-mix(in srgb, var(--botmox-color-brand-primary) 35%, transparent);
 }
 
 .resource-tree-resizer:focus-visible {
-  background: color-mix(in srgb, var(--boxmox-color-brand-primary) 45%, transparent);
-  outline: 2px solid var(--boxmox-color-brand-primary);
+  background: color-mix(in srgb, var(--botmox-color-brand-primary) 45%, transparent);
+  outline: 2px solid var(--botmox-color-brand-primary);
   outline-offset: 1px;
 }
 
@@ -162,7 +162,7 @@
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -171,14 +171,14 @@
 }
 
 .resource-tree-collapsed-item:hover {
-  background: var(--boxmox-color-surface-hover);
-  color: var(--boxmox-color-text-primary);
+  background: var(--botmox-color-surface-hover);
+  color: var(--botmox-color-text-primary);
 }
 
 .resource-tree-collapsed-item.active {
-  background: var(--boxmox-color-brand-soft);
-  border-color: var(--boxmox-color-brand-primary);
-  color: var(--boxmox-color-brand-contrast);
+  background: var(--botmox-color-brand-soft);
+  border-color: var(--botmox-color-brand-primary);
+  color: var(--botmox-color-brand-contrast);
 }
 
 .resource-tree-container.collapsed .resource-tree-resizer {
@@ -187,8 +187,8 @@
 
 /* Компактная панель фильтров */
 .resource-tree-filters-compact {
-  background: var(--boxmox-color-surface-panel);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .resource-tree-filters-header {
@@ -204,13 +204,13 @@
   text-align: left;
   padding: 6px 12px;
   font-size: var(--text-xs);
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   border-radius: 0;
 }
 
 .filters-toggle-btn:hover {
-  color: var(--boxmox-color-text-primary);
-  background: var(--boxmox-color-surface-muted);
+  color: var(--botmox-color-text-primary);
+  background: var(--botmox-color-surface-muted);
 }
 
 .filters-panel {
@@ -218,7 +218,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
 }
 
 .filter-chip {
@@ -226,24 +226,24 @@
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border: 1px solid var(--boxmox-color-border-default);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 3px;
-  background: var(--boxmox-color-surface-panel);
+  background: var(--botmox-color-surface-panel);
   cursor: pointer;
   font-size: var(--text-xs);
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   transition: all 0.15s ease;
 }
 
 .filter-chip:hover {
-  border-color: var(--boxmox-color-brand-primary);
-  color: var(--boxmox-color-text-primary);
+  border-color: var(--botmox-color-brand-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .filter-chip.active {
   border-color: var(--status-color);
   background: color-mix(in srgb, var(--status-color) 15%, transparent);
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .filter-chip-indicator {
@@ -275,15 +275,15 @@
 }
 
 .resource-tree-node-content:hover {
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
 }
 
 .resource-tree-node-content.selected {
-  background: var(--boxmox-color-brand-soft);
+  background: var(--botmox-color-brand-soft);
 }
 
 .resource-tree-node-content.selected .resource-tree-title {
-  color: var(--boxmox-color-brand-contrast);
+  color: var(--botmox-color-brand-contrast);
 }
 
 .resource-tree-node {
@@ -315,7 +315,7 @@
 
 .resource-tree-title {
   font-size: var(--text-sm);
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

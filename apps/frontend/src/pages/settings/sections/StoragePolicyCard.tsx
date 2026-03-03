@@ -49,7 +49,7 @@ export const StoragePolicyCard: React.FC<StoragePolicyCardProps> = ({
         <Form form={form} layout="vertical" onFinish={onSave} disabled={loading}>
           <Form.Item label="Secrets" style={{ marginBottom: 12 }}>
             <Space>
-              <Tag color="green" icon={<LockOutlined />}>
+              <Tag intent="success" icon={<LockOutlined />}>
                 Local-only
               </Tag>
               <Text type="secondary">Fixed security policy</Text>

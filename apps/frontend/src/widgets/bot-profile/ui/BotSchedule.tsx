@@ -302,7 +302,7 @@ export const BotSchedule: React.FC<BotScheduleProps> = ({ botId }) => {
             }
             type="warning"
             showIcon
-            icon={<WarningOutlined style={{ color: 'var(--boxmox-color-brand-warning)' }} />}
+            icon={<WarningOutlined style={{ color: 'var(--botmox-color-brand-warning)' }} />}
             className={styles['unsaved-alert']}
             closable
           />

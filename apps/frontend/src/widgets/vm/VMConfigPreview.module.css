@@ -5,8 +5,8 @@
 }
 
 .output {
-  background: var(--boxmox-color-surface-base);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-base);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 2px;
   padding: 12px;
   font-family: "Consolas", "Monaco", "Courier New", monospace;
@@ -15,7 +15,7 @@
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-all;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .details {
@@ -25,15 +25,15 @@
 }
 
 .detail {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 2px;
   padding: 8px 12px;
 }
 
 .detailLabel {
   font-size: 11px;
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -42,7 +42,7 @@
 .detailValue {
   font-family: "Consolas", "Monaco", "Courier New", monospace;
   font-size: 13px;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   word-break: break-all;
 }
 

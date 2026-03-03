@@ -53,19 +53,27 @@ export const getBotIcon = (status?: BotStatus) => {
 
   switch (status) {
     case 'offline':
-      return <PoweroffOutlined style={{ ...iconStyle, color: '#8c8c8c' }} />;
+      return (
+        <PoweroffOutlined style={{ ...iconStyle, color: 'var(--botmox-color-status-neutral)' }} />
+      );
     case 'prepare':
-      return <ClockCircleOutlined style={{ ...iconStyle, color: '#1890ff' }} />;
+      return (
+        <ClockCircleOutlined style={{ ...iconStyle, color: 'var(--botmox-color-status-info)' }} />
+      );
     case 'leveling':
-      return <PlayCircleOutlined style={{ ...iconStyle, color: '#722ed1' }} />;
+      return (
+        <PlayCircleOutlined style={{ ...iconStyle, color: 'var(--botmox-color-brand-primary)' }} />
+      );
     case 'profession':
-      return <ToolOutlined style={{ ...iconStyle, color: '#eb2f96' }} />;
+      return <ToolOutlined style={{ ...iconStyle, color: 'var(--botmox-color-brand-warning)' }} />;
     case 'farming':
-      return <PlayCircleOutlined style={{ ...iconStyle, color: '#52c41a' }} />;
+      return (
+        <PlayCircleOutlined style={{ ...iconStyle, color: 'var(--botmox-color-status-success)' }} />
+      );
     case 'banned':
-      return <StopOutlined style={{ ...iconStyle, color: '#f5222d' }} />;
+      return <StopOutlined style={{ ...iconStyle, color: 'var(--botmox-color-status-danger)' }} />;
     default:
-      return <UserOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-muted)' }} />;
+      return <UserOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-muted)' }} />;
   }
 };
 
@@ -82,34 +90,34 @@ export const getIcon = (
         case 'projects':
           return (
             <DatabaseOutlined
-              style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }}
+              style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }}
             />
           );
         case 'resources':
           return (
             <AppstoreOutlined
-              style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }}
+              style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }}
             />
           );
         case 'workspace':
           return (
-            <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+            <FolderOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
           );
         default:
           return (
-            <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+            <FolderOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
           );
       }
     }
     case 'folder':
       return (
-        <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <FolderOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'datacenter':
-      return <HomeOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />;
+      return <HomeOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />;
     case 'project':
       return (
-        <DesktopOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <DesktopOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'bot':
       return getBotIcon(status);
@@ -117,49 +125,49 @@ export const getIcon = (
       return getBotIcon(status);
     case 'finance':
       return (
-        <DollarOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <DollarOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'billing':
       return (
-        <CreditCardOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <CreditCardOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'archive':
       return (
-        <FolderOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <FolderOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'settings':
       return (
-        <SettingOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <SettingOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'licenses':
       return (
-        <RobotOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <RobotOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'proxies':
       return (
-        <GlobalOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <GlobalOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'subscriptions':
       return (
-        <CreditCardOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <CreditCardOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'notes':
       return (
-        <FileTextOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <FileTextOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'workspace_calendar':
       return (
-        <CalendarOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <CalendarOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'workspace_kanban':
       return (
-        <AppstoreOutlined style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }} />
+        <AppstoreOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }} />
       );
     case 'vms':
     case 'vms_list':
       return (
         <CloudServerOutlined
-          style={{ ...iconStyle, color: 'var(--boxmox-color-text-secondary)' }}
+          style={{ ...iconStyle, color: 'var(--botmox-color-text-secondary)' }}
         />
       );
     default:

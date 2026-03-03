@@ -1,19 +1,19 @@
 .vm-delete-vm-modal {
-  --dvm-panel: var(--boxmox-color-surface-panel);
-  --dvm-muted: var(--boxmox-color-surface-muted);
-  --dvm-hover: var(--boxmox-color-surface-hover);
-  --dvm-border: var(--boxmox-color-border-default);
-  --dvm-border-subtle: var(--boxmox-color-border-subtle);
-  --dvm-border-strong: var(--boxmox-color-border-strong);
-  --dvm-text: var(--boxmox-color-text-primary);
-  --dvm-text-muted: var(--boxmox-color-text-secondary);
-  --dvm-accent: var(--boxmox-color-brand-primary);
-  --dvm-accent-hover: var(--boxmox-color-brand-primary-hover);
-  --dvm-accent-soft: var(--boxmox-color-brand-soft);
-  --dvm-success: var(--boxmox-color-status-success);
-  --dvm-warning: var(--boxmox-color-status-warning);
-  --dvm-info: var(--boxmox-color-status-info);
-  --dvm-header-text: var(--boxmox-color-header-text);
+  --dvm-panel: var(--botmox-color-surface-panel);
+  --dvm-muted: var(--botmox-color-surface-muted);
+  --dvm-hover: var(--botmox-color-surface-hover);
+  --dvm-border: var(--botmox-color-border-default);
+  --dvm-border-subtle: var(--botmox-color-border-subtle);
+  --dvm-border-strong: var(--botmox-color-border-strong);
+  --dvm-text: var(--botmox-color-text-primary);
+  --dvm-text-muted: var(--botmox-color-text-secondary);
+  --dvm-accent: var(--botmox-color-brand-primary);
+  --dvm-accent-hover: var(--botmox-color-brand-primary-hover);
+  --dvm-accent-soft: var(--botmox-color-brand-soft);
+  --dvm-success: var(--botmox-color-status-success);
+  --dvm-warning: var(--botmox-color-status-warning);
+  --dvm-info: var(--botmox-color-status-info);
+  --dvm-header-text: var(--botmox-color-header-text);
 }
 
 .vm-delete-vm-modal-title-wrap {

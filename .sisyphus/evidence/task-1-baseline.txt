@@ -1,0 +1,180 @@
+# Task 1 Baseline Commands and Results
+
+## Commands Used
+1. `grep -RIn --binary-files=without-match -- '--boxmox-' apps/frontend/src packages/ui-kit/src | LC_ALL=C sort`
+2. `grep -RInE --binary-files=without-match '#[0-9A-Fa-f]{3,8}' apps/frontend/src/pages apps/frontend/src/widgets apps/frontend/src/features | LC_ALL=C sort`
+3. `grep -RInE --binary-files=without-match "from[[:space:]]+['\"]antd['\"]" apps/frontend/src | LC_ALL=C sort`
+4. `grep -RInE --binary-files=without-match '<[[:space:]]*(Tag|Badge)\b[^>]*\bcolor[[:space:]]*=' apps/frontend/src/pages apps/frontend/src/widgets apps/frontend/src/features | LC_ALL=C sort`
+
+## Direct antd Imports (apps/frontend/src)
+apps/frontend/src/App.tsx:4:import { App as AntdApp, Button, ConfigProvider, Spin, Tag, Typography } from 'antd';
+apps/frontend/src/entities/bot/api/useBotLifecycleMutations.ts:2:import { message } from 'antd';
+apps/frontend/src/entities/bot/api/useBotMutations.ts:2:import { message } from 'antd';
+apps/frontend/src/entities/notes/api/useNoteMutations.ts:2:import { message } from 'antd';
+apps/frontend/src/entities/settings/api/useSettingsMutations.ts:2:import { message } from 'antd';
+apps/frontend/src/entities/settings/api/useThemeMutations.ts:2:import { message } from 'antd';
+apps/frontend/src/entities/vm/api/useVmActionMutations.ts:2:import { message } from 'antd';
+apps/frontend/src/entities/workspace/api/useWorkspaceMutations.ts:2:import { message } from 'antd';
+apps/frontend/src/features/bot-account/BotAccount.tsx:2:import { message } from 'antd';
+apps/frontend/src/features/bot-account/account/use-account-generation-workflow.ts:1:import { message } from 'antd';
+apps/frontend/src/features/bot-account/account/use-account-generator-state.ts:1:import { message } from 'antd';
+apps/frontend/src/features/bot-account/account/use-bot-account-subscription.ts:1:import { message } from 'antd';
+apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts:1:import { message } from 'antd';
+apps/frontend/src/pages/billing/index.tsx:2:import { message } from 'antd';
+apps/frontend/src/pages/dashboard/index.tsx:7:import type { TableColumnsType } from 'antd';
+apps/frontend/src/pages/licenses/index.tsx:4:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/licenses/index.tsx:5:import { message } from 'antd';
+apps/frontend/src/pages/licenses/page/LicenseColumns.tsx:9:import type { TableColumnsType } from 'antd';
+apps/frontend/src/pages/licenses/page/LicenseModals.tsx:1:import type { FormInstance, FormProps, ModalProps } from 'antd';
+apps/frontend/src/pages/licenses/page/modal-helpers.ts:1:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/login/index.tsx:3:import { message } from 'antd';
+apps/frontend/src/pages/notes/index.tsx:6:import { message } from 'antd';
+apps/frontend/src/pages/proxies/ProxiesPage.tsx:4:import { message } from 'antd';
+apps/frontend/src/pages/proxies/ProxyCrudModal.tsx:2:import { type FormInstance, type FormProps, type ModalProps, message } from 'antd';
+apps/frontend/src/pages/settings/sections/ApiKeysCard.tsx:2:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/settings/sections/NotificationsCard.tsx:2:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/settings/sections/ProxyAndAlertsCards.tsx:2:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/settings/sections/StoragePolicyCard.tsx:2:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/settings/themePresetActions.ts:1:import { message } from 'antd';
+apps/frontend/src/pages/settings/useSettingsPageViewModel.ts:1:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/settings/useSettingsPageViewModel.ts:2:import { Form } from 'antd';
+apps/frontend/src/pages/settings/useThemeColorControls.ts:1:import { message } from 'antd';
+apps/frontend/src/pages/settings/useThemePresetControls.ts:1:import { message } from 'antd';
+apps/frontend/src/pages/subscriptions/index.tsx:11:import type { TableProps } from 'antd';
+apps/frontend/src/pages/subscriptions/index.tsx:12:import { message } from 'antd';
+apps/frontend/src/pages/subscriptions/subscription-columns.tsx:3:import type { TableColumnsType } from 'antd';
+apps/frontend/src/pages/vms/hooks/useVmOperationLogActions.ts:1:import { message } from 'antd';
+apps/frontend/src/pages/vms/hooks/useVmStartAndQueueActions.ts:1:import { message } from 'antd';
+apps/frontend/src/pages/vms/page/recreateVm.ts:1:import { message } from 'antd';
+apps/frontend/src/pages/vms/page/templateHardwareSync.ts:1:import { message } from 'antd';
+apps/frontend/src/pages/workspace/calendar/index.tsx:2:import { message } from 'antd';
+apps/frontend/src/pages/workspace/calendar/page/CalendarEventModal.tsx:1:import type { FormInstance } from 'antd';
+apps/frontend/src/pages/workspace/kanban/index.tsx:8:import { message } from 'antd';
+apps/frontend/src/shared/lib/query/queryClient.ts:2:import { message } from 'antd';
+apps/frontend/src/shared/ui/AppButton/AppButton.tsx:1:import type { ButtonProps } from 'antd';
+apps/frontend/src/shared/ui/AppButton/AppButton.tsx:2:import { Button } from 'antd';
+apps/frontend/src/shared/ui/AppCard/AppCard.tsx:1:import type { CardProps } from 'antd';
+apps/frontend/src/shared/ui/AppCard/AppCard.tsx:2:import { Card } from 'antd';
+apps/frontend/src/shared/ui/AppDivider/AppDivider.tsx:1:import type { DividerProps } from 'antd';
+apps/frontend/src/shared/ui/AppDivider/AppDivider.tsx:2:import { Divider } from 'antd';
+apps/frontend/src/shared/ui/AppInput/AppInput.tsx:1:import type { InputProps } from 'antd';
+apps/frontend/src/shared/ui/AppInput/AppInput.tsx:2:import { Input } from 'antd';
+apps/frontend/src/shared/ui/AppModal/AppModal.tsx:1:import type { ModalProps } from 'antd';
+apps/frontend/src/shared/ui/AppModal/AppModal.tsx:2:import { Modal } from 'antd';
+apps/frontend/src/shared/ui/AppSelect/AppSelect.tsx:1:import type { SelectProps } from 'antd';
+apps/frontend/src/shared/ui/AppSelect/AppSelect.tsx:2:import { Select } from 'antd';
+apps/frontend/src/shared/ui/AppStatistic/AppStatistic.tsx:1:import type { StatisticProps } from 'antd';
+apps/frontend/src/shared/ui/AppStatistic/AppStatistic.tsx:2:import { Statistic } from 'antd';
+apps/frontend/src/shared/ui/AppSwitch/AppSwitch.tsx:1:import type { SwitchProps } from 'antd';
+apps/frontend/src/shared/ui/AppSwitch/AppSwitch.tsx:2:import { Switch } from 'antd';
+apps/frontend/src/shared/ui/AppTable/AppTable.tsx:1:import type { TablePaginationConfig, TableProps } from 'antd';
+apps/frontend/src/shared/ui/AppTable/AppTable.tsx:2:import { Table } from 'antd';
+apps/frontend/src/shared/ui/AppTag/AppTag.tsx:1:import type { TagProps } from 'antd';
+apps/frontend/src/shared/ui/AppTag/AppTag.tsx:2:import { Tag } from 'antd';
+apps/frontend/src/shared/ui/AppText/AppText.tsx:1:import { Typography } from 'antd';
+apps/frontend/src/shared/ui/AppTitle/AppTitle.tsx:1:import { Typography } from 'antd';
+apps/frontend/src/shared/ui/ErrorBoundary.tsx:2:import { Button, Result } from 'antd';
+apps/frontend/src/shared/ui/LoadingState.tsx:1:import { Card, Skeleton, Spin } from 'antd';
+apps/frontend/src/shared/ui/MetricCard.tsx:1:import { Card, Progress, Statistic, Typography } from 'antd';
+apps/frontend/src/shared/ui/StatusBadge.tsx:1:import { Tag } from 'antd';
+apps/frontend/src/shared/ui/TableActionButton.tsx:1:import type { ButtonProps, SpaceProps } from 'antd';
+apps/frontend/src/shared/ui/TableActionButton.tsx:2:import { Button, Space, Tooltip } from 'antd';
+apps/frontend/src/shared/ui/index.ts:39:} from 'antd';
+apps/frontend/src/theme/themeRuntime.tsx:3:import { type ConfigProviderProps, theme } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotCharacterWidget.tsx:2:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotLicense.tsx:3:import type { FormInstance, MenuProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotLicense.tsx:4:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotLifeStagesWidget.tsx:9:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotPerson.tsx:1:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotProxy.tsx:4:import type { FormInstance } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotProxy.tsx:5:import { App, message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotSchedule.tsx:2:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotSubscription.tsx:4:import { App, message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/BotSummaryWidget.tsx:2:import { message } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/character/CharacterEditForm.tsx:16:import type { FormInstance } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/license/AssignLicenseModal.tsx:1:import type { FormInstance } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/license/LicenseFormModal.tsx:1:import type { FormProps, ModalProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/license/LicenseViews.tsx:10:import type { MenuProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/license/helpers.ts:1:import type { MenuProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/person/PersonFormFields.tsx:8:import type { FormInstance } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/proxy/ProxyEditorModal.tsx:1:import type { FormProps, ModalProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/proxy/helpers.tsx:7:import type { AlertProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/subscription/SubscriptionModal.tsx:1:import type { FormProps, ModalProps } from 'antd';
+apps/frontend/src/widgets/bot-profile/ui/summary/types.ts:1:import type { AlertProps } from 'antd';
+apps/frontend/src/widgets/finance/TransactionForm.tsx:2:import { theme } from 'antd';
+apps/frontend/src/widgets/layout/ResourceTree.tsx:1:import type { TreeDataNode } from 'antd';
+apps/frontend/src/widgets/layout/resourceTree/tree-utils.tsx:22:import type { TreeDataNode } from 'antd';
+apps/frontend/src/widgets/notes-editor/NoteSidebar.tsx:10:import { message } from 'antd';
+apps/frontend/src/widgets/schedule/ScheduleGenerator.tsx:2:import { message } from 'antd';
+apps/frontend/src/widgets/schedule/SessionEditor.tsx:1:import { theme } from 'antd';
+apps/frontend/src/widgets/subscriptions/SubscriptionForm.tsx:2:import type { FormProps } from 'antd';
+apps/frontend/src/widgets/vm-workspace/ui/useVmTargetStripModel.ts:1:import { message } from 'antd';
+apps/frontend/src/widgets/vm/VMCommandPanel.tsx:1:import { message } from 'antd';
+apps/frontend/src/widgets/vm/VMOperationLog.tsx:1:import { message } from 'antd';
+apps/frontend/src/widgets/vm/VMQueueUnattendModal.tsx:1:import type { UploadProps } from 'antd';
+apps/frontend/src/widgets/vm/VMSettingsForm.tsx:2:import { message } from 'antd';
+apps/frontend/src/widgets/vm/settingsForm/PlaybookTab.tsx:10:import { message } from 'antd';
+apps/frontend/src/widgets/vm/settingsForm/SecretField.tsx:3:import { message } from 'antd';
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:10:import type { UploadProps } from 'antd';
+apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx:11:import { message } from 'antd';
+apps/frontend/src/widgets/vm/useVMQueuePanelState.ts:1:import type { UploadProps } from 'antd';
+apps/frontend/src/widgets/vm/useVMQueuePanelState.ts:2:import { message } from 'antd';
+apps/frontend/src/widgets/vm/useVmListController.ts:1:import { message } from 'antd';
+
+## Direct <Tag color=...> / <Badge color=...> (pages|widgets|features)
+apps/frontend/src/features/bot-account/account/state-sections.tsx:70:          <Badge dot color="orange">
+apps/frontend/src/pages/billing/index.tsx:156:            <Tag color={access?.write_access ? 'green' : 'red'}>
+apps/frontend/src/pages/billing/index.tsx:65:    if (tier === 'admin') return <Tag color="gold">ADMIN</Tag>;
+apps/frontend/src/pages/billing/index.tsx:66:    if (tier === 'premium') return <Tag color="green">PREMIUM</Tag>;
+apps/frontend/src/pages/billing/index.tsx:67:    if (tier === 'trial') return <Tag color="blue">TRIAL</Tag>;
+apps/frontend/src/pages/billing/index.tsx:68:    return <Tag color="default">FREE</Tag>;
+apps/frontend/src/pages/licenses/page/LicenseColumns.tsx:90:        <Tag bordered={false} color={color} className={styles.statusTag}>
+apps/frontend/src/pages/project/columns.tsx:34:        <Tag color={color} className={styles.statusTag}>
+apps/frontend/src/pages/proxies/proxyColumns.tsx:131:                <Tag bordered={false} color="orange" style={{ ...tagStyle, fontSize: 9 }}>
+apps/frontend/src/pages/proxies/proxyColumns.tsx:136:                <Tag bordered={false} color="blue" style={{ ...tagStyle, fontSize: 9 }}>
+apps/frontend/src/pages/proxies/proxyColumns.tsx:141:                <Tag bordered={false} color="red" style={{ ...tagStyle, fontSize: 9 }}>
+apps/frontend/src/pages/proxies/proxyColumns.tsx:161:            <Tag bordered={false} color="default" style={tagStyle}>
+apps/frontend/src/pages/proxies/proxyColumns.tsx:191:                <Tag bordered={false} color="orange" style={{ ...tagStyle, fontSize: 9 }}>
+apps/frontend/src/pages/proxies/proxyColumns.tsx:196:                <Tag bordered={false} color="blue" style={{ ...tagStyle, fontSize: 9 }}>
+apps/frontend/src/pages/proxies/proxyColumns.tsx:201:                <Tag bordered={false} color="red" style={{ ...tagStyle, fontSize: 9 }}>
+apps/frontend/src/pages/proxies/proxyColumns.tsx:88:          <Tag bordered={false} color={color} style={tagStyle}>
+apps/frontend/src/pages/proxies/proxyCrudAlerts.tsx:95:            {ipqsData.vpn && <Tag color="orange">VPN</Tag>}
+apps/frontend/src/pages/proxies/proxyCrudAlerts.tsx:96:            {ipqsData.proxy && <Tag color="blue">Proxy</Tag>}
+apps/frontend/src/pages/proxies/proxyCrudAlerts.tsx:97:            {ipqsData.tor && <Tag color="red">TOR</Tag>}
+apps/frontend/src/pages/proxies/proxyCrudAlerts.tsx:98:            {ipqsData.bot_status && <Tag color="purple">Bot</Tag>}
+apps/frontend/src/pages/settings/sections/StoragePolicyCard.tsx:52:              <Tag color="green" icon={<LockOutlined />}>
+apps/frontend/src/pages/workspace/kanban/index.tsx:211:                  <Tag color={column.color}>{columnTasks.length}</Tag>
+apps/frontend/src/widgets/bot-profile/ui/BotProfessionWidget.tsx:71:                      <Tag color="success" className={styles['profession-status']}>
+apps/frontend/src/widgets/bot-profile/ui/lifeStages/StageProfessionsPanel.tsx:51:                      <Tag color="success" className={styles['profession-status']}>
+apps/frontend/src/widgets/bot-profile/ui/person/PersonCardStates.tsx:28:        <Badge dot color="orange">
+apps/frontend/src/widgets/bot-profile/ui/proxy/ProxyIpqsResults.tsx:68:              {ipqsData.vpn && <Tag color="orange">VPN</Tag>}
+apps/frontend/src/widgets/bot-profile/ui/proxy/ProxyIpqsResults.tsx:69:              {ipqsData.proxy && <Tag color="red">Proxy</Tag>}
+apps/frontend/src/widgets/bot-profile/ui/proxy/ProxyIpqsResults.tsx:70:              {ipqsData.tor && <Tag color="purple">TOR</Tag>}
+apps/frontend/src/widgets/bot-profile/ui/proxy/ProxyIpqsResults.tsx:71:              {ipqsData.bot_status && <Tag color="magenta">Bot</Tag>}
+apps/frontend/src/widgets/bot-profile/ui/subscription/SubscriptionListItem.tsx:60:          <Tag color="success" style={{ fontSize: '10px' }}>
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:128:          <Tag bordered={false} color={personComplete ? 'success' : 'warning'}>
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:165:          <Tag bordered={false} color={scheduleStats.enabledSessions > 0 ? 'success' : undefined}>
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:220:              <Tag bordered={false} color="error">
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:224:              <Tag bordered={false} color="warning">
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:228:              <Tag bordered={false} color="success">
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:257:              <Tag bordered={false} color="error">
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:261:              <Tag bordered={false} color="error">
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:265:              <Tag bordered={false} color="warning">
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:269:              <Tag bordered={false} color="success">
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:315:              <Tag bordered={false} color="success">
+apps/frontend/src/widgets/bot-profile/ui/summary/sections-details.tsx:71:          <Tag bordered={false} color={accountComplete ? 'success' : 'warning'}>
+apps/frontend/src/widgets/layout/Header.tsx:182:                  <Tag bordered={false} color="red" className={cx('access-tag')}>
+apps/frontend/src/widgets/vm-workspace/ui/VmTargetStrip.tsx:58:        <Tag color="warning">SSH not configured: SSH-only features are disabled</Tag>
+apps/frontend/src/widgets/vm-workspace/ui/VmTargetStrip.tsx:61:        <Tag color="error">
+apps/frontend/src/widgets/vm/VMListView.tsx:52:          {!connected && <Tag color="error">Disconnected</Tag>}
+apps/frontend/src/widgets/vm/VMSetupProgress.tsx:87:              <Tag color="red">Failed</Tag>
+apps/frontend/src/widgets/vm/VMSetupProgress.tsx:89:              <Tag color="blue">In progress</Tag>
+apps/frontend/src/widgets/vm/settingsForm/ProxmoxTab.tsx:267:                    <Tag color="green">{autoSelectBest ? 'AUTO' : 'DEFAULT'}</Tag>
+apps/frontend/src/widgets/vm/settingsForm/SecretField.tsx:77:          <Tag color="warning">No secret</Tag>
+apps/frontend/src/widgets/vm/vmListColumns.tsx:69:          <Tag bordered={false} color={colorMap[status] || 'default'}>
+
+## Counts
+- prefix_matches: 1183
+- hex_matches: 144
+- antd_direct_import_matches: 113
+- tag_badge_color_matches: 50

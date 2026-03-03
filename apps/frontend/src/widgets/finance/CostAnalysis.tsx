@@ -27,11 +27,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  subscription_bot: 'var(--boxmox-color-border-subtle)',
-  subscription_game: 'var(--boxmox-color-border-subtle)',
-  proxy: 'var(--boxmox-color-border-subtle)',
-  license: 'var(--boxmox-color-border-subtle)',
-  other: 'var(--boxmox-color-border-subtle)',
+  subscription_bot: 'var(--botmox-color-border-subtle)',
+  subscription_game: 'var(--botmox-color-border-subtle)',
+  proxy: 'var(--botmox-color-border-subtle)',
+  license: 'var(--botmox-color-border-subtle)',
+  other: 'var(--botmox-color-border-subtle)',
 };
 
 export const CostAnalysis: React.FC<CostAnalysisProps> = ({
@@ -57,7 +57,7 @@ export const CostAnalysis: React.FC<CostAnalysisProps> = ({
         renderItem={(item) => {
           const percentage = totalExpenses > 0 ? (item.amount / totalExpenses) * 100 : 0;
           const label = CATEGORY_LABELS[item.category] || item.category.replace(/_/g, ' ');
-          const color = CATEGORY_COLORS[item.category] || '#f5222d';
+          const color = CATEGORY_COLORS[item.category] || 'var(--botmox-color-status-danger)';
 
           return (
             <div style={{ marginBottom: 16 }}>
@@ -77,7 +77,7 @@ export const CostAnalysis: React.FC<CostAnalysisProps> = ({
               <Progress
                 percent={percentage}
                 strokeColor={color}
-                trailColor="var(--boxmox-color-surface-muted)"
+                trailColor="var(--botmox-color-surface-muted)"
                 showInfo={false}
                 size="small"
               />
@@ -86,7 +86,9 @@ export const CostAnalysis: React.FC<CostAnalysisProps> = ({
         }}
       />
       {totalExpenses === 0 && (
-        <div style={{ textAlign: 'center', padding: '20px', color: '#8c8c8c' }}>
+        <div
+          style={{ textAlign: 'center', padding: '20px', color: 'var(--botmox-color-text-muted)' }}
+        >
           No expense data available for the selected period.
         </div>
       )}

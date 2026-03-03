@@ -16,8 +16,8 @@ export const CharacterLoadingCard: React.FC = () => (
     <Card
       className={styles['character-card']}
       headStyle={{
-        background: 'var(--boxmox-color-surface-muted)',
-        borderColor: 'var(--boxmox-color-border-default)',
+        background: 'var(--botmox-color-surface-muted)',
+        borderColor: 'var(--botmox-color-border-default)',
       }}
       bodyStyle={{ padding: 16 }}
     >
@@ -44,8 +44,8 @@ export const CharacterErrorCard: React.FC<CharacterErrorCardProps> = ({ error })
     <Card
       className={styles['character-card']}
       headStyle={{
-        background: 'var(--boxmox-color-surface-muted)',
-        borderColor: 'var(--boxmox-color-border-default)',
+        background: 'var(--botmox-color-surface-muted)',
+        borderColor: 'var(--botmox-color-border-default)',
       }}
       bodyStyle={{ padding: 16 }}
     >
@@ -56,8 +56,8 @@ export const CharacterErrorCard: React.FC<CharacterErrorCardProps> = ({ error })
         showIcon
         style={{
           background:
-            'color-mix(in srgb, var(--boxmox-color-status-danger) 10%, var(--boxmox-color-surface-muted))',
-          borderColor: 'var(--boxmox-color-status-danger)',
+            'color-mix(in srgb, var(--botmox-color-status-danger) 10%, var(--botmox-color-surface-muted))',
+          borderColor: 'var(--botmox-color-status-danger)',
         }}
         action={
           <Button size="small" onClick={() => window.location.reload()}>

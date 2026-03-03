@@ -22,6 +22,7 @@ import { TableActionButton, TableActionGroup } from '../../shared/ui/TableAction
 import styles from './ProxiesPage.module.css';
 
 const { Text } = Typography;
+type TagIntent = 'success' | 'warning' | 'error' | 'info' | 'default';
 
 const headerTitle = (text: string) => (
   <span
@@ -70,22 +71,22 @@ export function buildProxyColumns({
       key: 'status',
       width: 85,
       render: (status: string, record: ProxyWithBot) => {
-        let color = 'default';
+        let intent: TagIntent = 'default';
         let text = status;
 
         if (isExpired(record.expires_at)) {
-          color = 'error';
+          intent = 'error';
           text = 'EXPIRED';
         } else if (isExpiringSoon(record.expires_at)) {
-          color = 'warning';
+          intent = 'warning';
         } else if (status === 'active') {
-          color = 'success';
+          intent = 'success';
         } else if (status === 'banned') {
-          color = 'red';
+          intent = 'error';
         }
 
         return (
-          <Tag bordered={false} color={color} style={tagStyle}>
+          <Tag bordered={false} intent={intent} style={tagStyle}>
             {text.toUpperCase()}
           </Tag>
         );
@@ -128,17 +129,17 @@ export function buildProxyColumns({
             <Text strong>{countryCode}</Text>
             <div className={styles.inlineTags}>
               {record.vpn && (
-                <Tag bordered={false} color="orange" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} intent="warning" style={{ ...tagStyle, fontSize: 9 }}>
                   VPN
                 </Tag>
               )}
               {record.proxy && (
-                <Tag bordered={false} color="blue" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} intent="info" style={{ ...tagStyle, fontSize: 9 }}>
                   PROXY
                 </Tag>
               )}
               {record.tor && (
-                <Tag bordered={false} color="red" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} intent="error" style={{ ...tagStyle, fontSize: 9 }}>
                   TOR
                 </Tag>
               )}
@@ -158,7 +159,7 @@ export function buildProxyColumns({
 
         if (!hasBeenChecked) {
           return (
-            <Tag bordered={false} color="default" style={tagStyle}>
+            <Tag bordered={false} intent="default" style={tagStyle}>
               UNKNOWN
             </Tag>
           );
@@ -171,7 +172,7 @@ export function buildProxyColumns({
                 percent={actualScore}
                 size="small"
                 strokeColor={getFraudScoreColor(actualScore)}
-                trailColor="var(--boxmox-color-surface-muted)"
+                trailColor="var(--botmox-color-surface-muted)"
                 strokeLinecap="round"
                 format={(percent) => (
                   <span
@@ -188,17 +189,17 @@ export function buildProxyColumns({
             </div>
             <div className={styles.inlineTags}>
               {record.vpn && (
-                <Tag bordered={false} color="orange" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} intent="warning" style={{ ...tagStyle, fontSize: 9 }}>
                   VPN
                 </Tag>
               )}
               {record.proxy && (
-                <Tag bordered={false} color="blue" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} intent="info" style={{ ...tagStyle, fontSize: 9 }}>
                   PROXY
                 </Tag>
               )}
               {record.tor && (
-                <Tag bordered={false} color="red" style={{ ...tagStyle, fontSize: 9 }}>
+                <Tag bordered={false} intent="error" style={{ ...tagStyle, fontSize: 9 }}>
                   TOR
                 </Tag>
               )}
@@ -214,7 +215,7 @@ export function buildProxyColumns({
       render: (_: unknown, record: ProxyWithBot) => (
         <div style={{ textAlign: 'left' }}>
           <Typography.Paragraph style={{ marginBottom: 0 }}>
-            <RobotOutlined style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }} />
+            <RobotOutlined style={{ marginRight: 4, color: 'var(--botmox-color-brand-primary)' }} />
             <Text code>{record.bot_id}</Text>
           </Typography.Paragraph>
           <Text type="secondary" style={{ fontSize: '11px', display: 'block' }}>
@@ -236,7 +237,11 @@ export function buildProxyColumns({
         return (
           <Text
             style={{
-              color: expired ? '#ff4d4f' : expiringSoon ? '#faad14' : undefined,
+              color: expired
+                ? 'var(--botmox-color-status-danger)'
+                : expiringSoon
+                  ? 'var(--botmox-color-status-warning)'
+                  : undefined,
               fontSize: 12,
               lineHeight: 1.4,
             }}
@@ -258,7 +263,11 @@ export function buildProxyColumns({
         return (
           <Text
             style={{
-              color: expired ? '#ff4d4f' : expiringSoon ? '#faad14' : '#52c41a',
+              color: expired
+                ? 'var(--botmox-color-status-danger)'
+                : expiringSoon
+                  ? 'var(--botmox-color-status-warning)'
+                  : 'var(--botmox-color-status-success)',
               fontSize: 13,
               fontWeight: 600,
             }}

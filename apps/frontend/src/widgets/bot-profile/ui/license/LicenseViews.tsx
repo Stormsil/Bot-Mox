@@ -27,7 +27,7 @@ import {
   AppTypography as Typography,
 } from '../../../../shared/ui';
 import { TableActionButton } from '../../../../shared/ui/TableActionButton';
-import { getDaysLeftColor, getLicenseStatusColor, getLicenseStatusText } from './helpers';
+import { getDaysLeftColor, getLicenseStatusText } from './helpers';
 import styles from './license.module.css';
 import type { BotLicenseProps, LicenseInfo } from './types';
 
@@ -175,17 +175,19 @@ export const LicenseDetailsCard: React.FC<LicenseDetailsCardProps> = ({
               <div>
                 <Tag
                   bordered={false}
-                  color={getLicenseStatusColor(license)}
+                  intent={
+                    license.isExpired ? 'error' : license.isExpiringSoon ? 'warning' : 'success'
+                  }
                   icon={
                     license.isExpired ? (
                       <ExclamationCircleOutlined
-                        style={{ color: 'var(--boxmox-color-status-danger)' }}
+                        style={{ color: 'var(--botmox-color-status-danger)' }}
                       />
                     ) : license.isExpiringSoon ? (
-                      <WarningOutlined style={{ color: 'var(--boxmox-color-status-warning)' }} />
+                      <WarningOutlined style={{ color: 'var(--botmox-color-status-warning)' }} />
                     ) : (
                       <CheckCircleOutlined
-                        style={{ color: 'var(--boxmox-color-status-success)' }}
+                        style={{ color: 'var(--botmox-color-status-success)' }}
                       />
                     )
                   }

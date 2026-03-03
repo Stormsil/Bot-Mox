@@ -168,14 +168,14 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
 
     modal.confirm({
       title: '',
-      icon: <WarningOutlined style={{ color: 'var(--boxmox-color-status-warning)' }} />,
+      icon: <WarningOutlined style={{ color: 'var(--botmox-color-status-warning)' }} />,
       content: (
         <div>
           <p>Are you sure you want to unassign this proxy from the bot?</p>
           <p>
             <strong>IP:</strong> {proxy.ip}:{proxy.port}
           </p>
-          <p style={{ color: 'var(--boxmox-color-text-muted)', fontSize: '12px' }}>
+          <p style={{ color: 'var(--botmox-color-text-muted)', fontSize: '12px' }}>
             The proxy will remain in the database but will no longer be linked to this bot.
           </p>
         </div>

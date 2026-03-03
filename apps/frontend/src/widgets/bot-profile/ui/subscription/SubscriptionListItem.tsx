@@ -50,14 +50,14 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
       <Flex justify="space-between" align="center">
         <Space size={8}>
           <Tag
-            color={getStatusColor(subscription.computedStatus)}
+            intent={getStatusColor(subscription.computedStatus)}
             icon={getStatusIcon(subscription.computedStatus)}
           >
             {getStatusText(subscription)}
           </Tag>
         </Space>
         {subscription.type === 'wow' && subscription.auto_renew && (
-          <Tag color="success" style={{ fontSize: '10px' }}>
+          <Tag intent="success" style={{ fontSize: '10px' }}>
             Auto-renewal
           </Tag>
         )}
@@ -87,9 +87,9 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
             style={{
               fontSize: '12px',
               color: subscription.isExpired
-                ? 'var(--boxmox-color-status-danger)'
+                ? 'var(--botmox-color-status-danger)'
                 : subscription.isExpiringSoon
-                  ? 'var(--boxmox-color-status-warning)'
+                  ? 'var(--botmox-color-status-warning)'
                   : undefined,
             }}
           >

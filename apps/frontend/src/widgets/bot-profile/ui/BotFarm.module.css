@@ -3,12 +3,12 @@
 }
 
 .farm-stat-card {
-  background: var(--boxmox-color-surface-panel);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-color: var(--botmox-color-border-default);
 }
 
 .farmStatTitle {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -16,8 +16,8 @@
 
 .inventory-card {
   margin-top: 16px;
-  background: var(--boxmox-color-surface-panel);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-color: var(--botmox-color-border-default);
 }
 
 .inventory-item {
@@ -25,7 +25,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .inventory-item:last-child {
@@ -39,7 +39,7 @@
 }
 
 .inventory-item-icon {
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
   font-size: 14px;
 }
 
@@ -49,8 +49,8 @@
 }
 
 .inventory-item-quantity {
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-secondary);
+  background: var(--botmox-color-surface-muted);
+  border-color: var(--botmox-color-border-default);
+  color: var(--botmox-color-text-secondary);
   font-size: var(--text-xs);
 }

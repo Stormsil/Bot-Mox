@@ -27,10 +27,10 @@ export function AccountWorkflowAlert({ accountLocked }: AccountWorkflowAlertProp
       showIcon
       icon={
         accountLocked ? (
-          <LockOutlined style={{ fontSize: 14, color: 'var(--boxmox-color-text-secondary)' }} />
+          <LockOutlined style={{ fontSize: 14, color: 'var(--botmox-color-text-secondary)' }} />
         ) : (
           <CheckCircleOutlined
-            style={{ fontSize: 14, color: 'var(--boxmox-color-brand-primary)' }}
+            style={{ fontSize: 14, color: 'var(--botmox-color-brand-primary)' }}
           />
         )
       }
@@ -51,7 +51,7 @@ export function AccountWorkflowAlert({ accountLocked }: AccountWorkflowAlertProp
       style={{
         marginBottom: 16,
         padding: '6px 10px',
-        borderLeft: `3px solid var(--boxmox-color-brand-primary)`,
+        borderLeft: `3px solid var(--botmox-color-brand-primary)`,
       }}
     />
   );
@@ -67,7 +67,7 @@ export function AccountCardTitle({ hasIncompleteData }: AccountCardTitleProps) {
       <span className={styles['account-card-title']}>Account Information</span>
       {hasIncompleteData && (
         <Tooltip title="Some fields are empty. Please fill in all account data.">
-          <Badge dot color="orange">
+          <Badge dot status="warning">
             <ExclamationCircleOutlined className={styles['warning-icon']} />
           </Badge>
         </Tooltip>
@@ -91,9 +91,9 @@ export function IncompleteAccountAlert() {
       icon={<ExclamationCircleOutlined />}
       style={{
         marginBottom: 16,
-        borderColor: 'var(--boxmox-color-brand-warning)',
+        borderColor: 'var(--botmox-color-brand-warning)',
         background:
-          'color-mix(in srgb, var(--boxmox-color-brand-warning) 10%, var(--boxmox-color-surface-muted))',
+          'color-mix(in srgb, var(--botmox-color-brand-warning) 10%, var(--botmox-color-surface-muted))',
       }}
     />
   );
@@ -114,14 +114,14 @@ export function AccountLoadingState() {
         title={<span className={styles['account-card-title']}>Account Information</span>}
         className={styles['account-card']}
         headStyle={{
-          background: 'var(--boxmox-color-surface-muted)',
-          borderColor: 'var(--boxmox-color-border-default)',
+          background: 'var(--botmox-color-surface-muted)',
+          borderColor: 'var(--botmox-color-border-default)',
         }}
         bodyStyle={{ padding: 16 }}
       >
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <Spin size="large" />
-          <p style={{ marginTop: '16px', color: 'var(--boxmox-color-text-secondary)' }}>
+          <p style={{ marginTop: '16px', color: 'var(--botmox-color-text-secondary)' }}>
             Loading account data...
           </p>
         </div>

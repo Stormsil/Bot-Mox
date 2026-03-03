@@ -4,7 +4,7 @@
   justify-content: center;
   gap: 24px;
   padding: 16px;
-  background: var(--boxmox-color-surface-panel);
+  background: var(--botmox-color-surface-panel);
 }
 
 .stat-item {
@@ -17,13 +17,13 @@
 .stat-value {
   font-size: 18px;
   font-weight: 700;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-family: "Monaco", "Consolas", monospace;
 }
 
 .stat-label {
   font-size: 11px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -31,5 +31,5 @@
 .stat-divider {
   width: 1px;
   height: 32px;
-  background: var(--boxmox-color-border-default);
+  background: var(--botmox-color-border-default);
 }

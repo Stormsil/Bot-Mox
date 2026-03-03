@@ -21,7 +21,7 @@
 }
 
 .titleIcon {
-  color: var(--boxmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -39,7 +39,7 @@
 
 .column {
   min-height: 0;
-  border-color: var(--boxmox-color-border-default);
+  border-color: var(--botmox-color-border-default);
 }
 
 .columnBody {
@@ -55,8 +55,8 @@
 }
 
 .task {
-  border-color: var(--boxmox-color-border-default);
-  background: var(--boxmox-color-surface-panel);
+  border-color: var(--botmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
 }
 
 .taskBody {

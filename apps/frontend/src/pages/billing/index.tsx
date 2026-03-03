@@ -62,10 +62,10 @@ export const BillingPage: React.FC = () => {
   const remainingTrialHours = calcRemainingHours(access?.trial_ends_at || null);
 
   const tierTag = useMemo(() => {
-    if (tier === 'admin') return <Tag color="gold">ADMIN</Tag>;
-    if (tier === 'premium') return <Tag color="green">PREMIUM</Tag>;
-    if (tier === 'trial') return <Tag color="blue">TRIAL</Tag>;
-    return <Tag color="default">FREE</Tag>;
+    if (tier === 'admin') return <Tag intent="warning">ADMIN</Tag>;
+    if (tier === 'premium') return <Tag intent="success">PREMIUM</Tag>;
+    if (tier === 'trial') return <Tag intent="info">TRIAL</Tag>;
+    return <Tag intent="default">FREE</Tag>;
   }, [tier]);
 
   const refreshIdentity = async (): Promise<void> => {
@@ -153,7 +153,7 @@ export const BillingPage: React.FC = () => {
 
           <div className={styles.row}>
             <Typography.Text strong>Write access:</Typography.Text>
-            <Tag color={access?.write_access ? 'green' : 'red'}>
+            <Tag intent={access?.write_access ? 'success' : 'error'}>
               {access?.write_access ? 'ENABLED' : 'DISABLED'}
             </Tag>
           </div>

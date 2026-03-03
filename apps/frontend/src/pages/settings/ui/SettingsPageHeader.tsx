@@ -23,7 +23,7 @@ export const SettingsPageHeader: React.FC<SettingsPageHeaderProps> = ({ loading,
       <Title
         level={4}
         className={cx('settings-title')}
-        style={{ margin: 0, color: 'var(--boxmox-color-text-primary)' }}
+        style={{ margin: 0, color: 'var(--botmox-color-text-primary)' }}
       >
         <ToolOutlined className={cx('settings-title-icon')} /> Settings
       </Title>

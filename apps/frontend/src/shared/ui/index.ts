@@ -8,6 +8,7 @@ export {
   Col as AppCol,
   Collapse as AppCollapse,
   ColorPicker as AppColorPicker,
+  ConfigProvider as AppConfigProvider,
   DatePicker as AppDatePicker,
   Descriptions as AppDescriptions,
   Drawer as AppDrawer,

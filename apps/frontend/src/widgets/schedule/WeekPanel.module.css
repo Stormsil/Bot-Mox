@@ -3,8 +3,8 @@
   flex-direction: column;
   width: 160px;
   min-width: 160px;
-  background: var(--boxmox-color-surface-panel);
-  border-right: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-right: 1px solid var(--botmox-color-border-default);
   padding: 16px 12px;
   gap: 12px;
 }
@@ -14,24 +14,24 @@
   align-items: center;
   justify-content: center;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .week-panel-title {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   letter-spacing: 1px;
 }
 
 .week-panel-selected-day {
   font-size: 13px;
   font-weight: 600;
-  color: var(--boxmox-color-brand-warning);
+  color: var(--botmox-color-brand-warning);
   text-align: center;
   padding: 8px 0;
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .week-panel-timelines {
@@ -53,13 +53,13 @@
 }
 
 .week-day-item:hover {
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-muted);
+  border-color: var(--botmox-color-border-default);
 }
 
 .week-day-item.selected {
   background: rgba(59, 125, 184, 0.12);
-  border-color: var(--boxmox-color-brand-primary);
+  border-color: var(--botmox-color-brand-primary);
 }
 
 .week-day-item.disabled {
@@ -67,13 +67,13 @@
 }
 
 .week-day-item.enabled .week-day-timeline-segment {
-  background: #52c41a;
+  background: var(--botmox-color-status-success);
 }
 
 .week-day-name {
   font-size: 11px;
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   width: 32px;
   text-align: left;
   flex-shrink: 0;
@@ -90,24 +90,24 @@
   position: relative;
   width: 100%;
   height: 8px;
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
   border-radius: 4px;
   overflow: hidden;
-  border: 1px solid var(--boxmox-color-border-default);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .week-day-timeline-segment {
   position: absolute;
   top: 0;
   height: 100%;
-  background: var(--boxmox-color-brand-warning);
+  background: var(--botmox-color-brand-warning);
   border-radius: 2px;
   min-width: 2px;
 }
 
 .week-panel-divider {
   height: 1px;
-  background: var(--boxmox-color-border-default);
+  background: var(--botmox-color-border-default);
   margin: 4px 0;
 }
 
@@ -126,13 +126,13 @@
 .week-stat-value {
   font-size: 13px;
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-family: "Monaco", "Consolas", monospace;
 }
 
 .week-stat-label {
   font-size: 10px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }

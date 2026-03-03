@@ -7,12 +7,12 @@
 }
 
 .schedule-card {
-  background: var(--boxmox-color-surface-panel);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-color: var(--botmox-color-border-default);
 }
 
 .schedule-card-title {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-size: 14px;
   font-weight: 600;
 }
@@ -22,26 +22,26 @@
 }
 
 .schedule-action-btn {
-  background: var(--boxmox-color-surface-muted);
-  border-color: var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-primary);
+  background: var(--botmox-color-surface-muted);
+  border-color: var(--botmox-color-border-default);
+  color: var(--botmox-color-text-primary);
 }
 
 .schedule-action-btn:hover {
-  border-color: var(--boxmox-color-brand-primary);
-  color: var(--boxmox-color-brand-primary);
+  border-color: var(--botmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }
 
 .schedule-action-btn-primary {
-  background: var(--boxmox-color-brand-primary);
-  border-color: var(--boxmox-color-brand-primary);
-  color: #fff;
+  background: var(--botmox-color-brand-primary);
+  border-color: var(--botmox-color-brand-primary);
+  color: var(--botmox-color-brand-contrast);
 }
 
 .schedule-action-btn-primary:hover {
-  background: var(--boxmox-color-brand-primary-hover);
-  border-color: var(--boxmox-color-brand-primary-hover);
-  color: #fff;
+  background: var(--botmox-color-brand-primary-hover);
+  border-color: var(--botmox-color-brand-primary-hover);
+  color: var(--botmox-color-brand-contrast);
 }
 
 .schedule-action-btn:disabled,
@@ -51,23 +51,27 @@
 }
 
 .schedule-unlock-btn {
-  border-color: var(--boxmox-color-brand-warning);
-  color: var(--boxmox-color-brand-warning);
+  border-color: var(--botmox-color-brand-warning);
+  color: var(--botmox-color-brand-warning);
 }
 
 .schedule-unlock-btn:hover {
-  border-color: var(--boxmox-color-brand-primary);
-  color: var(--boxmox-color-brand-primary);
+  border-color: var(--botmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }
 
 .unsaved-alert {
   margin-bottom: 16px;
-  background: #fff4e3;
-  border-color: var(--boxmox-color-brand-warning);
+  background: color-mix(
+    in srgb,
+    var(--botmox-color-brand-warning) 18%,
+    var(--botmox-color-surface-panel)
+  );
+  border-color: var(--botmox-color-brand-warning);
 }
 
 .unsaved-alert-message {
-  color: #b36200;
+  color: color-mix(in srgb, var(--botmox-color-brand-warning) 75%, black);
 }
 
 /* Main layout wrapper */
@@ -82,10 +86,10 @@
 
 .panel-block {
   margin: 0 16px 16px 16px;
-  border: 1px solid var(--boxmox-color-border-default);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 8px;
   overflow: hidden;
-  background: var(--boxmox-color-surface-panel);
+  background: var(--botmox-color-surface-panel);
 }
 
 /* Responsive adjustments */

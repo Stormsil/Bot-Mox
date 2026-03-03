@@ -3,8 +3,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  background: var(--boxmox-color-header-bg);
-  border-bottom: 1px solid var(--boxmox-color-header-border);
+  background: var(--botmox-color-header-bg);
+  border-bottom: 1px solid var(--botmox-color-header-border);
   height: var(--header-height);
   line-height: var(--header-height);
 }
@@ -28,16 +28,16 @@
 }
 
 .user-menu:hover {
-  background: var(--boxmox-color-header-hover);
+  background: var(--botmox-color-header-hover);
 }
 
 .user-email {
-  color: var(--boxmox-color-header-text);
+  color: var(--botmox-color-header-text);
   font-size: var(--text-sm);
 }
 
 .dropdown-icon {
-  color: var(--boxmox-color-header-text-muted);
+  color: var(--botmox-color-header-text-muted);
   font-size: 10px;
 }
 
@@ -50,7 +50,7 @@
 .upgrade-btn {
   padding-inline: 4px;
   height: auto;
-  color: var(--boxmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }
 
 .header-path {
@@ -64,9 +64,9 @@
   width: 26px;
   height: 26px;
   border-radius: 6px;
-  border: 1px solid var(--boxmox-color-header-border);
+  border: 1px solid var(--botmox-color-header-border);
   background: transparent;
-  color: var(--boxmox-color-header-text);
+  color: var(--botmox-color-header-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -75,7 +75,7 @@
 }
 
 .path-back:hover {
-  background: var(--boxmox-color-header-hover);
+  background: var(--botmox-color-header-hover);
 }
 
 .path-breadcrumbs {
@@ -83,7 +83,7 @@
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: var(--boxmox-color-header-text-muted);
+  color: var(--botmox-color-header-text-muted);
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -91,7 +91,7 @@
 
 .path-crumb {
   font-size: 12px;
-  color: var(--boxmox-color-header-text);
+  color: var(--botmox-color-header-text);
   padding: 2px 4px;
   border-radius: 4px;
   background: transparent;
@@ -103,20 +103,20 @@
 }
 
 .path-crumb.current {
-  color: var(--boxmox-color-header-text);
+  color: var(--botmox-color-header-text);
   cursor: default;
 }
 
 .path-crumb.muted {
-  color: var(--boxmox-color-header-text-muted);
+  color: var(--botmox-color-header-text-muted);
   cursor: default;
 }
 
 .path-crumb:hover:not(.current):not(.muted) {
-  background: var(--boxmox-color-header-hover);
+  background: var(--botmox-color-header-hover);
 }
 
 .path-sep {
-  color: var(--boxmox-color-header-text-muted);
+  color: var(--botmox-color-header-text-muted);
   font-size: 11px;
 }

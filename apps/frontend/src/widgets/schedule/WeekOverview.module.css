@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   padding: 16px;
-  background: var(--boxmox-color-surface-panel);
+  background: var(--botmox-color-surface-panel);
   min-height: 500px;
 }
 
@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 /* Header with actions */
@@ -20,7 +20,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  border-bottom: 1px solid var(--botmox-color-border-default);
   margin-bottom: 16px;
 }
 
@@ -32,13 +32,13 @@
 
 .week-overview-title h3 {
   margin: 0;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-size: 16px;
   font-weight: 600;
 }
 
 .week-overview-subtitle {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   font-size: 12px;
 }
 
@@ -56,14 +56,14 @@
   align-items: center;
   gap: 12px;
   padding: 8px;
-  background: var(--boxmox-color-surface-muted);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-muted);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .week-day-row:hover {
-  border-color: var(--boxmox-color-brand-warning);
+  border-color: var(--botmox-color-brand-warning);
 }
 
 /* Day label button */
@@ -82,20 +82,20 @@
 }
 
 .week-day-label:hover {
-  background: var(--boxmox-color-surface-panel);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border-color: var(--botmox-color-border-default);
 }
 
 .week-day-name {
   font-size: 13px;
   font-weight: 700;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   letter-spacing: 0.5px;
 }
 
 .week-day-date {
   font-size: 10px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .week-day-status {
@@ -106,12 +106,12 @@
 }
 
 .week-day-status.active {
-  background: #52c41a;
+  background: var(--botmox-color-status-success);
   box-shadow: 0 0 4px rgba(82, 196, 26, 0.5);
 }
 
 .week-day-status.disabled {
-  background: #8c8c8c;
+  background: var(--botmox-color-status-neutral);
 }
 
 /* Timeline wrapper */
@@ -126,7 +126,7 @@
   gap: 24px;
   align-items: center;
   padding-top: 16px;
-  border-top: 1px solid var(--boxmox-color-border-default);
+  border-top: 1px solid var(--botmox-color-border-default);
   margin-top: 16px;
 }
 
@@ -135,33 +135,33 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .week-overview-legend .legend-bar {
   width: 16px;
   height: 4px;
-  background: #52c41a;
+  background: var(--botmox-color-status-success);
   border-radius: 2px;
 }
 
 .week-overview-legend .legend-bar.overlap {
-  background: #faad14;
+  background: var(--botmox-color-status-warning);
 }
 
 .week-overview-legend .legend-marker {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  border: 2px solid var(--boxmox-color-surface-panel);
+  border: 2px solid var(--botmox-color-surface-panel);
 }
 
 .week-overview-legend .legend-marker.start {
-  background: #52c41a;
+  background: var(--botmox-color-status-success);
 }
 
 .week-overview-legend .legend-marker.end {
-  background: #8c8c8c;
+  background: var(--botmox-color-status-neutral);
 }
 
 .week-overview-legend .legend-text {

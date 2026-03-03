@@ -81,7 +81,7 @@ const renderSingleEventItem = (
           <Space size={8}>
             <span>{event.title}</span>
             <Tag
-              color={dayjs(event.date).isBefore(dayjs().startOf('day'), 'day') ? 'error' : 'blue'}
+              intent={dayjs(event.date).isBefore(dayjs().startOf('day'), 'day') ? 'error' : 'info'}
             >
               {dayjs(event.date).format('DD MMM')}
             </Tag>

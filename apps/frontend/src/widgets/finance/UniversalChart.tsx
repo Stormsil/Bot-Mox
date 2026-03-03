@@ -41,7 +41,7 @@ const DEFAULT_CONFIG: ChartSeriesConfig[] = [
   {
     key: 'income',
     name: 'Income',
-    color: '#9a9a9a',
+    color: 'var(--botmox-color-status-success)',
     type: 'line',
     yAxisId: 'left',
     visible: true,
@@ -50,7 +50,7 @@ const DEFAULT_CONFIG: ChartSeriesConfig[] = [
   {
     key: 'expense',
     name: 'Expense',
-    color: '#7a7a7a',
+    color: 'var(--botmox-color-status-danger)',
     type: 'line',
     yAxisId: 'left',
     visible: true,
@@ -59,7 +59,7 @@ const DEFAULT_CONFIG: ChartSeriesConfig[] = [
   {
     key: 'profit',
     name: 'Profit',
-    color: '#8b8b8b',
+    color: 'var(--botmox-color-brand-primary)',
     type: 'line',
     yAxisId: 'left',
     visible: true,
@@ -68,7 +68,7 @@ const DEFAULT_CONFIG: ChartSeriesConfig[] = [
   {
     key: 'dailyProfit',
     name: 'Daily Net',
-    color: '#5f5f5f',
+    color: 'var(--botmox-color-text-secondary)',
     type: 'bar',
     yAxisId: 'left',
     visible: false,
@@ -77,7 +77,7 @@ const DEFAULT_CONFIG: ChartSeriesConfig[] = [
   {
     key: 'gold_price_wow_tbc',
     name: 'Gold Price (TBC)',
-    color: '#8a8a8a',
+    color: 'var(--botmox-color-status-info)',
     type: 'line',
     yAxisId: 'right',
     visible: true,
@@ -86,7 +86,7 @@ const DEFAULT_CONFIG: ChartSeriesConfig[] = [
   {
     key: 'gold_price_wow_midnight',
     name: 'Gold Price (Midnight)',
-    color: '#6f6f6f',
+    color: 'var(--botmox-color-brand-warning)',
     type: 'line',
     yAxisId: 'right',
     visible: true,
@@ -259,11 +259,11 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
             <CartesianGrid
               strokeDasharray="3 3"
               vertical={false}
-              stroke="var(--boxmox-color-border-default)"
+              stroke="var(--botmox-color-border-default)"
             />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 11, fill: 'var(--boxmox-color-text-secondary)' }}
+              tick={{ fontSize: 11, fill: 'var(--botmox-color-text-secondary)' }}
               tickFormatter={(date) =>
                 new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
               }
@@ -272,28 +272,28 @@ export const UniversalChart: React.FC<UniversalChartProps> = (props) => {
               yAxisId="left"
               orientation="left"
               tickFormatter={(val) => `$${val}`}
-              tick={{ fontSize: 11, fill: 'var(--boxmox-color-text-secondary)' }}
+              tick={{ fontSize: 11, fill: 'var(--botmox-color-text-secondary)' }}
               label={{
                 value: 'Amount (USD)',
                 angle: -90,
                 position: 'insideLeft',
-                style: { textAnchor: 'middle', fill: 'var(--boxmox-color-text-muted)' },
+                style: { textAnchor: 'middle', fill: 'var(--botmox-color-text-muted)' },
               }}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
               tickFormatter={(val) => `$${val}`}
-              tick={{ fontSize: 11, fill: 'var(--boxmox-color-text-secondary)' }}
+              tick={{ fontSize: 11, fill: 'var(--botmox-color-text-secondary)' }}
               label={{
                 value: 'Gold Price',
                 angle: 90,
                 position: 'insideRight',
-                style: { textAnchor: 'middle', fill: 'var(--boxmox-color-text-muted)' },
+                style: { textAnchor: 'middle', fill: 'var(--botmox-color-text-muted)' },
               }}
             />
             <Tooltip content={<CustomChartTooltip config={config} />} />
-            <Legend wrapperStyle={{ color: 'var(--boxmox-color-text-secondary)', fontSize: 11 }} />
+            <Legend wrapperStyle={{ color: 'var(--botmox-color-text-secondary)', fontSize: 11 }} />
 
             {config.map((item) => {
               if (!item.visible) return null;

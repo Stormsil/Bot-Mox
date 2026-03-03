@@ -99,7 +99,7 @@ export const BotLevelingWidget: React.FC<BotLevelingProps> = () => {
           <Progress
             percent={xpPercent}
             strokeColor={wowMetricColors.levelingCurrent}
-            trailColor="var(--boxmox-color-border-default)"
+            trailColor="var(--botmox-color-border-default)"
             showInfo={false}
           />
           <div className={styles['xp-percent']}>{xpPercent}%</div>

@@ -45,7 +45,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 strong
                 style={
                   currentStage === 'prepare'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    ? { color: 'var(--botmox-color-brand-primary)' }
                     : undefined
                 }
               >
@@ -56,7 +56,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 type="secondary"
                 style={
                   currentStage === 'prepare'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    ? { color: 'var(--botmox-color-brand-primary)' }
                     : undefined
                 }
               >
@@ -92,7 +92,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 strong
                 style={
                   currentStage === 'leveling'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    ? { color: 'var(--botmox-color-brand-primary)' }
                     : undefined
                 }
               >
@@ -103,7 +103,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 type="secondary"
                 style={
                   currentStage === 'leveling'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    ? { color: 'var(--botmox-color-brand-primary)' }
                     : undefined
                 }
               >
@@ -139,7 +139,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 strong
                 style={
                   currentStage === 'professions'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    ? { color: 'var(--botmox-color-brand-primary)' }
                     : undefined
                 }
               >
@@ -150,7 +150,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 type="secondary"
                 style={
                   currentStage === 'professions'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    ? { color: 'var(--botmox-color-brand-primary)' }
                     : undefined
                 }
               >
@@ -186,7 +186,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 strong
                 style={
                   currentStage === 'farm'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    ? { color: 'var(--botmox-color-brand-primary)' }
                     : undefined
                 }
               >
@@ -197,7 +197,7 @@ export const StageTimeline: React.FC<StageTimelineProps> = ({ currentStage }) =>
                 type="secondary"
                 style={
                   currentStage === 'farm'
-                    ? { color: 'var(--boxmox-color-brand-primary)' }
+                    ? { color: 'var(--botmox-color-brand-primary)' }
                     : undefined
                 }
               >

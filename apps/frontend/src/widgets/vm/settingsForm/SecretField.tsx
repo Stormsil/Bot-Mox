@@ -70,11 +70,11 @@ export const SecretField: React.FC<SecretFieldProps> = ({
       <div className={layout.fieldLabel}>{label}</div>
       <Flex gap={8} align="center" wrap>
         {isBound ? (
-          <Tag icon={<CheckCircleOutlined />} color="success">
+          <Tag icon={<CheckCircleOutlined />} intent="success">
             Secret set
           </Tag>
         ) : (
-          <Tag color="warning">No secret</Tag>
+          <Tag intent="warning">No secret</Tag>
         )}
         <Button size="small" icon={<LockOutlined />} onClick={() => setModalOpen(true)}>
           {isBound ? 'Rotate' : 'Set'}

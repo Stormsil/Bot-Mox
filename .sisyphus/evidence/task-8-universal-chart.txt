@@ -1,0 +1,33 @@
+Task 8 - UniversalChart semantic palette + persisted config sanitation
+
+Scope
+- Updated apps/frontend/src/entities/finance/api/chartConfig.ts
+- Verified apps/frontend/src/widgets/finance/UniversalChart.tsx uses semantic token colors in DEFAULT_CONFIG
+- Appended notes:
+  - .sisyphus/notepads/ui-kit-final-polish/learnings.md
+  - .sisyphus/notepads/ui-kit-final-polish/issues.md
+
+Implementation evidence
+- Added deterministic sanitizer in chartConfig IO path:
+  - saveFinanceChartConfig() now sanitizes before write
+  - getFinanceChartConfig() now sanitizes after read
+- Sanitizer behavior:
+  - Validates persisted payload shape as array of chart series config items
+  - Converts known legacy HEX colors to semantic botmox tokens
+  - Remaps unknown HEX/non-token colors to key-based semantic fallback tokens
+  - Accepts only semantic var(--botmox-...) color strings as-is
+
+Policy verification
+- Grep command: grep pattern #[0-9a-fA-F]{3,8} include *UniversalChart* path apps/frontend/src
+- Result: No matches found
+
+LSP diagnostics
+- apps/frontend/src/entities/finance/api/chartConfig.ts: No diagnostics found
+- apps/frontend/src/widgets/finance/UniversalChart.tsx: No diagnostics found
+
+Build verification
+- Command: pnpm --filter @botmox/frontend typecheck
+- Result: PASS (tsc -b --noEmit)
+
+- Command: pnpm --filter @botmox/frontend build
+- Result: PASS (tsc -b && vite build, built successfully)

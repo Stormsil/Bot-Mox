@@ -11,7 +11,7 @@
 .generator-section-title {
   font-size: 11px;
   font-weight: 600;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   text-transform: uppercase;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
@@ -32,7 +32,7 @@
 }
 
 .formLabel {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   font-size: 11px;
 }
 
@@ -48,12 +48,12 @@
 
 .toggle-label {
   font-size: 11px;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .highlight-param {
   padding: 8px;
-  border: 1px dashed var(--boxmox-color-border-default);
+  border: 1px dashed var(--botmox-color-border-default);
   border-radius: 6px;
   background: rgba(59, 125, 184, 0.08);
 }
@@ -66,13 +66,13 @@
   margin: 12px 0;
   padding: 8px;
   background: rgba(255, 77, 79, 0.1);
-  border-left: 3px solid #ff4d4f;
+  border-left: 3px solid var(--botmox-color-status-danger);
   border-radius: 2px;
 }
 
 .error-item {
   font-size: 11px;
-  color: #ff4d4f;
+  color: var(--botmox-color-status-danger);
   margin-bottom: 4px;
 }
 
@@ -81,7 +81,7 @@
   gap: 8px;
   margin-top: 16px;
   padding-top: 12px;
-  border-top: 1px dashed var(--boxmox-color-border-default);
+  border-top: 1px dashed var(--botmox-color-border-default);
 }
 
 .generator-actions {
@@ -90,7 +90,7 @@
   gap: 8px;
   margin-top: 16px;
   padding-top: 12px;
-  border-top: 1px solid var(--boxmox-color-border-default);
+  border-top: 1px solid var(--botmox-color-border-default);
 }
 
 /* Templates List Styles */
@@ -144,7 +144,7 @@
 .template-name {
   font-weight: 600;
   font-size: 13px;
-  color: var(--boxmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -152,5 +152,5 @@
 
 .template-details {
   font-size: 11px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }

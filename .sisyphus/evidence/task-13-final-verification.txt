@@ -1,0 +1,76 @@
+Task 13 Final Verification (PASS)
+
+Command:
+`grep -R --line-number --fixed-strings -- "--boxmox-" apps/frontend/src packages/ui-kit/src`
+
+Output:
+(no output)
+
+Result:
+0 matches.
+
+Command:
+`grep -R --line-number -E "#[0-9a-fA-F]{3,6}\b" apps/frontend/src/pages apps/frontend/src/widgets apps/frontend/src/features | grep -v "apps/frontend/src/features/wow-data/config/colors.ts"`
+
+Output:
+(no output)
+
+Result:
+0 matches outside allowlisted `apps/frontend/src/features/wow-data/config/colors.ts`.
+
+Command:
+`grep -R --line-number -E "<(Tag|Badge)[^>]*\bcolor=" apps/frontend/src/pages apps/frontend/src/widgets apps/frontend/src/features`
+
+Output:
+(no output)
+
+Result:
+0 direct business-layer `<Tag|Badge ... color=>` usages in scoped dirs.
+
+Command:
+`pnpm --filter @botmox/frontend lint`
+
+Output:
+> @botmox/frontend@0.0.0 lint E:\Боттинг\source\repos\Bot-Mox\apps\frontend
+> pnpm --dir ../.. exec biome check apps/frontend/src && pnpm --dir ../.. run check:ui:boundaries
+
+Checked 603 files in 380ms. No fixes applied.
+
+> botmox-project@1.0.0 check:ui:boundaries E:\Боттинг\source\repos\Bot-Mox
+> node scripts/check-ui-boundaries.js
+
+[check-ui-boundaries] OK. Checked 109 UI files; violations: 0.
+
+Command:
+`pnpm --filter @botmox/frontend typecheck`
+
+Output:
+> @botmox/frontend@0.0.0 typecheck E:\Боттинг\source\repos\Bot-Mox\apps\frontend
+> tsc -b --noEmit
+
+Command:
+`pnpm --filter @botmox/frontend build`
+
+Output:
+> @botmox/frontend@0.0.0 prebuild E:\Боттинг\source\repos\Bot-Mox\apps\frontend
+> pnpm --filter @botmox/api-contract build
+
+> @botmox/api-contract@0.1.0 build E:\Боттинг\source\repos\Bot-Mox\packages\api-contract
+> pnpm exec tsc -p tsconfig.json
+
+> @botmox/frontend@0.0.0 build E:\Боттинг\source\repos\Bot-Mox\apps\frontend
+> tsc -b && vite build
+
+vite v7.3.1 building client environment for production...
+... (bundle details omitted)
+✓ built in 18.75s
+
+Command:
+`pnpm run check:style:ratchet`
+
+Output:
+> botmox-project@1.0.0 check:style:ratchet E:\Боттинг\source\repos\Bot-Mox
+> node scripts/check-style-token-usage.js --ratchet-prefix-only && node scripts/check-style-guardrails.js --ratchet-ui-kit
+
+Style token usage check passed (13 tracked files; legacyPrefix=0 in business scopes).
+Style guardrails passed (ui-kit ratchet mode: hex/tag checks).

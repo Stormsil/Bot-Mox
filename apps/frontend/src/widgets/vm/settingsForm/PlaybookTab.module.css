@@ -29,7 +29,7 @@
   border: 1px solid transparent;
   border-radius: 2px;
   background: transparent;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-size: 12px;
   font-family: inherit;
   line-height: 1.25;
@@ -40,16 +40,16 @@
 }
 
 .sidebarItem:hover {
-  background: var(--boxmox-color-surface-hover);
-  border-color: var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-hover);
+  border-color: var(--botmox-color-border-default);
 }
 
 .sidebarItemActive {
-  background: var(--boxmox-color-brand-soft);
+  background: var(--botmox-color-brand-soft);
   border-color: color-mix(
     in srgb,
-    var(--boxmox-color-brand-primary) 55%,
-    var(--boxmox-color-border-default)
+    var(--botmox-color-brand-primary) 55%,
+    var(--botmox-color-border-default)
   );
 }
 
@@ -78,10 +78,10 @@
 }
 
 .editorBox {
-  border: 1px solid var(--boxmox-color-border-default);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 2px;
   overflow: hidden;
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
 }
 
 .footerRow {

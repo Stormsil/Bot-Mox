@@ -7,8 +7,8 @@
 }
 
 .license-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   margin-bottom: 16px;
 }
 
@@ -25,7 +25,7 @@
 .license-key {
   font-family: monospace;
   font-size: 13px;
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
   padding: 4px 8px;
   border-radius: 4px;
   word-break: break-all;
@@ -34,5 +34,5 @@
 .license-actions {
   margin-top: 8px;
   padding-top: 16px;
-  border-top: 1px solid var(--boxmox-color-border-default);
+  border-top: 1px solid var(--botmox-color-border-default);
 }

@@ -1,0 +1,103 @@
+{
+  "startedAt": "2026-03-03T04:35:43.683Z",
+  "finishedAt": "2026-03-03T04:35:51.373Z",
+  "baseUrl": "http://127.0.0.1:5174",
+  "verdict": "PASS",
+  "blocker": null,
+  "maxDepthStillAppears": false,
+  "flows": [
+    {
+      "name": "Status/Tag Surface (Subscriptions)",
+      "route": "/subscriptions",
+      "steps": [
+        "Open /subscriptions",
+        "Verify status tag rendering includes Expiring Soon"
+      ],
+      "pass": true,
+      "outcome": "Status/tag surface rendered and stable"
+    },
+    {
+      "name": "Status/Tag Surface (Licenses)",
+      "route": "/licenses",
+      "steps": [
+        "Open /licenses",
+        "Verify active and expired status labels are visible"
+      ],
+      "pass": true,
+      "outcome": "Status/tag surface rendered and stable"
+    },
+    {
+      "name": "Settings Interactivity Surface",
+      "route": "/settings",
+      "steps": [
+        "Open /settings",
+        "Scroll page down and back",
+        "Click Refresh control"
+      ],
+      "pass": true,
+      "outcome": "Settings loaded and remained interactive; scrollY reached 0"
+    }
+  ],
+  "consoleErrors": [
+    "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.",
+    "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.",
+    "Warning: [antd: compatible] antd v5 support React is 16 ~ 18. see https://u.ant.design/v5-for-19 for compatible."
+  ],
+  "blockingConsoleErrors": [],
+  "pageErrors": [],
+  "requestLog": [
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/bots",
+    "GET /api/v1/settings/projects",
+    "GET /api/v1/settings/ui/resource_tree",
+    "GET /api/v1/bots",
+    "GET /api/v1/settings/alerts",
+    "GET /api/v1/resources/subscriptions",
+    "GET /api/v1/bots",
+    "GET /api/v1/resources/subscriptions",
+    "GET /api/v1/bots",
+    "GET /api/v1/resources/subscriptions",
+    "GET /api/v1/bots",
+    "GET /api/v1/resources/subscriptions",
+    "PUT /api/v1/settings/ui/resource_tree",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/bots",
+    "GET /api/v1/settings/projects",
+    "GET /api/v1/settings/ui/resource_tree",
+    "GET /api/v1/resources/licenses",
+    "GET /api/v1/bots",
+    "GET /api/v1/resources/licenses",
+    "GET /api/v1/bots",
+    "GET /api/v1/resources/licenses",
+    "GET /api/v1/bots",
+    "GET /api/v1/resources/licenses",
+    "GET /api/v1/bots",
+    "PUT /api/v1/settings/ui/resource_tree",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/bots",
+    "GET /api/v1/settings/projects",
+    "GET /api/v1/settings/ui/resource_tree",
+    "GET /api/v1/theme-assets",
+    "GET /api/v1/settings/api_keys",
+    "GET /api/v1/settings/proxy",
+    "GET /api/v1/settings/notifications/events",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/settings/storage_policy",
+    "GET /api/v1/settings/alerts",
+    "PUT /api/v1/settings/ui/resource_tree",
+    "GET /api/v1/settings/api_keys",
+    "GET /api/v1/settings/proxy",
+    "GET /api/v1/settings/notifications/events",
+    "GET /api/v1/settings/theme",
+    "GET /api/v1/settings/projects",
+    "GET /api/v1/settings/storage_policy",
+    "GET /api/v1/settings/alerts"
+  ]
+}

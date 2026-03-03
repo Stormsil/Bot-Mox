@@ -50,7 +50,14 @@ interface MetricBlockProps {
 // Цвета для графиков
 const COLORS = {
   // Muted, professional palette (non-grey, low saturation)
-  categories: ['#5b6f8f', '#4f8a8b', '#8b5a3c', '#7a5c8f', '#6b7a88', '#8a8f4f'],
+  categories: [
+    'var(--botmox-color-brand-primary)',
+    'var(--botmox-color-status-info)',
+    'var(--botmox-color-status-success)',
+    'var(--botmox-color-status-warning)',
+    'var(--botmox-color-brand-warning)',
+    'var(--botmox-color-text-muted)',
+  ],
 };
 
 const PieTooltipContent: React.FC<PieTooltipContentProps> = ({
@@ -290,7 +297,7 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
                     dataKey="value"
                     label={false}
                     labelLine={false}
-                    stroke="var(--boxmox-color-surface-base)"
+                    stroke="var(--botmox-color-surface-base)"
                     strokeWidth={2}
                   >
                     {expensePieData.map((entry, index) => (
@@ -304,7 +311,7 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
                   <Legend
                     iconType="circle"
                     wrapperStyle={{
-                      color: 'var(--boxmox-color-text-secondary)',
+                      color: 'var(--botmox-color-text-secondary)',
                       fontSize: 11,
                       textTransform: 'uppercase',
                       letterSpacing: '0.4px',

@@ -55,10 +55,10 @@ export const VmTargetStrip: React.FC<VmTargetStripProps> = ({
         Refresh Computers
       </Button>
       {!sshConfigured && (
-        <Tag color="warning">SSH not configured: SSH-only features are disabled</Tag>
+        <Tag intent="warning">SSH not configured: SSH-only features are disabled</Tag>
       )}
       {sshConfigured && !sshConnected && (
-        <Tag color="error">
+        <Tag intent="error">
           SSH unavailable{sshStatusCode ? ` (${sshStatusCode})` : ''}: SSH-only features are
           disabled
         </Tag>

@@ -1,14 +1,14 @@
 export const uiTokens = {
   colors: {
-    brand: 'var(--boxmox-color-primary)',
-    textPrimary: 'var(--boxmox-color-text-primary)',
-    textSecondary: 'var(--boxmox-color-text-secondary)',
-    bgBase: 'var(--boxmox-color-bg-base)',
+    brand: 'var(--botmox-color-primary)',
+    textPrimary: 'var(--botmox-color-text-primary)',
+    textSecondary: 'var(--botmox-color-text-secondary)',
+    bgBase: 'var(--botmox-color-bg-base)',
   },
   radius: {
-    sm: 'var(--boxmox-radius-sm)',
-    md: 'var(--boxmox-radius-md)',
-    lg: 'var(--boxmox-radius-lg)',
+    sm: 'var(--botmox-radius-sm)',
+    md: 'var(--botmox-radius-md)',
+    lg: 'var(--botmox-radius-lg)',
   },
 } as const;
 

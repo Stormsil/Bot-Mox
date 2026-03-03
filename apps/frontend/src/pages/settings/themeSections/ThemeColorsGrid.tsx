@@ -66,7 +66,6 @@ export function ThemeColorsGrid(props: ColorsProps): ReactElement {
               onBlur={() => props.onThemeInputCommit(props.editingThemeMode, cssVar)}
               onPressEnter={() => props.onThemeInputCommit(props.editingThemeMode, cssVar)}
               className={cx('theme-color-input')}
-              placeholder="#000000"
             />
             <Button
               icon={<HighlightOutlined />}

@@ -4,8 +4,14 @@ import type { TableColumnsType } from 'antd';
 
 import dayjs from 'dayjs';
 import type { SubscriptionWithDetails } from '../../entities/resources/model/types';
+import {
+  getExpiryIntent,
+  getRemainingDaysIntent,
+  getSemanticIntentColorToken,
+  getSubscriptionStatusIntent,
+} from '../../shared/lib/statusSemantic';
 import { AppSpace as Space, AppTag as Tag, AppTypography as Typography } from '../../shared/ui';
-import { getSubscriptionStatusColor, getSubscriptionStatusText } from './subscription-status';
+import { getSubscriptionStatusText } from './subscription-status';
 
 const { Text } = Typography;
 
@@ -24,7 +30,7 @@ export const buildSubscriptionColumns = ({
     render: (status: SubscriptionWithDetails['computedStatus'], record) => (
       <Tag
         bordered={false}
-        color={getSubscriptionStatusColor(status)}
+        intent={getSubscriptionStatusIntent(status)}
         style={{ fontSize: '11px', textTransform: 'uppercase' }}
       >
         {`${getSubscriptionStatusText(status)}${status === 'expiring_soon' ? ` (${record.daysRemaining} days)` : ''}`.toUpperCase()}
@@ -38,7 +44,7 @@ export const buildSubscriptionColumns = ({
     render: (_value: unknown, record) => (
       <Space direction="vertical" size={0}>
         <Space size={4}>
-          <RobotOutlined style={{ marginRight: 4, color: 'var(--boxmox-color-brand-primary)' }} />
+          <RobotOutlined style={{ marginRight: 4, color: 'var(--botmox-color-brand-primary)' }} />
           <Text code>{record.bot_id}</Text>
         </Space>
         <Text type="secondary" style={{ fontSize: '11px' }}>
@@ -53,16 +59,19 @@ export const buildSubscriptionColumns = ({
     dataIndex: 'expires_at',
     key: 'expires_at',
     width: 130,
-    render: (expiresAt: number, record) => (
-      <Text
-        style={{
-          color: record.isExpired ? '#ff4d4f' : record.isExpiringSoon ? '#faad14' : undefined,
-          fontSize: '12px',
-        }}
-      >
-        {dayjs(expiresAt).format('DD.MM.YYYY')}
-      </Text>
-    ),
+    render: (expiresAt: number, record) => {
+      const expiryIntent = getExpiryIntent(record.isExpired, record.isExpiringSoon);
+      return (
+        <Text
+          style={{
+            color: expiryIntent ? getSemanticIntentColorToken(expiryIntent) : undefined,
+            fontSize: '12px',
+          }}
+        >
+          {dayjs(expiresAt).format('DD.MM.YYYY')}
+        </Text>
+      );
+    },
   },
   {
     title: 'Created',
@@ -79,15 +88,20 @@ export const buildSubscriptionColumns = ({
     width: 100,
     render: (_value: unknown, record) => {
       if (record.isExpired) {
-        return <Text style={{ color: '#ff4d4f', fontSize: '14px', fontWeight: 600 }}>0</Text>;
+        return (
+          <Text
+            style={{
+              color: getSemanticIntentColorToken('error'),
+              fontSize: '14px',
+              fontWeight: 600,
+            }}
+          >
+            0
+          </Text>
+        );
       }
 
-      let color = '#52c41a';
-      if (record.daysRemaining <= 3) {
-        color = '#ff4d4f';
-      } else if (record.daysRemaining <= 7) {
-        color = '#faad14';
-      }
+      const color = getSemanticIntentColorToken(getRemainingDaysIntent(record.daysRemaining));
 
       return (
         <Text

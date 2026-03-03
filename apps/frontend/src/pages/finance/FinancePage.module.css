@@ -7,8 +7,8 @@
 }
 
 .filterBar {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: var(--radius-md);
   margin-bottom: 0;
 }

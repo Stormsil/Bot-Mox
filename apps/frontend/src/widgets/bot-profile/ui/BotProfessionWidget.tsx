@@ -68,7 +68,7 @@ export const BotProfessionWidget: React.FC<BotProfessionProps> = () => {
                     </span>
                     <span className={styles['profession-name']}>{profession.name}</span>
                     {isActive && (
-                      <Tag color="success" className={styles['profession-status']}>
+                      <Tag intent="success" className={styles['profession-status']}>
                         Active
                       </Tag>
                     )}
@@ -77,17 +77,17 @@ export const BotProfessionWidget: React.FC<BotProfessionProps> = () => {
               >
                 <div className={styles['profession-progress']}>
                   <div className={styles['skill-info']}>
-                    <Text strong style={{ color: 'var(--boxmox-color-text-primary)' }}>
+                    <Text strong style={{ color: 'var(--botmox-color-text-primary)' }}>
                       {profession.skill_points}
                     </Text>
-                    <Text type="secondary" style={{ color: 'var(--boxmox-color-text-primary)' }}>
+                    <Text type="secondary" style={{ color: 'var(--botmox-color-text-primary)' }}>
                       / {profession.max_skill_points}
                     </Text>
                   </div>
                   <Progress
                     percent={percent}
                     strokeColor={color}
-                    trailColor="var(--boxmox-color-border-default)"
+                    trailColor="var(--botmox-color-border-default)"
                     showInfo={false}
                   />
                   <div className={styles['skill-percent']}>{percent}%</div>

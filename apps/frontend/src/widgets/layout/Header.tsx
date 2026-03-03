@@ -147,8 +147,8 @@ export const Header: React.FC = () => {
               unCheckedChildren={<BulbOutlined />}
               style={{
                 background: isDark
-                  ? 'var(--boxmox-color-brand-primary)'
-                  : 'var(--boxmox-color-header-hover)',
+                  ? 'var(--botmox-color-brand-primary)'
+                  : 'var(--botmox-color-header-hover)',
               }}
             />
           </Tooltip>
@@ -157,19 +157,19 @@ export const Header: React.FC = () => {
               <Avatar
                 size="small"
                 icon={<UserOutlined />}
-                style={{ backgroundColor: 'var(--boxmox-color-brand-primary)' }}
+                style={{ backgroundColor: 'var(--botmox-color-brand-primary)' }}
               />
               <Text className={cx('user-email')}>{user?.email || 'admin@botmox.local'}</Text>
               {accessLabel ? (
                 <Tag
                   bordered={false}
-                  color={
+                  intent={
                     accessTier === 'admin'
-                      ? 'gold'
+                      ? 'warning'
                       : accessTier === 'premium'
-                        ? 'green'
+                        ? 'success'
                         : accessTier === 'trial'
-                          ? 'blue'
+                          ? 'info'
                           : 'default'
                   }
                   className={cx('access-tag')}
@@ -179,7 +179,7 @@ export const Header: React.FC = () => {
               ) : null}
               {!writeAccess ? (
                 <Tooltip title="Write operations are locked for FREE plan">
-                  <Tag bordered={false} color="red" className={cx('access-tag')}>
+                  <Tag bordered={false} intent="error" className={cx('access-tag')}>
                     READ ONLY
                   </Tag>
                 </Tooltip>

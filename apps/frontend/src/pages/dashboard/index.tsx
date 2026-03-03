@@ -140,7 +140,7 @@ export const DashboardPage: React.FC = () => {
       <Title
         level={2}
         className={cx('page-title')}
-        style={{ color: 'var(--boxmox-color-text-primary)', marginBottom: 24 }}
+        style={{ color: 'var(--botmox-color-text-primary)', marginBottom: 24 }}
       >
         Dashboard
       </Title>

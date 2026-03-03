@@ -25,7 +25,7 @@ import { SimpleBarChart } from './SimpleBarChart';
 const { Text } = Typography;
 
 export const StageLevelingPanel: React.FC = () => {
-  const statValueStyle = { color: 'var(--boxmox-color-text-primary)' };
+  const statValueStyle = { color: 'var(--botmox-color-text-primary)' };
   const leveling = mockLeveling;
   const xpPercent = Math.round((leveling.current_xp / leveling.max_xp) * 100);
   const analytics = mockAnalytics.leveling;
@@ -80,7 +80,7 @@ export const StageLevelingPanel: React.FC = () => {
           <Progress
             percent={xpPercent}
             strokeColor={wowMetricColors.levelingCurrent}
-            trailColor="var(--boxmox-color-border-default)"
+            trailColor="var(--botmox-color-border-default)"
             showInfo={false}
           />
           <div className={styles['xp-percent']}>{xpPercent}%</div>
@@ -111,7 +111,7 @@ export const StageLevelingPanel: React.FC = () => {
               value={analytics.totalTime}
               suffix="h"
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+              valueStyle={{ color: 'var(--botmox-color-text-primary)' }}
             />
           </Col>
           <Col span={8}>
@@ -119,7 +119,7 @@ export const StageLevelingPanel: React.FC = () => {
               title={<span className={styles['stat-title']}>Levels Gained</span>}
               value={analytics.levelsGained}
               prefix={<RiseOutlined />}
-              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+              valueStyle={{ color: 'var(--botmox-color-text-primary)' }}
             />
           </Col>
           <Col span={8}>
@@ -127,7 +127,7 @@ export const StageLevelingPanel: React.FC = () => {
               title={<span className={styles['stat-title']}>Avg XP/h</span>}
               value={analytics.avgXpPerHour.toLocaleString()}
               prefix={<LineChartOutlined />}
-              valueStyle={{ color: 'var(--boxmox-color-text-primary)' }}
+              valueStyle={{ color: 'var(--botmox-color-text-primary)' }}
             />
           </Col>
         </Row>

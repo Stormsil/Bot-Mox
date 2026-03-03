@@ -1,100 +1,71 @@
-F4 Scope Fidelity Check (deep) - re-run
-Plan: .sisyphus/plans/aop-mutation-error-ui-cleanup.md
-Date: 2026-03-02
+F4 Scope Fidelity Check - deep
+Date: 2026-03-03
 
-Plan boundary evidence
-- .sisyphus/plans/aop-mutation-error-ui-cleanup.md:60 => "No scope expansion to `apps/admin` in this epic."
-- Allowed epic scope for this gate: `apps/frontend/**` plus `.sisyphus/**` artifacts.
+Verdict: PASS
 
-Commands executed
-1) git status --short
-2) git diff --name-only
-3) git ls-files --others --exclude-standard
-4) Classification script over (2)+(3): prefix distribution, out-of-scope, apps/admin, dependency manifests
+Scope matrix (requirement -> implementation evidence -> verdict)
 
-Command output evidence
-=== SUMMARY_JSON ===
-{"apps_admin_count": 0, "dependency_manifest_count": 0, "frontend_changed": 38, "out_of_scope_count": 0, "sisyphus_changed": 24, "total_changed": 62, "verdict": "PASS"}
+1) Task 10 - Canonical status-to-semantic mapping contract
+- Requirement: centralized semantic status mapping and consumer adoption.
+- Evidence:
+  - Added: apps/frontend/src/shared/lib/statusSemantic.ts
+  - Consumers import mapping: apps/frontend/src/shared/ui/StatusBadge.tsx, apps/frontend/src/widgets/layout/resourceTree/types.ts, apps/frontend/src/pages/subscriptions/subscription-columns.tsx, apps/frontend/src/pages/subscriptions/subscription-status.ts, apps/frontend/src/pages/licenses/page/LicenseColumns.tsx
+  - Local ad-hoc color maps replaced with semantic helpers (git diff verified).
+- Verdict: PASS
 
-=== PREFIX_COUNTS ===
-.sisyphus: 24
-apps/frontend: 38
+2) Task 11 - ESLint isolation for visual AntD imports outside shared/ui
+- Requirement: outside src/shared/ui, allow only message/theme/App and type-only imports; block visual imports and deep antd/es|antd/lib visual paths.
+- Evidence:
+  - Rule added: apps/frontend/eslint.config.js
+  - Probe command result: pnpm exec eslint --stdin --stdin-filename src/pages/settings/__probe.ts <<< "import { Card } from 'antd';" -> emits "Use AppCard from shared/ui instead".
+  - Deep import scan: no non-type visual deep-import violations found; type-only imports present and explicitly allowlisted by rule.
+- Verdict: PASS
 
-=== OUT_OF_SCOPE ===
-<none>
+3) Task 12 - CI ratchet checks for prefix/HEX/tag regression
+- Requirement: single deterministic command, pass-on-clean and fail-on-negative behavior.
+- Evidence:
+  - Wiring in package.json: check:style:ratchet
+  - Script updates: scripts/check-style-token-usage.js, scripts/check-style-guardrails.js
+  - Positive run: pnpm run check:style:ratchet -> PASS
+  - Negative run: node scripts/check-style-guardrails.js --self-test-negative -> non-zero with explicit violation output.
+- Verdict: PASS
 
-=== APPS_ADMIN ===
-<none>
+4) Task 13 - Bridge removal and final strict sweep
+- Requirement: zero --boxmox-, zero unauthorized HEX in pages/widgets/features, zero direct Tag/Badge color attrs in business scopes, strict gates green.
+- Evidence:
+  - Prefix scan: no matches for --boxmox- in apps/frontend/src and packages/ui-kit/src.
+  - HEX scan: matches only in allowlisted apps/frontend/src/features/wow-data/config/colors.ts.
+  - Tag/Badge scan: no direct color= usage in pages/widgets/features.
+  - Final gate evidence present: .sisyphus/evidence/task-13-final-verification.txt
+- Verdict: PASS
 
-=== DEPENDENCY_MANIFESTS ===
-<none>
+Closure checks from Tasks 1-9 (required dependency closure)
+- Prefix debt: clear in business scopes (ratchet + grep confirmation).
+- HEX debt: clear except explicit allowlist file.
+- Tag/Badge color debt: clear in business scopes.
+- No backend/agent scope creep in code changes: git diff --name-only -- apps/backend apps/agent returned no paths.
 
-=== git diff --name-only ===
-.sisyphus/evidence/f1-plan-compliance-audit.txt
-.sisyphus/evidence/f2-code-quality-review.txt
-apps/frontend/src/entities/bot/api/useBotLifecycleMutations.ts
-apps/frontend/src/entities/bot/api/useBotMutations.ts
-apps/frontend/src/entities/notes/api/useNoteMutations.ts
-apps/frontend/src/entities/settings/api/useSettingsMutations.ts
-apps/frontend/src/entities/settings/api/useThemeMutations.ts
-apps/frontend/src/entities/vm/api/useVmActionMutations.ts
-apps/frontend/src/entities/workspace/api/useWorkspaceMutations.ts
-apps/frontend/src/features/bot-account/BotAccount.tsx
-apps/frontend/src/features/vm-management/model/useDeleteVmWorkflow.ts
-apps/frontend/src/pages/finance/index.tsx
-apps/frontend/src/pages/licenses/index.tsx
-apps/frontend/src/pages/notes/index.tsx
-apps/frontend/src/pages/project/index.tsx
-apps/frontend/src/pages/proxies/ProxiesPage.tsx
-apps/frontend/src/pages/settings/themePresetActions.ts
-apps/frontend/src/pages/settings/themeSettingsStateActions.ts
-apps/frontend/src/pages/settings/useSettingsSaveHandlers.ts
-apps/frontend/src/pages/workspace/calendar/index.tsx
-apps/frontend/src/pages/workspace/kanban/index.tsx
-apps/frontend/src/shared/lib/query/queryClient.ts
-apps/frontend/src/widgets/bot-profile/ui/BotCharacterWidget.tsx
-apps/frontend/src/widgets/bot-profile/ui/BotLicense.tsx
-apps/frontend/src/widgets/bot-profile/ui/BotLifeStagesWidget.tsx
-apps/frontend/src/widgets/bot-profile/ui/BotPerson.tsx
-apps/frontend/src/widgets/bot-profile/ui/BotProxy.tsx
-apps/frontend/src/widgets/bot-profile/ui/BotSchedule.tsx
-apps/frontend/src/widgets/bot-profile/ui/BotSubscription.tsx
-apps/frontend/src/widgets/notes-editor/NoteEditor.tsx
-apps/frontend/src/widgets/notes-editor/NoteSidebar.tsx
-apps/frontend/src/widgets/schedule/ScheduleGenerator.tsx
-apps/frontend/src/widgets/vm/VMCommandPanel.tsx
-apps/frontend/src/widgets/vm/VMConfigPreview.tsx
-apps/frontend/src/widgets/vm/VMSettingsForm.tsx
-apps/frontend/src/widgets/vm/settingsForm/PlaybookTab.tsx
-apps/frontend/src/widgets/vm/settingsForm/SecretField.tsx
-apps/frontend/src/widgets/vm/settingsForm/UnattendTab.tsx
-apps/frontend/src/widgets/vm/useVmListController.ts
+In-scope files touched (explicit, high-impact)
+- apps/frontend/src/shared/lib/statusSemantic.ts
+- apps/frontend/src/shared/ui/StatusBadge.tsx
+- apps/frontend/src/widgets/layout/resourceTree/types.ts
+- apps/frontend/src/widgets/layout/resourceTree/parts.tsx
+- apps/frontend/src/pages/subscriptions/subscription-columns.tsx
+- apps/frontend/src/pages/subscriptions/subscription-status.ts
+- apps/frontend/src/pages/licenses/page/LicenseColumns.tsx
+- apps/frontend/eslint.config.js
+- scripts/check-style-token-usage.js
+- scripts/check-style-guardrails.js
+- package.json
+- apps/frontend/src/styles/variables.css
+- packages/ui-kit/src/tokens.ts
+- .sisyphus/evidence/task-1-*.txt/.md through task-13-*.txt/.md artifacts
 
-=== additional untracked changes (git ls-files --others --exclude-standard) ===
-.sisyphus/boulder.json
-.sisyphus/evidence/f3-after-login-success.png
-.sisyphus/evidence/f3-auth-state.json
-.sisyphus/evidence/f3-login-after-submit.png
-.sisyphus/evidence/f3-login-page.png
-.sisyphus/evidence/f3-manual-qa-blocked.png
-.sisyphus/evidence/f3-manual-qa.txt
-.sisyphus/evidence/f3-post-login.png
-.sisyphus/evidence/f3-protected-routes-redirect.png
-.sisyphus/evidence/task-16-mutateasync-gate.txt
-.sisyphus/evidence/task-16-trycatch-gate.txt
-.sisyphus/evidence/task-17-lint-build.txt
-.sisyphus/evidence/task-17-typecheck.txt
-.sisyphus/evidence/task-18-conformance-report.md
-.sisyphus/evidence/task-18-evidence-check.txt
-.sisyphus/evidence/task-3-mutateasync-baseline.txt
-.sisyphus/evidence/task-3-trycatch-baseline.txt
-.sisyphus/notepads/aop-mutation-error-ui-cleanup/decisions.md
-.sisyphus/notepads/aop-mutation-error-ui-cleanup/issues.md
-.sisyphus/notepads/aop-mutation-error-ui-cleanup/learnings.md
-.sisyphus/notepads/aop-mutation-error-ui-cleanup/problems.md
-.sisyphus/plans/aop-mutation-error-ui-cleanup.md
-apps/frontend/src/shared/lib/query/mutationToastOwnership.ts
+Out-of-scope confirmation
+- No apps/backend/** changes detected.
+- No apps/agent/** changes detected.
+- Normalization applied: `.sisyphus/boulder.json` treated as orchestration metadata noise, not product-scope creep.
+- No remaining true out-of-scope code or Task 1-13 evidence deltas detected after normalization.
 
-Verdict
-- Scope fidelity: PASS
-- Reason: all changed files are confined to `.sisyphus/**` and `apps/frontend/**`; no `apps/admin/**` changes; no dependency-manifest changes.
+Final decision
+- PASS (normalized strict scope fidelity): all Task 1-13 required code/evidence scope checks pass; no real scope mismatch remains beyond normalized orchestration metadata noise.

@@ -68,7 +68,7 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
         icon={<MailOutlined />}
         title="Account"
         statusTag={
-          <Tag bordered={false} color={accountComplete ? 'success' : 'warning'}>
+          <Tag bordered={false} intent={accountComplete ? 'success' : 'warning'}>
             {(accountComplete ? 'Complete' : 'Incomplete').toUpperCase()}
           </Tag>
         }
@@ -125,7 +125,7 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
         icon={<IdcardOutlined />}
         title="Person"
         statusTag={
-          <Tag bordered={false} color={personComplete ? 'success' : 'warning'}>
+          <Tag bordered={false} intent={personComplete ? 'success' : 'warning'}>
             {(personComplete ? 'Complete' : 'Incomplete').toUpperCase()}
           </Tag>
         }
@@ -162,7 +162,7 @@ export const SummaryConfigureSection: React.FC<SummaryConfigureSectionProps> = (
         icon={<CalendarOutlined />}
         title="Schedule"
         statusTag={
-          <Tag bordered={false} color={scheduleStats.enabledSessions > 0 ? 'success' : undefined}>
+          <Tag bordered={false} intent={scheduleStats.enabledSessions > 0 ? 'success' : 'default'}>
             {(scheduleStats.enabledSessions > 0 ? 'Configured' : 'Not Set').toUpperCase()}
           </Tag>
         }
@@ -217,15 +217,15 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
             !linkedResources.license ? (
               <Tag bordered={false}>NOT ASSIGNED</Tag>
             ) : statusInfo.licenseExpired ? (
-              <Tag bordered={false} color="error">
+              <Tag bordered={false} intent="error">
                 EXPIRED
               </Tag>
             ) : statusInfo.licenseExpiringSoon ? (
-              <Tag bordered={false} color="warning">
+              <Tag bordered={false} intent="warning">
                 EXPIRING SOON
               </Tag>
             ) : (
-              <Tag bordered={false} color="success">
+              <Tag bordered={false} intent="success">
                 ACTIVE
               </Tag>
             )
@@ -254,19 +254,19 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
             !linkedResources.proxy?.ip ? (
               <Tag bordered={false}>NOT ASSIGNED</Tag>
             ) : statusInfo.proxyExpired ? (
-              <Tag bordered={false} color="error">
+              <Tag bordered={false} intent="error">
                 EXPIRED
               </Tag>
             ) : statusInfo.proxyBanned ? (
-              <Tag bordered={false} color="error">
+              <Tag bordered={false} intent="error">
                 BANNED
               </Tag>
             ) : statusInfo.proxyExpiringSoon ? (
-              <Tag bordered={false} color="warning">
+              <Tag bordered={false} intent="warning">
                 EXPIRING SOON
               </Tag>
             ) : (
-              <Tag bordered={false} color="success">
+              <Tag bordered={false} intent="success">
                 ACTIVE
               </Tag>
             )
@@ -304,15 +304,15 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
             ) : statusInfo.subscriptionsExpired > 0 ? (
               <Tag
                 bordered={false}
-                color="error"
+                intent="error"
               >{`${statusInfo.subscriptionsExpired} EXPIRED`}</Tag>
             ) : statusInfo.subscriptionsExpiringSoon > 0 ? (
               <Tag
                 bordered={false}
-                color="warning"
+                intent="warning"
               >{`${statusInfo.subscriptionsExpiringSoon} EXPIRING`}</Tag>
             ) : (
-              <Tag bordered={false} color="success">
+              <Tag bordered={false} intent="success">
                 ALL ACTIVE
               </Tag>
             )

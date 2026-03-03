@@ -1,6 +1,6 @@
 .session-list {
   padding: 16px;
-  background: var(--boxmox-color-surface-panel);
+  background: var(--botmox-color-surface-panel);
   display: flex;
   flex-direction: column;
 }
@@ -14,14 +14,14 @@
 
 .session-list-header h4 {
   margin: 0;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-size: 14px;
   font-weight: 600;
 }
 
 .session-empty {
   padding: 32px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .session-items {
@@ -42,17 +42,17 @@
 }
 
 .session-items-scrollable::-webkit-scrollbar-track {
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
   border-radius: 3px;
 }
 
 .session-items-scrollable::-webkit-scrollbar-thumb {
-  background: var(--boxmox-color-border-default);
+  background: var(--botmox-color-border-default);
   border-radius: 3px;
 }
 
 .session-items-scrollable::-webkit-scrollbar-thumb:hover {
-  background: var(--boxmox-color-brand-primary);
+  background: var(--botmox-color-brand-primary);
 }
 
 .session-item {
@@ -60,20 +60,20 @@
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: var(--boxmox-color-surface-muted);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-muted);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 6px;
   transition: all 0.2s ease;
   min-height: 36px;
 }
 
 .session-item:hover {
-  border-color: var(--boxmox-color-brand-primary);
+  border-color: var(--botmox-color-brand-primary);
 }
 
 .session-item.disabled {
   opacity: 0.6;
-  background: var(--boxmox-color-surface-panel);
+  background: var(--botmox-color-surface-panel);
 }
 
 .session-number {
@@ -91,13 +91,13 @@
 .time-range {
   font-size: 13px;
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-family: "Monaco", "Consolas", monospace;
 }
 
 .duration {
   font-size: 11px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .session-actions {
@@ -108,9 +108,9 @@
 }
 
 .sessionActionBtn {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .sessionActionBtn:hover {
-  color: var(--boxmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }

@@ -1,3 +1,9 @@
+import {
+  getBotStatusIntent,
+  getSemanticIntentColorToken,
+  type SemanticStatusIntent,
+} from '../../../shared/lib/statusSemantic';
+
 export type BotStatus = 'offline' | 'prepare' | 'leveling' | 'profession' | 'farming' | 'banned';
 
 export const SHOW_FILTERS_KEY = 'resourceTreeShowFilters';
@@ -63,14 +69,17 @@ export interface TreeItem {
   children?: TreeItem[];
 }
 
-export const statusConfig: Record<BotStatus, { title: string; color: string }> = {
-  offline: { title: 'Offline', color: '#8c8c8c' },
-  prepare: { title: 'Prepare', color: '#1890ff' },
-  leveling: { title: 'Leveling', color: '#722ed1' },
-  profession: { title: 'Profession', color: '#eb2f96' },
-  farming: { title: 'Farming', color: '#52c41a' },
-  banned: { title: 'Banned', color: '#f5222d' },
+export const statusConfig: Record<BotStatus, { title: string; intent: SemanticStatusIntent }> = {
+  offline: { title: 'Offline', intent: getBotStatusIntent('offline') },
+  prepare: { title: 'Prepare', intent: getBotStatusIntent('prepare') },
+  leveling: { title: 'Leveling', intent: getBotStatusIntent('leveling') },
+  profession: { title: 'Profession', intent: getBotStatusIntent('profession') },
+  farming: { title: 'Farming', intent: getBotStatusIntent('farming') },
+  banned: { title: 'Banned', intent: getBotStatusIntent('banned') },
 };
+
+export const getBotStatusColorToken = (status: BotStatus): string =>
+  getSemanticIntentColorToken(statusConfig[status].intent);
 
 export function isBotStatus(value: unknown): value is BotStatus {
   return typeof value === 'string' && Object.hasOwn(statusConfig, value);

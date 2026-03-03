@@ -3,8 +3,8 @@
 }
 
 .vm-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   margin-bottom: 16px;
 }
 
@@ -17,7 +17,7 @@
 }
 
 .vm-card-title {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-size: var(--text-sm);
   font-weight: 600;
 }
@@ -30,7 +30,7 @@
 
 .vm-ip {
   font-family: var(--font-mono);
-  background: var(--boxmox-color-surface-muted);
+  background: var(--botmox-color-surface-muted);
   padding: 4px 8px;
   border-radius: 4px;
   display: inline-block;

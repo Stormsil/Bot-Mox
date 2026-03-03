@@ -92,10 +92,10 @@ export const ProxyIpqsResultAlert: React.FC<{ ipqsData: IPQSResponse }> = ({ ipq
             <strong>City:</strong> {ipqsData.city}, {ipqsData.region}
           </Text>
           <Space size={8}>
-            {ipqsData.vpn && <Tag color="orange">VPN</Tag>}
-            {ipqsData.proxy && <Tag color="blue">Proxy</Tag>}
-            {ipqsData.tor && <Tag color="red">TOR</Tag>}
-            {ipqsData.bot_status && <Tag color="purple">Bot</Tag>}
+            {ipqsData.vpn && <Tag intent="warning">VPN</Tag>}
+            {ipqsData.proxy && <Tag intent="info">Proxy</Tag>}
+            {ipqsData.tor && <Tag intent="error">TOR</Tag>}
+            {ipqsData.bot_status && <Tag intent="info">Bot</Tag>}
           </Space>
         </Space>
       }

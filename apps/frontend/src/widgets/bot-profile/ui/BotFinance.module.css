@@ -7,12 +7,12 @@
 }
 
 .finance-stat-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .statTitle {
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -29,7 +29,7 @@
 }
 
 .stat-label {
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
   font-size: var(--text-xs);
 }
 
@@ -39,8 +39,8 @@
 
 .costs-card,
 .roi-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .cost-row,
@@ -49,7 +49,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid var(--boxmox-color-surface-muted);
+  border-bottom: 1px solid var(--botmox-color-surface-muted);
 }
 
 .row-last {
@@ -57,23 +57,23 @@
 }
 
 .lineLabel {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   font-size: var(--text-sm);
 }
 
 .lineValue {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-weight: 600;
 }
 
 .lineLabelStrong {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-weight: 700;
   font-size: var(--text-md);
 }
 
 .lineValueStrong {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-weight: 700;
   font-size: var(--text-md);
 }
@@ -81,22 +81,22 @@
 .cost-divider,
 .roi-divider {
   height: 1px;
-  background: var(--boxmox-color-border-default);
+  background: var(--botmox-color-border-default);
   margin: 8px 0;
 }
 
 .totalAmount {
-  color: var(--boxmox-color-brand-primary);
+  color: var(--botmox-color-brand-primary);
 }
 
 .positive {
-  color: var(--boxmox-color-status-success);
+  color: var(--botmox-color-status-success);
 }
 
 /* Transactions Table */
 .transactions-card {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
 }
 
 .transactions-title {
@@ -118,12 +118,12 @@
 }
 
 .tableCell {
-  border-bottom: 1px solid var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-secondary);
+  border-bottom: 1px solid var(--botmox-color-surface-muted);
+  color: var(--botmox-color-text-secondary);
 }
 
 .tableRow:hover .tableCell {
-  background: var(--boxmox-color-surface-hover);
+  background: var(--botmox-color-surface-hover);
 }
 
 .tablePagination {
@@ -139,9 +139,9 @@
 }
 
 .category-tag {
-  background: var(--boxmox-color-surface-muted);
-  border: 1px solid var(--boxmox-color-border-default);
-  color: var(--boxmox-color-text-secondary);
+  background: var(--botmox-color-surface-muted);
+  border: 1px solid var(--botmox-color-border-default);
+  color: var(--botmox-color-text-secondary);
   font-size: var(--text-xs);
   padding: 0 6px;
   height: 18px;
@@ -149,11 +149,11 @@
 }
 
 .amount-income {
-  color: var(--boxmox-color-status-success);
+  color: var(--botmox-color-status-success);
   font-weight: 500;
 }
 
 .amount-expense {
-  color: var(--boxmox-color-status-danger);
+  color: var(--botmox-color-status-danger);
   font-weight: 500;
 }

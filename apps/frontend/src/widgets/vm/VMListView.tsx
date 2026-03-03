@@ -49,7 +49,7 @@ export const VMListView = React.memo(function VMListView({
             {stoppedCount} stopped
           </span>
           <span>Total: {vms.length}</span>
-          {!connected && <Tag color="error">Disconnected</Tag>}
+          {!connected && <Tag intent="error">Disconnected</Tag>}
         </div>
         <Button size="small" icon={<ReloadOutlined />} onClick={refreshVMs} loading={loading}>
           Refresh

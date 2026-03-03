@@ -23,17 +23,19 @@ export const SUBSCRIPTION_TYPES: SubscriptionTypeOption[] = [
 export const getStatusIcon = (status: ComputedSubscriptionStatus) => {
   switch (status) {
     case 'expired':
-      return <ExclamationCircleOutlined style={{ color: 'var(--boxmox-color-status-danger)' }} />;
+      return <ExclamationCircleOutlined style={{ color: 'var(--botmox-color-status-danger)' }} />;
     case 'expiring_soon':
-      return <ClockCircleOutlined style={{ color: 'var(--boxmox-color-status-warning)' }} />;
+      return <ClockCircleOutlined style={{ color: 'var(--botmox-color-status-warning)' }} />;
     case 'active':
-      return <CheckCircleOutlined style={{ color: 'var(--boxmox-color-status-success)' }} />;
+      return <CheckCircleOutlined style={{ color: 'var(--botmox-color-status-success)' }} />;
     default:
       return null;
   }
 };
 
-export const getStatusColor = (status: ComputedSubscriptionStatus) => {
+export const getStatusColor = (
+  status: ComputedSubscriptionStatus,
+): 'success' | 'warning' | 'error' | 'info' | 'default' => {
   switch (status) {
     case 'expired':
       return 'error';
@@ -57,13 +59,13 @@ export const getTypeLabel = (type: SubscriptionType) =>
   SUBSCRIPTION_TYPES.find((item) => item.value === type)?.label || type;
 
 export const getDaysLeftColor = (subscription: SubscriptionWithDetails): string => {
-  if (subscription.isExpired) return 'var(--boxmox-color-status-danger)';
-  if (subscription.isExpiringSoon) return 'var(--boxmox-color-status-warning)';
+  if (subscription.isExpired) return 'var(--botmox-color-status-danger)';
+  if (subscription.isExpiringSoon) return 'var(--botmox-color-status-warning)';
   if (typeof subscription.daysRemaining === 'number' && subscription.daysRemaining <= 3)
-    return 'var(--boxmox-color-status-danger)';
+    return 'var(--botmox-color-status-danger)';
   if (typeof subscription.daysRemaining === 'number' && subscription.daysRemaining <= 7)
-    return 'var(--boxmox-color-status-warning)';
-  return 'var(--boxmox-color-status-success)';
+    return 'var(--botmox-color-status-warning)';
+  return 'var(--botmox-color-status-success)';
 };
 
 export const isProblemSubscription = (subscription: SubscriptionWithDetails): boolean =>

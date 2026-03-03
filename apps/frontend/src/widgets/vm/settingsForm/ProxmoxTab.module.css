@@ -1,16 +1,16 @@
 .section {
-  background: var(--boxmox-color-surface-panel);
-  border: 1px solid var(--boxmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 2px;
   padding: 16px;
 }
 
 .section h4 {
   margin: 0 0 12px 0;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
   font-size: 14px;
   font-weight: 600;
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  border-bottom: 1px solid var(--botmox-color-border-default);
   padding-bottom: 8px;
 }
 
@@ -32,7 +32,7 @@
 .fieldLabel {
   display: block;
   font-size: 12px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   margin-bottom: 4px;
 }
 
@@ -41,23 +41,23 @@
   align-items: center;
   min-height: 28px;
   padding: 0 10px;
-  border: 1px solid var(--boxmox-color-border-default);
-  background: var(--boxmox-color-surface-muted);
-  color: var(--boxmox-color-text-secondary);
+  border: 1px solid var(--botmox-color-border-default);
+  background: var(--botmox-color-surface-muted);
+  color: var(--botmox-color-text-secondary);
   font-size: 12px;
 }
 
 .templateStatusHint {
   font-size: 11px;
-  border-bottom: 1px dotted var(--boxmox-color-border-default);
+  border-bottom: 1px dotted var(--botmox-color-border-default);
   cursor: help;
 }
 
 .templateSummary {
   margin-top: 10px;
   padding: 10px;
-  border: 1px solid var(--boxmox-color-border-default);
-  background: var(--boxmox-color-surface-muted);
+  border: 1px solid var(--botmox-color-border-default);
+  background: var(--botmox-color-surface-muted);
 }
 
 .storageCurrent {
@@ -72,21 +72,21 @@
 }
 
 .storageTableWrap {
-  border: 1px solid var(--boxmox-color-border-default);
-  background: var(--boxmox-color-surface-muted);
+  border: 1px solid var(--botmox-color-border-default);
+  background: var(--botmox-color-surface-muted);
 }
 
 .storageTable thead th {
-  background: var(--boxmox-color-surface-panel);
-  color: var(--boxmox-color-text-secondary);
+  background: var(--botmox-color-surface-panel);
+  color: var(--botmox-color-text-secondary);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .storageTable tbody td {
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  border-bottom: 1px solid var(--botmox-color-border-default);
   background: transparent;
 }
 

@@ -17,6 +17,16 @@ import { formatDaysRemaining, formatFaction, formatServerName } from './utils';
 
 const { Text } = Typography;
 
+function resolveTagIntent(value: string): 'success' | 'warning' | 'error' | 'info' | 'default' {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'success' || normalized === 'green') return 'success';
+  if (normalized === 'warning' || normalized === 'orange' || normalized === 'gold')
+    return 'warning';
+  if (normalized === 'error' || normalized === 'red') return 'error';
+  if (normalized === 'info' || normalized === 'blue' || normalized === 'processing') return 'info';
+  return 'default';
+}
+
 function renderStatusWithDays({
   label,
   color,
@@ -31,7 +41,7 @@ function renderStatusWithDays({
   return (
     <button type="button" className={`${styles.cellButton} ${styles.cellLink}`} onClick={onClick}>
       <Flex vertical gap={2}>
-        <Tag color={color} className={styles.statusTag}>
+        <Tag intent={resolveTagIntent(color)} className={styles.statusTag}>
           {label}
         </Tag>
         <Text type="secondary" className={styles.secondary}>

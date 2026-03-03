@@ -5,8 +5,8 @@
   gap: 10px;
   min-height: 48px;
   padding: 8px 10px;
-  background: var(--vmx-panel, var(--boxmox-color-surface-panel));
-  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  background: var(--vmx-panel, var(--botmox-color-surface-panel));
+  border: 1px solid var(--vmx-border, var(--botmox-color-border-default));
   border-radius: 0;
   flex-shrink: 0;
 }
@@ -22,10 +22,10 @@
   padding: 0 12px;
   font-size: 12px;
   font-family: var(--font-primary);
-  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  border: 1px solid var(--vmx-border, var(--botmox-color-border-default));
   border-radius: 0;
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
-  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
+  color: var(--vmx-text, var(--botmox-color-text-primary));
   cursor: pointer;
   white-space: nowrap;
   display: inline-flex;
@@ -46,9 +46,9 @@
 }
 
 .btn:hover {
-  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
-  border-color: var(--vmx-border-strong, var(--boxmox-color-border-strong));
-  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  background: var(--vmx-muted-2, var(--botmox-color-surface-hover));
+  border-color: var(--vmx-border-strong, var(--botmox-color-border-strong));
+  color: var(--vmx-text, var(--botmox-color-text-primary));
 }
 
 .btn:disabled {
@@ -60,53 +60,53 @@
   min-width: 152px;
   justify-content: center;
   gap: 6px;
-  background: var(--vmx-accent, var(--boxmox-color-brand-primary));
-  color: var(--vmx-header-text, var(--boxmox-color-header-text));
-  border-color: var(--vmx-accent, var(--boxmox-color-brand-primary));
+  background: var(--vmx-accent, var(--botmox-color-brand-primary));
+  color: var(--vmx-header-text, var(--botmox-color-header-text));
+  border-color: var(--vmx-accent, var(--botmox-color-brand-primary));
   box-shadow: none;
 }
 
 .btnStart:hover:not(:disabled) {
-  background: var(--vmx-accent-hover, var(--boxmox-color-brand-primary-hover));
-  border-color: var(--vmx-accent-hover, var(--boxmox-color-brand-primary-hover));
+  background: var(--vmx-accent-hover, var(--botmox-color-brand-primary-hover));
+  border-color: var(--vmx-accent-hover, var(--botmox-color-brand-primary-hover));
 }
 
 .btnStop {
   min-width: 152px;
   justify-content: center;
   gap: 6px;
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
-  color: var(--vmx-text, var(--boxmox-color-text-primary));
-  border-color: var(--vmx-border, var(--boxmox-color-border-default));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
+  color: var(--vmx-text, var(--botmox-color-text-primary));
+  border-color: var(--vmx-border, var(--botmox-color-border-default));
   box-shadow: none;
 }
 
 .btnStop:hover:not(:disabled) {
-  background: var(--vmx-muted-2, var(--boxmox-color-surface-hover));
-  border-color: var(--vmx-border-strong, var(--boxmox-color-border-strong));
-  color: var(--vmx-text, var(--boxmox-color-text-primary));
+  background: var(--vmx-muted-2, var(--botmox-color-surface-hover));
+  border-color: var(--vmx-border-strong, var(--botmox-color-border-strong));
+  color: var(--vmx-text, var(--botmox-color-text-primary));
 }
 
 .btnService {
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
 }
 
 .btnServiceActive {
-  background: var(--vmx-accent, var(--boxmox-color-brand-primary));
-  border-color: var(--vmx-accent, var(--boxmox-color-brand-primary));
-  color: var(--vmx-header-text, var(--boxmox-color-header-text));
+  background: var(--vmx-accent, var(--botmox-color-brand-primary));
+  border-color: var(--vmx-accent, var(--botmox-color-brand-primary));
+  color: var(--vmx-header-text, var(--botmox-color-header-text));
 }
 
 .btnServiceActive:hover:not(:disabled) {
-  background: var(--vmx-accent-hover, var(--boxmox-color-brand-primary-hover));
-  border-color: var(--vmx-accent-hover, var(--boxmox-color-brand-primary-hover));
-  color: var(--vmx-header-text, var(--boxmox-color-header-text));
+  background: var(--vmx-accent-hover, var(--botmox-color-brand-primary-hover));
+  border-color: var(--vmx-accent-hover, var(--botmox-color-brand-primary-hover));
+  color: var(--vmx-header-text, var(--botmox-color-header-text));
 }
 
 .separator {
   width: 1px;
   height: 22px;
-  background: var(--vmx-border, var(--boxmox-color-border-default));
+  background: var(--vmx-border, var(--botmox-color-border-default));
   margin: 0 2px;
 }
 
@@ -126,17 +126,17 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  border: 1px solid var(--vmx-border, var(--boxmox-color-border-default));
+  border: 1px solid var(--vmx-border, var(--botmox-color-border-default));
   border-radius: 2px;
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
-  color: var(--vmx-text-muted, var(--boxmox-color-text-secondary));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
+  color: var(--vmx-text-muted, var(--botmox-color-text-secondary));
   font-family: var(--font-primary);
 }
 
 .chipError {
-  border-color: var(--vmx-danger, var(--boxmox-color-status-danger));
-  color: var(--vmx-danger, var(--boxmox-color-status-danger));
-  background: var(--vmx-muted, var(--boxmox-color-surface-muted));
+  border-color: var(--vmx-danger, var(--botmox-color-status-danger));
+  color: var(--vmx-danger, var(--botmox-color-status-danger));
+  background: var(--vmx-muted, var(--botmox-color-surface-muted));
 }
 
 .badge {
@@ -149,7 +149,7 @@
   border-radius: 2px;
   font-size: 11px;
   font-weight: 800;
-  color: var(--vmx-header-text, var(--boxmox-color-header-text));
+  color: var(--vmx-header-text, var(--botmox-color-header-text));
   text-transform: uppercase;
   letter-spacing: 0.08em;
   border: 1px solid transparent;
@@ -157,19 +157,19 @@
 }
 
 .badgeReady {
-  background: var(--vmx-neutral, var(--boxmox-color-status-neutral));
+  background: var(--vmx-neutral, var(--botmox-color-status-neutral));
 }
 
 .badgeWorking {
-  background: var(--vmx-accent, var(--boxmox-color-brand-primary));
+  background: var(--vmx-accent, var(--botmox-color-brand-primary));
 }
 
 .badgeSuccess {
-  background: var(--vmx-success, var(--boxmox-color-status-success));
+  background: var(--vmx-success, var(--botmox-color-status-success));
 }
 
 .badgeError {
-  background: var(--vmx-danger, var(--boxmox-color-status-danger));
+  background: var(--vmx-danger, var(--botmox-color-status-danger));
 }
 
 @media (max-width: 1320px) {

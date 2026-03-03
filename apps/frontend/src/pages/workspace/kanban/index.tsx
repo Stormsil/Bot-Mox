@@ -44,10 +44,14 @@ interface KanbanFormValues {
   due_date?: Dayjs;
 }
 
-const STATUSES: Array<{ key: KanbanStatus; title: string; color: string }> = [
-  { key: 'todo', title: 'Todo', color: 'default' },
-  { key: 'in_progress', title: 'In Progress', color: 'processing' },
-  { key: 'done', title: 'Done', color: 'success' },
+const STATUSES: Array<{
+  key: KanbanStatus;
+  title: string;
+  intent: 'success' | 'warning' | 'error' | 'info' | 'default';
+}> = [
+  { key: 'todo', title: 'Todo', intent: 'default' },
+  { key: 'in_progress', title: 'In Progress', intent: 'info' },
+  { key: 'done', title: 'Done', intent: 'success' },
 ];
 
 export const WorkspaceKanbanPage: React.FC = () => {
@@ -185,7 +189,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
         <Title
           level={4}
           className={styles.title}
-          style={{ margin: 0, color: 'var(--boxmox-color-text-primary)' }}
+          style={{ margin: 0, color: 'var(--botmox-color-text-primary)' }}
         >
           <span className={styles.titleIcon} aria-hidden>
             <CheckCircleOutlined />
@@ -208,7 +212,7 @@ export const WorkspaceKanbanPage: React.FC = () => {
               title={
                 <Space>
                   <span>{column.title}</span>
-                  <Tag color={column.color}>{columnTasks.length}</Tag>
+                  <Tag intent={column.intent}>{columnTasks.length}</Tag>
                 </Space>
               }
               extra={
@@ -275,7 +279,9 @@ export const WorkspaceKanbanPage: React.FC = () => {
                       <div className={styles.taskFooter}>
                         {task.due_date ? (
                           <Tag
-                            color={dayjs(task.due_date).isBefore(dayjs(), 'day') ? 'error' : 'blue'}
+                            intent={
+                              dayjs(task.due_date).isBefore(dayjs(), 'day') ? 'error' : 'info'
+                            }
                           >
                             Due {dayjs(task.due_date).format('DD MMM')}
                           </Tag>

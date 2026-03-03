@@ -10,38 +10,38 @@
 
 .headerMainTitle {
   margin: 0;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .headerSubtitle {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .expiringAlert {
   margin-bottom: 16px;
   border: 1px solid rgba(250, 173, 20, 0.8);
-  border-left: 4px solid #faad14;
+  border-left: 4px solid var(--botmox-color-status-warning);
   background: linear-gradient(90deg, rgba(250, 173, 20, 0.2), rgba(250, 173, 20, 0.05));
   box-shadow: 0 0 0 1px rgba(250, 173, 20, 0.15);
 }
 
 .expiringAlertMessage {
-  color: #faad14;
+  color: var(--botmox-color-status-warning);
   font-weight: 600;
 }
 
 .expiringAlertDescription {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .expiringAlertIcon {
-  color: #faad14;
+  color: var(--botmox-color-status-warning);
 }
 
 .expiringList {
   margin: 8px 0 0 0;
   padding-left: 20px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .expiringList li {

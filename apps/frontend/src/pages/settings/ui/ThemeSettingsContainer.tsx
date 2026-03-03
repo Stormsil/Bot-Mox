@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useThemeRuntime } from '../../../theme/themeRuntime';
 import { ThemeSettingsPanel } from '../ThemeSettingsPanel';
 import type { ThemeSettings } from '../themeSettings.types';
@@ -34,10 +34,27 @@ export const ThemeSettingsContainer: React.FC<ThemeSettingsContainerProps> = ({
     onShapeSettingsChange: setShapeSettings,
   });
 
+  const applyThemeSettingsRef = useRef(theme.applyThemeSettings);
+  const appliedThemeSettingsKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (!themeSettings) return;
-    theme.applyThemeSettings(themeSettings);
-  }, [theme, themeSettings]);
+    applyThemeSettingsRef.current = theme.applyThemeSettings;
+  }, [theme.applyThemeSettings]);
+
+  useEffect(() => {
+    if (!themeSettings) {
+      appliedThemeSettingsKeyRef.current = null;
+      return;
+    }
+
+    const nextThemeSettingsKey = JSON.stringify(themeSettings);
+    if (appliedThemeSettingsKeyRef.current === nextThemeSettingsKey) {
+      return;
+    }
+
+    appliedThemeSettingsKeyRef.current = nextThemeSettingsKey;
+    applyThemeSettingsRef.current(themeSettings);
+  }, [themeSettings]);
 
   return (
     <ThemeSettingsPanel

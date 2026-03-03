@@ -10,11 +10,11 @@
 
 .headerHeading {
   margin: 0;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .headerSubtitle {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .stats {
@@ -28,30 +28,30 @@
 .statValue {
   font-size: 22px;
   font-weight: 600;
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .statLabel {
   font-size: 12px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .statCardActive .statValue {
-  color: #52c41a;
+  color: var(--botmox-color-status-success);
 }
 
 .statCardPrepare .statValue {
-  color: #1890ff;
+  color: var(--botmox-color-status-info);
 }
 
 .statCardWarning .statValue {
-  color: #faad14;
+  color: var(--botmox-color-status-warning);
 }
 
 .statCardBanned .statValue {
-  color: #ff4d4f;
+  color: var(--botmox-color-status-danger);
 }
 
 .filters {
@@ -74,13 +74,13 @@
 }
 
 .cellLink:focus-visible {
-  outline: 2px solid rgba(var(--boxmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
+  outline: 2px solid rgba(var(--botmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
 .cellLink:hover .secondary {
-  color: var(--boxmox-color-text-primary);
+  color: var(--botmox-color-text-primary);
 }
 
 .deleteButton {
@@ -89,7 +89,7 @@
 
 .secondary {
   font-size: 11px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .id {
@@ -111,7 +111,7 @@
 }
 
 .filterSearch input::placeholder {
-  color: var(--boxmox-color-text-muted);
+  color: var(--botmox-color-text-muted);
 }
 
 .statusTag {

@@ -1,8 +1,8 @@
 .card {
   margin-bottom: 24px;
   border-radius: 0;
-  border: 1px solid var(--boxmox-color-border-default);
-  background: var(--boxmox-color-surface-panel);
+  border: 1px solid var(--botmox-color-border-default);
+  background: var(--botmox-color-surface-panel);
   box-shadow: none;
 }
 
@@ -12,16 +12,16 @@
 
 .settingsPopover {
   width: 300px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .settingsButton {
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }
 
 .settingsButton:hover {
-  color: var(--boxmox-color-text-primary);
-  background: var(--boxmox-color-surface-hover);
+  color: var(--botmox-color-text-primary);
+  background: var(--botmox-color-surface-hover);
 }
 
 .settingRow {
@@ -43,7 +43,7 @@
 
 .tooltip {
   background-color: rgba(30, 30, 30, 0.96);
-  border: 1px solid var(--boxmox-color-border-default);
+  border: 1px solid var(--botmox-color-border-default);
   border-radius: 2px;
   padding: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -52,8 +52,8 @@
 .tooltipDate {
   font-weight: 600;
   margin-bottom: 8px;
-  color: var(--boxmox-color-text-primary);
-  border-bottom: 1px solid var(--boxmox-color-border-default);
+  color: var(--botmox-color-text-primary);
+  border-bottom: 1px solid var(--botmox-color-border-default);
   padding-bottom: 4px;
 }
 
@@ -61,5 +61,5 @@
   margin: 0;
   padding: 2px 0;
   font-size: 13px;
-  color: var(--boxmox-color-text-secondary);
+  color: var(--botmox-color-text-secondary);
 }

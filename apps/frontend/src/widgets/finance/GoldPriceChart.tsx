@@ -37,6 +37,13 @@ interface GoldChartTooltipProps {
   label?: string;
 }
 
+const chartColorTokens = {
+  grid: 'var(--botmox-color-border-subtle, var(--botmox-color-border-default))',
+  axis: 'var(--botmox-color-text-muted, var(--botmox-color-text-secondary))',
+  tbc: 'var(--botmox-color-status-info, var(--botmox-color-brand-primary))',
+  midnight: 'var(--botmox-color-status-success, var(--botmox-color-positive))',
+} as const;
+
 /**
  * Форматирует дату для отображения на графике
  */
@@ -135,22 +142,22 @@ export const GoldPriceChart: React.FC<GoldPriceChartProps> = ({ data, loading = 
       <div className={styles.container}>
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke={chartColorTokens.grid} />
             <XAxis
               dataKey="date"
               tickFormatter={formatDate}
-              stroke="#8c8c8c"
+              stroke={chartColorTokens.axis}
               tick={{ fontSize: 12 }}
             />
             <YAxis
-              stroke="#8c8c8c"
+              stroke={chartColorTokens.axis}
               tick={{ fontSize: 12 }}
               tickFormatter={(value) => `$${value}`}
               label={{
                 value: 'Price per 1000g (USD)',
                 angle: -90,
                 position: 'insideLeft',
-                style: { textAnchor: 'middle', fill: '#8c8c8c' },
+                style: { textAnchor: 'middle', fill: chartColorTokens.axis },
               }}
             />
             <Tooltip content={<GoldChartTooltip />} />
@@ -160,10 +167,10 @@ export const GoldPriceChart: React.FC<GoldPriceChartProps> = ({ data, loading = 
                 type="monotone"
                 dataKey="wow_tbc"
                 name="WoW TBC Classic"
-                stroke="#1890ff"
+                stroke={chartColorTokens.tbc}
                 strokeWidth={2}
-                dot={{ fill: '#1890ff', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#1890ff', strokeWidth: 2 }}
+                dot={{ fill: chartColorTokens.tbc, strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, stroke: chartColorTokens.tbc, strokeWidth: 2 }}
                 connectNulls={false}
               />
             )}
@@ -172,10 +179,10 @@ export const GoldPriceChart: React.FC<GoldPriceChartProps> = ({ data, loading = 
                 type="monotone"
                 dataKey="wow_midnight"
                 name="WoW Midnight"
-                stroke="#52c41a"
+                stroke={chartColorTokens.midnight}
                 strokeWidth={2}
-                dot={{ fill: '#52c41a', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#52c41a', strokeWidth: 2 }}
+                dot={{ fill: chartColorTokens.midnight, strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, stroke: chartColorTokens.midnight, strokeWidth: 2 }}
                 connectNulls={false}
               />
             )}

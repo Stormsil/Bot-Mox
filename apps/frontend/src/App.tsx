@@ -1,7 +1,7 @@
 import { useNotificationProvider } from '@refinedev/antd';
 import { Authenticated, Refine, useGetIdentity } from '@refinedev/core';
 import routerProvider from '@refinedev/react-router';
-import { App as AntdApp, Button, ConfigProvider, Spin, Tag, Typography } from 'antd';
+import { App as AntdApp } from 'antd';
 import type React from 'react';
 import { lazy, Suspense, useEffect, useMemo } from 'react';
 import {
@@ -17,6 +17,7 @@ import { authProvider } from './app/providers/auth-provider';
 import { dataProvider } from './app/providers/data-provider';
 import { QueryProvider } from './app/providers/QueryProvider';
 import { ADMIN_APP_URL } from './config/env';
+import { AppButton, AppConfigProvider, AppSpin, AppTag, AppTypography } from './shared/ui';
 import { ThemeRuntimeProvider, useThemeRuntime } from './theme/themeRuntime';
 import { Header } from './widgets/layout/Header';
 import { ResourceTree } from './widgets/layout/ResourceTree';
@@ -59,13 +60,13 @@ const AccessStatusBanner: React.FC = () => {
   if (tier === 'premium' && canWrite) {
     return (
       <div className={shellStyles['access-banner']}>
-        <Typography.Text>
+        <AppTypography.Text>
           Access
-          <Tag color="green" bordered={false} style={{ marginInline: 8 }}>
+          <AppTag color="green" bordered={false} style={{ marginInline: 8 }}>
             PREMIUM
-          </Tag>
+          </AppTag>
           Write operations are enabled.
-        </Typography.Text>
+        </AppTypography.Text>
       </div>
     );
   }
@@ -73,30 +74,30 @@ const AccessStatusBanner: React.FC = () => {
   if (tier === 'trial' && canWrite) {
     return (
       <div className={shellStyles['access-banner']}>
-        <Typography.Text>
+        <AppTypography.Text>
           Access
-          <Tag color="blue" bordered={false} style={{ marginInline: 8 }}>
+          <AppTag color="blue" bordered={false} style={{ marginInline: 8 }}>
             TRIAL
-          </Tag>
+          </AppTag>
           Write operations are enabled.
           {remainingTrialHours !== null ? ` Remaining: ~${remainingTrialHours}h.` : ''}
-        </Typography.Text>
+        </AppTypography.Text>
       </div>
     );
   }
 
   return (
     <div className={shellStyles['access-banner']}>
-      <Typography.Text>
+      <AppTypography.Text>
         Access
-        <Tag color="default" bordered={false} style={{ marginInline: 8 }}>
+        <AppTag color="default" bordered={false} style={{ marginInline: 8 }}>
           FREE / READ ONLY
-        </Tag>
+        </AppTag>
         Navigation is available, but write operations are locked.
-      </Typography.Text>
-      <Button type="primary" size="small" onClick={() => navigate('/billing')}>
+      </AppTypography.Text>
+      <AppButton type="primary" size="small" onClick={() => navigate('/billing')}>
         Upgrade Access
-      </Button>
+      </AppButton>
     </div>
   );
 };
@@ -222,7 +223,7 @@ const RefineCrudPageRoute: React.FC = () => {
 
 const RouteFallback: React.FC = () => (
   <div style={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-    <Spin size="large" />
+    <AppSpin size="large" />
   </div>
 );
 
@@ -247,18 +248,18 @@ function App() {
 function AppWithTheme() {
   const { themeConfig } = useThemeRuntime();
   useEffect(() => {
-    ConfigProvider.config({
+    AppConfigProvider.config({
       holderRender: (children) => (
-        <ConfigProvider theme={themeConfig}>
+        <AppConfigProvider theme={themeConfig}>
           <AntdApp>{children}</AntdApp>
-        </ConfigProvider>
+        </AppConfigProvider>
       ),
     });
   }, [themeConfig]);
 
   return (
     <BrowserRouter>
-      <ConfigProvider theme={themeConfig}>
+      <AppConfigProvider theme={themeConfig}>
         <AntdApp>
           <Refine
             dataProvider={dataProvider}
@@ -357,7 +358,7 @@ function AppWithTheme() {
             </Suspense>
           </Refine>
         </AntdApp>
-      </ConfigProvider>
+      </AppConfigProvider>
     </BrowserRouter>
   );
 }

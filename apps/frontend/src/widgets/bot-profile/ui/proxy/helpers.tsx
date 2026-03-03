@@ -20,12 +20,12 @@ export const withProxyComputedState = (proxy: ProxyResource): ProxyInfo => {
 
 export const getProxyStatusIcon = (proxy: ProxyInfo) => {
   if (proxy.isExpired)
-    return <ExclamationCircleOutlined style={{ color: 'var(--boxmox-color-status-danger)' }} />;
+    return <ExclamationCircleOutlined style={{ color: 'var(--botmox-color-status-danger)' }} />;
   if (proxy.isExpiringSoon)
-    return <ClockCircleOutlined style={{ color: 'var(--boxmox-color-status-warning)' }} />;
+    return <ClockCircleOutlined style={{ color: 'var(--botmox-color-status-warning)' }} />;
   if (proxy.status === 'banned')
-    return <WarningOutlined style={{ color: 'var(--boxmox-color-status-danger)' }} />;
-  return <CheckCircleOutlined style={{ color: 'var(--boxmox-color-status-success)' }} />;
+    return <WarningOutlined style={{ color: 'var(--botmox-color-status-danger)' }} />;
+  return <CheckCircleOutlined style={{ color: 'var(--botmox-color-status-success)' }} />;
 };
 
 export const getProxyStatusColor = (proxy: ProxyInfo): AlertProps['type'] => {
@@ -78,9 +78,9 @@ export const getProxyAlertState = (proxy: ProxyInfo): ProxyAlertState | null => 
 };
 
 export const getLocalFraudScoreColor = (score: number) => {
-  if (score <= 20) return 'var(--boxmox-color-status-success)';
-  if (score <= 50) return 'var(--boxmox-color-status-warning)';
-  return 'var(--boxmox-color-status-danger)';
+  if (score <= 20) return 'var(--botmox-color-status-success)';
+  if (score <= 50) return 'var(--botmox-color-status-warning)';
+  return 'var(--botmox-color-status-danger)';
 };
 
 export const getLocalFraudScoreStatus = (score: number) => {

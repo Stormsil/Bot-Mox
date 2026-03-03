@@ -83,8 +83,8 @@ export const SessionList: React.FC<SessionListProps> = ({
                     // so we don't need any `.ant-*` overrides in CSS Modules.
                     style={{
                       backgroundColor: session.enabled
-                        ? 'var(--boxmox-color-status-success)'
-                        : 'var(--boxmox-color-border-strong)',
+                        ? 'var(--botmox-color-status-success)'
+                        : 'var(--botmox-color-border-strong)',
                     }}
                   />
                   <TableActionButton
