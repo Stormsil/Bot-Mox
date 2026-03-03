@@ -1,12 +1,11 @@
-import { useInfiniteList, useList } from '@refinedev/core';
+import { useList } from '@refinedev/core';
+import { useQuery } from '@tanstack/react-query';
 
 import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
 import type { BotRecord } from '../../entities/bot/model/types';
-import { calculateFinanceSummary } from '../../entities/finance/lib/analytics';
-import { mapFinanceOperationsFromInfinitePages } from '../../entities/finance/lib/financeOperationMapper';
 import { useNotesIndexQuery } from '../../entities/notes/api/useNotesIndexQuery';
 import type { NoteIndex } from '../../entities/notes/model/types';
 import type {
@@ -16,7 +15,10 @@ import type {
 } from '../../entities/resources/model/types';
 import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
-import type { FinanceOperationContractRecord } from '../../shared/api/providers/finance-contract-client';
+import {
+  getFinanceProjectPerformanceViaContract,
+  getFinanceSummaryViaContract,
+} from '../../shared/api/providers/finance-contract-client';
 import { AppSpin as Spin } from '../../shared/ui';
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import { DatacenterContentMap, type ExpiringItem } from './content-map';
@@ -24,7 +26,6 @@ import { cx } from './datacenterUi';
 import { buildProjectStats, FINANCE_WINDOW_DAYS, MS_PER_DAY } from './page-helpers';
 import { useDatacenterCollapsedSections, useDatacenterCurrentTime } from './useDatacenterState';
 
-const FINANCE_PAGE_SIZE = 200;
 const FINANCE_REFETCH_INTERVAL_MS = 4_000;
 const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
@@ -32,7 +33,6 @@ const RESOURCE_LIST_PAGE_SIZE = 5_000;
 export const DatacenterPage: React.FC = () => {
   const navigate = useNavigate();
   const currentTime = useDatacenterCurrentTime();
-  const [isFinanceInitialLoadComplete, setIsFinanceInitialLoadComplete] = useState(false);
   const botsMapQuery = useBotsMapQuery();
   const licensesList = useList<BotLicense>({
     resource: 'licenses',
@@ -54,68 +54,34 @@ export const DatacenterPage: React.FC = () => {
 
   const { collapsedSections, toggleSection } = useDatacenterCollapsedSections();
 
-  const financeOperationsList = useInfiniteList<FinanceOperationContractRecord>({
-    resource: 'finance/operations',
-    pagination: {
-      mode: 'server',
-      currentPage: 1,
-      pageSize: FINANCE_PAGE_SIZE,
-    },
-    sorters: [{ field: 'date', order: 'desc' }],
-    queryOptions: {
-      refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
+  const financeAggregateQuery = useMemo(
+    () => ({
+      from_ts: currentTime - FINANCE_WINDOW_DAYS * MS_PER_DAY,
+      to_ts: currentTime,
+    }),
+    [currentTime],
+  );
+  const financeSummaryAggregateQuery = useQuery({
+    queryKey: ['datacenter', 'finance', 'summary-aggregate', financeAggregateQuery],
+    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
+    queryFn: async () => {
+      const payload = await getFinanceSummaryViaContract(financeAggregateQuery);
+      return payload.data;
     },
   });
-  const { query: financeOperationsQuery, result: financeOperationsResult } = financeOperationsList;
-
-  useEffect(() => {
-    if (!financeOperationsResult.hasNextPage) {
-      return;
-    }
-    if (financeOperationsQuery.isLoading || financeOperationsQuery.isFetchingNextPage) {
-      return;
-    }
-
-    void financeOperationsQuery.fetchNextPage();
-  }, [
-    financeOperationsQuery.fetchNextPage,
-    financeOperationsQuery.isFetchingNextPage,
-    financeOperationsQuery.isLoading,
-    financeOperationsResult.hasNextPage,
-  ]);
-
-  useEffect(() => {
-    if (isFinanceInitialLoadComplete) {
-      return;
-    }
-    if (!financeOperationsResult.data) {
-      return;
-    }
-    if (financeOperationsResult.hasNextPage) {
-      return;
-    }
-    if (financeOperationsQuery.isLoading || financeOperationsQuery.isFetchingNextPage) {
-      return;
-    }
-
-    setIsFinanceInitialLoadComplete(true);
-  }, [
-    financeOperationsQuery.isFetchingNextPage,
-    financeOperationsQuery.isLoading,
-    financeOperationsResult.data,
-    financeOperationsResult.hasNextPage,
-    isFinanceInitialLoadComplete,
-  ]);
-
-  const operations = useMemo(
-    () => mapFinanceOperationsFromInfinitePages(financeOperationsResult.data?.pages),
-    [financeOperationsResult.data?.pages],
-  );
+  const financeProjectPerformanceAggregateQuery = useQuery({
+    queryKey: ['datacenter', 'finance', 'project-performance-aggregate', financeAggregateQuery],
+    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
+    queryFn: async () => {
+      const payload = await getFinanceProjectPerformanceViaContract(financeAggregateQuery);
+      return payload.data;
+    },
+  });
   const financeLoading =
-    !isFinanceInitialLoadComplete &&
-    (financeOperationsQuery.isLoading ||
-      financeOperationsQuery.isFetchingNextPage ||
-      Boolean(financeOperationsResult.hasNextPage));
+    financeSummaryAggregateQuery.isLoading ||
+    financeSummaryAggregateQuery.isFetching ||
+    financeProjectPerformanceAggregateQuery.isLoading ||
+    financeProjectPerformanceAggregateQuery.isFetching;
   const bots = useMemo<Record<string, BotRecord>>(
     () => (botsMapQuery.data || {}) as Record<string, BotRecord>,
     [botsMapQuery.data],
@@ -140,6 +106,24 @@ export const DatacenterPage: React.FC = () => {
   const notesLoading = notesIndexQuery.isLoading;
   const warningDays = subscriptionSettingsQuery.data?.warning_days || 7;
 
+  useEffect(() => {
+    if (!financeSummaryAggregateQuery.error) {
+      return;
+    }
+    uiLogger.error(
+      'Error loading datacenter finance summary aggregates:',
+      financeSummaryAggregateQuery.error,
+    );
+  }, [financeSummaryAggregateQuery.error]);
+  useEffect(() => {
+    if (!financeProjectPerformanceAggregateQuery.error) {
+      return;
+    }
+    uiLogger.error(
+      'Error loading datacenter finance project-performance aggregates:',
+      financeProjectPerformanceAggregateQuery.error,
+    );
+  }, [financeProjectPerformanceAggregateQuery.error]);
   useEffect(() => {
     if (!botsMapQuery.error) {
       return;
@@ -181,32 +165,38 @@ export const DatacenterPage: React.FC = () => {
   }, [botsList, currentTime]);
 
   const financeSummary = useMemo(() => {
-    const start = currentTime - FINANCE_WINDOW_DAYS * MS_PER_DAY;
-    const windowOps = operations.filter((op) => op.date >= start);
-    return calculateFinanceSummary(windowOps);
-  }, [operations, currentTime]);
+    const summary = financeSummaryAggregateQuery.data;
+    return {
+      totalIncome: Number(summary?.income_total || 0),
+      totalExpenses: Number(summary?.expense_total || 0),
+      netProfit: Number(summary?.net_total || 0),
+    };
+  }, [financeSummaryAggregateQuery.data]);
 
   const financeGoldByProject = useMemo(() => {
-    const start = currentTime - FINANCE_WINDOW_DAYS * MS_PER_DAY;
-
     const seed = {
       wow_tbc: { totalGold: 0, priceSum: 0, priceCount: 0, avgPrice: 0 },
       wow_midnight: { totalGold: 0, priceSum: 0, priceCount: 0, avgPrice: 0 },
     };
 
-    operations.forEach((op) => {
-      if (op.date < start) return;
-      if (op.type !== 'income' || op.category !== 'sale') return;
-      if (!op.project_id) return;
-      if (!(op.project_id in seed)) return;
+    (financeProjectPerformanceAggregateQuery.data?.items || []).forEach(
+      (item: Record<string, unknown>) => {
+        const projectId = String(item.project_id || '');
+        if (!(projectId in seed)) {
+          return;
+        }
 
-      const projectKey = op.project_id as 'wow_tbc' | 'wow_midnight';
-      seed[projectKey].totalGold += op.gold_amount || 0;
-      if (typeof op.gold_price_at_time === 'number' && op.gold_price_at_time > 0) {
-        seed[projectKey].priceSum += op.gold_price_at_time;
-        seed[projectKey].priceCount += 1;
-      }
-    });
+        const projectKey = projectId as 'wow_tbc' | 'wow_midnight';
+        const totalGold = Number(item.gold_volume || 0);
+        const incomeTotal = Number(item.income_total || 0);
+
+        seed[projectKey].totalGold = totalGold;
+        if (totalGold > 0) {
+          seed[projectKey].priceSum = (incomeTotal * 1000) / totalGold;
+          seed[projectKey].priceCount = 1;
+        }
+      },
+    );
 
     (Object.keys(seed) as Array<'wow_tbc' | 'wow_midnight'>).forEach((key) => {
       const entry = seed[key];
@@ -214,7 +204,7 @@ export const DatacenterPage: React.FC = () => {
     });
 
     return seed;
-  }, [operations, currentTime]);
+  }, [financeProjectPerformanceAggregateQuery.data?.items]);
 
   const licenseStats = useMemo(() => {
     const expiringSoon = licenses.filter((license) => {

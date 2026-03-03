@@ -2,7 +2,16 @@ import type { BotStatus } from '../../../shared/types/core';
 
 export type ResourceKind = 'licenses' | 'proxies' | 'subscriptions';
 
-export interface BotLicense {
+export type ResourceComputedStatus = 'active' | 'expiring' | 'expiring_soon' | 'expired' | 'banned';
+
+export interface ResourceComputedFields<TStatus extends ResourceComputedStatus> {
+  computed_status: TStatus;
+  days_remaining: number | null;
+  is_expiring_soon: boolean;
+}
+
+export interface BotLicense
+  extends ResourceComputedFields<'active' | 'expiring' | 'expiring_soon' | 'expired'> {
   id: string;
   key: string;
   type: string;
@@ -12,10 +21,13 @@ export interface BotLicense {
   expires_at: number;
   created_at: number;
   updated_at: number;
-  computed_status?: 'active' | 'expiring' | 'expired';
-  days_remaining?: number | null;
-  is_expiring_soon?: boolean;
 }
+
+export type BotLicenseMutationPayload = Omit<
+  BotLicense,
+  'id' | 'computed_status' | 'days_remaining' | 'is_expiring_soon'
+>;
+export type BotLicenseMutationPatch = Partial<BotLicenseMutationPayload>;
 
 export interface LicenseBotName {
   id: string;
@@ -33,7 +45,8 @@ export interface LicenseWithBots extends BotLicense {
   }>;
 }
 
-export interface Proxy {
+export interface Proxy
+  extends ResourceComputedFields<'active' | 'expiring' | 'expiring_soon' | 'expired' | 'banned'> {
   id: string;
   ip: string;
   port: number;
@@ -62,10 +75,13 @@ export interface Proxy {
   created_at: number;
   updated_at: number;
   last_checked?: number;
-  computed_status?: 'active' | 'expiring' | 'expired' | 'banned';
-  days_remaining?: number | null;
-  is_expiring_soon?: boolean;
 }
+
+export type ProxyMutationPayload = Omit<
+  Proxy,
+  'id' | 'computed_status' | 'days_remaining' | 'is_expiring_soon'
+>;
+export type ProxyMutationPatch = Partial<ProxyMutationPayload>;
 
 export interface IPQSResponse {
   success: boolean;
@@ -92,7 +108,8 @@ export type SubscriptionType = 'wow' | 'bot' | 'proxy' | 'vpn' | 'other';
 export type SubscriptionDbStatus = 'active' | 'cancelled';
 export type ComputedSubscriptionStatus = 'active' | 'expiring_soon' | 'expired';
 
-export interface Subscription {
+export interface Subscription
+  extends ResourceComputedFields<'active' | 'expiring' | 'expiring_soon' | 'expired'> {
   id: string;
   type: SubscriptionType;
   status: SubscriptionDbStatus;
@@ -104,10 +121,13 @@ export interface Subscription {
   auto_renew?: boolean;
   project_id?: 'wow_tbc' | 'wow_midnight';
   notes?: string;
-  computed_status?: 'active' | 'expiring' | 'expired';
-  days_remaining?: number | null;
-  is_expiring_soon?: boolean;
 }
+
+export type SubscriptionMutationPayload = Omit<
+  Subscription,
+  'id' | 'computed_status' | 'days_remaining' | 'is_expiring_soon'
+>;
+export type SubscriptionMutationPatch = Partial<SubscriptionMutationPayload>;
 
 export interface SubscriptionWithDetails extends Subscription {
   computedStatus: ComputedSubscriptionStatus;

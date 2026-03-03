@@ -526,6 +526,10 @@ export class FinanceController {
           group_by: 'category',
           items: [],
           totals: this.buildEmptySummary(parsedQuery),
+          project_performance: {
+            source: 'finance_breakdown_aggregate',
+            items: [],
+          },
         },
       };
     }

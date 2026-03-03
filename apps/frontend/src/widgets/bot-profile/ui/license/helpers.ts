@@ -1,16 +1,18 @@
 import type { MenuProps } from 'antd';
+import { normalizeResourceStatusVocabulary } from '../../../../entities/resources/model/statusVocabulary';
 import type { BotLicense } from '../../../../entities/resources/model/types';
 import type { LicenseFormValues, LicenseInfo } from './types';
 
-const DAY_MS = 1000 * 60 * 60 * 24;
-
 export const withLicenseRuntimeState = (license: BotLicense): LicenseInfo => {
-  const daysRemaining = Math.ceil((license.expires_at - Date.now()) / DAY_MS);
+  const normalizedStatus = normalizeResourceStatusVocabulary(license);
+  const isExpired =
+    normalizedStatus.computedStatus === 'expired' || normalizedStatus.statusToken === 'expired';
+
   return {
     ...license,
-    daysRemaining,
-    isExpired: Date.now() > license.expires_at,
-    isExpiringSoon: daysRemaining <= 3 && daysRemaining > 0,
+    daysRemaining: isExpired ? 0 : (normalizedStatus.daysRemaining ?? 0),
+    isExpired,
+    isExpiringSoon: normalizedStatus.isExpiringSoon,
   };
 };
 

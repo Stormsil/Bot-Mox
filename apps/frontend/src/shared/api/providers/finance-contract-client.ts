@@ -6,6 +6,7 @@ import {
   financeOperationCreateSchema,
   financeOperationPatchSchema,
   financeOperationRecordSchema,
+  financeProjectPerformanceSchema,
   financeSummarySchema,
   financeTimeSeriesQuerySchema,
   financeTimeSeriesSchema,
@@ -57,6 +58,9 @@ export type FinanceGoldPriceHistoryContractMap = ReturnType<
 >;
 export type FinanceSummaryContractRecord = ReturnType<typeof financeSummarySchema.parse>;
 export type FinanceBreakdownContractRecord = ReturnType<typeof financeBreakdownSchema.parse>;
+export type FinanceProjectPerformanceContractRecord = ReturnType<
+  typeof financeProjectPerformanceSchema.parse
+>;
 export type FinanceTimeSeriesContractRecord = ReturnType<typeof financeTimeSeriesSchema.parse>;
 
 export async function listFinanceOperationsViaContract(
@@ -339,6 +343,66 @@ export async function getFinanceBreakdownViaContract(
       }),
     };
   }
+}
+
+function toProjectPerformanceRecord(
+  breakdown: FinanceBreakdownContractRecord,
+): FinanceProjectPerformanceContractRecord {
+  const directProjectPerformance = (breakdown as { project_performance?: unknown })
+    .project_performance;
+  const directParseResult = financeProjectPerformanceSchema.safeParse(directProjectPerformance);
+  if (directParseResult.success) {
+    return directParseResult.data;
+  }
+
+  const entries = (breakdown.items || []) as Array<Record<string, unknown>>;
+  const items = entries
+    .map((entry) => {
+      const projectId = String(entry.key || entry.project_id || '').trim();
+      if (!projectId) {
+        return null;
+      }
+
+      const income = Number(entry.income_total ?? 0);
+      const expense = Number(entry.expense_total ?? 0);
+      const net = Number(entry.net_total ?? income - expense);
+      const margin =
+        entry.margin_percent === undefined || entry.margin_percent === null
+          ? income > 0
+            ? (net / income) * 100
+            : 0
+          : Number(entry.margin_percent);
+      const operationCount = Number(entry.operation_count ?? entry.count ?? 0);
+
+      return {
+        project_id: projectId,
+        income_total: Number.isFinite(income) ? income : 0,
+        expense_total: Number.isFinite(expense) ? expense : 0,
+        net_total: Number.isFinite(net) ? net : 0,
+        margin_percent: Number.isFinite(margin) ? margin : 0,
+        operation_count:
+          Number.isFinite(operationCount) && operationCount >= 0 ? Math.trunc(operationCount) : 0,
+        ...(entry.gold_volume !== undefined && entry.gold_volume !== null
+          ? { gold_volume: Number(entry.gold_volume) || 0 }
+          : {}),
+      };
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+  return financeProjectPerformanceSchema.parse({
+    source: 'finance_breakdown_aggregate',
+    items,
+  });
+}
+
+export async function getFinanceProjectPerformanceViaContract(
+  query: FinanceAggregateQuery,
+): Promise<ApiSuccessEnvelope<FinanceProjectPerformanceContractRecord>> {
+  const breakdown = await getFinanceBreakdownViaContract(query);
+  return {
+    ...breakdown,
+    data: toProjectPerformanceRecord(breakdown.data),
+  };
 }
 
 export async function getFinanceTimeSeriesViaContract(

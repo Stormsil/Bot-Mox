@@ -6,9 +6,11 @@ import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useBotByIdQuery } from '../../../entities/bot/api/useBotQueries';
 import { enrichSubscriptionsWithDetails } from '../../../entities/resources/api/subscriptionFacade';
-import type { Subscription } from '../../../entities/resources/model/types';
-import { getDefaultSettings } from '../../../entities/settings/api/settingsFacade';
-import { useSubscriptionSettingsQuery } from '../../../entities/settings/api/useSubscriptionSettingsQuery';
+import type {
+  Subscription,
+  SubscriptionMutationPatch,
+  SubscriptionMutationPayload,
+} from '../../../entities/resources/model/types';
 import {
   AppButton as Button,
   AppCard as Card,
@@ -54,15 +56,18 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
     filters: [{ field: 'bot_id', operator: 'eq', value: bot.id }],
     queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
-  const settingsQuery = useSubscriptionSettingsQuery();
-  const createSubscriptionModal = useModalForm<Subscription, HttpError, Omit<Subscription, 'id'>>({
+  const createSubscriptionModal = useModalForm<
+    Subscription,
+    HttpError,
+    SubscriptionMutationPayload
+  >({
     resource: 'subscriptions',
     action: 'create',
     redirect: false,
     invalidates: ['resourceAll'],
     syncWithLocation: false,
   });
-  const editSubscriptionModal = useModalForm<Subscription, HttpError, Partial<Subscription>>({
+  const editSubscriptionModal = useModalForm<Subscription, HttpError, SubscriptionMutationPatch>({
     resource: 'subscriptions',
     action: 'edit',
     redirect: false,
@@ -73,7 +78,6 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
 
   const [botAccountEmail, setBotAccountEmail] = useState<string | null>(null);
   const botQuery = useBotByIdQuery(bot.id);
-  const warningDays = settingsQuery.data?.warning_days ?? getDefaultSettings().warning_days;
 
   const subscriptions = useMemo(() => {
     const vmName =
@@ -91,13 +95,9 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
         },
       ],
     ]);
-    return enrichSubscriptionsWithDetails(
-      subscriptionsList.result.data || [],
-      warningDays,
-      botsMap,
-    );
-  }, [bot, subscriptionsList.result.data, warningDays]);
-  const loading = subscriptionsList.query.isLoading || settingsQuery.isLoading;
+    return enrichSubscriptionsWithDetails(subscriptionsList.result.data || [], botsMap);
+  }, [bot, subscriptionsList.result.data]);
+  const loading = subscriptionsList.query.isLoading;
 
   useEffect(() => {
     if (!subscriptionsList.query.error) return;

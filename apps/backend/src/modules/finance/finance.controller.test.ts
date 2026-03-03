@@ -183,3 +183,43 @@ test('FinanceController summary validates invalid date window with deterministic
     },
   );
 });
+
+test('FinanceController breakdown soft-fail returns empty project performance aggregate', async () => {
+  const controller = new FinanceController({
+    ...createServiceStub(),
+    getBreakdown: async () => {
+      throw { code: 'P2021', message: 'Table does not exist' };
+    },
+  });
+
+  const from = '1700000000000';
+  const to = '1700000100000';
+  const result = await controller.breakdown(
+    'Bearer test-token',
+    { from_ts: from, to_ts: to },
+    buildRequest('tenant-a'),
+  );
+
+  assert.deepEqual(result, {
+    success: true,
+    data: {
+      group_by: 'category',
+      items: [],
+      totals: {
+        income_total: 0,
+        expense_total: 0,
+        net_total: 0,
+        margin_percent: 0,
+        operation_count: 0,
+        period: {
+          from_ts: Number(from),
+          to_ts: Number(to),
+        },
+      },
+      project_performance: {
+        source: 'finance_breakdown_aggregate',
+        items: [],
+      },
+    },
+  });
+});

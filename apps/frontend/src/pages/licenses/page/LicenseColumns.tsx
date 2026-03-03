@@ -9,6 +9,7 @@ import { DeleteButton, EditButton } from '@refinedev/antd';
 import type { TableColumnsType } from 'antd';
 
 import dayjs from 'dayjs';
+import { normalizeResourceStatusVocabulary } from '../../../entities/resources/model/statusVocabulary';
 import type { LicenseWithBots } from '../../../entities/resources/model/types';
 import {
   getExpiryIntent,
@@ -25,13 +26,11 @@ import {
 } from '../../../shared/ui';
 import { TableActionButton, TableActionGroup } from '../../../shared/ui/TableActionButton';
 import styles from '../LicensesPage.module.css';
-import { isExpired, isExpiringSoon, ONE_DAY_MS } from './helpers';
 import type { LicenseColumnsHandlers } from './types';
 
 const { Text } = Typography;
 
 interface BuildLicenseColumnsOptions {
-  currentTime: number;
   handlers: LicenseColumnsHandlers;
 }
 
@@ -71,7 +70,6 @@ const renderBotsPopover = (
 );
 
 export const buildLicenseColumns = ({
-  currentTime,
   handlers,
 }: BuildLicenseColumnsOptions): TableColumnsType<LicenseWithBots> => [
   {
@@ -80,13 +78,16 @@ export const buildLicenseColumns = ({
     key: 'status',
     width: 120,
     render: (status: LicenseWithBots['status'], record) => {
-      const intent = isExpiringSoon(record.expires_at, currentTime)
+      const normalizedStatus = normalizeResourceStatusVocabulary(record);
+      const expired =
+        normalizedStatus.computedStatus === 'expired' || normalizedStatus.statusToken === 'expired';
+      const intent = normalizedStatus.isExpiringSoon
         ? 'warning'
-        : getLicenseStatusIntent(isExpired(record.expires_at, currentTime) ? 'expired' : status);
+        : getLicenseStatusIntent(expired ? 'expired' : status);
 
       return (
         <Tag bordered={false} intent={intent} className={styles.statusTag}>
-          {(isExpired(record.expires_at, currentTime) ? 'expired' : status).toUpperCase()}
+          {(expired ? 'expired' : status).toUpperCase()}
         </Tag>
       );
     },
@@ -203,9 +204,11 @@ export const buildLicenseColumns = ({
     dataIndex: 'expires_at',
     key: 'expires_at',
     width: 120,
-    render: (expiresAt: number) => {
-      const expired = isExpired(expiresAt, currentTime);
-      const expiringSoon = isExpiringSoon(expiresAt, currentTime);
+    render: (expiresAt: number, record) => {
+      const normalizedStatus = normalizeResourceStatusVocabulary(record);
+      const expired =
+        normalizedStatus.computedStatus === 'expired' || normalizedStatus.statusToken === 'expired';
+      const expiringSoon = normalizedStatus.isExpiringSoon;
       const expiryIntent = getExpiryIntent(expired, expiringSoon);
       return (
         <Text
@@ -230,8 +233,10 @@ export const buildLicenseColumns = ({
     key: 'days_left',
     width: 100,
     render: (_value, record) => {
-      const expired = isExpired(record.expires_at, currentTime);
-      const daysLeft = Math.ceil((record.expires_at - currentTime) / ONE_DAY_MS);
+      const normalizedStatus = normalizeResourceStatusVocabulary(record);
+      const expired =
+        normalizedStatus.computedStatus === 'expired' || normalizedStatus.statusToken === 'expired';
+      const daysLeft = expired ? 0 : (normalizedStatus.daysRemaining ?? 0);
 
       if (expired) {
         return (

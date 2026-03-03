@@ -212,6 +212,20 @@ test('FinanceService aggregate DTOs are stable for normal filtered period', asyn
 
   assert.equal(breakdown.group_by, 'category');
   assert.equal(breakdown.items.length, 2);
+  assert.deepEqual(breakdown.project_performance, {
+    source: 'finance_breakdown_aggregate',
+    items: [
+      {
+        project_id: 'wow_tbc',
+        income_total: 100,
+        expense_total: 30,
+        net_total: 70,
+        margin_percent: 70,
+        operation_count: 2,
+        gold_volume: 0,
+      },
+    ],
+  });
   assert.deepEqual(breakdown.items[0], {
     key: 'sale',
     label: 'sale',
@@ -300,6 +314,10 @@ test('FinanceService aggregate DTOs handle empty dataset', async () => {
     group_by: 'category',
     items: [],
     totals: summary,
+    project_performance: {
+      source: 'finance_breakdown_aggregate',
+      items: [],
+    },
   });
 
   const timeSeries = await service.getTimeSeries({ ...query, granularity: 'day' }, 'tenant-a');
@@ -317,5 +335,123 @@ test('FinanceService aggregate DTOs handle empty dataset', async () => {
     expense_total: 0,
     net_total: 0,
     operation_count: 0,
+  });
+});
+
+test('FinanceService project performance groups normal and empty windows deterministically', async () => {
+  const jan1 = Date.UTC(2026, 0, 1, 12, 0, 0, 0);
+  const jan2 = Date.UTC(2026, 0, 2, 12, 0, 0, 0);
+  const jan3 = Date.UTC(2026, 0, 3, 12, 0, 0, 0);
+  const repositoryStub: RepositoryStub = {
+    list: async () => [
+      {
+        id: 'fin-1',
+        payload: {
+          id: 'fin-1',
+          type: 'income',
+          category: 'sale',
+          amount: 120,
+          gold_amount: 1000,
+          currency: 'usd',
+          project_id: 'project_alpha',
+          date: jan1,
+        },
+      },
+      {
+        id: 'fin-2',
+        payload: {
+          id: 'fin-2',
+          type: 'expense',
+          category: 'consumables',
+          amount: 30,
+          currency: 'usd',
+          project_id: 'project_alpha',
+          date: jan2,
+        },
+      },
+      {
+        id: 'fin-3',
+        payload: {
+          id: 'fin-3',
+          type: 'income',
+          category: 'sale',
+          amount: 50,
+          gold_amount: 250,
+          currency: 'usd',
+          project_id: 'project_beta',
+          date: jan2,
+        },
+      },
+      {
+        id: 'fin-4',
+        payload: {
+          id: 'fin-4',
+          type: 'expense',
+          category: 'infra',
+          amount: 20,
+          currency: 'usd',
+          date: jan3,
+        },
+      },
+    ],
+    findById: async () => null,
+    upsert: async () => ({ id: 'x', payload: {} }),
+    delete: async () => false,
+  };
+
+  const service = createService(repositoryStub);
+
+  const normalWindowBreakdown = await service.getBreakdown(
+    {
+      from_ts: Date.UTC(2026, 0, 1, 0, 0, 0, 0),
+      to_ts: Date.UTC(2026, 0, 3, 23, 59, 59, 999),
+    },
+    'tenant-a',
+  );
+
+  assert.deepEqual(normalWindowBreakdown.project_performance, {
+    source: 'finance_breakdown_aggregate',
+    items: [
+      {
+        project_id: 'project_alpha',
+        income_total: 120,
+        expense_total: 30,
+        net_total: 90,
+        margin_percent: 75,
+        operation_count: 2,
+        gold_volume: 1000,
+      },
+      {
+        project_id: 'project_beta',
+        income_total: 50,
+        expense_total: 0,
+        net_total: 50,
+        margin_percent: 100,
+        operation_count: 1,
+        gold_volume: 250,
+      },
+      {
+        project_id: 'global',
+        income_total: 0,
+        expense_total: 20,
+        net_total: -20,
+        margin_percent: 0,
+        operation_count: 1,
+        gold_volume: 0,
+      },
+    ],
+  });
+
+  const emptyWindowBreakdown = await service.getBreakdown(
+    {
+      from_ts: Date.UTC(2027, 0, 1, 0, 0, 0, 0),
+      to_ts: Date.UTC(2027, 0, 2, 23, 59, 59, 999),
+    },
+    'tenant-a',
+  );
+
+  assert.deepEqual(emptyWindowBreakdown.project_performance, {
+    source: 'finance_breakdown_aggregate',
+    items: [],
   });
 });

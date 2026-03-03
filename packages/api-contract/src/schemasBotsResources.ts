@@ -4,9 +4,9 @@ import { jsonValueSchema } from './schemasCommon.js';
 export const botRecordSchema = z
   .object({
     id: z.string().min(1),
-    computed_status: z.string().trim().min(1).optional(),
-    days_remaining: z.coerce.number().int().nullable().optional(),
-    is_expiring_soon: z.boolean().optional(),
+    computed_status: z.string().trim().min(1),
+    days_remaining: z.coerce.number().int().nullable(),
+    is_expiring_soon: z.boolean(),
   })
   .passthrough();
 
@@ -89,13 +89,23 @@ export const botLifecycleIsBannedSchema = z.object({
 });
 
 export const resourceKindSchema = z.enum(['licenses', 'proxies', 'subscriptions']);
-export const resourceRecordSchema = z.record(jsonValueSchema).and(
-  z.object({
-    computed_status: z.string().trim().min(1).optional(),
-    days_remaining: z.coerce.number().int().nullable().optional(),
-    is_expiring_soon: z.boolean().optional(),
-  }),
-);
+export const resourceComputedStatusSchema = z.enum([
+  'active',
+  'expiring',
+  'expiring_soon',
+  'expired',
+  'banned',
+]);
+
+// Thin-client migration source-of-truth: frontend business status consumes backend computed fields.
+export const resourceStatusVocabularySchema = z.object({
+  computed_status: resourceComputedStatusSchema,
+  status: z.string().trim().min(1).optional(),
+  days_remaining: z.coerce.number().int().nullable(),
+  is_expiring_soon: z.boolean(),
+});
+
+export const resourceRecordSchema = z.record(jsonValueSchema).and(resourceStatusVocabularySchema);
 export const resourceListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(200).optional(),

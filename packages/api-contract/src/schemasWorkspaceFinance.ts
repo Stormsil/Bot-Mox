@@ -213,11 +213,31 @@ export const financeBreakdownItemSchema: z.ZodTypeAny = z
   })
   .passthrough();
 
+export const financeProjectPerformanceSourceSchema = z.literal('finance_breakdown_aggregate');
+
+export const financeProjectPerformanceItemSchema: z.ZodTypeAny = z
+  .object({
+    project_id: z.string().trim().min(1),
+    income_total: z.coerce.number().finite(),
+    expense_total: z.coerce.number().finite(),
+    net_total: z.coerce.number().finite(),
+    margin_percent: z.coerce.number().finite(),
+    operation_count: z.coerce.number().int().nonnegative(),
+    gold_volume: z.coerce.number().finite().optional(),
+  })
+  .passthrough();
+
+export const financeProjectPerformanceSchema: z.ZodTypeAny = z.object({
+  source: financeProjectPerformanceSourceSchema,
+  items: z.array(financeProjectPerformanceItemSchema),
+});
+
 export const financeBreakdownSchema: z.ZodTypeAny = z
   .object({
     group_by: z.string().trim().min(1).optional(),
     items: z.array(financeBreakdownItemSchema),
     totals: financeSummarySchema.optional(),
+    project_performance: financeProjectPerformanceSchema.optional(),
   })
   .passthrough();
 

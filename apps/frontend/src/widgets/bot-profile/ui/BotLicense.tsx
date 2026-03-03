@@ -5,7 +5,11 @@ import { message } from 'antd';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import type { BotLicense as BotLicenseRecord } from '../../../entities/resources/model/types';
+import type {
+  BotLicenseMutationPatch,
+  BotLicenseMutationPayload,
+  BotLicense as BotLicenseRecord,
+} from '../../../entities/resources/model/types';
 import { AppForm as Form } from '../../../shared/ui';
 import type {
   AssignLicenseFormValues,
@@ -36,25 +40,21 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
     queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
-  const createLicenseModal = useModalForm<
-    BotLicenseRecord,
-    HttpError,
-    Omit<BotLicenseRecord, 'id'>
-  >({
+  const createLicenseModal = useModalForm<BotLicenseRecord, HttpError, BotLicenseMutationPayload>({
     resource: 'licenses',
     action: 'create',
     redirect: false,
     invalidates: ['resourceAll'],
     syncWithLocation: false,
   });
-  const editLicenseModal = useModalForm<BotLicenseRecord, HttpError, Partial<BotLicenseRecord>>({
+  const editLicenseModal = useModalForm<BotLicenseRecord, HttpError, BotLicenseMutationPatch>({
     resource: 'licenses',
     action: 'edit',
     redirect: false,
     invalidates: ['resourceAll'],
     syncWithLocation: false,
   });
-  const updateLicenseMutation = useUpdate<BotLicenseRecord, HttpError, Partial<BotLicenseRecord>>();
+  const updateLicenseMutation = useUpdate<BotLicenseRecord, HttpError, BotLicenseMutationPatch>();
   const deleteLicenseMutation = useDelete<BotLicenseRecord>();
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const createForm = createLicenseModal.form as unknown as FormInstance<LicenseFormValues>;

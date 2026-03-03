@@ -1,3 +1,4 @@
+import { normalizeResourceStatusVocabulary } from '../../entities/resources/model/statusVocabulary';
 import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
 import type { ProxyWithBot } from './proxyColumns';
 
@@ -57,13 +58,7 @@ export function filterProxies(
   });
 }
 
-export function buildProxyStats(
-  proxies: ProxyWithBot[],
-  deps: {
-    isExpired: (expiresAt: number) => boolean;
-    isExpiringSoon: (expiresAt: number) => boolean;
-  },
-): {
+export function buildProxyStats(proxies: ProxyWithBot[]): {
   total: number;
   active: number;
   expired: number;
@@ -72,11 +67,20 @@ export function buildProxyStats(
 } {
   return {
     total: proxies.length,
-    active: proxies.filter(
-      (proxy) => proxy.status === 'active' && !deps.isExpired(proxy.expires_at),
-    ).length,
-    expired: proxies.filter((proxy) => deps.isExpired(proxy.expires_at)).length,
-    expiringSoon: proxies.filter((proxy) => deps.isExpiringSoon(proxy.expires_at)).length,
+    active: proxies.filter((proxy) => {
+      const status = normalizeResourceStatusVocabulary(proxy);
+      return (
+        (status.computedStatus === 'active' || status.statusToken === 'active') &&
+        status.computedStatus !== 'expired' &&
+        status.statusToken !== 'expired'
+      );
+    }).length,
+    expired: proxies.filter((proxy) => {
+      const status = normalizeResourceStatusVocabulary(proxy);
+      return status.computedStatus === 'expired' || status.statusToken === 'expired';
+    }).length,
+    expiringSoon: proxies.filter((proxy) => normalizeResourceStatusVocabulary(proxy).isExpiringSoon)
+      .length,
     unassigned: proxies.filter((proxy) => !proxy.bot_id).length,
   };
 }

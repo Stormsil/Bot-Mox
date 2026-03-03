@@ -3,6 +3,8 @@ import type {
   ComputedSubscriptionStatus,
   Subscription,
   SubscriptionFormData,
+  SubscriptionMutationPatch,
+  SubscriptionMutationPayload,
   SubscriptionWithDetails,
 } from '../../entities/resources/model/types';
 
@@ -54,7 +56,9 @@ function parseDateToTimestamp(dateString: string): number {
   return new Date(year, month - 1, day, 23, 59, 59, 999).getTime();
 }
 
-export function toCreateSubscriptionPayload(data: SubscriptionFormData): Omit<Subscription, 'id'> {
+export function toCreateSubscriptionPayload(
+  data: SubscriptionFormData,
+): SubscriptionMutationPayload {
   const expiresAtTimestamp = parseDateToTimestamp(data.expires_at);
   if (!Number.isFinite(expiresAtTimestamp)) {
     throw new Error(`Invalid expires_at format: ${data.expires_at}. Expected DD.MM.YYYY`);
@@ -77,8 +81,8 @@ export function toCreateSubscriptionPayload(data: SubscriptionFormData): Omit<Su
 
 export function toUpdateSubscriptionPayload(
   data: Partial<SubscriptionFormData>,
-): Partial<Subscription> {
-  const updates: Partial<Subscription> = {
+): SubscriptionMutationPatch {
+  const updates: SubscriptionMutationPatch = {
     updated_at: Date.now(),
   };
 

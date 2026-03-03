@@ -5,16 +5,20 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import type { AlertProps } from 'antd';
+import { normalizeResourceStatusVocabulary } from '../../../../entities/resources/model/statusVocabulary';
 import type { Proxy as ProxyResource } from '../../../../entities/resources/model/types';
 import type { ProxyInfo } from './types';
 
 export const withProxyComputedState = (proxy: ProxyResource): ProxyInfo => {
-  const daysRemaining = Math.ceil((proxy.expires_at - Date.now()) / (1000 * 60 * 60 * 24));
+  const normalizedStatus = normalizeResourceStatusVocabulary(proxy);
+  const isExpired =
+    normalizedStatus.computedStatus === 'expired' || normalizedStatus.statusToken === 'expired';
+
   return {
     ...proxy,
-    daysRemaining,
-    isExpired: Date.now() > proxy.expires_at,
-    isExpiringSoon: daysRemaining <= 7 && daysRemaining > 0,
+    daysRemaining: isExpired ? 0 : (normalizedStatus.daysRemaining ?? 0),
+    isExpired,
+    isExpiringSoon: normalizedStatus.isExpiringSoon,
   };
 };
 

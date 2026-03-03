@@ -11,6 +11,7 @@ import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { getFraudScoreColor } from '../../entities/resources/api/ipqsFacade';
+import { normalizeResourceStatusVocabulary } from '../../entities/resources/model/statusVocabulary';
 import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
 import {
   AppButton as Button,
@@ -49,8 +50,6 @@ export interface ProxyWithBot extends ProxyResource {
 
 interface BuildProxyColumnsParams {
   checkingProxyId: string | null;
-  isExpired: (expiresAt: number) => boolean;
-  isExpiringSoon: (expiresAt: number) => boolean;
   copyProxyString: (proxy: ProxyResource, event?: React.MouseEvent) => void;
   handleRecheckIPQS: (proxy: ProxyWithBot) => void;
   onEdit: (proxyId: string) => void;
@@ -58,8 +57,6 @@ interface BuildProxyColumnsParams {
 
 export function buildProxyColumns({
   checkingProxyId,
-  isExpired,
-  isExpiringSoon,
   copyProxyString,
   handleRecheckIPQS,
   onEdit,
@@ -71,13 +68,17 @@ export function buildProxyColumns({
       key: 'status',
       width: 85,
       render: (status: string, record: ProxyWithBot) => {
+        const normalizedStatus = normalizeResourceStatusVocabulary(record);
+        const expired =
+          normalizedStatus.computedStatus === 'expired' ||
+          normalizedStatus.statusToken === 'expired';
         let intent: TagIntent = 'default';
         let text = status;
 
-        if (isExpired(record.expires_at)) {
+        if (expired) {
           intent = 'error';
           text = 'EXPIRED';
-        } else if (isExpiringSoon(record.expires_at)) {
+        } else if (normalizedStatus.isExpiringSoon) {
           intent = 'warning';
         } else if (status === 'active') {
           intent = 'success';
@@ -230,9 +231,12 @@ export function buildProxyColumns({
       dataIndex: 'expires_at',
       key: 'expires_at',
       width: 100,
-      render: (expiresAt: number) => {
-        const expired = isExpired(expiresAt);
-        const expiringSoon = isExpiringSoon(expiresAt);
+      render: (expiresAt: number, record: ProxyWithBot) => {
+        const normalizedStatus = normalizeResourceStatusVocabulary(record);
+        const expired =
+          normalizedStatus.computedStatus === 'expired' ||
+          normalizedStatus.statusToken === 'expired';
+        const expiringSoon = normalizedStatus.isExpiringSoon;
 
         return (
           <Text
@@ -256,9 +260,12 @@ export function buildProxyColumns({
       key: 'days_left',
       width: 60,
       render: (_: unknown, record: ProxyWithBot) => {
-        const expired = isExpired(record.expires_at);
-        const expiringSoon = isExpiringSoon(record.expires_at);
-        const daysLeft = Math.ceil((record.expires_at - Date.now()) / (1000 * 60 * 60 * 24));
+        const normalizedStatus = normalizeResourceStatusVocabulary(record);
+        const expired =
+          normalizedStatus.computedStatus === 'expired' ||
+          normalizedStatus.statusToken === 'expired';
+        const expiringSoon = normalizedStatus.isExpiringSoon;
+        const daysLeft = expired ? 0 : (normalizedStatus.daysRemaining ?? 0);
 
         return (
           <Text
@@ -272,7 +279,7 @@ export function buildProxyColumns({
               fontWeight: 600,
             }}
           >
-            {expired ? '0' : daysLeft}
+            {daysLeft}
           </Text>
         );
       },

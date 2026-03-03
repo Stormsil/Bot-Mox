@@ -182,7 +182,7 @@ export const DeleteVmModal: React.FC<DeleteVmModalProps> = ({
           </div>
           <div className={cx('vm-delete-vm-modal-list')}>
             {loading ? (
-              <div className={cx('vm-delete-vm-modal-empty')}>Loading linked account data...</div>
+              <div className={cx('vm-delete-vm-modal-empty')}>Loading deletion evaluation...</div>
             ) : candidates.length === 0 ? (
               <div className={cx('vm-delete-vm-modal-empty')}>No VMs found on selected node.</div>
             ) : (

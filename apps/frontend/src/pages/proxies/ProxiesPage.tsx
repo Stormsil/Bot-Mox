@@ -11,7 +11,11 @@ import {
   isProxySuspicious,
   updateProxyWithIPQSData,
 } from '../../entities/resources/api/ipqsFacade';
-import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
+import type {
+  ProxyMutationPatch,
+  ProxyMutationPayload,
+  Proxy as ProxyResource,
+} from '../../entities/resources/model/types';
 import {
   AppTable,
   AppButton as Button,
@@ -74,14 +78,14 @@ export const ProxiesPage: React.FC = () => {
       refetchInterval: BOT_POLL_MS,
     },
   });
-  const updateProxy = useUpdate<ProxyResource, HttpError, Partial<ProxyResource>>();
-  const createProxyModal = useModalForm<ProxyResource, HttpError, Omit<ProxyResource, 'id'>>({
+  const updateProxy = useUpdate<ProxyResource, HttpError, ProxyMutationPatch>();
+  const createProxyModal = useModalForm<ProxyResource, HttpError, ProxyMutationPayload>({
     resource: 'proxies',
     action: 'create',
     autoSubmitClose: true,
     syncWithLocation: false,
   });
-  const editProxyModal = useModalForm<ProxyResource, HttpError, Partial<ProxyResource>>({
+  const editProxyModal = useModalForm<ProxyResource, HttpError, ProxyMutationPatch>({
     resource: 'proxies',
     action: 'edit',
     autoSubmitClose: true,
@@ -168,13 +172,6 @@ export const ProxiesPage: React.FC = () => {
     localStorage.setItem(STATS_COLLAPSED_KEY, JSON.stringify(statsCollapsed));
   }, [statsCollapsed]);
 
-  const isExpired = useCallback((expiresAt: number) => Date.now() > expiresAt, []);
-
-  const isExpiringSoon = useCallback((expiresAt: number) => {
-    const daysUntilExpiry = Math.ceil((expiresAt - Date.now()) / (1000 * 60 * 60 * 24));
-    return daysUntilExpiry <= 7 && daysUntilExpiry > 0;
-  }, []);
-
   const handleProviderCreated = useCallback((providerName: string) => {
     if (!providerName) {
       return;
@@ -213,7 +210,7 @@ export const ProxiesPage: React.FC = () => {
         }
 
         const suspicious = await isProxySuspicious(data.fraud_score);
-        const updates = updateProxyWithIPQSData(proxy, data) as Partial<ProxyResource>;
+        const updates = updateProxyWithIPQSData(proxy, data);
         if (suspicious) {
           updates.status = 'banned';
         }
@@ -268,26 +265,14 @@ export const ProxiesPage: React.FC = () => {
     () =>
       buildProxyColumns({
         checkingProxyId,
-        isExpired,
-        isExpiringSoon,
         copyProxyString,
         handleRecheckIPQS,
         onEdit: (proxyId) => editProxyModal.show(proxyId),
       }),
-    [
-      checkingProxyId,
-      copyProxyString,
-      handleRecheckIPQS,
-      isExpired,
-      isExpiringSoon,
-      editProxyModal,
-    ],
+    [checkingProxyId, copyProxyString, handleRecheckIPQS, editProxyModal],
   );
 
-  const stats = useMemo(
-    () => buildProxyStats(tableProxies, { isExpired, isExpiringSoon }),
-    [tableProxies, isExpired, isExpiringSoon],
-  );
+  const stats = useMemo(() => buildProxyStats(tableProxies), [tableProxies]);
 
   const countries = useMemo(() => extractCountries(tableProxies), [tableProxies]);
 

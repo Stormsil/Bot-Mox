@@ -69,6 +69,9 @@ export interface ProxyDetails {
   expires_at?: number;
   provider?: string;
   country?: string;
+  computed_status?: ProxyResource['computed_status'];
+  days_remaining?: ProxyResource['days_remaining'];
+  is_expiring_soon?: ProxyResource['is_expiring_soon'];
 }
 
 export interface LinkedResources {

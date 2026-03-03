@@ -12,7 +12,11 @@
     "lint": "pnpm --dir ../.. exec biome check apps/frontend/src && pnpm --dir ../.. run check:ui:boundaries",
     "preview": "vite preview",
     "test:e2e": "playwright test",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "guard:thin-client:delete-modal": "playwright test e2e/thin-client-delete-modal-guard.spec.ts --project=chromium",
+    "guard:thin-client:f1-verification": "playwright test e2e/thin-client-f1-verification-guard.spec.ts --project=chromium",
+    "guard:thin-client:forbidden": "node e2e/guards/forbidden-local-business-logic.mjs",
+    "guard:thin-client": "pnpm run guard:thin-client:forbidden && pnpm run guard:thin-client:delete-modal"
   },
   "dependencies": {
     "@ant-design/icons": "^5.6.1",

@@ -1,3 +1,4 @@
+import { normalizeResourceStatusVocabulary } from '../../entities/resources/model/statusVocabulary';
 import type {
   BotLicense,
   Proxy as ProxyResource,
@@ -15,17 +16,18 @@ import type {
 
 type ComputedStatusPayload = {
   computed_status?: string;
+  status?: string;
   days_remaining?: number | null;
   is_expiring_soon?: boolean;
 };
 
-function hasComputedStatus(value: unknown): value is ComputedStatusPayload {
+function hasStatusVocabulary(value: unknown): value is ComputedStatusPayload {
   if (!value || typeof value !== 'object') {
     return false;
   }
 
   const candidate = value as ComputedStatusPayload;
-  return typeof candidate.computed_status === 'string';
+  return typeof candidate.computed_status === 'string' || typeof candidate.status === 'string';
 }
 
 function toBotStatus(value: unknown): BotStatus | undefined {
@@ -42,17 +44,11 @@ function toBotStatus(value: unknown): BotStatus | undefined {
   return undefined;
 }
 
-function clampDaysRemaining(value: unknown): number | undefined {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return undefined;
-  }
-  return Math.max(0, Math.ceil(value));
-}
-
 function buildProxyStatus(proxy?: ProxyResource | ProxyLike) {
-  if (hasComputedStatus(proxy)) {
-    const computed = proxy.computed_status;
-    const daysRemaining = clampDaysRemaining(proxy.days_remaining);
+  if (hasStatusVocabulary(proxy)) {
+    const normalized = normalizeResourceStatusVocabulary(proxy);
+    const computed = normalized.computedStatus || normalized.statusToken;
+    const daysRemaining = normalized.daysRemaining;
 
     if (computed === 'banned') {
       return {
@@ -129,7 +125,12 @@ function buildAggregateResourceStatus(
     };
   }
 
-  if (resources.some((item) => item.computed_status === 'expired')) {
+  if (
+    resources.some((item) => {
+      const normalized = normalizeResourceStatusVocabulary(item);
+      return normalized.computedStatus === 'expired' || normalized.statusToken === 'expired';
+    })
+  ) {
     return {
       status: 'expired' as const,
       label: 'Expired',
@@ -139,12 +140,13 @@ function buildAggregateResourceStatus(
     };
   }
 
-  const expiring = resources.filter(
-    (item) => item.computed_status === 'expiring' || item.is_expiring_soon === true,
-  );
+  const expiring = resources.filter((item) => {
+    const normalized = normalizeResourceStatusVocabulary(item);
+    return normalized.computedStatus === 'expiring' || normalized.isExpiringSoon;
+  });
   if (expiring.length > 0) {
     const minDaysRemaining = expiring
-      .map((item) => clampDaysRemaining(item.days_remaining))
+      .map((item) => normalizeResourceStatusVocabulary(item).daysRemaining)
       .find((value) => value !== undefined);
     return {
       status: 'expiring' as const,
@@ -156,7 +158,7 @@ function buildAggregateResourceStatus(
   }
 
   const minDaysRemaining = resources
-    .map((item) => clampDaysRemaining(item.days_remaining))
+    .map((item) => normalizeResourceStatusVocabulary(item).daysRemaining)
     .find((value) => value !== undefined);
 
   return {

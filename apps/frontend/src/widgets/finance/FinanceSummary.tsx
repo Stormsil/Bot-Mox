@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type {
   CategoryBreakdown,
-  FinanceOperation,
   FinanceSummary as FinanceSummaryType,
   GoldPriceHistoryEntry,
   TimeSeriesData,
@@ -114,7 +113,15 @@ interface FinanceSummaryProps {
   timeRange: number;
   onTimeRangeChange: (days: number) => void;
   selectedProject: 'all' | 'wow_tbc' | 'wow_midnight';
-  operations: FinanceOperation[]; // Added operations prop
+  projectPerformance: Array<{
+    project_id: string;
+    income_total: number;
+    expense_total: number;
+    net_total?: number;
+    margin_percent?: number;
+    operation_count?: number;
+    gold_volume?: number;
+  }>;
 }
 
 export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
@@ -127,7 +134,7 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
     timeRange,
     onTimeRangeChange,
     selectedProject,
-    operations,
+    projectPerformance,
   } = props;
   // Форматирование валюты
   const formatCurrency = (value: number) => {
@@ -156,30 +163,19 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
 
   const goldByProject = useMemo(() => {
     const base = {
-      wow_tbc: { totalGold: 0, priceSum: 0, priceCount: 0, avgPrice: 0 },
-      wow_midnight: { totalGold: 0, priceSum: 0, priceCount: 0, avgPrice: 0 },
+      wow_tbc: { totalGold: 0 },
+      wow_midnight: { totalGold: 0 },
     };
 
-    operations.forEach((op) => {
-      if (op.type !== 'income' || op.category !== 'sale') return;
-      if (!op.project_id) return;
-      if (!(op.project_id in base)) return;
-
-      const key = op.project_id as 'wow_tbc' | 'wow_midnight';
-      base[key].totalGold += op.gold_amount || 0;
-      if (typeof op.gold_price_at_time === 'number' && op.gold_price_at_time > 0) {
-        base[key].priceSum += op.gold_price_at_time;
-        base[key].priceCount += 1;
+    projectPerformance.forEach((entry) => {
+      if (entry.project_id !== 'wow_tbc' && entry.project_id !== 'wow_midnight') {
+        return;
       }
-    });
-
-    (Object.keys(base) as Array<'wow_tbc' | 'wow_midnight'>).forEach((key) => {
-      const entry = base[key];
-      entry.avgPrice = entry.priceCount > 0 ? entry.priceSum / entry.priceCount : 0;
+      base[entry.project_id].totalGold += entry.gold_volume || 0;
     });
 
     return base;
-  }, [operations]);
+  }, [projectPerformance]);
 
   const renderGoldValue = () => {
     if (selectedProject !== 'all') {
@@ -207,8 +203,8 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
 
     return (
       <span className={styles.metricHintStack}>
-        <span>WoW TBC: ${goldByProject.wow_tbc.avgPrice.toFixed(4)}/1000g</span>
-        <span>WoW Midnight: ${goldByProject.wow_midnight.avgPrice.toFixed(4)}/1000g</span>
+        <span>WoW TBC: Avg price from summary filter</span>
+        <span>WoW Midnight: Avg price from summary filter</span>
       </span>
     );
   };
@@ -271,7 +267,7 @@ export const FinanceSummary: React.FC<FinanceSummaryProps> = (props) => {
       {/* Project Performance Table */}
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <ProjectPerformanceTable operations={operations} loading={loading} />
+          <ProjectPerformanceTable projectPerformance={projectPerformance} loading={loading} />
         </Col>
       </Row>
 

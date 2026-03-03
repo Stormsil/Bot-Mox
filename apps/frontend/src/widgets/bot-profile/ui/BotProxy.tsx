@@ -11,7 +11,13 @@ import {
   isAutoCheckEnabled,
   updateProxyWithIPQSData,
 } from '../../../entities/resources/api/ipqsFacade';
-import type { IPQSResponse, Proxy as ProxyResource } from '../../../entities/resources/model/types';
+import type {
+  IPQSResponse,
+  ProxyMutationPatch,
+  ProxyMutationPayload,
+  Proxy as ProxyResource,
+} from '../../../entities/resources/model/types';
+import { uiLogger } from '../../../observability/uiLogger';
 import { parseProxyString } from '../../../shared/lib/utils/proxyUtils';
 import { AppCard as Card, AppSpin as Spin } from '../../../shared/ui';
 import type { BotProxyProps, ProxyInfo, ProxyModalFormValues } from './proxy';
@@ -35,14 +41,14 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [checkingIPQS, setCheckingIPQS] = useState(false);
   const [ipqsData, setIpqsData] = useState<IPQSResponse | null>(null);
-  const createProxyModal = useModalForm<ProxyResource, HttpError, Omit<ProxyResource, 'id'>>({
+  const createProxyModal = useModalForm<ProxyResource, HttpError, ProxyMutationPayload>({
     resource: 'proxies',
     action: 'create',
     redirect: false,
     invalidates: ['resourceAll'],
     syncWithLocation: false,
   });
-  const editProxyModal = useModalForm<ProxyResource, HttpError, Partial<ProxyResource>>({
+  const editProxyModal = useModalForm<ProxyResource, HttpError, ProxyMutationPatch>({
     resource: 'proxies',
     action: 'edit',
     redirect: false,
@@ -51,7 +57,7 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
   });
   const createForm = createProxyModal.form as unknown as FormInstance<ProxyModalFormValues>;
   const editForm = editProxyModal.form as unknown as FormInstance<ProxyModalFormValues>;
-  const updateProxyMutation = useUpdate<ProxyResource, HttpError, Partial<ProxyResource>>();
+  const updateProxyMutation = useUpdate<ProxyResource, HttpError, ProxyMutationPatch>();
   const proxiesList = useList<ProxyResource>({
     resource: 'proxies',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
@@ -71,7 +77,11 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
       return;
     }
 
-    console.error('Error loading proxy:', proxiesError);
+    uiLogger.error('bot_proxy.load_failed', {
+      message: 'Error loading proxy',
+      module: 'widgets/bot-profile/BotProxy',
+      error: proxiesError,
+    });
     message.error({ content: 'Failed to load proxy data', key: 'bot-proxy-load-error' });
   }, [proxiesError]);
 
@@ -100,15 +110,17 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
     try {
       const autoCheckEnabled = await isAutoCheckEnabled();
       if (!autoCheckEnabled) {
-        console.log('IPQS auto-check is disabled or API key not configured');
         return;
       }
 
       const data = await checkIPQuality(ip);
-      console.log('IPQS Data:', data);
       setIpqsData(data);
     } catch (error) {
-      console.error('IPQS check failed:', error);
+      uiLogger.error('bot_proxy.ipqs_check_failed', {
+        message: 'IPQS check failed',
+        module: 'widgets/bot-profile/BotProxy',
+        error,
+      });
     } finally {
       setCheckingIPQS(false);
     }
@@ -203,7 +215,7 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
         ? values.expires_at.valueOf()
         : Date.now() + 30 * 24 * 60 * 60 * 1000;
 
-      let proxyData: Partial<ProxyResource> = {
+      let proxyData: ProxyMutationPatch = {
         ip: parsed.ip,
         port: parsed.port,
         login: parsed.login,
@@ -235,7 +247,7 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
         }
         const proxyData = buildProxyPayload(values, parsedProxy);
         proxyData.created_at = Date.now();
-        return createProxyModal.onFinish(proxyData as Omit<ProxyResource, 'id'>);
+        return createProxyModal.onFinish(proxyData as ProxyMutationPayload);
       },
     }),
     [buildProxyPayload, createProxyModal.formProps, createProxyModal.onFinish, parsedProxy],

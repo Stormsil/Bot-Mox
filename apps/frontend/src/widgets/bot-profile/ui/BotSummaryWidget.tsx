@@ -3,6 +3,7 @@ import { message } from 'antd';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { normalizeResourceStatusVocabulary } from '../../../entities/resources/model/statusVocabulary';
 import type {
   BotLicense,
   Proxy as ProxyResource,
@@ -80,30 +81,29 @@ export const BotSummaryWidget: React.FC<BotSummaryProps> = ({ bot }) => {
     const proxies = (proxiesList.result.data || []) as ProxyResource[];
     const subscriptions = (subscriptionsList.result.data || []) as Subscription[];
     const linkedLicense = licenses.find((license) => license.bot_ids?.includes(bot.id)) || null;
-    let linkedProxy: ProxyDetails | null = bot.proxy?.ip
+    const proxyData = proxies.find((proxy) => proxy.bot_id === bot.id);
+    const linkedProxy: ProxyDetails | null = proxyData
       ? {
-          ip: bot.proxy.ip,
-          port: bot.proxy.port,
-          status: bot.proxy.status,
-          expires_at: bot.proxy.expires_at,
-          provider: bot.proxy.provider,
-          country: bot.proxy.country,
-        }
-      : null;
-
-    if (!linkedProxy) {
-      const proxyData = proxies.find((proxy) => proxy.bot_id === bot.id);
-      if (proxyData) {
-        linkedProxy = {
           ip: proxyData.ip,
           port: proxyData.port,
           status: proxyData.status,
           expires_at: proxyData.expires_at,
           provider: proxyData.provider,
           country: proxyData.country,
-        };
-      }
-    }
+          computed_status: proxyData.computed_status,
+          days_remaining: proxyData.days_remaining,
+          is_expiring_soon: proxyData.is_expiring_soon,
+        }
+      : bot.proxy?.ip
+        ? {
+            ip: bot.proxy.ip,
+            port: bot.proxy.port,
+            status: bot.proxy.status,
+            expires_at: bot.proxy.expires_at,
+            provider: bot.proxy.provider,
+            country: bot.proxy.country,
+          }
+        : null;
 
     return {
       license: linkedLicense,
@@ -131,33 +131,28 @@ export const BotSummaryWidget: React.FC<BotSummaryProps> = ({ bot }) => {
       lastSeenMinutes: 0,
     };
 
-    const warningDays = 7;
     const lastSeenMinutes = Math.floor((currentTime - bot.last_seen) / (1000 * 60));
     info.isOffline = lastSeenMinutes > 5;
     info.lastSeenMinutes = lastSeenMinutes;
 
     if (linkedResources.license) {
-      const daysRemaining = Math.ceil(
-        (linkedResources.license.expires_at - currentTime) / (1000 * 60 * 60 * 24),
-      );
-      info.licenseExpired = currentTime > linkedResources.license.expires_at;
-      info.licenseExpiringSoon = daysRemaining <= warningDays && daysRemaining > 0;
+      const status = normalizeResourceStatusVocabulary(linkedResources.license);
+      info.licenseExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
+      info.licenseExpiringSoon = status.isExpiringSoon;
     }
 
     if (linkedResources.proxy?.expires_at) {
-      const daysRemaining = Math.ceil(
-        (linkedResources.proxy.expires_at - currentTime) / (1000 * 60 * 60 * 24),
-      );
-      info.proxyExpired = currentTime > linkedResources.proxy.expires_at;
-      info.proxyExpiringSoon = daysRemaining <= warningDays && daysRemaining > 0;
+      const status = normalizeResourceStatusVocabulary(linkedResources.proxy);
+      info.proxyExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
+      info.proxyExpiringSoon = status.isExpiringSoon;
       info.proxyBanned = linkedResources.proxy.status === 'banned';
     }
 
     linkedResources.subscriptions.forEach((sub) => {
-      const daysRemaining = Math.ceil((sub.expires_at - currentTime) / (1000 * 60 * 60 * 24));
-      if (currentTime > sub.expires_at) {
+      const status = normalizeResourceStatusVocabulary(sub);
+      if (status.computedStatus === 'expired' || status.statusToken === 'expired') {
         info.subscriptionsExpired += 1;
-      } else if (daysRemaining <= warningDays && daysRemaining > 0) {
+      } else if (status.isExpiringSoon) {
         info.subscriptionsExpiringSoon += 1;
       }
     });

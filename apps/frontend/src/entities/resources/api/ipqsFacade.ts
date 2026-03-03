@@ -4,7 +4,7 @@ import {
   getIpqsStatusViaContract,
 } from '../../../shared/api/providers/ipqs-contract-client';
 import { getApiKeys, getProxySettings } from '../../settings/api/settingsFacade';
-import type { IPQSResponse, Proxy as ProxyResource } from '../model/types';
+import type { IPQSResponse, ProxyMutationPatch, Proxy as ProxyResource } from '../model/types';
 
 interface BackendStatusPayload {
   enabled?: unknown;
@@ -100,10 +100,10 @@ export async function isIPQSCheckEnabled(): Promise<boolean> {
 }
 
 export function updateProxyWithIPQSData(
-  proxy: Partial<ProxyResource>,
+  proxy: ProxyMutationPatch,
   ipqsData: IPQSResponse,
-): Partial<ProxyResource> {
-  const updates: Partial<ProxyResource> = {
+): ProxyMutationPatch {
+  const updates: ProxyMutationPatch = {
     ...proxy,
     fraud_score: ipqsData.fraud_score,
     country: ipqsData.country_code || proxy.country || 'Unknown',
@@ -125,8 +125,9 @@ export function updateProxyWithIPQSData(
   };
 
   Object.keys(updates).forEach((key) => {
-    if (updates[key as keyof ProxyResource] === undefined) {
-      delete updates[key as keyof ProxyResource];
+    const typedKey = key as keyof ProxyMutationPatch;
+    if (updates[typedKey] === undefined) {
+      delete updates[typedKey];
     }
   });
 

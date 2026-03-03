@@ -1,17 +1,10 @@
+import { normalizeResourceStatusVocabulary } from '../../../entities/resources/model/statusVocabulary';
 import type { BotLicense, LicenseWithBots } from '../../../entities/resources/model/types';
 import type { BotsMap, LicensesStats } from './types';
 
 export const STATS_COLLAPSED_KEY = 'licensesStatsCollapsed';
-export const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 
 export const getCurrentTimestamp = (): number => Date.now();
-
-export const isExpired = (expiresAt: number, currentTime: number) => currentTime > expiresAt;
-
-export const isExpiringSoon = (expiresAt: number, currentTime: number) => {
-  const daysUntilExpiry = Math.ceil((expiresAt - currentTime) / ONE_DAY_MS);
-  return daysUntilExpiry <= 3 && daysUntilExpiry > 0;
-};
 
 export const withBotDetails = (licenses: LicenseWithBots[], bots: BotsMap): LicenseWithBots[] =>
   licenses.map((license) => {
@@ -55,14 +48,23 @@ export const filterLicenses = (
     return matchesSearch && matchesStatus && matchesType;
   });
 
-export const computeStats = (licenses: LicenseWithBots[], currentTime: number): LicensesStats => ({
+export const computeStats = (licenses: LicenseWithBots[]): LicensesStats => ({
   total: licenses.length,
-  active: licenses.filter(
-    (license) => license.status === 'active' && !isExpired(license.expires_at, currentTime),
+  active: licenses.filter((license) => {
+    const status = normalizeResourceStatusVocabulary(license);
+    return (
+      (status.computedStatus === 'active' || status.statusToken === 'active') &&
+      status.computedStatus !== 'expired' &&
+      status.statusToken !== 'expired'
+    );
+  }).length,
+  expired: licenses.filter((license) => {
+    const status = normalizeResourceStatusVocabulary(license);
+    return status.computedStatus === 'expired' || status.statusToken === 'expired';
+  }).length,
+  expiringSoon: licenses.filter(
+    (license) => normalizeResourceStatusVocabulary(license).isExpiringSoon,
   ).length,
-  expired: licenses.filter((license) => isExpired(license.expires_at, currentTime)).length,
-  expiringSoon: licenses.filter((license) => isExpiringSoon(license.expires_at, currentTime))
-    .length,
   unassigned: licenses.filter((license) => !license.bot_ids || license.bot_ids.length === 0).length,
 });
 

@@ -17,6 +17,8 @@ import { uiLogger } from '../../observability/uiLogger';
 import {
   type FinanceOperationContractRecord,
   getFinanceBreakdownViaContract,
+  getFinanceGoldPriceHistoryViaContract,
+  getFinanceProjectPerformanceViaContract,
   getFinanceSummaryViaContract,
   getFinanceTimeSeriesViaContract,
 } from '../../shared/api/providers/finance-contract-client';
@@ -35,8 +37,8 @@ import {
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import styles from './FinancePage.module.css';
 import {
-  getGoldPriceHistoryFromOperationsLocal,
   mapBreakdownFromAggregate,
+  mapGoldPriceHistoryFromContract,
   mapSummaryFromAggregate,
   mapTimeSeriesFromAggregate,
 } from './mappers';
@@ -62,6 +64,8 @@ export const FinancePage: React.FC = () => {
   const [formVisible, setFormVisible] = useState(false);
   const [editingOperation, setEditingOperation] = useState<FinanceOperation | null>(null);
   const [isFinanceInitialLoadComplete, setIsFinanceInitialLoadComplete] = useState(false);
+  const isTransactionsTab = activeTab === 'transactions';
+  const isSummaryTab = activeTab === 'summary';
 
   const financeOperationsList = useInfiniteList<FinanceOperationContractRecord>({
     resource: 'finance/operations',
@@ -72,7 +76,8 @@ export const FinancePage: React.FC = () => {
     },
     sorters: [{ field: 'date', order: 'desc' }],
     queryOptions: {
-      refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
+      enabled: isTransactionsTab,
+      refetchInterval: isTransactionsTab ? FINANCE_REFETCH_INTERVAL_MS : false,
     },
   });
   const createFinanceOperation = useCreate();
@@ -82,6 +87,9 @@ export const FinancePage: React.FC = () => {
   const { query: financeOperationsQuery, result: financeOperationsResult } = financeOperationsList;
 
   useEffect(() => {
+    if (!isTransactionsTab) {
+      return;
+    }
     if (!financeOperationsResult.hasNextPage) {
       return;
     }
@@ -95,9 +103,13 @@ export const FinancePage: React.FC = () => {
     financeOperationsQuery.isFetchingNextPage,
     financeOperationsQuery.isLoading,
     financeOperationsResult.hasNextPage,
+    isTransactionsTab,
   ]);
 
   useEffect(() => {
+    if (!isTransactionsTab) {
+      return;
+    }
     if (isFinanceInitialLoadComplete) {
       return;
     }
@@ -118,6 +130,7 @@ export const FinancePage: React.FC = () => {
     financeOperationsResult.data,
     financeOperationsResult.hasNextPage,
     isFinanceInitialLoadComplete,
+    isTransactionsTab,
   ]);
 
   const operations = useMemo(
@@ -162,6 +175,23 @@ export const FinancePage: React.FC = () => {
       return payload.data;
     },
   });
+  const financeProjectPerformanceAggregateQuery = useQuery({
+    queryKey: ['finance', 'project-performance-aggregate', aggregateQuery],
+    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
+    queryFn: async () => {
+      const payload = await getFinanceProjectPerformanceViaContract(aggregateQuery);
+      return payload.data;
+    },
+  });
+  const financeGoldPriceHistoryQuery = useQuery({
+    queryKey: ['finance', 'gold-price-history'],
+    enabled: isSummaryTab,
+    refetchInterval: isSummaryTab ? FINANCE_REFETCH_INTERVAL_MS : false,
+    queryFn: async () => {
+      const payload = await getFinanceGoldPriceHistoryViaContract();
+      return payload.data;
+    },
+  });
 
   useEffect(() => {
     if (!financeSummaryAggregateQuery.error) {
@@ -187,8 +217,24 @@ export const FinancePage: React.FC = () => {
       financeTimeSeriesAggregateQuery.error,
     );
   }, [financeTimeSeriesAggregateQuery.error]);
+  useEffect(() => {
+    if (!financeProjectPerformanceAggregateQuery.error) {
+      return;
+    }
+    uiLogger.error(
+      'Error loading finance project-performance aggregates:',
+      financeProjectPerformanceAggregateQuery.error,
+    );
+  }, [financeProjectPerformanceAggregateQuery.error]);
+  useEffect(() => {
+    if (!financeGoldPriceHistoryQuery.error) {
+      return;
+    }
+    uiLogger.error('Error loading finance gold-price history:', financeGoldPriceHistoryQuery.error);
+  }, [financeGoldPriceHistoryQuery.error]);
 
   const financeListLoading =
+    isTransactionsTab &&
     !isFinanceInitialLoadComplete &&
     (financeOperationsQuery.isLoading ||
       financeOperationsQuery.isFetchingNextPage ||
@@ -196,7 +242,9 @@ export const FinancePage: React.FC = () => {
   const financeAggregateLoading =
     financeSummaryAggregateQuery.isFetching ||
     financeBreakdownAggregateQuery.isFetching ||
-    financeTimeSeriesAggregateQuery.isFetching;
+    financeTimeSeriesAggregateQuery.isFetching ||
+    financeProjectPerformanceAggregateQuery.isFetching ||
+    financeGoldPriceHistoryQuery.isFetching;
   const loading =
     financeListLoading ||
     financeAggregateLoading ||
@@ -243,10 +291,26 @@ export const FinancePage: React.FC = () => {
     return mapTimeSeriesFromAggregate(financeTimeSeriesAggregateQuery.data);
   }, [dateRange, financeTimeSeriesAggregateQuery.data]);
 
-  // Get gold price history (from ALL operations to show trends, or filtered? Filtered makes sense)
+  const projectPerformance = useMemo(() => {
+    return financeProjectPerformanceAggregateQuery.data?.items || [];
+  }, [financeProjectPerformanceAggregateQuery.data]);
+
   const goldPriceHistory = useMemo(() => {
-    return getGoldPriceHistoryFromOperationsLocal(filteredOperations);
-  }, [filteredOperations]);
+    const mapped = mapGoldPriceHistoryFromContract(
+      financeGoldPriceHistoryQuery.data,
+      selectedProject,
+    );
+    if (!dateRange) {
+      return mapped;
+    }
+
+    const start = dateRange[0].startOf('day').valueOf();
+    const end = dateRange[1].endOf('day').valueOf();
+    return mapped.filter((entry) => {
+      const ts = dayjs(entry.date).valueOf();
+      return ts >= start && ts <= end;
+    });
+  }, [dateRange, financeGoldPriceHistoryQuery.data, selectedProject]);
 
   // Handle adding transaction
   const handleAdd = () => {
@@ -344,7 +408,7 @@ export const FinancePage: React.FC = () => {
               setDateRange([dayjs().subtract(days, 'days'), dayjs()]);
             }}
             selectedProject={selectedProject}
-            operations={filteredOperations}
+            projectPerformance={projectPerformance}
           />
         );
       case 'transactions':

@@ -1,7 +1,7 @@
 {
-  "active_plan": ".sisyphus/plans/ui-kit-final-polish.md",
-  "plan_name": "ui-kit-final-polish",
-  "started_at": "2026-03-03T01:51:05+00:00",
+  "active_plan": ".sisyphus/plans/frontend-thin-client-cleanup.md",
+  "plan_name": "frontend-thin-client-cleanup",
+  "started_at": "2026-03-03T20:09:48.318+00:00",
   "session_ids": [
     "atlas-main",
     "ses_3545a3022ffeB10IslJesTv34e",
@@ -12,7 +12,9 @@
     "atlas-css-lapsha-final-cleanup",
     "atlas-strict-design-system-ui-kit-foundation",
     "ses_35009bc23ffepr9t9QINq1YDrX",
-    "atlas-ui-kit-final-polish"
+    "atlas-ui-kit-final-polish",
+    "atlas-frontend-thin-client-cleanup",
+    "ses_34ac75d22ffeX13cUOF3S5vgZX"
   ],
   "worktree_path": "E:\\Боттинг\\source\\repos\\Bot-Mox"
 }

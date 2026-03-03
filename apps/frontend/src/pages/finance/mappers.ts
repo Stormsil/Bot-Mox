@@ -2,13 +2,13 @@ import dayjs from 'dayjs';
 import type {
   CategoryBreakdown,
   FinanceCategory,
-  FinanceOperation,
   FinanceSummary as FinanceSummaryModel,
   GoldPriceHistoryEntry,
   TimeSeriesData,
 } from '../../entities/finance/model/types';
 import type {
   FinanceBreakdownContractRecord,
+  FinanceGoldPriceHistoryContractMap,
   FinanceSummaryContractRecord,
   FinanceTimeSeriesContractRecord,
 } from '../../shared/api/providers/finance-contract-client';
@@ -36,40 +36,30 @@ function toFiniteNumber(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-export function getGoldPriceHistoryFromOperationsLocal(
-  operations: FinanceOperation[],
+export function mapGoldPriceHistoryFromContract(
+  history: FinanceGoldPriceHistoryContractMap | undefined,
+  selectedProject: 'all' | 'wow_tbc' | 'wow_midnight',
 ): GoldPriceHistoryEntry[] {
-  const grouped = new Map<string, GoldPriceHistoryEntry>();
+  const points = Object.entries(history || {})
+    .map(([date, entry]) => ({
+      date,
+      price: toFiniteNumber(entry?.price),
+    }))
+    .filter((entry) => entry.price > 0)
+    .sort((left, right) => dayjs(left.date).valueOf() - dayjs(right.date).valueOf());
 
-  operations
-    .filter(
-      (operation) =>
-        operation.type === 'income' &&
-        operation.category === 'sale' &&
-        typeof operation.gold_price_at_time === 'number' &&
-        operation.gold_price_at_time > 0 &&
-        operation.project_id,
-    )
-    .forEach((operation) => {
-      const date = dayjs(operation.date).format('YYYY-MM-DD');
-      const projectId = operation.project_id as 'wow_tbc' | 'wow_midnight';
-      const key = `${date}_${projectId}`;
-      const existing = grouped.get(key);
-      if (!existing) {
-        grouped.set(key, {
-          date,
-          price: operation.gold_price_at_time || 0,
-          project_id: projectId,
-        });
-        return;
-      }
-      existing.price = (existing.price + (operation.gold_price_at_time || 0)) / 2;
-      grouped.set(key, existing);
-    });
+  if (selectedProject === 'all') {
+    return points.flatMap((entry) => [
+      { date: entry.date, price: entry.price, project_id: 'wow_tbc' as const },
+      { date: entry.date, price: entry.price, project_id: 'wow_midnight' as const },
+    ]);
+  }
 
-  return [...grouped.values()].sort(
-    (left, right) => dayjs(left.date).valueOf() - dayjs(right.date).valueOf(),
-  );
+  return points.map((entry) => ({
+    date: entry.date,
+    price: entry.price,
+    project_id: selectedProject,
+  }));
 }
 
 export function mapBreakdownFromAggregate(
@@ -107,13 +97,14 @@ export function mapBreakdownFromAggregate(
 export function mapSummaryFromAggregate(
   summary: FinanceSummaryContractRecord | undefined,
 ): FinanceSummaryModel {
+  const summaryRecord = (summary || {}) as Record<string, unknown>;
   return {
     totalIncome: toFiniteNumber(summary?.income_total),
     totalExpenses: toFiniteNumber(summary?.expense_total),
     netProfit: toFiniteNumber(summary?.net_total),
-    totalGoldSold: 0,
-    totalGoldFarmed: 0,
-    averageGoldPrice: 0,
+    totalGoldSold: toFiniteNumber(summaryRecord.total_gold_sold),
+    totalGoldFarmed: toFiniteNumber(summaryRecord.total_gold_farmed),
+    averageGoldPrice: toFiniteNumber(summaryRecord.average_gold_price),
   };
 }
 

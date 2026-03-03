@@ -54,10 +54,26 @@ export interface FinanceBreakdownItemDto {
   net_total: number;
 }
 
+export interface FinanceProjectPerformanceItemDto {
+  project_id: string;
+  income_total: number;
+  expense_total: number;
+  net_total: number;
+  margin_percent: number;
+  operation_count: number;
+  gold_volume: number;
+}
+
+export interface FinanceProjectPerformanceDto {
+  source: 'finance_breakdown_aggregate';
+  items: FinanceProjectPerformanceItemDto[];
+}
+
 export interface FinanceBreakdownDto {
   group_by: 'category';
   items: FinanceBreakdownItemDto[];
   totals: FinanceSummaryDto;
+  project_performance: FinanceProjectPerformanceDto;
 }
 
 export interface FinanceTimeSeriesPointDto {
@@ -660,10 +676,76 @@ export class FinanceService {
         return left.key.localeCompare(right.key);
       });
 
+    const byProject = new Map<
+      string,
+      {
+        projectId: string;
+        incomeTotal: number;
+        expenseTotal: number;
+        operationCount: number;
+        goldVolume: number;
+      }
+    >();
+
+    for (const operation of filtered) {
+      const rawProjectId =
+        typeof operation.project_id === 'string' ? operation.project_id.trim().toLowerCase() : '';
+      const projectId = rawProjectId.length > 0 ? rawProjectId : 'global';
+      const current = byProject.get(projectId) ?? {
+        projectId,
+        incomeTotal: 0,
+        expenseTotal: 0,
+        operationCount: 0,
+        goldVolume: 0,
+      };
+
+      const amount = this.normalizeAmount(operation.amount);
+      const type = this.normalizeType(operation.type);
+      if (type === 'income') {
+        current.incomeTotal += amount;
+      } else if (type === 'expense') {
+        current.expenseTotal += amount;
+      }
+
+      const category =
+        typeof operation.category === 'string' ? operation.category.trim().toLowerCase() : '';
+      const goldAmount = this.normalizeAmount(operation.gold_amount);
+      if (type === 'income' && category === 'sale' && goldAmount > 0) {
+        current.goldVolume += goldAmount;
+      }
+
+      current.operationCount += 1;
+      byProject.set(projectId, current);
+    }
+
+    const projectPerformanceItems: FinanceProjectPerformanceItemDto[] = [...byProject.values()]
+      .map((entry) => {
+        const netTotal = entry.incomeTotal - entry.expenseTotal;
+        return {
+          project_id: entry.projectId,
+          income_total: entry.incomeTotal,
+          expense_total: entry.expenseTotal,
+          net_total: netTotal,
+          margin_percent: entry.incomeTotal > 0 ? (netTotal / entry.incomeTotal) * 100 : 0,
+          operation_count: entry.operationCount,
+          gold_volume: entry.goldVolume,
+        };
+      })
+      .sort((left, right) => {
+        if (right.net_total !== left.net_total) {
+          return right.net_total - left.net_total;
+        }
+        return left.project_id.localeCompare(right.project_id);
+      });
+
     return {
       group_by: 'category',
       items,
       totals,
+      project_performance: {
+        source: 'finance_breakdown_aggregate',
+        items: projectPerformanceItems,
+      },
     };
   }
 

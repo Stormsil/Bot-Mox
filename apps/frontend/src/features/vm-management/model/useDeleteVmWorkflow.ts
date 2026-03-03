@@ -2,19 +2,11 @@ import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useUpdateVmSettingsMutation } from '../../../entities/vm/api/useVmActionMutations';
 import {
-  type DeleteVmBotRecord,
   type DeleteVmEvaluationRecord,
-  type DeleteVmLicenseRecord,
-  type DeleteVmProxyRecord,
-  type DeleteVmSubscriptionRecord,
-  fetchDeleteVmContextWithEvaluation,
+  fetchDeleteVmEvaluations,
 } from '../../../entities/vm/api/vmDeleteContextFacade';
 import type { VMQueueItem } from '../../../shared/types';
-import type {
-  DeleteVmBotEvaluation,
-  DeleteVmCandidateRow,
-  DeleteVmFilters,
-} from './deleteVm.types';
+import type { DeleteVmCandidateRow, DeleteVmFilters } from './deleteVm.types';
 import type {
   UseDeleteVmWorkflowParams,
   UseDeleteVmWorkflowResult,
@@ -34,6 +26,12 @@ const DEFAULT_DELETE_VM_FILTERS: DeleteVmFilters = {
   },
 };
 
+function normalizeToken(value: unknown): string {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase();
+}
+
 function normalizeDeleteVmFilters(input?: DeleteVmFilters): DeleteVmFilters {
   return {
     policy: {
@@ -47,17 +45,10 @@ function normalizeDeleteVmFilters(input?: DeleteVmFilters): DeleteVmFilters {
   };
 }
 
-function normalizeToken(value: unknown): string {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase();
-}
-
 export const useDeleteVmWorkflow = ({
   queue,
   queueItems,
   proxmoxVms,
-  refreshVms,
   templateVmId,
   settings,
   setSettings,
@@ -66,12 +57,6 @@ export const useDeleteVmWorkflow = ({
   const [deleteVmModalOpen, setDeleteVmModalOpen] = useState(false);
   const [deleteVmSelection, setDeleteVmSelection] = useState<number[]>([]);
   const [deleteVmContextLoading, setDeleteVmContextLoading] = useState(false);
-  const [deleteVmBots, setDeleteVmBots] = useState<Record<string, DeleteVmBotRecord>>({});
-  const [deleteVmProxies, setDeleteVmProxies] = useState<DeleteVmProxyRecord[]>([]);
-  const [deleteVmSubscriptions, setDeleteVmSubscriptions] = useState<DeleteVmSubscriptionRecord[]>(
-    [],
-  );
-  const [deleteVmLicenses, setDeleteVmLicenses] = useState<DeleteVmLicenseRecord[]>([]);
   const [deleteVmEvaluationsByVmid, setDeleteVmEvaluationsByVmid] = useState<
     Record<string, DeleteVmEvaluationRecord>
   >({});
@@ -160,7 +145,7 @@ export const useDeleteVmWorkflow = ({
     setDeleteVmContextLoading(true);
 
     try {
-      const context = await fetchDeleteVmContextWithEvaluation({
+      const evaluationsByVmid = await fetchDeleteVmEvaluations({
         evaluation: {
           items: proxmoxVms
             .filter((vm) => !vm.template)
@@ -170,17 +155,9 @@ export const useDeleteVmWorkflow = ({
           required: true,
         },
       });
-      setDeleteVmBots(context.bots);
-      setDeleteVmProxies(context.proxies);
-      setDeleteVmSubscriptions(context.subscriptions);
-      setDeleteVmLicenses(context.licenses);
-      setDeleteVmEvaluationsByVmid(context.evaluationsByVmid);
+      setDeleteVmEvaluationsByVmid(evaluationsByVmid);
     } catch {
-      message.error('Failed to load linked account data for delete rules');
-      setDeleteVmBots({});
-      setDeleteVmProxies([]);
-      setDeleteVmSubscriptions([]);
-      setDeleteVmLicenses([]);
+      message.error('Failed to evaluate VM deletion rules');
       setDeleteVmEvaluationsByVmid({});
     } finally {
       setDeleteVmContextLoading(false);
@@ -188,95 +165,29 @@ export const useDeleteVmWorkflow = ({
   }, [deleteVmFilters.policy, proxmoxVms, templateVmId]);
 
   const deleteVmCandidatesRaw = useMemo<DeleteVmCandidateRow[]>(() => {
-    const botsByVmName = new Map<string, DeleteVmBotRecord[]>();
-    Object.values(deleteVmBots).forEach((bot) => {
-      const key = normalizeToken(bot.vmName);
-      if (!key) {
-        return;
-      }
-
-      const list = botsByVmName.get(key);
-      if (list) {
-        list.push(bot);
-        return;
-      }
-
-      botsByVmName.set(key, [bot]);
-    });
-
-    const proxiesByBotId = new Map<string, number>();
-    deleteVmProxies.forEach((record) => {
-      proxiesByBotId.set(record.botId, (proxiesByBotId.get(record.botId) || 0) + 1);
-    });
-
-    const subscriptionsByBotId = new Map<string, number>();
-    deleteVmSubscriptions.forEach((record) => {
-      subscriptionsByBotId.set(record.botId, (subscriptionsByBotId.get(record.botId) || 0) + 1);
-    });
-
-    const licensesByBotId = new Map<string, number>();
-    deleteVmLicenses.forEach((record) => {
-      record.botIds.forEach((botId) => {
-        licensesByBotId.set(botId, (licensesByBotId.get(botId) || 0) + 1);
-      });
-    });
-
     return [...proxmoxVms]
       .filter((vm) => !vm.template)
       .filter((vm) => vm.vmid !== templateVmId)
       .sort((first, second) => first.vmid - second.vmid)
       .map((vm) => {
-        const linkedBots = botsByVmName.get(normalizeToken(vm.name)) || [];
         const backendDecision = deleteVmEvaluationsByVmid[String(vm.vmid)];
-        const fallbackReason = 'VM deletion decision unavailable from backend';
+        const fallbackReason = 'Deletion decision unavailable from backend';
+        const rawReasons = Array.isArray(backendDecision?.reasons)
+          ? backendDecision.reasons.filter((reason) => String(reason || '').trim().length > 0)
+          : [];
         const canDelete = backendDecision?.can_delete ?? false;
         const decisionReason =
-          String(backendDecision?.reason || '').trim() ||
-          String(backendDecision?.reasons?.[0] || '').trim() ||
-          fallbackReason;
-
-        const evaluations: DeleteVmBotEvaluation[] = linkedBots.map((bot) => {
-          const status = normalizeToken(bot.status);
-          const hasEmail = Boolean(bot.accountEmail);
-          const hasPassword = Boolean(bot.accountPassword);
-          const hasProxy = (proxiesByBotId.get(bot.id) || 0) > 0;
-          const hasSubscription = (subscriptionsByBotId.get(bot.id) || 0) > 0;
-          const hasLicense = (licensesByBotId.get(bot.id) || 0) > 0;
-          const isPrepare = status === 'prepare';
-          const isPrepareSeed =
-            isPrepare && !hasEmail && !hasPassword && !hasProxy && !hasSubscription && !hasLicense;
-
-          return {
-            bot,
-            hasEmail,
-            hasPassword,
-            hasProxy,
-            hasSubscription,
-            hasLicense,
-            isBanned: status === 'banned',
-            isPrepareSeed,
-            canDelete,
-            reason: decisionReason,
-          };
-        });
+          String(backendDecision?.reason || '').trim() || rawReasons[0] || fallbackReason;
 
         return {
           vm,
-          linkedBots,
-          evaluations,
           canDelete,
+          decisionReasonCode: backendDecision?.reason_code,
+          decisionReasons: rawReasons,
           decisionReason,
         };
       });
-  }, [
-    deleteVmBots,
-    deleteVmEvaluationsByVmid,
-    deleteVmLicenses,
-    deleteVmProxies,
-    deleteVmSubscriptions,
-    proxmoxVms,
-    templateVmId,
-  ]);
+  }, [deleteVmEvaluationsByVmid, proxmoxVms, templateVmId]);
 
   const deleteVmCandidates = useMemo(() => {
     return deleteVmCandidatesRaw.filter((candidate) => {
@@ -345,11 +256,11 @@ export const useDeleteVmWorkflow = ({
     setDeleteVmModalOpen(true);
 
     try {
-      await Promise.all([Promise.resolve(refreshVms()), loadDeleteVmContext()]);
+      await loadDeleteVmContext();
     } catch {
       // noop
     }
-  }, [loadDeleteVmContext, refreshVms]);
+  }, [loadDeleteVmContext]);
 
   const handleToggleDeleteVm = useCallback(
     (vmid: number, checked: boolean) => {

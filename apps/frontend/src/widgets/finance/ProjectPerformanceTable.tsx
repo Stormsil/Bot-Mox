@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import type { FinanceOperation } from '../../entities/finance/model/types';
 import {
   AppCard as Card,
   AppTable as Table,
@@ -12,7 +11,15 @@ import styles from './FinanceSummary.module.css';
 const { Text } = Typography;
 
 interface ProjectPerformanceTableProps {
-  operations: FinanceOperation[];
+  projectPerformance: Array<{
+    project_id: string;
+    income_total: number;
+    expense_total: number;
+    net_total?: number;
+    margin_percent?: number;
+    gold_volume?: number;
+    operation_count?: number;
+  }>;
   loading?: boolean;
 }
 
@@ -28,66 +35,64 @@ interface ProjectStats {
 }
 
 const ProjectPerformanceTableImpl: React.FC<ProjectPerformanceTableProps> = ({
-  operations,
+  projectPerformance,
   loading = false,
 }) => {
   const data = useMemo(() => {
-    const statsMap = new Map<string, ProjectStats>();
+    const toProjectLabel = (projectId: string): string => {
+      if (projectId === 'wow_tbc') return 'WoW TBC Classic';
+      if (projectId === 'wow_midnight') return 'WoW Midnight';
+      if (projectId === 'global') return 'Global / Infrastructure';
+      return projectId;
+    };
 
-    // Initialize projects (hardcoded for now to ensure they appear even if empty)
-    const projects = ['wow_tbc', 'wow_midnight'];
+    return projectPerformance
+      .map((item): ProjectStats => {
+        const income = Number.isFinite(item.income_total) ? item.income_total : 0;
+        const expense = Number.isFinite(item.expense_total) ? item.expense_total : 0;
+        const profit =
+          item.net_total === undefined ||
+          item.net_total === null ||
+          !Number.isFinite(item.net_total)
+            ? income - expense
+            : item.net_total;
+        const margin =
+          item.margin_percent === undefined ||
+          item.margin_percent === null ||
+          !Number.isFinite(item.margin_percent)
+            ? income > 0
+              ? (profit / income) * 100
+              : 0
+            : item.margin_percent;
+        const transactionCount =
+          item.operation_count !== undefined &&
+          item.operation_count !== null &&
+          Number.isFinite(item.operation_count)
+            ? Math.max(0, Math.trunc(item.operation_count))
+            : 0;
+        const goldVolume =
+          item.gold_volume !== undefined &&
+          item.gold_volume !== null &&
+          Number.isFinite(item.gold_volume)
+            ? item.gold_volume
+            : 0;
 
-    projects.forEach((proj) => {
-      statsMap.set(proj, {
-        key: proj,
-        project: proj === 'wow_tbc' ? 'WoW TBC Classic' : 'WoW Midnight',
-        income: 0,
-        expense: 0,
-        profit: 0,
-        margin: 0,
-        goldVolume: 0,
-        transactionCount: 0,
-      });
-    });
-
-    // Also handle global/other operations
-    statsMap.set('global', {
-      key: 'global',
-      project: 'Global / Infrastructure',
-      income: 0,
-      expense: 0,
-      profit: 0,
-      margin: 0,
-      goldVolume: 0,
-      transactionCount: 0,
-    });
-
-    operations.forEach((op) => {
-      const key = op.project_id || 'global';
-      const stats = statsMap.get(key);
-
-      if (stats) {
-        if (op.type === 'income') {
-          stats.income += op.amount;
-          if (op.category === 'sale') {
-            stats.goldVolume += op.gold_amount || 0;
-          }
-        } else {
-          stats.expense += op.amount;
-        }
-        stats.transactionCount += 1;
-      }
-    });
-
-    // Calculate derived metrics
-    return Array.from(statsMap.values())
-      .map((stat) => {
-        stat.profit = stat.income - stat.expense;
-        stat.margin = stat.income > 0 ? (stat.profit / stat.income) * 100 : 0;
-        return stat;
+        return {
+          key: item.project_id,
+          project: toProjectLabel(item.project_id),
+          income,
+          expense,
+          profit,
+          margin,
+          goldVolume,
+          transactionCount,
+        };
       })
-      .filter((stat) => stat.transactionCount > 0); // Hide completely empty rows
-  }, [operations]);
+      .filter(
+        (item) =>
+          item.transactionCount > 0 || item.income > 0 || item.expense > 0 || item.goldVolume > 0,
+      );
+  }, [projectPerformance]);
 
   const columns = useMemo(
     () => [

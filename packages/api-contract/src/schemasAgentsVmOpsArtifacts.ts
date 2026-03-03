@@ -309,14 +309,24 @@ export const vmDeletionEvaluateItemSchema: z.ZodTypeAny = z
 
 export const vmDeletionEvaluateBodySchema: z.ZodTypeAny = z.object({
   items: z.array(vmDeletionEvaluateItemSchema).min(1).max(1_000),
+  policy: z
+    .object({
+      allowBanned: z.boolean().optional(),
+      allowPrepareNoResources: z.boolean().optional(),
+      allowOrphan: z.boolean().optional(),
+    })
+    .partial()
+    .optional(),
 });
 
 export const vmDeletionEvaluationResultSchema: z.ZodTypeAny = z
   .object({
     vmid: vmIdSchema,
     can_delete: z.boolean(),
+    reason_code: z.string().trim().min(1).optional(),
     reason: z.string().trim().min(1),
     reasons: z.array(z.string().trim().min(1)).optional(),
+    linked_bots: z.array(z.record(jsonValueSchema)).optional(),
     node: z.string().trim().min(1).optional(),
     vm_uuid: vmUuidSchema.optional(),
   })

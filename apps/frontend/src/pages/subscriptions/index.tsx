@@ -18,10 +18,10 @@ import type {
   ComputedSubscriptionStatus,
   Subscription,
   SubscriptionFormData,
+  SubscriptionMutationPatch,
+  SubscriptionMutationPayload,
   SubscriptionWithDetails,
 } from '../../entities/resources/model/types';
-import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
-import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
 import {
   AppModal,
@@ -72,7 +72,6 @@ export const SubscriptionsPage: React.FC = () => {
       refetchInterval: BOT_POLL_MS,
     },
   });
-  const settingsQuery = useSubscriptionSettingsQuery();
   const subscriptionsTable = useTable<Subscription>({
     resource: 'subscriptions',
     syncWithLocation: syncWithLocationEnabled,
@@ -89,23 +88,25 @@ export const SubscriptionsPage: React.FC = () => {
           staleTime: 60_000,
         },
   });
-  const createSubscriptionForm = useModalForm<Subscription, HttpError, Omit<Subscription, 'id'>>({
-    resource: 'subscriptions',
-    action: 'create',
-    autoSubmitClose: true,
-    redirect: false,
-    invalidates: ['resourceAll'],
-    syncWithLocation: false,
-    successNotification: () => ({
-      message: 'Subscription created',
-      type: 'success',
-    }),
-    errorNotification: (error) => ({
-      message: `Error saving subscription: ${getErrorMessage(error, 'Unknown error')}`,
-      type: 'error',
-    }),
-  });
-  const editSubscriptionForm = useModalForm<Subscription, HttpError, Partial<Subscription>>({
+  const createSubscriptionForm = useModalForm<Subscription, HttpError, SubscriptionMutationPayload>(
+    {
+      resource: 'subscriptions',
+      action: 'create',
+      autoSubmitClose: true,
+      redirect: false,
+      invalidates: ['resourceAll'],
+      syncWithLocation: false,
+      successNotification: () => ({
+        message: 'Subscription created',
+        type: 'success',
+      }),
+      errorNotification: (error) => ({
+        message: `Error saving subscription: ${getErrorMessage(error, 'Unknown error')}`,
+        type: 'error',
+      }),
+    },
+  );
+  const editSubscriptionForm = useModalForm<Subscription, HttpError, SubscriptionMutationPatch>({
     resource: 'subscriptions',
     action: 'edit',
     autoSubmitClose: true,
@@ -129,7 +130,6 @@ export const SubscriptionsPage: React.FC = () => {
   });
 
   const searchText = readFilterValue(subscriptionsTable.filters, 'q', '');
-  const warningDays = settingsQuery.data?.warning_days ?? getDefaultSettings().warning_days;
 
   const botsMap = useMemo(() => {
     const nextBotsMap = new Map<
@@ -175,8 +175,8 @@ export const SubscriptionsPage: React.FC = () => {
     [subscriptionsTable.tableProps.dataSource],
   );
   const subscriptionsWithDetails = useMemo(
-    () => enrichSubscriptionsWithDetails(tableSubscriptions, warningDays, botsMap),
-    [tableSubscriptions, warningDays, botsMap],
+    () => enrichSubscriptionsWithDetails(tableSubscriptions, botsMap),
+    [tableSubscriptions, botsMap],
   );
   const editingSubscription = useMemo(() => {
     if (editSubscriptionForm.id === undefined || editSubscriptionForm.id === null) {
@@ -246,7 +246,6 @@ export const SubscriptionsPage: React.FC = () => {
   const loading =
     Boolean(subscriptionsTable.tableProps.loading) ||
     botsList.query.isLoading ||
-    settingsQuery.isLoading ||
     createSubscriptionForm.formLoading ||
     editSubscriptionForm.formLoading;
 

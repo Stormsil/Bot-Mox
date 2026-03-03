@@ -8,7 +8,12 @@ import {
   isAutoCheckEnabled,
   isProxySuspicious,
 } from '../../entities/resources/api/ipqsFacade';
-import type { IPQSResponse, Proxy as ProxyResource } from '../../entities/resources/model/types';
+import type {
+  IPQSResponse,
+  ProxyMutationPatch,
+  ProxyMutationPayload,
+  Proxy as ProxyResource,
+} from '../../entities/resources/model/types';
 import { parseProxyString } from '../../shared/lib/utils/proxyUtils';
 import {
   AppModal,
@@ -23,7 +28,7 @@ import { ParsedProxyAlert, ProxyIpqsLoadingAlert, ProxyIpqsResultAlert } from '.
 interface ProxyCrudModalProps {
   mode: 'create' | 'edit';
   modalProps: ModalProps;
-  formProps: FormProps<Omit<ProxyResource, 'id'>> | FormProps<Partial<ProxyResource>>;
+  formProps: FormProps<ProxyMutationPayload> | FormProps<ProxyMutationPatch>;
   editingProxy?: ProxyResource | null;
   bots: ProxiesBotMap;
   providers: string[];
@@ -193,7 +198,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
         return;
       }
 
-      const proxyData: Partial<ProxyResource> = {
+      const proxyData: ProxyMutationPatch = {
         ip: parsedProxy.ip,
         port: parsedProxy.port,
         login: parsedProxy.login,
@@ -211,7 +216,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
       }
 
       const onFinish = formProps.onFinish as
-        | ((values: Partial<ProxyResource>) => Promise<unknown>)
+        | ((values: ProxyMutationPatch) => Promise<unknown>)
         | undefined;
       if (!onFinish) {
         return;
@@ -230,7 +235,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
       }
     }
 
-    const proxyData: Omit<ProxyResource, 'id'> = {
+    const proxyData: ProxyMutationPayload = {
       ip: parsedProxy.ip,
       port: parsedProxy.port,
       login: parsedProxy.login,
@@ -273,7 +278,7 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
     }
 
     const onFinish = formProps.onFinish as
-      | ((values: Omit<ProxyResource, 'id'>) => Promise<unknown>)
+      | ((values: ProxyMutationPayload) => Promise<unknown>)
       | undefined;
     if (!onFinish) {
       return;

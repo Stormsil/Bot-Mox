@@ -1,8 +1,11 @@
 import type { BotStatus } from '../../../shared/types';
+import { normalizeResourceStatusVocabulary } from '../model/statusVocabulary';
 import type {
   ComputedSubscriptionStatus,
   Subscription,
   SubscriptionFormData,
+  SubscriptionMutationPatch,
+  SubscriptionMutationPayload,
   SubscriptionWithDetails,
 } from '../model/types';
 import {
@@ -37,14 +40,11 @@ function parseDateToTimestamp(dateString: string): number {
   return date.getTime();
 }
 
-function calculateSubscriptionStatus(
-  subscription: Subscription,
-  warningDays: number,
-): SubscriptionStatusDetails {
-  const now = Date.now();
-  const daysRemaining = Math.ceil((subscription.expires_at - now) / (1000 * 60 * 60 * 24));
-  const isExpired = now > subscription.expires_at;
-  const isExpiringSoon = daysRemaining <= warningDays && daysRemaining > 0;
+function calculateSubscriptionStatus(subscription: Subscription): SubscriptionStatusDetails {
+  const normalizedStatus = normalizeResourceStatusVocabulary(subscription);
+  const isExpired =
+    normalizedStatus.computedStatus === 'expired' || normalizedStatus.statusToken === 'expired';
+  const isExpiringSoon = normalizedStatus.isExpiringSoon;
 
   const computedStatus: ComputedSubscriptionStatus = isExpired
     ? 'expired'
@@ -54,7 +54,7 @@ function calculateSubscriptionStatus(
 
   return {
     computedStatus,
-    daysRemaining: isExpired ? 0 : Math.max(0, daysRemaining),
+    daysRemaining: isExpired ? 0 : (normalizedStatus.daysRemaining ?? 0),
     isExpired,
     isExpiringSoon,
   };
@@ -80,7 +80,7 @@ export async function createSubscription(data: SubscriptionFormData): Promise<st
   }
 
   const now = Date.now();
-  const payload: Omit<Subscription, 'id'> = {
+  const payload: SubscriptionMutationPayload = {
     type: data.type,
     status: 'active',
     expires_at: expiresAtTimestamp,
@@ -109,7 +109,7 @@ export async function updateSubscription(
   id: string,
   data: Partial<SubscriptionFormData>,
 ): Promise<void> {
-  const updates: Partial<Subscription> = {
+  const updates: SubscriptionMutationPatch = {
     updated_at: Date.now(),
   };
 
@@ -140,11 +140,10 @@ export async function deleteSubscription(id: string): Promise<void> {
 
 export function enrichSubscriptionsWithDetails(
   subscriptions: Subscription[],
-  warningDays: number = 7,
   botsMap?: Map<string, { name: string; character?: string; status?: BotStatus; vmName?: string }>,
 ): SubscriptionWithDetails[] {
   return subscriptions.map((subscription) => {
-    const statusInfo = calculateSubscriptionStatus(subscription, warningDays);
+    const statusInfo = calculateSubscriptionStatus(subscription);
     const botInfo = botsMap?.get(subscription.bot_id);
 
     return {

@@ -5,9 +5,13 @@ import type { FormInstance } from 'antd';
 import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import type { BotRecord } from '../../entities/bot/model/types';
-import type { BotLicense, LicenseWithBots } from '../../entities/resources/model/types';
+import type {
+  BotLicense,
+  BotLicenseMutationPatch,
+  BotLicenseMutationPayload,
+  LicenseWithBots,
+} from '../../entities/resources/model/types';
 import { uiLogger } from '../../observability/uiLogger';
-import { useCurrentTime } from '../../shared/lib/hooks/useCurrentTime';
 import {
   AppTable,
   AppButton as Button,
@@ -111,7 +115,7 @@ export const LicensesPage: React.FC = () => {
       refetchInterval: BOT_POLL_MS,
     },
   });
-  const createLicenseModal = useModalForm<BotLicense, HttpError, Omit<BotLicense, 'id'>>({
+  const createLicenseModal = useModalForm<BotLicense, HttpError, BotLicenseMutationPayload>({
     resource: 'licenses',
     action: 'create',
     redirect: false,
@@ -126,7 +130,7 @@ export const LicensesPage: React.FC = () => {
       type: 'error',
     }),
   });
-  const editLicenseModal = useModalForm<BotLicense, HttpError, Partial<BotLicense>>({
+  const editLicenseModal = useModalForm<BotLicense, HttpError, BotLicenseMutationPatch>({
     resource: 'licenses',
     action: 'edit',
     redirect: false,
@@ -141,9 +145,7 @@ export const LicensesPage: React.FC = () => {
       type: 'error',
     }),
   });
-  const updateLicense = useUpdate<BotLicense, HttpError, Partial<BotLicense>>();
-
-  const currentTime = useCurrentTime();
+  const updateLicense = useUpdate<BotLicense, HttpError, BotLicenseMutationPatch>();
   const [isAddBotModalOpen, setIsAddBotModalOpen] = useState(false);
   const [selectedLicenseForBot, setSelectedLicenseForBot] = useState<LicenseWithBots | null>(null);
   const [selectedLicenseForEdit, setSelectedLicenseForEdit] = useState<LicenseWithBots | null>(
@@ -215,10 +217,7 @@ export const LicensesPage: React.FC = () => {
     }),
     [editLicenseModal.formProps, editLicenseModal.onFinish, editingLicense?.bot_ids],
   );
-  const stats = useMemo(
-    () => computeStats(licensesWithBots, currentTime),
-    [licensesWithBots, currentTime],
-  );
+  const stats = useMemo(() => computeStats(licensesWithBots), [licensesWithBots]);
 
   const searchText = readFilterValue(licensesTable.filters, 'q', '');
   const statusFilter = readEnumFilterValue(
@@ -356,7 +355,6 @@ export const LicensesPage: React.FC = () => {
   }, [editLicenseModal.modalProps.open]);
 
   const columns = buildLicenseColumns({
-    currentTime,
     handlers: {
       onEdit: openEditModal,
       onCopyKey: copyKey,
