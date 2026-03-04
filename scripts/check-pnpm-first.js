@@ -10,6 +10,7 @@ if (!fs.existsSync(rootPackageJsonPath)) {
 }
 
 const SKIP_DIRS = new Set([
+  '.cache',
   '.git',
   '.turbo',
   'build',
@@ -18,6 +19,7 @@ const SKIP_DIRS = new Set([
   'node_modules',
   'playwright-report',
   'test-results',
+  'tmp',
 ]);
 
 const allowedScriptsByManifest = new Map();
@@ -64,7 +66,7 @@ const offenders = [];
 
 for (const manifestPath of packageJsonPaths) {
   const manifestRelativePath = path.relative(repoRoot, manifestPath).split(path.sep).join('/');
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8').replace(/^\uFEFF/, ''));
   const scripts = manifest.scripts || {};
   const allowNpmScripts = allowedScriptsByManifest.get(manifestRelativePath) ?? new Set();
 

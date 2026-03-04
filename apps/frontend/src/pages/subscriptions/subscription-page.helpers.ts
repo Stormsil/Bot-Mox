@@ -1,7 +1,6 @@
 import type { CrudFilter } from '@refinedev/core';
 import type {
   ComputedSubscriptionStatus,
-  Subscription,
   SubscriptionFormData,
   SubscriptionMutationPatch,
   SubscriptionMutationPayload,

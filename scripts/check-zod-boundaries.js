@@ -33,7 +33,11 @@ function hasNestBoundaryDecorators(text) {
 }
 
 function hasNestValidation(text) {
-  return /safeParse\s*\(|\.parse\s*\(/.test(text) || /parseWithZodOrBadRequest\s*\(/.test(text);
+  return (
+    /safeParse\s*\(|\.parse\s*\(/.test(text) ||
+    /parseWithZodOrBadRequest\s*\(/.test(text) ||
+    /new\s+ZodSchemaValidationPipe\s*\(/.test(text)
+  );
 }
 
 function checkNestControllers() {

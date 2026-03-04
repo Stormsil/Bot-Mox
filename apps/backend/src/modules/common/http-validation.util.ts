@@ -2,8 +2,8 @@ import {
   BadRequestException,
   Injectable,
   type PipeTransform,
-  ValidationPipe,
   type ValidationError,
+  ValidationPipe,
 } from '@nestjs/common';
 import type { ZodType } from 'zod';
 

@@ -7,8 +7,6 @@ import {
   unattendProfilePathSchema,
   unattendProfileUpdateSchema,
 } from '@botmox/api-contract';
-import { Transform } from 'class-transformer';
-import { IsString, MinLength } from 'class-validator';
 import {
   BadRequestException,
   Body,
@@ -25,6 +23,8 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Transform } from 'class-transformer';
+import { IsString, MinLength } from 'class-validator';
 import type { Request } from 'express';
 import type { ZodType, z } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
@@ -109,21 +109,6 @@ export class ProvisioningController {
     return { deleted: true };
   }
 
-  private async getOneCore(
-    authorization: string | undefined,
-    id: string,
-    req: Request,
-  ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
-    const parsedId = this.parseId(id);
-    const tenantId = this.getTenantId(req);
-    const entity = await this.getEntityById(parsedId, tenantId);
-    if (!entity) {
-      throw new NotFoundException(this.getNotFoundPayload());
-    }
-    return { success: true, data: entity };
-  }
-
   private async createCore(
     authorization: string | undefined,
     body: unknown,
@@ -187,24 +172,6 @@ export class ProvisioningController {
     return parsed.data;
   }
 
-  private parseValidateBody(body: unknown): z.infer<typeof provisioningValidateTokenSchema> {
-    return this.parseWithSchema(
-      provisioningValidateTokenSchema,
-      body,
-      'PROVISIONING_INVALID_VALIDATE_BODY',
-      'Invalid provisioning validate-token payload',
-    );
-  }
-
-  private parseReportBody(body: unknown): z.infer<typeof provisioningReportProgressSchema> {
-    return this.parseWithSchema(
-      provisioningReportProgressSchema,
-      body,
-      'PROVISIONING_INVALID_REPORT_BODY',
-      'Invalid provisioning report-progress payload',
-    );
-  }
-
   private parseCreateBody(body: unknown): z.infer<typeof unattendProfileCreateSchema> {
     return this.parseWithSchema(
       unattendProfileCreateSchema,
@@ -242,10 +209,6 @@ export class ProvisioningController {
     };
   }
 
-  private getEntityById(id: string, tenantId: string) {
-    return this.provisioningService.getProfile(id, tenantId);
-  }
-
   private createEntity(
     body: z.infer<typeof unattendProfileCreateSchema>,
     _explicitId: string | undefined,
@@ -264,24 +227,6 @@ export class ProvisioningController {
 
   private removeEntity(id: string, tenantId: string) {
     return this.provisioningService.deleteProfile(id, tenantId);
-  }
-
-  private parseGenerateBody(body: unknown): z.infer<typeof provisioningGenerateIsoPayloadSchema> {
-    const parsed = provisioningGenerateIsoPayloadSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'PROVISIONING_INVALID_GENERATE_BODY',
-        message: 'Invalid provisioning generate-iso payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    if (!parsed.data.profile_id && !parsed.data.profile_config) {
-      throw new BadRequestException({
-        code: 'PROVISIONING_PROFILE_SOURCE_REQUIRED',
-        message: 'Either profile_id or profile_config is required',
-      });
-    }
-    return parsed.data;
   }
 
   private parseVmUuid(vmUuid: string): string {
@@ -329,7 +274,12 @@ export class ProvisioningController {
     @Body(unattendProfileUpdateBodyPipe) body: z.infer<typeof unattendProfileUpdateSchema>,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    return this.updateCore(authorization, typeof params === 'string' ? params : params.id, body, req);
+    return this.updateCore(
+      authorization,
+      typeof params === 'string' ? params : params.id,
+      body,
+      req,
+    );
   }
 
   @Delete('unattend-profiles/:id')
@@ -338,7 +288,11 @@ export class ProvisioningController {
     @Param(unattendProfileIdParamPipe) params: UnattendProfileIdParamDto | string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { deleted: boolean } }> {
-    return this.removeCore(authorization, typeof params === 'string' ? params : params.id, req) as Promise<{
+    return this.removeCore(
+      authorization,
+      typeof params === 'string' ? params : params.id,
+      req,
+    ) as Promise<{
       success: true;
       data: { deleted: boolean };
     }>;

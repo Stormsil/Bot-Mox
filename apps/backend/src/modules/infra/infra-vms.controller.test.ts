@@ -50,7 +50,7 @@ function createServiceStub() {
     async applyVmConfigPatch(_tenantId: string, input: Record<string, unknown>) {
       return {
         vmid: input.vmid,
-        applied: input.dry_run === true || input.apply === false ? false : true,
+        applied: !(input.dry_run === true || input.apply === false),
         patch: {
           patched: String(input.current_config || ''),
           changes: [],

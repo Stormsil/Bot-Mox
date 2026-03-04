@@ -3,8 +3,6 @@ import {
   playbookUpdateSchema,
   playbookValidateBodySchema,
 } from '@botmox/api-contract';
-import { Transform } from 'class-transformer';
-import { IsString, MinLength } from 'class-validator';
 import {
   BadRequestException,
   Body,
@@ -20,6 +18,8 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { Transform } from 'class-transformer';
+import { IsString, MinLength } from 'class-validator';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
@@ -93,7 +93,11 @@ export class PlaybooksController {
   }
 
   private parseWithSchema<T>(
-    schema: { safeParse: (value: unknown) => { success: true; data: T } | { success: false; error: { flatten: () => unknown } } },
+    schema: {
+      safeParse: (
+        value: unknown,
+      ) => { success: true; data: T } | { success: false; error: { flatten: () => unknown } };
+    },
     value: unknown,
     code: string,
     message: string,
@@ -109,7 +113,11 @@ export class PlaybooksController {
     return parsed.data;
   }
 
-  private async beforeCreate(body: { name: string; is_default?: boolean; content: string }): Promise<void> {
+  private async beforeCreate(body: {
+    name: string;
+    is_default?: boolean;
+    content: string;
+  }): Promise<void> {
     const validation = this.playbooksService.validate(body.content);
     if (!validation.valid) {
       throw new UnprocessableEntityException({
@@ -126,7 +134,10 @@ export class PlaybooksController {
     }
   }
 
-  private async beforeUpdate(_id: string, body: z.infer<typeof playbookUpdateSchema>): Promise<void> {
+  private async beforeUpdate(
+    _id: string,
+    body: z.infer<typeof playbookUpdateSchema>,
+  ): Promise<void> {
     if (typeof body.content !== 'string') {
       return;
     }
@@ -219,7 +230,12 @@ export class PlaybooksController {
   }
 
   private parseId(id: string): string {
-    return this.parseWithSchema(playbookIdSchema, String(id || ''), 'PLAYBOOK_INVALID_ID', 'Invalid playbook id');
+    return this.parseWithSchema(
+      playbookIdSchema,
+      String(id || ''),
+      'PLAYBOOK_INVALID_ID',
+      'Invalid playbook id',
+    );
   }
 
   private parseCreateBody(body: unknown): {
@@ -241,17 +257,6 @@ export class PlaybooksController {
       body ?? {},
       'PLAYBOOK_INVALID_UPDATE_BODY',
       'Invalid playbook update payload',
-    );
-  }
-
-  private parseValidateBody(body: unknown): {
-    content: string;
-  } {
-    return this.parseWithSchema(
-      playbookValidateBodySchema,
-      body ?? {},
-      'PLAYBOOK_INVALID_VALIDATE_BODY',
-      'Invalid playbook validate payload',
     );
   }
 
@@ -314,7 +319,12 @@ export class PlaybooksController {
     @Body(playbookUpdateBodyPipe) body: z.infer<typeof playbookUpdateSchema>,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    return this.updateCore(authorization, typeof params === 'string' ? params : params.id, body, req);
+    return this.updateCore(
+      authorization,
+      typeof params === 'string' ? params : params.id,
+      body,
+      req,
+    );
   }
 
   @Delete(':id')
@@ -323,7 +333,11 @@ export class PlaybooksController {
     @Param(playbookIdParamPipe) params: PlaybookIdParamDto | string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { deleted: boolean } }> {
-    return this.removeCore(authorization, typeof params === 'string' ? params : params.id, req) as Promise<{
+    return this.removeCore(
+      authorization,
+      typeof params === 'string' ? params : params.id,
+      req,
+    ) as Promise<{
       success: true;
       data: { deleted: boolean };
     }>;

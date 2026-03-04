@@ -4,8 +4,6 @@ import {
   botListQuerySchema,
   botMutationSchema,
 } from '@botmox/api-contract';
-import { Transform, Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 import {
   BadRequestException,
   Body,
@@ -21,6 +19,8 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Transform, Type } from 'class-transformer';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
@@ -223,32 +223,6 @@ export class BotsController {
     return this.parseCreateBody(body);
   }
 
-  private parseTransitionBody(body: unknown): {
-    status: 'offline' | 'prepare' | 'leveling' | 'profession' | 'farming' | 'banned';
-  } {
-    const parsed = botLifecycleTransitionSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'BOTS_INVALID_TRANSITION_BODY',
-        message: 'Invalid bot transition payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
-  }
-
-  private parseBanBody(body: unknown): Record<string, unknown> {
-    const parsed = botBanDetailsSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'BOTS_INVALID_BAN_BODY',
-        message: 'Invalid bot ban payload',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
-  }
-
   private getNotFoundPayload(): { code: string; message: string } {
     return {
       code: 'BOT_NOT_FOUND',
@@ -326,7 +300,12 @@ export class BotsController {
     @Body(botMutationBodyPipe) body: Record<string, unknown>,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    return this.updateCore(authorization, typeof params === 'string' ? params : params.id, body, req);
+    return this.updateCore(
+      authorization,
+      typeof params === 'string' ? params : params.id,
+      body,
+      req,
+    );
   }
 
   @Get(':id/lifecycle')
@@ -499,7 +478,11 @@ export class BotsController {
     @Param(botIdParamPipe) params: BotIdParamDto | string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { id: string; deleted: boolean } }> {
-    return this.removeCore(authorization, typeof params === 'string' ? params : params.id, req) as Promise<{
+    return this.removeCore(
+      authorization,
+      typeof params === 'string' ? params : params.id,
+      req,
+    ) as Promise<{
       success: true;
       data: { id: string; deleted: boolean };
     }>;

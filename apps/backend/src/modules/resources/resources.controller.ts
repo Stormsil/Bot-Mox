@@ -3,16 +3,6 @@ import {
   resourceListQuerySchema,
   resourceMutationSchema,
 } from '@botmox/api-contract';
-import { Transform, Type } from 'class-transformer';
-import {
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  Max,
-  Min,
-  MinLength,
-} from 'class-validator';
 import {
   BadRequestException,
   Body,
@@ -29,15 +19,23 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Transform, Type } from 'class-transformer';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 import type { Request } from 'express';
 import { getRequestIdentity } from '../auth/request-identity.util';
-import { createBadRequestValidationPipe, ZodSchemaValidationPipe } from '../common/http-validation.util';
+import {
+  createBadRequestValidationPipe,
+  ZodSchemaValidationPipe,
+} from '../common/http-validation.util';
 import { buildTrimmedIdSchema } from '../common/zod-http-parse';
 import { type ResourceListQuery, ResourcesService } from './resources.service';
 
 type ResourceKind = 'licenses' | 'proxies' | 'subscriptions';
 
-const resourceListQueryPipe = createBadRequestValidationPipe('RESOURCES_INVALID_LIST_QUERY', 'Invalid resources list query');
+const resourceListQueryPipe = createBadRequestValidationPipe(
+  'RESOURCES_INVALID_LIST_QUERY',
+  'Invalid resources list query',
+);
 const resourceKindBodylessPipe = new ZodSchemaValidationPipe(
   resourceKindSchema,
   'RESOURCES_INVALID_KIND',

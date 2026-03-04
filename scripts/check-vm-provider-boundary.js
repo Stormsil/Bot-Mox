@@ -24,6 +24,10 @@ function toUnixPath(filePath) {
 }
 
 function listSourceFiles(dir) {
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
+
   const result = [];
   const stack = [dir];
 

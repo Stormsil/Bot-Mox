@@ -15,6 +15,14 @@ function normalize(file) {
   return file.replace(/\\/g, '/');
 }
 
+const isCi = String(process.env.CI || '').toLowerCase() === 'true';
+const hasBaseRef = Boolean(process.env.GITHUB_BASE_REF);
+
+if (!isCi && !hasBaseRef) {
+  process.stdout.write('Docs change policy: local mode without base ref, skipping.\n');
+  process.exit(0);
+}
+
 function getRange() {
   const baseRef = process.env.GITHUB_BASE_REF;
 

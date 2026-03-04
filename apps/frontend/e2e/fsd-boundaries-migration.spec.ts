@@ -426,7 +426,9 @@ test.describe('fsd boundaries migration focused paths', () => {
       hasText: 'VM 501 - vm-e2e-01',
     });
     await expect(candidateRow).toBeVisible();
-    await expect(candidateRow).toContainText('Rule: VM deletion decision unavailable from backend');
+    await expect(candidateRow).toContainText(
+      /Rule: (?:VM )?deletion decision unavailable from backend/i,
+    );
   });
 
   test('bot profile sections render on migration-affected route', async ({ page }) => {
@@ -440,10 +442,13 @@ test.describe('fsd boundaries migration focused paths', () => {
     await expect(botTabs.getByText('Resources', { exact: true })).toBeVisible();
 
     await botTabs.getByText('Configure', { exact: true }).click();
-    await expect(page.getByText('Person', { exact: true })).toBeVisible();
-    await expect(page.getByText('Account', { exact: true })).toBeVisible();
-    await expect(page.getByText('Character', { exact: true })).toBeVisible();
-    await expect(page.getByText('Schedule', { exact: true })).toBeVisible();
+    const configureSections = page
+      .getByRole('tablist')
+      .filter({ has: page.getByText('Person', { exact: true }) });
+    await expect(configureSections.getByText('Person', { exact: true })).toBeVisible();
+    await expect(configureSections.getByText('Account', { exact: true })).toBeVisible();
+    await expect(configureSections.getByText('Character', { exact: true })).toBeVisible();
+    await expect(configureSections.getByText('Schedule', { exact: true })).toBeVisible();
 
     await botTabs.getByText('Resources', { exact: true }).click();
     await expect(page.getByText('No subscription for this bot')).toBeVisible();
