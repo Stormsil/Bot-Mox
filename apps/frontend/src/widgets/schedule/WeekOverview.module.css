@@ -107,7 +107,7 @@
 
 .week-day-status.active {
   background: var(--botmox-color-status-success);
-  box-shadow: 0 0 4px rgba(82, 196, 26, 0.5);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--botmox-color-status-success) 50%, transparent);
 }
 
 .week-day-status.disabled {

@@ -91,7 +91,7 @@
 }
 
 .storageTableRowActive td {
-  background: rgba(82, 196, 26, 0.08);
+  background: color-mix(in srgb, var(--botmox-color-status-success) 8%, transparent);
 }
 
 .storageUsage {

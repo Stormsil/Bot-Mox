@@ -154,7 +154,7 @@
 }
 
 .vm-queue-item-input:focus-visible {
-  box-shadow: 0 0 0 2px rgba(var(--botmox-color-brand-primary-rgb, 66, 133, 244), 0.15);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--botmox-color-brand-primary) 15%, transparent);
 }
 
 .vm-queue-item-placeholder {
@@ -301,19 +301,27 @@
 .vm-queue-item-status--running {
   color: var(--vmx-info, var(--botmox-color-status-info));
   border-color: var(--vmx-info, var(--botmox-color-status-info));
-  background: rgba(var(--vmx-info-rgb), 0.1);
+  background: color-mix(in srgb, var(--vmx-info, var(--botmox-color-status-info)) 10%, transparent);
 }
 
 .vm-queue-item-status--ok {
   color: var(--vmx-success, var(--botmox-color-status-success));
   border-color: var(--vmx-success, var(--botmox-color-status-success));
-  background: rgba(var(--vmx-success-rgb), 0.1);
+  background: color-mix(
+    in srgb,
+    var(--vmx-success, var(--botmox-color-status-success)) 10%,
+    transparent
+  );
 }
 
 .vm-queue-item-status--error {
   color: var(--vmx-danger, var(--botmox-color-status-danger));
   border-color: var(--vmx-danger, var(--botmox-color-status-danger));
-  background: rgba(var(--vmx-danger-rgb), 0.1);
+  background: color-mix(
+    in srgb,
+    var(--vmx-danger, var(--botmox-color-status-danger)) 10%,
+    transparent
+  );
 }
 
 .vm-queue-item-start {

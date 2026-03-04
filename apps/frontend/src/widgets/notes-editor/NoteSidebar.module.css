@@ -110,19 +110,19 @@
 }
 
 .note-list-item.pinned {
-  background-color: rgba(var(--botmox-color-brand-primary-rgb, 66, 133, 244), 0.08);
+  background-color: color-mix(in srgb, var(--botmox-color-brand-primary) 8%, transparent);
   border-left: 3px solid var(--botmox-color-brand-primary);
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
 
 .note-list-item.pinned:hover {
-  background-color: rgba(var(--botmox-color-brand-primary-rgb, 66, 133, 244), 0.12);
+  background-color: color-mix(in srgb, var(--botmox-color-brand-primary) 12%, transparent);
   border-color: var(--botmox-color-brand-primary);
 }
 
 .note-list-item.pinned.selected {
-  background-color: rgba(var(--botmox-color-brand-primary-rgb, 66, 133, 244), 0.15);
+  background-color: color-mix(in srgb, var(--botmox-color-brand-primary) 15%, transparent);
   border-color: var(--botmox-color-brand-primary);
 }
 
@@ -178,7 +178,7 @@
 
 .note-list-item-action.pinned:hover {
   color: var(--botmox-color-brand-primary);
-  background-color: rgba(var(--botmox-color-brand-primary-rgb, 66, 133, 244), 0.15);
+  background-color: color-mix(in srgb, var(--botmox-color-brand-primary) 15%, transparent);
 }
 
 .note-list-item-title {

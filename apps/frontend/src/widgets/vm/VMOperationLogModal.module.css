@@ -12,7 +12,11 @@
 .vm-task-log-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(var(--vmx-accent-rgb, var(--botmox-color-brand-primary-rgb)), 0.08);
+  background: color-mix(
+    in srgb,
+    var(--vmx-accent, var(--botmox-color-brand-primary)) 8%,
+    transparent
+  );
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 1000;
@@ -89,7 +93,11 @@
 }
 
 .vm-task-log-modal-actions .vm-task-log-modal-cancel-btn:hover {
-  background: rgba(var(--vmx-danger-rgb, var(--botmox-color-status-danger-rgb, 255, 77, 79)), 0.12);
+  background: color-mix(
+    in srgb,
+    var(--vmx-danger, var(--botmox-color-status-danger)) 12%,
+    transparent
+  );
   border-color: var(--vmx-danger, var(--botmox-color-status-danger));
 }
 

@@ -5,8 +5,16 @@
   justify-content: center;
   padding: 24px;
   background:
-    radial-gradient(circle at 20% 20%, rgba(31, 115, 183, 0.18), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(0, 188, 140, 0.14), transparent 40%),
+    radial-gradient(
+      circle at 20% 20%,
+      color-mix(in srgb, var(--botmox-color-brand-primary) 18%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 80% 0%,
+      color-mix(in srgb, var(--botmox-color-status-success) 14%, transparent),
+      transparent 40%
+    ),
     linear-gradient(
       160deg,
       var(--botmox-color-header-bg),

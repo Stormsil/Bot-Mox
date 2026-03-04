@@ -176,6 +176,7 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^2.4.2",
+    "astral-regex": "^2.0.0",
     "concurrently": "^9.1.2",
     "mcp-antd-components": "github:hannesj/mcp-antd-components",
     "pnpm": "^10.30.0",

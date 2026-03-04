@@ -20,7 +20,7 @@
   --color-fg-default: var(--botmox-color-text-secondary);
   --color-fg-muted: var(--botmox-color-text-muted);
   --color-accent-fg: var(--botmox-color-brand-primary);
-  --color-neutral-muted: rgba(var(--botmox-color-brand-primary-rgb), 0.12);
+  --color-neutral-muted: color-mix(in srgb, var(--botmox-color-brand-primary) 12%, transparent);
   --md-editor-font-family: var(--font-mono, "Roboto Mono", "Consolas", monospace);
 }
 
@@ -71,7 +71,7 @@
 }
 
 .note-md-editor-root :global(.w-md-editor-text-input)::selection {
-  background-color: rgba(var(--botmox-color-brand-primary-rgb), 0.24);
+  background-color: color-mix(in srgb, var(--botmox-color-brand-primary) 24%, transparent);
 }
 
 .note-md-editor-root :global(.w-md-editor-preview) {

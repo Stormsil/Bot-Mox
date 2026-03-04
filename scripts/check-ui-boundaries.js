@@ -3,8 +3,10 @@ const path = require('node:path');
 
 const repoRoot = path.join(__dirname, '..');
 const uiRoots = [
-  path.join(repoRoot, 'apps', 'frontend', 'src', 'components'),
+  path.join(repoRoot, 'apps', 'frontend', 'src', 'app'),
   path.join(repoRoot, 'apps', 'frontend', 'src', 'pages'),
+  path.join(repoRoot, 'apps', 'frontend', 'src', 'widgets'),
+  path.join(repoRoot, 'apps', 'frontend', 'src', 'entities'),
 ];
 
 const fileExtensions = new Set(['.ts', '.tsx']);
@@ -84,7 +86,7 @@ for (const filePath of filesToCheck) {
 
 if (allViolations.length > 0) {
   console.error(
-    '[check-ui-boundaries] Direct services imports are forbidden in UI layers (components/pages).',
+    '[check-ui-boundaries] Direct services imports are forbidden in UI layers (app/pages/widgets/entities).',
   );
   for (const violation of allViolations) {
     console.error(`- ${violation.filePath}:${violation.line} -> ${violation.importPath}`);

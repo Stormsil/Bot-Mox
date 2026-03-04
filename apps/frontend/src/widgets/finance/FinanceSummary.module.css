@@ -102,7 +102,7 @@
   border: 1px solid var(--botmox-color-border-default);
   border-radius: 2px;
   padding: 12px;
-  box-shadow: 0 8px 18px rgba(31, 52, 73, 0.12);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--botmox-color-header-bg) 12%, transparent);
 }
 
 .chartTooltipLabel {

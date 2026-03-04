@@ -27,7 +27,6 @@ export default defineConfig([
       react,
     },
     rules: {
-      // Prevent accidental form submissions (default type is "submit").
       'react/button-has-type': 'error',
       'no-restricted-syntax': [
         'warn',
@@ -57,59 +56,6 @@ export default defineConfig([
   {
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['src/shared/ui/**'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            {
-              name: 'antd',
-              importNames: ['Card'],
-              message: 'Use AppCard from shared/ui instead',
-            },
-            {
-              name: 'antd',
-              allowImportNames: ['message', 'theme', 'App'],
-              allowTypeImports: true,
-              message:
-                'Outside shared/ui, only message, theme, App, and type-only imports are allowed from antd.',
-            },
-          ],
-          patterns: [
-            {
-              group: ['antd/es/*', 'antd/lib/*'],
-              allowTypeImports: true,
-              message:
-                'Visual AntD deep imports are not allowed outside shared/ui. Use shared/ui wrappers instead.',
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    files: [
-      'src/components/bot/**/*.tsx',
-      'src/pages/bot/**/*.tsx',
-      'src/components/layout/Header.tsx',
-    ],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['**/services/apiClient'],
-              message:
-                'Do not import apiClient directly in bot UI components. Use entities/bot query/mutation hooks.',
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    files: ['src/components/**/*.tsx', 'src/pages/**/*.tsx'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -154,6 +100,19 @@ export default defineConfig([
           ],
           patterns: [
             {
+              group: ['antd'],
+              allowImportNamePattern: '^(message|theme|App|Form)$',
+              allowTypeImports: true,
+              message:
+                'Outside shared/ui, only message, theme, App, Form (for Form.useForm), and type-only imports are allowed from antd.',
+            },
+            {
+              group: ['antd/es/*', 'antd/lib/*'],
+              allowTypeImports: true,
+              message:
+                'Visual AntD deep imports are not allowed outside shared/ui. Use shared/ui wrappers instead.',
+            },
+            {
               group: ['**/services/settingsService'],
               message:
                 'UI layers must not import settingsService directly. Use entities/settings facade/query hooks.',
@@ -177,6 +136,11 @@ export default defineConfig([
               group: ['**/services/botLifecycleService'],
               message:
                 'UI layers must not import botLifecycleService directly. Use entities/bot facades/query hooks.',
+            },
+            {
+              group: ['**/services/apiClient'],
+              message:
+                'UI layers must not import apiClient directly. Route requests through entities/services hooks.',
             },
           ],
         },

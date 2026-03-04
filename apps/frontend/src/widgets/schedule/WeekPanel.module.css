@@ -58,7 +58,7 @@
 }
 
 .week-day-item.selected {
-  background: rgba(59, 125, 184, 0.12);
+  background: color-mix(in srgb, var(--botmox-color-brand-primary) 12%, transparent);
   border-color: var(--botmox-color-brand-primary);
 }
 

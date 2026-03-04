@@ -18,7 +18,7 @@
 .checkbox-block:focus-within,
 .list-block:focus-within {
   background-color: var(--botmox-color-surface-hover);
-  box-shadow: 0 0 0 2px rgba(var(--botmox-color-brand-primary-rgb, 66, 133, 244), 0.12);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--botmox-color-brand-primary) 12%, transparent);
 }
 
 .block-placeholder {

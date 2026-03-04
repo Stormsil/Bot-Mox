@@ -76,7 +76,7 @@
   border-radius: 8px;
   object-fit: cover;
   border: 2px solid var(--botmox-color-border-subtle);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--botmox-color-text-strong) 30%, transparent);
 }
 
 .character-title {

@@ -74,7 +74,7 @@
 }
 
 .cellLink:focus-visible {
-  outline: 2px solid rgba(var(--botmox-color-brand-primary-rgb, 66, 133, 244), 0.35);
+  outline: 2px solid color-mix(in srgb, var(--botmox-color-brand-primary) 35%, transparent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }

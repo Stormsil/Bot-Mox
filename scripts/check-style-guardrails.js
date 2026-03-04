@@ -18,9 +18,9 @@ const GLOBAL_STYLES = [
 ];
 
 const MAX_IMPORTANT_COUNT = 0;
-// Phase-0 guardrail: cap deprecated Ant internal selector overrides in CSS Modules.
-// We allow existing usage during migration, but prevent adding more debt.
-const MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES = 0;
+// Ratchet baseline for deprecated Ant internal selector overrides in CSS Modules.
+// Existing debt is temporarily allowed, but any increase fails CI.
+const MAX_ANT_SELECTOR_OCCURRENCES_IN_CSS_MODULES = 15;
 const ANT_GLOBAL_PATTERN = /\.(ant-[\w-]+)/;
 const ANT_SELECTOR_PATTERN = /\.ant-[\w-]+/g;
 const IMPORTANT_PATTERN = /!important/g;

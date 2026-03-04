@@ -100,7 +100,7 @@
 .day-tab.selected .day-indicator.disabled,
 .day-tab.selected .day-indicator.empty {
   background: var(--botmox-color-surface-panel);
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--botmox-color-header-text) 50%, transparent);
 }
 
 /* Status colors for non-selected tabs */
