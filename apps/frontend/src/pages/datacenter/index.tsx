@@ -8,12 +8,12 @@ import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
 import type { BotRecord } from '../../entities/bot/model/types';
 import { useNotesIndexQuery } from '../../entities/notes/api/useNotesIndexQuery';
 import type { NoteIndex } from '../../entities/notes/model/types';
+import { normalizeResourceStatusVocabulary } from '../../entities/resources/model/statusVocabulary';
 import type {
   BotLicense,
   Proxy as ProxyResource,
   Subscription,
 } from '../../entities/resources/model/types';
-import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
 import {
   getFinanceProjectPerformanceViaContract,
@@ -50,7 +50,6 @@ export const DatacenterPage: React.FC = () => {
     queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const notesIndexQuery = useNotesIndexQuery();
-  const subscriptionSettingsQuery = useSubscriptionSettingsQuery();
 
   const { collapsedSections, toggleSection } = useDatacenterCollapsedSections();
 
@@ -104,7 +103,6 @@ export const DatacenterPage: React.FC = () => {
   const subscriptionsLoading = subscriptionsList.query.isLoading;
   const notesIndex = useMemo<NoteIndex[]>(() => notesIndexQuery.data || [], [notesIndexQuery.data]);
   const notesLoading = notesIndexQuery.isLoading;
-  const warningDays = subscriptionSettingsQuery.data?.warning_days || 7;
 
   useEffect(() => {
     if (!financeSummaryAggregateQuery.error) {
@@ -146,11 +144,6 @@ export const DatacenterPage: React.FC = () => {
     if (!notesIndexQuery.error) return;
     uiLogger.error('Error loading notes index:', notesIndexQuery.error);
   }, [notesIndexQuery.error]);
-  useEffect(() => {
-    if (!subscriptionSettingsQuery.error) return;
-    uiLogger.error('Error loading subscription settings:', subscriptionSettingsQuery.error);
-  }, [subscriptionSettingsQuery.error]);
-
   const botsList = useMemo(() => Object.values(bots), [bots]);
 
   const projectStats = useMemo(() => {
@@ -208,14 +201,19 @@ export const DatacenterPage: React.FC = () => {
 
   const licenseStats = useMemo(() => {
     const expiringSoon = licenses.filter((license) => {
-      const daysRemaining = Math.ceil((license.expires_at - currentTime) / MS_PER_DAY);
-      return daysRemaining <= warningDays && daysRemaining > 0;
+      const status = normalizeResourceStatusVocabulary(license);
+      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
+      return status.isExpiringSoon && !isExpired;
     }).length;
 
-    const expired = licenses.filter((license) => license.expires_at <= currentTime).length;
-    const active = licenses.filter(
-      (license) => license.status === 'active' && license.expires_at > currentTime,
-    ).length;
+    const expired = licenses.filter((license) => {
+      const status = normalizeResourceStatusVocabulary(license);
+      return status.computedStatus === 'expired' || status.statusToken === 'expired';
+    }).length;
+    const active = licenses.filter((license) => {
+      const status = normalizeResourceStatusVocabulary(license);
+      return status.computedStatus === 'active' || status.statusToken === 'active';
+    }).length;
     const unassigned = licenses.filter(
       (license) => !license.bot_ids || license.bot_ids.length === 0,
     ).length;
@@ -227,21 +225,25 @@ export const DatacenterPage: React.FC = () => {
       expired,
       unassigned,
     };
-  }, [licenses, warningDays, currentTime]);
+  }, [licenses]);
 
   const proxyStats = useMemo(() => {
     const expiringSoon = proxies.filter((proxy) => {
-      if (proxy.status === 'banned') return false;
-      const daysRemaining = Math.ceil((proxy.expires_at - currentTime) / MS_PER_DAY);
-      return daysRemaining <= warningDays && daysRemaining > 0;
+      const status = normalizeResourceStatusVocabulary(proxy);
+      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
+      const isBanned = status.computedStatus === 'banned' || status.statusToken === 'banned';
+      return status.isExpiringSoon && !isExpired && !isBanned;
     }).length;
 
-    const expired = proxies.filter(
-      (proxy) => proxy.expires_at <= currentTime || proxy.status === 'expired',
-    ).length;
-    const active = proxies.filter(
-      (proxy) => proxy.status === 'active' && proxy.expires_at > currentTime,
-    ).length;
+    const expired = proxies.filter((proxy) => {
+      const status = normalizeResourceStatusVocabulary(proxy);
+      return status.computedStatus === 'expired' || status.statusToken === 'expired';
+    }).length;
+    const active = proxies.filter((proxy) => {
+      const status = normalizeResourceStatusVocabulary(proxy);
+      const isBanned = status.computedStatus === 'banned' || status.statusToken === 'banned';
+      return (status.computedStatus === 'active' || status.statusToken === 'active') && !isBanned;
+    }).length;
     const unassigned = proxies.filter((proxy) => !proxy.bot_id).length;
 
     return {
@@ -251,16 +253,23 @@ export const DatacenterPage: React.FC = () => {
       expired,
       unassigned,
     };
-  }, [proxies, warningDays, currentTime]);
+  }, [proxies]);
 
   const subscriptionStats = useMemo(() => {
     const expiringSoon = subscriptions.filter((sub) => {
-      const daysRemaining = Math.ceil((sub.expires_at - currentTime) / MS_PER_DAY);
-      return daysRemaining <= warningDays && daysRemaining > 0;
+      const status = normalizeResourceStatusVocabulary(sub);
+      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
+      return status.isExpiringSoon && !isExpired;
     }).length;
 
-    const expired = subscriptions.filter((sub) => sub.expires_at <= currentTime).length;
-    const active = subscriptions.filter((sub) => sub.expires_at > currentTime).length;
+    const expired = subscriptions.filter((sub) => {
+      const status = normalizeResourceStatusVocabulary(sub);
+      return status.computedStatus === 'expired' || status.statusToken === 'expired';
+    }).length;
+    const active = subscriptions.filter((sub) => {
+      const status = normalizeResourceStatusVocabulary(sub);
+      return status.computedStatus === 'active' || status.statusToken === 'active';
+    }).length;
 
     return {
       total: subscriptions.length,
@@ -268,7 +277,7 @@ export const DatacenterPage: React.FC = () => {
       expired,
       expiringSoon,
     };
-  }, [subscriptions, warningDays, currentTime]);
+  }, [subscriptions]);
 
   const notesStats = useMemo(() => {
     const total = notesIndex.length;
@@ -282,8 +291,15 @@ export const DatacenterPage: React.FC = () => {
     const items: ExpiringItem[] = [];
 
     licenses.forEach((license) => {
-      const daysRemaining = Math.ceil((license.expires_at - currentTime) / MS_PER_DAY);
-      if (daysRemaining <= warningDays && daysRemaining > 0) {
+      const status = normalizeResourceStatusVocabulary(license);
+      const daysRemaining = status.daysRemaining;
+      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
+      if (
+        status.isExpiringSoon &&
+        !isExpired &&
+        typeof daysRemaining === 'number' &&
+        daysRemaining > 0
+      ) {
         const botName = license.bot_ids?.length
           ? bots[license.bot_ids[0]]?.character?.name
           : undefined;
@@ -299,9 +315,17 @@ export const DatacenterPage: React.FC = () => {
     });
 
     proxies.forEach((proxy) => {
-      if (proxy.status === 'banned') return;
-      const daysRemaining = Math.ceil((proxy.expires_at - currentTime) / MS_PER_DAY);
-      if (daysRemaining <= warningDays && daysRemaining > 0) {
+      const status = normalizeResourceStatusVocabulary(proxy);
+      const daysRemaining = status.daysRemaining;
+      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
+      const isBanned = status.computedStatus === 'banned' || status.statusToken === 'banned';
+      if (
+        status.isExpiringSoon &&
+        !isExpired &&
+        !isBanned &&
+        typeof daysRemaining === 'number' &&
+        daysRemaining > 0
+      ) {
         const botName = proxy.bot_id ? bots[proxy.bot_id]?.character?.name : undefined;
         items.push({
           id: proxy.id,
@@ -315,8 +339,15 @@ export const DatacenterPage: React.FC = () => {
     });
 
     subscriptions.forEach((sub) => {
-      const daysRemaining = Math.ceil((sub.expires_at - currentTime) / MS_PER_DAY);
-      if (daysRemaining <= warningDays && daysRemaining > 0) {
+      const status = normalizeResourceStatusVocabulary(sub);
+      const daysRemaining = status.daysRemaining;
+      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
+      if (
+        status.isExpiringSoon &&
+        !isExpired &&
+        typeof daysRemaining === 'number' &&
+        daysRemaining > 0
+      ) {
         const botName = sub.bot_id ? bots[sub.bot_id]?.character?.name : undefined;
         items.push({
           id: sub.id,
@@ -330,7 +361,7 @@ export const DatacenterPage: React.FC = () => {
     });
 
     return items.sort((a, b) => a.daysRemaining - b.daysRemaining);
-  }, [licenses, proxies, subscriptions, bots, warningDays, currentTime]);
+  }, [licenses, proxies, subscriptions, bots]);
 
   const initialLoading =
     botsLoading &&

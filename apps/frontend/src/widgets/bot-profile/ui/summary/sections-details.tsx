@@ -191,7 +191,7 @@ interface SummaryResourcesSectionProps {
   onActivate: (action: () => void) => (event: React.KeyboardEvent<HTMLElement>) => void;
   formatCompactKey: (value?: string) => string;
   formatDate: (timestamp?: number) => string;
-  formatDaysLeft: (timestamp?: number) => string;
+  formatDaysLeft: (daysRemaining?: number | null) => string;
 }
 
 export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = ({
@@ -332,7 +332,7 @@ export const SummaryResourcesSection: React.FC<SummaryResourcesSectionProps> = (
                 <span>
                   Next:{' '}
                   {subscriptionSummary.nextExpiry
-                    ? `${formatDate(subscriptionSummary.nextExpiry.expires_at)} (${formatDaysLeft(subscriptionSummary.nextExpiry.expires_at)})`
+                    ? `${formatDate(subscriptionSummary.nextExpiry.expires_at)} (${formatDaysLeft(subscriptionSummary.nextExpiry.days_remaining)})`
                     : '—'}
                 </span>
               ),

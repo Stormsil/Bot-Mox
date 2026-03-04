@@ -140,7 +140,9 @@ export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
         if (!license || !editLicenseModal.id) {
           throw new Error('License is not available for editing');
         }
-        return editLicenseModal.onFinish(buildLicensePayload(values, license.bot_ids || []));
+        return editLicenseModal.onFinish(
+          buildLicensePayload(values, license.bot_ids || [], Date.now(), license.status),
+        );
       },
     }),
     [editLicenseModal.formProps, editLicenseModal.id, editLicenseModal.onFinish, license],

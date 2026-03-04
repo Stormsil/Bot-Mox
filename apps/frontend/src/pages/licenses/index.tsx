@@ -211,11 +211,21 @@ export const LicensesPage: React.FC = () => {
       onFinish: async (values: LicenseFormValues) => {
         const now = getCurrentTimestamp();
         return editLicenseModal.onFinish(
-          buildLicensePayload(values, now, editingLicense?.bot_ids || []),
+          buildLicensePayload(
+            values,
+            now,
+            editingLicense?.bot_ids || [],
+            editingLicense?.status || 'active',
+          ),
         );
       },
     }),
-    [editLicenseModal.formProps, editLicenseModal.onFinish, editingLicense?.bot_ids],
+    [
+      editLicenseModal.formProps,
+      editLicenseModal.onFinish,
+      editingLicense?.bot_ids,
+      editingLicense?.status,
+    ],
   );
   const stats = useMemo(() => computeStats(licensesWithBots), [licensesWithBots]);
 

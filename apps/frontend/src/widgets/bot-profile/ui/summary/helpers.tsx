@@ -7,6 +7,7 @@ import {
   UserOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
+import { normalizeResourceStatusVocabulary } from '../../../../entities/resources/model/statusVocabulary';
 
 import type { Subscription } from '../../../../entities/resources/model/types';
 import { formatDateDotted } from '../../../../shared/lib/date';
@@ -82,11 +83,10 @@ export function formatDate(timestamp?: number) {
   return formatDateDotted(timestamp);
 }
 
-export function formatDaysLeft(timestamp?: number) {
-  if (!timestamp) return '—';
-  const daysLeft = Math.ceil((timestamp - Date.now()) / (1000 * 60 * 60 * 24));
-  if (daysLeft < 0) return 'Expired';
-  return `${daysLeft} Day${daysLeft === 1 ? '' : 's'} left`;
+export function formatDaysLeft(daysRemaining?: number | null) {
+  if (daysRemaining === null || daysRemaining === undefined) return '—';
+  if (daysRemaining < 0) return 'Expired';
+  return `${daysRemaining} Day${daysRemaining === 1 ? '' : 's'} left`;
 }
 
 export function formatCompactKey(value?: string) {
@@ -137,10 +137,21 @@ export function calculateScheduleStats(schedule: unknown): ScheduleStats {
 }
 
 export function calculateSubscriptionSummary(subscriptions: Subscription[]): SubscriptionSummary {
-  const now = Date.now();
   const total = subscriptions.length;
-  const active = subscriptions.filter((sub) => sub.expires_at > now);
-  const nextExpiry = active.sort((a, b) => a.expires_at - b.expires_at)[0];
+  const active = subscriptions.filter((sub) => {
+    const status = normalizeResourceStatusVocabulary(sub);
+    return status.computedStatus === 'active' || status.statusToken === 'active';
+  });
+
+  const nextExpiry = [...active].sort((a, b) => {
+    const aDays = normalizeResourceStatusVocabulary(a).daysRemaining;
+    const bDays = normalizeResourceStatusVocabulary(b).daysRemaining;
+    if (typeof aDays === 'number' && typeof bDays === 'number') {
+      return aDays - bDays;
+    }
+    return a.expires_at - b.expires_at;
+  })[0];
+
   return {
     total,
     activeCount: active.length,

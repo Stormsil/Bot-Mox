@@ -52,9 +52,9 @@ export const buildLicensePayload = (
   values: LicenseFormValues,
   botIds: string[],
   now = Date.now(),
+  status: BotLicense['status'] = 'active',
 ) => {
   const expiresAt = values.expires_at.valueOf();
-  const status: BotLicense['status'] = now > expiresAt ? 'expired' : 'active';
 
   return {
     key: values.key,
