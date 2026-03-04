@@ -1,2 +1,0 @@
-Command: pnpm --filter @botmox/frontend test:e2e -- e2e/refine-phase3-crud-wiring.spec.ts
-Result: 3 passed (chromium)

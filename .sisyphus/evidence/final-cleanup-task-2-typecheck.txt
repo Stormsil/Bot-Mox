@@ -1,8 +1,0 @@
-
-> botmox-project@1.0.0 check:types E:\Боттинг\source\repos\Bot-Mox
-> pnpm --filter @botmox/frontend typecheck
-
-
-> @botmox/frontend@0.0.0 typecheck E:\Боттинг\source\repos\Bot-Mox\apps\frontend
-> tsc -b --noEmit
-

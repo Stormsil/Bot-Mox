@@ -1,2 +1,0 @@
-[interpretation]
-- No stderr output was produced by the verification command sequence.

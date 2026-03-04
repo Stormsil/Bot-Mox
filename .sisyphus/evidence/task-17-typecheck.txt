@@ -1,6 +1,0 @@
-
-> @botmox/frontend@0.0.0 typecheck E:\Боттинг\source\repos\Bot-Mox\apps\frontend
-> tsc -b --noEmit
-
-
-[exit_code=0]

@@ -1,2 +1,0 @@
-- Temporary Playwright webServer startup conflict (`Port 4173 is already in use`) occurred once; immediate rerun succeeded.
-- Some subagent completion summaries reported stale/high-level file lists; always re-verify with direct `Read` + `git diff`.

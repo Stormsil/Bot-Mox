@@ -1,9 +1,0 @@
-Check name: Task 8 resource inline layout style error scan
-Date: 2026-03-02
-Command(s):
-- python -c "import pathlib,re,json; p=re.compile(r'style\\s*=\\s*\\{\\{[^}]*\\b(display|alignItems|justifyContent|gap|flexDirection|gridTemplateColumns)\\b',re.S); files=[]\nfor d in ['apps/frontend/src/widgets/bot-profile/ui/proxy','apps/frontend/src/widgets/bot-profile/ui/license','apps/frontend/src/widgets/bot-profile/ui/subscription']:\n files.extend(pathlib.Path(d).rglob('*.tsx'))\nh=[f.as_posix() for f in files if p.search(f.read_text(encoding='utf-8'))]\nprint(json.dumps({'files_checked':len(files),'hits':h},ensure_ascii=True,indent=2))"
-Observed result:
-- files_checked: 14
-- hits: []
-Conclusion:
-- No error detected. Timestamp: 2026-03-02T10:10:53.082758+03:00

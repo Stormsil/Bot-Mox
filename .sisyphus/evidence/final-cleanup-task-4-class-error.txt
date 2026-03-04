@@ -1,1 +1,0 @@
-Selector cleanup verification (proxy scope): no exact matches for proxy-string-container, ipqs-loading, ipqs-results, ipqs-row, fraud-score-display, ipqs-flags.

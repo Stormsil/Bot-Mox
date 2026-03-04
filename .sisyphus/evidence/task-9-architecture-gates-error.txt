@@ -1,8 +1,0 @@
-PASS: [P1] no local queue state (useState<VMQueueItem[]>) in apps/frontend/src/features/vm-management/model/vm/useVMQueue.ts
-PASS: [P2] no queueRef in pipeline files (types.ts, processor.ts, provisioningPhase.ts)
-FAIL: [P3] no mirror effect setWorkspaceQueueItems( in apps/frontend/src/pages/vms/hooks/useVmsPageViewModel.ts (stale snapshot simulation)
-DETAIL: injected legacy mirror symbol setWorkspaceQueueItems( detected in simulated stale snapshot
-PASS: [P4] bare <VMQueuePanel /> callsite in apps/frontend/src/pages/vms/VMsPage.tsx
-FINAL_EXIT_CODE=1
-EXIT_CODE_SEMANTICS: 0=all architectural guardrails PASS; non-zero=one or more guardrail violations
-OBSERVED_PROCESS_EXIT_CODE=1

@@ -1,5 +1,0 @@
-Final Cleanup Task 2 - Wrapper Selector Check
-Plan: .sisyphus/plans/css-lapsha-final-cleanup.md (TODO #2)
-Target: apps/frontend/src/widgets/vm/settingsForm/SettingsSectionLayout.module.css
-STATUS: PASS
-NO_MATCHES: .row .rowSingle .actions .inlineRow

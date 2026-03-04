@@ -51,6 +51,9 @@ Winsible/
 
 # Local AI/agent workspace state (do not commit)
 .serena/
+.sisyphus/
+**/.sisyphus/
+**/.sisyphus/**
 
 # Local scratch files (do not commit)
 tmp_unattend_page.html

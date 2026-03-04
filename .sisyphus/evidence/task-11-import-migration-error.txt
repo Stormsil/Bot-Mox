@@ -1,5 +1,0 @@
-No blocking errors remain for Task 11.
-
-Status:
-- `pnpm exec rg "from ['\"]antd['\"]" ... --glob "*.tsx"` returns only allowlisted non-visual or type-only imports.
-- `pnpm --filter @botmox/frontend lint && pnpm --filter @botmox/frontend typecheck` passes.

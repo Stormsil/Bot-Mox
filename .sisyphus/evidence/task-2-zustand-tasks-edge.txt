@@ -1,6 +1,0 @@
-      useVmWorkspaceStore.getState().logsActions.setTasks(parsed);
-  const getTasks = useCallback((): VMTaskEntry[] => useVmWorkspaceStore.getState().logs.tasks, []);
-    useVmWorkspaceStore.getState().logsActions.setTasks(nextTasks);
-      useVmWorkspaceStore.getState().logsActions.setTasks(parsed);
-  const getTasks = useCallback((): VMTaskEntry[] => useVmWorkspaceStore.getState().logs.tasks, []);
-    useVmWorkspaceStore.getState().logsActions.setTasks(nextTasks);

@@ -1,4 +1,0 @@
-Selector cleanup verification (allowlist):
-- grep pattern: .(headerContent|pageTitle|headerActions|filtersRow|stats) in ProxiesPage.module.css
-- grep pattern: styles.(headerContent|pageTitle|headerActions|filtersRow|stats) in Proxies*.tsx
-Result: No matches found

@@ -1,5 +1,0 @@
-F3 manual QA rerun status
-Started: 2026-03-03T04:35:43.683Z
-Finished: 2026-03-03T04:35:51.373Z
-Status: PASS
-Blocker semantics cleared: no active blocker.
