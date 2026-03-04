@@ -64,35 +64,7 @@ export function getContractRuntimeClient() {
 function withRuntimeAuthorizationFallback(
   client: ContractRuntimeClient,
 ): RuntimeClientWithoutProviderAuthHeaders {
-  return new Proxy(client, {
-    get(target, property, receiver) {
-      const value = Reflect.get(target, property, receiver);
-      if (typeof value !== 'function') {
-        return value;
-      }
-
-      return (args: unknown) => {
-        if (!args || typeof args !== 'object' || Array.isArray(args)) {
-          return (value as (input: unknown) => unknown).call(target, args);
-        }
-
-        const sourceArgs = args as Record<string, unknown>;
-        const sourceHeaders = sourceArgs.headers;
-        const normalizedHeaders =
-          sourceHeaders && typeof sourceHeaders === 'object' && !Array.isArray(sourceHeaders)
-            ? (sourceHeaders as Record<string, unknown>)
-            : {};
-
-        return (value as (input: unknown) => unknown).call(target, {
-          ...sourceArgs,
-          headers: {
-            authorization: '',
-            ...normalizedHeaders,
-          },
-        });
-      };
-    },
-  }) as unknown as RuntimeClientWithoutProviderAuthHeaders;
+  return client as unknown as RuntimeClientWithoutProviderAuthHeaders;
 }
 
 export function createContractRuntimeClient(): RuntimeClientWithoutProviderAuthHeaders {
