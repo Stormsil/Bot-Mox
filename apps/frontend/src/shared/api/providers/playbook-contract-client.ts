@@ -1,9 +1,5 @@
 import { ApiClientError, type ApiSuccessEnvelope } from '../apiClient';
-import {
-  createContractRuntimeClient,
-  resolveContractAuthorizationHeader,
-  toContractApiClientError,
-} from '../contracts/runtimeClient';
+import { createContractRuntimeClient, toContractApiClientError } from '../contracts/runtimeClient';
 
 type PlaybookRecord = {
   id: string;
@@ -56,10 +52,7 @@ function isExpectedPlaybookReadDegradedError(error: unknown): error is ApiClient
 export async function listPlaybooksViaContract(): Promise<ApiSuccessEnvelope<PlaybookRecord[]>> {
   try {
     const client = createContractRuntimeClient();
-    const authorization = resolveContractAuthorizationHeader();
-    const response = await client.playbooksList({
-      headers: { authorization },
-    });
+    const response = await client.playbooksList({});
 
     if (response.status !== 200) {
       throw toContractApiClientError('/api/v1/playbooks', response.status, response.body);
@@ -78,9 +71,7 @@ export async function getPlaybookViaContract(
   id: string,
 ): Promise<ApiSuccessEnvelope<PlaybookRecord>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.playbooksGet({
-    headers: { authorization },
     params: { id },
   });
 
@@ -95,9 +86,7 @@ export async function createPlaybookViaContract(
   payload: PlaybookCreatePayload,
 ): Promise<ApiSuccessEnvelope<PlaybookRecord>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.playbooksCreate({
-    headers: { authorization },
     body: payload,
   });
 
@@ -113,9 +102,7 @@ export async function updatePlaybookViaContract(
   payload: PlaybookUpdatePayload,
 ): Promise<ApiSuccessEnvelope<PlaybookRecord>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.playbooksUpdate({
-    headers: { authorization },
     params: { id },
     body: payload,
   });
@@ -131,9 +118,7 @@ export async function deletePlaybookViaContract(
   id: string,
 ): Promise<ApiSuccessEnvelope<{ deleted: boolean }>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.playbooksDelete({
-    headers: { authorization },
     params: { id },
   });
 
@@ -148,9 +133,7 @@ export async function validatePlaybookViaContract(
   content: string,
 ): Promise<ApiSuccessEnvelope<PlaybookValidationResult>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.playbooksValidate({
-    headers: { authorization },
     body: { content },
   });
 

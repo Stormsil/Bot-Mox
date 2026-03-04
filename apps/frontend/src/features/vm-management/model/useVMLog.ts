@@ -49,7 +49,6 @@ export function useVMLog() {
   const { data: hydratedTasksData, error: hydratedTasksError } = useQuery<VMTaskEntry[], Error>({
     queryKey: ['settings', 'vmgenerator', 'task_logs'],
     queryFn: loadPersistedTasks,
-    refetchInterval: 4000,
     retry: false,
   });
 

@@ -11,8 +11,6 @@ import { settingsQueryKeys } from './settingsQueryKeys';
 
 const SCHEDULE_TEMPLATES_PATH = '/api/v1/settings/schedule/templates';
 const SCHEDULE_LAST_PARAMS_PATH = '/api/v1/settings/schedule/last_params';
-const SCHEDULE_REFETCH_MS = 8_000;
-
 const FALLBACK_PARAMS: ScheduleGenerationParams = {
   startTime: '07:00',
   endTime: '23:30',
@@ -67,7 +65,6 @@ export function useScheduleGeneratorSettingsQuery(): UseQueryResult<
   return useQuery<ScheduleGeneratorSettingsData, Error>({
     queryKey: settingsQueryKeys.scheduleGenerator(),
     queryFn: fetchScheduleGeneratorSettings,
-    refetchInterval: SCHEDULE_REFETCH_MS,
   });
 }
 

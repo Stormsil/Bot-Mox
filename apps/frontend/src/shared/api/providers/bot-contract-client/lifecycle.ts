@@ -1,5 +1,5 @@
 import type { ApiSuccessEnvelope } from '../../apiClient';
-import { createRuntimeClient, resolveAuthorizationHeader, toApiClientError } from './runtime';
+import { createRuntimeClient, toApiClientError } from './runtime';
 import type { BotBanPayload, BotLifecycleTransitionStatus } from './types';
 
 export async function getBotLifecycleViaContract(
@@ -11,9 +11,7 @@ export async function getBotLifecycleViaContract(
   }
 
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsLifecycleGet({
-    headers: { authorization },
     params: { id },
   });
 
@@ -33,9 +31,7 @@ export async function getBotLifecycleTransitionsViaContract(
   }
 
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsLifecycleTransitions({
-    headers: { authorization },
     params: { id },
   });
 
@@ -59,9 +55,7 @@ export async function isBotBannedViaContract(
   }
 
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsLifecycleIsBanned({
-    headers: { authorization },
     params: { id },
   });
 
@@ -86,9 +80,7 @@ export async function transitionBotLifecycleViaContract(
   }
 
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsLifecycleTransition({
-    headers: { authorization },
     params: { id },
     body: { status },
   });
@@ -114,9 +106,7 @@ export async function banBotViaContract(
   }
 
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsLifecycleBan({
-    headers: { authorization },
     params: { id },
     body: payload,
   });
@@ -137,9 +127,7 @@ export async function unbanBotViaContract(
   }
 
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsLifecycleUnban({
-    headers: { authorization },
     params: { id },
     body: {},
   });

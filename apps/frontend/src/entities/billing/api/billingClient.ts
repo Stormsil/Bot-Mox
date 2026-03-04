@@ -41,29 +41,15 @@ export class BillingApiError extends Error {
   }
 }
 
-function readAuthToken(): string {
-  if (typeof window === 'undefined') {
-    return '';
-  }
-  try {
-    return String(localStorage.getItem('botmox.auth.token') || '').trim();
-  } catch {
-    return '';
-  }
-}
-
 async function requestBilling<T>(path: string, init: RequestInit): Promise<T> {
-  const token = readAuthToken();
   const headers = new Headers(init.headers || {});
   if (!headers.has('Accept')) {
     headers.set('Accept', 'application/json');
   }
-  if (token && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
 
   const response = await fetch(buildApiUrl(path), {
     ...init,
+    credentials: init.credentials ?? 'include',
     headers,
   });
 

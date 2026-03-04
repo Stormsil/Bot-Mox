@@ -50,7 +50,6 @@ type FinanceTab = 'summary' | 'transactions' | 'gold_price';
 type ProjectFilter = 'all' | 'wow_tbc' | 'wow_midnight';
 
 const FINANCE_PAGE_SIZE = 200;
-const FINANCE_REFETCH_INTERVAL_MS = 4_000;
 
 export const FinancePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<FinanceTab>('summary');
@@ -77,7 +76,6 @@ export const FinancePage: React.FC = () => {
     sorters: [{ field: 'date', order: 'desc' }],
     queryOptions: {
       enabled: isTransactionsTab,
-      refetchInterval: isTransactionsTab ? FINANCE_REFETCH_INTERVAL_MS : false,
     },
   });
   const createFinanceOperation = useCreate();
@@ -150,7 +148,6 @@ export const FinancePage: React.FC = () => {
 
   const financeSummaryAggregateQuery = useQuery({
     queryKey: ['finance', 'summary-aggregate', aggregateQuery],
-    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
     queryFn: async () => {
       const payload = await getFinanceSummaryViaContract(aggregateQuery);
       return payload.data;
@@ -158,7 +155,6 @@ export const FinancePage: React.FC = () => {
   });
   const financeBreakdownAggregateQuery = useQuery({
     queryKey: ['finance', 'breakdown-aggregate', aggregateQuery],
-    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
     queryFn: async () => {
       const payload = await getFinanceBreakdownViaContract(aggregateQuery);
       return payload.data;
@@ -166,7 +162,6 @@ export const FinancePage: React.FC = () => {
   });
   const financeTimeSeriesAggregateQuery = useQuery({
     queryKey: ['finance', 'time-series-aggregate', aggregateQuery],
-    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
     queryFn: async () => {
       const payload = await getFinanceTimeSeriesViaContract({
         ...aggregateQuery,
@@ -177,7 +172,6 @@ export const FinancePage: React.FC = () => {
   });
   const financeProjectPerformanceAggregateQuery = useQuery({
     queryKey: ['finance', 'project-performance-aggregate', aggregateQuery],
-    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
     queryFn: async () => {
       const payload = await getFinanceProjectPerformanceViaContract(aggregateQuery);
       return payload.data;
@@ -186,7 +180,6 @@ export const FinancePage: React.FC = () => {
   const financeGoldPriceHistoryQuery = useQuery({
     queryKey: ['finance', 'gold-price-history'],
     enabled: isSummaryTab,
-    refetchInterval: isSummaryTab ? FINANCE_REFETCH_INTERVAL_MS : false,
     queryFn: async () => {
       const payload = await getFinanceGoldPriceHistoryViaContract();
       return payload.data;

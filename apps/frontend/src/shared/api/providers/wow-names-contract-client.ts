@@ -1,9 +1,5 @@
 import type { ApiSuccessEnvelope } from '../apiClient';
-import {
-  createContractRuntimeClient,
-  resolveContractAuthorizationHeader,
-  toContractApiClientError,
-} from '../contracts/runtimeClient';
+import { createContractRuntimeClient, toContractApiClientError } from '../contracts/runtimeClient';
 
 interface WowNamesQuery {
   batches?: number;
@@ -21,9 +17,7 @@ export async function getWowNamesViaContract(
   query: WowNamesQuery,
 ): Promise<ApiSuccessEnvelope<WowNamesPayload>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.wowNamesGet({
-    headers: { authorization },
     query,
   });
 

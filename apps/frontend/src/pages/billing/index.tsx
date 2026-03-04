@@ -69,8 +69,6 @@ export const BillingPage: React.FC = () => {
   }, [tier]);
 
   const refreshIdentity = async (): Promise<void> => {
-    const token = String(localStorage.getItem('botmox.auth.token') || '').trim();
-    if (!token) return;
     const whoami = await fetchBillingWhoami();
     const payload = whoami || {};
     const identitySnapshot = {

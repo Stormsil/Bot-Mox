@@ -35,14 +35,10 @@ function statusToStepStatus(status: string): 'wait' | 'process' | 'finish' | 'er
 
 interface VMSetupProgressProps {
   vmUuid: string;
-  pollIntervalMs?: number;
 }
 
-export const VMSetupProgress: React.FC<VMSetupProgressProps> = ({
-  vmUuid,
-  pollIntervalMs = 5000,
-}) => {
-  const setupProgressQuery = useVmSetupProgressQuery(vmUuid, pollIntervalMs);
+export const VMSetupProgress: React.FC<VMSetupProgressProps> = ({ vmUuid }) => {
+  const setupProgressQuery = useVmSetupProgressQuery(vmUuid);
   const entries = setupProgressQuery.data || [];
 
   // Build step map from entries (latest status per step)

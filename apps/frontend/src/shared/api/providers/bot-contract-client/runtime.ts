@@ -1,12 +1,13 @@
 import type { BotRecord } from '../../../../entities/bot/model/types';
-
-export {
-  createContractRuntimeClient as createRuntimeClient,
-  resolveContractApiBaseUrl as resolveApiBaseUrl,
-  resolveContractAuthorizationHeader as resolveAuthorizationHeader,
-  resolveContractBearerToken as resolveBearerToken,
-  toContractApiClientError as toApiClientError,
+import {
+  createContractRuntimeClient,
+  resolveContractApiBaseUrl,
+  toContractApiClientError,
 } from '../../contracts/runtimeClient';
+
+export const createRuntimeClient = createContractRuntimeClient;
+export const resolveApiBaseUrl = resolveContractApiBaseUrl;
+export const toApiClientError = toContractApiClientError;
 
 export function toBotRecord(value: unknown): BotRecord | null {
   if (!value || typeof value !== 'object') return null;

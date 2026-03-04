@@ -1,9 +1,5 @@
 import type { ApiSuccessEnvelope } from '../apiClient';
-import {
-  createContractRuntimeClient,
-  resolveContractAuthorizationHeader,
-  toContractApiClientError,
-} from '../contracts/runtimeClient';
+import { createContractRuntimeClient, toContractApiClientError } from '../contracts/runtimeClient';
 
 export interface VmHardwareFingerprintMeta extends Record<string, unknown> {
   brand?: string;
@@ -69,9 +65,7 @@ export async function getVmHardwareFingerprintEnvelope(): Promise<
   ApiSuccessEnvelope<VmHardwareFingerprintPayload>
 > {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.vmHardwareFingerprint({
-    headers: { authorization },
     query: {},
   });
 

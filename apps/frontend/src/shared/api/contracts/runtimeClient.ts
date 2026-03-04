@@ -1,7 +1,7 @@
-import { createApiContractClient } from '@botmox/api-contract';
+import { apiContract } from '@botmox/api-contract';
+import { initClient } from '@ts-rest/core';
 import { API_BASE_URL } from '../../../config/env';
 import { ApiClientError } from '../apiClient';
-import { withAuthHeaders } from '../authFetch';
 
 const CONTRACT_ERROR_MESSAGE_BY_CODE: Record<string, string> = {
   AGENTS_STORAGE_UNAVAILABLE:
@@ -11,9 +11,30 @@ const CONTRACT_ERROR_MESSAGE_BY_CODE: Record<string, string> = {
   AGENT_OFFLINE: 'Agent is offline or not paired yet.',
 };
 
-let cachedContractRuntimeClient: ReturnType<typeof createApiContractClient> | null = null;
+let cachedContractRuntimeClient: ReturnType<typeof initContractRuntimeClient> | null = null;
 let cachedContractBaseUrl = '';
-let cachedContractToken = '';
+
+type ContractRuntimeClient = ReturnType<typeof initContractRuntimeClient>;
+
+type WithOptionalAuthorizationHeader<T> = T extends (args: infer TArgs) => infer TResult
+  ? TArgs extends { headers: infer THeaders }
+    ? (args: Omit<TArgs, 'headers'> & { headers?: THeaders }) => TResult
+    : T
+  : T;
+
+type RuntimeClientWithoutProviderAuthHeaders = {
+  [TKey in keyof ContractRuntimeClient]: WithOptionalAuthorizationHeader<
+    ContractRuntimeClient[TKey]
+  >;
+};
+
+function initContractRuntimeClient(baseUrl: string) {
+  return initClient(apiContract, {
+    baseUrl: baseUrl.replace(/\/+$/, ''),
+    credentials: 'include',
+    throwOnUnknownStatus: false,
+  });
+}
 
 export function resolveContractApiBaseUrl(): string {
   if (API_BASE_URL) {
@@ -27,47 +48,55 @@ export function resolveContractApiBaseUrl(): string {
   return 'http://localhost:3002';
 }
 
-export function resolveContractBearerToken(): string {
-  const authorization = withAuthHeaders().get('Authorization') || '';
-  return authorization.replace(/^Bearer\s+/i, '').trim();
-}
-
-export function resolveContractAuthorizationHeader(): string {
-  const token = resolveContractBearerToken();
-  if (!token) {
-    throw new ApiClientError('Missing auth token for contract request', {
-      status: 401,
-      code: 'MISSING_AUTH_TOKEN',
-    });
-  }
-
-  return `Bearer ${token}`;
-}
-
 export function getContractRuntimeClient() {
   const baseUrl = resolveContractApiBaseUrl();
-  const accessToken = resolveContractBearerToken();
 
-  if (
-    cachedContractRuntimeClient &&
-    cachedContractBaseUrl === baseUrl &&
-    cachedContractToken === accessToken
-  ) {
+  if (cachedContractRuntimeClient && cachedContractBaseUrl === baseUrl) {
     return cachedContractRuntimeClient;
   }
 
   cachedContractBaseUrl = baseUrl;
-  cachedContractToken = accessToken;
-  cachedContractRuntimeClient = createApiContractClient({
-    baseUrl,
-    accessToken,
-  });
+  cachedContractRuntimeClient = initContractRuntimeClient(baseUrl);
 
   return cachedContractRuntimeClient;
 }
 
-export function createContractRuntimeClient() {
-  return getContractRuntimeClient();
+function withRuntimeAuthorizationFallback(
+  client: ContractRuntimeClient,
+): RuntimeClientWithoutProviderAuthHeaders {
+  return new Proxy(client, {
+    get(target, property, receiver) {
+      const value = Reflect.get(target, property, receiver);
+      if (typeof value !== 'function') {
+        return value;
+      }
+
+      return (args: unknown) => {
+        if (!args || typeof args !== 'object' || Array.isArray(args)) {
+          return (value as (input: unknown) => unknown).call(target, args);
+        }
+
+        const sourceArgs = args as Record<string, unknown>;
+        const sourceHeaders = sourceArgs.headers;
+        const normalizedHeaders =
+          sourceHeaders && typeof sourceHeaders === 'object' && !Array.isArray(sourceHeaders)
+            ? (sourceHeaders as Record<string, unknown>)
+            : {};
+
+        return (value as (input: unknown) => unknown).call(target, {
+          ...sourceArgs,
+          headers: {
+            authorization: '',
+            ...normalizedHeaders,
+          },
+        });
+      };
+    },
+  }) as unknown as RuntimeClientWithoutProviderAuthHeaders;
+}
+
+export function createContractRuntimeClient(): RuntimeClientWithoutProviderAuthHeaders {
+  return withRuntimeAuthorizationFallback(getContractRuntimeClient());
 }
 
 export function toContractApiClientError(
@@ -92,3 +121,5 @@ export function toContractApiClientError(
     details: payload.details ?? body,
   });
 }
+
+export * from '../providers/bot-contract-client/runtime';

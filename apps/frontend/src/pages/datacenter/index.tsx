@@ -26,8 +26,6 @@ import { cx } from './datacenterUi';
 import { buildProjectStats, FINANCE_WINDOW_DAYS, MS_PER_DAY } from './page-helpers';
 import { useDatacenterCollapsedSections, useDatacenterCurrentTime } from './useDatacenterState';
 
-const FINANCE_REFETCH_INTERVAL_MS = 4_000;
-const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 export const DatacenterPage: React.FC = () => {
@@ -37,17 +35,14 @@ export const DatacenterPage: React.FC = () => {
   const licensesList = useList<BotLicense>({
     resource: 'licenses',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const proxiesList = useList<ProxyResource>({
     resource: 'proxies',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const subscriptionsList = useList<Subscription>({
     resource: 'subscriptions',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const notesIndexQuery = useNotesIndexQuery();
 
@@ -62,7 +57,6 @@ export const DatacenterPage: React.FC = () => {
   );
   const financeSummaryAggregateQuery = useQuery({
     queryKey: ['datacenter', 'finance', 'summary-aggregate', financeAggregateQuery],
-    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
     queryFn: async () => {
       const payload = await getFinanceSummaryViaContract(financeAggregateQuery);
       return payload.data;
@@ -70,7 +64,6 @@ export const DatacenterPage: React.FC = () => {
   });
   const financeProjectPerformanceAggregateQuery = useQuery({
     queryKey: ['datacenter', 'finance', 'project-performance-aggregate', financeAggregateQuery],
-    refetchInterval: FINANCE_REFETCH_INTERVAL_MS,
     queryFn: async () => {
       const payload = await getFinanceProjectPerformanceViaContract(financeAggregateQuery);
       return payload.data;

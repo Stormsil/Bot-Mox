@@ -21,8 +21,9 @@ export function useProxmoxTargetsQuery(): UseQueryResult<ProxmoxTargetInfo[], Er
 
 export function useVmSetupProgressQuery(
   vmUuid: string,
-  pollIntervalMs = 5_000,
+  legacyArg?: number,
 ): UseQueryResult<VmSetupProgressEntry[], Error> {
+  void legacyArg;
   const normalizedVmUuid = String(vmUuid || '').trim();
 
   return useQuery<VmSetupProgressEntry[], Error>({
@@ -32,6 +33,5 @@ export function useVmSetupProgressQuery(
       const envelope = await getVmSetupProgress(normalizedVmUuid);
       return envelope.data || [];
     },
-    refetchInterval: pollIntervalMs,
   });
 }

@@ -31,14 +31,12 @@ import {
 } from './license';
 import styles from './license/license.module.css';
 
-const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 export const BotLicense: React.FC<BotLicenseProps> = ({ bot }) => {
   const licensesList = useList<BotLicenseRecord>({
     resource: 'licenses',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const createLicenseModal = useModalForm<BotLicenseRecord, HttpError, BotLicenseMutationPayload>({
     resource: 'licenses',

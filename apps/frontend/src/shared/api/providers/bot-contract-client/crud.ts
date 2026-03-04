@@ -1,12 +1,7 @@
 import type { BotRecord } from '../../../../entities/bot/model/types';
 import type { ApiSuccessEnvelope } from '../../apiClient';
 import { ApiClientError } from '../../apiClient';
-import {
-  createRuntimeClient,
-  resolveAuthorizationHeader,
-  toApiClientError,
-  toBotRecord,
-} from './runtime';
+import { createRuntimeClient, toApiClientError, toBotRecord } from './runtime';
 import { type BotsListQuery, MAX_PAGE_COUNT, PAGE_LIMIT } from './types';
 
 function shouldSoftFailBotList(error: unknown): boolean {
@@ -32,9 +27,7 @@ export async function listBotsViaContract(
   query: BotsListQuery,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>[]>> {
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsList({
-    headers: { authorization },
     query,
   });
 
@@ -54,9 +47,7 @@ export async function getBotViaContract(
   }
 
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsGet({
-    headers: { authorization },
     params: { id },
   });
 
@@ -71,9 +62,7 @@ export async function createBotViaContract(
   payload: Record<string, unknown>,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsCreate({
-    headers: { authorization },
     body: payload,
   });
 
@@ -125,9 +114,7 @@ export async function fetchBotByIdViaContract(botId: string): Promise<BotRecord 
   if (!id) return null;
 
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsGet({
-    headers: { authorization },
     params: { id },
   });
 
@@ -152,9 +139,7 @@ export async function patchBotViaContract(
   }
 
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsPatch({
-    headers: { authorization },
     params: { id },
     body: payload,
   });
@@ -175,9 +160,7 @@ export async function deleteBotViaContract(
   }
 
   const client = createRuntimeClient();
-  const authorization = resolveAuthorizationHeader();
   const response = await client.botsDelete({
-    headers: { authorization },
     params: { id },
   });
 

@@ -6,13 +6,10 @@ import {
 import type { BotRecord } from '../model/types';
 import { botQueryKeys } from './botQueryKeys';
 
-const BOT_REFETCH_INTERVAL_MS = 5_000;
-
 export function useBotsListQuery(): UseQueryResult<BotRecord[], Error> {
   return useQuery<BotRecord[], Error>({
     queryKey: botQueryKeys.list('all'),
     queryFn: fetchBotsListViaContract,
-    refetchInterval: BOT_REFETCH_INTERVAL_MS,
   });
 }
 
@@ -20,7 +17,6 @@ export function useBotsMapQuery(): UseQueryResult<Record<string, BotRecord>, Err
   return useQuery<BotRecord[], Error, Record<string, BotRecord>>({
     queryKey: botQueryKeys.list('all'),
     queryFn: fetchBotsListViaContract,
-    refetchInterval: BOT_REFETCH_INTERVAL_MS,
     select: (list) =>
       list.reduce<Record<string, BotRecord>>((acc, bot) => {
         acc[bot.id] = bot;
@@ -35,6 +31,5 @@ export function useBotByIdQuery(botId?: string): UseQueryResult<BotRecord | null
     queryKey: botQueryKeys.byId(id || 'unknown'),
     queryFn: () => fetchBotByIdViaContract(id),
     enabled: id.length > 0,
-    refetchInterval: BOT_REFETCH_INTERVAL_MS,
   });
 }

@@ -35,7 +35,6 @@ import {
   withBotDetails,
 } from './page';
 
-const BOT_POLL_MS = 5_000;
 const LARGE_PAGE_SIZE = 5_000;
 const ALLOWED_STATUS_FILTERS = new Set(['all', 'active', 'expired', 'revoked']);
 const ALLOWED_TYPE_FILTERS = new Set(['all', 'sin', 'other']);
@@ -110,9 +109,6 @@ export const LicensesPage: React.FC = () => {
       mode: 'server',
       currentPage: 1,
       pageSize: LARGE_PAGE_SIZE,
-    },
-    queryOptions: {
-      refetchInterval: BOT_POLL_MS,
     },
   });
   const createLicenseModal = useModalForm<BotLicense, HttpError, BotLicenseMutationPayload>({

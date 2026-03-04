@@ -1,10 +1,6 @@
 import type { IPQSResponse } from '../../../entities/resources/model/types';
 import type { ApiSuccessEnvelope } from '../apiClient';
-import {
-  createContractRuntimeClient,
-  resolveContractAuthorizationHeader,
-  toContractApiClientError,
-} from '../contracts/runtimeClient';
+import { createContractRuntimeClient, toContractApiClientError } from '../contracts/runtimeClient';
 
 interface IpqsStatusPayload {
   enabled?: unknown;
@@ -24,10 +20,7 @@ interface IpqsBatchPayload {
 
 export async function getIpqsStatusViaContract(): Promise<ApiSuccessEnvelope<IpqsStatusPayload>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
-  const response = await client.ipqsStatusGet({
-    headers: { authorization },
-  });
+  const response = await client.ipqsStatusGet({});
 
   if (response.status !== 200) {
     throw toContractApiClientError('/api/v1/ipqs/status', response.status, response.body);
@@ -38,9 +31,7 @@ export async function getIpqsStatusViaContract(): Promise<ApiSuccessEnvelope<Ipq
 
 export async function checkIpqsViaContract(ip: string): Promise<ApiSuccessEnvelope<IPQSResponse>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.ipqsCheck({
-    headers: { authorization },
     body: { ip },
   });
 
@@ -55,9 +46,7 @@ export async function checkIpqsBatchViaContract(
   ips: string[],
 ): Promise<ApiSuccessEnvelope<IpqsBatchPayload>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.ipqsCheckBatch({
-    headers: { authorization },
     body: { ips },
   });
 

@@ -1,9 +1,5 @@
 import type { ApiSuccessEnvelope } from '../apiClient';
-import {
-  createContractRuntimeClient,
-  resolveContractAuthorizationHeader,
-  toContractApiClientError,
-} from '../contracts/runtimeClient';
+import { createContractRuntimeClient, toContractApiClientError } from '../contracts/runtimeClient';
 
 export type VmOpsDispatchTarget = 'proxmox' | 'syncthing';
 
@@ -25,9 +21,7 @@ export async function listAgentsViaContract(
   query: ContractAgentListQuery,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>[]>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.agentsList({
-    headers: { authorization },
     query,
   });
 
@@ -42,9 +36,7 @@ export async function createAgentPairingViaContract(
   payload: ContractAgentPairingPayload,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.agentsCreatePairing({
-    headers: { authorization },
     body: payload,
   });
 
@@ -61,11 +53,9 @@ export async function dispatchVmOpsViaContract(
   payload: ContractVmOpsDispatchPayload,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const endpoint =
     target === 'syncthing' ? client.vmOpsDispatchSyncthing : client.vmOpsDispatchProxmox;
   const response = await endpoint({
-    headers: { authorization },
     params: { action },
     body: payload,
   });
@@ -85,9 +75,7 @@ export async function getVmOpsCommandViaContract(
   commandId: string,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.vmOpsCommandById({
-    headers: { authorization },
     params: { id: commandId },
   });
 

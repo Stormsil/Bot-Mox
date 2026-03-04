@@ -39,7 +39,6 @@ import type {
   SummaryResourcesTab,
 } from './summary/types';
 
-const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 export const BotSummaryWidget: React.FC<BotSummaryProps> = ({ bot }) => {
@@ -48,17 +47,14 @@ export const BotSummaryWidget: React.FC<BotSummaryProps> = ({ bot }) => {
   const licensesList = useList<BotLicense>({
     resource: 'licenses',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const proxiesList = useList<ProxyResource>({
     resource: 'proxies',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const subscriptionsList = useList<Subscription>({
     resource: 'subscriptions',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const [searchParams, setSearchParams] = useSearchParams();
 

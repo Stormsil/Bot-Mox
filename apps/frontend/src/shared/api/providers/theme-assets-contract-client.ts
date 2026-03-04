@@ -1,9 +1,5 @@
 import type { ApiSuccessEnvelope } from '../apiClient';
-import {
-  createContractRuntimeClient,
-  resolveContractAuthorizationHeader,
-  toContractApiClientError,
-} from '../contracts/runtimeClient';
+import { createContractRuntimeClient, toContractApiClientError } from '../contracts/runtimeClient';
 
 export type ThemeAssetMimeType = 'image/jpeg' | 'image/png' | 'image/webp';
 
@@ -50,10 +46,7 @@ export async function listThemeAssetsViaContract(): Promise<
   ApiSuccessEnvelope<ThemeAssetsListPayload>
 > {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
-  const response = await client.themeAssetsList({
-    headers: { authorization },
-  });
+  const response = await client.themeAssetsList({});
 
   if (response.status !== 200) {
     throw toContractApiClientError('/api/v1/theme-assets', response.status, response.body);
@@ -66,9 +59,7 @@ export async function createThemeAssetPresignUploadViaContract(
   payload: ThemeAssetPresignPayload,
 ): Promise<ApiSuccessEnvelope<ThemeAssetPresignResponsePayload>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.themeAssetsPresignUpload({
-    headers: { authorization },
     body: payload,
   });
 
@@ -87,9 +78,7 @@ export async function completeThemeAssetViaContract(
   payload: ThemeAssetCompletePayload,
 ): Promise<ApiSuccessEnvelope<ThemeAssetPayload>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.themeAssetsComplete({
-    headers: { authorization },
     body: payload,
   });
 
@@ -104,9 +93,7 @@ export async function deleteThemeAssetViaContract(
   assetId: string,
 ): Promise<ApiSuccessEnvelope<{ id: string; status: 'deleted' }>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.themeAssetsDelete({
-    headers: { authorization },
     params: { id: assetId },
   });
 

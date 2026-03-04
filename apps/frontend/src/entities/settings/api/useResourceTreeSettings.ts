@@ -12,8 +12,6 @@ import {
 } from './resourceTreeFacade';
 import { settingsQueryKeys } from './settingsQueryKeys';
 
-const RESOURCE_TREE_REFETCH_MS = 15_000;
-
 export function useResourceTreeSettingsQuery(): UseQueryResult<
   ResourceTreeSettingsPayload | null,
   Error
@@ -21,7 +19,6 @@ export function useResourceTreeSettingsQuery(): UseQueryResult<
   return useQuery<ResourceTreeSettingsPayload | null, Error>({
     queryKey: settingsQueryKeys.resourceTree(),
     queryFn: fetchResourceTreeSettings,
-    refetchInterval: RESOURCE_TREE_REFETCH_MS,
   });
 }
 

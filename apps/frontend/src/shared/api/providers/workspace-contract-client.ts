@@ -1,9 +1,5 @@
 import type { ApiSuccessEnvelope } from '../apiClient';
-import {
-  createContractRuntimeClient,
-  resolveContractAuthorizationHeader,
-  toContractApiClientError,
-} from '../contracts/runtimeClient';
+import { createContractRuntimeClient, toContractApiClientError } from '../contracts/runtimeClient';
 
 interface WorkspaceListQuery {
   page?: number;
@@ -20,20 +16,16 @@ async function listWorkspaceViaContract(
   query: WorkspaceListQuery,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>[]>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response =
     kind === 'notes'
       ? await client.workspaceNotesList({
-          headers: { authorization },
           query,
         })
       : kind === 'calendar'
         ? await client.workspaceCalendarList({
-            headers: { authorization },
             query,
           })
         : await client.workspaceKanbanList({
-            headers: { authorization },
             query,
           });
 
@@ -49,20 +41,16 @@ async function getWorkspaceViaContract(
   id: string,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response =
     kind === 'notes'
       ? await client.workspaceNotesGet({
-          headers: { authorization },
           params: { id },
         })
       : kind === 'calendar'
         ? await client.workspaceCalendarGet({
-            headers: { authorization },
             params: { id },
           })
         : await client.workspaceKanbanGet({
-            headers: { authorization },
             params: { id },
           });
 
@@ -82,20 +70,16 @@ async function createWorkspaceViaContract(
   payload: Record<string, unknown>,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response =
     kind === 'notes'
       ? await client.workspaceNotesCreate({
-          headers: { authorization },
           body: payload,
         })
       : kind === 'calendar'
         ? await client.workspaceCalendarCreate({
-            headers: { authorization },
             body: payload,
           })
         : await client.workspaceKanbanCreate({
-            headers: { authorization },
             body: payload,
           });
 
@@ -112,22 +96,18 @@ async function patchWorkspaceViaContract(
   payload: Record<string, unknown>,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response =
     kind === 'notes'
       ? await client.workspaceNotesPatch({
-          headers: { authorization },
           params: { id },
           body: payload,
         })
       : kind === 'calendar'
         ? await client.workspaceCalendarPatch({
-            headers: { authorization },
             params: { id },
             body: payload,
           })
         : await client.workspaceKanbanPatch({
-            headers: { authorization },
             params: { id },
             body: payload,
           });
@@ -148,20 +128,16 @@ async function deleteWorkspaceViaContract(
   id: string,
 ): Promise<ApiSuccessEnvelope<{ id: string; deleted: boolean }>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response =
     kind === 'notes'
       ? await client.workspaceNotesDelete({
-          headers: { authorization },
           params: { id },
         })
       : kind === 'calendar'
         ? await client.workspaceCalendarDelete({
-            headers: { authorization },
             params: { id },
           })
         : await client.workspaceKanbanDelete({
-            headers: { authorization },
             params: { id },
           });
 

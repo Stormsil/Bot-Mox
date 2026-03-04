@@ -40,7 +40,6 @@ import { formatProjectTitle, parseStatusFilterFromParams } from './utils';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 export const ProjectPage: React.FC = () => {
@@ -52,17 +51,14 @@ export const ProjectPage: React.FC = () => {
   const proxiesList = useList<ProxyResource>({
     resource: 'proxies',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const subscriptionsList = useList<Subscription>({
     resource: 'subscriptions',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const licensesList = useList<BotLicense>({
     resource: 'licenses',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const deleteBotMutation = useDelete();
   const subscriptionSettingsQuery = useSubscriptionSettingsQuery();

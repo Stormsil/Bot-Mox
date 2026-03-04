@@ -1,9 +1,5 @@
 import type { ApiSuccessEnvelope } from '../apiClient';
-import {
-  createContractRuntimeClient,
-  resolveContractAuthorizationHeader,
-  toContractApiClientError,
-} from '../contracts/runtimeClient';
+import { createContractRuntimeClient, toContractApiClientError } from '../contracts/runtimeClient';
 
 export type ContractResourceKind = 'licenses' | 'proxies' | 'subscriptions';
 
@@ -25,10 +21,8 @@ export async function listResourcesViaContract(
   query: ResourceListQuery,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>[]>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.resourcesList({
     params: { kind },
-    headers: { authorization },
     query,
   });
 
@@ -52,10 +46,8 @@ export async function getResourceViaContract(
   id: string,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.resourcesGet({
     params: { kind, id },
-    headers: { authorization },
   });
 
   if (response.status !== 200) {
@@ -74,10 +66,8 @@ export async function createResourceViaContract(
   payload: Record<string, unknown>,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.resourcesCreate({
     params: { kind },
-    headers: { authorization },
     body: payload,
   });
 
@@ -94,10 +84,8 @@ export async function updateResourceViaContract(
   payload: Record<string, unknown>,
 ): Promise<ApiSuccessEnvelope<Record<string, unknown>>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.resourcesUpdate({
     params: { kind, id },
-    headers: { authorization },
     body: payload,
   });
 
@@ -117,10 +105,8 @@ export async function deleteResourceViaContract(
   id: string,
 ): Promise<ApiSuccessEnvelope<{ id: string; deleted: boolean }>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.resourcesDelete({
     params: { kind, id },
-    headers: { authorization },
   });
 
   if (response.status !== 200) {

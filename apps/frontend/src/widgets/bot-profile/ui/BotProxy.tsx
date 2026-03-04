@@ -30,7 +30,6 @@ import {
 } from './proxy';
 import styles from './proxy/proxy.module.css';
 
-const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
@@ -61,7 +60,6 @@ export const BotProxy: React.FC<BotProxyProps> = ({ bot }) => {
   const proxiesList = useList<ProxyResource>({
     resource: 'proxies',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const proxies = proxiesList.result.data || [];
   const isProxiesLoading = proxiesList.query.isLoading;

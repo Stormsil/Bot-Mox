@@ -12,11 +12,7 @@ import {
   financeTimeSeriesSchema,
 } from '@botmox/api-contract';
 import { ApiClientError, type ApiSuccessEnvelope } from '../apiClient';
-import {
-  createContractRuntimeClient,
-  resolveContractAuthorizationHeader,
-  toContractApiClientError,
-} from '../contracts/runtimeClient';
+import { createContractRuntimeClient, toContractApiClientError } from '../contracts/runtimeClient';
 
 interface FinanceListQuery {
   page?: number;
@@ -68,9 +64,7 @@ export async function listFinanceOperationsViaContract(
 ): Promise<ApiSuccessEnvelope<FinanceOperationContractRecord[]>> {
   try {
     const client = createContractRuntimeClient();
-    const authorization = resolveContractAuthorizationHeader();
     const response = await client.financeOperationsList({
-      headers: { authorization },
       query,
     });
 
@@ -99,9 +93,7 @@ export async function getFinanceOperationViaContract(
   id: string,
 ): Promise<ApiSuccessEnvelope<FinanceOperationContractRecord>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.financeOperationsGet({
-    headers: { authorization },
     params: { id },
   });
 
@@ -124,10 +116,8 @@ export async function createFinanceOperationViaContract(
   payload: unknown,
 ): Promise<ApiSuccessEnvelope<FinanceOperationContractRecord>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const body = financeOperationCreateSchema.parse(payload);
   const response = await client.financeOperationsCreate({
-    headers: { authorization },
     body,
   });
 
@@ -147,10 +137,8 @@ export async function patchFinanceOperationViaContract(
   payload: unknown,
 ): Promise<ApiSuccessEnvelope<FinanceOperationContractRecord>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const body = financeOperationPatchSchema.parse(payload);
   const response = await client.financeOperationsPatch({
-    headers: { authorization },
     params: { id },
     body,
   });
@@ -174,9 +162,7 @@ export async function deleteFinanceOperationViaContract(
   id: string,
 ): Promise<ApiSuccessEnvelope<{ id: string; deleted: boolean }>> {
   const client = createContractRuntimeClient();
-  const authorization = resolveContractAuthorizationHeader();
   const response = await client.financeOperationsDelete({
-    headers: { authorization },
     params: { id },
   });
 
@@ -196,10 +182,7 @@ export async function getFinanceDailyStatsViaContract(): Promise<
 > {
   try {
     const client = createContractRuntimeClient();
-    const authorization = resolveContractAuthorizationHeader();
-    const response = await client.financeDailyStats({
-      headers: { authorization },
-    });
+    const response = await client.financeDailyStats({});
 
     if (response.status !== 200) {
       throw toContractApiClientError('/api/v1/finance/daily-stats', response.status, response.body);
@@ -226,10 +209,7 @@ export async function getFinanceGoldPriceHistoryViaContract(): Promise<
 > {
   try {
     const client = createContractRuntimeClient();
-    const authorization = resolveContractAuthorizationHeader();
-    const response = await client.financeGoldPriceHistory({
-      headers: { authorization },
-    });
+    const response = await client.financeGoldPriceHistory({});
 
     if (response.status !== 200) {
       throw toContractApiClientError(
@@ -260,10 +240,8 @@ export async function getFinanceSummaryViaContract(
 ): Promise<ApiSuccessEnvelope<FinanceSummaryContractRecord>> {
   try {
     const client = createContractRuntimeClient();
-    const authorization = resolveContractAuthorizationHeader();
     const parsedQuery = financeAggregateQuerySchema.parse(query || {});
     const response = await client.financeSummary({
-      headers: { authorization },
       query: parsedQuery,
     });
 
@@ -303,10 +281,8 @@ export async function getFinanceBreakdownViaContract(
 ): Promise<ApiSuccessEnvelope<FinanceBreakdownContractRecord>> {
   try {
     const client = createContractRuntimeClient();
-    const authorization = resolveContractAuthorizationHeader();
     const parsedQuery = financeAggregateQuerySchema.parse(query || {});
     const response = await client.financeBreakdown({
-      headers: { authorization },
       query: parsedQuery,
     });
 
@@ -410,10 +386,8 @@ export async function getFinanceTimeSeriesViaContract(
 ): Promise<ApiSuccessEnvelope<FinanceTimeSeriesContractRecord>> {
   try {
     const client = createContractRuntimeClient();
-    const authorization = resolveContractAuthorizationHeader();
     const parsedQuery = financeTimeSeriesQuerySchema.parse(query || {});
     const response = await client.financeTimeSeries({
-      headers: { authorization },
       query: parsedQuery,
     });
 

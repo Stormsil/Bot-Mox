@@ -44,7 +44,6 @@ import {
 } from './proxiesTableFilters';
 import { buildProxyColumns, type ProxyWithBot } from './proxyColumns';
 
-const BOT_POLL_MS = 5_000;
 const LARGE_PAGE_SIZE = 5_000;
 const { Title, Text } = Typography;
 
@@ -73,9 +72,6 @@ export const ProxiesPage: React.FC = () => {
       mode: 'server',
       currentPage: 1,
       pageSize: LARGE_PAGE_SIZE,
-    },
-    queryOptions: {
-      refetchInterval: BOT_POLL_MS,
     },
   });
   const updateProxy = useUpdate<ProxyResource, HttpError, ProxyMutationPatch>();

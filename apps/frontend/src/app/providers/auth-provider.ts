@@ -1,13 +1,7 @@
 import type { AuthProvider } from '@refinedev/core';
-import dayjs from 'dayjs';
-import { apiRequest } from '../../shared/api/apiClient';
-import { hasSupabaseAuth, supabase } from '../../shared/lib/utils/supabase';
+import { ApiClientError, apiRequest } from '../../shared/api/apiClient';
 
-const AUTH_TOKEN_KEY = 'botmox.auth.token';
 const AUTH_IDENTITY_KEY = 'botmox.auth.identity';
-const AUTH_VERIFY_TS_KEY = 'botmox.auth.verify_at';
-const VERIFY_TTL_MS = 5 * 60 * 1000;
-const verifyInFlightByToken = new Map<string, Promise<StoredIdentity | null>>();
 
 interface StoredIdentity {
   id: string;
@@ -26,16 +20,12 @@ interface StoredIdentity {
   };
 }
 
-function saveSession(token: string, identity: StoredIdentity): void {
-  localStorage.setItem(AUTH_TOKEN_KEY, token);
+function saveIdentity(identity: StoredIdentity): void {
   localStorage.setItem(AUTH_IDENTITY_KEY, JSON.stringify(identity));
-  localStorage.setItem(AUTH_VERIFY_TS_KEY, String(Date.now()));
 }
 
 function clearSession(): void {
-  localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_IDENTITY_KEY);
-  localStorage.removeItem(AUTH_VERIFY_TS_KEY);
 }
 
 function readIdentity(): StoredIdentity | null {
@@ -48,134 +38,71 @@ function readIdentity(): StoredIdentity | null {
   }
 }
 
-async function verifyTokenWithBackend(token: string): Promise<StoredIdentity | null> {
-  const normalizedToken = String(token || '').trim();
-  if (!normalizedToken) {
-    return null;
-  }
+function mapWhoamiToIdentity(data: {
+  uid?: unknown;
+  email?: unknown;
+  roles?: unknown;
+  access?: {
+    tenantType?: unknown;
+    accessTier?: unknown;
+    premiumActive?: unknown;
+    writeAccess?: unknown;
+    lifetimePremium?: unknown;
+    trialUsed?: unknown;
+    trialEndsAt?: unknown;
+    premiumUntil?: unknown;
+  };
+}): StoredIdentity {
+  return {
+    id: String(data.uid || 'unknown'),
+    name: String(data.email || data.uid || 'User'),
+    email: String(data.email || ''),
+    roles: Array.isArray(data.roles) ? data.roles : [],
+    access:
+      data.access && typeof data.access === 'object'
+        ? {
+            tenant_type: 'user' as const,
+            access_tier: String(data.access.accessTier || '')
+              .trim()
+              .toLowerCase() as 'free' | 'trial' | 'premium' | 'admin',
+            premium_active: Boolean(data.access.premiumActive),
+            write_access: Boolean(data.access.writeAccess),
+            lifetime_premium: Boolean(data.access.lifetimePremium),
+            trial_used: Boolean(data.access.trialUsed),
+            trial_ends_at: String(data.access.trialEndsAt || '').trim() || null,
+            premium_until: String(data.access.premiumUntil || '').trim() || null,
+          }
+        : undefined,
+  };
+}
 
-  const pending = verifyInFlightByToken.get(normalizedToken);
-  if (pending) {
-    return pending;
-  }
-
-  const request = (async () => {
-    try {
-      const payload = await apiRequest<{
-        uid?: unknown;
-        email?: unknown;
-        roles?: unknown;
-        access?: {
-          tenantType?: unknown;
-          accessTier?: unknown;
-          premiumActive?: unknown;
-          writeAccess?: unknown;
-          lifetimePremium?: unknown;
-          trialUsed?: unknown;
-          trialEndsAt?: unknown;
-          premiumUntil?: unknown;
-        };
-      }>('/api/v1/auth/whoami', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${normalizedToken}`,
-        },
-      });
-
-      const data = payload.data || {};
-      return {
-        id: String(data.uid || 'unknown'),
-        name: String(data.email || data.uid || 'User'),
-        email: String(data.email || ''),
-        roles: Array.isArray(data.roles) ? data.roles : [],
-        access:
-          data.access && typeof data.access === 'object'
-            ? {
-                tenant_type: 'user' as const,
-                access_tier: String(data.access.accessTier || '')
-                  .trim()
-                  .toLowerCase() as 'free' | 'trial' | 'premium' | 'admin',
-                premium_active: Boolean(data.access.premiumActive),
-                write_access: Boolean(data.access.writeAccess),
-                lifetime_premium: Boolean(data.access.lifetimePremium),
-                trial_used: Boolean(data.access.trialUsed),
-                trial_ends_at: String(data.access.trialEndsAt || '').trim() || null,
-                premium_until: String(data.access.premiumUntil || '').trim() || null,
-              }
-            : undefined,
+async function fetchWhoamiIdentity(): Promise<StoredIdentity | null> {
+  try {
+    const payload = await apiRequest<{
+      uid?: unknown;
+      email?: unknown;
+      roles?: unknown;
+      access?: {
+        tenantType?: unknown;
+        accessTier?: unknown;
+        premiumActive?: unknown;
+        writeAccess?: unknown;
+        lifetimePremium?: unknown;
+        trialUsed?: unknown;
+        trialEndsAt?: unknown;
+        premiumUntil?: unknown;
       };
-    } catch {
+    }>('/api/v1/auth/whoami', {
+      method: 'GET',
+    });
+
+    return mapWhoamiToIdentity(payload.data || {});
+  } catch (error) {
+    if (error instanceof ApiClientError && error.status === 401) {
       return null;
     }
-  })();
-
-  verifyInFlightByToken.set(normalizedToken, request);
-
-  try {
-    return await request;
-  } finally {
-    verifyInFlightByToken.delete(normalizedToken);
+    throw error;
   }
-}
-
-async function ensureSessionValid(): Promise<boolean> {
-  const token = localStorage.getItem(AUTH_TOKEN_KEY);
-  if (!token) return false;
-
-  const lastVerify = Number(localStorage.getItem(AUTH_VERIFY_TS_KEY) || 0);
-  const stillFresh =
-    Number.isFinite(lastVerify) && dayjs().diff(lastVerify, 'millisecond') < VERIFY_TTL_MS;
-  if (stillFresh) return true;
-
-  const identity = await verifyTokenWithBackend(token);
-  if (!identity) {
-    clearSession();
-    return false;
-  }
-
-  saveSession(token, identity);
-  return true;
-}
-
-async function ensureSupabaseSessionValid(): Promise<boolean> {
-  if (!hasSupabaseAuth || !supabase) {
-    return false;
-  }
-
-  const sessionResult = await supabase.auth.getSession().catch(() => null);
-  const session = sessionResult?.data?.session || null;
-
-  if (!session?.access_token) {
-    return false;
-  }
-
-  const cachedToken = String(localStorage.getItem(AUTH_TOKEN_KEY) || '');
-  const lastVerify = Number(localStorage.getItem(AUTH_VERIFY_TS_KEY) || 0);
-  const stillFresh =
-    Number.isFinite(lastVerify) && dayjs().diff(lastVerify, 'millisecond') < VERIFY_TTL_MS;
-  if (stillFresh && cachedToken && cachedToken === session.access_token && readIdentity()) {
-    return true;
-  }
-
-  const verified = await verifyTokenWithBackend(session.access_token);
-  if (verified) {
-    saveSession(session.access_token, verified);
-    return true;
-  }
-
-  const refreshed = await supabase.auth.refreshSession().catch(() => null);
-  const refreshedSession = refreshed?.data?.session || null;
-  if (!refreshedSession?.access_token) {
-    return false;
-  }
-
-  const verifiedAfterRefresh = await verifyTokenWithBackend(refreshedSession.access_token);
-  if (!verifiedAfterRefresh) {
-    return false;
-  }
-
-  saveSession(refreshedSession.access_token, verifiedAfterRefresh);
-  return true;
 }
 
 export const authProvider: AuthProvider = {
@@ -201,7 +128,6 @@ export const authProvider: AuthProvider = {
     try {
       const route = mode === 'signup' ? '/api/v1/auth/signup' : '/api/v1/auth/signin';
       const response = await apiRequest<{
-        access_token?: unknown;
         uid?: unknown;
         email?: unknown;
         access?: unknown;
@@ -215,29 +141,29 @@ export const authProvider: AuthProvider = {
           password,
         }),
       });
-      const token = String(response.data?.access_token || '').trim();
-      if (!token) {
+      if (!response.success) {
         return {
           success: false,
           error: {
             name: 'LoginError',
-            message: 'Backend did not return access token',
+            message: 'Authentication failed',
           },
         };
       }
 
-      const verifiedIdentity = await verifyTokenWithBackend(token);
-      if (!verifiedIdentity) {
+      const identity = await fetchWhoamiIdentity();
+      if (!identity) {
+        clearSession();
         return {
           success: false,
           error: {
-            name: 'TokenVerificationFailed',
-            message: 'Backend rejected Supabase token',
+            name: 'LoginError',
+            message: 'Authentication session was not established',
           },
         };
       }
 
-      saveSession(token, verifiedIdentity);
+      saveIdentity(identity);
 
       return {
         success: true,
@@ -256,19 +182,15 @@ export const authProvider: AuthProvider = {
   },
 
   logout: async () => {
-    clearSession();
-
-    if (supabase) {
-      try {
-        await supabase.auth.signOut({ scope: 'local' });
-      } catch {
-        try {
-          await supabase.auth.signOut();
-        } catch {
-          // Supabase session may already be invalid, or global logout may be denied.
-        }
-      }
+    try {
+      await apiRequest<null>('/api/v1/auth/logout', {
+        method: 'POST',
+      });
+    } catch {
+      // Local state is still cleared even if server session is already invalid.
     }
+
+    clearSession();
 
     return {
       success: true,
@@ -277,19 +199,35 @@ export const authProvider: AuthProvider = {
   },
 
   check: async () => {
-    const isValid = (await ensureSessionValid()) || (await ensureSupabaseSessionValid());
+    try {
+      const identity = await fetchWhoamiIdentity();
+      if (identity) {
+        saveIdentity(identity);
+        return {
+          authenticated: true,
+        };
+      }
 
-    if (isValid) {
+      clearSession();
       return {
-        authenticated: true,
+        authenticated: false,
+        redirectTo: '/login',
+        logout: true,
+      };
+    } catch (error) {
+      if (error instanceof ApiClientError && error.status === 401) {
+        clearSession();
+        return {
+          authenticated: false,
+          redirectTo: '/login',
+          logout: true,
+        };
+      }
+
+      return {
+        authenticated: false,
       };
     }
-
-    return {
-      authenticated: false,
-      redirectTo: '/login',
-      logout: true,
-    };
   },
 
   getPermissions: async () => {

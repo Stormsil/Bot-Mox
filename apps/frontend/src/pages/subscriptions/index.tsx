@@ -55,7 +55,6 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const STATS_COLLAPSED_KEY = 'subscriptionsStatsCollapsed';
 
-const BOT_POLL_MS = 5_000;
 const LARGE_PAGE_SIZE = 5_000;
 
 export const SubscriptionsPage: React.FC = () => {
@@ -67,9 +66,6 @@ export const SubscriptionsPage: React.FC = () => {
       mode: 'server',
       currentPage: 1,
       pageSize: LARGE_PAGE_SIZE,
-    },
-    queryOptions: {
-      refetchInterval: BOT_POLL_MS,
     },
   });
   const subscriptionsTable = useTable<Subscription>({

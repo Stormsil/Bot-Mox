@@ -35,7 +35,6 @@ import {
 import styles from './subscription/subscription.module.css';
 
 const { Text } = Typography;
-const RESOURCE_REFETCH_INTERVAL_MS = 7_000;
 const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 function parseDateToTimestamp(dateString: string): number {
@@ -54,7 +53,6 @@ export const BotSubscription: React.FC<BotSubscriptionProps> = ({ bot }) => {
     resource: 'subscriptions',
     pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
     filters: [{ field: 'bot_id', operator: 'eq', value: bot.id }],
-    queryOptions: { refetchInterval: RESOURCE_REFETCH_INTERVAL_MS },
   });
   const createSubscriptionModal = useModalForm<
     Subscription,
