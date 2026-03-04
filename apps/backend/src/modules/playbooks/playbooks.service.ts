@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PlaybooksRepository } from './playbooks.repository';
@@ -35,7 +36,9 @@ export class PlaybooksService {
 
   private makeId(): string {
     const stamp = Date.now().toString(36);
-    const random = Math.random().toString(36).slice(2, 8);
+    const random = randomInt(36 ** 6)
+      .toString(36)
+      .padStart(6, '0');
     return `playbook-${stamp}-${random}`;
   }
 

@@ -26,8 +26,11 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
+    const userToken = String(
+      (req as Request & { cookies?: Record<string, unknown> }).cookies?.botmox_token || '',
+    ).trim();
+    const verifiedUser = await this.authService.verifyBearerToken(userToken);
     const authorization = String(req.headers.authorization || '').trim();
-    const verifiedUser = await this.authService.verifyBearerToken(authorization);
     const agentVerifier = (
       this.authService as unknown as {
         verifyAgentBearerToken?: (token: string) => ReturnType<AuthService['verifyBearerToken']>;

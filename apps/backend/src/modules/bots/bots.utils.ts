@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import type { BotLifecycleStage, BotLifecycleState, BotRecord } from './bots.types';
 import { BOT_STATUS_TO_STAGE } from './bots.types';
 
@@ -29,7 +30,9 @@ export function normalizeSearchValue(value: unknown): string {
 
 export function makeId(): string {
   const stamp = Date.now().toString(36);
-  const random = Math.random().toString(36).slice(2, 8);
+  const random = randomInt(36 ** 6)
+    .toString(36)
+    .padStart(6, '0');
   return `bot-${stamp}-${random}`;
 }
 

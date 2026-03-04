@@ -2,7 +2,7 @@ export {};
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { NotFoundException, UnauthorizedException } = require('@nestjs/common');
+const { NotFoundException } = require('@nestjs/common');
 const { REQUEST_IDENTITY_KEY } = require('../auth/request-identity.ts');
 const { WorkspaceController } = require('./workspace.controller.ts');
 
@@ -28,27 +28,21 @@ function createServiceStub() {
   };
 }
 
-test('WorkspaceController returns deterministic code for missing bearer token', async () => {
+test('WorkspaceController accepts request identity without bearer header in list', async () => {
   const controller = new WorkspaceController(createServiceStub());
 
-  await assert.rejects(
-    () => controller.list(undefined, 'notes', {}, buildRequest('tenant-a')),
-    (error: unknown) => {
-      assert.ok(error instanceof UnauthorizedException);
-      assert.deepEqual((error as { getResponse: () => unknown }).getResponse(), {
-        code: 'MISSING_BEARER_TOKEN',
-        message: 'Missing bearer token',
-      });
-      return true;
-    },
-  );
+  const result = await controller.list('notes', {}, buildRequest('tenant-a'));
+
+  assert.equal(result.success, true);
+  assert.deepEqual(result.data, []);
+  assert.deepEqual(result.meta, { total: 0, page: 1, limit: 50 });
 });
 
 test('WorkspaceController returns deterministic code for missing entity', async () => {
   const controller = new WorkspaceController(createServiceStub());
 
   await assert.rejects(
-    () => controller.getOne('Bearer test-token', 'notes', 'entity-001', buildRequest('tenant-a')),
+    () => controller.getOne('notes', 'entity-001', buildRequest('tenant-a')),
     (error: unknown) => {
       assert.ok(error instanceof NotFoundException);
       assert.deepEqual((error as { getResponse: () => unknown }).getResponse(), {

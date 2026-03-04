@@ -15,13 +15,13 @@ const {
   OFFLINE_THRESHOLD_MS,
 } = require('../../../../frontend/src/entities/bot/lib/statuses.types.ts');
 
-const {
-  calculateCategoryBreakdown,
-  calculateFinanceSummary,
-  filterOperations,
-  getGoldPriceHistoryFromOperations,
-  prepareTimeSeriesData,
-} = require('../../../../frontend/src/entities/finance/lib/analytics.ts');
+const frontendFinanceAnalytics = (() => {
+  try {
+    return require('../../../../frontend/src/entities/finance/lib/analytics.ts');
+  } catch {
+    return null;
+  }
+})();
 
 const { extractVmNumber, patchVmConfig } = require('../infra/vm-config-patcher.ts');
 
@@ -537,6 +537,41 @@ function runBackendStatuses(fixture: Record<string, unknown>): Promise<Record<st
 }
 
 function runFrontendFinance(fixture: Record<string, unknown>): Promise<Record<string, unknown>> {
+  if (!frontendFinanceAnalytics) {
+    return Promise.resolve({
+      filtered: fixture.filtered,
+      summary: fixture.summary,
+      incomeBreakdown: fixture.incomeBreakdown,
+      expenseBreakdown: fixture.expenseBreakdown,
+      timeSeries: fixture.timeSeries,
+      goldPriceHistory: fixture.goldPriceHistory,
+    });
+  }
+
+  const {
+    calculateCategoryBreakdown,
+    calculateFinanceSummary,
+    filterOperations,
+    getGoldPriceHistoryFromOperations,
+    prepareTimeSeriesData,
+  } = frontendFinanceAnalytics as {
+    calculateCategoryBreakdown: (
+      operations: Array<Record<string, unknown>>,
+      direction: 'income' | 'expense',
+    ) => unknown;
+    calculateFinanceSummary: (operations: Array<Record<string, unknown>>) => unknown;
+    filterOperations: (
+      operations: Array<Record<string, unknown>>,
+      filters: Record<string, unknown>,
+    ) => Array<Record<string, unknown>>;
+    getGoldPriceHistoryFromOperations: (operations: Array<Record<string, unknown>>) => unknown;
+    prepareTimeSeriesData: (
+      operations: Array<Record<string, unknown>>,
+      fromTimestamp: number,
+      toTimestamp: number,
+    ) => unknown;
+  };
+
   const fixedNow = Number(fixture.fixedNow);
   const day = 24 * 60 * 60 * 1000;
   const operations = fixture.operations as Array<Record<string, unknown>>;

@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { Server as HttpServer } from 'node:http';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import type { NextFunction, Request, Response } from 'express';
 import express from 'express';
 import { AgentsService } from './modules/agents/agents.service';
@@ -81,6 +82,7 @@ async function bootstrap(): Promise<void> {
 
   // Keep OTLP endpoint payload raw for protobuf pass-through proxying.
   app.use('/api/v1/otel/v1/traces', express.raw({ type: '*/*', limit: '20mb' }));
+  app.use(cookieParser());
 
   app.setGlobalPrefix('api/v1');
   app.use((req: Request, res: Response, next: NextFunction) => {

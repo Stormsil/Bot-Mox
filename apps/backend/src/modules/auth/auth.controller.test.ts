@@ -3,13 +3,37 @@ const assert = require('node:assert/strict');
 const { BadRequestException, UnauthorizedException } = require('@nestjs/common');
 const { AuthController } = require('./auth.controller.ts');
 
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 function createMockRequest(input?: { headers?: Record<string, string>; ip?: string }): Request {
   return {
     headers: input?.headers ?? {},
     ip: input?.ip ?? '127.0.0.1',
   } as unknown as Request;
+}
+
+function createMockResponse(): {
+  response: Response;
+  cookieCalls: Array<{ name: string; value: string; options: Record<string, unknown> }>;
+  clearCookieCalls: string[];
+} {
+  const cookieCalls: Array<{ name: string; value: string; options: Record<string, unknown> }> = [];
+  const clearCookieCalls: string[] = [];
+
+  return {
+    response: {
+      cookie: (name: string, value: string, options: Record<string, unknown>) => {
+        cookieCalls.push({ name, value, options });
+        return undefined as unknown as Response;
+      },
+      clearCookie: (name: string) => {
+        clearCookieCalls.push(name);
+        return undefined as unknown as Response;
+      },
+    } as unknown as Response,
+    cookieCalls,
+    clearCookieCalls,
+  };
 }
 
 test('AuthController returns deterministic code for missing bearer token', async () => {
@@ -55,6 +79,7 @@ test('AuthController whoami returns mapped identity', async () => {
 
 test('AuthController signup applies public auth rate limit with client ip + email', async () => {
   const rateLimitCalls: Array<Record<string, unknown>> = [];
+  const mockResponse = createMockResponse();
   const controller = new AuthController({
     verifyBearerToken: async () => null,
     enforcePublicAuthRateLimit: (input: unknown) => {
@@ -82,6 +107,7 @@ test('AuthController signup applies public auth rate limit with client ip + emai
       headers: { 'x-forwarded-for': '203.0.113.7, 10.0.0.2' },
       ip: '127.0.0.1',
     }),
+    mockResponse.response,
   );
 
   assert.equal(response.success, true);
@@ -91,6 +117,43 @@ test('AuthController signup applies public auth rate limit with client ip + emai
     clientIp: '203.0.113.7',
     principal: 'new@example.local',
   });
+  assert.equal(mockResponse.cookieCalls.length, 1);
+  assert.equal(mockResponse.cookieCalls[0]?.name, 'botmox_token');
+  assert.equal(mockResponse.cookieCalls[0]?.value, 'token-1');
+  assert.equal(mockResponse.cookieCalls[0]?.options.httpOnly, true);
+  assert.equal(mockResponse.cookieCalls[0]?.options.sameSite, 'lax');
+  assert.equal(mockResponse.cookieCalls[0]?.options.maxAge, 86400000);
+});
+
+test('AuthController signin sets auth cookie on successful signin', async () => {
+  const mockResponse = createMockResponse();
+  const controller = new AuthController({
+    verifyBearerToken: async () => null,
+    enforcePublicAuthRateLimit: () => undefined,
+    signInWithPassword: async () => ({
+      accessToken: 'signin-token-1',
+      identity: {
+        uid: 'u-1',
+        email: 'new@example.local',
+        tenantId: 'tenant-new',
+        access: { accessTier: 'trial' },
+      },
+    }),
+  });
+
+  const response = await controller.signin(
+    { login: 'new@example.local', password: 'StrongPass123' },
+    createMockRequest({
+      headers: {},
+      ip: '127.0.0.1',
+    }),
+    mockResponse.response,
+  );
+
+  assert.equal(response.success, true);
+  assert.equal(mockResponse.cookieCalls.length, 1);
+  assert.equal(mockResponse.cookieCalls[0]?.name, 'botmox_token');
+  assert.equal(mockResponse.cookieCalls[0]?.value, 'signin-token-1');
 });
 
 test('AuthController signin propagates rate-limit error', async () => {
@@ -136,6 +199,7 @@ test('AuthController signin propagates rate-limit error', async () => {
 
 test('AuthController admin signin uses admin rate limit and returns token for admin', async () => {
   const adminRateLimitCalls: Array<Record<string, unknown>> = [];
+  const mockResponse = createMockResponse();
   const controller = new AuthController({
     enforceAdminRateLimit: (input: unknown) => {
       adminRateLimitCalls.push(input as Record<string, unknown>);
@@ -160,16 +224,31 @@ test('AuthController admin signin uses admin rate limit and returns token for ad
       headers: { 'x-forwarded-for': '203.0.113.8, 10.0.0.2' },
       ip: '127.0.0.1',
     }),
+    mockResponse.response,
   );
 
   assert.equal(response.success, true);
-  assert.equal(response.data.access_token, 'admin-token-1');
   assert.equal(adminRateLimitCalls.length, 1);
   assert.deepEqual(adminRateLimitCalls[0], {
     action: 'auth.admin.signin',
     clientIp: '203.0.113.8',
     principal: 'admin@example.local',
   });
+  assert.equal(mockResponse.cookieCalls.length, 1);
+  assert.equal(mockResponse.cookieCalls[0]?.name, 'botmox_token');
+  assert.equal(mockResponse.cookieCalls[0]?.value, 'admin-token-1');
+});
+
+test('AuthController logout clears auth cookie and returns success', () => {
+  const mockResponse = createMockResponse();
+  const controller = new AuthController({
+    verifyBearerToken: async () => null,
+  });
+
+  const response = controller.logout(mockResponse.response);
+
+  assert.deepEqual(response, { success: true });
+  assert.deepEqual(mockResponse.clearCookieCalls, ['botmox_token']);
 });
 
 test('AuthController admin signin rejects non-admin credentials', async () => {
@@ -258,6 +337,7 @@ test('AuthController admin whoami rejects non-admin identity', async () => {
 });
 
 test('AuthController signup rejects weak password by policy', async () => {
+  const mockResponse = createMockResponse();
   const controller = new AuthController({
     verifyBearerToken: async () => null,
     enforcePublicAuthRateLimit: () => undefined,
@@ -285,6 +365,7 @@ test('AuthController signup rejects weak password by policy', async () => {
           headers: {},
           ip: '127.0.0.1',
         }),
+        mockResponse.response,
       ),
     (error: unknown) => {
       assert.ok(error instanceof BadRequestException);

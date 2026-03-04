@@ -1,5 +1,7 @@
+import { randomInt } from 'node:crypto';
+
 function randomByte(): number {
-  return Math.floor(Math.random() * 256);
+  return randomInt(256);
 }
 
 function toHex(byte: number): string {

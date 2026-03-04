@@ -5,23 +5,20 @@ import {
   workspaceListQuerySchema,
   workspaceNotesMutationSchema,
 } from '@botmox/api-contract';
-import { Transform, Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  Headers,
   NotFoundException,
   Param,
   Patch,
   Post,
   Query,
   Req,
-  UnauthorizedException,
 } from '@nestjs/common';
+import { Transform, Type } from 'class-transformer';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 import type { Request } from 'express';
 import { getRequestIdentity } from '../auth/request-identity.util';
 import {
@@ -45,6 +42,31 @@ const workspaceListQueryPipe = createBadRequestValidationPipe(
   'WORKSPACE_INVALID_LIST_QUERY',
   'Invalid workspace list query',
 );
+const workspaceListQueryZodPipe = new ZodSchemaValidationPipe(
+  workspaceListQuerySchema,
+  'WORKSPACE_INVALID_LIST_QUERY',
+  'Invalid workspace list query',
+);
+const workspaceNotesBodyPipe = new ZodSchemaValidationPipe(
+  workspaceNotesMutationSchema,
+  'WORKSPACE_INVALID_BODY',
+  'Invalid workspace payload',
+);
+const workspaceCalendarBodyPipe = new ZodSchemaValidationPipe(
+  workspaceCalendarMutationSchema,
+  'WORKSPACE_INVALID_BODY',
+  'Invalid workspace payload',
+);
+const workspaceKanbanBodyPipe = new ZodSchemaValidationPipe(
+  workspaceKanbanMutationSchema,
+  'WORKSPACE_INVALID_BODY',
+  'Invalid workspace payload',
+);
+const workspaceBodyPipeByKind = {
+  notes: workspaceNotesBodyPipe,
+  calendar: workspaceCalendarBodyPipe,
+  kanban: workspaceKanbanBodyPipe,
+} as const;
 
 class WorkspaceListQueryDto {
   @IsOptional()
@@ -81,15 +103,6 @@ class WorkspaceListQueryDto {
 export class WorkspaceController {
   constructor(private readonly workspaceService: WorkspaceService) {}
 
-  private ensureAuthHeader(authorization: string | undefined): void {
-    if (!authorization) {
-      throw new UnauthorizedException({
-        code: 'MISSING_BEARER_TOKEN',
-        message: 'Missing bearer token',
-      });
-    }
-  }
-
   private getTenantId(req: Request): string {
     return getRequestIdentity(req).tenantId;
   }
@@ -107,18 +120,16 @@ export class WorkspaceController {
 
   @Get(':kind')
   async list(
-    @Headers('authorization') authorization: string | undefined,
     @Param('kind', workspaceKindStringPipe) kind: string,
-    @Query(workspaceListQueryPipe) query: WorkspaceListQueryDto,
+    @Query(workspaceListQueryPipe, workspaceListQueryZodPipe) query: WorkspaceListQueryDto,
     @Req() req: Request,
   ): Promise<{
     success: true;
     data: unknown[];
     meta: { total: number; page: number; limit: number };
   }> {
-    this.ensureAuthHeader(authorization);
     const parsedKind = kind as WorkspaceKind;
-    const parsedQuery = this.parseZodListQuery(query);
+    const parsedQuery = query as WorkspaceListQuery;
     const tenantId = this.getTenantId(req);
     const result = await this.workspaceService.list(parsedKind, parsedQuery, tenantId);
     return {
@@ -134,12 +145,10 @@ export class WorkspaceController {
 
   @Get(':kind/:id')
   async getOne(
-    @Headers('authorization') authorization: string | undefined,
     @Param('kind', workspaceKindStringPipe) kind: string,
     @Param('id', workspaceIdStringPipe) id: string,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
     const parsedKind = kind as WorkspaceKind;
     const parsedId = id;
     const tenantId = this.getTenantId(req);
@@ -152,14 +161,15 @@ export class WorkspaceController {
 
   @Post(':kind')
   async create(
-    @Headers('authorization') authorization: string | undefined,
     @Param('kind', workspaceKindStringPipe) kind: string,
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
     const parsedKind = kind as WorkspaceKind;
-    const parsedBody = this.parseBodyWithKind(parsedKind, body);
+    const parsedBody = workspaceBodyPipeByKind[parsedKind].transform(body) as Record<
+      string,
+      unknown
+    >;
     const tenantId = this.getTenantId(req);
     const explicitId = this.getExplicitIdFromBody(parsedBody);
     return {
@@ -170,18 +180,18 @@ export class WorkspaceController {
 
   @Patch(':kind/:id')
   async update(
-    @Headers('authorization') authorization: string | undefined,
     @Param('kind', workspaceKindStringPipe) kind: string,
     @Param('id', workspaceIdStringPipe) id: string,
     @Body() body: unknown,
     @Req() req: Request,
   ): Promise<{ success: true; data: unknown }> {
-    this.ensureAuthHeader(authorization);
     const parsedKind = kind as WorkspaceKind;
-    const parsedId = id;
-    const parsedBody = this.parseBodyWithKind(parsedKind, body);
+    const parsedBody = workspaceBodyPipeByKind[parsedKind].transform(body) as Record<
+      string,
+      unknown
+    >;
     const tenantId = this.getTenantId(req);
-    const updated = await this.workspaceService.update(parsedKind, parsedId, parsedBody, tenantId);
+    const updated = await this.workspaceService.update(parsedKind, id, parsedBody, tenantId);
     if (!updated) {
       throw new NotFoundException(this.getNotFoundPayload());
     }
@@ -190,12 +200,10 @@ export class WorkspaceController {
 
   @Delete(':kind/:id')
   async remove(
-    @Headers('authorization') authorization: string | undefined,
     @Param('kind', workspaceKindStringPipe) kind: string,
     @Param('id', workspaceIdStringPipe) id: string,
     @Req() req: Request,
   ): Promise<{ success: true; data: { id: string; deleted: boolean } }> {
-    this.ensureAuthHeader(authorization);
     const parsedKind = kind as WorkspaceKind;
     const parsedId = id;
     const tenantId = this.getTenantId(req);
@@ -210,28 +218,5 @@ export class WorkspaceController {
         deleted: true,
       },
     };
-  }
-
-  private parseZodListQuery(query: WorkspaceListQueryDto): WorkspaceListQuery {
-    const parsed = workspaceListQuerySchema.safeParse(query);
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: 'WORKSPACE_INVALID_LIST_QUERY',
-        message: 'Invalid workspace list query',
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
-  }
-
-  private parseBodyWithKind(kind: WorkspaceKind, body: unknown): Record<string, unknown> {
-    const schema =
-      kind === 'notes'
-        ? workspaceNotesMutationSchema
-        : kind === 'calendar'
-          ? workspaceCalendarMutationSchema
-          : workspaceKanbanMutationSchema;
-    const pipe = new ZodSchemaValidationPipe(schema, 'WORKSPACE_INVALID_BODY', 'Invalid workspace payload');
-    return pipe.transform(body) as Record<string, unknown>;
   }
 }

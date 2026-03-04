@@ -7,9 +7,10 @@ import {
   HttpCode,
   Post,
   Req,
+  Res,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { AdminAuditService } from '../admin-audit/admin-audit.service';
 import { AuthService } from './auth.service';
@@ -26,9 +27,12 @@ const passwordSchema = z
 const authEmailSchema = z
   .string()
   .trim()
-  .refine((value) => /^[^\s@]+@localhost$/i.test(value) || z.string().email().safeParse(value).success, {
-    message: 'Invalid email',
-  });
+  .refine(
+    (value) => /^[^\s@]+@localhost$/i.test(value) || z.string().email().safeParse(value).success,
+    {
+      message: 'Invalid email',
+    },
+  );
 
 const adminCreateUserSchema = z.object({
   email: authEmailSchema,
@@ -168,9 +172,10 @@ export class AuthController {
   async signup(
     @Body() body: unknown,
     @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<{
     success: true;
-    data: { access_token: string; uid: string; email: string; tenant_id: string; access: unknown };
+    data: { uid: string; email: string; tenant_id: string; access: unknown };
   }> {
     const parsed = signUpSchema.safeParse(body ?? {});
     if (!parsed.success) {
@@ -197,10 +202,16 @@ export class AuthController {
       password: parsed.data.password,
     });
 
+    res.cookie('botmox_token', signedIn.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 86400000,
+    });
+
     return {
       success: true,
       data: {
-        access_token: signedIn.accessToken,
         uid: signedIn.identity.uid,
         email: signedIn.identity.email,
         tenant_id: signedIn.identity.tenantId,
@@ -214,9 +225,10 @@ export class AuthController {
   async signin(
     @Body() body: unknown,
     @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<{
     success: true;
-    data: { access_token: string; uid: string; email: string; tenant_id: string; access: unknown };
+    data: { uid: string; email: string; tenant_id: string; access: unknown };
   }> {
     const parsed = signInSchema.safeParse(body ?? {});
     if (!parsed.success) {
@@ -237,10 +249,17 @@ export class AuthController {
       login: parsed.data.login,
       password: parsed.data.password,
     });
+
+    res.cookie('botmox_token', signedIn.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 86400000,
+    });
+
     return {
       success: true,
       data: {
-        access_token: signedIn.accessToken,
         uid: signedIn.identity.uid,
         email: signedIn.identity.email,
         tenant_id: signedIn.identity.tenantId,
@@ -254,9 +273,10 @@ export class AuthController {
   async adminSignin(
     @Body() body: unknown,
     @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<{
     success: true;
-    data: { access_token: string; uid: string; email: string; tenant_id: string; access: unknown };
+    data: { uid: string; email: string; tenant_id: string; access: unknown };
   }> {
     const parsed = signInSchema.safeParse(body ?? {});
     if (!parsed.success) {
@@ -285,16 +305,29 @@ export class AuthController {
       });
     }
 
+    res.cookie('botmox_token', signedIn.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 86400000,
+    });
+
     return {
       success: true,
       data: {
-        access_token: signedIn.accessToken,
         uid: signedIn.identity.uid,
         email: signedIn.identity.email,
         tenant_id: signedIn.identity.tenantId,
         access: signedIn.identity.access,
       },
     };
+  }
+
+  @Post('logout')
+  @HttpCode(200)
+  logout(@Res({ passthrough: true }) res: Response): { success: true } {
+    res.clearCookie('botmox_token');
+    return { success: true };
   }
 
   @Get('admin/whoami')

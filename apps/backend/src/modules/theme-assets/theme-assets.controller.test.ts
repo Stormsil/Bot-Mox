@@ -2,7 +2,7 @@ export {};
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { NotFoundException, UnauthorizedException } = require('@nestjs/common');
+const { NotFoundException } = require('@nestjs/common');
 const { REQUEST_IDENTITY_KEY } = require('../auth/request-identity.ts');
 const { ThemeAssetsController } = require('./theme-assets.controller.ts');
 
@@ -27,32 +27,20 @@ function createServiceStub() {
   };
 }
 
-test('ThemeAssetsController returns deterministic code for missing bearer token', async () => {
+test('ThemeAssetsController accepts request identity without bearer header in list', async () => {
   const controller = new ThemeAssetsController(createServiceStub());
 
-  await assert.rejects(
-    () => controller.list(undefined, buildRequest('tenant-a')),
-    (error: unknown) => {
-      assert.ok(error instanceof UnauthorizedException);
-      assert.deepEqual((error as { getResponse: () => unknown }).getResponse(), {
-        code: 'MISSING_BEARER_TOKEN',
-        message: 'Missing bearer token',
-      });
-      return true;
-    },
-  );
+  const result = await controller.list(buildRequest('tenant-a'));
+
+  assert.equal(result.success, true);
+  assert.equal(typeof result.data, 'object');
 });
 
 test('ThemeAssetsController returns deterministic code for missing asset on complete', async () => {
   const controller = new ThemeAssetsController(createServiceStub());
 
   await assert.rejects(
-    () =>
-      controller.completeUpload(
-        'Bearer test-token',
-        { asset_id: 'asset-1' },
-        buildRequest('tenant-a'),
-      ),
+    () => controller.completeUpload({ asset_id: 'asset-1' }, buildRequest('tenant-a')),
     (error: unknown) => {
       assert.ok(error instanceof NotFoundException);
       assert.deepEqual((error as { getResponse: () => unknown }).getResponse(), {

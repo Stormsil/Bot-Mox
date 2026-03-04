@@ -1,23 +1,31 @@
 import { themeAssetCompleteSchema, themeAssetPresignUploadSchema } from '@botmox/api-contract';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
   Param,
   Post,
   Req,
-  UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import type { ZodType, z } from 'zod';
 import { getRequestIdentity } from '../auth/request-identity.util';
+import { ZodSchemaValidationPipe } from '../common/http-validation.util';
 import { ThemeAssetsService } from './theme-assets.service';
+
+const themeAssetPresignBodyPipe = new ZodSchemaValidationPipe(
+  themeAssetPresignUploadSchema,
+  'THEME_ASSET_INVALID_PRESIGN_BODY',
+  'Invalid theme asset presign payload',
+);
+const themeAssetCompleteBodyPipe = new ZodSchemaValidationPipe(
+  themeAssetCompleteSchema,
+  'THEME_ASSET_INVALID_COMPLETE_BODY',
+  'Invalid theme asset complete payload',
+);
 
 @Controller('theme-assets')
 export class ThemeAssetsController {
@@ -27,35 +35,8 @@ export class ThemeAssetsController {
     return { success: true, data };
   }
 
-  private ensureAuthHeader(authorization: string | undefined): void {
-    if (!authorization) {
-      throw new UnauthorizedException({
-        code: 'MISSING_BEARER_TOKEN',
-        message: 'Missing bearer token',
-      });
-    }
-  }
-
-  private getTenantId(authorization: string | undefined, req: Request): string {
-    this.ensureAuthHeader(authorization);
+  private getTenantId(req: Request): string {
     return getRequestIdentity(req).tenantId;
-  }
-
-  private parseWithSchema<TSchema extends ZodType>(
-    schema: TSchema,
-    input: unknown,
-    code: string,
-    message: string,
-  ): z.output<TSchema> {
-    const parsed = schema.safeParse(input ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code,
-        message,
-        details: parsed.error.flatten(),
-      });
-    }
-    return parsed.data;
   }
 
   private notFoundThemeAsset(): never {
@@ -66,54 +47,37 @@ export class ThemeAssetsController {
   }
 
   @Get()
-  async list(
-    @Headers('authorization') authorization: string | undefined,
-    @Req() req: Request,
-  ): Promise<{
+  async list(@Req() req: Request): Promise<{
     success: true;
     data: unknown;
   }> {
-    const tenantId = this.getTenantId(authorization, req);
+    const tenantId = this.getTenantId(req);
     return this.success(await this.themeAssetsService.listAssets(tenantId));
   }
 
   @Post('presign-upload')
   @HttpCode(HttpStatus.CREATED)
   async createPresignedUpload(
-    @Headers('authorization') authorization: string | undefined,
-    @Body() body: unknown,
+    @Body(themeAssetPresignBodyPipe) body: ReturnType<typeof themeAssetPresignUploadSchema.parse>,
     @Req() req: Request,
   ): Promise<{
     success: true;
     data: unknown;
   }> {
-    const parsedBody = this.parseWithSchema(
-      themeAssetPresignUploadSchema,
-      body,
-      'THEME_ASSET_INVALID_PRESIGN_BODY',
-      'Invalid theme asset presign payload',
-    );
-    const tenantId = this.getTenantId(authorization, req);
-    return this.success(await this.themeAssetsService.createPresignedUpload(parsedBody, tenantId));
+    const tenantId = this.getTenantId(req);
+    return this.success(await this.themeAssetsService.createPresignedUpload(body, tenantId));
   }
 
   @Post('complete')
   async completeUpload(
-    @Headers('authorization') authorization: string | undefined,
-    @Body() body: unknown,
+    @Body(themeAssetCompleteBodyPipe) body: ReturnType<typeof themeAssetCompleteSchema.parse>,
     @Req() req: Request,
   ): Promise<{
     success: true;
     data: unknown;
   }> {
-    const parsedBody = this.parseWithSchema(
-      themeAssetCompleteSchema,
-      body,
-      'THEME_ASSET_INVALID_COMPLETE_BODY',
-      'Invalid theme asset complete payload',
-    );
-    const tenantId = this.getTenantId(authorization, req);
-    const completed = await this.themeAssetsService.completeUpload(parsedBody, tenantId);
+    const tenantId = this.getTenantId(req);
+    const completed = await this.themeAssetsService.completeUpload(body, tenantId);
     if (!completed) {
       this.notFoundThemeAsset();
     }
@@ -122,14 +86,13 @@ export class ThemeAssetsController {
 
   @Delete(':id')
   async deleteAsset(
-    @Headers('authorization') authorization: string | undefined,
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<{
     success: true;
     data: unknown;
   }> {
-    const tenantId = this.getTenantId(authorization, req);
+    const tenantId = this.getTenantId(req);
     const deleted = await this.themeAssetsService.deleteAsset(id, tenantId);
     if (!deleted) {
       this.notFoundThemeAsset();
