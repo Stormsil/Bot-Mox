@@ -1,17 +1,17 @@
 import dayjs from 'dayjs';
 import type {
+  FinanceBreakdownContractRecord,
+  FinanceGoldPriceHistoryContractMap,
+  FinanceSummaryContractRecord,
+  FinanceTimeSeriesContractRecord,
+} from '../../entities/finance/api/financeContractFacade';
+import type {
   CategoryBreakdown,
   FinanceCategory,
   FinanceSummary as FinanceSummaryModel,
   GoldPriceHistoryEntry,
   TimeSeriesData,
 } from '../../entities/finance/model/types';
-import type {
-  FinanceBreakdownContractRecord,
-  FinanceGoldPriceHistoryContractMap,
-  FinanceSummaryContractRecord,
-  FinanceTimeSeriesContractRecord,
-} from '../../shared/api/providers/finance-contract-client';
 
 const FINANCE_CATEGORY_SET = new Set<FinanceCategory>([
   'subscription_game',
@@ -67,7 +67,7 @@ export function mapBreakdownFromAggregate(
   type: 'income' | 'expense',
 ): CategoryBreakdown[] {
   const sourceItems = (breakdown?.items || []) as Array<Record<string, unknown>>;
-  const mapped = sourceItems
+  return sourceItems
     .map((item: Record<string, unknown>) => {
       const typedItem = item as Record<string, unknown>;
       const amount =
@@ -77,20 +77,10 @@ export function mapBreakdownFromAggregate(
       return {
         category: toFinanceCategory(typedItem.key),
         amount,
+        percentage: toFiniteNumber(typedItem.share_percent),
       };
     })
-    .filter((entry: { category: FinanceCategory; amount: number }) => entry.amount > 0);
-
-  const total = mapped.reduce(
-    (accumulator: number, entry: { category: FinanceCategory; amount: number }) =>
-      accumulator + entry.amount,
-    0,
-  );
-  return mapped
-    .map((entry: { category: FinanceCategory; amount: number }) => ({
-      ...entry,
-      percentage: total > 0 ? Math.round((entry.amount / total) * 100) : 0,
-    }))
+    .filter((entry: { category: FinanceCategory; amount: number }) => entry.amount > 0)
     .sort((left: { amount: number }, right: { amount: number }) => right.amount - left.amount);
 }
 
@@ -115,20 +105,17 @@ export function mapTimeSeriesFromAggregate(
     return [];
   }
 
-  const sortedPoints = [...timeSeries.points].sort(
-    (left, right) =>
-      dayjs(String(left.bucket || '')).valueOf() - dayjs(String(right.bucket || '')).valueOf(),
-  );
-
-  let cumulativeProfit = 0;
-  return sortedPoints.map((point) => {
+  return timeSeries.points.map((point: Record<string, unknown>) => {
     const income = toFiniteNumber(point.income_total);
     const expense = toFiniteNumber(point.expense_total);
     const dailyProfit =
-      point.net_total === undefined || point.net_total === null
-        ? income - expense
-        : toFiniteNumber(point.net_total);
-    cumulativeProfit += dailyProfit;
+      point.daily_profit === undefined || point.daily_profit === null
+        ? toFiniteNumber(point.net_total)
+        : toFiniteNumber(point.daily_profit);
+    const cumulativeProfit =
+      point.cumulative_profit === undefined || point.cumulative_profit === null
+        ? dailyProfit
+        : toFiniteNumber(point.cumulative_profit);
     return {
       date: String(point.bucket || ''),
       income,

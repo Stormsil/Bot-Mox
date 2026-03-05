@@ -2,7 +2,9 @@ import { ApiClientError } from '../../../shared/api/apiClient';
 import {
   createResourceViaContract,
   deleteResourceViaContract,
+  getResourcesStatusAggregateViaContract,
   listResourcesViaContract,
+  type ResourcesStatusAggregateContractRecord,
   updateResourceViaContract,
 } from '../../../shared/api/providers/resource-contract-client';
 import type { ResourceKind } from '../model/types';
@@ -101,4 +103,9 @@ export async function deleteResourceViaContractMutation(
   id: string,
 ): Promise<void> {
   await deleteResourceViaContract(kind, id);
+}
+
+export async function fetchResourcesStatusAggregateViaContract(): Promise<ResourcesStatusAggregateContractRecord> {
+  const response = await getResourcesStatusAggregateViaContract();
+  return response.data;
 }

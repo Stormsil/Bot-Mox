@@ -28,22 +28,6 @@ export class InfraRepository {
     };
   }
 
-  private getBotClient(): {
-    findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
-  } {
-    return (this.prisma as unknown as { botEntity: unknown }).botEntity as {
-      findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
-    };
-  }
-
-  private getResourceItemClient(): {
-    findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
-  } {
-    return (this.prisma as unknown as { resourceItem: unknown }).resourceItem as {
-      findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
-    };
-  }
-
   private getVmConfigClient(): {
     findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
     upsert: (args: unknown) => Promise<Record<string, unknown>>;
@@ -96,32 +80,6 @@ export class InfraRepository {
       ],
     });
     return rows.map((row) => row.payload as VmRecord);
-  }
-
-  async listTenantBots(tenantId: string): Promise<Array<Record<string, unknown>>> {
-    return this.getBotClient().findMany({
-      where: {
-        tenantId,
-      },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    });
-  }
-
-  async listTenantResources(
-    tenantId: string,
-    kind: 'proxies' | 'subscriptions' | 'licenses',
-  ): Promise<Array<Record<string, unknown>>> {
-    return this.getResourceItemClient().findMany({
-      where: {
-        tenantId,
-        kind,
-      },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    });
   }
 
   async upsertVm(input: {

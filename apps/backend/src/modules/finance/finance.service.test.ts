@@ -194,6 +194,9 @@ test('FinanceService aggregate DTOs are stable for normal filtered period', asyn
     net_total: 70,
     margin_percent: 70,
     operation_count: 2,
+    total_gold_sold: 0,
+    total_gold_farmed: 0,
+    average_gold_price: 0,
     period: {
       from_ts: Date.UTC(2026, 0, 1, 0, 0, 0, 0),
       to_ts: Date.UTC(2026, 0, 3, 23, 59, 59, 999),
@@ -223,6 +226,7 @@ test('FinanceService aggregate DTOs are stable for normal filtered period', asyn
         margin_percent: 70,
         operation_count: 2,
         gold_volume: 0,
+        average_gold_price: 0,
       },
     ],
   });
@@ -266,6 +270,8 @@ test('FinanceService aggregate DTOs are stable for normal filtered period', asyn
       expense_total: 0,
       net_total: 100,
       operation_count: 1,
+      daily_profit: 100,
+      cumulative_profit: 100,
     },
     {
       bucket: '2026-01-02',
@@ -273,6 +279,8 @@ test('FinanceService aggregate DTOs are stable for normal filtered period', asyn
       expense_total: 30,
       net_total: -30,
       operation_count: 1,
+      daily_profit: -30,
+      cumulative_profit: 70,
     },
     {
       bucket: '2026-01-03',
@@ -280,6 +288,8 @@ test('FinanceService aggregate DTOs are stable for normal filtered period', asyn
       expense_total: 0,
       net_total: 0,
       operation_count: 0,
+      daily_profit: 0,
+      cumulative_profit: 70,
     },
   ]);
   assert.deepEqual(timeSeries.totals, summary);
@@ -306,6 +316,9 @@ test('FinanceService aggregate DTOs handle empty dataset', async () => {
     net_total: 0,
     margin_percent: 0,
     operation_count: 0,
+    total_gold_sold: 0,
+    total_gold_farmed: 0,
+    average_gold_price: 0,
     period: query,
   });
 
@@ -328,6 +341,8 @@ test('FinanceService aggregate DTOs handle empty dataset', async () => {
     expense_total: 0,
     net_total: 0,
     operation_count: 0,
+    daily_profit: 0,
+    cumulative_profit: 0,
   });
   assert.deepEqual(timeSeries.points[1], {
     bucket: '2026-02-02',
@@ -335,6 +350,8 @@ test('FinanceService aggregate DTOs handle empty dataset', async () => {
     expense_total: 0,
     net_total: 0,
     operation_count: 0,
+    daily_profit: 0,
+    cumulative_profit: 0,
   });
 });
 
@@ -420,6 +437,7 @@ test('FinanceService project performance groups normal and empty windows determi
         margin_percent: 75,
         operation_count: 2,
         gold_volume: 1000,
+        average_gold_price: 120,
       },
       {
         project_id: 'project_beta',
@@ -429,6 +447,7 @@ test('FinanceService project performance groups normal and empty windows determi
         margin_percent: 100,
         operation_count: 1,
         gold_volume: 250,
+        average_gold_price: 200,
       },
       {
         project_id: 'global',
@@ -438,6 +457,7 @@ test('FinanceService project performance groups normal and empty windows determi
         margin_percent: 0,
         operation_count: 1,
         gold_volume: 0,
+        average_gold_price: 0,
       },
     ],
   });

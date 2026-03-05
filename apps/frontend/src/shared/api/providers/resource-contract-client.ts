@@ -1,3 +1,4 @@
+import { resourcesStatusAggregateSchema } from '@botmox/api-contract';
 import type { ApiSuccessEnvelope } from '../apiClient';
 import { createContractRuntimeClient, toContractApiClientError } from '../contracts/runtimeClient';
 
@@ -16,6 +17,10 @@ interface ResourceListQuery {
   bot_id?: string;
 }
 
+export type ResourcesStatusAggregateContractRecord = ReturnType<
+  typeof resourcesStatusAggregateSchema.parse
+>;
+
 export async function listResourcesViaContract(
   kind: ContractResourceKind,
   query: ResourceListQuery,
@@ -31,6 +36,27 @@ export async function listResourcesViaContract(
   }
 
   return response.body as ApiSuccessEnvelope<Record<string, unknown>[]>;
+}
+
+export async function getResourcesStatusAggregateViaContract(): Promise<
+  ApiSuccessEnvelope<ResourcesStatusAggregateContractRecord>
+> {
+  const client = createContractRuntimeClient();
+  const response = await client.resourcesStatusAggregate({});
+
+  if (response.status !== 200) {
+    throw toContractApiClientError(
+      '/api/v1/resources/status-aggregate',
+      response.status,
+      response.body,
+    );
+  }
+
+  return {
+    success: true,
+    data: resourcesStatusAggregateSchema.parse(response.body.data),
+    ...(response.body.meta ? { meta: response.body.meta } : {}),
+  };
 }
 
 export async function upsertResourceViaContract(

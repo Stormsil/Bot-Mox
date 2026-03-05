@@ -1,4 +1,4 @@
-import { ApiClientError } from '../../../../shared/api/apiClient';
+import { ApiClientError } from '../../../../entities/vm/api/vmRuntimeFacade';
 
 interface CommandEnvelope {
   id: string;

@@ -1,20 +1,14 @@
 import { DesktopOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { useDelete, useList } from '@refinedev/core';
+import { useDelete } from '@refinedev/core';
+import { useQuery } from '@tanstack/react-query';
 
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
-import { getDefaultSettings } from '../../entities/settings/api/settingsFacade';
+import { fetchResourcesStatusAggregateViaContract } from '../../entities/resources/api/resourceContractFacade';
 import { useProjectSettingsQuery } from '../../entities/settings/api/useProjectSettingsQuery';
-import { useSubscriptionSettingsQuery } from '../../entities/settings/api/useSubscriptionSettingsQuery';
 import { uiLogger } from '../../observability/uiLogger';
-import type {
-  BotLicense,
-  Proxy as ProxyResource,
-  Subscription,
-  SubscriptionSettings,
-} from '../../shared/types';
 import {
   AppAlert as Alert,
   AppButton as Button,
@@ -29,18 +23,12 @@ import {
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
 import { createProjectColumns } from './columns';
 import styles from './ProjectPage.module.css';
-import {
-  buildBotRows,
-  buildProjectStats,
-  buildResourcesByBotMaps,
-  filterBotRows,
-} from './selectors';
+import { buildBotRows, buildProjectStats, filterBotRows } from './selectors';
 import type { BotRecord, StatusFilter } from './types';
 import { formatProjectTitle, parseStatusFilterFromParams } from './utils';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-const RESOURCE_LIST_PAGE_SIZE = 5_000;
 
 export const ProjectPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -48,21 +36,12 @@ export const ProjectPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const projectId = (id || '').trim();
   const botsMapQuery = useBotsMapQuery();
-  const proxiesList = useList<ProxyResource>({
-    resource: 'proxies',
-    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-  });
-  const subscriptionsList = useList<Subscription>({
-    resource: 'subscriptions',
-    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-  });
-  const licensesList = useList<BotLicense>({
-    resource: 'licenses',
-    pagination: { mode: 'server', currentPage: 1, pageSize: RESOURCE_LIST_PAGE_SIZE },
-  });
   const deleteBotMutation = useDelete();
-  const subscriptionSettingsQuery = useSubscriptionSettingsQuery();
   const projectSettingsQuery = useProjectSettingsQuery();
+  const resourcesStatusAggregateQuery = useQuery({
+    queryKey: ['project', 'resources', 'status-aggregate'],
+    queryFn: fetchResourcesStatusAggregateViaContract,
+  });
 
   const bots = useMemo(
     () => (botsMapQuery.data || {}) as Record<string, BotRecord>,
@@ -78,28 +57,9 @@ export const ProjectPage: React.FC = () => {
       ),
     [projectSettingsQuery.data],
   );
-  const proxies = useMemo<ProxyResource[]>(
-    () => proxiesList.result.data || [],
-    [proxiesList.result.data],
-  );
-  const subscriptions = useMemo<Subscription[]>(
-    () => subscriptionsList.result.data || [],
-    [subscriptionsList.result.data],
-  );
-  const licenses = useMemo<BotLicense[]>(
-    () => licensesList.result.data || [],
-    [licensesList.result.data],
-  );
-  const settings = useMemo<SubscriptionSettings>(
-    () => subscriptionSettingsQuery.data || getDefaultSettings(),
-    [subscriptionSettingsQuery.data],
-  );
-
   const loadingBots = botsMapQuery.isLoading;
-  const loadingProxies = proxiesList.query.isLoading;
-  const loadingSubscriptions = subscriptionsList.query.isLoading;
-  const loadingLicenses = licensesList.query.isLoading;
-  const loadingSettings = subscriptionSettingsQuery.isLoading;
+  const loadingSettings = projectSettingsQuery.isLoading;
+  const loadingResourcesStatus = resourcesStatusAggregateQuery.isLoading;
 
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(() =>
@@ -131,21 +91,6 @@ export const ProjectPage: React.FC = () => {
       uiLogger.error('Error loading bots:', botsMapQuery.error);
     }
   }, [botsMapQuery.error]);
-  useEffect(() => {
-    if (proxiesList.query.error) {
-      uiLogger.error('Error loading proxies:', proxiesList.query.error);
-    }
-  }, [proxiesList.query.error]);
-  useEffect(() => {
-    if (subscriptionsList.query.error) {
-      uiLogger.error('Error loading subscriptions:', subscriptionsList.query.error);
-    }
-  }, [subscriptionsList.query.error]);
-  useEffect(() => {
-    if (licensesList.query.error) {
-      uiLogger.error('Error loading licenses:', licensesList.query.error);
-    }
-  }, [licensesList.query.error]);
 
   useEffect(() => {
     if (!projectSettingsQuery.error) {
@@ -154,26 +99,23 @@ export const ProjectPage: React.FC = () => {
     uiLogger.error('Error loading project settings:', projectSettingsQuery.error);
   }, [projectSettingsQuery.error]);
   useEffect(() => {
-    if (!subscriptionSettingsQuery.error) {
+    if (!resourcesStatusAggregateQuery.error) {
       return;
     }
-    uiLogger.error('Error loading subscription settings:', subscriptionSettingsQuery.error);
-  }, [subscriptionSettingsQuery.error]);
-
-  const resourcesByBot = useMemo(
-    () => buildResourcesByBotMaps({ proxies, subscriptions, licenses }),
-    [licenses, proxies, subscriptions],
-  );
+    uiLogger.error(
+      'Error loading resources status aggregate:',
+      resourcesStatusAggregateQuery.error,
+    );
+  }, [resourcesStatusAggregateQuery.error]);
 
   const rows = useMemo(
     () =>
       buildBotRows({
         bots,
         projectId,
-        warningDays: settings.warning_days,
-        resourcesByBot,
+        resourceStatusByBot: resourcesStatusAggregateQuery.data?.by_bot,
       }),
-    [bots, projectId, resourcesByBot, settings.warning_days],
+    [bots, projectId, resourcesStatusAggregateQuery.data?.by_bot],
   );
 
   const filteredRows = useMemo(
@@ -263,8 +205,7 @@ export const ProjectPage: React.FC = () => {
     );
   }
 
-  const loading =
-    loadingBots || loadingProxies || loadingSubscriptions || loadingLicenses || loadingSettings;
+  const loading = loadingBots || loadingSettings || loadingResourcesStatus;
 
   const projectTitle = projectsMeta[projectId]?.name || formatProjectTitle(projectId);
 

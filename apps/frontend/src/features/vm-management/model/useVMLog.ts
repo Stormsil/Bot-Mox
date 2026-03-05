@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
+import { writeVmTaskLogs } from '../../../entities/vm/api/vmTaskLogFacade';
 import { uiLogger } from '../../../observability/uiLogger';
-import { apiPut } from '../../../shared/api/apiClient';
 import type {
   VMLogEntry,
   VMTaskDetailLevel,
@@ -22,7 +22,6 @@ import { loadPersistedTasks } from './vmTaskHistoryPersistence';
 
 const LOG_PERSIST_DEBOUNCE_MS = 250;
 const RUNNING_TASK_SWEEP_INTERVAL_MS = 15_000;
-const VM_LOG_TASKS_API_PATH = '/api/v1/settings/vmgenerator/task_logs';
 
 interface StartTaskMeta {
   node?: string;
@@ -75,7 +74,7 @@ export function useVMLog() {
         }
 
         try {
-          await apiPut(VM_LOG_TASKS_API_PATH, snapshot.tasks);
+          await writeVmTaskLogs(snapshot.tasks);
           lastPersistedHashRef.current = snapshot.serialized;
           lastCommittedSeqRef.current = snapshot.seq;
         } catch (error) {

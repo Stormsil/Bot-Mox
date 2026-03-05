@@ -1,0 +1,46 @@
+# Base audit excludes for gitingest-toolkit
+# Keep this list conservative: it should remove obvious non-code noise.
+
+**/.git/**
+**/node_modules/**
+**/.pnpm-store/**
+**/.cache/**
+**/.turbo/**
+**/dist/**
+**/build/**
+**/coverage/**
+**/test-results/**
+**/playwright-report/**
+**/.next/**
+**/.nuxt/**
+**/.venv/**
+**/venv/**
+**/__pycache__/**
+**/.pytest_cache/**
+**/.mypy_cache/**
+
+# Historical and generated docs often bloat LLM context
+**/docs/history/**
+**/docs/_generated/**
+
+# Lockfiles and binary assets
+**/package-lock.json
+**/yarn.lock
+pnpm-lock.yaml
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.webp
+**/*.ico
+**/*.pdf
+**/*.zip
+**/*.tar
+**/*.gz
+**/*.7z
+**/*.mp4
+**/*.mp3
+**/*.woff
+**/*.woff2
+**/*.ttf
+**/*.eot

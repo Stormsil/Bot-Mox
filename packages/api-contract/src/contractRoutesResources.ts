@@ -7,10 +7,22 @@ import {
   resourceListQuerySchema,
   resourceMutationSchema,
   resourceRecordSchema,
+  resourcesStatusAggregateSchema,
   successEnvelopeSchema,
 } from './schemas.js';
 
 export const contractRoutesResources = {
+  resourcesStatusAggregate: {
+    method: 'GET',
+    path: '/api/v1/resources/status-aggregate',
+    headers: authHeaderSchema,
+    responses: {
+      200: successEnvelopeSchema(resourcesStatusAggregateSchema),
+      401: errorEnvelopeSchema,
+      403: errorEnvelopeSchema,
+    },
+    summary: 'Get resources status aggregate projections',
+  },
   resourcesCreate: {
     method: 'POST',
     path: '/api/v1/resources/:kind',

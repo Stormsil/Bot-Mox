@@ -6,22 +6,23 @@ import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBotsMapQuery } from '../../entities/bot/api/useBotQueries';
 import type { BotRecord } from '../../entities/bot/model/types';
+import {
+  type FinanceAggregateQuery,
+  getFinanceProjectPerformanceViaContract,
+  getFinanceSummaryViaContract,
+} from '../../entities/finance/api/financeContractFacade';
 import { useNotesIndexQuery } from '../../entities/notes/api/useNotesIndexQuery';
 import type { NoteIndex } from '../../entities/notes/model/types';
-import { normalizeResourceStatusVocabulary } from '../../entities/resources/model/statusVocabulary';
+import { fetchResourcesStatusAggregateViaContract } from '../../entities/resources/api/resourceContractFacade';
 import type {
   BotLicense,
   Proxy as ProxyResource,
   Subscription,
 } from '../../entities/resources/model/types';
 import { uiLogger } from '../../observability/uiLogger';
-import {
-  getFinanceProjectPerformanceViaContract,
-  getFinanceSummaryViaContract,
-} from '../../shared/api/providers/finance-contract-client';
 import { AppSpin as Spin } from '../../shared/ui';
 import { ContentPanel } from '../../widgets/layout/ContentPanel';
-import { DatacenterContentMap, type ExpiringItem } from './content-map';
+import { DatacenterContentMap } from './content-map';
 import { cx } from './datacenterUi';
 import { buildProjectStats, FINANCE_WINDOW_DAYS, MS_PER_DAY } from './page-helpers';
 import { useDatacenterCollapsedSections, useDatacenterCurrentTime } from './useDatacenterState';
@@ -48,7 +49,7 @@ export const DatacenterPage: React.FC = () => {
 
   const { collapsedSections, toggleSection } = useDatacenterCollapsedSections();
 
-  const financeAggregateQuery = useMemo(
+  const financeAggregateQuery = useMemo<FinanceAggregateQuery>(
     () => ({
       from_ts: currentTime - FINANCE_WINDOW_DAYS * MS_PER_DAY,
       to_ts: currentTime,
@@ -69,30 +70,24 @@ export const DatacenterPage: React.FC = () => {
       return payload.data;
     },
   });
+  const resourcesStatusAggregateQuery = useQuery({
+    queryKey: ['datacenter', 'resources', 'status-aggregate'],
+    queryFn: fetchResourcesStatusAggregateViaContract,
+  });
   const financeLoading =
     financeSummaryAggregateQuery.isLoading ||
     financeSummaryAggregateQuery.isFetching ||
     financeProjectPerformanceAggregateQuery.isLoading ||
     financeProjectPerformanceAggregateQuery.isFetching;
+  const resourcesStatusLoading =
+    resourcesStatusAggregateQuery.isLoading || resourcesStatusAggregateQuery.isFetching;
   const bots = useMemo<Record<string, BotRecord>>(
     () => (botsMapQuery.data || {}) as Record<string, BotRecord>,
     [botsMapQuery.data],
   );
   const botsLoading = botsMapQuery.isLoading;
-  const licenses = useMemo<BotLicense[]>(
-    () => licensesList.result.data || [],
-    [licensesList.result.data],
-  );
   const licensesLoading = licensesList.query.isLoading;
-  const proxies = useMemo<ProxyResource[]>(
-    () => proxiesList.result.data || [],
-    [proxiesList.result.data],
-  );
   const proxiesLoading = proxiesList.query.isLoading;
-  const subscriptions = useMemo<Subscription[]>(
-    () => subscriptionsList.result.data || [],
-    [subscriptionsList.result.data],
-  );
   const subscriptionsLoading = subscriptionsList.query.isLoading;
   const notesIndex = useMemo<NoteIndex[]>(() => notesIndexQuery.data || [], [notesIndexQuery.data]);
   const notesLoading = notesIndexQuery.isLoading;
@@ -115,6 +110,15 @@ export const DatacenterPage: React.FC = () => {
       financeProjectPerformanceAggregateQuery.error,
     );
   }, [financeProjectPerformanceAggregateQuery.error]);
+  useEffect(() => {
+    if (!resourcesStatusAggregateQuery.error) {
+      return;
+    }
+    uiLogger.error(
+      'Error loading datacenter resources status aggregate:',
+      resourcesStatusAggregateQuery.error,
+    );
+  }, [resourcesStatusAggregateQuery.error]);
   useEffect(() => {
     if (!botsMapQuery.error) {
       return;
@@ -160,117 +164,60 @@ export const DatacenterPage: React.FC = () => {
   }, [financeSummaryAggregateQuery.data]);
 
   const financeGoldByProject = useMemo(() => {
-    const seed = {
-      wow_tbc: { totalGold: 0, priceSum: 0, priceCount: 0, avgPrice: 0 },
-      wow_midnight: { totalGold: 0, priceSum: 0, priceCount: 0, avgPrice: 0 },
-    };
-
-    (financeProjectPerformanceAggregateQuery.data?.items || []).forEach(
-      (item: Record<string, unknown>) => {
-        const projectId = String(item.project_id || '');
-        if (!(projectId in seed)) {
-          return;
-        }
-
-        const projectKey = projectId as 'wow_tbc' | 'wow_midnight';
-        const totalGold = Number(item.gold_volume || 0);
-        const incomeTotal = Number(item.income_total || 0);
-
-        seed[projectKey].totalGold = totalGold;
-        if (totalGold > 0) {
-          seed[projectKey].priceSum = (incomeTotal * 1000) / totalGold;
-          seed[projectKey].priceCount = 1;
-        }
-      },
+    const tbcEntry = (financeProjectPerformanceAggregateQuery.data?.items || []).find(
+      (item: Record<string, unknown>) => String(item.project_id || '') === 'wow_tbc',
+    );
+    const midnightEntry = (financeProjectPerformanceAggregateQuery.data?.items || []).find(
+      (item: Record<string, unknown>) => String(item.project_id || '') === 'wow_midnight',
     );
 
-    (Object.keys(seed) as Array<'wow_tbc' | 'wow_midnight'>).forEach((key) => {
-      const entry = seed[key];
-      entry.avgPrice = entry.priceCount > 0 ? entry.priceSum / entry.priceCount : 0;
-    });
-
-    return seed;
+    return {
+      wow_tbc: {
+        totalGold: Number(tbcEntry?.gold_volume || 0),
+        priceSum: 0,
+        priceCount: 0,
+        avgPrice: Number(tbcEntry?.average_gold_price || 0),
+      },
+      wow_midnight: {
+        totalGold: Number(midnightEntry?.gold_volume || 0),
+        priceSum: 0,
+        priceCount: 0,
+        avgPrice: Number(midnightEntry?.average_gold_price || 0),
+      },
+    };
   }, [financeProjectPerformanceAggregateQuery.data?.items]);
 
   const licenseStats = useMemo(() => {
-    const expiringSoon = licenses.filter((license) => {
-      const status = normalizeResourceStatusVocabulary(license);
-      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
-      return status.isExpiringSoon && !isExpired;
-    }).length;
-
-    const expired = licenses.filter((license) => {
-      const status = normalizeResourceStatusVocabulary(license);
-      return status.computedStatus === 'expired' || status.statusToken === 'expired';
-    }).length;
-    const active = licenses.filter((license) => {
-      const status = normalizeResourceStatusVocabulary(license);
-      return status.computedStatus === 'active' || status.statusToken === 'active';
-    }).length;
-    const unassigned = licenses.filter(
-      (license) => !license.bot_ids || license.bot_ids.length === 0,
-    ).length;
-
+    const data = resourcesStatusAggregateQuery.data?.summary?.licenses;
     return {
-      total: licenses.length,
-      active,
-      expiringSoon,
-      expired,
-      unassigned,
+      total: Number(data?.total || 0),
+      active: Number(data?.active || 0),
+      expiringSoon: Number(data?.expiring_soon || 0),
+      expired: Number(data?.expired || 0),
+      unassigned: Number(data?.unassigned || 0),
     };
-  }, [licenses]);
+  }, [resourcesStatusAggregateQuery.data?.summary?.licenses]);
 
   const proxyStats = useMemo(() => {
-    const expiringSoon = proxies.filter((proxy) => {
-      const status = normalizeResourceStatusVocabulary(proxy);
-      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
-      const isBanned = status.computedStatus === 'banned' || status.statusToken === 'banned';
-      return status.isExpiringSoon && !isExpired && !isBanned;
-    }).length;
-
-    const expired = proxies.filter((proxy) => {
-      const status = normalizeResourceStatusVocabulary(proxy);
-      return status.computedStatus === 'expired' || status.statusToken === 'expired';
-    }).length;
-    const active = proxies.filter((proxy) => {
-      const status = normalizeResourceStatusVocabulary(proxy);
-      const isBanned = status.computedStatus === 'banned' || status.statusToken === 'banned';
-      return (status.computedStatus === 'active' || status.statusToken === 'active') && !isBanned;
-    }).length;
-    const unassigned = proxies.filter((proxy) => !proxy.bot_id).length;
-
+    const data = resourcesStatusAggregateQuery.data?.summary?.proxies;
     return {
-      total: proxies.length,
-      active,
-      expiringSoon,
-      expired,
-      unassigned,
+      total: Number(data?.total || 0),
+      active: Number(data?.active || 0),
+      expiringSoon: Number(data?.expiring_soon || 0),
+      expired: Number(data?.expired || 0),
+      unassigned: Number(data?.unassigned || 0),
     };
-  }, [proxies]);
+  }, [resourcesStatusAggregateQuery.data?.summary?.proxies]);
 
   const subscriptionStats = useMemo(() => {
-    const expiringSoon = subscriptions.filter((sub) => {
-      const status = normalizeResourceStatusVocabulary(sub);
-      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
-      return status.isExpiringSoon && !isExpired;
-    }).length;
-
-    const expired = subscriptions.filter((sub) => {
-      const status = normalizeResourceStatusVocabulary(sub);
-      return status.computedStatus === 'expired' || status.statusToken === 'expired';
-    }).length;
-    const active = subscriptions.filter((sub) => {
-      const status = normalizeResourceStatusVocabulary(sub);
-      return status.computedStatus === 'active' || status.statusToken === 'active';
-    }).length;
-
+    const data = resourcesStatusAggregateQuery.data?.summary?.subscriptions;
     return {
-      total: subscriptions.length,
-      active,
-      expired,
-      expiringSoon,
+      total: Number(data?.total || 0),
+      active: Number(data?.active || 0),
+      expired: Number(data?.expired || 0),
+      expiringSoon: Number(data?.expiring_soon || 0),
     };
-  }, [subscriptions]);
+  }, [resourcesStatusAggregateQuery.data?.summary?.subscriptions]);
 
   const notesStats = useMemo(() => {
     const total = notesIndex.length;
@@ -281,80 +228,15 @@ export const DatacenterPage: React.FC = () => {
   const latestNotes = useMemo(() => notesIndex.slice(0, 5), [notesIndex]);
 
   const expiringItems = useMemo(() => {
-    const items: ExpiringItem[] = [];
-
-    licenses.forEach((license) => {
-      const status = normalizeResourceStatusVocabulary(license);
-      const daysRemaining = status.daysRemaining;
-      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
-      if (
-        status.isExpiringSoon &&
-        !isExpired &&
-        typeof daysRemaining === 'number' &&
-        daysRemaining > 0
-      ) {
-        const botName = license.bot_ids?.length
-          ? bots[license.bot_ids[0]]?.character?.name
-          : undefined;
-        items.push({
-          id: license.id,
-          type: 'license',
-          name: `License (${license.type})`,
-          botName,
-          daysRemaining,
-          expiresAt: license.expires_at,
-        });
-      }
-    });
-
-    proxies.forEach((proxy) => {
-      const status = normalizeResourceStatusVocabulary(proxy);
-      const daysRemaining = status.daysRemaining;
-      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
-      const isBanned = status.computedStatus === 'banned' || status.statusToken === 'banned';
-      if (
-        status.isExpiringSoon &&
-        !isExpired &&
-        !isBanned &&
-        typeof daysRemaining === 'number' &&
-        daysRemaining > 0
-      ) {
-        const botName = proxy.bot_id ? bots[proxy.bot_id]?.character?.name : undefined;
-        items.push({
-          id: proxy.id,
-          type: 'proxy',
-          name: `Proxy (${proxy.ip}:${proxy.port})`,
-          botName,
-          daysRemaining,
-          expiresAt: proxy.expires_at,
-        });
-      }
-    });
-
-    subscriptions.forEach((sub) => {
-      const status = normalizeResourceStatusVocabulary(sub);
-      const daysRemaining = status.daysRemaining;
-      const isExpired = status.computedStatus === 'expired' || status.statusToken === 'expired';
-      if (
-        status.isExpiringSoon &&
-        !isExpired &&
-        typeof daysRemaining === 'number' &&
-        daysRemaining > 0
-      ) {
-        const botName = sub.bot_id ? bots[sub.bot_id]?.character?.name : undefined;
-        items.push({
-          id: sub.id,
-          type: 'subscription',
-          name: `Subscription (${sub.type})`,
-          botName,
-          daysRemaining,
-          expiresAt: sub.expires_at,
-        });
-      }
-    });
-
-    return items.sort((a, b) => a.daysRemaining - b.daysRemaining);
-  }, [licenses, proxies, subscriptions, bots]);
+    return (resourcesStatusAggregateQuery.data?.expiring_items || []).map((item) => ({
+      id: String(item.id || ''),
+      type: item.type,
+      name: String(item.name || ''),
+      botName: item.bot_id ? bots[item.bot_id]?.character?.name : undefined,
+      daysRemaining: Number(item.days_remaining || 0),
+      expiresAt: Number(item.expires_at || 0),
+    }));
+  }, [resourcesStatusAggregateQuery.data?.expiring_items, bots]);
 
   const initialLoading =
     botsLoading &&
@@ -362,6 +244,7 @@ export const DatacenterPage: React.FC = () => {
     proxiesLoading &&
     subscriptionsLoading &&
     financeLoading &&
+    resourcesStatusLoading &&
     notesLoading;
 
   const navProps = (path: string) => ({

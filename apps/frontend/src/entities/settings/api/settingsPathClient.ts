@@ -10,6 +10,8 @@ interface SettingsEnvelope<T> {
   data: T;
   meta?: Record<string, unknown>;
 }
+
+export const SETTINGS_API_BASE_PATH = '/api/v1/settings';
 function toSettingsEnvelope<T>(response: ApiSuccessEnvelope<T>): SettingsEnvelope<T> {
   return {
     data: response.data,
@@ -34,7 +36,7 @@ export const apiPut = async <T>(path: string, payload: unknown): Promise<Setting
 export const getSettingsPath = (path: string): string => {
   const normalized = String(path || '').trim();
   if (!normalized) {
-    return '/api/v1/settings';
+    return SETTINGS_API_BASE_PATH;
   }
 
   const withoutLeadingSlash = normalized.replace(/^\/+/, '');
@@ -42,10 +44,10 @@ export const getSettingsPath = (path: string): string => {
     return `/${withoutLeadingSlash}`;
   }
   if (withoutLeadingSlash === 'api/v1/settings') {
-    return '/api/v1/settings';
+    return SETTINGS_API_BASE_PATH;
   }
 
-  return `/api/v1/settings/${withoutLeadingSlash}`;
+  return `${SETTINGS_API_BASE_PATH}/${withoutLeadingSlash}`;
 };
 
 export const readSettingsPath = async <T>(path: string): Promise<T | null> => {

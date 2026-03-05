@@ -7,7 +7,6 @@ import {
   UserOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { normalizeResourceStatusVocabulary } from '../../../../entities/resources/model/statusVocabulary';
 
 import type { Subscription } from '../../../../entities/resources/model/types';
 import { formatDateDotted } from '../../../../shared/lib/date';
@@ -138,14 +137,11 @@ export function calculateScheduleStats(schedule: unknown): ScheduleStats {
 
 export function calculateSubscriptionSummary(subscriptions: Subscription[]): SubscriptionSummary {
   const total = subscriptions.length;
-  const active = subscriptions.filter((sub) => {
-    const status = normalizeResourceStatusVocabulary(sub);
-    return status.computedStatus === 'active' || status.statusToken === 'active';
-  });
+  const active = subscriptions.filter((sub) => sub.computed_status === 'active');
 
   const nextExpiry = [...active].sort((a, b) => {
-    const aDays = normalizeResourceStatusVocabulary(a).daysRemaining;
-    const bDays = normalizeResourceStatusVocabulary(b).daysRemaining;
+    const aDays = typeof a.days_remaining === 'number' ? a.days_remaining : undefined;
+    const bDays = typeof b.days_remaining === 'number' ? b.days_remaining : undefined;
     if (typeof aDays === 'number' && typeof bDays === 'number') {
       return aDays - bDays;
     }

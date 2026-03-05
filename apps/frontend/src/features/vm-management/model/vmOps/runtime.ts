@@ -1,8 +1,10 @@
-import { ApiClientError } from '../../../../shared/api/apiClient';
-import { listAgentsViaContract } from '../../../../shared/api/providers/vmops-contract-client';
+import { ApiClientError, listAgentsViaContract } from '../../../../entities/vm/api/vmRuntimeFacade';
+import {
+  getSelectedProxmoxTargetId,
+  getSelectedProxmoxTargetNode,
+} from '../../../../entities/vm/api/vmSelectionFacade';
 import { dispatchAndPoll } from './commandExecution';
 import { type AgentSummary, toAgentSummaryList } from './parsers';
-import { getSelectedProxmoxTargetId, getSelectedProxmoxTargetNode } from './targetStorage';
 
 const AGENT_ONLINE_WINDOW_MS = 120_000;
 const AGENT_CACHE_TTL_MS = 10_000;

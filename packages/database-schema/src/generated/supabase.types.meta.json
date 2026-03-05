@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-02-22T10:14:18.012Z",
   "schemaList": "public,storage,graphql_public",
-  "migrationsHash": "383ce87b34ab26e5533937eb6411b3ccb0e57936af8eeb8ebd728c1e8144a3da",
+  "migrationsHash": "2e1c6e8d505ee26675d62a0d59bb1a34756aa98d64a67a99af66752140e261d2",
   "migrationFiles": [
     "supabase/migrations/20260212000100_create_storage_policies.sql",
     "supabase/migrations/20260212000200_create_artifacts_domain.sql",

@@ -6,8 +6,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..', '..');
 
-const strictMode = process.env.THIN_CLIENT_GUARD_STRICT === '1';
-
 const scopedFiles = {
   statusMath: [
     'src/pages/licenses/page/helpers.ts',
@@ -61,44 +59,6 @@ const rules = [
   },
 ];
 
-const baselineMaxCounts = {
-  'src/pages/licenses/page/helpers.ts': {
-    'status-no-isExpired-helper': 2,
-    'status-no-isExpiringSoon-helper': 1,
-    'status-no-expires-date-now-math': 0,
-  },
-  'src/widgets/bot-profile/ui/proxy/helpers.tsx': {
-    'status-no-isExpired-helper': 0,
-    'status-no-isExpiringSoon-helper': 0,
-    'status-no-expires-date-now-math': 1,
-  },
-  'src/widgets/finance/ProjectPerformanceTable.tsx': {
-    'finance-no-project-map-grouping': 1,
-    'finance-no-operations-foreach-grouping': 1,
-    'finance-no-local-gold-history-mapper': 0,
-  },
-  'src/widgets/finance/FinanceSummary.tsx': {
-    'finance-no-project-map-grouping': 0,
-    'finance-no-operations-foreach-grouping': 1,
-    'finance-no-local-gold-history-mapper': 0,
-  },
-  'src/pages/finance/mappers.ts': {
-    'finance-no-project-map-grouping': 0,
-    'finance-no-operations-foreach-grouping': 0,
-    'finance-no-local-gold-history-mapper': 1,
-  },
-  'src/pages/finance/index.tsx': {
-    'finance-no-project-map-grouping': 0,
-    'finance-no-operations-foreach-grouping': 0,
-    'finance-no-local-gold-history-mapper': 0,
-  },
-  'src/pages/datacenter/index.tsx': {
-    'finance-no-project-map-grouping': 0,
-    'finance-no-operations-foreach-grouping': 1,
-    'finance-no-local-gold-history-mapper': 0,
-  },
-};
-
 function countOccurrences(content, pattern) {
   const matches = [...content.matchAll(pattern)];
   return matches.length;
@@ -126,7 +86,21 @@ function collectMatches(content, pattern) {
 
 function run() {
   const failures = [];
-  const modeLabel = strictMode ? 'strict' : 'baseline-regression';
+  const scannedFiles = new Set();
+
+  if (rules.length === 0) {
+    failures.push(
+      '[guard-config] no forbidden-business-logic rules configured; refusing false-green result.',
+    );
+  }
+
+  for (const [scope, files] of Object.entries(scopedFiles)) {
+    if (!Array.isArray(files) || files.length === 0) {
+      failures.push(
+        `[guard-config] scope ${scope} has zero target files; refusing false-green result.`,
+      );
+    }
+  }
 
   for (const rule of rules) {
     const files = scopedFiles[rule.scope] || [];
@@ -140,9 +114,9 @@ function run() {
       }
 
       const content = fs.readFileSync(absoluteFile, 'utf8');
+      scannedFiles.add(relativeFile);
       const count = countOccurrences(content, rule.pattern);
-      const allowedByBaseline = baselineMaxCounts[relativeFile]?.[rule.id] ?? 0;
-      const allowed = strictMode ? 0 : allowedByBaseline;
+      const allowed = 0;
 
       if (count > allowed) {
         const detail = collectMatches(content, rule.pattern)
@@ -150,10 +124,14 @@ function run() {
           .map((entry) => `line ${entry.line}: ${entry.excerpt}`)
           .join('; ');
         failures.push(
-          `[forbidden-pattern] ${relativeFile} :: ${rule.id} :: found ${count}, allowed ${allowed} (${modeLabel}) :: ${rule.description} :: ${detail}`,
+          `[forbidden-pattern] ${relativeFile} :: ${rule.id} :: found ${count}, allowed ${allowed} (strict) :: ${rule.description} :: ${detail}`,
         );
       }
     }
+  }
+
+  if (scannedFiles.size === 0) {
+    failures.push('[guard-config] zero scoped files scanned; refusing false-green result.');
   }
 
   if (failures.length > 0) {
@@ -165,7 +143,7 @@ function run() {
   }
 
   process.stdout.write(
-    `Thin-client forbidden business logic guard passed (${modeLabel}) for ${rules.length} rules across scoped business files.\n`,
+    `Thin-client forbidden business logic guard passed (strict) for ${rules.length} rules across ${scannedFiles.size} scoped business files.\n`,
   );
 }
 

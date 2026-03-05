@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { buildBotComputedStatusFields } from '../common/status-computation';
+import { DOMAIN_EVENT_TYPES } from '../eventing/domain-events.contracts';
+import { DurableEventBusService } from '../eventing/durable-event-bus.service';
 import { buildBanPayload, buildTransitionPayload, buildUnbanPayload } from './bots.lifecycle';
 import { BotsRepository } from './bots.repository';
 import type {
@@ -24,7 +26,10 @@ export class BotsServiceValidationError extends Error {}
 
 @Injectable()
 export class BotsService {
-  constructor(private readonly repository: BotsRepository) {}
+  constructor(
+    private readonly repository: BotsRepository,
+    @Optional() private readonly eventBus?: DurableEventBusService,
+  ) {}
 
   private mapDbRow(row: Record<string, unknown>): BotRecord {
     const id = String(row.id || '').trim();
@@ -140,7 +145,51 @@ export class BotsService {
 
   async remove(id: string, tenantId: string): Promise<boolean> {
     const normalizedTenantId = normalizeTenantId(tenantId);
-    return this.repository.delete(normalizedTenantId, id);
+    await this.eventBus?.publish({
+      type: DOMAIN_EVENT_TYPES.BOT_DELETE_REQUESTED,
+      tenantId: normalizedTenantId,
+      aggregateId: id,
+      payload: {
+        botId: id,
+      },
+    });
+
+    try {
+      const removed = await this.repository.delete(normalizedTenantId, id);
+      if (removed) {
+        await this.eventBus?.publish({
+          type: DOMAIN_EVENT_TYPES.BOT_DELETED,
+          tenantId: normalizedTenantId,
+          aggregateId: id,
+          payload: {
+            botId: id,
+          },
+        });
+      } else {
+        await this.eventBus?.publish({
+          type: DOMAIN_EVENT_TYPES.BOT_DELETE_FAILED,
+          tenantId: normalizedTenantId,
+          aggregateId: id,
+          payload: {
+            botId: id,
+            reason: 'not_found',
+          },
+        });
+      }
+      return removed;
+    } catch (error) {
+      await this.eventBus?.publish({
+        type: DOMAIN_EVENT_TYPES.BOT_DELETE_FAILED,
+        tenantId: normalizedTenantId,
+        aggregateId: id,
+        payload: {
+          botId: id,
+          reason: 'repository_error',
+          details: (error as Error)?.message || String(error),
+        },
+      });
+      throw error;
+    }
   }
 
   async getLifecycle(id: string, tenantId: string): Promise<BotLifecycleState | null> {

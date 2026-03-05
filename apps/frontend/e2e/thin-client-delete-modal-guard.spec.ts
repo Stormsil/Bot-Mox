@@ -33,6 +33,11 @@ type RequestCounters = {
   fanoutSubscriptions: number;
 };
 
+type UnexpectedRequest = {
+  method: string;
+  pathname: string;
+};
+
 function envelope(data: unknown, meta?: Record<string, unknown>): ApiEnvelope {
   if (meta) {
     return { success: true, data, meta };
@@ -171,7 +176,9 @@ function createFixture() {
   };
 }
 
-async function mountDeleteModalGuardApi(page: Page): Promise<RequestCounters> {
+async function mountDeleteModalGuardApi(
+  page: Page,
+): Promise<{ counters: RequestCounters; unexpectedRequests: UnexpectedRequest[] }> {
   const fixture = createFixture();
   const vmCommandResults = new Map<string, { commandType: string; result: unknown }>();
   const counters: RequestCounters = {
@@ -180,6 +187,7 @@ async function mountDeleteModalGuardApi(page: Page): Promise<RequestCounters> {
     fanoutProxies: 0,
     fanoutSubscriptions: 0,
   };
+  const unexpectedRequests: UnexpectedRequest[] = [];
 
   await page.route('**/api/v1/**', async (route: Route) => {
     const request = route.request();
@@ -313,6 +321,49 @@ async function mountDeleteModalGuardApi(page: Page): Promise<RequestCounters> {
       return;
     }
 
+    if (pathname === '/api/v1/settings/theme') {
+      await route.fulfill(
+        toJsonResponse(
+          envelope({
+            mode: 'light',
+            density: 'compact',
+          }),
+        ),
+      );
+      return;
+    }
+
+    if (pathname === '/api/v1/settings/ui/resource_tree') {
+      if (method === 'GET') {
+        await route.fulfill(
+          toJsonResponse(
+            envelope({
+              groups: [],
+              pinned: [],
+            }),
+          ),
+        );
+        return;
+      }
+
+      if (method === 'PUT') {
+        await route.fulfill(toJsonResponse(envelope({ updated: true })));
+        return;
+      }
+    }
+
+    if (pathname === '/api/v1/settings/finance/chart_config') {
+      await route.fulfill(
+        toJsonResponse(
+          envelope({
+            period: '30d',
+            metric: 'net_profit',
+          }),
+        ),
+      );
+      return;
+    }
+
     if (pathname === '/api/v1/settings/alerts') {
       await route.fulfill(
         toJsonResponse(
@@ -331,6 +382,11 @@ async function mountDeleteModalGuardApi(page: Page): Promise<RequestCounters> {
       return;
     }
 
+    if (pathname === '/api/v1/settings/vmgenerator/task_logs') {
+      await route.fulfill(toJsonResponse(envelope([], { total: 0 })));
+      return;
+    }
+
     if (pathname === '/api/v1/bots') {
       await route.fulfill(toJsonResponse(envelope(fixture.bots, { total: fixture.bots.length })));
       return;
@@ -338,6 +394,16 @@ async function mountDeleteModalGuardApi(page: Page): Promise<RequestCounters> {
 
     if (pathname.startsWith('/api/v1/bots/')) {
       await route.fulfill(toJsonResponse(envelope(fixture.bot)));
+      return;
+    }
+
+    if (pathname === '/api/v1/unattend-profiles') {
+      await route.fulfill(toJsonResponse(envelope([], { total: 0 })));
+      return;
+    }
+
+    if (pathname === '/api/v1/playbooks') {
+      await route.fulfill(toJsonResponse(envelope([], { total: 0 })));
       return;
     }
 
@@ -399,22 +465,20 @@ async function mountDeleteModalGuardApi(page: Page): Promise<RequestCounters> {
       return;
     }
 
-    if (method === 'GET') {
-      await route.fulfill(toJsonResponse(envelope([], { total: 0 })));
-      return;
-    }
-
-    await route.fulfill(toJsonResponse(envelope({ id: 'e2e-item' })));
+    unexpectedRequests.push({ method, pathname });
+    await route.fulfill(
+      toJsonResponse(envelope({ error: 'UNEXPECTED_GUARD_REQUEST', method, pathname }), 500),
+    );
   });
 
-  return counters;
+  return { counters, unexpectedRequests };
 }
 
 test('thin-client guard: delete-modal open performs one evaluate request and no resource fan-out', async ({
   page,
 }) => {
   await page.addInitScript(seedAuthStorage, e2eIdentity);
-  const counters = await mountDeleteModalGuardApi(page);
+  const { counters, unexpectedRequests } = await mountDeleteModalGuardApi(page);
 
   await page.goto('/vms');
   await expect(page).toHaveURL(/\/vms$/);
@@ -452,4 +516,8 @@ test('thin-client guard: delete-modal open performs one evaluate request and no 
     subscriptionsDelta,
     'Delete-modal open must not trigger GET /api/v1/resources/subscriptions fan-out',
   ).toBe(0);
+  expect(
+    unexpectedRequests,
+    'Unexpected /api/v1 requests must hard-fail thin-client guard',
+  ).toEqual([]);
 });

@@ -141,6 +141,19 @@ export class ResourcesController {
     };
   }
 
+  @Get('status-aggregate')
+  async statusAggregate(
+    @Headers('authorization') authorization: string | undefined,
+    @Req() req: Request,
+  ): Promise<{ success: true; data: unknown }> {
+    this.ensureAuthHeader(authorization);
+    const tenantId = this.getTenantId(req);
+    return {
+      success: true,
+      data: await this.resourcesService.getStatusAggregates(tenantId),
+    };
+  }
+
   @Get(':kind')
   async list(
     @Headers('authorization') authorization: string | undefined,

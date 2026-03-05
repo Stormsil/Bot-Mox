@@ -25,6 +25,12 @@ function createServiceStub() {
     create: async () => ({}),
     update: async () => null,
     remove: async () => false,
+    getStatusAggregates: async () => ({
+      generated_at: 0,
+      summary: {},
+      expiring_items: [],
+      by_bot: {},
+    }),
   };
 }
 
@@ -59,4 +65,24 @@ test('ResourcesController returns deterministic code for missing resource', asyn
       return true;
     },
   );
+});
+
+test('ResourcesController returns status aggregate from service', async () => {
+  const controller = new ResourcesController({
+    ...createServiceStub(),
+    getStatusAggregates: async () => ({
+      generated_at: 123,
+      summary: {
+        licenses: { total: 1, active: 1, expiring_soon: 0, expired: 0, unassigned: 0 },
+        proxies: { total: 0, active: 0, expiring_soon: 0, expired: 0, unassigned: 0 },
+        subscriptions: { total: 0, active: 0, expiring_soon: 0, expired: 0 },
+      },
+      expiring_items: [],
+      by_bot: {},
+    }),
+  });
+
+  const result = await controller.statusAggregate('Bearer test-token', buildRequest('tenant-a'));
+  assert.equal(result.success, true);
+  assert.equal((result.data as { generated_at: number }).generated_at, 123);
 });

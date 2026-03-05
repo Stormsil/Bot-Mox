@@ -4,6 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import {
+  type FinanceAggregateQuery,
+  type FinanceOperationContractRecord,
+  getFinanceBreakdownViaContract,
+  getFinanceGoldPriceHistoryViaContract,
+  getFinanceProjectPerformanceViaContract,
+  getFinanceSummaryViaContract,
+  getFinanceTimeSeriesViaContract,
+} from '../../entities/finance/api/financeContractFacade';
 import { mapFinanceOperationsFromInfinitePages } from '../../entities/finance/lib/financeOperationMapper';
 import {
   buildFinanceOperationCreatePayload,
@@ -14,14 +23,6 @@ import type {
   FinanceOperationFormData,
 } from '../../entities/finance/model/types';
 import { uiLogger } from '../../observability/uiLogger';
-import {
-  type FinanceOperationContractRecord,
-  getFinanceBreakdownViaContract,
-  getFinanceGoldPriceHistoryViaContract,
-  getFinanceProjectPerformanceViaContract,
-  getFinanceSummaryViaContract,
-  getFinanceTimeSeriesViaContract,
-} from '../../shared/api/providers/finance-contract-client';
 import {
   AppCard as Card,
   AppDatePicker as DatePicker,
@@ -136,7 +137,7 @@ export const FinancePage: React.FC = () => {
     [financeOperationsResult.data?.pages],
   );
 
-  const aggregateQuery = useMemo(() => {
+  const aggregateQuery = useMemo<FinanceAggregateQuery>(() => {
     const fromTs = dateRange ? dateRange[0].startOf('day').valueOf() : undefined;
     const toTs = dateRange ? dateRange[1].endOf('day').valueOf() : undefined;
     return {

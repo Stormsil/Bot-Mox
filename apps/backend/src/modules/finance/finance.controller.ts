@@ -332,6 +332,9 @@ export class FinanceController {
     net_total: number;
     margin_percent: number;
     operation_count: number;
+    total_gold_sold: number;
+    total_gold_farmed: number;
+    average_gold_price: number;
     period: { from_ts?: number; to_ts?: number };
   } {
     return {
@@ -340,6 +343,9 @@ export class FinanceController {
       net_total: 0,
       margin_percent: 0,
       operation_count: 0,
+      total_gold_sold: 0,
+      total_gold_farmed: 0,
+      average_gold_price: 0,
       period: {
         ...(query.from_ts !== undefined ? { from_ts: query.from_ts } : {}),
         ...(query.to_ts !== undefined ? { to_ts: query.to_ts } : {}),

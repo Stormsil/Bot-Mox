@@ -1,4 +1,12 @@
+export { ApiClientError } from '../../../shared/api/apiClient';
+export type { VmOpsCommandEvent } from '../../../shared/api/providers/vm-ops-events-client';
 export { subscribeToVmOpsEvents } from '../../../shared/api/providers/vm-ops-events-client';
+export {
+  dispatchVmOpsViaContract,
+  getVmOpsCommandViaContract,
+  listAgentsViaContract,
+  type VmOpsDispatchTarget,
+} from '../../../shared/api/providers/vmops-contract-client';
 export type { Playbook, PlaybookValidationResult } from './playbookFacade';
 export {
   createPlaybook,

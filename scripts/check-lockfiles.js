@@ -14,6 +14,7 @@ const skipDirs = new Set([
   'playwright-report',
   'test-results',
   'tmp',
+  'tmp-research',
 ]);
 const allowPathPrefixes = ['docs/history/'];
 

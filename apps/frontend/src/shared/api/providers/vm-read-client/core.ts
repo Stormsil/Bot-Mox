@@ -1,4 +1,4 @@
-import { executeVmOps } from '../../../../features/vm-management/model/vmOps/runtime';
+import { executeVmOps } from '../../../../entities/vm/api/vmOpsExecutionFacade';
 import type {
   ProxmoxClusterResource,
   ProxmoxTaskStatus,

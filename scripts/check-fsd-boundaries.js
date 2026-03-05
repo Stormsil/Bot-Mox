@@ -15,9 +15,12 @@ const allowlistedViolations = new Set([
   'apps/frontend/src/shared/api/providers/bot-contract-client/runtime.ts::../../../../entities/bot/model/types',
   'apps/frontend/src/shared/api/providers/ipqs-contract-client.ts::../../../entities/resources/model/types',
   'apps/frontend/src/shared/api/providers/settings-contract-client.ts::../../../entities/settings/model/types',
+  'apps/frontend/src/shared/api/providers/vm-read-client/core.ts::../../../../entities/vm/api/vmOpsExecutionFacade',
   'apps/frontend/src/shared/api/providers/vm-read-client/core.ts::../../../../features/vm-management/model/vmOps/runtime',
   'apps/frontend/src/shared/api/services/vm/proxmoxOps.ts::../../../../features/vm-management/model/vmOps/runtime',
+  'apps/frontend/src/shared/api/services/vm/proxmoxOps.ts::../../../../entities/vm/api/vmOpsExecutionFacade',
   'apps/frontend/src/shared/api/services/vm/sshOps.ts::../../../../features/vm-management/model/vmOps/runtime',
+  'apps/frontend/src/shared/api/services/vm/sshOps.ts::../../../../entities/vm/api/vmOpsExecutionFacade',
   'apps/frontend/src/shared/lib/utils/unattendXml.ts::../../../entities/vm/api/unattendProfileFacade',
 ]);
 
@@ -88,11 +91,18 @@ function getLineNumber(source, index) {
 }
 
 if (!fs.existsSync(frontendRoot)) {
-  process.stdout.write('FSD boundaries: frontend src not found, skipping.\n');
-  process.exit(0);
+  process.stderr.write(
+    'FSD boundaries: stale/missing frontend src root, refusing false-green result.\n',
+  );
+  process.exit(1);
 }
 
 const files = listLayerFiles();
+if (files.length === 0) {
+  process.stderr.write('FSD boundaries: zero target files scanned, refusing false-green result.\n');
+  process.exit(1);
+}
+
 const violations = [];
 
 for (const fileAbs of files) {

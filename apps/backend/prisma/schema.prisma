@@ -83,6 +83,78 @@ model WorkspaceItem {
   @@map("workspace_items")
 }
 
+model ResourceLicense {
+  tenantId  String   @map("tenant_id")
+  id        String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_resources_licenses_tenant_updated")
+  @@map("resources_licenses")
+}
+
+model ResourceProxy {
+  tenantId  String   @map("tenant_id")
+  id        String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_resources_proxies_tenant_updated")
+  @@map("resources_proxies")
+}
+
+model ResourceSubscription {
+  tenantId  String   @map("tenant_id")
+  id        String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_resources_subscriptions_tenant_updated")
+  @@map("resources_subscriptions")
+}
+
+model WorkspaceNote {
+  tenantId  String   @map("tenant_id")
+  id        String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_workspace_notes_tenant_updated")
+  @@map("workspace_notes")
+}
+
+model WorkspaceCalendarEvent {
+  tenantId  String   @map("tenant_id")
+  id        String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_workspace_calendar_events_tenant_updated")
+  @@map("workspace_calendar_events")
+}
+
+model WorkspaceKanbanTask {
+  tenantId  String   @map("tenant_id")
+  id        String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_workspace_kanban_tasks_tenant_updated")
+  @@map("workspace_kanban_tasks")
+}
+
 model FinanceOperation {
   id        String
   tenantId  String   @map("tenant_id")
@@ -141,6 +213,18 @@ model BotEntity {
   @@map("bot_entities")
 }
 
+model Bot {
+  tenantId  String   @map("tenant_id")
+  id        String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_bots_tenant_updated")
+  @@map("bots")
+}
+
 model PlaybookItem {
   id        String
   tenantId  String   @map("tenant_id")
@@ -151,6 +235,18 @@ model PlaybookItem {
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_playbook_items_tenant_updated")
   @@map("playbook_items")
+}
+
+model Playbook {
+  tenantId  String   @map("tenant_id")
+  id        String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_playbooks_tenant_updated")
+  @@map("playbooks")
 }
 
 model SettingsItem {
@@ -165,6 +261,15 @@ model SettingsItem {
   @@map("settings_items")
 }
 
+model AppSetting {
+  tenantId  String   @id @map("tenant_id")
+  data      Json     @default("{}")
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([updatedAt(sort: Desc)], map: "idx_app_settings_updated")
+  @@map("app_settings")
+}
+
 model ThemeAssetItem {
   id        String
   tenantId  String   @map("tenant_id")
@@ -175,6 +280,18 @@ model ThemeAssetItem {
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_theme_asset_items_tenant_updated")
   @@map("theme_asset_items")
+}
+
+model ThemeBackgroundAsset {
+  tenantId  String   @map("tenant_id")
+  id        String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, updatedAt(sort: Desc)], map: "idx_theme_background_assets_tenant_updated")
+  @@map("theme_background_assets")
 }
 
 model LicenseLeaseItem {
@@ -347,4 +464,40 @@ model AdminAuditEvent {
   @@index([action, createdAt(sort: Desc)], map: "idx_admin_audit_events_action_created")
   @@index([targetTenantId, createdAt(sort: Desc)], map: "idx_admin_audit_events_target_created")
   @@map("admin_audit_events")
+}
+
+model DomainEventOutbox {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String    @map("tenant_id")
+  aggregateType String    @map("aggregate_type")
+  aggregateId   String    @map("aggregate_id")
+  eventType     String    @map("event_type")
+  eventVersion  Int       @default(1) @map("event_version")
+  payload       Json      @default("{}")
+  status        String    @default("pending")
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(5) @map("max_attempts")
+  nextAttemptAt DateTime  @default(now()) @map("next_attempt_at") @db.Timestamptz(6)
+  publishedAt   DateTime? @map("published_at") @db.Timestamptz(6)
+  lastError     String?   @map("last_error")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status, nextAttemptAt, createdAt(sort: Asc)], map: "idx_domain_event_outbox_relay")
+  @@index([tenantId, createdAt(sort: Desc)], map: "idx_domain_event_outbox_tenant_created")
+  @@map("domain_event_outbox")
+}
+
+model ProcessedDomainEvent {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId     String   @map("event_id") @db.Uuid
+  consumer    String
+  status      String   @default("processing")
+  processedAt DateTime? @map("processed_at") @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([eventId, consumer], map: "ux_processed_domain_events_event_consumer")
+  @@index([consumer, processedAt(sort: Desc)], map: "idx_processed_domain_events_consumer_processed")
+  @@map("processed_domain_events")
 }

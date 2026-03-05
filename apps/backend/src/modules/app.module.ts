@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AdminAccessModule } from './admin-access/admin-access.module';
 import { AdminAuditModule } from './admin-audit/admin-audit.module';
 import { AdminDataEncryptionModule } from './admin-data-encryption/admin-data-encryption.module';
@@ -9,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
 import { BotsModule } from './bots/bots.module';
 import { DbModule } from './db/db.module';
+import { EventingModule } from './eventing/eventing.module';
 import { FinanceModule } from './finance/finance.module';
 import { HealthModule } from './health/health.module';
 import { InfraModule } from './infra/infra.module';
@@ -23,6 +25,7 @@ import { SecretsModule } from './secrets/secrets.module';
 import { SettingsModule } from './settings/settings.module';
 import { ThemeAssetsModule } from './theme-assets/theme-assets.module';
 import { VmModule } from './vm/vm.module';
+import { VmDeletionOrchestratorModule } from './vm-deletion-orchestrator/vm-deletion-orchestrator.module';
 import { VmOpsModule } from './vm-ops/vm-ops.module';
 import { WorkspaceModule } from './workspace/workspace.module';
 import { WowNamesModule } from './wow-names/wow-names.module';
@@ -30,6 +33,8 @@ import { WowNamesModule } from './wow-names/wow-names.module';
 @Module({
   imports: [
     DbModule,
+    EventEmitterModule.forRoot(),
+    EventingModule,
     HealthModule,
     InfraGatewayModule,
     ObservabilityModule,
@@ -42,6 +47,7 @@ import { WowNamesModule } from './wow-names/wow-names.module';
     ArtifactsModule,
     InfraModule,
     BotsModule,
+    VmDeletionOrchestratorModule,
     VmOpsModule,
     AgentsModule,
     ResourcesModule,

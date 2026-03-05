@@ -20,6 +20,7 @@ const SKIP_DIRS = new Set([
   'playwright-report',
   'test-results',
   'tmp',
+  'tmp-research',
 ]);
 
 const allowedScriptsByManifest = new Map();

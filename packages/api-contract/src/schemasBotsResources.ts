@@ -169,3 +169,60 @@ export const resourceDeleteResultSchema = z.object({
   id: z.string().min(1),
   deleted: z.boolean(),
 });
+
+export const resourceStatusProjectionSchema = z.object({
+  status: z.enum(['none', 'active', 'expiring', 'expired', 'banned']),
+  label: z.string().trim().min(1),
+  color: z.enum(['default', 'success', 'warning', 'error']),
+  sort: z.coerce.number().int(),
+  days_remaining: z.coerce.number().int().optional(),
+});
+
+export const resourcesStatusAggregateSchema = z.object({
+  generated_at: z.coerce.number().int().nonnegative(),
+  summary: z.object({
+    licenses: z.object({
+      total: z.coerce.number().int().nonnegative(),
+      active: z.coerce.number().int().nonnegative(),
+      expiring_soon: z.coerce.number().int().nonnegative(),
+      expired: z.coerce.number().int().nonnegative(),
+      unassigned: z.coerce.number().int().nonnegative(),
+    }),
+    proxies: z.object({
+      total: z.coerce.number().int().nonnegative(),
+      active: z.coerce.number().int().nonnegative(),
+      expiring_soon: z.coerce.number().int().nonnegative(),
+      expired: z.coerce.number().int().nonnegative(),
+      unassigned: z.coerce.number().int().nonnegative(),
+    }),
+    subscriptions: z.object({
+      total: z.coerce.number().int().nonnegative(),
+      active: z.coerce.number().int().nonnegative(),
+      expiring_soon: z.coerce.number().int().nonnegative(),
+      expired: z.coerce.number().int().nonnegative(),
+    }),
+  }),
+  expiring_items: z.array(
+    z.object({
+      id: z.string().trim().min(1),
+      type: z.enum(['license', 'proxy', 'subscription']),
+      name: z.string().trim().min(1),
+      bot_id: z.string().trim().min(1).optional(),
+      days_remaining: z.coerce.number().int().nonnegative(),
+      expires_at: z.coerce.number().int().nonnegative().optional(),
+    }),
+  ),
+  by_bot: z.record(
+    z.object({
+      license_status: resourceStatusProjectionSchema,
+      proxy_status: resourceStatusProjectionSchema,
+      subscription_status: resourceStatusProjectionSchema,
+      subscriptions_summary: z.object({
+        total: z.coerce.number().int().nonnegative(),
+        active_count: z.coerce.number().int().nonnegative(),
+        next_expiry_days_remaining: z.coerce.number().int().optional(),
+        next_expiry_at: z.coerce.number().int().optional(),
+      }),
+    }),
+  ),
+});

@@ -1,0 +1,46 @@
+{
+  "topic": "auth",
+  "description": "Authentication and authorization cross-stack extraction profile.",
+  "path_hints": [
+    "auth",
+    "login",
+    "signin",
+    "signup",
+    "session",
+    "token",
+    "jwt",
+    "guard",
+    "permission",
+    "rbac",
+    "oauth",
+    "access"
+  ],
+  "keywords": [
+    "authorization",
+    "authenticate",
+    "access_token",
+    "refresh_token",
+    "bearer",
+    "identity",
+    "tenant",
+    "agent_token",
+    "role",
+    "scope",
+    "session"
+  ],
+  "regex": [
+    "Authorization\\s*:\\s*Bearer",
+    "(sign[-_ ]?in|sign[-_ ]?up|login|logout)",
+    "(verify|validate).*(token|jwt|session)",
+    "(role|permission|rbac)",
+    "agent[_-]?token"
+  ],
+  "exclude_patterns": [
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.jpeg",
+    "**/*.gif",
+    "**/*.webp",
+    "**/*.pdf"
+  ]
+}

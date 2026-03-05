@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ApiClientError } from '../../../entities/vm/api/vmRuntimeFacade';
 import { getSelectedProxmoxTargetNode } from '../../../entities/vm/api/vmSelectionFacade';
 import { getVMSettings } from '../../../entities/vm/api/vmSettingsFacade';
-import { ApiClientError } from '../../../shared/api/apiClient';
 import { getProxmoxConnectionSnapshot, listVMs } from '../../../shared/api/services/vm/proxmoxOps';
 import { getSshConnectionStatus } from '../../../shared/api/services/vm/sshOps';
 import type { ProxmoxVM } from '../../../shared/types';

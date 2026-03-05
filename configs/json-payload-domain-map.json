@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "description": "Inventory of payload Json domain models and typed replacement targets. Deterministic order for CI checks.",
+  "schemaPath": "apps/backend/prisma/schema.prisma",
+  "repositoryGlob": "apps/backend/src/modules/**/*.repository.ts",
+  "excludedPayloadModels": [
+    {
+      "model": "AdminAuditEvent",
+      "table": "admin_audit_events",
+      "reason": "Audit log stream; excluded from domain payload migration inventory."
+    }
+  ],
+  "modelMappings": [
+    {
+      "model": "AgentCommand",
+      "table": "agent_commands",
+      "domain": "vm-ops",
+      "repositoryPaths": ["apps/backend/src/modules/vm-ops/vm-ops.repository.ts"],
+      "typedReplacementTarget": "agent command queue typed command/result envelope columns",
+      "retainedEncryptedFields": ["payload", "result"]
+    },
+    {
+      "model": "ArtifactAssignmentItem",
+      "table": "artifact_assignment_items",
+      "domain": "artifacts",
+      "repositoryPaths": ["apps/backend/src/modules/artifacts/artifacts.repository.ts"],
+      "typedReplacementTarget": "artifact assignment typed scope and policy columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "ArtifactReleaseItem",
+      "table": "artifact_release_items",
+      "domain": "artifacts",
+      "repositoryPaths": ["apps/backend/src/modules/artifacts/artifacts.repository.ts"],
+      "typedReplacementTarget": "artifact release typed manifest columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "BotEntity",
+      "table": "bot_entities",
+      "domain": "bots",
+      "repositoryPaths": [
+        "apps/backend/src/modules/bots/bots.repository.ts",
+        "apps/backend/src/modules/infra/infra.repository.ts"
+      ],
+      "typedReplacementTarget": "bot entity typed bot profile columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "FinanceOperation",
+      "table": "finance_operations",
+      "domain": "finance",
+      "repositoryPaths": ["apps/backend/src/modules/finance/finance.repository.ts"],
+      "typedReplacementTarget": "finance operation typed ledger columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "InfraVmItem",
+      "table": "infra_vm_items",
+      "domain": "infra",
+      "repositoryPaths": ["apps/backend/src/modules/infra/infra.repository.ts"],
+      "typedReplacementTarget": "infra VM typed state/config columns",
+      "retainedEncryptedFields": []
+    },
+    {
+      "model": "LicenseLeaseItem",
+      "table": "license_lease_items",
+      "domain": "license",
+      "repositoryPaths": ["apps/backend/src/modules/license/license.repository.ts"],
+      "typedReplacementTarget": "license lease typed entitlement columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "PlaybookItem",
+      "table": "playbook_items",
+      "domain": "playbooks",
+      "repositoryPaths": ["apps/backend/src/modules/playbooks/playbooks.repository.ts"],
+      "typedReplacementTarget": "playbook typed step and trigger columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "ProvisioningProfileItem",
+      "table": "provisioning_profile_items",
+      "domain": "provisioning",
+      "repositoryPaths": ["apps/backend/src/modules/provisioning/provisioning.repository.ts"],
+      "typedReplacementTarget": "provisioning profile typed unattended setup columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "ProvisioningProgressItem",
+      "table": "provisioning_progress_items",
+      "domain": "provisioning",
+      "repositoryPaths": ["apps/backend/src/modules/provisioning/provisioning.repository.ts"],
+      "typedReplacementTarget": "provisioning progress typed event/status columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "ProvisioningTokenItem",
+      "table": "provisioning_token_items",
+      "domain": "provisioning",
+      "repositoryPaths": ["apps/backend/src/modules/provisioning/provisioning.repository.ts"],
+      "typedReplacementTarget": "provisioning token typed lease/session columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "ResourceItem",
+      "table": "resource_items",
+      "domain": "resources",
+      "repositoryPaths": [
+        "apps/backend/src/modules/resources/resources.repository.ts",
+        "apps/backend/src/modules/infra/infra.repository.ts"
+      ],
+      "typedReplacementTarget": "resource typed endpoint and credential-reference columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "SettingsItem",
+      "table": "settings_items",
+      "domain": "settings",
+      "repositoryPaths": ["apps/backend/src/modules/settings/settings.repository.ts"],
+      "typedReplacementTarget": "settings typed configuration columns by namespace",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "ThemeAssetItem",
+      "table": "theme_asset_items",
+      "domain": "theme-assets",
+      "repositoryPaths": ["apps/backend/src/modules/theme-assets/theme-assets.repository.ts"],
+      "typedReplacementTarget": "theme asset typed storage and metadata columns",
+      "retainedEncryptedFields": ["payload"]
+    },
+    {
+      "model": "WorkspaceItem",
+      "table": "workspace_items",
+      "domain": "workspace",
+      "repositoryPaths": ["apps/backend/src/modules/workspace/workspace.repository.ts"],
+      "typedReplacementTarget": "workspace typed note/task/calendar columns",
+      "retainedEncryptedFields": ["payload"]
+    }
+  ]
+}

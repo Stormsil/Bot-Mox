@@ -5,10 +5,9 @@ const path = require('node:path');
 const ts = require('typescript');
 
 const repoRoot = process.cwd();
-const providersRoot = path.join(repoRoot, 'apps', 'frontend', 'src', 'providers');
+const providersRoot = path.join(repoRoot, 'apps', 'frontend', 'src', 'app', 'providers');
 
 const sourceExtensions = new Set(['.ts', '.tsx']);
-const vmProviderFilePattern = /(vm-|unattend-profile-client)/i;
 
 const forbiddenSpecifiers = [
   '/services/vmService',
@@ -54,18 +53,33 @@ function listSourceFiles(dir) {
   return result.sort();
 }
 
-function isVmProviderFile(filePath) {
-  const basename = path.basename(filePath);
-  return vmProviderFilePattern.test(basename);
-}
-
 function isForbidden(specifier) {
   return forbiddenSpecifiers.some((entry) => specifier.includes(entry));
 }
 
 function collectViolations() {
   const violations = [];
-  const files = listSourceFiles(providersRoot).filter(isVmProviderFile);
+  if (!fs.existsSync(providersRoot)) {
+    process.stderr.write(
+      '[check-vm-provider-boundary] stale/missing providers root: apps/frontend/src/app/providers\n',
+    );
+    process.exit(1);
+  }
+
+  if (forbiddenSpecifiers.length === 0) {
+    process.stderr.write(
+      '[check-vm-provider-boundary] forbidden specifier list is empty; refusing false-green result.\n',
+    );
+    process.exit(1);
+  }
+
+  const files = listSourceFiles(providersRoot);
+  if (files.length === 0) {
+    process.stderr.write(
+      '[check-vm-provider-boundary] zero provider target files scanned; refusing false-green result.\n',
+    );
+    process.exit(1);
+  }
 
   for (const filePath of files) {
     const content = fs.readFileSync(filePath, 'utf8');
@@ -104,22 +118,25 @@ function collectViolations() {
     }
   }
 
-  return violations.sort((a, b) => {
-    const fileCompare = a.file.localeCompare(b.file);
-    if (fileCompare !== 0) {
-      return fileCompare;
-    }
+  return {
+    scannedFiles: files.length,
+    violations: violations.sort((a, b) => {
+      const fileCompare = a.file.localeCompare(b.file);
+      if (fileCompare !== 0) {
+        return fileCompare;
+      }
 
-    const specCompare = a.specifier.localeCompare(b.specifier);
-    if (specCompare !== 0) {
-      return specCompare;
-    }
+      const specCompare = a.specifier.localeCompare(b.specifier);
+      if (specCompare !== 0) {
+        return specCompare;
+      }
 
-    return a.line - b.line;
-  });
+      return a.line - b.line;
+    }),
+  };
 }
 
-const violations = collectViolations();
+const { scannedFiles, violations } = collectViolations();
 if (violations.length > 0) {
   process.stderr.write(
     `[check-vm-provider-boundary] found ${violations.length} forbidden VM provider import(s):\n`,
@@ -134,5 +151,5 @@ if (violations.length > 0) {
 }
 
 process.stdout.write(
-  '[check-vm-provider-boundary] OK. no forbidden VM provider imports detected.\n',
+  `[check-vm-provider-boundary] OK. scanned ${scannedFiles} provider files; no forbidden VM provider imports detected.\n`,
 );

@@ -37,6 +37,9 @@ export interface FinanceSummaryDto {
   net_total: number;
   margin_percent: number;
   operation_count: number;
+  total_gold_sold: number;
+  total_gold_farmed: number;
+  average_gold_price: number;
   period: {
     from_ts?: number;
     to_ts?: number;
@@ -62,6 +65,7 @@ export interface FinanceProjectPerformanceItemDto {
   margin_percent: number;
   operation_count: number;
   gold_volume: number;
+  average_gold_price: number;
 }
 
 export interface FinanceProjectPerformanceDto {
@@ -82,6 +86,8 @@ export interface FinanceTimeSeriesPointDto {
   expense_total: number;
   net_total: number;
   operation_count: number;
+  daily_profit: number;
+  cumulative_profit: number;
 }
 
 export interface FinanceTimeSeriesDto {
@@ -297,14 +303,26 @@ export class FinanceService {
   ): FinanceSummaryDto {
     let incomeTotal = 0;
     let expenseTotal = 0;
+    let saleIncomeTotal = 0;
+    let totalGoldSold = 0;
+    let totalGoldFarmed = 0;
     const fromTs = this.normalizeTimestamp(query.from_ts);
     const toTs = this.normalizeTimestamp(query.to_ts);
 
     for (const item of items) {
       const amount = this.normalizeAmount(item.amount);
       const type = this.normalizeType(item.type);
+      const category = typeof item.category === 'string' ? item.category.trim().toLowerCase() : '';
+      const goldAmount = this.normalizeAmount(item.gold_amount);
       if (type === 'income') {
         incomeTotal += amount;
+        if (goldAmount > 0) {
+          totalGoldFarmed += goldAmount;
+          if (category === 'sale') {
+            totalGoldSold += goldAmount;
+            saleIncomeTotal += amount;
+          }
+        }
       } else if (type === 'expense') {
         expenseTotal += amount;
       }
@@ -326,6 +344,9 @@ export class FinanceService {
       net_total: netTotal,
       margin_percent: marginPercent,
       operation_count: items.length,
+      total_gold_sold: totalGoldSold,
+      total_gold_farmed: totalGoldFarmed,
+      average_gold_price: totalGoldSold > 0 ? (saleIncomeTotal * 1000) / totalGoldSold : 0,
       period,
     };
   }
@@ -388,15 +409,21 @@ export class FinanceService {
       }
     }
 
-    return [...pointsByBucket.entries()]
-      .sort(([left], [right]) => left - right)
-      .map(([bucketStart, aggregate]) => ({
+    const sortedPoints = [...pointsByBucket.entries()].sort(([left], [right]) => left - right);
+    let cumulativeProfit = 0;
+    return sortedPoints.map(([bucketStart, aggregate]) => {
+      const dailyProfit = aggregate.incomeTotal - aggregate.expenseTotal;
+      cumulativeProfit += dailyProfit;
+      return {
         bucket: this.formatBucket(bucketStart, granularity),
         income_total: aggregate.incomeTotal,
         expense_total: aggregate.expenseTotal,
-        net_total: aggregate.incomeTotal - aggregate.expenseTotal,
+        net_total: dailyProfit,
         operation_count: aggregate.operationCount,
-      }));
+        daily_profit: dailyProfit,
+        cumulative_profit: cumulativeProfit,
+      };
+    });
   }
 
   private applyListQuery(
@@ -684,6 +711,7 @@ export class FinanceService {
         expenseTotal: number;
         operationCount: number;
         goldVolume: number;
+        saleIncomeTotal: number;
       }
     >();
 
@@ -697,6 +725,7 @@ export class FinanceService {
         expenseTotal: 0,
         operationCount: 0,
         goldVolume: 0,
+        saleIncomeTotal: 0,
       };
 
       const amount = this.normalizeAmount(operation.amount);
@@ -712,6 +741,7 @@ export class FinanceService {
       const goldAmount = this.normalizeAmount(operation.gold_amount);
       if (type === 'income' && category === 'sale' && goldAmount > 0) {
         current.goldVolume += goldAmount;
+        current.saleIncomeTotal += amount;
       }
 
       current.operationCount += 1;
@@ -729,6 +759,8 @@ export class FinanceService {
           margin_percent: entry.incomeTotal > 0 ? (netTotal / entry.incomeTotal) * 100 : 0,
           operation_count: entry.operationCount,
           gold_volume: entry.goldVolume,
+          average_gold_price:
+            entry.goldVolume > 0 ? (entry.saleIncomeTotal * 1000) / entry.goldVolume : 0,
         };
       })
       .sort((left, right) => {

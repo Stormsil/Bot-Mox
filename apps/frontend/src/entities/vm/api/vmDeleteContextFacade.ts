@@ -1,5 +1,8 @@
 import { vmDeletionEvaluationSchema } from '@botmox/api-contract';
-import { apiPost } from '../../../shared/api/apiClient';
+import {
+  createContractRuntimeClient,
+  toContractApiClientError,
+} from '../../../shared/api/contracts/runtimeClient';
 
 export interface DeleteVmEvaluationPolicy {
   allowBanned?: boolean;
@@ -66,8 +69,15 @@ async function fetchVmDeletionEvaluations(input: {
       : {}),
   };
 
-  const response = await apiPost<unknown>(VM_DELETION_EVALUATION_ENDPOINT, payload);
-  const parsed = vmDeletionEvaluationSchema.parse(response.data);
+  const client = createContractRuntimeClient();
+  const response = await client.vmsEvaluateDeletion({
+    body: payload,
+  });
+  if (response.status !== 200) {
+    throw toContractApiClientError(VM_DELETION_EVALUATION_ENDPOINT, response.status, response.body);
+  }
+
+  const parsed = vmDeletionEvaluationSchema.parse(response.body.data);
   const map: Record<string, DeleteVmEvaluationRecord> = {};
 
   parsed.items.forEach((item: VmDeletionEvaluationItemDto) => {

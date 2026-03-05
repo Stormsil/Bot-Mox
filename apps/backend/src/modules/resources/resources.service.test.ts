@@ -235,3 +235,73 @@ test('ResourcesService computes status metadata for proxies, licenses and subscr
     Date.now = originalNow;
   }
 });
+
+test('ResourcesService returns backend status aggregate projections', async () => {
+  const fixedNow = 1_700_000_000_000;
+  const day = 24 * 60 * 60 * 1000;
+  const originalNow = Date.now;
+  Date.now = () => fixedNow;
+
+  try {
+    const repository: RepositoryStub = {
+      list: async (_tenantId: unknown, kind: unknown) => {
+        if (kind === 'licenses') {
+          return [
+            {
+              id: 'license-1',
+              payload: {
+                id: 'license-1',
+                type: 'retail',
+                bot_ids: ['bot-1'],
+                expires_at: fixedNow + 2 * day,
+              },
+            },
+          ];
+        }
+        if (kind === 'proxies') {
+          return [
+            {
+              id: 'proxy-1',
+              payload: {
+                id: 'proxy-1',
+                ip: '127.0.0.1',
+                port: 8080,
+                status: 'active',
+                bot_id: 'bot-1',
+                expires_at: fixedNow + 3 * day,
+              },
+            },
+          ];
+        }
+        return [
+          {
+            id: 'sub-1',
+            payload: {
+              id: 'sub-1',
+              type: 'game',
+              status: 'active',
+              bot_id: 'bot-1',
+              expires_at: fixedNow + 5 * day,
+            },
+          },
+        ];
+      },
+      findById: async () => null,
+      upsert: async () => ({ id: 'noop', payload: {} }),
+      delete: async () => true,
+    };
+
+    const service = createService(repository);
+    const aggregate = await service.getStatusAggregates('tenant-a');
+    assert.equal(aggregate.summary.licenses.total, 1);
+    assert.equal(aggregate.summary.proxies.total, 1);
+    assert.equal(aggregate.summary.subscriptions.total, 1);
+    assert.equal(aggregate.by_bot['bot-1'].license_status.status, 'expiring');
+    assert.equal(aggregate.by_bot['bot-1'].proxy_status.status, 'expiring');
+    assert.equal(aggregate.by_bot['bot-1'].subscription_status.status, 'expiring');
+    assert.equal(aggregate.by_bot['bot-1'].subscriptions_summary.total, 1);
+    assert.equal(aggregate.expiring_items.length, 3);
+  } finally {
+    Date.now = originalNow;
+  }
+});

@@ -2,10 +2,14 @@ import type { BaseRecord, GetListParams, GetListResponse } from '@refinedev/core
 import type { ApiSuccessEnvelope } from '../../../shared/api/apiClient';
 import type { ContractResourceKind } from '../../../shared/api/providers/resource-contract-client';
 
-export function resolveResourcePath(resource: string): string {
-  const normalized = String(resource || '')
+export function normalizeResourceKey(resource: string): string {
+  return String(resource || '')
     .trim()
     .toLowerCase();
+}
+
+export function resolveResourcePath(resource: string): string {
+  const normalized = normalizeResourceKey(resource);
 
   if (normalized === 'licenses' || normalized === 'proxies' || normalized === 'subscriptions') {
     return `/api/v1/resources/${normalized}`;
@@ -35,9 +39,7 @@ export function resolveResourcePath(resource: string): string {
 }
 
 export function toContractResourceKind(resource: string): ContractResourceKind | null {
-  const normalized = String(resource || '')
-    .trim()
-    .toLowerCase();
+  const normalized = normalizeResourceKey(resource);
   if (normalized === 'licenses' || normalized === 'proxies' || normalized === 'subscriptions') {
     return normalized;
   }
@@ -46,11 +48,7 @@ export function toContractResourceKind(resource: string): ContractResourceKind |
 }
 
 export function isBotResource(resource: string): boolean {
-  return (
-    String(resource || '')
-      .trim()
-      .toLowerCase() === 'bots'
-  );
+  return normalizeResourceKey(resource) === 'bots';
 }
 
 export function normalizeListResponse<TData extends BaseRecord = BaseRecord>(

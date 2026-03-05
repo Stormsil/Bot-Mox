@@ -24,6 +24,11 @@ type RequestCounters = {
   financeOperations: number;
 };
 
+type UnexpectedRequest = {
+  method: string;
+  pathname: string;
+};
+
 function envelope(data: unknown, meta?: Record<string, unknown>): ApiEnvelope {
   if (meta) {
     return { success: true, data, meta };
@@ -49,11 +54,14 @@ function seedAuthStorage(identity: typeof e2eIdentity) {
   localStorage.setItem('botmox.auth.verify_at', String(FIXED_NOW));
 }
 
-async function mountF1GuardApi(page: Page): Promise<RequestCounters> {
+async function mountF1GuardApi(
+  page: Page,
+): Promise<{ counters: RequestCounters; unexpectedRequests: UnexpectedRequest[] }> {
   const counters: RequestCounters = {
     financeSummary: 0,
     financeOperations: 0,
   };
+  const unexpectedRequests: UnexpectedRequest[] = [];
 
   await page.route('**/api/v1/**', async (route: Route) => {
     const request = route.request();
@@ -106,6 +114,49 @@ async function mountF1GuardApi(page: Page): Promise<RequestCounters> {
           envelope({
             wow_tbc: { name: 'WOW TBC E2E' },
             wow_midnight: { name: 'WOW MIDNIGHT E2E' },
+          }),
+        ),
+      );
+      return;
+    }
+
+    if (pathname === '/api/v1/settings/theme') {
+      await route.fulfill(
+        toJsonResponse(
+          envelope({
+            mode: 'light',
+            density: 'compact',
+          }),
+        ),
+      );
+      return;
+    }
+
+    if (pathname === '/api/v1/settings/ui/resource_tree') {
+      if (method === 'GET') {
+        await route.fulfill(
+          toJsonResponse(
+            envelope({
+              groups: [],
+              pinned: [],
+            }),
+          ),
+        );
+        return;
+      }
+
+      if (method === 'PUT') {
+        await route.fulfill(toJsonResponse(envelope({ updated: true })));
+        return;
+      }
+    }
+
+    if (pathname === '/api/v1/settings/finance/chart_config') {
+      await route.fulfill(
+        toJsonResponse(
+          envelope({
+            period: '30d',
+            metric: 'net_profit',
           }),
         ),
       );
@@ -299,22 +350,20 @@ async function mountF1GuardApi(page: Page): Promise<RequestCounters> {
       return;
     }
 
-    if (method === 'GET') {
-      await route.fulfill(toJsonResponse(envelope([], { total: 0 })));
-      return;
-    }
-
-    await route.fulfill(toJsonResponse(envelope({ id: 'e2e-item' })));
+    unexpectedRequests.push({ method, pathname });
+    await route.fulfill(
+      toJsonResponse(envelope({ error: 'UNEXPECTED_GUARD_REQUEST', method, pathname }), 500),
+    );
   });
 
-  return counters;
+  return { counters, unexpectedRequests };
 }
 
 test('thin-client guard: finance summary isolates operations network calls by tab', async ({
   page,
 }) => {
   await page.addInitScript(seedAuthStorage, e2eIdentity);
-  const counters = await mountF1GuardApi(page);
+  const { counters, unexpectedRequests } = await mountF1GuardApi(page);
 
   await page.goto('/finance');
   await expect(page).toHaveURL(/\/finance$/);
@@ -338,13 +387,18 @@ test('thin-client guard: finance summary isolates operations network calls by ta
       message: 'Transactions tab must fetch /api/v1/finance/operations',
     })
     .toBeGreaterThan(0);
+
+  expect(
+    unexpectedRequests,
+    'Unexpected /api/v1 requests must hard-fail thin-client guard',
+  ).toEqual([]);
 });
 
 test('thin-client guard: backend status fields render status badges on resources pages', async ({
   page,
 }) => {
   await page.addInitScript(seedAuthStorage, e2eIdentity);
-  await mountF1GuardApi(page);
+  const { unexpectedRequests } = await mountF1GuardApi(page);
 
   await page.goto('/licenses');
   await expect(page).toHaveURL(/\/licenses$/);
@@ -361,4 +415,9 @@ test('thin-client guard: backend status fields render status badges on resources
   await expect(
     page.locator('tr', { hasText: 'bot-e2e' }).getByText('EXPIRING SOON (3 DAYS)', { exact: true }),
   ).toBeVisible();
+
+  expect(
+    unexpectedRequests,
+    'Unexpected /api/v1 requests must hard-fail thin-client guard',
+  ).toEqual([]);
 });

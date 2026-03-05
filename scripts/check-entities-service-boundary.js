@@ -36,8 +36,21 @@ function listSourceFiles(dir) {
 }
 
 function collectImports() {
+  if (!fs.existsSync(entitiesRoot)) {
+    process.stderr.write(
+      '[check-entities-service-boundary] stale/missing entities root: apps/frontend/src/entities\n',
+    );
+    process.exit(1);
+  }
+
   const imports = [];
   const files = listSourceFiles(entitiesRoot);
+  if (files.length === 0) {
+    process.stderr.write(
+      '[check-entities-service-boundary] zero entities target files scanned; refusing false-green result.\n',
+    );
+    process.exit(1);
+  }
 
   for (const filePath of files) {
     const content = fs.readFileSync(filePath, 'utf8');
