@@ -13,6 +13,8 @@ const SUPPORTED_DOMAINS = [
   'theme-assets',
 ];
 
+const SUPPORTED_FIXTURE_MODES = ['pass', 'mismatch'];
+
 function parseBoolean(value, fallback) {
   const normalized = String(value || '')
     .trim()
@@ -39,6 +41,7 @@ function parseArgs(argv) {
     tenantId: String(process.env.BOTMOX_TYPED_STORE_PARITY_TENANT || '').trim() || null,
     reportFile: String(process.env.BOTMOX_TYPED_STORE_PARITY_REPORT_PATH || '').trim() || null,
     fixtureFile: null,
+    fixtureMode: String(process.env.BOTMOX_TYPED_STORE_PARITY_FIXTURE_MODE || '').trim() || null,
     domains: [...SUPPORTED_DOMAINS],
     includeMatchRows: parseBoolean(process.env.BOTMOX_TYPED_STORE_PARITY_INCLUDE_MATCH_ROWS, false),
   };
@@ -70,6 +73,11 @@ function parseArgs(argv) {
       args.fixtureFile = filePath || null;
       continue;
     }
+    if (raw.startsWith('--fixture-mode=')) {
+      const mode = String(raw.slice('--fixture-mode='.length)).trim().toLowerCase();
+      args.fixtureMode = mode || null;
+      continue;
+    }
     if (raw.startsWith('--domains=')) {
       const domains = String(raw.slice('--domains='.length))
         .split(',')
@@ -96,7 +104,56 @@ function parseArgs(argv) {
     );
   }
 
+  if (args.fixtureMode && !SUPPORTED_FIXTURE_MODES.includes(args.fixtureMode)) {
+    throw new Error(
+      `Unsupported fixture mode: ${args.fixtureMode}. Supported: ${SUPPORTED_FIXTURE_MODES.join(', ')}`,
+    );
+  }
+
   return args;
+}
+
+function buildDomainSnapshotsFromFixtureMode(fixtureMode, selectedDomains) {
+  const snapshots = selectedDomains.map((domain) => ({
+    domain,
+    legacyRows: [
+      {
+        tenantId: 'tenant-fixture',
+        entityId: `${domain}-entity-1`,
+        payload: {
+          domain,
+          marker: 'ok',
+        },
+      },
+    ],
+    typedRows: [
+      {
+        tenantId: 'tenant-fixture',
+        entityId: `${domain}-entity-1`,
+        payload: {
+          domain,
+          marker: 'ok',
+        },
+      },
+    ],
+  }));
+
+  if (fixtureMode === 'mismatch' && snapshots.length > 0) {
+    snapshots[0] = {
+      ...snapshots[0],
+      typedRows: [
+        {
+          ...snapshots[0].typedRows[0],
+          payload: {
+            domain: snapshots[0].domain,
+            marker: 'mismatch',
+          },
+        },
+      ],
+    };
+  }
+
+  return snapshots;
 }
 
 function sortedClone(value) {
@@ -265,7 +322,19 @@ async function loadDomainSnapshotsFromDb(options) {
           `select tenant_id as "tenantId", id as "entityId", payload from public.bot_entities e where 1=1${tenantFilterSql('e')}`,
         ),
         typedRows: await query(
-          `select tenant_id as "tenantId", id as "entityId", data as payload from public.bots t where 1=1${tenantFilterSql('t')}`,
+          `select
+             tenant_id as "tenantId",
+             id as "entityId",
+             jsonb_strip_nulls(jsonb_build_object(
+               'status', status,
+               'lifecycle', lifecycle,
+               'platform', platform,
+               'profile', profile,
+               'version', version,
+               'last_seen_at', (extract(epoch from last_seen_at) * 1000)::bigint
+             )) as payload
+           from public.bots t
+           where 1=1${tenantFilterSql('t')}`,
         ),
       });
     }
@@ -277,7 +346,24 @@ async function loadDomainSnapshotsFromDb(options) {
           `select tenant_id as "tenantId", id as "entityId", payload from public.finance_operations e where 1=1${tenantFilterSql('e')}`,
         ),
         typedRows: await query(
-          `select tenant_id as "tenantId", id as "entityId", data as payload from public.finance_operations t where 1=1${tenantFilterSql('t')}`,
+          `select
+             tenant_id as "tenantId",
+             id as "entityId",
+             jsonb_strip_nulls(jsonb_build_object(
+               'type', type,
+               'category', category,
+               'amount', amount,
+               'currency', currency,
+               'operation_at', (extract(epoch from operation_at) * 1000)::bigint,
+               'date', (extract(epoch from operation_at) * 1000)::bigint,
+               'status', status,
+               'project_id', project_id,
+               'bot_id', bot_id,
+               'gold_amount', gold_amount,
+               'gold_price_at_time', gold_price_at_time
+             )) as payload
+           from public.finance_operations t
+           where 1=1${tenantFilterSql('t')}`,
         ),
       });
     }
@@ -291,11 +377,44 @@ async function loadDomainSnapshotsFromDb(options) {
            where kind in ('licenses', 'proxies', 'subscriptions')${tenantFilterSql('e')}`,
         ),
         typedRows: await query(
-          `select tenant_id as "tenantId", 'licenses:' || id as "entityId", data as payload from public.resources_licenses t where 1=1${tenantFilterSql('t')}
+          `select tenant_id as "tenantId", 'licenses:' || id as "entityId", jsonb_strip_nulls(jsonb_build_object(
+              'type', type,
+              'status', status,
+              'bot_id', bot_id,
+              'country', country,
+              'country_code', country_code,
+              'ip', ip,
+              'port', port,
+              'expires_at', (extract(epoch from expires_at) * 1000)::bigint,
+              'days_remaining', days_remaining,
+              'is_expiring_soon', is_expiring_soon
+            )) as payload from public.resources_licenses t where 1=1${tenantFilterSql('t')}
            union all
-           select tenant_id as "tenantId", 'proxies:' || id as "entityId", data as payload from public.resources_proxies t where 1=1${tenantFilterSql('t')}
+           select tenant_id as "tenantId", 'proxies:' || id as "entityId", jsonb_strip_nulls(jsonb_build_object(
+              'type', type,
+              'status', status,
+              'bot_id', bot_id,
+              'country', country,
+              'country_code', country_code,
+              'ip', ip,
+              'port', port,
+              'expires_at', (extract(epoch from expires_at) * 1000)::bigint,
+              'days_remaining', days_remaining,
+              'is_expiring_soon', is_expiring_soon
+            )) as payload from public.resources_proxies t where 1=1${tenantFilterSql('t')}
            union all
-           select tenant_id as "tenantId", 'subscriptions:' || id as "entityId", data as payload from public.resources_subscriptions t where 1=1${tenantFilterSql('t')}`,
+           select tenant_id as "tenantId", 'subscriptions:' || id as "entityId", jsonb_strip_nulls(jsonb_build_object(
+              'type', type,
+              'status', status,
+              'bot_id', bot_id,
+              'country', country,
+              'country_code', country_code,
+              'ip', ip,
+              'port', port,
+              'expires_at', (extract(epoch from expires_at) * 1000)::bigint,
+              'days_remaining', days_remaining,
+              'is_expiring_soon', is_expiring_soon
+            )) as payload from public.resources_subscriptions t where 1=1${tenantFilterSql('t')}`,
         ),
       });
     }
@@ -337,9 +456,8 @@ async function loadDomainSnapshotsFromDb(options) {
           `select tenant_id as "tenantId", path as "entityId", payload from public.settings_items e where 1=1${tenantFilterSql('e')}`,
         ),
         typedRows: await query(
-          `select tenant_id as "tenantId", kv.key as "entityId", kv.value as payload
+          `select tenant_id as "tenantId", path as "entityId", value as payload
            from public.app_settings t
-           cross join lateral jsonb_each(t.data) as kv(key, value)
            where 1=1${tenantFilterSql('t')}`,
         ),
       });
@@ -424,7 +542,9 @@ async function runCli(argv) {
   const options = parseArgs(argv);
   const domainSnapshots = options.fixtureFile
     ? loadDomainSnapshotsFromFixture(options.fixtureFile, options.domains)
-    : await loadDomainSnapshotsFromDb(options);
+    : options.fixtureMode
+      ? buildDomainSnapshotsFromFixtureMode(options.fixtureMode, options.domains)
+      : await loadDomainSnapshotsFromDb(options);
 
   const report = buildParityReport({
     threshold: options.threshold,

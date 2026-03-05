@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
-import { FinanceRepository } from './finance.repository';
+import { Prisma } from '@prisma/client';
+import {
+  type FinanceCategoryAggregateRow,
+  type FinanceDailyStatsAggregateRow,
+  type FinanceGoldPriceHistoryAggregateRow,
+  type FinanceProjectAggregateRow,
+  FinanceRepository,
+  type FinanceSummaryAggregateRow,
+} from './finance.repository';
 
 type FinanceOperationRecord = Record<string, unknown>;
 
@@ -163,6 +170,98 @@ export class FinanceService {
   private normalizeAmount(value: unknown): number {
     const amount = Number(value);
     return Number.isFinite(amount) ? amount : 0;
+  }
+
+  private normalizeCount(value: unknown): number {
+    const count = Number(value);
+    return Number.isFinite(count) ? Math.max(0, Math.trunc(count)) : 0;
+  }
+
+  private toDecimal(value: unknown): Prisma.Decimal {
+    if (value instanceof Prisma.Decimal) {
+      return value;
+    }
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return new Prisma.Decimal(value);
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return new Prisma.Decimal(0);
+      }
+      return new Prisma.Decimal(trimmed);
+    }
+
+    if (typeof value === 'bigint') {
+      return new Prisma.Decimal(value.toString());
+    }
+
+    return new Prisma.Decimal(0);
+  }
+
+  private mapSummaryAggregate(
+    aggregate: FinanceSummaryAggregateRow,
+    query: FinanceAggregateQuery,
+  ): FinanceSummaryDto {
+    const incomeTotal = this.toDecimal(aggregate.incomeTotal);
+    const expenseTotal = this.toDecimal(aggregate.expenseTotal);
+    const totalGoldSold = this.toDecimal(aggregate.totalGoldSold);
+    const totalGoldFarmed = this.toDecimal(aggregate.totalGoldFarmed);
+    const saleIncomeTotal = this.toDecimal(aggregate.saleIncomeTotal);
+
+    const netTotal = incomeTotal.sub(expenseTotal);
+    const marginPercent = incomeTotal.gt(0)
+      ? netTotal.div(incomeTotal).mul(100)
+      : new Prisma.Decimal(0);
+    const averageGoldPrice = totalGoldSold.gt(0)
+      ? saleIncomeTotal.mul(1000).div(totalGoldSold)
+      : new Prisma.Decimal(0);
+
+    const fromTs = this.normalizeTimestamp(query.from_ts);
+    const toTs = this.normalizeTimestamp(query.to_ts);
+    const period: { from_ts?: number; to_ts?: number } = {};
+    if (fromTs !== undefined) {
+      period.from_ts = fromTs;
+    }
+    if (toTs !== undefined) {
+      period.to_ts = toTs;
+    }
+
+    return {
+      income_total: incomeTotal.toNumber(),
+      expense_total: expenseTotal.toNumber(),
+      net_total: netTotal.toNumber(),
+      margin_percent: marginPercent.toNumber(),
+      operation_count: this.normalizeCount(aggregate.operationCount),
+      total_gold_sold: totalGoldSold.toNumber(),
+      total_gold_farmed: totalGoldFarmed.toNumber(),
+      average_gold_price: averageGoldPrice.toNumber(),
+      period,
+    };
+  }
+
+  private toRepositoryAggregateFilters(query: FinanceAggregateQuery): {
+    fromTs?: number;
+    toTs?: number;
+    currency?: string;
+    projectId?: string;
+    botId?: string;
+  } {
+    const fromTs = this.normalizeTimestamp(query.from_ts);
+    const toTs = this.normalizeTimestamp(query.to_ts);
+    const currency = this.normalizeExactFilter(query.currency);
+    const projectId = this.normalizeExactFilter(query.project_id);
+    const botId = this.normalizeExactFilter(query.bot_id);
+
+    return {
+      ...(fromTs !== undefined ? { fromTs } : {}),
+      ...(toTs !== undefined ? { toTs } : {}),
+      ...(currency !== undefined ? { currency } : {}),
+      ...(projectId !== undefined ? { projectId } : {}),
+      ...(botId !== undefined ? { botId } : {}),
+    };
   }
 
   private normalizeType(value: unknown): 'income' | 'expense' | undefined {
@@ -555,47 +654,31 @@ export class FinanceService {
   async getDailyStats(tenantId: string): Promise<Record<string, Record<string, unknown>>> {
     const normalizedTenantId = this.normalizeTenantId(tenantId);
     const stats: Record<string, Record<string, unknown>> = {};
-    const activeBotsByDate = new Map<string, Set<string>>();
-    const source = (await this.repository.list(normalizedTenantId)).map((row) =>
-      this.mapDbRow(row),
-    );
+    const aggregateRows = await this.repository.getDailyStatsAggregate(normalizedTenantId);
 
-    for (const operation of source) {
-      const dateKey = this.toDay(operation.date ?? operation.created_at);
-      const amount = Number(operation.amount || 0);
-      const type = operation.type === 'expense' ? 'expense' : 'income';
-
-      if (!stats[dateKey]) {
-        stats[dateKey] = {
-          date: dateKey,
-          total_expenses: 0,
-          total_revenue: 0,
-          net_profit: 0,
-          active_bots: 0,
-          total_farmed: {},
-        };
+    for (const row of aggregateRows) {
+      const bucketTs = this.normalizeTimestamp((row as FinanceDailyStatsAggregateRow).bucketTs);
+      if (bucketTs === undefined) {
+        continue;
       }
 
-      if (type === 'expense') {
-        stats[dateKey].total_expenses = Number(stats[dateKey].total_expenses || 0) + amount;
-      } else {
-        stats[dateKey].total_revenue = Number(stats[dateKey].total_revenue || 0) + amount;
-      }
+      const dateKey = this.toDay(bucketTs);
+      const incomeTotal = this.toDecimal(
+        (row as FinanceDailyStatsAggregateRow).incomeTotal,
+      ).toNumber();
+      const expenseTotal = this.toDecimal(
+        (row as FinanceDailyStatsAggregateRow).expenseTotal,
+      ).toNumber();
+      const activeBots = this.normalizeCount((row as FinanceDailyStatsAggregateRow).activeBots);
 
-      stats[dateKey].net_profit =
-        Number(stats[dateKey].total_revenue || 0) - Number(stats[dateKey].total_expenses || 0);
-
-      const botId = typeof operation.bot_id === 'string' ? operation.bot_id.trim() : '';
-      if (botId) {
-        const bucket = activeBotsByDate.get(dateKey) ?? new Set<string>();
-        bucket.add(botId);
-        activeBotsByDate.set(dateKey, bucket);
-      }
-    }
-
-    for (const [dateKey, bucket] of activeBotsByDate.entries()) {
-      if (!stats[dateKey]) continue;
-      stats[dateKey].active_bots = bucket.size;
+      stats[dateKey] = {
+        date: dateKey,
+        total_expenses: expenseTotal,
+        total_revenue: incomeTotal,
+        net_profit: incomeTotal - expenseTotal,
+        active_bots: activeBots,
+        total_farmed: {},
+      };
     }
 
     return stats;
@@ -603,99 +686,71 @@ export class FinanceService {
 
   async getGoldPriceHistory(tenantId: string): Promise<Record<string, { price: number }>> {
     const normalizedTenantId = this.normalizeTenantId(tenantId);
-    const sums = new Map<string, { total: number; count: number }>();
-    const source = (await this.repository.list(normalizedTenantId)).map((row) =>
-      this.mapDbRow(row),
-    );
-
-    for (const operation of source) {
-      const isSale = operation.type === 'income' && operation.category === 'sale';
-      const rawPrice = operation.gold_price_at_time;
-      const price = Number(rawPrice);
-      if (!isSale || !Number.isFinite(price) || price <= 0) continue;
-
-      const dateKey = this.toDay(operation.date ?? operation.created_at);
-      const current = sums.get(dateKey) ?? { total: 0, count: 0 };
-      current.total += price;
-      current.count += 1;
-      sums.set(dateKey, current);
-    }
-
     const result: Record<string, { price: number }> = {};
-    for (const [date, aggregate] of sums.entries()) {
-      if (aggregate.count <= 0) continue;
-      result[date] = {
-        price: aggregate.total / aggregate.count,
-      };
+    const aggregateRows = await this.repository.getGoldPriceHistoryAggregate(normalizedTenantId);
+    for (const row of aggregateRows) {
+      const bucketTs = this.normalizeTimestamp(
+        (row as FinanceGoldPriceHistoryAggregateRow).bucketTs,
+      );
+      if (bucketTs === undefined) {
+        continue;
+      }
+
+      const price = this.toDecimal(
+        (row as FinanceGoldPriceHistoryAggregateRow).avgGoldPrice,
+      ).toNumber();
+      if (!Number.isFinite(price) || price <= 0) {
+        continue;
+      }
+
+      result[this.toDay(bucketTs)] = { price };
     }
     return result;
   }
 
   async getSummary(query: FinanceAggregateQuery, tenantId: string): Promise<FinanceSummaryDto> {
     const normalizedTenantId = this.normalizeTenantId(tenantId);
-    const source = (await this.repository.list(normalizedTenantId)).map((row) =>
-      this.mapDbRow(row),
+    const aggregate = await this.repository.getSummaryAggregate(
+      normalizedTenantId,
+      this.toRepositoryAggregateFilters(query),
     );
-    const filtered = this.filterOperationsByAggregateQuery(source, query);
-    return this.buildSummary(filtered, query);
+    return this.mapSummaryAggregate(aggregate, query);
   }
 
   async getBreakdown(query: FinanceAggregateQuery, tenantId: string): Promise<FinanceBreakdownDto> {
     const normalizedTenantId = this.normalizeTenantId(tenantId);
-    const source = (await this.repository.list(normalizedTenantId)).map((row) =>
-      this.mapDbRow(row),
+    const filters = this.toRepositoryAggregateFilters(query);
+    const [summaryAggregate, categoryRows, projectRows] = await Promise.all([
+      this.repository.getSummaryAggregate(normalizedTenantId, filters),
+      this.repository.getCategoryBreakdownAggregate(normalizedTenantId, filters),
+      this.repository.getProjectPerformanceAggregate(normalizedTenantId, filters),
+    ]);
+    const totals = this.mapSummaryAggregate(summaryAggregate, query);
+
+    const totalAmount = categoryRows.reduce(
+      (acc, row) => acc.add(this.toDecimal(row.amount)),
+      new Prisma.Decimal(0),
     );
-    const filtered = this.filterOperationsByAggregateQuery(source, query);
-    const totals = this.buildSummary(filtered, query);
-
-    const byCategory = new Map<
-      string,
-      {
-        key: string;
-        label: string;
-        amount: number;
-        count: number;
-        incomeTotal: number;
-        expenseTotal: number;
-      }
-    >();
-
-    for (const operation of filtered) {
-      const rawCategory = typeof operation.category === 'string' ? operation.category.trim() : '';
-      const key = rawCategory.length > 0 ? rawCategory : 'uncategorized';
-      const current = byCategory.get(key) ?? {
-        key,
-        label: key,
-        amount: 0,
-        count: 0,
-        incomeTotal: 0,
-        expenseTotal: 0,
-      };
-      const amount = this.normalizeAmount(operation.amount);
-      const type = this.normalizeType(operation.type);
-
-      current.amount += amount;
-      current.count += 1;
-      if (type === 'income') {
-        current.incomeTotal += amount;
-      } else if (type === 'expense') {
-        current.expenseTotal += amount;
-      }
-      byCategory.set(key, current);
-    }
-
-    const totalAmount = [...byCategory.values()].reduce((acc, entry) => acc + entry.amount, 0);
-    const items: FinanceBreakdownItemDto[] = [...byCategory.values()]
-      .map((entry) => ({
-        key: entry.key,
-        label: entry.label,
-        amount: entry.amount,
-        share_percent: totalAmount > 0 ? (entry.amount / totalAmount) * 100 : 0,
-        count: entry.count,
-        income_total: entry.incomeTotal,
-        expense_total: entry.expenseTotal,
-        net_total: entry.incomeTotal - entry.expenseTotal,
-      }))
+    const totalAmountNumber = totalAmount.toNumber();
+    const items: FinanceBreakdownItemDto[] = categoryRows
+      .map((row: FinanceCategoryAggregateRow) => {
+        const amount = this.toDecimal(row.amount);
+        const incomeTotal = this.toDecimal(row.incomeTotal);
+        const expenseTotal = this.toDecimal(row.expenseTotal);
+        const amountNumber = amount.toNumber();
+        const key = String(row.key ?? 'uncategorized');
+        const label = String(row.label ?? key);
+        return {
+          key,
+          label,
+          amount: amountNumber,
+          share_percent: totalAmountNumber > 0 ? (amountNumber / totalAmountNumber) * 100 : 0,
+          count: this.normalizeCount(row.count),
+          income_total: incomeTotal.toNumber(),
+          expense_total: expenseTotal.toNumber(),
+          net_total: incomeTotal.sub(expenseTotal).toNumber(),
+        };
+      })
       .sort((left, right) => {
         if (right.amount !== left.amount) {
           return right.amount - left.amount;
@@ -703,64 +758,24 @@ export class FinanceService {
         return left.key.localeCompare(right.key);
       });
 
-    const byProject = new Map<
-      string,
-      {
-        projectId: string;
-        incomeTotal: number;
-        expenseTotal: number;
-        operationCount: number;
-        goldVolume: number;
-        saleIncomeTotal: number;
-      }
-    >();
-
-    for (const operation of filtered) {
-      const rawProjectId =
-        typeof operation.project_id === 'string' ? operation.project_id.trim().toLowerCase() : '';
-      const projectId = rawProjectId.length > 0 ? rawProjectId : 'global';
-      const current = byProject.get(projectId) ?? {
-        projectId,
-        incomeTotal: 0,
-        expenseTotal: 0,
-        operationCount: 0,
-        goldVolume: 0,
-        saleIncomeTotal: 0,
-      };
-
-      const amount = this.normalizeAmount(operation.amount);
-      const type = this.normalizeType(operation.type);
-      if (type === 'income') {
-        current.incomeTotal += amount;
-      } else if (type === 'expense') {
-        current.expenseTotal += amount;
-      }
-
-      const category =
-        typeof operation.category === 'string' ? operation.category.trim().toLowerCase() : '';
-      const goldAmount = this.normalizeAmount(operation.gold_amount);
-      if (type === 'income' && category === 'sale' && goldAmount > 0) {
-        current.goldVolume += goldAmount;
-        current.saleIncomeTotal += amount;
-      }
-
-      current.operationCount += 1;
-      byProject.set(projectId, current);
-    }
-
-    const projectPerformanceItems: FinanceProjectPerformanceItemDto[] = [...byProject.values()]
-      .map((entry) => {
-        const netTotal = entry.incomeTotal - entry.expenseTotal;
+    const projectPerformanceItems: FinanceProjectPerformanceItemDto[] = projectRows
+      .map((row: FinanceProjectAggregateRow) => {
+        const incomeTotal = this.toDecimal(row.incomeTotal);
+        const expenseTotal = this.toDecimal(row.expenseTotal);
+        const goldVolume = this.toDecimal(row.goldVolume);
+        const saleIncomeTotal = this.toDecimal(row.saleIncomeTotal);
+        const netTotal = incomeTotal.sub(expenseTotal);
         return {
-          project_id: entry.projectId,
-          income_total: entry.incomeTotal,
-          expense_total: entry.expenseTotal,
-          net_total: netTotal,
-          margin_percent: entry.incomeTotal > 0 ? (netTotal / entry.incomeTotal) * 100 : 0,
-          operation_count: entry.operationCount,
-          gold_volume: entry.goldVolume,
-          average_gold_price:
-            entry.goldVolume > 0 ? (entry.saleIncomeTotal * 1000) / entry.goldVolume : 0,
+          project_id: String(row.projectId ?? 'global'),
+          income_total: incomeTotal.toNumber(),
+          expense_total: expenseTotal.toNumber(),
+          net_total: netTotal.toNumber(),
+          margin_percent: incomeTotal.gt(0) ? netTotal.div(incomeTotal).mul(100).toNumber() : 0,
+          operation_count: this.normalizeCount(row.operationCount),
+          gold_volume: goldVolume.toNumber(),
+          average_gold_price: goldVolume.gt(0)
+            ? saleIncomeTotal.mul(1000).div(goldVolume).toNumber()
+            : 0,
         };
       })
       .sort((left, right) => {
@@ -786,14 +801,74 @@ export class FinanceService {
     tenantId: string,
   ): Promise<FinanceTimeSeriesDto> {
     const normalizedTenantId = this.normalizeTenantId(tenantId);
-    const source = (await this.repository.list(normalizedTenantId)).map((row) =>
-      this.mapDbRow(row),
-    );
-    const filtered = this.filterOperationsByAggregateQuery(source, query);
+    const granularity = this.normalizeGranularity(query.granularity);
+    const filters = this.toRepositoryAggregateFilters(query);
+    const [summaryAggregate, aggregateRows] = await Promise.all([
+      this.repository.getSummaryAggregate(normalizedTenantId, filters),
+      this.repository.getTimeSeriesAggregate(normalizedTenantId, filters, granularity),
+    ]);
+
+    const pointsByBucket = new Map<
+      number,
+      {
+        incomeTotal: Prisma.Decimal;
+        expenseTotal: Prisma.Decimal;
+        operationCount: number;
+      }
+    >();
+
+    for (const row of aggregateRows) {
+      const bucketStart = this.normalizeTimestamp(row.bucketTs);
+      if (bucketStart === undefined) {
+        continue;
+      }
+      pointsByBucket.set(bucketStart, {
+        incomeTotal: this.toDecimal(row.incomeTotal),
+        expenseTotal: this.toDecimal(row.expenseTotal),
+        operationCount: this.normalizeCount(row.operationCount),
+      });
+    }
+
+    const fromTs = this.normalizeTimestamp(query.from_ts);
+    const toTs = this.normalizeTimestamp(query.to_ts);
+    if (fromTs !== undefined && toTs !== undefined) {
+      const startBucket = this.getBucketStart(fromTs, granularity);
+      const endBucket = this.getBucketStart(toTs, granularity);
+      for (
+        let bucketStart = startBucket;
+        bucketStart <= endBucket;
+        bucketStart = this.stepBucket(bucketStart, granularity)
+      ) {
+        if (!pointsByBucket.has(bucketStart)) {
+          pointsByBucket.set(bucketStart, {
+            incomeTotal: new Prisma.Decimal(0),
+            expenseTotal: new Prisma.Decimal(0),
+            operationCount: 0,
+          });
+        }
+      }
+    }
+
+    const sortedPoints = [...pointsByBucket.entries()].sort(([left], [right]) => left - right);
+    let cumulativeProfit = new Prisma.Decimal(0);
+    const points = sortedPoints.map(([bucketStart, entry]) => {
+      const dailyProfit = entry.incomeTotal.sub(entry.expenseTotal);
+      cumulativeProfit = cumulativeProfit.add(dailyProfit);
+      return {
+        bucket: this.formatBucket(bucketStart, granularity),
+        income_total: entry.incomeTotal.toNumber(),
+        expense_total: entry.expenseTotal.toNumber(),
+        net_total: dailyProfit.toNumber(),
+        operation_count: entry.operationCount,
+        daily_profit: dailyProfit.toNumber(),
+        cumulative_profit: cumulativeProfit.toNumber(),
+      };
+    });
+
     return {
-      granularity: this.normalizeGranularity(query.granularity),
-      points: this.buildTimeSeriesPoints(filtered, query),
-      totals: this.buildSummary(filtered, query),
+      granularity,
+      points,
+      totals: this.mapSummaryAggregate(summaryAggregate, query),
     };
   }
 }

@@ -56,6 +56,8 @@ jobs:
           AUTH_MODE: enforced
           AGENT_TRANSPORT: ws
           SECRETS_VAULT_MODE: enforced
+          BOTMOX_TYPED_STORE_PARITY_FIXTURE_MODE: pass
+          BOTMOX_TYPED_STORE_PARITY_REPORT_PATH: logs/typed-store-parity-strict.json
           SUPABASE_URL: https://example.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
           SUPABASE_VAULT_RPC_NAME: vault

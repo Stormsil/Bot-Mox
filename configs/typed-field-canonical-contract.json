@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "description": "Canonical typed field contract for scoped payload-to-typed-store migration domains.",
+  "scopedDomains": [
+    "finance",
+    "bots",
+    "resources",
+    "workspace",
+    "playbooks",
+    "settings",
+    "theme-assets"
+  ],
+  "typedFieldMapByDomain": {
+    "finance": [
+      "type",
+      "category",
+      "amount",
+      "currency",
+      "operation_at",
+      "status",
+      "project_id",
+      "bot_id",
+      "gold_amount",
+      "gold_price_at_time"
+    ],
+    "bots": [
+      "status",
+      "lifecycle",
+      "platform",
+      "profile",
+      "version",
+      "last_seen_at",
+      "created_at",
+      "updated_at"
+    ],
+    "resources": [
+      "type",
+      "status",
+      "bot_id",
+      "country",
+      "country_code",
+      "ip",
+      "port",
+      "expires_at",
+      "days_remaining",
+      "is_expiring_soon",
+      "created_at",
+      "updated_at"
+    ],
+    "workspace": [
+      "kind",
+      "title",
+      "content",
+      "preview",
+      "tags",
+      "blocks",
+      "status",
+      "priority",
+      "start_at",
+      "end_at",
+      "due_at",
+      "created_at",
+      "updated_at"
+    ],
+    "playbooks": ["name", "content", "is_default", "status", "version", "created_at", "updated_at"],
+    "settings": ["path", "value", "namespace", "value_type", "updated_at"],
+    "theme-assets": [
+      "object_key",
+      "mime_type",
+      "size_bytes",
+      "width",
+      "height",
+      "status",
+      "image_url",
+      "image_url_expires_at_ms",
+      "created_at",
+      "updated_at"
+    ]
+  }
+}

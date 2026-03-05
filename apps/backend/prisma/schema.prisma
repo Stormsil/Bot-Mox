@@ -86,36 +86,75 @@ model WorkspaceItem {
 model ResourceLicense {
   tenantId  String   @map("tenant_id")
   id        String
-  data      Json     @default("{}")
+  type      String?
+  status    String?
+  botId     String?  @map("bot_id")
+  country   String?
+  countryCode String? @map("country_code")
+  ip        String?
+  port      Int?
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
+  daysRemaining Int? @map("days_remaining")
+  isExpiringSoon Boolean? @map("is_expiring_soon")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_resources_licenses_tenant_updated")
+  @@index([tenantId, status, expiresAt(sort: Asc)], map: "idx_resources_licenses_tenant_status_expires")
+  @@index([tenantId, type, updatedAt(sort: Desc)], map: "idx_resources_licenses_tenant_type_updated")
+  @@index([tenantId, botId, updatedAt(sort: Desc)], map: "idx_resources_licenses_tenant_bot_updated")
+  @@index([tenantId, countryCode, updatedAt(sort: Desc)], map: "idx_resources_licenses_tenant_country_updated")
   @@map("resources_licenses")
 }
 
 model ResourceProxy {
   tenantId  String   @map("tenant_id")
   id        String
-  data      Json     @default("{}")
+  type      String?
+  status    String?
+  botId     String?  @map("bot_id")
+  country   String?
+  countryCode String? @map("country_code")
+  ip        String?
+  port      Int?
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
+  daysRemaining Int? @map("days_remaining")
+  isExpiringSoon Boolean? @map("is_expiring_soon")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_resources_proxies_tenant_updated")
+  @@index([tenantId, status, expiresAt(sort: Asc)], map: "idx_resources_proxies_tenant_status_expires")
+  @@index([tenantId, type, updatedAt(sort: Desc)], map: "idx_resources_proxies_tenant_type_updated")
+  @@index([tenantId, botId, updatedAt(sort: Desc)], map: "idx_resources_proxies_tenant_bot_updated")
+  @@index([tenantId, countryCode, updatedAt(sort: Desc)], map: "idx_resources_proxies_tenant_country_updated")
   @@map("resources_proxies")
 }
 
 model ResourceSubscription {
   tenantId  String   @map("tenant_id")
   id        String
-  data      Json     @default("{}")
+  type      String?
+  status    String?
+  botId     String?  @map("bot_id")
+  country   String?
+  countryCode String? @map("country_code")
+  ip        String?
+  port      Int?
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
+  daysRemaining Int? @map("days_remaining")
+  isExpiringSoon Boolean? @map("is_expiring_soon")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_resources_subscriptions_tenant_updated")
+  @@index([tenantId, status, expiresAt(sort: Asc)], map: "idx_resources_subscriptions_tenant_status_expires")
+  @@index([tenantId, type, updatedAt(sort: Desc)], map: "idx_resources_subscriptions_tenant_type_updated")
+  @@index([tenantId, botId, updatedAt(sort: Desc)], map: "idx_resources_subscriptions_tenant_bot_updated")
+  @@index([tenantId, countryCode, updatedAt(sort: Desc)], map: "idx_resources_subscriptions_tenant_country_updated")
   @@map("resources_subscriptions")
 }
 
@@ -123,11 +162,25 @@ model WorkspaceNote {
   tenantId  String   @map("tenant_id")
   id        String
   data      Json     @default("{}")
+  kind      String?
+  title     String?
+  content   String?
+  preview   String?
+  tags      Json?    @default("[]")
+  blocks    Json?    @default("[]")
+  status    String?
+  priority  String?
+  startAt   DateTime? @map("start_at") @db.Timestamptz(6)
+  endAt     DateTime? @map("end_at") @db.Timestamptz(6)
+  dueAt     DateTime? @map("due_at") @db.Timestamptz(6)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_workspace_notes_tenant_updated")
+  @@index([tenantId, kind, updatedAt(sort: Desc)], map: "idx_workspace_notes_tenant_kind_updated")
+  @@index([tenantId, status, updatedAt(sort: Desc)], map: "idx_workspace_notes_tenant_status_updated")
+  @@index([tenantId, priority, dueAt(sort: Asc)], map: "idx_workspace_notes_tenant_priority_due")
   @@map("workspace_notes")
 }
 
@@ -135,11 +188,25 @@ model WorkspaceCalendarEvent {
   tenantId  String   @map("tenant_id")
   id        String
   data      Json     @default("{}")
+  kind      String?
+  title     String?
+  content   String?
+  preview   String?
+  tags      Json?    @default("[]")
+  blocks    Json?    @default("[]")
+  status    String?
+  priority  String?
+  startAt   DateTime? @map("start_at") @db.Timestamptz(6)
+  endAt     DateTime? @map("end_at") @db.Timestamptz(6)
+  dueAt     DateTime? @map("due_at") @db.Timestamptz(6)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_workspace_calendar_events_tenant_updated")
+  @@index([tenantId, kind, updatedAt(sort: Desc)], map: "idx_workspace_calendar_events_tenant_kind_updated")
+  @@index([tenantId, status, startAt(sort: Asc)], map: "idx_workspace_calendar_events_tenant_status_start")
+  @@index([tenantId, priority, dueAt(sort: Asc)], map: "idx_workspace_calendar_events_tenant_priority_due")
   @@map("workspace_calendar_events")
 }
 
@@ -147,23 +214,50 @@ model WorkspaceKanbanTask {
   tenantId  String   @map("tenant_id")
   id        String
   data      Json     @default("{}")
+  kind      String?
+  title     String?
+  content   String?
+  preview   String?
+  tags      Json?    @default("[]")
+  blocks    Json?    @default("[]")
+  status    String?
+  priority  String?
+  startAt   DateTime? @map("start_at") @db.Timestamptz(6)
+  endAt     DateTime? @map("end_at") @db.Timestamptz(6)
+  dueAt     DateTime? @map("due_at") @db.Timestamptz(6)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_workspace_kanban_tasks_tenant_updated")
+  @@index([tenantId, kind, updatedAt(sort: Desc)], map: "idx_workspace_kanban_tasks_tenant_kind_updated")
+  @@index([tenantId, status, updatedAt(sort: Desc)], map: "idx_workspace_kanban_tasks_tenant_status_updated")
+  @@index([tenantId, priority, dueAt(sort: Asc)], map: "idx_workspace_kanban_tasks_tenant_priority_due")
   @@map("workspace_kanban_tasks")
 }
 
 model FinanceOperation {
   id        String
   tenantId  String   @map("tenant_id")
-  payload   Json
+  type      String?
+  category  String?
+  amount    Decimal? @db.Decimal(20, 6)
+  currency  String?
+  operationAt DateTime? @map("operation_at") @db.Timestamptz(6)
+  status    String?
+  projectId String?  @map("project_id")
+  botId     String?  @map("bot_id")
+  goldAmount Decimal? @map("gold_amount") @db.Decimal(20, 6)
+  goldPriceAtTime Decimal? @map("gold_price_at_time") @db.Decimal(20, 6)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_finance_operations_tenant_updated")
+  @@index([tenantId, operationAt(sort: Desc)], map: "idx_finance_operations_tenant_operation_at")
+  @@index([tenantId, status, operationAt(sort: Desc)], map: "idx_finance_operations_tenant_status_operation_at")
+  @@index([tenantId, category, operationAt(sort: Desc)], map: "idx_finance_operations_tenant_category_operation_at")
+  @@index([tenantId, currency, operationAt(sort: Desc)], map: "idx_finance_operations_tenant_currency_operation_at")
   @@map("finance_operations")
 }
 
@@ -216,12 +310,20 @@ model BotEntity {
 model Bot {
   tenantId  String   @map("tenant_id")
   id        String
-  data      Json     @default("{}")
+  status    String?
+  lifecycle Json?    @default("{}")
+  platform  String?
+  profile   String?
+  version   String?
+  lastSeenAt DateTime? @map("last_seen_at") @db.Timestamptz(6)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_bots_tenant_updated")
+  @@index([tenantId, status, updatedAt(sort: Desc)], map: "idx_bots_tenant_status_updated")
+  @@index([tenantId, platform, updatedAt(sort: Desc)], map: "idx_bots_tenant_platform_updated")
+  @@index([tenantId, lastSeenAt(sort: Desc)], map: "idx_bots_tenant_last_seen")
   @@map("bots")
 }
 
@@ -241,11 +343,18 @@ model Playbook {
   tenantId  String   @map("tenant_id")
   id        String
   data      Json     @default("{}")
+  name      String?
+  content   String?
+  isDefault Boolean? @map("is_default")
+  status    String?
+  version   String?
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_playbooks_tenant_updated")
+  @@index([tenantId, status, updatedAt(sort: Desc)], map: "idx_playbooks_tenant_status_updated")
+  @@index([tenantId, isDefault, updatedAt(sort: Desc)], map: "idx_playbooks_tenant_default_updated")
   @@map("playbooks")
 }
 
@@ -262,11 +371,18 @@ model SettingsItem {
 }
 
 model AppSetting {
-  tenantId  String   @id @map("tenant_id")
+  tenantId  String   @map("tenant_id")
+  path      String
   data      Json     @default("{}")
+  value     Json?    @default("{}")
+  namespace String?
+  valueType String?  @map("value_type")
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
+  @@id([tenantId, path])
   @@index([updatedAt(sort: Desc)], map: "idx_app_settings_updated")
+  @@index([tenantId, namespace, updatedAt(sort: Desc)], map: "idx_app_settings_tenant_namespace_updated")
+  @@index([tenantId, path], map: "idx_app_settings_tenant_path")
   @@map("app_settings")
 }
 
@@ -286,11 +402,22 @@ model ThemeBackgroundAsset {
   tenantId  String   @map("tenant_id")
   id        String
   data      Json     @default("{}")
+  objectKey String?  @map("object_key")
+  mimeType  String?  @map("mime_type")
+  sizeBytes Int?     @map("size_bytes")
+  width     Int?
+  height    Int?
+  status    String?
+  imageUrl  String?  @map("image_url")
+  imageUrlExpiresAtMs BigInt? @map("image_url_expires_at_ms")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, updatedAt(sort: Desc)], map: "idx_theme_background_assets_tenant_updated")
+  @@index([tenantId, status, updatedAt(sort: Desc)], map: "idx_theme_background_assets_tenant_status_updated")
+  @@index([tenantId, mimeType, updatedAt(sort: Desc)], map: "idx_theme_background_assets_tenant_mime_updated")
+  @@index([tenantId, objectKey], map: "idx_theme_background_assets_tenant_object_key")
   @@map("theme_background_assets")
 }
 

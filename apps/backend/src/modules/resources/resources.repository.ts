@@ -1,24 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, type PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { softFailMissingStorage, softFailMissingStorageRead } from '../common/prisma-soft-fail';
-import {
-  resolveTypedStoreMigrationMode,
-  type TypedStoreMigrationMode,
-} from '../common/typed-store-migration-mode';
 import { PrismaService } from '../db/prisma.service';
 
 @Injectable()
 export class ResourcesRepository {
   private readonly prisma: PrismaService;
-  private readonly migrationMode: TypedStoreMigrationMode;
 
   constructor(prisma: PrismaService) {
     this.prisma = prisma;
-    this.migrationMode = resolveTypedStoreMigrationMode({
-      env: process.env,
-      readPrecedenceOverrideEnvName: 'BOTMOX_RESOURCES_READ_PRECEDENCE',
-      dualWriteOverrideEnvName: 'BOTMOX_RESOURCES_DUAL_WRITE',
-    });
   }
 
   private resolveTypedTable(kind: string): string | null {
@@ -28,32 +18,158 @@ export class ResourcesRepository {
     return null;
   }
 
-  private asTypedRows(rows: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
-    return rows.map((row) => ({
-      id: row.id,
-      payload: (row.data as Prisma.JsonValue) ?? {},
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    }));
+  private asRecord(value: unknown): Record<string, unknown> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return {};
+    }
+    return value as Record<string, unknown>;
   }
 
-  private async listLegacy(
-    tenantId: string,
-    kind: string,
-  ): Promise<Array<Record<string, unknown>>> {
-    return softFailMissingStorageRead(
-      () =>
-        this.prisma.withTenantContext(tenantId, async (tx) => {
-          return this.getResourceItemClient(tx).findMany({
-            where: {
-              tenantId,
-              kind,
-            },
-            orderBy: { updatedAt: 'desc' },
-          });
-        }),
-      [],
-    );
+  private toTrimmedString(value: unknown): string | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+    const normalized = value.trim();
+    return normalized.length > 0 ? normalized : null;
+  }
+
+  private toInteger(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return Math.trunc(value);
+    }
+    if (typeof value === 'string' && value.trim().length > 0) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
+    }
+    return null;
+  }
+
+  private toBoolean(value: unknown): boolean | null {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase();
+      if (
+        normalized === 'true' ||
+        normalized === '1' ||
+        normalized === 'yes' ||
+        normalized === 'on'
+      ) {
+        return true;
+      }
+      if (
+        normalized === 'false' ||
+        normalized === '0' ||
+        normalized === 'no' ||
+        normalized === 'off'
+      ) {
+        return false;
+      }
+    }
+    return null;
+  }
+
+  private toDateValue(value: unknown): Date | null {
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value;
+    }
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    if (typeof value === 'string' && value.trim().length > 0) {
+      const numeric = Number(value);
+      if (Number.isFinite(numeric) && numeric > 0) {
+        const fromNumeric = new Date(numeric);
+        if (!Number.isNaN(fromNumeric.getTime())) {
+          return fromNumeric;
+        }
+      }
+      const fromString = new Date(value);
+      return Number.isNaN(fromString.getTime()) ? null : fromString;
+    }
+    return null;
+  }
+
+  private toEpochMillis(value: unknown): number | null {
+    const parsed = this.toDateValue(value);
+    return parsed ? parsed.getTime() : null;
+  }
+
+  private pickFirstDefined(payload: Record<string, unknown>, keys: string[]): unknown {
+    for (const key of keys) {
+      if (Object.hasOwn(payload, key)) {
+        return payload[key];
+      }
+    }
+    return undefined;
+  }
+
+  private resolveResourceTypedColumns(payloadValue: Prisma.InputJsonValue): {
+    type: string | null;
+    status: string | null;
+    botId: string | null;
+    country: string | null;
+    countryCode: string | null;
+    ip: string | null;
+    port: number | null;
+    expiresAt: Date | null;
+    daysRemaining: number | null;
+    isExpiringSoon: boolean | null;
+  } {
+    const payload = this.asRecord(payloadValue);
+    return {
+      type: this.toTrimmedString(payload.type),
+      status: this.toTrimmedString(payload.status),
+      botId: this.toTrimmedString(this.pickFirstDefined(payload, ['bot_id', 'botId'])),
+      country: this.toTrimmedString(payload.country),
+      countryCode: this.toTrimmedString(
+        this.pickFirstDefined(payload, ['country_code', 'countryCode']),
+      ),
+      ip: this.toTrimmedString(payload.ip),
+      port: this.toInteger(payload.port),
+      expiresAt: this.toDateValue(this.pickFirstDefined(payload, ['expires_at', 'expiresAt'])),
+      daysRemaining: this.toInteger(
+        this.pickFirstDefined(payload, ['days_remaining', 'daysRemaining']),
+      ),
+      isExpiringSoon: this.toBoolean(
+        this.pickFirstDefined(payload, ['is_expiring_soon', 'isExpiringSoon']),
+      ),
+    };
+  }
+
+  private asTypedRows(rows: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+    return rows.map((row) => {
+      const typedType = this.toTrimmedString(row.type);
+      const typedStatus = this.toTrimmedString(row.status);
+      const typedBotId = this.toTrimmedString(row.botId);
+      const typedCountry = this.toTrimmedString(row.country);
+      const typedCountryCode = this.toTrimmedString(row.countryCode);
+      const typedIp = this.toTrimmedString(row.ip);
+      const typedPort = this.toInteger(row.port);
+      const typedExpiresAt = this.toEpochMillis(row.expiresAt);
+      const typedDaysRemaining = this.toInteger(row.daysRemaining);
+      const typedIsExpiringSoon = this.toBoolean(row.isExpiringSoon);
+
+      return {
+        id: row.id,
+        payload: {
+          ...(typedType ? { type: typedType } : {}),
+          ...(typedStatus ? { status: typedStatus } : {}),
+          ...(typedBotId ? { bot_id: typedBotId } : {}),
+          ...(typedCountry ? { country: typedCountry } : {}),
+          ...(typedCountryCode ? { country_code: typedCountryCode } : {}),
+          ...(typedIp ? { ip: typedIp } : {}),
+          ...(typedPort !== null ? { port: typedPort } : {}),
+          ...(typedExpiresAt !== null ? { expires_at: typedExpiresAt } : {}),
+          ...(typedDaysRemaining !== null ? { days_remaining: typedDaysRemaining } : {}),
+          ...(typedIsExpiringSoon !== null ? { is_expiring_soon: typedIsExpiringSoon } : {}),
+        } as Prisma.JsonValue,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      };
+    });
   }
 
   private async listTyped(tenantId: string, kind: string): Promise<Array<Record<string, unknown>>> {
@@ -65,7 +181,20 @@ export class ResourcesRepository {
     const rows = await softFailMissingStorageRead(
       () =>
         this.prisma.$queryRaw<Array<Record<string, unknown>>>(Prisma.sql`
-          select id, data, created_at as "createdAt", updated_at as "updatedAt"
+          select
+            id,
+            type,
+            status,
+            bot_id as "botId",
+            country,
+            country_code as "countryCode",
+            ip,
+            port,
+            expires_at as "expiresAt",
+            days_remaining as "daysRemaining",
+            is_expiring_soon as "isExpiringSoon",
+            created_at as "createdAt",
+            updated_at as "updatedAt"
           from ${Prisma.raw(`public.${table}`)}
           where tenant_id = ${tenantId}
           order by updated_at desc
@@ -73,26 +202,6 @@ export class ResourcesRepository {
       [],
     );
     return this.asTypedRows(rows);
-  }
-
-  private async findByIdLegacy(
-    tenantId: string,
-    kind: string,
-    id: string,
-  ): Promise<Record<string, unknown> | null> {
-    return softFailMissingStorageRead(
-      () =>
-        this.prisma.withTenantContext(tenantId, async (tx) => {
-          return this.getResourceItemClient(tx).findFirst({
-            where: {
-              tenantId,
-              kind,
-              id,
-            },
-          });
-        }),
-      null,
-    );
   }
 
   private async findByIdTyped(
@@ -108,7 +217,20 @@ export class ResourcesRepository {
     const rows = await softFailMissingStorageRead(
       () =>
         this.prisma.$queryRaw<Array<Record<string, unknown>>>(Prisma.sql`
-          select id, data, created_at as "createdAt", updated_at as "updatedAt"
+          select
+            id,
+            type,
+            status,
+            bot_id as "botId",
+            country,
+            country_code as "countryCode",
+            ip,
+            port,
+            expires_at as "expiresAt",
+            days_remaining as "daysRemaining",
+            is_expiring_soon as "isExpiringSoon",
+            created_at as "createdAt",
+            updated_at as "updatedAt"
           from ${Prisma.raw(`public.${table}`)}
           where tenant_id = ${tenantId}
             and id = ${id}
@@ -118,36 +240,6 @@ export class ResourcesRepository {
     );
 
     return rows[0] ? (this.asTypedRows(rows)[0] ?? null) : null;
-  }
-
-  private async upsertLegacy(input: {
-    tenantId: string;
-    kind: string;
-    id: string;
-    payload: Prisma.InputJsonValue;
-  }): Promise<Record<string, unknown>> {
-    return this.prisma.withTenantContext(input.tenantId, async (tx) => {
-      return this.getResourceItemClient(tx).upsert({
-        where: {
-          tenantId_kind_id: {
-            tenantId: input.tenantId,
-            kind: input.kind,
-            id: input.id,
-          },
-        },
-        create: {
-          id: input.id,
-          tenantId: input.tenantId,
-          kind: input.kind,
-          payload: input.payload,
-        },
-        update: {
-          tenantId: input.tenantId,
-          kind: input.kind,
-          payload: input.payload,
-        },
-      });
-    });
   }
 
   private async upsertTyped(
@@ -164,44 +256,72 @@ export class ResourcesRepository {
       return fallback;
     }
 
-    const payloadJson = JSON.stringify(input.payload ?? {});
-    return softFailMissingStorage(async () => {
+    const typedColumns = this.resolveResourceTypedColumns(input.payload);
+    const operation = async () => {
       const rows = await this.prisma.$queryRaw<Array<Record<string, unknown>>>(Prisma.sql`
           insert into ${Prisma.raw(`public.${table}`)} (
             tenant_id,
             id,
-            data,
+            type,
+            status,
+            bot_id,
+            country,
+            country_code,
+            ip,
+            port,
+            expires_at,
+            days_remaining,
+            is_expiring_soon,
             created_at,
             updated_at
           ) values (
             ${input.tenantId},
             ${input.id},
-            ${payloadJson}::jsonb,
+            ${typedColumns.type},
+            ${typedColumns.status},
+            ${typedColumns.botId},
+            ${typedColumns.country},
+            ${typedColumns.countryCode},
+            ${typedColumns.ip},
+            ${typedColumns.port},
+            ${typedColumns.expiresAt},
+            ${typedColumns.daysRemaining},
+            ${typedColumns.isExpiringSoon},
             now(),
             now()
           )
           on conflict (tenant_id, id)
           do update set
-            data = excluded.data,
+            type = excluded.type,
+            status = excluded.status,
+            bot_id = excluded.bot_id,
+            country = excluded.country,
+            country_code = excluded.country_code,
+            ip = excluded.ip,
+            port = excluded.port,
+            expires_at = excluded.expires_at,
+            days_remaining = excluded.days_remaining,
+            is_expiring_soon = excluded.is_expiring_soon,
             updated_at = now()
-          returning id, data, created_at as "createdAt", updated_at as "updatedAt"
+          returning
+            id,
+            type,
+            status,
+            bot_id as "botId",
+            country,
+            country_code as "countryCode",
+            ip,
+            port,
+            expires_at as "expiresAt",
+            days_remaining as "daysRemaining",
+            is_expiring_soon as "isExpiringSoon",
+            created_at as "createdAt",
+            updated_at as "updatedAt"
         `);
       const mapped = this.asTypedRows(rows);
       return mapped[0] ?? fallback;
-    }, fallback);
-  }
-
-  private async deleteLegacy(tenantId: string, kind: string, id: string): Promise<boolean> {
-    const result = await this.prisma.withTenantContext(tenantId, async (tx) => {
-      return this.getResourceItemClient(tx).deleteMany({
-        where: {
-          tenantId,
-          kind,
-          id,
-        },
-      });
-    });
-    return result.count > 0;
+    };
+    return operation();
   }
 
   private async deleteTyped(tenantId: string, kind: string, id: string): Promise<boolean> {
@@ -210,46 +330,18 @@ export class ResourcesRepository {
       return false;
     }
 
-    const count = await softFailMissingStorage(
-      () =>
-        this.prisma.$executeRaw<number>(Prisma.sql`
-          delete from ${Prisma.raw(`public.${table}`)}
-          where tenant_id = ${tenantId}
-            and id = ${id}
-        `),
-      0,
-    );
+    const operation = () =>
+      this.prisma.$executeRaw<number>(Prisma.sql`
+        delete from ${Prisma.raw(`public.${table}`)}
+        where tenant_id = ${tenantId}
+          and id = ${id}
+      `);
+    const count = await operation();
 
     return count > 0;
   }
 
-  private getResourceItemClient(source: PrismaClient | Prisma.TransactionClient): {
-    findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
-    findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
-    upsert: (args: unknown) => Promise<Record<string, unknown>>;
-    deleteMany: (args: unknown) => Promise<{ count: number }>;
-  } {
-    return (source as unknown as { resourceItem: unknown }).resourceItem as {
-      findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
-      findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
-      upsert: (args: unknown) => Promise<Record<string, unknown>>;
-      deleteMany: (args: unknown) => Promise<{ count: number }>;
-    };
-  }
-
   async list(tenantId: string, kind: string): Promise<Array<Record<string, unknown>>> {
-    if (this.migrationMode.readPrecedence === 'typed-first') {
-      const typedRows = await this.listTyped(tenantId, kind);
-      if (typedRows.length > 0) {
-        return typedRows;
-      }
-      return this.listLegacy(tenantId, kind);
-    }
-
-    const legacyRows = await this.listLegacy(tenantId, kind);
-    if (legacyRows.length > 0) {
-      return legacyRows;
-    }
     return this.listTyped(tenantId, kind);
   }
 
@@ -258,18 +350,6 @@ export class ResourcesRepository {
     kind: string,
     id: string,
   ): Promise<Record<string, unknown> | null> {
-    if (this.migrationMode.readPrecedence === 'typed-first') {
-      const typedRow = await this.findByIdTyped(tenantId, kind, id);
-      if (typedRow) {
-        return typedRow;
-      }
-      return this.findByIdLegacy(tenantId, kind, id);
-    }
-
-    const legacyRow = await this.findByIdLegacy(tenantId, kind, id);
-    if (legacyRow) {
-      return legacyRow;
-    }
     return this.findByIdTyped(tenantId, kind, id);
   }
 
@@ -279,27 +359,14 @@ export class ResourcesRepository {
     id: string;
     payload: Prisma.InputJsonValue;
   }): Promise<Record<string, unknown>> {
-    const legacyRow = await this.upsertLegacy(input);
-    if (!this.migrationMode.dualWriteEnabled) {
-      return legacyRow;
-    }
-
-    if (this.migrationMode.readPrecedence === 'typed-first') {
-      return this.upsertTyped(input, legacyRow);
-    }
-
-    await this.upsertTyped(input, legacyRow);
-    return legacyRow;
+    return this.upsertTyped(input, {
+      id: input.id,
+      payload: input.payload,
+    });
   }
 
   async delete(tenantId: string, kind: string, id: string): Promise<boolean> {
-    const legacyDeleted = await this.deleteLegacy(tenantId, kind, id);
-    if (!this.migrationMode.dualWriteEnabled) {
-      return legacyDeleted;
-    }
-
-    const typedDeleted = await this.deleteTyped(tenantId, kind, id);
-    return legacyDeleted || typedDeleted;
+    return this.deleteTyped(tenantId, kind, id);
   }
 
   async deleteLinkedToBot(tenantId: string, botId: string): Promise<number> {
@@ -308,28 +375,12 @@ export class ResourcesRepository {
       return 0;
     }
 
-    const legacyDeleted = await this.prisma.$executeRaw<number>(Prisma.sql`
-      delete from public.resource_items
-      where tenant_id = ${tenantId}
-        and (
-          (
-            kind in ('proxies', 'subscriptions')
-            and payload->>'bot_id' = ${normalizedBotId}
-          )
-          or (
-            kind = 'licenses'
-            and jsonb_typeof(payload->'bot_ids') = 'array'
-            and (payload->'bot_ids') ? ${normalizedBotId}
-          )
-        )
-    `);
-
     const typedProxiesDeleted = await softFailMissingStorage(
       () =>
         this.prisma.$executeRaw<number>(Prisma.sql`
           delete from public.resources_proxies
           where tenant_id = ${tenantId}
-            and data->>'bot_id' = ${normalizedBotId}
+            and bot_id = ${normalizedBotId}
         `),
       0,
     );
@@ -339,7 +390,7 @@ export class ResourcesRepository {
         this.prisma.$executeRaw<number>(Prisma.sql`
           delete from public.resources_subscriptions
           where tenant_id = ${tenantId}
-            and data->>'bot_id' = ${normalizedBotId}
+            and bot_id = ${normalizedBotId}
         `),
       0,
     );
@@ -349,12 +400,11 @@ export class ResourcesRepository {
         this.prisma.$executeRaw<number>(Prisma.sql`
           delete from public.resources_licenses
           where tenant_id = ${tenantId}
-            and jsonb_typeof(data->'bot_ids') = 'array'
-            and (data->'bot_ids') ? ${normalizedBotId}
+            and bot_id = ${normalizedBotId}
         `),
       0,
     );
 
-    return legacyDeleted + typedProxiesDeleted + typedSubscriptionsDeleted + typedLicensesDeleted;
+    return typedProxiesDeleted + typedSubscriptionsDeleted + typedLicensesDeleted;
   }
 }

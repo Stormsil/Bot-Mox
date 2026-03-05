@@ -104,6 +104,162 @@ components:
         - $ref: '#/components/schemas/LicenseMutationRequest'
         - $ref: '#/components/schemas/ProxyMutationRequest'
         - $ref: '#/components/schemas/SubscriptionMutationRequest'
+    ResourceKind:
+      type: string
+      enum: [licenses, proxies, subscriptions]
+    ResourceComputedStatus:
+      type: string
+      enum: [active, expiring, expiring_soon, expired, banned]
+    ResourceRecord:
+      type: object
+      properties:
+        computed_status:
+          $ref: '#/components/schemas/ResourceComputedStatus'
+        status:
+          type: string
+        days_remaining:
+          type: integer
+          nullable: true
+        is_expiring_soon:
+          type: boolean
+      required: [computed_status, days_remaining, is_expiring_soon]
+      additionalProperties: true
+    ResourceDeleteResult:
+      type: object
+      properties:
+        id:
+          type: string
+        deleted:
+          type: boolean
+      required: [id, deleted]
+    ResourceStatusProjection:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [none, active, expiring, expired, banned]
+        label:
+          type: string
+        color:
+          type: string
+          enum: [default, success, warning, error]
+        sort:
+          type: integer
+        days_remaining:
+          type: integer
+      required: [status, label, color, sort]
+    ResourcesStatusAggregate:
+      type: object
+      properties:
+        generated_at:
+          type: integer
+          minimum: 0
+        summary:
+          type: object
+          properties:
+            licenses:
+              type: object
+              properties:
+                total:
+                  type: integer
+                  minimum: 0
+                active:
+                  type: integer
+                  minimum: 0
+                expiring_soon:
+                  type: integer
+                  minimum: 0
+                expired:
+                  type: integer
+                  minimum: 0
+                unassigned:
+                  type: integer
+                  minimum: 0
+              required: [total, active, expiring_soon, expired, unassigned]
+            proxies:
+              type: object
+              properties:
+                total:
+                  type: integer
+                  minimum: 0
+                active:
+                  type: integer
+                  minimum: 0
+                expiring_soon:
+                  type: integer
+                  minimum: 0
+                expired:
+                  type: integer
+                  minimum: 0
+                unassigned:
+                  type: integer
+                  minimum: 0
+              required: [total, active, expiring_soon, expired, unassigned]
+            subscriptions:
+              type: object
+              properties:
+                total:
+                  type: integer
+                  minimum: 0
+                active:
+                  type: integer
+                  minimum: 0
+                expiring_soon:
+                  type: integer
+                  minimum: 0
+                expired:
+                  type: integer
+                  minimum: 0
+              required: [total, active, expiring_soon, expired]
+          required: [licenses, proxies, subscriptions]
+        expiring_items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              type:
+                type: string
+                enum: [license, proxy, subscription]
+              name:
+                type: string
+              bot_id:
+                type: string
+              days_remaining:
+                type: integer
+                minimum: 0
+              expires_at:
+                type: integer
+                minimum: 0
+            required: [id, type, name, days_remaining]
+        by_bot:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              license_status:
+                $ref: '#/components/schemas/ResourceStatusProjection'
+              proxy_status:
+                $ref: '#/components/schemas/ResourceStatusProjection'
+              subscription_status:
+                $ref: '#/components/schemas/ResourceStatusProjection'
+              subscriptions_summary:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    minimum: 0
+                  active_count:
+                    type: integer
+                    minimum: 0
+                  next_expiry_days_remaining:
+                    type: integer
+                  next_expiry_at:
+                    type: integer
+                required: [total, active_count]
+            required: [license_status, proxy_status, subscription_status, subscriptions_summary]
+      required: [generated_at, summary, expiring_items, by_bot]
     WorkspaceMutationRequest:
       description: |
         Kind-specific mutation payload. Server validates by `{kind}`.
@@ -499,6 +655,25 @@ paths:
           description: WoW names payload
         '502':
           description: Source returned no names
+  /api/v1/resources/status-aggregate:
+    get:
+      summary: Get resources status aggregate projections
+      responses:
+        '200':
+          description: Resources status aggregate payload
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ResourcesStatusAggregate'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
   /api/v1/resources/{kind}:
     get:
       summary: List resources by kind
@@ -507,11 +682,81 @@ paths:
           name: kind
           required: true
           schema:
+            $ref: '#/components/schemas/ResourceKind'
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+        - in: query
+          name: sort
+          required: false
+          schema:
             type: string
-            enum: [licenses, proxies, subscriptions]
+        - in: query
+          name: order
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: type
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: country
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: country_code
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: bot_id
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: Resource list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ResourceRecord'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
     post:
       summary: Create resource by kind
       parameters:
@@ -519,8 +764,7 @@ paths:
           name: kind
           required: true
           schema:
-            type: string
-            enum: [licenses, proxies, subscriptions]
+            $ref: '#/components/schemas/ResourceKind'
       requestBody:
         required: true
         content:
@@ -530,6 +774,21 @@ paths:
       responses:
         '201':
           description: Created resource
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ResourceRecord'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
   /api/v1/resources/{kind}/{id}:
     get:
       summary: Get resource by id
@@ -538,8 +797,7 @@ paths:
           name: kind
           required: true
           schema:
-            type: string
-            enum: [licenses, proxies, subscriptions]
+            $ref: '#/components/schemas/ResourceKind'
         - in: path
           name: id
           required: true
@@ -548,6 +806,21 @@ paths:
       responses:
         '200':
           description: Resource entity
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ResourceRecord'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
         '404':
           description: Not found
     patch:
@@ -557,8 +830,7 @@ paths:
           name: kind
           required: true
           schema:
-            type: string
-            enum: [licenses, proxies, subscriptions]
+            $ref: '#/components/schemas/ResourceKind'
         - in: path
           name: id
           required: true
@@ -573,6 +845,23 @@ paths:
       responses:
         '200':
           description: Updated resource
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ResourceRecord'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
     delete:
       summary: Delete resource by id
       parameters:
@@ -580,8 +869,7 @@ paths:
           name: kind
           required: true
           schema:
-            type: string
-            enum: [licenses, proxies, subscriptions]
+            $ref: '#/components/schemas/ResourceKind'
         - in: path
           name: id
           required: true
@@ -590,6 +878,23 @@ paths:
       responses:
         '200':
           description: Deletion result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ResourceDeleteResult'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
   /api/v1/workspace/{kind}:
     get:
       summary: List workspace entities by kind

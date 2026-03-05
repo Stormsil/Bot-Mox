@@ -92,10 +92,33 @@ export class AdminDataEncryptionService {
         take: limit,
         select: {
           id: true,
-          payload: true,
+          type: true,
+          category: true,
+          amount: true,
+          currency: true,
+          operationAt: true,
+          status: true,
+          projectId: true,
+          botId: true,
+          goldAmount: true,
+          goldPriceAtTime: true,
         },
       });
-      return rows as Array<{ id: string; payload: Prisma.JsonValue }>;
+      return rows.map((row) => ({
+        id: row.id,
+        payload: {
+          type: row.type ?? null,
+          category: row.category ?? null,
+          amount: row.amount?.toNumber?.() ?? null,
+          currency: row.currency ?? null,
+          operation_at: row.operationAt ? row.operationAt.getTime() : null,
+          status: row.status ?? null,
+          project_id: row.projectId ?? null,
+          bot_id: row.botId ?? null,
+          gold_amount: row.goldAmount?.toNumber?.() ?? null,
+          gold_price_at_time: row.goldPriceAtTime?.toNumber?.() ?? null,
+        } as Prisma.JsonValue,
+      }));
     });
   }
 
@@ -466,19 +489,9 @@ export class AdminDataEncryptionService {
           continue;
         }
 
-        const decryptedPayload = wrapperEnvelope
-          ? this.crypto.decryptJson<Record<string, unknown>>(wrapperEnvelope)
-          : null;
-        const plaintextPayload =
-          decryptedPayload && typeof decryptedPayload === 'object'
-            ? decryptedPayload
-            : (row.payload as Record<string, unknown>);
         planned += 1;
 
         if (!dryRun) {
-          const nextPayload = {
-            __enc_payload_v1: this.crypto.encryptJson(plaintextPayload),
-          };
           await this.prisma.withTenantContext(tenantId, async (tx) => {
             await tx.financeOperation.update({
               where: {
@@ -488,7 +501,7 @@ export class AdminDataEncryptionService {
                 },
               },
               data: {
-                payload: nextPayload as unknown as Prisma.InputJsonValue,
+                updatedAt: new Date(),
               },
             });
           });

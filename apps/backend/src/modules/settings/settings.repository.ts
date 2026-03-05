@@ -1,43 +1,54 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, type PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { softFailMissingStorage, softFailMissingStorageRead } from '../common/prisma-soft-fail';
-import {
-  resolveTypedStoreMigrationMode,
-  type TypedStoreMigrationMode,
-} from '../common/typed-store-migration-mode';
 import { PrismaService } from '../db/prisma.service';
 
 @Injectable()
 export class SettingsRepository {
   private readonly prisma: PrismaService;
-  private readonly migrationMode: TypedStoreMigrationMode;
 
   constructor(prisma: PrismaService) {
     this.prisma = prisma;
-    this.migrationMode = resolveTypedStoreMigrationMode({
-      env: process.env,
-      readPrecedenceOverrideEnvName: 'BOTMOX_SETTINGS_READ_PRECEDENCE',
-      dualWriteOverrideEnvName: 'BOTMOX_SETTINGS_DUAL_WRITE',
-    });
+  }
+
+  private resolveNamespace(path: string): string {
+    const normalized = String(path || '').trim();
+    if (!normalized) {
+      return 'root';
+    }
+    const [head] = normalized.split('/');
+    const candidate = String(head || '').trim();
+    return candidate || 'root';
+  }
+
+  private resolveValueType(value: Prisma.InputJsonValue): string {
+    if (Array.isArray(value)) {
+      return 'array';
+    }
+    if (value === null) {
+      return 'null';
+    }
+    const kind = typeof value;
+    if (kind === 'string' || kind === 'number' || kind === 'boolean') {
+      return kind;
+    }
+    return 'object';
+  }
+
+  private buildTypedPathPayload(
+    row: Record<string, unknown>,
+    path: string,
+  ): Prisma.JsonValue | null {
+    const rowPath = typeof row.path === 'string' ? row.path : null;
+    const rowValue = row.value as Prisma.JsonValue | undefined;
+    if (rowPath === path && rowValue !== undefined && rowValue !== null) {
+      return rowValue;
+    }
+    return null;
   }
 
   private toTypedRow(payload: Prisma.JsonValue): Record<string, unknown> {
     return { payload: payload as unknown as Record<string, unknown> };
-  }
-
-  private async findByPathLegacy(
-    tenantId: string,
-    path: string,
-  ): Promise<Record<string, unknown> | null> {
-    return softFailMissingStorageRead(
-      () =>
-        this.prisma.withTenantContext(tenantId, async (tx) => {
-          return this.getSettingsItemClient(tx).findFirst({
-            where: { tenantId, path },
-          });
-        }),
-      null,
-    );
   }
 
   private async findByPathTyped(
@@ -47,54 +58,20 @@ export class SettingsRepository {
     const rows = await softFailMissingStorageRead(
       () =>
         this.prisma.$queryRaw<Array<Record<string, unknown>>>(Prisma.sql`
-          select data -> ${path} as payload
+          select path, value, namespace, value_type
           from public.app_settings
           where tenant_id = ${tenantId}
+            and path = ${path}
           limit 1
         `),
       [],
     );
-    const payload = rows[0]?.payload as Prisma.JsonValue | undefined;
+
+    const payload = rows[0] ? this.buildTypedPathPayload(rows[0], path) : null;
     if (payload === undefined || payload === null) {
       return null;
     }
     return this.toTypedRow(payload);
-  }
-
-  private async upsertLegacy(input: {
-    tenantId: string;
-    path: string;
-    payload: Prisma.InputJsonValue;
-  }): Promise<Record<string, unknown>> {
-    const fallback = {
-      tenantId: input.tenantId,
-      path: input.path,
-      payload: input.payload,
-    };
-    return softFailMissingStorage(
-      () =>
-        this.prisma.withTenantContext(input.tenantId, async (tx) => {
-          return this.getSettingsItemClient(tx).upsert({
-            where: {
-              tenantId_path: {
-                tenantId: input.tenantId,
-                path: input.path,
-              },
-            },
-            create: {
-              tenantId: input.tenantId,
-              path: input.path,
-              payload: input.payload,
-            },
-            update: {
-              tenantId: input.tenantId,
-              path: input.path,
-              payload: input.payload,
-            },
-          });
-        }),
-      fallback,
-    );
   }
 
   private async upsertTyped(
@@ -106,55 +83,45 @@ export class SettingsRepository {
     fallback: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     const payloadJson = JSON.stringify(input.payload ?? {});
-    return softFailMissingStorage(async () => {
+    const namespace = this.resolveNamespace(input.path);
+    const valueType = this.resolveValueType(input.payload);
+    const operation = async () => {
       const rows = await this.prisma.$queryRaw<Array<Record<string, unknown>>>(Prisma.sql`
           insert into public.app_settings (
             tenant_id,
-            data,
+            path,
+            value,
+            namespace,
+            value_type,
             updated_at
           ) values (
             ${input.tenantId},
-            jsonb_build_object(${input.path}, ${payloadJson}::jsonb),
+            ${input.path},
+            ${payloadJson}::jsonb,
+            ${namespace},
+            ${valueType},
             now()
           )
-          on conflict (tenant_id)
+          on conflict (tenant_id, path)
           do update set
-            data = coalesce(public.app_settings.data, '{}'::jsonb) ||
-              jsonb_build_object(${input.path}, ${payloadJson}::jsonb),
+            path = excluded.path,
+            value = excluded.value,
+            namespace = excluded.namespace,
+            value_type = excluded.value_type,
             updated_at = now()
-          returning data -> ${input.path} as payload
+          returning path, value, namespace, value_type
         `);
-      const payload = rows[0]?.payload as Prisma.JsonValue | undefined;
+
+      const payload = rows[0] ? this.buildTypedPathPayload(rows[0], input.path) : null;
       if (payload === undefined || payload === null) {
         return fallback;
       }
       return this.toTypedRow(payload);
-    }, fallback);
-  }
-
-  private getSettingsItemClient(source: PrismaClient | Prisma.TransactionClient): {
-    findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
-    upsert: (args: unknown) => Promise<Record<string, unknown>>;
-  } {
-    return (source as unknown as { settingsItem: unknown }).settingsItem as {
-      findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
-      upsert: (args: unknown) => Promise<Record<string, unknown>>;
     };
+    return operation();
   }
 
   async findByPath(tenantId: string, path: string): Promise<Record<string, unknown> | null> {
-    if (this.migrationMode.readPrecedence === 'typed-first') {
-      const typedRow = await this.findByPathTyped(tenantId, path);
-      if (typedRow) {
-        return typedRow;
-      }
-      return this.findByPathLegacy(tenantId, path);
-    }
-
-    const legacyRow = await this.findByPathLegacy(tenantId, path);
-    if (legacyRow) {
-      return legacyRow;
-    }
     return this.findByPathTyped(tenantId, path);
   }
 
@@ -163,16 +130,11 @@ export class SettingsRepository {
     path: string;
     payload: Prisma.InputJsonValue;
   }): Promise<Record<string, unknown>> {
-    const legacyRow = await this.upsertLegacy(input);
-    if (!this.migrationMode.dualWriteEnabled) {
-      return legacyRow;
-    }
-
-    if (this.migrationMode.readPrecedence === 'typed-first') {
-      return this.upsertTyped(input, legacyRow);
-    }
-
-    await this.upsertTyped(input, legacyRow);
-    return legacyRow;
+    const typedFallback = {
+      tenantId: input.tenantId,
+      path: input.path,
+      payload: input.payload,
+    };
+    return this.upsertTyped(input, typedFallback);
   }
 }

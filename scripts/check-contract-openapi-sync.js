@@ -18,6 +18,17 @@ function normalizePath(filePath) {
   return filePath.replace(/\\/g, '/');
 }
 
+function parseChangedRaw(changedRaw) {
+  if (!changedRaw) {
+    return [];
+  }
+
+  return changedRaw
+    .split('\n')
+    .map((item) => normalizePath(item.trim()))
+    .filter(Boolean);
+}
+
 function readArgValue(name) {
   const args = process.argv.slice(2);
   const directPrefix = `${name}=`;
@@ -71,13 +82,7 @@ function getChangedFiles() {
   const againstRef = readArgValue('--against');
   if (againstRef) {
     const changedRaw = run(`git diff --name-only ${againstRef}`, '');
-    if (!changedRaw) {
-      return [];
-    }
-    return changedRaw
-      .split('\n')
-      .map((item) => normalizePath(item.trim()))
-      .filter(Boolean);
+    return parseChangedRaw(changedRaw);
   }
 
   const range = getCommitRange();
@@ -85,15 +90,22 @@ function getChangedFiles() {
     return null;
   }
 
-  const changedRaw = run(`git diff --name-only ${range}`, '');
-  if (!changedRaw) {
-    return [];
+  const rangeChangedFiles = parseChangedRaw(run(`git diff --name-only ${range}`, ''));
+  const isCiRun = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
+  if (isCiRun) {
+    return rangeChangedFiles;
   }
 
-  return changedRaw
-    .split('\n')
-    .map((item) => normalizePath(item.trim()))
-    .filter(Boolean);
+  const localChangedFiles = new Set(rangeChangedFiles);
+  for (const file of parseChangedRaw(run('git diff --name-only', ''))) {
+    localChangedFiles.add(file);
+  }
+  for (const file of parseChangedRaw(run('git diff --name-only --cached', ''))) {
+    localChangedFiles.add(file);
+  }
+
+  return Array.from(localChangedFiles);
 }
 
 const changedFiles = getChangedFiles();

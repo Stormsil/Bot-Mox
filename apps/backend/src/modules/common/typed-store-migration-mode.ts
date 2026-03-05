@@ -1,12 +1,15 @@
 export type TypedStoreReadPrecedence = 'legacy-first' | 'typed-first';
+export type TypedStoreDualWriteFailureMode = 'soft' | 'hard';
 
 export interface TypedStoreMigrationMode {
   readPrecedence: TypedStoreReadPrecedence;
   dualWriteEnabled: boolean;
+  dualWriteFailureMode: TypedStoreDualWriteFailureMode;
   cutoverBlockedReason?: string;
 }
 
-const DEFAULT_READ_PRECEDENCE: TypedStoreReadPrecedence = 'legacy-first';
+const DEFAULT_READ_PRECEDENCE: TypedStoreReadPrecedence = 'typed-first';
+const DEFAULT_DUAL_WRITE_FAILURE_MODE: TypedStoreDualWriteFailureMode = 'hard';
 
 function parseReadPrecedence(
   value: string | undefined,
@@ -36,6 +39,22 @@ function parseBoolean(value: string | undefined, fallback: boolean): boolean {
   }
   if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off') {
     return false;
+  }
+  return fallback;
+}
+
+function parseDualWriteFailureMode(
+  value: string | undefined,
+  fallback: TypedStoreDualWriteFailureMode,
+): TypedStoreDualWriteFailureMode {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+  if (normalized === 'hard') {
+    return 'hard';
+  }
+  if (normalized === 'soft') {
+    return 'soft';
   }
   return fallback;
 }
@@ -86,7 +105,12 @@ function resolveParityGateState(options: { env: NodeJS.ProcessEnv; domain: strin
     const raw = fs.readFileSync(reportPath, 'utf8');
     const parsed = JSON.parse(raw) as {
       threshold?: number;
-      domains?: Array<{ domain?: string; mismatchCount?: number }>;
+      domains?: Array<{
+        domain?: string;
+        mismatchCount?: number;
+        legacyRows?: number;
+        typedRows?: number;
+      }>;
     };
     const threshold = Number.isFinite(parsed.threshold) ? Number(parsed.threshold) : 0;
     const domains = Array.isArray(parsed.domains) ? parsed.domains : [];
@@ -113,6 +137,31 @@ function resolveParityGateState(options: { env: NodeJS.ProcessEnv; domain: strin
         allowTypedFirst: false,
         reason: `${options.domain} parity mismatches ${mismatchCount} exceed threshold ${threshold}`,
       };
+    }
+
+    const completenessGateEnabled = parseBoolean(
+      options.env.BOTMOX_TYPED_STORE_COMPLETENESS_GATE,
+      true,
+    );
+    if (completenessGateEnabled) {
+      const legacyRows = Number.isFinite(matchedDomain.legacyRows)
+        ? Number(matchedDomain.legacyRows)
+        : Number.NaN;
+      const typedRows = Number.isFinite(matchedDomain.typedRows)
+        ? Number(matchedDomain.typedRows)
+        : Number.NaN;
+      if (!Number.isFinite(legacyRows) || !Number.isFinite(typedRows)) {
+        return {
+          allowTypedFirst: false,
+          reason: `${options.domain} parity report missing completeness row counts`,
+        };
+      }
+      if (typedRows < legacyRows) {
+        return {
+          allowTypedFirst: false,
+          reason: `${options.domain} completeness failed: typed rows ${typedRows} below legacy rows ${legacyRows}`,
+        };
+      }
     }
 
     return { allowTypedFirst: true };
@@ -143,6 +192,18 @@ export function resolveTypedStoreMigrationMode(options: {
     options.env[options.dualWriteOverrideEnvName],
     globalDualWriteEnabled,
   );
+  const globalDualWriteFailureMode = parseDualWriteFailureMode(
+    options.env.BOTMOX_TYPED_STORE_DUAL_WRITE_PHASE,
+    DEFAULT_DUAL_WRITE_FAILURE_MODE,
+  );
+  const scopedDualWriteFailureModeEnvName = options.dualWriteOverrideEnvName.replace(
+    /_DUAL_WRITE$/,
+    '_DUAL_WRITE_PHASE',
+  );
+  const dualWriteFailureMode = parseDualWriteFailureMode(
+    options.env[scopedDualWriteFailureModeEnvName],
+    globalDualWriteFailureMode,
+  );
 
   let effectiveReadPrecedence: TypedStoreReadPrecedence = readPrecedence;
   let cutoverBlockedReason: string | undefined;
@@ -162,6 +223,7 @@ export function resolveTypedStoreMigrationMode(options: {
   return {
     readPrecedence: effectiveReadPrecedence,
     dualWriteEnabled,
+    dualWriteFailureMode,
     ...(cutoverBlockedReason ? { cutoverBlockedReason } : {}),
   };
 }

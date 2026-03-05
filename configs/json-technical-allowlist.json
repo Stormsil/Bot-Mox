@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "description": "Technical JSON allowlist for scoped domains. Business aggregate/filter keys are explicitly prohibited.",
+  "scopedDomains": [
+    "finance",
+    "bots",
+    "resources",
+    "workspace",
+    "playbooks",
+    "settings",
+    "theme-assets"
+  ],
+  "technicalJsonAllowlistByDomain": {
+    "finance": ["metadata", "tags", "notes", "attachments"],
+    "bots": ["metadata", "runtime", "custom_config", "labels"],
+    "resources": ["metadata", "credentials_ref", "provider_payload", "tags"],
+    "workspace": ["metadata", "editor_state", "custom_fields", "attachments"],
+    "playbooks": ["metadata", "raw_yaml", "variables", "steps"],
+    "settings": ["metadata", "legacy_blob", "ui_overrides", "namespaced_value"],
+    "theme-assets": ["metadata", "variants", "transform_hints", "cdn_hints"]
+  },
+  "prohibitedBusinessKeys": [
+    "page",
+    "limit",
+    "sort",
+    "order",
+    "q",
+    "status",
+    "type",
+    "country",
+    "country_code",
+    "bot_id",
+    "from_ts",
+    "to_ts",
+    "currency",
+    "project_id",
+    "granularity",
+    "group_by",
+    "operation_count",
+    "income_total",
+    "expense_total",
+    "net_total",
+    "margin_percent"
+  ]
+}

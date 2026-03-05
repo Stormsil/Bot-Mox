@@ -9,19 +9,43 @@ type RepositoryStub = {
   findById: (...args: unknown[]) => Promise<Record<string, unknown> | null>;
   upsert: (...args: unknown[]) => Promise<Record<string, unknown>>;
   delete: (...args: unknown[]) => Promise<boolean>;
+  getSummaryAggregate: (...args: unknown[]) => Promise<Record<string, unknown>>;
+  getCategoryBreakdownAggregate: (...args: unknown[]) => Promise<Array<Record<string, unknown>>>;
+  getProjectPerformanceAggregate: (...args: unknown[]) => Promise<Array<Record<string, unknown>>>;
+  getTimeSeriesAggregate: (...args: unknown[]) => Promise<Array<Record<string, unknown>>>;
+  getDailyStatsAggregate: (...args: unknown[]) => Promise<Array<Record<string, unknown>>>;
+  getGoldPriceHistoryAggregate: (...args: unknown[]) => Promise<Array<Record<string, unknown>>>;
 };
 
 function createService(repositoryStub: RepositoryStub) {
   return new FinanceService(repositoryStub);
 }
 
-test('FinanceService requires tenantId', async () => {
-  const repositoryStub: RepositoryStub = {
+function withRepositoryDefaults(overrides: Partial<RepositoryStub>): RepositoryStub {
+  return {
     list: async () => [],
     findById: async () => null,
     upsert: async () => ({}),
     delete: async () => false,
+    getSummaryAggregate: async () => ({
+      incomeTotal: 0,
+      expenseTotal: 0,
+      operationCount: 0,
+      totalGoldSold: 0,
+      totalGoldFarmed: 0,
+      saleIncomeTotal: 0,
+    }),
+    getCategoryBreakdownAggregate: async () => [],
+    getProjectPerformanceAggregate: async () => [],
+    getTimeSeriesAggregate: async () => [],
+    getDailyStatsAggregate: async () => [],
+    getGoldPriceHistoryAggregate: async () => [],
+    ...overrides,
   };
+}
+
+test('FinanceService requires tenantId', async () => {
+  const repositoryStub = withRepositoryDefaults({});
   const service = createService(repositoryStub);
   await assert.rejects(() => service.list({}, ''), /tenantId is required/);
   await assert.rejects(() => service.getById('id-1', ''), /tenantId is required/);
@@ -29,16 +53,14 @@ test('FinanceService requires tenantId', async () => {
 });
 
 test('FinanceService fails hard on repository errors', async () => {
-  const repositoryStub: RepositoryStub = {
+  const repositoryStub = withRepositoryDefaults({
     list: async () => {
       throw new Error('repo list failed');
     },
-    findById: async () => null,
     upsert: async () => {
       throw new Error('repo upsert failed');
     },
-    delete: async () => false,
-  };
+  });
   const service = createService(repositoryStub);
   await assert.rejects(() => service.list({}, 'tenant-a'), /repo list failed/);
   await assert.rejects(
@@ -50,7 +72,7 @@ test('FinanceService fails hard on repository errors', async () => {
 test('FinanceService CRUD/list use repository only', async () => {
   const records = new Map<string, Record<string, unknown>>();
   const dbRows = new Map<string, Record<string, unknown>>();
-  const repositoryStub: RepositoryStub = {
+  const repositoryStub = withRepositoryDefaults({
     list: async () => [...dbRows.values()],
     findById: async (_tenantId: unknown, id: unknown) => {
       const key = String(id);
@@ -69,7 +91,7 @@ test('FinanceService CRUD/list use repository only', async () => {
       records.delete(key);
       return existed;
     },
-  };
+  });
   const service = createService(repositoryStub);
   const created = await service.create({ amount: 42, type: 'income' }, 'fin-1', 'tenant-a');
   assert.equal(created.id, 'fin-1');
@@ -84,7 +106,7 @@ test('FinanceService CRUD/list use repository only', async () => {
 test('FinanceService passes plain payload to repository and returns record shape', async () => {
   let lastUpsertPayload: Record<string, unknown> | null = null;
   const dbRows = new Map<string, Record<string, unknown>>();
-  const repositoryStub: RepositoryStub = {
+  const repositoryStub = withRepositoryDefaults({
     list: async () => [...dbRows.values()],
     findById: async (_tenantId: unknown, id: unknown) => dbRows.get(String(id)) ?? null,
     upsert: async (input: unknown) => {
@@ -94,8 +116,7 @@ test('FinanceService passes plain payload to repository and returns record shape
       dbRows.set(typed.id, row);
       return row;
     },
-    delete: async () => false,
-  };
+  });
 
   const service = createService(repositoryStub);
   const created = await service.create(
@@ -170,12 +191,59 @@ test('FinanceService aggregate DTOs are stable for normal filtered period', asyn
     },
   ];
 
-  const repositoryStub: RepositoryStub = {
+  const repositoryStub = withRepositoryDefaults({
     list: async () => rows,
-    findById: async () => null,
-    upsert: async () => ({ id: 'x', payload: {} }),
-    delete: async () => false,
-  };
+    getSummaryAggregate: async () => ({
+      incomeTotal: 100,
+      expenseTotal: 30,
+      operationCount: 2,
+      totalGoldSold: 0,
+      totalGoldFarmed: 0,
+      saleIncomeTotal: 0,
+    }),
+    getCategoryBreakdownAggregate: async () => [
+      {
+        key: 'sale',
+        label: 'sale',
+        amount: 100,
+        count: 1,
+        incomeTotal: 100,
+        expenseTotal: 0,
+      },
+      {
+        key: 'consumables',
+        label: 'consumables',
+        amount: 30,
+        count: 1,
+        incomeTotal: 0,
+        expenseTotal: 30,
+      },
+    ],
+    getProjectPerformanceAggregate: async () => [
+      {
+        projectId: 'wow_tbc',
+        incomeTotal: 100,
+        expenseTotal: 30,
+        operationCount: 2,
+        goldVolume: 0,
+        saleIncomeTotal: 0,
+      },
+    ],
+    getTimeSeriesAggregate: async () => [
+      {
+        bucketTs: Date.UTC(2026, 0, 1, 0, 0, 0, 0),
+        incomeTotal: 100,
+        expenseTotal: 0,
+        operationCount: 1,
+      },
+      {
+        bucketTs: Date.UTC(2026, 0, 2, 0, 0, 0, 0),
+        incomeTotal: 0,
+        expenseTotal: 30,
+        operationCount: 1,
+      },
+    ],
+  });
   const service = createService(repositoryStub);
 
   const summary = await service.getSummary(
@@ -296,12 +364,9 @@ test('FinanceService aggregate DTOs are stable for normal filtered period', asyn
 });
 
 test('FinanceService aggregate DTOs handle empty dataset', async () => {
-  const repositoryStub: RepositoryStub = {
+  const repositoryStub = withRepositoryDefaults({
     list: async () => [],
-    findById: async () => null,
-    upsert: async () => ({ id: 'x', payload: {} }),
-    delete: async () => false,
-  };
+  });
   const service = createService(repositoryStub);
 
   const query = {
@@ -359,7 +424,7 @@ test('FinanceService project performance groups normal and empty windows determi
   const jan1 = Date.UTC(2026, 0, 1, 12, 0, 0, 0);
   const jan2 = Date.UTC(2026, 0, 2, 12, 0, 0, 0);
   const jan3 = Date.UTC(2026, 0, 3, 12, 0, 0, 0);
-  const repositoryStub: RepositoryStub = {
+  const repositoryStub = withRepositoryDefaults({
     list: async () => [
       {
         id: 'fin-1',
@@ -411,10 +476,43 @@ test('FinanceService project performance groups normal and empty windows determi
         },
       },
     ],
-    findById: async () => null,
-    upsert: async () => ({ id: 'x', payload: {} }),
-    delete: async () => false,
-  };
+    getProjectPerformanceAggregate: async (_tenantId: unknown, filters: unknown) => {
+      const typedFilters = filters as { fromTs?: number };
+      if (
+        typedFilters.fromTs !== undefined &&
+        typedFilters.fromTs >= Date.UTC(2027, 0, 1, 0, 0, 0, 0)
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          projectId: 'project_alpha',
+          incomeTotal: 120,
+          expenseTotal: 30,
+          operationCount: 2,
+          goldVolume: 1000,
+          saleIncomeTotal: 120,
+        },
+        {
+          projectId: 'project_beta',
+          incomeTotal: 50,
+          expenseTotal: 0,
+          operationCount: 1,
+          goldVolume: 250,
+          saleIncomeTotal: 50,
+        },
+        {
+          projectId: 'global',
+          incomeTotal: 0,
+          expenseTotal: 20,
+          operationCount: 1,
+          goldVolume: 0,
+          saleIncomeTotal: 0,
+        },
+      ];
+    },
+  });
 
   const service = createService(repositoryStub);
 

@@ -1,53 +1,70 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, type PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { softFailMissingStorage, softFailMissingStorageRead } from '../common/prisma-soft-fail';
-import {
-  resolveTypedStoreMigrationMode,
-  type TypedStoreMigrationMode,
-} from '../common/typed-store-migration-mode';
 import { PrismaService } from '../db/prisma.service';
 
 @Injectable()
 export class PlaybooksRepository {
   private readonly prisma: PrismaService;
-  private readonly migrationMode: TypedStoreMigrationMode;
 
   constructor(prisma: PrismaService) {
     this.prisma = prisma;
-    this.migrationMode = resolveTypedStoreMigrationMode({
-      env: process.env,
-      readPrecedenceOverrideEnvName: 'BOTMOX_PLAYBOOKS_READ_PRECEDENCE',
-      dualWriteOverrideEnvName: 'BOTMOX_PLAYBOOKS_DUAL_WRITE',
-    });
+  }
+
+  private asObject(value: unknown): Record<string, unknown> {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return value as Record<string, unknown>;
+    }
+    return {};
+  }
+
+  private readString(payload: Record<string, unknown>, key: string): string | null {
+    const value = payload[key];
+    if (typeof value !== 'string') {
+      return null;
+    }
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  private readBoolean(payload: Record<string, unknown>, key: string): boolean | null {
+    const value = payload[key];
+    return typeof value === 'boolean' ? value : null;
+  }
+
+  private buildTypedPayload(row: Record<string, unknown>): Record<string, unknown> {
+    const payload = this.asObject(row.data);
+    if (typeof row.name === 'string') payload.name = row.name;
+    if (typeof row.content === 'string') payload.content = row.content;
+    if (typeof row.is_default === 'boolean') payload.is_default = row.is_default;
+    if (typeof row.status === 'string') payload.status = row.status;
+    if (typeof row.version === 'string') payload.version = row.version;
+    return payload;
   }
 
   private asTypedRows(rows: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
     return rows.map((row) => ({
       id: row.id,
-      payload: (row.data as Prisma.JsonValue) ?? {},
+      payload: this.buildTypedPayload(row),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     }));
-  }
-
-  private async listLegacy(tenantId: string): Promise<Array<Record<string, unknown>>> {
-    return softFailMissingStorageRead(
-      () =>
-        this.prisma.withTenantContext(tenantId, async (tx) => {
-          return this.getPlaybookItemClient(tx).findMany({
-            where: { tenantId },
-            orderBy: { updatedAt: 'desc' },
-          });
-        }),
-      [],
-    );
   }
 
   private async listTyped(tenantId: string): Promise<Array<Record<string, unknown>>> {
     const rows = await softFailMissingStorageRead(
       () =>
         this.prisma.$queryRaw<Array<Record<string, unknown>>>(Prisma.sql`
-          select id, data, created_at as "createdAt", updated_at as "updatedAt"
+          select
+            id,
+            data,
+            name,
+            content,
+            is_default,
+            status,
+            version,
+            created_at as "createdAt",
+            updated_at as "updatedAt"
           from public.playbooks
           where tenant_id = ${tenantId}
           order by updated_at desc
@@ -57,24 +74,6 @@ export class PlaybooksRepository {
     return this.asTypedRows(rows);
   }
 
-  private async findByIdLegacy(
-    tenantId: string,
-    id: string,
-  ): Promise<Record<string, unknown> | null> {
-    return softFailMissingStorageRead(
-      () =>
-        this.prisma.withTenantContext(tenantId, async (tx) => {
-          return this.getPlaybookItemClient(tx).findFirst({
-            where: {
-              tenantId,
-              id,
-            },
-          });
-        }),
-      null,
-    );
-  }
-
   private async findByIdTyped(
     tenantId: string,
     id: string,
@@ -82,7 +81,16 @@ export class PlaybooksRepository {
     const rows = await softFailMissingStorageRead(
       () =>
         this.prisma.$queryRaw<Array<Record<string, unknown>>>(Prisma.sql`
-          select id, data, created_at as "createdAt", updated_at as "updatedAt"
+          select
+            id,
+            data,
+            name,
+            content,
+            is_default,
+            status,
+            version,
+            created_at as "createdAt",
+            updated_at as "updatedAt"
           from public.playbooks
           where tenant_id = ${tenantId}
             and id = ${id}
@@ -93,32 +101,6 @@ export class PlaybooksRepository {
     return rows[0] ? (this.asTypedRows(rows)[0] ?? null) : null;
   }
 
-  private async upsertLegacy(input: {
-    tenantId: string;
-    id: string;
-    payload: Prisma.InputJsonValue;
-  }): Promise<Record<string, unknown>> {
-    return this.prisma.withTenantContext(input.tenantId, async (tx) => {
-      return this.getPlaybookItemClient(tx).upsert({
-        where: {
-          tenantId_id: {
-            tenantId: input.tenantId,
-            id: input.id,
-          },
-        },
-        create: {
-          id: input.id,
-          tenantId: input.tenantId,
-          payload: input.payload,
-        },
-        update: {
-          tenantId: input.tenantId,
-          payload: input.payload,
-        },
-      });
-    });
-  }
-
   private async upsertTyped(
     input: {
       tenantId: string;
@@ -127,101 +109,81 @@ export class PlaybooksRepository {
     },
     fallback: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
+    const payloadObject = this.asObject(input.payload);
     const payloadJson = JSON.stringify(input.payload ?? {});
-    return softFailMissingStorage(async () => {
+    const typedName = this.readString(payloadObject, 'name');
+    const typedContent = this.readString(payloadObject, 'content');
+    const typedIsDefault = this.readBoolean(payloadObject, 'is_default');
+    const typedStatus = this.readString(payloadObject, 'status');
+    const typedVersion = this.readString(payloadObject, 'version');
+
+    const operation = async () => {
       const rows = await this.prisma.$queryRaw<Array<Record<string, unknown>>>(Prisma.sql`
           insert into public.playbooks (
             tenant_id,
             id,
             data,
+            name,
+            content,
+            is_default,
+            status,
+            version,
             created_at,
             updated_at
           ) values (
             ${input.tenantId},
             ${input.id},
             ${payloadJson}::jsonb,
+            ${typedName},
+            ${typedContent},
+            ${typedIsDefault},
+            ${typedStatus},
+            ${typedVersion},
             now(),
             now()
           )
           on conflict (tenant_id, id)
           do update set
             data = excluded.data,
+            name = excluded.name,
+            content = excluded.content,
+            is_default = excluded.is_default,
+            status = excluded.status,
+            version = excluded.version,
             updated_at = now()
-          returning id, data, created_at as "createdAt", updated_at as "updatedAt"
+          returning
+            id,
+            data,
+            name,
+            content,
+            is_default,
+            status,
+            version,
+            created_at as "createdAt",
+            updated_at as "updatedAt"
         `);
       const mapped = this.asTypedRows(rows);
       return mapped[0] ?? fallback;
-    }, fallback);
-  }
-
-  private async deleteLegacy(tenantId: string, id: string): Promise<boolean> {
-    const result = await this.prisma.withTenantContext(tenantId, async (tx) => {
-      return this.getPlaybookItemClient(tx).deleteMany({
-        where: {
-          tenantId,
-          id,
-        },
-      });
-    });
-    return result.count > 0;
+    };
+    return operation();
   }
 
   private async deleteTyped(tenantId: string, id: string): Promise<boolean> {
-    const count = await softFailMissingStorage(
-      () =>
-        this.prisma.$executeRaw<number>(Prisma.sql`
-          delete from public.playbooks
-          where tenant_id = ${tenantId}
-            and id = ${id}
-        `),
-      0,
-    );
+    const operation = () =>
+      this.prisma.$executeRaw<number>(Prisma.sql`
+        delete from public.playbooks
+        where tenant_id = ${tenantId}
+          and id = ${id}
+      `);
+    const count = await operation();
     return count > 0;
   }
 
-  private getPlaybookItemClient(source: PrismaClient | Prisma.TransactionClient): {
-    findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
-    findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
-    upsert: (args: unknown) => Promise<Record<string, unknown>>;
-    deleteMany: (args: unknown) => Promise<{ count: number }>;
-  } {
-    return (source as unknown as { playbookItem: unknown }).playbookItem as {
-      findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
-      findFirst: (args: unknown) => Promise<Record<string, unknown> | null>;
-      upsert: (args: unknown) => Promise<Record<string, unknown>>;
-      deleteMany: (args: unknown) => Promise<{ count: number }>;
-    };
-  }
-
   async list(tenantId: string): Promise<Array<Record<string, unknown>>> {
-    if (this.migrationMode.readPrecedence === 'typed-first') {
-      const typedRows = await this.listTyped(tenantId);
-      if (typedRows.length > 0) {
-        return typedRows;
-      }
-      return this.listLegacy(tenantId);
-    }
-
-    const legacyRows = await this.listLegacy(tenantId);
-    if (legacyRows.length > 0) {
-      return legacyRows;
-    }
     return this.listTyped(tenantId);
   }
 
   async findById(tenantId: string, id: string): Promise<Record<string, unknown> | null> {
-    if (this.migrationMode.readPrecedence === 'typed-first') {
-      const typedRow = await this.findByIdTyped(tenantId, id);
-      if (typedRow) {
-        return typedRow;
-      }
-      return this.findByIdLegacy(tenantId, id);
-    }
-
-    const legacyRow = await this.findByIdLegacy(tenantId, id);
-    if (legacyRow) {
-      return legacyRow;
-    }
     return this.findByIdTyped(tenantId, id);
   }
 
@@ -230,26 +192,16 @@ export class PlaybooksRepository {
     id: string;
     payload: Prisma.InputJsonValue;
   }): Promise<Record<string, unknown>> {
-    const legacyRow = await this.upsertLegacy(input);
-    if (!this.migrationMode.dualWriteEnabled) {
-      return legacyRow;
-    }
-
-    if (this.migrationMode.readPrecedence === 'typed-first') {
-      return this.upsertTyped(input, legacyRow);
-    }
-
-    await this.upsertTyped(input, legacyRow);
-    return legacyRow;
+    const typedFallback = {
+      id: input.id,
+      payload: input.payload,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    return this.upsertTyped(input, typedFallback);
   }
 
   async delete(tenantId: string, id: string): Promise<boolean> {
-    const legacyDeleted = await this.deleteLegacy(tenantId, id);
-    if (!this.migrationMode.dualWriteEnabled) {
-      return legacyDeleted;
-    }
-
-    const typedDeleted = await this.deleteTyped(tenantId, id);
-    return legacyDeleted || typedDeleted;
+    return this.deleteTyped(tenantId, id);
   }
 }
