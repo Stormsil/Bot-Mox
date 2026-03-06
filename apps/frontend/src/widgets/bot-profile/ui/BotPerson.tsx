@@ -17,6 +17,7 @@ import {
   PersonLoadingState,
   PersonStatusAlerts,
   PersonUnavailableState,
+  preloadPersonDataset,
   savePersonGeneratorCountry,
   toPersonFormValues,
   toPersonPayload,
@@ -33,6 +34,10 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
   const [pendingLock, setPendingLock] = useState(false);
   const botQuery = useBotByIdQuery(bot?.id);
   const updateBotMutation = useUpdateBotMutation();
+
+  useEffect(() => {
+    void preloadPersonDataset();
+  }, []);
 
   useEffect(() => {
     if (!bot) {
@@ -100,16 +105,21 @@ export const BotPerson: React.FC<BotPersonProps> = ({ bot }) => {
     );
   };
 
-  const handleGenerateData = useCallback(() => {
+  const handleGenerateData = useCallback(async () => {
     if (generationLocked) {
       message.warning('Person generation is locked');
       return;
     }
 
-    const generatedData = generateRandomPersonData(selectedCountry);
-    form.setFieldsValue(generatedData);
-    setPendingLock(true);
-    message.success(`Generated random person data for ${selectedCountry}`);
+    try {
+      const generatedData = await generateRandomPersonData(selectedCountry);
+      form.setFieldsValue(generatedData);
+      setPendingLock(true);
+      message.success(`Generated random person data for ${selectedCountry}`);
+    } catch (error) {
+      console.error('Failed to generate person data:', error);
+      message.error('Failed to generate person data. Please try again.');
+    }
   }, [form, generationLocked, selectedCountry]);
 
   const handleUnlockGeneration = useCallback(() => {

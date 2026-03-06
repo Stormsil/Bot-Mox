@@ -12,6 +12,7 @@
 .header-left {
   display: flex;
   align-items: center;
+  gap: 16px;
   min-width: 0;
 }
 
@@ -58,6 +59,59 @@
   align-items: center;
   gap: 10px;
   min-width: 0;
+}
+
+.brand-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.brand-link:focus-visible {
+  outline: 2px solid var(--botmox-color-brand-primary);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+.brand-link :global(.botmox-logo) {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-link :global(.botmox-logo__mark) {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 8px 16px var(--botmox-color-brand-primary));
+}
+
+.brand-link :global(.botmox-logo__type) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+}
+
+.brand-link :global(.botmox-logo__title) {
+  color: var(--botmox-color-header-text);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.brand-link :global(.botmox-logo__subtitle) {
+  color: var(--botmox-color-header-text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .path-back {

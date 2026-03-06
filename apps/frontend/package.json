@@ -6,6 +6,7 @@
   "scripts": {
     "predev": "pnpm --filter @botmox/api-contract build",
     "dev": "vite",
+    "dev:frontend-only": "vite --mode frontend-only",
     "prebuild": "pnpm --filter @botmox/api-contract build",
     "typecheck": "tsc -b --noEmit",
     "build": "tsc -b && vite build",

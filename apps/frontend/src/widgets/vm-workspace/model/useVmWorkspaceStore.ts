@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import type { VMLogEntry, VMQueueItem, VMTaskEntry } from '../../../shared/types';
 
 type WorkspaceStateOwner = 'zustand' | 'react-query' | 'local';
@@ -118,6 +118,27 @@ export interface VmWorkspaceStoreState {
   logsActions: VmWorkspaceLogsActions;
 }
 
+type StoreWithSelectors<TState extends object> = UseBoundStore<StoreApi<TState>> & {
+  use: {
+    [K in keyof TState]: () => TState[K];
+  };
+};
+
+const createSelectors = <TState extends object>(
+  store: UseBoundStore<StoreApi<TState>>,
+): StoreWithSelectors<TState> => {
+  const storeWithSelectors = store as StoreWithSelectors<TState>;
+  const selectors = Object.fromEntries(
+    (Object.keys(store.getState()) as Array<keyof TState>).map((key) => [
+      key,
+      () => store((state) => state[key]),
+    ]),
+  ) as StoreWithSelectors<TState>['use'];
+
+  storeWithSelectors.use = selectors;
+  return storeWithSelectors;
+};
+
 const INITIAL_LAYOUT_STATE: VmWorkspaceLayoutState = {
   splitRatio: 0.58,
   logHeight: 280,
@@ -144,7 +165,7 @@ const INITIAL_LOGS_STATE: VmWorkspaceLogsState = {
   },
 };
 
-export const useVmWorkspaceStore = create<VmWorkspaceStoreState>((set) => ({
+const useVmWorkspaceStoreBase = create<VmWorkspaceStoreState>((set) => ({
   layout: INITIAL_LAYOUT_STATE,
   queue: INITIAL_QUEUE_STATE,
   logs: INITIAL_LOGS_STATE,
@@ -269,6 +290,8 @@ export const useVmWorkspaceStore = create<VmWorkspaceStoreState>((set) => ({
   },
 }));
 
+export const useVmWorkspaceStore = createSelectors(useVmWorkspaceStoreBase);
+
 const VmWorkspaceStoreSelectors = {
   splitRatio: (state: VmWorkspaceStoreState) => state.layout.splitRatio,
   logHeight: (state: VmWorkspaceStoreState) => state.layout.logHeight,
@@ -295,8 +318,7 @@ export const useVmWorkspaceIsWorkspaceResizing = () =>
   useVmWorkspaceStore(VmWorkspaceStoreSelectors.isWorkspaceResizing);
 export const useVmWorkspaceIsLogResizing = () =>
   useVmWorkspaceStore(VmWorkspaceStoreSelectors.isLogResizing);
-export const useVmWorkspaceLayoutActions = () =>
-  useVmWorkspaceStore(VmWorkspaceStoreSelectors.layoutActions);
+export const useVmWorkspaceLayoutActions = () => useVmWorkspaceStore.use.layoutActions();
 
 export const useVmWorkspaceQueueItems = () =>
   useVmWorkspaceStore(VmWorkspaceStoreSelectors.queueItems);
@@ -304,8 +326,7 @@ export const useVmWorkspaceSelectedTaskKey = () =>
   useVmWorkspaceStore(VmWorkspaceStoreSelectors.selectedTaskKey);
 export const useVmWorkspaceHoveredTaskKey = () =>
   useVmWorkspaceStore(VmWorkspaceStoreSelectors.hoveredTaskKey);
-export const useVmWorkspaceQueueActions = () =>
-  useVmWorkspaceStore(VmWorkspaceStoreSelectors.queueActions);
+export const useVmWorkspaceQueueActions = () => useVmWorkspaceStore.use.queueActions();
 
 export const useVmWorkspaceActiveLogTaskKey = () =>
   useVmWorkspaceStore(VmWorkspaceStoreSelectors.activeLogTaskKey);
@@ -316,5 +337,4 @@ export const useVmWorkspaceIsAutoFollowEnabled = () =>
 export const useVmWorkspaceLogTasks = () => useVmWorkspaceStore(VmWorkspaceStoreSelectors.logTasks);
 export const useVmWorkspaceLogOperationApi = () =>
   useVmWorkspaceStore(VmWorkspaceStoreSelectors.logOperationApi);
-export const useVmWorkspaceLogsActions = () =>
-  useVmWorkspaceStore(VmWorkspaceStoreSelectors.logsActions);
+export const useVmWorkspaceLogsActions = () => useVmWorkspaceStore.use.logsActions();

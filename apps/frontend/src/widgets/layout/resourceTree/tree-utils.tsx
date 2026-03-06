@@ -20,6 +20,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import type { TreeDataNode } from 'antd';
+import { getBotStatusIconColorToken } from '../../../shared/lib/statusSemantic';
 import type { BotItem, BotStatus, StatusGroup, TreeItem } from './types';
 import { isBotStatus, statusConfig } from './types';
 
@@ -54,24 +55,24 @@ export const getBotIcon = (status?: BotStatus) => {
   switch (status) {
     case 'offline':
       return (
-        <PoweroffOutlined style={{ ...iconStyle, color: 'var(--botmox-color-status-neutral)' }} />
+        <PoweroffOutlined style={{ ...iconStyle, color: getBotStatusIconColorToken(status) }} />
       );
     case 'prepare':
       return (
-        <ClockCircleOutlined style={{ ...iconStyle, color: 'var(--botmox-color-status-info)' }} />
+        <ClockCircleOutlined style={{ ...iconStyle, color: getBotStatusIconColorToken(status) }} />
       );
     case 'leveling':
       return (
-        <PlayCircleOutlined style={{ ...iconStyle, color: 'var(--botmox-color-brand-primary)' }} />
+        <PlayCircleOutlined style={{ ...iconStyle, color: getBotStatusIconColorToken(status) }} />
       );
     case 'profession':
-      return <ToolOutlined style={{ ...iconStyle, color: 'var(--botmox-color-brand-warning)' }} />;
+      return <ToolOutlined style={{ ...iconStyle, color: getBotStatusIconColorToken(status) }} />;
     case 'farming':
       return (
-        <PlayCircleOutlined style={{ ...iconStyle, color: 'var(--botmox-color-status-success)' }} />
+        <PlayCircleOutlined style={{ ...iconStyle, color: getBotStatusIconColorToken(status) }} />
       );
     case 'banned':
-      return <StopOutlined style={{ ...iconStyle, color: 'var(--botmox-color-status-danger)' }} />;
+      return <StopOutlined style={{ ...iconStyle, color: getBotStatusIconColorToken(status) }} />;
     default:
       return <UserOutlined style={{ ...iconStyle, color: 'var(--botmox-color-text-muted)' }} />;
   }

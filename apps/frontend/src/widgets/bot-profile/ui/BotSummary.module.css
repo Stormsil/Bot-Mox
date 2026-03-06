@@ -7,8 +7,6 @@
   justify-content: center;
   align-items: center;
   min-height: 200px;
-  background: var(--botmox-color-surface-panel);
-  border: 1px solid var(--botmox-color-border-default);
 }
 
 /* Local sub-navigation inside summary */
@@ -125,8 +123,6 @@
 }
 
 .status-summary-card {
-  background: var(--botmox-color-surface-panel);
-  border: 1px solid var(--botmox-color-border-default);
   margin-top: 0;
 }
 
@@ -196,8 +192,6 @@
 }
 
 .detail-card {
-  background: var(--botmox-color-surface-panel);
-  border: 1px solid var(--botmox-color-border-default);
   height: 100%;
 }
 

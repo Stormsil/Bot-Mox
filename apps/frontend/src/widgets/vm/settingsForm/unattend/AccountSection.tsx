@@ -1,11 +1,11 @@
 import type React from 'react';
 import type { UnattendProfileConfig } from '../../../../entities/vm/model/unattend';
 import {
+  AppFormBuilder,
   AppForm as Form,
   AppInput as Input,
   AppInputNumber as InputNumber,
   AppRadio as Radio,
-  AppSelect as Select,
   AppTypography as Typography,
 } from '../../../../shared/ui';
 
@@ -41,45 +41,49 @@ export const AccountSection: React.FC<AccountSectionProps> = ({ config, updateCo
 
       {userNameMode === 'custom' && (
         <>
-          <Form.Item
-            label="Custom username"
-            validateStatus={!config.user.customName?.trim() ? 'error' : undefined}
-            help={!config.user.customName?.trim() ? 'Custom username is required' : undefined}
-          >
-            <Input
-              value={config.user.customName || ''}
-              onChange={(e) => {
+          <AppFormBuilder.Input
+            item={{
+              label: 'Custom username',
+              validateStatus: !config.user.customName?.trim() ? 'error' : undefined,
+              help: !config.user.customName?.trim() ? 'Custom username is required' : undefined,
+            }}
+            control={{
+              value: config.user.customName || '',
+              onChange: (e) => {
                 updateConfig('user', { customName: e.target.value });
-              }}
-            />
-          </Form.Item>
+              },
+            }}
+          />
 
-          <Form.Item label="Name suffix">
-            <Select
-              value={config.user.customNameSuffix || 'none'}
-              onChange={(value) => {
+          <AppFormBuilder.Select
+            item={{ label: 'Name suffix' }}
+            control={{
+              value: config.user.customNameSuffix || 'none',
+              onChange: (value) => {
                 updateConfig('user', { customNameSuffix: value });
-              }}
-              options={[
+              },
+              options: [
                 { value: 'none', label: 'None' },
                 { value: 'random_digits', label: 'Random digits (2-4)' },
                 { value: 'sequential', label: 'Sequential (caller provides index)' },
-              ]}
-              style={{ width: 260 }}
-            />
-          </Form.Item>
+              ],
+              style: { width: 260 },
+            }}
+            fullWidth={false}
+          />
         </>
       )}
 
-      <Form.Item label="Display name (optional)">
-        <Input
-          value={config.user.displayName || ''}
-          onChange={(e) => {
+      <AppFormBuilder.Input
+        item={{ label: 'Display name (optional)' }}
+        control={{
+          value: config.user.displayName || '',
+          onChange: (e) => {
             updateConfig('user', { displayName: e.target.value });
-          }}
-          placeholder="Defaults to generated username"
-        />
-      </Form.Item>
+          },
+          placeholder: 'Defaults to generated username',
+        }}
+      />
 
       <Form.Item label="Password">
         <Input.Password
@@ -133,21 +137,22 @@ export const AccountSection: React.FC<AccountSectionProps> = ({ config, updateCo
       </Form.Item>
 
       {computerNameMode === 'custom' && (
-        <Form.Item
-          label="Custom name (max 15 chars)"
-          validateStatus={!config.computerName.customName?.trim() ? 'error' : undefined}
-          help={
-            !config.computerName.customName?.trim() ? 'Custom computer name is required' : undefined
-          }
-        >
-          <Input
-            maxLength={15}
-            value={config.computerName.customName || ''}
-            onChange={(e) => {
+        <AppFormBuilder.Input
+          item={{
+            label: 'Custom name (max 15 chars)',
+            validateStatus: !config.computerName.customName?.trim() ? 'error' : undefined,
+            help: !config.computerName.customName?.trim()
+              ? 'Custom computer name is required'
+              : undefined,
+          }}
+          control={{
+            maxLength: 15,
+            value: config.computerName.customName || '',
+            onChange: (e) => {
               updateConfig('computerName', { customName: e.target.value });
-            }}
-          />
-        </Form.Item>
+            },
+          }}
+        />
       )}
     </Form>
   );

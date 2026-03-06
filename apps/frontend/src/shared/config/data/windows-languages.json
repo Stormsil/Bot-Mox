@@ -1,0 +1,217 @@
+[
+  {
+    "tag": "af-ZA",
+    "name": "Afrikaans",
+    "nativeName": "Afrikaans"
+  },
+  {
+    "tag": "ar-SA",
+    "name": "Arabic",
+    "nativeName": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629"
+  },
+  {
+    "tag": "bg-BG",
+    "name": "Bulgarian",
+    "nativeName": "\u0411\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438"
+  },
+  {
+    "tag": "ca-ES",
+    "name": "Catalan",
+    "nativeName": "Catal\u00e0"
+  },
+  {
+    "tag": "cs-CZ",
+    "name": "Czech",
+    "nativeName": "\u010ce\u0161tina"
+  },
+  {
+    "tag": "da-DK",
+    "name": "Danish",
+    "nativeName": "Dansk"
+  },
+  {
+    "tag": "de-DE",
+    "name": "German",
+    "nativeName": "Deutsch"
+  },
+  {
+    "tag": "el-GR",
+    "name": "Greek",
+    "nativeName": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac"
+  },
+  {
+    "tag": "en-GB",
+    "name": "English (UK)",
+    "nativeName": "English (United Kingdom)"
+  },
+  {
+    "tag": "en-US",
+    "name": "English (US)",
+    "nativeName": "English (United States)"
+  },
+  {
+    "tag": "es-ES",
+    "name": "Spanish (Spain)",
+    "nativeName": "Espa\u00f1ol (Espa\u00f1a)"
+  },
+  {
+    "tag": "es-MX",
+    "name": "Spanish (Mexico)",
+    "nativeName": "Espa\u00f1ol (M\u00e9xico)"
+  },
+  {
+    "tag": "et-EE",
+    "name": "Estonian",
+    "nativeName": "Eesti"
+  },
+  {
+    "tag": "fi-FI",
+    "name": "Finnish",
+    "nativeName": "Suomi"
+  },
+  {
+    "tag": "fr-CA",
+    "name": "French (Canada)",
+    "nativeName": "Fran\u00e7ais (Canada)"
+  },
+  {
+    "tag": "fr-FR",
+    "name": "French (France)",
+    "nativeName": "Fran\u00e7ais (France)"
+  },
+  {
+    "tag": "he-IL",
+    "name": "Hebrew",
+    "nativeName": "\u05e2\u05d1\u05e8\u05d9\u05ea"
+  },
+  {
+    "tag": "hi-IN",
+    "name": "Hindi",
+    "nativeName": "\u0939\u093f\u0928\u094d\u0926\u0940"
+  },
+  {
+    "tag": "hr-HR",
+    "name": "Croatian",
+    "nativeName": "Hrvatski"
+  },
+  {
+    "tag": "hu-HU",
+    "name": "Hungarian",
+    "nativeName": "Magyar"
+  },
+  {
+    "tag": "id-ID",
+    "name": "Indonesian",
+    "nativeName": "Bahasa Indonesia"
+  },
+  {
+    "tag": "it-IT",
+    "name": "Italian",
+    "nativeName": "Italiano"
+  },
+  {
+    "tag": "ja-JP",
+    "name": "Japanese",
+    "nativeName": "\u65e5\u672c\u8a9e"
+  },
+  {
+    "tag": "ko-KR",
+    "name": "Korean",
+    "nativeName": "\ud55c\uad6d\uc5b4"
+  },
+  {
+    "tag": "lt-LT",
+    "name": "Lithuanian",
+    "nativeName": "Lietuvi\u0173"
+  },
+  {
+    "tag": "lv-LV",
+    "name": "Latvian",
+    "nativeName": "Latvie\u0161u"
+  },
+  {
+    "tag": "nb-NO",
+    "name": "Norwegian (Bokm\u00e5l)",
+    "nativeName": "Norsk bokm\u00e5l"
+  },
+  {
+    "tag": "nl-NL",
+    "name": "Dutch",
+    "nativeName": "Nederlands"
+  },
+  {
+    "tag": "pl-PL",
+    "name": "Polish",
+    "nativeName": "Polski"
+  },
+  {
+    "tag": "pt-BR",
+    "name": "Portuguese (Brazil)",
+    "nativeName": "Portugu\u00eas (Brasil)"
+  },
+  {
+    "tag": "pt-PT",
+    "name": "Portuguese (Portugal)",
+    "nativeName": "Portugu\u00eas (Portugal)"
+  },
+  {
+    "tag": "ro-RO",
+    "name": "Romanian",
+    "nativeName": "Rom\u00e2n\u0103"
+  },
+  {
+    "tag": "ru-RU",
+    "name": "Russian",
+    "nativeName": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439"
+  },
+  {
+    "tag": "sk-SK",
+    "name": "Slovak",
+    "nativeName": "Sloven\u010dina"
+  },
+  {
+    "tag": "sl-SI",
+    "name": "Slovenian",
+    "nativeName": "Sloven\u0161\u010dina"
+  },
+  {
+    "tag": "sr-Latn-RS",
+    "name": "Serbian (Latin)",
+    "nativeName": "Srpski (latinica)"
+  },
+  {
+    "tag": "sv-SE",
+    "name": "Swedish",
+    "nativeName": "Svenska"
+  },
+  {
+    "tag": "th-TH",
+    "name": "Thai",
+    "nativeName": "\u0e44\u0e17\u0e22"
+  },
+  {
+    "tag": "tr-TR",
+    "name": "Turkish",
+    "nativeName": "T\u00fcrk\u00e7e"
+  },
+  {
+    "tag": "uk-UA",
+    "name": "Ukrainian",
+    "nativeName": "\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430"
+  },
+  {
+    "tag": "vi-VN",
+    "name": "Vietnamese",
+    "nativeName": "Ti\u1ebfng Vi\u1ec7t"
+  },
+  {
+    "tag": "zh-CN",
+    "name": "Chinese (Simplified)",
+    "nativeName": "\u4e2d\u6587(\u7b80\u4f53)"
+  },
+  {
+    "tag": "zh-TW",
+    "name": "Chinese (Traditional)",
+    "nativeName": "\u4e2d\u6587(\u7e41\u9ad4)"
+  }
+]

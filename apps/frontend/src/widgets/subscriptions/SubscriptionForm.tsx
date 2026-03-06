@@ -10,14 +10,11 @@ import type {
 } from '../../entities/resources/model/types';
 import {
   AppAlert as Alert,
+  AppFormBuilder,
   AppButton as Button,
-  AppDatePicker as DatePicker,
   AppForm as Form,
-  AppSelect as Select,
 } from '../../shared/ui';
 import styles from './SubscriptionForm.module.css';
-
-const { Option } = Select;
 
 // Interface for bot in dropdown
 interface BotOption {
@@ -151,50 +148,53 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
 
       {/* Bot selection (hidden if bot_id is preset) */}
       {!isBotPreset && (
-        <Form.Item
-          name="bot_id"
-          label="Bot"
-          rules={[{ required: true, message: 'Please select a bot' }]}
-        >
-          <Select placeholder="Select bot" showSearch optionFilterProp="label">
-            {availableBots.map((bot) => {
+        <AppFormBuilder.Select
+          item={{
+            name: 'bot_id',
+            label: 'Bot',
+            rules: [{ required: true, message: 'Please select a bot' }],
+          }}
+          control={{
+            placeholder: 'Select bot',
+            showSearch: true,
+            optionFilterProp: 'title',
+            options: availableBots.map((bot) => {
               const vmName = bot.vmName || bot.name || 'Unknown';
               const characterName = bot.character || 'Unknown';
-
-              // Search string. Keep it user-facing (no IDs).
               const searchLabel = `${characterName} ${vmName} ${bot.account_email ?? ''}`.trim();
 
-              return (
-                <Option key={bot.id} value={bot.id} label={searchLabel}>
+              return {
+                value: bot.id,
+                title: searchLabel,
+                label: (
                   <div className={styles.botOption}>
                     <div className={styles.botOptionTitle}>{characterName}</div>
                     <div className={styles.botOptionMeta}>{vmName}</div>
                   </div>
-                </Option>
-              );
-            })}
-          </Select>
-        </Form.Item>
+                ),
+              };
+            }),
+          }}
+        />
       )}
 
       {/* Expiration date */}
-      <Form.Item
-        name="expires_at"
-        label="Expiration Date"
-        rules={[{ required: true, message: 'Please select an expiration date' }]}
-        tooltip="Format: DD.MM.YYYY"
-        getValueProps={(value) => ({ value: toDayjsValue(value) })}
-      >
-        <DatePicker
-          format="DD.MM.YYYY"
-          style={{ width: '100%' }}
-          placeholder="DD.MM.YYYY"
-          disabledDate={(current) => {
-            // Disallow past dates
+      <AppFormBuilder.DatePicker
+        item={{
+          name: 'expires_at',
+          label: 'Expiration Date',
+          rules: [{ required: true, message: 'Please select an expiration date' }],
+          tooltip: 'Format: DD.MM.YYYY',
+          getValueProps: (value) => ({ value: toDayjsValue(value) }),
+        }}
+        control={{
+          format: 'DD.MM.YYYY',
+          placeholder: 'DD.MM.YYYY',
+          disabledDate: (current) => {
             return current && current < dayjs().startOf('day');
-          }}
-        />
-      </Form.Item>
+          },
+        }}
+      />
 
       {/* Buttons */}
       <Form.Item>

@@ -1,5 +1,7 @@
 import type React from 'react';
-import { AppCard as Card, AppCol as Col, AppRow as Row } from '../../shared/ui';
+import { getProxyStatusIntent } from '../../shared/lib/statusSemantic';
+import { AppCol as Col, AppRow as Row } from '../../shared/ui';
+import { MetricCard } from '../../shared/ui/MetricCard';
 import styles from './ProxiesPage.module.css';
 
 interface ProxiesStats {
@@ -16,34 +18,23 @@ export const ProxiesStatsCards: React.FC<{
   return (
     <Row gutter={[12, 12]} className={styles.statsRow}>
       <Col flex="1 1 140px">
-        <Card className={styles.statCard}>
-          <div className={styles.statValue}>{stats.total}</div>
-          <div className={styles.statLabel}>Total</div>
-        </Card>
+        <MetricCard label="Total" value={stats.total} />
       </Col>
       <Col flex="1 1 140px">
-        <Card className={`${styles.statCard} ${styles.statCardActive}`}>
-          <div className={styles.statValue}>{stats.active}</div>
-          <div className={styles.statLabel}>Active</div>
-        </Card>
+        <MetricCard label="Active" value={stats.active} intent={getProxyStatusIntent('active')} />
       </Col>
       <Col flex="1 1 140px">
-        <Card className={`${styles.statCard} ${styles.statCardWarning}`}>
-          <div className={styles.statValue}>{stats.expiringSoon}</div>
-          <div className={styles.statLabel}>Expiring Soon</div>
-        </Card>
+        <MetricCard label="Expiring Soon" value={stats.expiringSoon} intent="warning" />
       </Col>
       <Col flex="1 1 140px">
-        <Card className={`${styles.statCard} ${styles.statCardExpired}`}>
-          <div className={styles.statValue}>{stats.expired}</div>
-          <div className={styles.statLabel}>Expired</div>
-        </Card>
+        <MetricCard
+          label="Expired"
+          value={stats.expired}
+          intent={getProxyStatusIntent('expired')}
+        />
       </Col>
       <Col flex="1 1 140px">
-        <Card className={styles.statCard}>
-          <div className={styles.statValue}>{stats.unassigned}</div>
-          <div className={styles.statLabel}>Unassigned</div>
-        </Card>
+        <MetricCard label="Unassigned" value={stats.unassigned} />
       </Col>
     </Row>
   );

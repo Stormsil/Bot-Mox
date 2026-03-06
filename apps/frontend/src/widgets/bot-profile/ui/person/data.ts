@@ -1,14 +1,27 @@
 import type { PersonData } from '../../../../shared/types';
-import { turkeyAddresses, ukraineAddresses } from './data/addresses';
 import { countries } from './data/countries';
-import {
-  turkishFirstNames,
-  turkishLastNames,
-  ukrainianFirstNames,
-  ukrainianLastNames,
-} from './data/names';
 
-type PersonAddress = (typeof turkeyAddresses)[0];
+interface PersonAddress {
+  street: string;
+  houseNumber: string;
+  locality: string;
+  region: string;
+  province: string;
+  postalCode: string;
+}
+
+interface PersonCountryData {
+  firstNames: readonly string[];
+  lastNames: readonly string[];
+  addresses: readonly PersonAddress[];
+}
+
+interface PersonDataset {
+  Turkey: PersonCountryData;
+  Ukraine: PersonCountryData;
+}
+
+let personDatasetPromise: Promise<PersonDataset> | null = null;
 
 const pickRandom = <T>(values: readonly T[]): T =>
   values[Math.floor(Math.random() * values.length)];
@@ -27,23 +40,43 @@ const generateRandomBirthDate = (): string => {
   return `${day}-${month}-${year}`;
 };
 
-const byCountry = {
-  Turkey: {
-    firstNames: turkishFirstNames,
-    lastNames: turkishLastNames,
-    addresses: turkeyAddresses,
-  },
-  Ukraine: {
-    firstNames: ukrainianFirstNames,
-    lastNames: ukrainianLastNames,
-    addresses: ukraineAddresses,
-  },
-} as const;
+const loadPersonDataset = async (): Promise<PersonDataset> => {
+  const [{ turkeyAddresses, ukraineAddresses }, namesModule] = await Promise.all([
+    import('./data/addresses'),
+    import('./data/names'),
+  ]);
+
+  return {
+    Turkey: {
+      firstNames: namesModule.turkishFirstNames,
+      lastNames: namesModule.turkishLastNames,
+      addresses: turkeyAddresses,
+    },
+    Ukraine: {
+      firstNames: namesModule.ukrainianFirstNames,
+      lastNames: namesModule.ukrainianLastNames,
+      addresses: ukraineAddresses,
+    },
+  };
+};
+
+const getPersonDataset = (): Promise<PersonDataset> => {
+  if (!personDatasetPromise) {
+    personDatasetPromise = loadPersonDataset();
+  }
+
+  return personDatasetPromise;
+};
 
 export { countries };
 
-export const generateRandomPersonData = (country: string): PersonData => {
-  const countryConfig = byCountry[country as keyof typeof byCountry] ?? byCountry.Ukraine;
+export const preloadPersonDataset = async (): Promise<void> => {
+  await getPersonDataset();
+};
+
+export const generateRandomPersonData = async (country: string): Promise<PersonData> => {
+  const byCountry = await getPersonDataset();
+  const countryConfig = byCountry[country as keyof PersonDataset] ?? byCountry.Ukraine;
   const firstName = pickRandom(countryConfig.firstNames);
   const lastName = pickRandom(countryConfig.lastNames);
   const address: PersonAddress = pickRandom(countryConfig.addresses);

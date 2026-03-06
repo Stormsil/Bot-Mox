@@ -1,17 +1,27 @@
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-
 import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   KeyboardLayoutPair,
   UnattendProfileConfig,
 } from '../../../../entities/vm/model/unattend';
-import { WINDOWS_GEOLOCATIONS } from '../../../../shared/config/data/windows-geolocations';
 import {
+  getWindowsGeoLocations,
+  type WindowsGeoLocation,
+} from '../../../../shared/config/data/windows-geolocations';
+import {
+  getKeyboardGroups,
   getKeyboardLayoutsForLanguage,
-  KEYBOARD_GROUPS,
+  type KeyboardLanguageGroup,
 } from '../../../../shared/config/data/windows-keyboards';
-import { WINDOWS_LANGUAGES } from '../../../../shared/config/data/windows-languages';
-import { WINDOWS_TIMEZONES } from '../../../../shared/config/data/windows-timezones';
+import {
+  getWindowsLanguages,
+  type WindowsLanguage,
+} from '../../../../shared/config/data/windows-languages';
+import {
+  getWindowsTimezones,
+  type WindowsTimezone,
+} from '../../../../shared/config/data/windows-timezones';
 import {
   AppButton as Button,
   AppForm as Form,
@@ -34,12 +44,66 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({
   config,
   updateConfig,
 }) => {
+  const [geoLocations, setGeoLocations] = useState<WindowsGeoLocation[]>([]);
+  const [keyboardGroups, setKeyboardGroups] = useState<KeyboardLanguageGroup[]>([]);
+  const [languages, setLanguages] = useState<WindowsLanguage[]>([]);
+  const [timezones, setTimezones] = useState<WindowsTimezone[]>([]);
+  const [isDictionaryLoading, setIsDictionaryLoading] = useState(true);
+  const [dictionaryLoadError, setDictionaryLoadError] = useState<string | null>(null);
+  const isSubscribedRef = useRef(true);
+
+  const loadDictionaries = useCallback(async () => {
+    setIsDictionaryLoading(true);
+    setDictionaryLoadError(null);
+
+    try {
+      const [loadedGeoLocations, loadedKeyboardGroups, loadedLanguages, loadedTimezones] =
+        await Promise.all([
+          getWindowsGeoLocations(),
+          getKeyboardGroups(),
+          getWindowsLanguages(),
+          getWindowsTimezones(),
+        ]);
+
+      if (!isSubscribedRef.current) {
+        return;
+      }
+
+      setGeoLocations(loadedGeoLocations);
+      setKeyboardGroups(loadedKeyboardGroups);
+      setLanguages(loadedLanguages);
+      setTimezones(loadedTimezones);
+    } catch (error) {
+      console.error('Failed to load unattend locale dictionaries:', error);
+      if (!isSubscribedRef.current) {
+        return;
+      }
+      setDictionaryLoadError('Failed to load locale dictionaries. Please retry.');
+    } finally {
+      if (isSubscribedRef.current) {
+        setIsDictionaryLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadDictionaries();
+
+    return () => {
+      isSubscribedRef.current = false;
+    };
+  }, [loadDictionaries]);
+
   const keyboards = config.locale.keyboardLayouts || [];
-  const keyboardLanguageNameById = new Map(
-    KEYBOARD_GROUPS.map((group) => [group.languageId, group.name] as const),
+  const keyboardLanguageNameById = useMemo(
+    () => new Map(keyboardGroups.map((group) => [group.languageId, group.name] as const)),
+    [keyboardGroups],
+  );
+  const keyboardTagByLanguageId = useMemo(
+    () => new Map(keyboardGroups.map((group) => [group.languageId, group.tag] as const)),
+    [keyboardGroups],
   );
   const keyboardRowKeys = new Map<string, number>();
-
   const handleAddKeyboard = () => {
     if (keyboards.length >= 3) return;
     updateConfig('locale', {
@@ -58,7 +122,7 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({
       if (i !== index) return kb;
       if (field === 'language') {
         // when language changes, auto-select first layout for that language
-        const group = KEYBOARD_GROUPS.find((g) => g.languageId === value);
+        const group = keyboardGroups.find((g) => g.languageId === value);
         const firstLayout = group?.layouts[0]?.id || kb.layout;
         return { language: value, layout: firstLayout };
       }
@@ -69,13 +133,31 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({
 
   return (
     <Form layout="vertical" size="small">
+      {dictionaryLoadError && (
+        <Form.Item>
+          <Space>
+            <Text type="danger">{dictionaryLoadError}</Text>
+            <Button
+              size="small"
+              onClick={() => {
+                void loadDictionaries();
+              }}
+              loading={isDictionaryLoading}
+            >
+              Retry
+            </Button>
+          </Space>
+        </Form.Item>
+      )}
+
       <Form.Item label="Display Language">
         <Select
           showSearch
+          loading={isDictionaryLoading}
           value={config.locale.uiLanguage}
           onChange={(value) => updateConfig('locale', { uiLanguage: value })}
           optionFilterProp="label"
-          options={WINDOWS_LANGUAGES.map((l) => ({
+          options={languages.map((l) => ({
             value: l.tag,
             label: `${l.name} — ${l.nativeName}`,
           }))}
@@ -94,11 +176,12 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({
               <Space key={rowKey} align="start">
                 <Select
                   showSearch
+                  loading={isDictionaryLoading}
                   value={kb.language}
                   onChange={(value) => handleKeyboardChange(index, 'language', value)}
                   optionFilterProp="label"
                   style={{ width: 220 }}
-                  options={KEYBOARD_GROUPS.map((g) => ({
+                  options={keyboardGroups.map((g) => ({
                     value: g.languageId,
                     label: g.name,
                   }))}
@@ -106,12 +189,14 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({
                 />
                 <Select
                   showSearch
+                  loading={isDictionaryLoading}
                   value={kb.layout}
                   onChange={(value) => handleKeyboardChange(index, 'layout', value)}
                   optionFilterProp="label"
                   style={{ width: 260 }}
                   options={getKeyboardLayoutsForLanguage(
-                    KEYBOARD_GROUPS.find((g) => g.languageId === kb.language)?.tag || '',
+                    keyboardGroups,
+                    keyboardTagByLanguageId.get(kb.language) || '',
                   ).map((l) => ({
                     value: l.id,
                     label: l.name,
@@ -147,10 +232,11 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({
       <Form.Item label="Home Location">
         <Select
           showSearch
+          loading={isDictionaryLoading}
           value={config.locale.geoLocation}
           onChange={(value) => updateConfig('locale', { geoLocation: value })}
           optionFilterProp="label"
-          options={WINDOWS_GEOLOCATIONS.map((g) => ({
+          options={geoLocations.map((g) => ({
             value: g.id,
             label: g.name,
           }))}
@@ -162,10 +248,11 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({
         {/* Intentionally using Windows timezone IDs here: unattend.xml and provisioning expect Windows IDs, not IANA names from Intl APIs. */}
         <Select
           showSearch
+          loading={isDictionaryLoading}
           value={config.locale.timeZone}
           onChange={(value) => updateConfig('locale', { timeZone: value })}
           optionFilterProp="label"
-          options={WINDOWS_TIMEZONES.map((tz) => ({
+          options={timezones.map((tz) => ({
             value: tz.id,
             label: `${tz.displayName}`,
           }))}
@@ -180,7 +267,8 @@ export const RegionLanguageSection: React.FC<RegionLanguageSectionProps> = ({
             const languageName = keyboardLanguageNameById.get(kb.language) || kb.language;
             const layoutName =
               getKeyboardLayoutsForLanguage(
-                KEYBOARD_GROUPS.find((g) => g.languageId === kb.language)?.tag || '',
+                keyboardGroups,
+                keyboardTagByLanguageId.get(kb.language) || '',
               ).find((layout) => layout.id === kb.layout)?.name || kb.layout;
             return `${languageName}: ${layoutName}`;
           })

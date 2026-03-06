@@ -1,4 +1,5 @@
 import type React from 'react';
+import { getSubscriptionStatusIntent } from '../../shared/lib/statusSemantic';
 import { AppCol as Col, AppRow as Row } from '../../shared/ui';
 import { MetricCard } from '../../shared/ui/MetricCard';
 
@@ -28,21 +29,21 @@ export const SubscriptionsStats: React.FC<SubscriptionsStatsProps> = ({ collapse
         <MetricCard
           label="Active"
           value={stats.active}
-          color="var(--botmox-color-status-success)"
+          intent={getSubscriptionStatusIntent('active')}
         />
       </Col>
       <Col xs={12} sm={8} md={4}>
         <MetricCard
           label="Expiring Soon"
           value={stats.expiringSoon}
-          color="var(--botmox-color-status-warning)"
+          intent={getSubscriptionStatusIntent('expiring_soon')}
         />
       </Col>
       <Col xs={12} sm={8} md={4}>
         <MetricCard
           label="Expired"
           value={stats.expired}
-          color="var(--botmox-color-status-danger)"
+          intent={getSubscriptionStatusIntent('expired')}
         />
       </Col>
     </Row>

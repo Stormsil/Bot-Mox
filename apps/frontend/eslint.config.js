@@ -142,6 +142,17 @@ export default defineConfig([
               message:
                 'UI layers must not import apiClient directly. Route requests through entities/services hooks.',
             },
+            {
+              group: [
+                '**/shared/config/data/windows-bloatware.json',
+                '**/shared/config/data/windows-geolocations.json',
+                '**/shared/config/data/windows-keyboards.json',
+                '**/shared/config/data/windows-languages.json',
+                '**/shared/config/data/windows-timezones.json',
+              ],
+              message:
+                'Heavy Windows datasets must not be imported directly. Use lazy accessors from shared/config/data/*.ts.',
+            },
           ],
         },
       ],

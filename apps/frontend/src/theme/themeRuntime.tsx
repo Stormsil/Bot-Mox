@@ -26,23 +26,62 @@ const THEME_STORAGE_KEY = 'botmox_theme';
 
 type AntThemeConfig = ConfigProviderProps['theme'];
 
-interface ThemeRuntimeContextValue {
+export type ThemeRuntimeReadonlyState = Readonly<{
   themeMode: ThemeMode;
-  setThemeMode: (mode: ThemeMode) => void;
   themeSettings: ThemeSettings;
-  setThemeSettings: React.Dispatch<React.SetStateAction<ThemeSettings>>;
   themePalettes: ThemePalettes;
   visualSettings: ThemeVisualSettings;
   typographySettings: ThemeTypographySettings;
   shapeSettings: ThemeShapeSettings;
+  themeConfig: AntThemeConfig;
+}>;
+
+export type ThemeRuntimeMutableActions = Readonly<{
+  setThemeMode: (mode: ThemeMode) => void;
+  setThemeSettings: React.Dispatch<React.SetStateAction<ThemeSettings>>;
   setThemePalettes: (palettes: ThemePalettes) => void;
   setVisualSettings: (visual: ThemeVisualSettings) => void;
   setTypographySettings: (typography: ThemeTypographySettings) => void;
   setShapeSettings: (shape: ThemeShapeSettings) => void;
-  themeConfig: AntThemeConfig;
-}
+}>;
+
+export type ThemeRuntimeContract = ThemeRuntimeReadonlyState & ThemeRuntimeMutableActions;
+
+export const THEME_RUNTIME_CONTRACT_VERSION = 'v1' as const;
+
+export const THEME_RUNTIME_CONTRACT_BASELINE = Object.freeze({
+  version: THEME_RUNTIME_CONTRACT_VERSION,
+  stateKeys: Object.freeze([
+    'themeMode',
+    'themeSettings',
+    'themePalettes',
+    'visualSettings',
+    'typographySettings',
+    'shapeSettings',
+    'themeConfig',
+  ] as const satisfies readonly (keyof ThemeRuntimeReadonlyState)[]),
+  actionKeys: Object.freeze([
+    'setThemeMode',
+    'setThemeSettings',
+    'setThemePalettes',
+    'setVisualSettings',
+    'setTypographySettings',
+    'setShapeSettings',
+  ] as const satisfies readonly (keyof ThemeRuntimeMutableActions)[]),
+  duplicationBaseline: Object.freeze({
+    themedComponentTokenScopes: 3,
+    stateFieldCount: 7,
+    actionFieldCount: 6,
+  }),
+});
+
+type ThemeRuntimeContextValue = ThemeRuntimeContract;
 
 const ThemeRuntimeContext = createContext<ThemeRuntimeContextValue | null>(null);
+
+function freezeThemeRuntimeContract(value: ThemeRuntimeContextValue): ThemeRuntimeContextValue {
+  return Object.freeze(value);
+}
 
 type ThemeSpacingScale = {
   xs: number;
@@ -121,6 +160,8 @@ function buildThemeConfig(
       colorTextSecondary: palette['--botmox-color-text-secondary'],
       colorTextPlaceholder: palette['--botmox-color-text-muted'],
       colorBorder: palette['--botmox-color-border-default'],
+      colorBorderSecondary: palette['--botmox-color-border-subtle'],
+      colorSplit: palette['--botmox-color-border-subtle'],
       colorFillContent: palette['--botmox-color-surface-muted'],
       colorFillContentHover: palette['--botmox-color-surface-hover'],
       controlOutline: 'rgba(var(--botmox-color-brand-primary-rgb), 0.22)',
@@ -145,16 +186,36 @@ function buildThemeConfig(
     components: {
       Layout: {
         headerBg: palette['--botmox-color-header-bg'],
+        headerColor: palette['--botmox-color-header-text'],
         bodyBg: palette['--botmox-color-surface-base'],
         siderBg: palette['--botmox-color-surface-panel'],
+        triggerBg: palette['--botmox-color-header-bg'],
+        triggerColor: palette['--botmox-color-header-text'],
+        lightSiderBg: palette['--botmox-color-surface-panel'],
+        lightTriggerBg: palette['--botmox-color-surface-muted'],
+        lightTriggerColor: palette['--botmox-color-text-primary'],
+        footerBg: palette['--botmox-color-surface-panel'],
       },
       Card: {
         colorBgContainer: palette['--botmox-color-surface-panel'],
         headerBg: palette['--botmox-color-surface-muted'],
+        actionsBg: palette['--botmox-color-surface-muted'],
+        extraColor: palette['--botmox-color-text-secondary'],
       },
       Table: {
         colorBgContainer: palette['--botmox-color-surface-panel'],
         headerBg: palette['--botmox-color-surface-muted'],
+        headerColor: palette['--botmox-color-text-secondary'],
+        footerBg: palette['--botmox-color-surface-muted'],
+        borderColor: palette['--botmox-color-border-default'],
+        headerSplitColor: palette['--botmox-color-border-subtle'],
+        rowHoverBg: palette['--botmox-color-surface-hover'],
+        rowSelectedBg: palette['--botmox-color-brand-soft'],
+        rowSelectedHoverBg: palette['--botmox-color-surface-active'],
+        bodySortBg: palette['--botmox-color-surface-active'],
+        headerSortActiveBg: palette['--botmox-color-surface-active'],
+        headerSortHoverBg: palette['--botmox-color-surface-hover'],
+        fixedHeaderSortActiveBg: palette['--botmox-color-surface-active'],
       },
       Pagination: {
         itemBg: palette['--botmox-color-surface-muted'],
@@ -286,41 +347,42 @@ export const ThemeRuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ 
   );
 
   const value: ThemeRuntimeContextValue = useMemo(
-    () => ({
-      themeMode,
-      setThemeMode,
-      themeSettings,
-      setThemeSettings,
-      themePalettes: themeSettings.palettes,
-      visualSettings: sanitizeThemeVisualSettings(themeSettings.visual),
-      typographySettings: sanitizeThemeTypographySettings(themeSettings.typography),
-      shapeSettings: sanitizeThemeShapeSettings(themeSettings.shape),
-      setThemePalettes: (palettes) => {
-        setThemeSettings((current) => ({
-          ...current,
-          palettes,
-        }));
-      },
-      setVisualSettings: (visual) => {
-        setThemeSettings((current) => ({
-          ...current,
-          visual: sanitizeThemeVisualSettings(visual),
-        }));
-      },
-      setTypographySettings: (typography) => {
-        setThemeSettings((current) => ({
-          ...current,
-          typography: sanitizeThemeTypographySettings(typography),
-        }));
-      },
-      setShapeSettings: (shape) => {
-        setThemeSettings((current) => ({
-          ...current,
-          shape: sanitizeThemeShapeSettings(shape),
-        }));
-      },
-      themeConfig,
-    }),
+    () =>
+      freezeThemeRuntimeContract({
+        themeMode,
+        setThemeMode,
+        themeSettings,
+        setThemeSettings,
+        themePalettes: themeSettings.palettes,
+        visualSettings: sanitizeThemeVisualSettings(themeSettings.visual),
+        typographySettings: sanitizeThemeTypographySettings(themeSettings.typography),
+        shapeSettings: sanitizeThemeShapeSettings(themeSettings.shape),
+        setThemePalettes: (palettes) => {
+          setThemeSettings((current) => ({
+            ...current,
+            palettes,
+          }));
+        },
+        setVisualSettings: (visual) => {
+          setThemeSettings((current) => ({
+            ...current,
+            visual: sanitizeThemeVisualSettings(visual),
+          }));
+        },
+        setTypographySettings: (typography) => {
+          setThemeSettings((current) => ({
+            ...current,
+            typography: sanitizeThemeTypographySettings(typography),
+          }));
+        },
+        setShapeSettings: (shape) => {
+          setThemeSettings((current) => ({
+            ...current,
+            shape: sanitizeThemeShapeSettings(shape),
+          }));
+        },
+        themeConfig,
+      }),
     [themeMode, themeSettings, themeConfig],
   );
 

@@ -8,22 +8,29 @@ import {
 import { DeleteButton, EditButton } from '@refinedev/antd';
 
 import type { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
-import type React from 'react';
+import type { CSSProperties, MouseEvent } from 'react';
 import { getFraudScoreColor } from '../../entities/resources/api/ipqsFacade';
 import { normalizeResourceStatusVocabulary } from '../../entities/resources/model/statusVocabulary';
 import type { Proxy as ProxyResource } from '../../entities/resources/model/types';
 import {
+  getExpiryIntent,
+  getProxyStatusIntent,
+  getSemanticIntentColorToken,
+  isProxyPresentationStatus,
+} from '../../shared/lib/statusSemantic';
+import {
   AppButton as Button,
+  createActionsRenderer,
+  createDateTextRenderer,
+  createStatusTagRenderer,
   AppProgress as Progress,
   AppTag as Tag,
   AppTypography as Typography,
 } from '../../shared/ui';
-import { TableActionButton, TableActionGroup } from '../../shared/ui/TableActionButton';
+import { TableActionButton } from '../../shared/ui/TableActionButton';
 import styles from './ProxiesPage.module.css';
 
 const { Text } = Typography;
-type TagIntent = 'success' | 'warning' | 'error' | 'info' | 'default';
 
 const headerTitle = (text: string) => (
   <span
@@ -33,7 +40,7 @@ const headerTitle = (text: string) => (
   </span>
 );
 
-const tagStyle: React.CSSProperties = {
+const tagStyle: CSSProperties = {
   borderRadius: 2,
   fontSize: 10,
   fontWeight: 500,
@@ -50,9 +57,25 @@ export interface ProxyWithBot extends ProxyResource {
 
 interface BuildProxyColumnsParams {
   checkingProxyId: string | null;
-  copyProxyString: (proxy: ProxyResource, event?: React.MouseEvent) => void;
+  copyProxyString: (proxy: ProxyResource, event?: MouseEvent) => void;
   handleRecheckIPQS: (proxy: ProxyWithBot) => void;
   onEdit: (proxyId: string) => void;
+}
+
+function resolveProxyStatusPresentation(record: ProxyWithBot, status: string) {
+  const normalizedStatus = normalizeResourceStatusVocabulary(record);
+  const expired =
+    normalizedStatus.computedStatus === 'expired' || normalizedStatus.statusToken === 'expired';
+  const expiryIntent = getExpiryIntent(expired, normalizedStatus.isExpiringSoon);
+
+  const statusIntent = isProxyPresentationStatus(status)
+    ? getProxyStatusIntent(status)
+    : ('default' as const);
+
+  return {
+    intent: expiryIntent ?? statusIntent,
+    text: expired ? 'EXPIRED' : status.toUpperCase(),
+  };
 }
 
 export function buildProxyColumns({
@@ -61,37 +84,82 @@ export function buildProxyColumns({
   handleRecheckIPQS,
   onEdit,
 }: BuildProxyColumnsParams): ColumnsType<ProxyWithBot> {
+  const renderStatusTag = createStatusTagRenderer<ProxyWithBot, string>({
+    getIntent: (status, record) => resolveProxyStatusPresentation(record, status).intent,
+    getLabel: (status, record) => resolveProxyStatusPresentation(record, status).text,
+    style: tagStyle,
+  });
+
+  const renderExpiresDate = createDateTextRenderer<ProxyWithBot, number>({
+    getIntent: (_value, record) => {
+      const normalizedStatus = normalizeResourceStatusVocabulary(record);
+      const expired =
+        normalizedStatus.computedStatus === 'expired' || normalizedStatus.statusToken === 'expired';
+
+      return getExpiryIntent(expired, normalizedStatus.isExpiringSoon);
+    },
+    fontSize: 12,
+    lineHeight: 1.4,
+  });
+
+  const renderActions = createActionsRenderer<ProxyWithBot>({
+    grouped: true,
+    wrapperClassName: styles.actionsCell,
+    renderActions: (record) => (
+      <>
+        <TableActionButton
+          icon={<SyncOutlined spin={checkingProxyId === record.id} />}
+          onClick={() => handleRecheckIPQS(record)}
+          disabled={checkingProxyId === record.id}
+          tooltip="Recheck IPQS"
+        />
+        <EditButton
+          hideText
+          size="small"
+          shape="circle"
+          icon={<EditOutlined />}
+          resource="proxies"
+          recordItemId={record.id}
+          onClick={(event) => {
+            event.preventDefault();
+            onEdit(String(record.id));
+          }}
+        />
+        <TableActionButton
+          icon={<CopyOutlined />}
+          onClick={() => copyProxyString(record)}
+          tooltip="Copy"
+        />
+        <DeleteButton
+          hideText
+          size="small"
+          shape="circle"
+          icon={<DeleteOutlined />}
+          resource="proxies"
+          recordItemId={record.id}
+          confirmTitle="Delete Proxy?"
+          confirmOkText="Delete"
+          confirmCancelText="Cancel"
+          successNotification={() => ({
+            message: 'Proxy deleted',
+            type: 'success',
+          })}
+          errorNotification={() => ({
+            message: 'Failed to delete proxy',
+            type: 'error',
+          })}
+        />
+      </>
+    ),
+  });
+
   return [
     {
       title: headerTitle('Status'),
       dataIndex: 'status',
       key: 'status',
       width: 85,
-      render: (status: string, record: ProxyWithBot) => {
-        const normalizedStatus = normalizeResourceStatusVocabulary(record);
-        const expired =
-          normalizedStatus.computedStatus === 'expired' ||
-          normalizedStatus.statusToken === 'expired';
-        let intent: TagIntent = 'default';
-        let text = status;
-
-        if (expired) {
-          intent = 'error';
-          text = 'EXPIRED';
-        } else if (normalizedStatus.isExpiringSoon) {
-          intent = 'warning';
-        } else if (status === 'active') {
-          intent = 'success';
-        } else if (status === 'banned') {
-          intent = 'error';
-        }
-
-        return (
-          <Tag bordered={false} intent={intent} style={tagStyle}>
-            {text.toUpperCase()}
-          </Tag>
-        );
-      },
+      render: renderStatusTag,
     },
     {
       title: headerTitle(''),
@@ -231,29 +299,7 @@ export function buildProxyColumns({
       dataIndex: 'expires_at',
       key: 'expires_at',
       width: 100,
-      render: (expiresAt: number, record: ProxyWithBot) => {
-        const normalizedStatus = normalizeResourceStatusVocabulary(record);
-        const expired =
-          normalizedStatus.computedStatus === 'expired' ||
-          normalizedStatus.statusToken === 'expired';
-        const expiringSoon = normalizedStatus.isExpiringSoon;
-
-        return (
-          <Text
-            style={{
-              color: expired
-                ? 'var(--botmox-color-status-danger)'
-                : expiringSoon
-                  ? 'var(--botmox-color-status-warning)'
-                  : undefined,
-              fontSize: 12,
-              lineHeight: 1.4,
-            }}
-          >
-            {dayjs(expiresAt).format('DD.MM.YYYY')}
-          </Text>
-        );
-      },
+      render: renderExpiresDate,
     },
     {
       title: headerTitle('Days Left'),
@@ -266,15 +312,12 @@ export function buildProxyColumns({
           normalizedStatus.statusToken === 'expired';
         const expiringSoon = normalizedStatus.isExpiringSoon;
         const daysLeft = expired ? 0 : (normalizedStatus.daysRemaining ?? 0);
+        const daysIntent = getExpiryIntent(expired, expiringSoon) ?? 'success';
 
         return (
           <Text
             style={{
-              color: expired
-                ? 'var(--botmox-color-status-danger)'
-                : expiringSoon
-                  ? 'var(--botmox-color-status-warning)'
-                  : 'var(--botmox-color-status-success)',
+              color: getSemanticIntentColorToken(daysIntent),
               fontSize: 13,
               fontWeight: 600,
             }}
@@ -288,54 +331,7 @@ export function buildProxyColumns({
       title: headerTitle('Actions'),
       key: 'actions',
       width: 130,
-      render: (_: unknown, record: ProxyWithBot) => (
-        <div className={styles.actionsCell}>
-          <TableActionGroup>
-            <TableActionButton
-              icon={<SyncOutlined spin={checkingProxyId === record.id} />}
-              onClick={() => handleRecheckIPQS(record)}
-              disabled={checkingProxyId === record.id}
-              tooltip="Recheck IPQS"
-            />
-            <EditButton
-              hideText
-              size="small"
-              shape="circle"
-              icon={<EditOutlined />}
-              resource="proxies"
-              recordItemId={record.id}
-              onClick={(event) => {
-                event.preventDefault();
-                onEdit(String(record.id));
-              }}
-            />
-            <TableActionButton
-              icon={<CopyOutlined />}
-              onClick={() => copyProxyString(record)}
-              tooltip="Copy"
-            />
-            <DeleteButton
-              hideText
-              size="small"
-              shape="circle"
-              icon={<DeleteOutlined />}
-              resource="proxies"
-              recordItemId={record.id}
-              confirmTitle="Delete Proxy?"
-              confirmOkText="Delete"
-              confirmCancelText="Cancel"
-              successNotification={() => ({
-                message: 'Proxy deleted',
-                type: 'success',
-              })}
-              errorNotification={() => ({
-                message: 'Failed to delete proxy',
-                type: 'error',
-              })}
-            />
-          </TableActionGroup>
-        </div>
-      ),
+      render: renderActions,
     },
   ];
 }

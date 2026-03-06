@@ -1,8 +1,11 @@
 import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { UnattendProfileConfig } from '../../../../entities/vm/model/unattend';
 import {
-  BLOATWARE_PACKAGES,
-  WINDOWS_CAPABILITIES,
+  type BloatwarePackage,
+  getWindowsBloatwarePackages,
+  getWindowsCapabilities,
+  type WindowsCapability,
 } from '../../../../shared/config/data/windows-bloatware';
 import {
   AppButton as Button,
@@ -26,29 +29,88 @@ interface BloatwareSectionProps {
 }
 
 export const BloatwareSection: React.FC<BloatwareSectionProps> = ({ config, updateConfig }) => {
+  const [bloatwarePackages, setBloatwarePackages] = useState<BloatwarePackage[]>([]);
+  const [windowsCapabilities, setWindowsCapabilities] = useState<WindowsCapability[]>([]);
+  const [isDictionaryLoading, setIsDictionaryLoading] = useState(true);
+  const [dictionaryLoadError, setDictionaryLoadError] = useState<string | null>(null);
+  const isSubscribedRef = useRef(true);
+
+  const loadDictionaries = useCallback(async () => {
+    setIsDictionaryLoading(true);
+    setDictionaryLoadError(null);
+
+    try {
+      const [loadedPackages, loadedCapabilities] = await Promise.all([
+        getWindowsBloatwarePackages(),
+        getWindowsCapabilities(),
+      ]);
+
+      if (!isSubscribedRef.current) {
+        return;
+      }
+
+      setBloatwarePackages(loadedPackages);
+      setWindowsCapabilities(loadedCapabilities);
+    } catch (error) {
+      console.error('Failed to load unattend bloatware dictionaries:', error);
+      if (!isSubscribedRef.current) {
+        return;
+      }
+      setDictionaryLoadError('Failed to load bloatware dictionaries. Please retry.');
+    } finally {
+      if (isSubscribedRef.current) {
+        setIsDictionaryLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadDictionaries();
+
+    return () => {
+      isSubscribedRef.current = false;
+    };
+  }, [loadDictionaries]);
+
   const sr = config.softwareRemoval;
   const cr = config.capabilityRemoval;
-
   const handleSelectAll = (field: 'fixedPackages' | 'randomPool') => {
-    updateConfig('softwareRemoval', { [field]: BLOATWARE_PACKAGES.map((p) => p.id) });
+    updateConfig('softwareRemoval', { [field]: bloatwarePackages.map((p) => p.id) });
   };
 
   const handleClearAll = (field: 'fixedPackages' | 'randomPool') => {
     updateConfig('softwareRemoval', { [field]: [] });
   };
 
-  const packageOptions = BLOATWARE_PACKAGES.map((p) => ({
+  const packageOptions = bloatwarePackages.map((p) => ({
     label: p.name,
     value: p.id,
   }));
 
-  const capabilityOptions = WINDOWS_CAPABILITIES.map((c) => ({
+  const capabilityOptions = windowsCapabilities.map((c) => ({
     label: c.name,
     value: c.id,
   }));
 
   return (
     <Form layout="vertical" size="small">
+      {dictionaryLoadError && (
+        <Form.Item>
+          <Space>
+            <Text type="danger">{dictionaryLoadError}</Text>
+            <Button
+              size="small"
+              onClick={() => {
+                void loadDictionaries();
+              }}
+              loading={isDictionaryLoading}
+            >
+              Retry
+            </Button>
+          </Space>
+        </Form.Item>
+      )}
+
       <Form.Item label="Package removal mode">
         <Radio.Group
           value={sr.mode}
@@ -72,6 +134,7 @@ export const BloatwareSection: React.FC<BloatwareSectionProps> = ({ config, upda
           </Space>
           <Select
             mode="multiple"
+            loading={isDictionaryLoading}
             value={sr.fixedPackages}
             onChange={(value) => updateConfig('softwareRemoval', { fixedPackages: value })}
             placeholder="Select packages"
@@ -95,6 +158,7 @@ export const BloatwareSection: React.FC<BloatwareSectionProps> = ({ config, upda
             </Space>
             <Select
               mode="multiple"
+              loading={isDictionaryLoading}
               value={sr.randomPool}
               onChange={(value) => updateConfig('softwareRemoval', { randomPool: value })}
               placeholder="Pool for random removal"
@@ -124,6 +188,7 @@ export const BloatwareSection: React.FC<BloatwareSectionProps> = ({ config, upda
       <Form.Item label="Never remove (protected)">
         <Select
           mode="multiple"
+          loading={isDictionaryLoading}
           value={sr.neverRemove || []}
           onChange={(value) => updateConfig('softwareRemoval', { neverRemove: value })}
           placeholder="Packages that should never be removed"
@@ -150,6 +215,7 @@ export const BloatwareSection: React.FC<BloatwareSectionProps> = ({ config, upda
       <Form.Item label="Capabilities to remove">
         <Select
           mode="multiple"
+          loading={isDictionaryLoading}
           value={cr.fixedCapabilities}
           onChange={(value) => updateConfig('capabilityRemoval', { fixedCapabilities: value })}
           placeholder="Select capabilities"
@@ -163,6 +229,7 @@ export const BloatwareSection: React.FC<BloatwareSectionProps> = ({ config, upda
         <Form.Item label="Capability random pool">
           <Select
             mode="multiple"
+            loading={isDictionaryLoading}
             value={cr.randomPool}
             onChange={(value) => updateConfig('capabilityRemoval', { randomPool: value })}
             placeholder="Pool for random removal"

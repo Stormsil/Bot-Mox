@@ -10,14 +10,18 @@
 }
 
 /* Top toolbar */
+.resource-tree-toolbar,
+.resource-tree-filters-compact {
+  background: var(--botmox-color-surface-panel);
+  border-bottom: 1px solid var(--botmox-color-border-default);
+}
+
 .resource-tree-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 6px 8px;
   gap: 6px;
-  background: var(--botmox-color-surface-panel);
-  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .resource-tree-collapse-btn {
@@ -183,12 +187,6 @@
 
 .resource-tree-container.collapsed .resource-tree-resizer {
   display: none;
-}
-
-/* Компактная панель фильтров */
-.resource-tree-filters-compact {
-  background: var(--botmox-color-surface-panel);
-  border-bottom: 1px solid var(--botmox-color-border-default);
 }
 
 .resource-tree-filters-header {

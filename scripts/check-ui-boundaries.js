@@ -20,6 +20,13 @@ const forbiddenTransportImportPatterns = [
   /(?:^|[/\\])shared[/\\]api[/\\]apiClient(?:$|\b|[/\\])/,
   /(?:^|[/\\])shared[/\\]api[/\\]providers(?:$|[/\\])/,
 ];
+const forbiddenHeavyDatasetImportPatterns = [
+  /(?:^|[/\\])shared[/\\]config[/\\]data[/\\]windows-bloatware\.json$/,
+  /(?:^|[/\\])shared[/\\]config[/\\]data[/\\]windows-geolocations\.json$/,
+  /(?:^|[/\\])shared[/\\]config[/\\]data[/\\]windows-keyboards\.json$/,
+  /(?:^|[/\\])shared[/\\]config[/\\]data[/\\]windows-languages\.json$/,
+  /(?:^|[/\\])shared[/\\]config[/\\]data[/\\]windows-timezones\.json$/,
+];
 
 function walk(dir, files) {
   if (!fs.existsSync(dir)) {
@@ -57,29 +64,57 @@ function findViolations(filePath) {
   const violations = [];
   const importPattern = /import\s+(?:type\s+)?[\s\S]*?\sfrom\s+['"]([^'"]+)['"]/g;
   const dynamicImportPattern = /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
+  const importMetaUrlPattern = /new\s+URL\s*\(\s*(['"])([^'"]+)\1\s*,\s*import\.meta\.url\s*\)/g;
+
+  function pushPathViolations(importPath, line) {
+    if (serviceImportPattern.test(importPath)) {
+      violations.push({
+        line,
+        importPath,
+        category: 'service',
+      });
+    }
+
+    if (forbiddenTransportImportPatterns.some((pattern) => pattern.test(importPath))) {
+      violations.push({
+        line,
+        importPath,
+        category: 'transport',
+      });
+    }
+
+    if (forbiddenHeavyDatasetImportPatterns.some((pattern) => pattern.test(importPath))) {
+      violations.push({
+        line,
+        importPath,
+        category: 'heavy-dataset',
+      });
+    }
+  }
 
   for (const pattern of [importPattern, dynamicImportPattern]) {
     let match = pattern.exec(content);
     while (match) {
       const importPath = match[1] || '';
-      if (serviceImportPattern.test(importPath)) {
-        violations.push({
-          line: getLineNumber(content, match.index),
-          importPath,
-          category: 'service',
-        });
-      }
-
-      if (forbiddenTransportImportPatterns.some((pattern) => pattern.test(importPath))) {
-        violations.push({
-          line: getLineNumber(content, match.index),
-          importPath,
-          category: 'transport',
-        });
-      }
+      pushPathViolations(importPath, getLineNumber(content, match.index));
 
       match = pattern.exec(content);
     }
+  }
+
+  let importMetaUrlMatch = importMetaUrlPattern.exec(content);
+  while (importMetaUrlMatch) {
+    const importPath = importMetaUrlMatch[2] || '';
+    const line = getLineNumber(content, importMetaUrlMatch.index);
+    if (forbiddenHeavyDatasetImportPatterns.some((pattern) => pattern.test(importPath))) {
+      violations.push({
+        line,
+        importPath,
+        category: 'heavy-dataset',
+      });
+    }
+
+    importMetaUrlMatch = importMetaUrlPattern.exec(content);
   }
 
   return violations;
@@ -140,6 +175,23 @@ for (const filePath of serviceBoundaryFiles) {
 for (const filePath of transportBoundaryFiles) {
   const violations = findViolations(filePath).filter(
     (violation) => violation.category === 'transport',
+  );
+  for (const violation of violations) {
+    allViolations.push({
+      filePath: path.relative(repoRoot, filePath),
+      line: violation.line,
+      importPath: violation.importPath,
+      category: violation.category,
+    });
+  }
+}
+
+const heavyDatasetBoundaryFiles = Array.from(
+  new Set([...serviceBoundaryFiles, ...transportBoundaryFiles]),
+);
+for (const filePath of heavyDatasetBoundaryFiles) {
+  const violations = findViolations(filePath).filter(
+    (violation) => violation.category === 'heavy-dataset',
   );
   for (const violation of violations) {
     allViolations.push({

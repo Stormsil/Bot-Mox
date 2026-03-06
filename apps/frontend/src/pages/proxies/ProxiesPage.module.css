@@ -6,8 +6,6 @@
 
 .header {
   margin-bottom: 16px;
-  background: var(--botmox-color-surface-panel);
-  border: 1px solid var(--botmox-color-border-default);
 }
 
 .headerTitle h4 {
@@ -23,45 +21,8 @@
   margin-bottom: 16px;
 }
 
-.statCard {
-  background: var(--botmox-color-surface-panel);
-  border: 1px solid var(--botmox-color-border-default);
-  text-align: center;
-}
-
-.statValue {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--botmox-color-text-primary);
-}
-
-.statLabel {
-  font-size: 12px;
-  color: var(--botmox-color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.statCardActive .statValue {
-  color: var(--botmox-color-status-success);
-}
-
-.statCardExpired .statValue {
-  color: var(--botmox-color-status-danger);
-}
-
-.statCardWarning .statValue {
-  color: var(--botmox-color-status-warning);
-}
-
-.statCardBanned .statValue {
-  color: var(--botmox-color-status-danger);
-}
-
 .filters {
   margin-bottom: 16px;
-  background: var(--botmox-color-surface-panel);
-  border: 1px solid var(--botmox-color-border-default);
 }
 
 .filterSearch {
@@ -74,11 +35,6 @@
 
 .filterSelectSm {
   width: 100px;
-}
-
-.tableCard {
-  background: var(--botmox-color-surface-panel);
-  border: 1px solid var(--botmox-color-border-default);
 }
 
 .tableCard table {

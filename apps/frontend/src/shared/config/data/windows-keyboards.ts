@@ -1,19 +1,20 @@
-import { KEYBOARD_GROUPS_PART1 } from './windows-keyboards/groups-part1';
-import { KEYBOARD_GROUPS_PART2 } from './windows-keyboards/groups-part2';
-import { KEYBOARD_GROUPS_PART3 } from './windows-keyboards/groups-part3';
+import { loadLazyJson } from './lazy-json';
 import type { KeyboardLanguageGroup, KeyboardLayout } from './windows-keyboards/types';
 
 export type { KeyboardLanguageGroup, KeyboardLayout } from './windows-keyboards/types';
 
-export const KEYBOARD_GROUPS: KeyboardLanguageGroup[] = [
-  ...KEYBOARD_GROUPS_PART1,
-  ...KEYBOARD_GROUPS_PART2,
-  ...KEYBOARD_GROUPS_PART3,
-];
+const WINDOWS_KEYBOARDS_URL = new URL('./windows-keyboards.json', import.meta.url).href;
+
+export function getKeyboardGroups(): Promise<KeyboardLanguageGroup[]> {
+  return loadLazyJson<KeyboardLanguageGroup[]>(WINDOWS_KEYBOARDS_URL);
+}
 
 /** Get keyboard layouts for a given language tag. */
-export function getKeyboardLayoutsForLanguage(tag: string): KeyboardLayout[] {
-  const group = KEYBOARD_GROUPS.find((g) => g.tag === tag);
+export function getKeyboardLayoutsForLanguage(
+  groups: KeyboardLanguageGroup[],
+  tag: string,
+): KeyboardLayout[] {
+  const group = groups.find((entry) => entry.tag === tag);
   return group?.layouts ?? [];
 }
 

@@ -15,6 +15,7 @@
     "dev:backend": "pnpm --filter @botmox/backend dev",
     "dev:backend:nest": "pnpm run dev:backend",
     "dev:frontend": "pnpm --filter @botmox/frontend dev",
+    "dev:frontend-only": "pnpm --filter @botmox/frontend dev:frontend-only",
     "dev:admin": "pnpm --filter @botmox/admin dev",
     "dev:supabase:start": "corepack pnpm exec supabase start",
     "dev:supabase:stop": "corepack pnpm exec supabase stop",

@@ -1,4 +1,5 @@
-import { expect, type Page, type Route, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
+import { setupAppMocks } from './fixtures/setupAppMocks';
 
 const e2eIdentity = {
   id: 'e2e-user',
@@ -11,12 +12,6 @@ const e2eIdentity = {
   },
 };
 
-type ApiEnvelope = {
-  success: true;
-  data: unknown;
-  meta?: Record<string, unknown>;
-};
-
 type ResourceKind = 'licenses' | 'proxies' | 'subscriptions';
 
 type ResourceRecord = {
@@ -27,28 +22,6 @@ type ResourceRecord = {
 };
 
 const MAX_BASELINE_LIST_GETS = 4;
-
-function envelope(data: unknown, meta?: Record<string, unknown>): ApiEnvelope {
-  if (meta) {
-    return { success: true, data, meta };
-  }
-  return { success: true, data };
-}
-
-function toJsonResponse(
-  payload: ApiEnvelope,
-  status = 200,
-): {
-  status: number;
-  contentType: string;
-  body: string;
-} {
-  return {
-    status,
-    contentType: 'application/json',
-    body: JSON.stringify(payload),
-  };
-}
 
 function seedAuthStorage(identity: typeof e2eIdentity) {
   localStorage.setItem('botmox.auth.token', 'e2e-token');
@@ -146,130 +119,112 @@ function createBaselineFixture() {
 async function mountCrudMockApi(page: Page) {
   const fixture = createBaselineFixture();
 
-  await page.route('**/api/v1/**', async (route: Route) => {
-    const request = route.request();
-    const method = request.method();
-    const url = new URL(request.url());
-    const pathname = url.pathname;
+  await setupAppMocks(page, {
+    identity: e2eIdentity,
+    whoamiData: {
+      access: {
+        accessTier: 'premium',
+        premiumActive: true,
+        writeAccess: true,
+      },
+    },
+    fallbackItemId: 'fallback-item',
+    overrides: [
+      async ({ pathname, method, request, fulfillJson }) => {
+        if (pathname === '/api/v1/bots') {
+          await fulfillJson(fixture.bots, { total: fixture.bots.length });
+          return true;
+        }
 
-    if (pathname === '/api/v1/auth/whoami') {
-      await route.fulfill(
-        toJsonResponse(
-          envelope({
-            uid: e2eIdentity.id,
-            email: e2eIdentity.email,
-            roles: e2eIdentity.roles,
-            access: {
-              accessTier: 'premium',
-              premiumActive: true,
-              writeAccess: true,
-            },
-          }),
-        ),
-      );
-      return;
-    }
-
-    if (pathname === '/api/v1/theme-assets') {
-      await route.fulfill(toJsonResponse(envelope({ generated_at_ms: Date.now(), items: [] })));
-      return;
-    }
-
-    if (pathname === '/api/v1/bots') {
-      await route.fulfill(toJsonResponse(envelope(fixture.bots, { total: fixture.bots.length })));
-      return;
-    }
-
-    if (pathname === '/api/v1/settings/alerts') {
-      await route.fulfill(
-        toJsonResponse(
-          envelope({
+        if (pathname === '/api/v1/settings/alerts') {
+          await fulfillJson({
             warning_days: 7,
             enabled: true,
             updated_at: Date.now(),
-          }),
-        ),
-      );
-      return;
-    }
+          });
+          return true;
+        }
 
-    if (pathname.startsWith('/api/v1/resources/')) {
-      const parts = pathname.split('/').filter(Boolean);
-      const kind = parts[3] as ResourceKind | undefined;
-      const id = parts[4];
+        if (!pathname.startsWith('/api/v1/resources/')) {
+          return false;
+        }
 
-      if (!kind || !(kind in fixture.data)) {
-        await route.fulfill(toJsonResponse(envelope([], { total: 0 })));
-        return;
-      }
+        const parts = pathname.split('/').filter(Boolean);
+        const kind = parts[3] as ResourceKind | undefined;
+        const id = parts[4];
 
-      const collection = fixture.data[kind];
+        if (!kind || !(kind in fixture.data)) {
+          await fulfillJson([], { total: 0 });
+          return true;
+        }
 
-      if (method === 'GET' && !id) {
-        fixture.counts.listGet[kind] += 1;
-        await route.fulfill(toJsonResponse(envelope(collection, { total: collection.length })));
-        return;
-      }
+        const collection = fixture.data[kind];
 
-      if (method === 'GET' && id) {
-        const found = collection.find((item) => item.id === id);
-        await route.fulfill(toJsonResponse(envelope(found ?? null), found ? 200 : 404));
-        return;
-      }
+        if (method === 'GET' && !id) {
+          fixture.counts.listGet[kind] += 1;
+          await fulfillJson(collection, { total: collection.length });
+          return true;
+        }
 
-      if (method === 'POST' && !id) {
-        fixture.counts.write[kind].post += 1;
-        const body = request.postDataJSON() as Record<string, unknown>;
-        const next: ResourceRecord = {
-          ...body,
-          id: `${kind}-created-${fixture.counts.write[kind].post}`,
-          created_at: Number(body.created_at ?? Date.now()),
-          updated_at: Number(body.updated_at ?? Date.now()),
-        };
-        collection.unshift(next);
-        await route.fulfill(toJsonResponse(envelope(next), 201));
-        return;
-      }
+        if (method === 'GET' && id) {
+          const found = collection.find((item) => item.id === id);
+          await fulfillJson(found ?? null, undefined, found ? 200 : 404);
+          return true;
+        }
 
-      if (method === 'PATCH' && id) {
-        fixture.counts.write[kind].patch += 1;
-        const body = request.postDataJSON() as Record<string, unknown>;
-        const index = collection.findIndex((item) => item.id === id);
-        if (index >= 0) {
-          const current = collection[index];
-          if (!current) {
-            await route.fulfill(toJsonResponse(envelope({ id })));
-            return;
-          }
-          collection[index] = {
-            ...current,
+        if (method === 'POST' && !id) {
+          fixture.counts.write[kind].post += 1;
+          const body = request.postDataJSON() as Record<string, unknown>;
+          const next: ResourceRecord = {
             ...body,
-            id: String(current.id),
-            created_at: Number(current.created_at ?? Date.now()),
+            id: `${kind}-created-${fixture.counts.write[kind].post}`,
+            created_at: Number(body.created_at ?? Date.now()),
             updated_at: Number(body.updated_at ?? Date.now()),
           };
+          collection.unshift(next);
+          await fulfillJson(next, undefined, 201);
+          return true;
         }
-        await route.fulfill(toJsonResponse(envelope(collection[index] ?? { id })));
-        return;
-      }
 
-      if (method === 'DELETE' && id) {
-        fixture.counts.write[kind].delete += 1;
-        const index = collection.findIndex((item) => item.id === id);
-        if (index >= 0) {
-          collection.splice(index, 1);
+        if (method === 'PATCH' && id) {
+          fixture.counts.write[kind].patch += 1;
+          const body = request.postDataJSON() as Record<string, unknown>;
+          const index = collection.findIndex((item) => item.id === id);
+          if (index >= 0) {
+            const current = collection[index];
+            if (!current) {
+              await fulfillJson({ id });
+              return true;
+            }
+
+            collection[index] = {
+              ...current,
+              ...body,
+              id: String(current.id),
+              created_at: Number(current.created_at ?? Date.now()),
+              updated_at: Number(body.updated_at ?? Date.now()),
+            };
+          }
+
+          await fulfillJson(collection[index] ?? { id });
+          return true;
         }
-        await route.fulfill(toJsonResponse(envelope({ id, deleted: true })));
-        return;
-      }
-    }
 
-    if (method === 'GET') {
-      await route.fulfill(toJsonResponse(envelope([])));
-      return;
-    }
+        if (method === 'DELETE' && id) {
+          fixture.counts.write[kind].delete += 1;
+          const index = collection.findIndex((item) => item.id === id);
+          if (index >= 0) {
+            collection.splice(index, 1);
+          }
 
-    await route.fulfill(toJsonResponse(envelope({ id: 'fallback-item' })));
+          await fulfillJson({ id, deleted: true });
+          return true;
+        }
+
+        await fulfillJson({ id: 'fallback-item' });
+        return true;
+      },
+    ],
   });
 
   return fixture;

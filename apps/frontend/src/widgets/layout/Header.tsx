@@ -25,6 +25,7 @@ import {
   AppTypography as Typography,
 } from '../../shared/ui';
 import { useThemeRuntime } from '../../theme/themeRuntime';
+import { BotMoxLogo } from './BotMoxLogo';
 import styles from './Header.module.css';
 import { buildBotContext, buildBreadcrumbs } from './header/breadcrumbs';
 
@@ -96,6 +97,15 @@ export const Header: React.FC = () => {
   return (
     <AntHeader className={cx('proxmox-header')}>
       <div className={cx('header-left')}>
+        <button
+          type="button"
+          className={cx('brand-link')}
+          onClick={() => navigate('/')}
+          aria-label="Go to Bot-Mox home"
+          title="Bot-Mox"
+        >
+          <BotMoxLogo />
+        </button>
         <div className={cx('header-path')}>
           <button
             type="button"

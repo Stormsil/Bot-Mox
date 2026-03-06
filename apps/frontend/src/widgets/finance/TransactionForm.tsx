@@ -10,20 +10,16 @@ import type {
   FinanceOperationType,
 } from '../../entities/finance/model/types';
 import {
-  AppDatePicker as DatePicker,
+  AppFormBuilder,
   AppDivider as Divider,
   AppForm as Form,
-  AppInput as Input,
-  AppInputNumber as InputNumber,
   AppModal as Modal,
   AppRadio as Radio,
-  AppSelect as Select,
   AppSpace as Space,
   AppTypography as Typography,
 } from '../../shared/ui';
 
 const { Text } = Typography;
-const { TextArea } = Input;
 
 interface TransactionFormProps {
   visible: boolean;
@@ -263,25 +259,27 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         </Form.Item>
 
         {transactionType === 'expense' && (
-          <Form.Item name="category" label="Category">
-            <Select
-              placeholder="Select category"
-              disabled={isEdit}
-              options={categories.map((cat) => ({ value: cat.value, label: cat.label }))}
-            />
-          </Form.Item>
+          <AppFormBuilder.Select
+            item={{ name: 'category', label: 'Category' }}
+            control={{
+              placeholder: 'Select category',
+              disabled: isEdit,
+              options: categories.map((cat) => ({ value: cat.value, label: cat.label })),
+            }}
+          />
         )}
 
         {isGoldSale && (
-          <Form.Item name="project_id" label="Project">
-            <Select
-              placeholder="Select project"
-              options={[
+          <AppFormBuilder.Select
+            item={{ name: 'project_id', label: 'Project' }}
+            control={{
+              placeholder: 'Select project',
+              options: [
                 { value: 'wow_tbc', label: 'WoW TBC Classic' },
                 { value: 'wow_midnight', label: 'WoW Midnight' },
-              ]}
-            />
-          </Form.Item>
+              ],
+            }}
+          />
         )}
 
         {isGoldSale && (
@@ -292,19 +290,15 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
             </Text>
 
             <Space direction="vertical" style={{ width: '100%' }} size="middle">
-              <Form.Item name="gold_amount" label="Gold Amount (g)">
-                <InputNumber style={{ width: '100%' }} min={0} placeholder="Enter gold amount" />
-              </Form.Item>
+              <AppFormBuilder.InputNumber
+                item={{ name: 'gold_amount', label: 'Gold Amount (g)' }}
+                control={{ min: 0, placeholder: 'Enter gold amount' }}
+              />
 
-              <Form.Item name="gold_price_at_time" label="Gold Price (per 1000g)">
-                <InputNumber
-                  style={{ width: '100%' }}
-                  min={0}
-                  step={0.01}
-                  placeholder="Enter gold price"
-                  prefix="$"
-                />
-              </Form.Item>
+              <AppFormBuilder.InputNumber
+                item={{ name: 'gold_price_at_time', label: 'Gold Price (per 1000g)' }}
+                control={{ min: 0, step: 0.01, placeholder: 'Enter gold price', prefix: '$' }}
+              />
 
               <div
                 style={{
@@ -328,37 +322,33 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         )}
 
         {!isGoldSale && (
-          <Form.Item name="amount" label="Amount (USD)">
-            <InputNumber
-              style={{ width: '100%' }}
-              min={0}
-              step={0.01}
-              placeholder="Enter amount"
-              prefix="$"
-            />
-          </Form.Item>
+          <AppFormBuilder.InputNumber
+            item={{ name: 'amount', label: 'Amount (USD)' }}
+            control={{ min: 0, step: 0.01, placeholder: 'Enter amount', prefix: '$' }}
+          />
         )}
 
-        <Form.Item name="date" label="Date & Time" tooltip="Format: DD.MM.YYYY HH:mm">
-          <DatePicker
-            style={{ width: '100%' }}
-            format="DD.MM.YYYY HH:mm"
-            showTime={{ format: 'HH:mm' }}
-            value={(() => {
+        <AppFormBuilder.DatePicker
+          item={{ name: 'date', label: 'Date & Time', tooltip: 'Format: DD.MM.YYYY HH:mm' }}
+          control={{
+            format: 'DD.MM.YYYY HH:mm',
+            showTime: { format: 'HH:mm' },
+            value: (() => {
               const current = form.getFieldValue('date');
               if (dayjs.isDayjs(current)) return current;
               if (typeof current === 'number') return dayjs(current);
               return null;
-            })()}
-            onChange={(date) => {
+            })(),
+            onChange: (date) => {
               form.setFieldValue('date', date ? date.valueOf() : Date.now());
-            }}
-          />
-        </Form.Item>
+            },
+          }}
+        />
 
-        <Form.Item name="description" label="Description">
-          <TextArea rows={2} placeholder="Enter transaction description (optional)" />
-        </Form.Item>
+        <AppFormBuilder.TextArea
+          item={{ name: 'description', label: 'Description' }}
+          control={{ rows: 2, placeholder: 'Enter transaction description (optional)' }}
+        />
       </Form>
     </Modal>
   );

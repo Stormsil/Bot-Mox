@@ -2,9 +2,11 @@ import { DeleteOutlined } from '@ant-design/icons';
 
 import type { BotStatus } from '../../shared/types';
 import {
+  createActionsRenderer,
+  createStatusWithSecondaryRenderer,
   AppFlex as Flex,
   AppPopconfirm as Popconfirm,
-  AppTag as Tag,
+  resolveStatusIntentFromColor,
   AppTooltip as Tooltip,
   AppTypography as Typography,
 } from '../../shared/ui';
@@ -17,41 +19,6 @@ import { formatDaysRemaining, formatFaction, formatServerName } from './utils';
 
 const { Text } = Typography;
 
-function resolveTagIntent(value: string): 'success' | 'warning' | 'error' | 'info' | 'default' {
-  const normalized = value.trim().toLowerCase();
-  if (normalized === 'success' || normalized === 'green') return 'success';
-  if (normalized === 'warning' || normalized === 'orange' || normalized === 'gold')
-    return 'warning';
-  if (normalized === 'error' || normalized === 'red') return 'error';
-  if (normalized === 'info' || normalized === 'blue' || normalized === 'processing') return 'info';
-  return 'default';
-}
-
-function renderStatusWithDays({
-  label,
-  color,
-  daysRemaining,
-  onClick,
-}: {
-  label: string;
-  color: string;
-  daysRemaining: number | undefined;
-  onClick: () => void;
-}) {
-  return (
-    <button type="button" className={`${styles.cellButton} ${styles.cellLink}`} onClick={onClick}>
-      <Flex vertical gap={2}>
-        <Tag intent={resolveTagIntent(color)} className={styles.statusTag}>
-          {label}
-        </Tag>
-        <Text type="secondary" className={styles.secondary}>
-          {formatDaysRemaining(daysRemaining)}
-        </Text>
-      </Flex>
-    </button>
-  );
-}
-
 export function createProjectColumns({
   goToBot,
   deletingBotIds,
@@ -61,6 +28,64 @@ export function createProjectColumns({
   deletingBotIds: Record<string, boolean>;
   onDeleteAccount: (botId: string) => void | Promise<void>;
 }) {
+  const renderLicenseStatus = createStatusWithSecondaryRenderer<BotRow, string>({
+    getLabel: (_value, record) => record.licenseStatusLabel,
+    getIntent: (_value, record) => resolveStatusIntentFromColor(record.licenseStatusColor),
+    getSecondaryText: (_value, record) => formatDaysRemaining(record.licenseDaysRemaining),
+    onClick: (record) => goToBot(record.id, 'license'),
+    buttonClassName: `${styles.cellButton} ${styles.cellLink}`,
+    secondaryClassName: styles.secondary,
+    tagClassName: styles.statusTag,
+  });
+
+  const renderProxyStatus = createStatusWithSecondaryRenderer<BotRow, string>({
+    getLabel: (_value, record) => record.proxyStatusLabel,
+    getIntent: (_value, record) => resolveStatusIntentFromColor(record.proxyStatusColor),
+    getSecondaryText: (_value, record) => formatDaysRemaining(record.proxyDaysRemaining),
+    onClick: (record) => goToBot(record.id, 'proxy'),
+    buttonClassName: `${styles.cellButton} ${styles.cellLink}`,
+    secondaryClassName: styles.secondary,
+    tagClassName: styles.statusTag,
+  });
+
+  const renderSubscriptionStatus = createStatusWithSecondaryRenderer<BotRow, string>({
+    getLabel: (_value, record) => record.subscriptionStatusLabel,
+    getIntent: (_value, record) => resolveStatusIntentFromColor(record.subscriptionStatusColor),
+    getSecondaryText: (_value, record) => formatDaysRemaining(record.subscriptionDaysRemaining),
+    onClick: (record) => goToBot(record.id, 'subscription'),
+    buttonClassName: `${styles.cellButton} ${styles.cellLink}`,
+    secondaryClassName: styles.secondary,
+    tagClassName: styles.statusTag,
+  });
+
+  const renderActions = createActionsRenderer<BotRow>({
+    renderActions: (record) => {
+      const isDeleting = Boolean(deletingBotIds[record.id]);
+      return (
+        <Popconfirm
+          title="Delete account?"
+          description={`This will remove ${record.idShort} from database.`}
+          okText="Delete"
+          cancelText="Cancel"
+          okButtonProps={{ danger: true }}
+          onConfirm={() => onDeleteAccount(record.id)}
+        >
+          <TableActionButton
+            danger
+            icon={<DeleteOutlined />}
+            className={styles.deleteButton}
+            loading={isDeleting}
+            onClick={(event) => event.stopPropagation()}
+            tooltip="Delete account"
+          >
+            Delete
+          </TableActionButton>
+        </Popconfirm>
+      );
+    },
+    renderContainer: (actions) => <Flex justify="flex-start">{actions}</Flex>,
+  });
+
   return [
     {
       title: 'ID',
@@ -174,13 +199,7 @@ export function createProjectColumns({
       key: 'licenseStatus',
       width: 120,
       sorter: (a: BotRow, b: BotRow) => a.licenseSort - b.licenseSort,
-      render: (_: string, record: BotRow) =>
-        renderStatusWithDays({
-          label: record.licenseStatusLabel,
-          color: record.licenseStatusColor,
-          daysRemaining: record.licenseDaysRemaining,
-          onClick: () => goToBot(record.id, 'license'),
-        }),
+      render: renderLicenseStatus,
     },
     {
       title: 'Proxy',
@@ -188,13 +207,7 @@ export function createProjectColumns({
       key: 'proxyStatus',
       width: 120,
       sorter: (a: BotRow, b: BotRow) => a.proxySort - b.proxySort,
-      render: (_: string, record: BotRow) =>
-        renderStatusWithDays({
-          label: record.proxyStatusLabel,
-          color: record.proxyStatusColor,
-          daysRemaining: record.proxyDaysRemaining,
-          onClick: () => goToBot(record.id, 'proxy'),
-        }),
+      render: renderProxyStatus,
     },
     {
       title: 'Subscribe',
@@ -202,45 +215,14 @@ export function createProjectColumns({
       key: 'subscriptionStatus',
       width: 140,
       sorter: (a: BotRow, b: BotRow) => a.subscriptionSort - b.subscriptionSort,
-      render: (_: string, record: BotRow) =>
-        renderStatusWithDays({
-          label: record.subscriptionStatusLabel,
-          color: record.subscriptionStatusColor,
-          daysRemaining: record.subscriptionDaysRemaining,
-          onClick: () => goToBot(record.id, 'subscription'),
-        }),
+      render: renderSubscriptionStatus,
     },
     {
       title: 'Action',
       key: 'action',
       width: 140,
       align: 'left' as const,
-      render: (_: unknown, record: BotRow) => {
-        const isDeleting = Boolean(deletingBotIds[record.id]);
-        return (
-          <Flex justify="flex-start">
-            <Popconfirm
-              title="Delete account?"
-              description={`This will remove ${record.idShort} from database.`}
-              okText="Delete"
-              cancelText="Cancel"
-              okButtonProps={{ danger: true }}
-              onConfirm={() => onDeleteAccount(record.id)}
-            >
-              <TableActionButton
-                danger
-                icon={<DeleteOutlined />}
-                className={styles.deleteButton}
-                loading={isDeleting}
-                onClick={(event) => event.stopPropagation()}
-                tooltip="Delete account"
-              >
-                Delete
-              </TableActionButton>
-            </Popconfirm>
-          </Flex>
-        );
-      },
+      render: renderActions,
     },
   ];
 }

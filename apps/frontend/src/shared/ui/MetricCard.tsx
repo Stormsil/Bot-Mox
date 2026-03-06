@@ -1,5 +1,6 @@
 import { Card, Progress, Statistic, Typography } from 'antd';
 import type React from 'react';
+import { getSemanticIntentColorToken, type SemanticStatusIntent } from '../lib/statusSemantic';
 
 const { Text } = Typography;
 
@@ -9,6 +10,7 @@ interface MetricCardProps {
   subtext?: string;
   progress?: number;
   icon?: React.ReactNode;
+  intent?: SemanticStatusIntent;
   color?: string;
 }
 
@@ -18,8 +20,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   subtext,
   progress,
   icon,
+  intent,
   color = 'var(--botmox-color-brand-primary)',
 }) => {
+  const resolvedColor = intent ? getSemanticIntentColorToken(intent) : color;
+
   return (
     <Card
       variant="borderless"
@@ -47,13 +52,20 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         value={value}
         prefix={
           icon ? (
-            <span style={{ color, fontSize: 20, display: 'inline-flex', alignItems: 'center' }}>
+            <span
+              style={{
+                color: resolvedColor,
+                fontSize: 20,
+                display: 'inline-flex',
+                alignItems: 'center',
+              }}
+            >
               {icon}
             </span>
           ) : undefined
         }
         valueStyle={{
-          color,
+          color: resolvedColor,
           fontFamily: '"Roboto Condensed", sans-serif',
           fontSize: 24,
           fontWeight: 700,
@@ -64,7 +76,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         <Progress
           percent={progress}
           size="small"
-          strokeColor={color}
+          strokeColor={resolvedColor}
           trailColor="var(--botmox-color-surface-muted)"
           strokeLinecap="butt"
           showInfo={false}

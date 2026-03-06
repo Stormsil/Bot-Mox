@@ -15,14 +15,7 @@ import type {
   Proxy as ProxyResource,
 } from '../../entities/resources/model/types';
 import { parseProxyString } from '../../shared/lib/utils/proxyUtils';
-import {
-  AppModal,
-  AppButton as Button,
-  AppDatePicker as DatePicker,
-  AppForm as Form,
-  AppInput as Input,
-  AppSelect as Select,
-} from '../../shared/ui';
+import { AppFormBuilder, AppModal, AppButton as Button, AppForm as Form } from '../../shared/ui';
 import { ParsedProxyAlert, ProxyIpqsLoadingAlert, ProxyIpqsResultAlert } from './proxyCrudAlerts';
 
 interface ProxyCrudModalProps {
@@ -324,31 +317,32 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
           void submitForm(values);
         }}
       >
-        <Form.Item
-          name="proxyString"
-          label="Proxy String"
-          required
-          extra="Format: ip:port:login:password"
-          rules={[
-            { required: true, message: 'Please enter proxy string' },
-            {
-              validator: async (_rule, value: string | undefined) => {
-                if (!value || !String(value).trim()) {
-                  throw new Error('Please enter proxy string');
-                }
-                if (parseProxyString(String(value)) === null) {
-                  throw new Error('Invalid proxy format. Use: ip:port:login:password');
-                }
+        <AppFormBuilder.TextArea
+          item={{
+            name: 'proxyString',
+            label: 'Proxy String',
+            required: true,
+            extra: 'Format: ip:port:login:password',
+            rules: [
+              { required: true, message: 'Please enter proxy string' },
+              {
+                validator: async (_rule, value: string | undefined) => {
+                  if (!value || !String(value).trim()) {
+                    throw new Error('Please enter proxy string');
+                  }
+                  if (parseProxyString(String(value)) === null) {
+                    throw new Error('Invalid proxy format. Use: ip:port:login:password');
+                  }
+                },
               },
-            },
-          ]}
-        >
-          <Input.TextArea
-            rows={2}
-            placeholder="Enter proxy string (ip:port:login:password)"
-            style={{ fontFamily: 'monospace' }}
-          />
-        </Form.Item>
+            ],
+          }}
+          control={{
+            rows: 2,
+            placeholder: 'Enter proxy string (ip:port:login:password)',
+            style: { fontFamily: 'monospace' },
+          }}
+        />
 
         {parsedProxy && (
           <ParsedProxyAlert
@@ -362,24 +356,26 @@ export const ProxyCrudModal: React.FC<ProxyCrudModalProps> = ({
 
         {!isEditMode && ipqsData && <ProxyIpqsResultAlert ipqsData={ipqsData} />}
 
-        <Form.Item name="bot_id" label="Assign to Bot">
-          <Select
-            placeholder="Select bot"
-            options={Object.entries(bots).map(([id, bot]) => ({
+        <AppFormBuilder.Select
+          item={{ name: 'bot_id', label: 'Assign to Bot' }}
+          control={{
+            placeholder: 'Select bot',
+            options: Object.entries(bots).map(([id, bot]) => ({
               value: id,
               label: `${bot.character?.name || 'Unknown'} ${bot.vm?.name ? `(${bot.vm.name})` : ''} - ${id}`,
-            }))}
-          />
-        </Form.Item>
+            })),
+          }}
+        />
 
-        <Form.Item
-          name="expires_at"
-          label="Expiration Date"
-          rules={[{ required: true, message: 'Please select expiration date' }]}
-          getValueProps={(value) => ({ value: toDayjsValue(value) })}
-        >
-          <DatePicker style={{ width: '100%' }} showTime={false} />
-        </Form.Item>
+        <AppFormBuilder.DatePicker
+          item={{
+            name: 'expires_at',
+            label: 'Expiration Date',
+            rules: [{ required: true, message: 'Please select expiration date' }],
+            getValueProps: (value) => ({ value: toDayjsValue(value) }),
+          }}
+          control={{ showTime: false }}
+        />
       </Form>
     </AppModal>
   );
